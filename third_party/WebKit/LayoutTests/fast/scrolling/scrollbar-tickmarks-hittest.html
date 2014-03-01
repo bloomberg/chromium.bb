@@ -16,8 +16,6 @@ onload = function()
         window.internals.settings.setOverlayScrollbarsEnabled(true);
         window.internals.addTextMatchMarker(range, true);
     }
-    if (window.testRunner)
-        testRunner.display();
     if (window.eventSender) {
         eventSender.mouseMoveTo(window.innerWidth - 1, window.innerHeight - 1);
         eventSender.mouseDown();

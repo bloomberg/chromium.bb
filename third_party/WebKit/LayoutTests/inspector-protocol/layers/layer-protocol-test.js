@@ -46,11 +46,3 @@ InspectorTest.enableLayerTreeAgent = function(callback)
 }
 
 }
-
-function onLoad()
-{
-    if (window.testRunner)
-        window.testRunner.display();
-}
-
-window.addEventListener("load", onLoad, false);

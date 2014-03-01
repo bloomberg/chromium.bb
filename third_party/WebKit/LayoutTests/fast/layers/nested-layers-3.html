@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <script>
 function test()
 {
-    document.body.offsetTop;
     if (window.testRunner) {
-        testRunner.display();
+        testRunner.waitUntilDone();
         testRunner.dumpAsText();
-        finish();
-    } else {
-        window.setTimeout(finish, 50);
     }
+    runAfterDisplay(finish);
 }
 
 function finish()
@@ -20,6 +18,8 @@ function finish()
     innerLayer.style.left = '19px';
     innerLayer.style.top = '23px';
     foo.scrollTop = 50;
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
 </script>
 <style>

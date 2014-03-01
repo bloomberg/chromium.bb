@@ -7,18 +7,17 @@
 
   <script>
     if (window.testRunner) {
-        testRunner.display();
         testRunner.waitUntilDone();
-        setTimeout(runTest, 0);
-    } else {
-        setTimeout(runTest, 200);
     }
+    window.requestAnimationFrame(function() {
+        setTimeout(runTest, 0);
+    });
 
     function runTest() {
-	document.getElementById('clear_rect').setAttribute('fill', 'white');
-	document.getElementById('rect').setAttribute('vector-effect', 'non-scaling-stroke');
-	if (window.testRunner)
-	    testRunner.notifyDone();
+        document.getElementById('clear_rect').setAttribute('fill', 'white');
+        document.getElementById('rect').setAttribute('vector-effect', 'non-scaling-stroke');
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
   </script>
 </svg>

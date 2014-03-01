@@ -25,9 +25,7 @@ function performActions()
 
 function test()
 {
-    InspectorTest.evaluateInPage("testRunner.display()", function() {
-        InspectorTest.performActionsAndPrint("performActions()", "Layout");
-    });
+    InspectorTest.performActionsAndPrint("performActions()", "Layout");
 }
 
 </script>

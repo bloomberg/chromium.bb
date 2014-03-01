@@ -1,3 +1,4 @@
+<script src="../../resources/run-after-display.js"></script>
 <body style="overflow: hidden;">
     <p>
         Test for <i><a href="rdar://problem/10098679">&lt;rdar://problem/10098679></a>
@@ -18,15 +19,10 @@
             document.getElementById("widener").style.removeProperty("width");
             document.getElementById("target").style.removeProperty("-webkit-column-count");
         }
- 
-               window.scrollBy(1, 0);
 
-        if (window.testRunner) {
-            testRunner.display();
+        window.scrollBy(1, 0);
+        if (window.testRunner)
             testRunner.dumpAsText();
-            test();
-        } else
-            setTimeout(test, 500);
-
+        runAfterDisplay(test);
     </script>
 </body>

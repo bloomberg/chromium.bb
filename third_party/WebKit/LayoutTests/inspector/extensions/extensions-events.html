@@ -167,7 +167,7 @@ function extension_testTimelineEvents(nextTest)
     webInspector.timeline.onEventRecorded.addListener(onTimelineEvent);
 
     // Trigger a relayout.
-    webInspector.inspectedWindow.eval("document.body.style.float = 'left'; testRunner.display();");
+    webInspector.inspectedWindow.eval("document.body.style.float = 'left'; document.body.offsetTop;");
 }
 
 </script>

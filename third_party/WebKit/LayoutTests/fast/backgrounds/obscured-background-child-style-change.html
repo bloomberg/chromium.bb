@@ -1,3 +1,4 @@
+<script src="../../resources/run-after-display.js"></script>
 <style>
 .parent {
     position: relative;
@@ -22,10 +23,13 @@
     </div>
 </div>
 <script>
-document.body.offsetTop;
 if (window.testRunner)
-    testRunner.display();
-var children = document.getElementsByClassName("child");
-children[0].style.backgroundColor = "rgba(0,255,0,0.5)";
-children[1].style.backgroundColor = "rgba(0,255,0,0.5)";
+    testRunner.waitUntilDone();
+runAfterDisplay(function() {
+    var children = document.getElementsByClassName("child");
+    children[0].style.backgroundColor = "rgba(0,255,0,0.5)";
+    children[1].style.backgroundColor = "rgba(0,255,0,0.5)";
+    if (window.testRunner)
+        testRunner.notifyDone();
+});
 </script>

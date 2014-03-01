@@ -6,6 +6,7 @@
 
 <pre>FAIL</pre>
 
+<script src="../../../resources/run-after-display.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
@@ -23,16 +24,16 @@ window.onerror = function() {
     return true;
 };
 
-requestAnimationFrame(postMessage);
+requestAnimationFrame(function() {
+    postMessage();
+    runAfterDisplay(function() {
+        setTimeout(function() {
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }, 50);
+    });
+});
 setTimeout(postMessage);
-
-if (window.testRunner)
-    testRunner.display();
-
-setTimeout(function() {
-    if (window.testRunner)
-        testRunner.notifyDone();
-}, 50);
 
 </script>
 </body>

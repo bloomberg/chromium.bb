@@ -1,13 +1,16 @@
 <html>
 <head>
     <title>Test HTML Page</title>
+<script src="../../resources/run-after-display.js"></script>
 <script>
 function test()
 {
     if (window.testRunner) {
         testRunner.dumpAsText();
-        document.body.offsetTop;
-        testRunner.display();
+        testRunner.waitUntilDone();
+        runAfterDisplay(function() {
+            testRunner.notifyDone();
+        });
     }
 }
 </script>
