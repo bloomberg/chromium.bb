@@ -125,10 +125,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   typedef ScopedVector<UtilityMessageHandler> Handlers;
   Handlers handlers_;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  scoped_ptr<metadata::MediaMetadataParser> media_metadata_parser_;
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
-
   // Flag to enable whitelisting.
   bool filter_messages_;
   // A list of message_ids to filter.

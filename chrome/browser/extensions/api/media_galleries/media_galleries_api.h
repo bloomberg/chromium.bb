@@ -255,10 +255,8 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
                      scoped_ptr<std::string> blob_header,
                      int64 total_blob_length);
 
-  // |parser| argument exists so a callback can own the SafeMediaMetadataParser.
   void OnSafeMediaMetadataParserDone(
-      metadata::SafeMediaMetadataParser* parser, bool parse_success,
-      base::DictionaryValue* metadata_dictionary);
+      bool parse_success, base::DictionaryValue* metadata_dictionary);
 };
 
 }  // namespace extensions

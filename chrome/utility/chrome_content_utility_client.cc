@@ -296,10 +296,12 @@ typedef PdfFunctionsBase PdfFunctions;
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-void SendMediaMetadataToHost(
+void FinishParseMediaMetadata(
+    metadata::MediaMetadataParser* parser,
     scoped_ptr<extensions::api::media_galleries::MediaMetadata> metadata) {
   Send(new ChromeUtilityHostMsg_ParseMediaMetadata_Finished(
       true, *(metadata->ToValue().get())));
+  ReleaseProcessIfNeeded();
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -820,13 +822,12 @@ void ChromeContentUtilityClient::OnParseMediaMetadata(
     const std::string& mime_type,
     int64 total_size) {
   // Only one IPCDataSource may be created and added to the list of handlers.
-  CHECK(!media_metadata_parser_);
   metadata::IPCDataSource* source = new metadata::IPCDataSource(total_size);
   handlers_.push_back(source);
 
-  media_metadata_parser_.reset(new metadata::MediaMetadataParser(source,
-                                                                 mime_type));
-  media_metadata_parser_->Start(base::Bind(&SendMediaMetadataToHost));
+  metadata::MediaMetadataParser* parser =
+      new metadata::MediaMetadataParser(source, mime_type);
+  parser->Start(base::Bind(&FinishParseMediaMetadata, base::Owned(parser)));
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 

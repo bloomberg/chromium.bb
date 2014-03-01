@@ -49,7 +49,6 @@ void SafeMediaMetadataParser::StartWorkOnIOThread(
 
   utility_process_host_ = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current())->AsWeakPtr();
-  utility_process_host_->StartBatchMode();
 
   utility_process_host_->Send(
       new ChromeUtilityMsg_ParseMediaMetadata(mime_type_, blob_size_));
@@ -64,8 +63,6 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
 
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
-
-  utility_process_host_->EndBatchMode();
 
   BrowserThread::PostTask(
       BrowserThread::UI,

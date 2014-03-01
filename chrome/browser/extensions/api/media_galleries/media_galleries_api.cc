@@ -827,13 +827,11 @@ void MediaGalleriesGetMetadataFunction::SniffMimeType(
       new metadata::SafeMediaMetadataParser(GetProfile(), blob_uuid,
                                             total_blob_length, mime_type));
   parser->Start(base::Bind(
-      &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone,
-      this, parser));
+      &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone, this));
 }
 
 void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
-    metadata::SafeMediaMetadataParser* /* parser */, bool parse_success,
-    base::DictionaryValue* metadata_dictionary) {
+    bool parse_success, base::DictionaryValue* metadata_dictionary) {
   if (!parse_success) {
     SendResponse(false);
     return;
