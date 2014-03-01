@@ -167,7 +167,7 @@ def GetCanariesForChromeLKGM(configs=config):
   builders = []
   for build_name, conf in configs.iteritems():
     if (conf['build_type'] == constants.CANARY_TYPE and
-        conf['critical_for_chrome']):
+        conf['critical_for_chrome'] and not conf['child_configs']):
       builders.append(build_name)
 
   return builders
@@ -797,7 +797,7 @@ class _config(dict):
     return cls().add_config(name, *args, **kwargs)
 
   @classmethod
-  def add_group(cls, name, *args, **kwargs):
+  def add_group(cls, name, *args):
     """Create a new group of build configurations.
 
     Args:
@@ -806,12 +806,12 @@ class _config(dict):
       args: Configurations to build in this group. The first config in
             the group is considered the primary configuration and is used
             for syncing and creating the chroot.
-      kwargs: See the docstring of derive. Applies to entire group.
+
+    Returns:
+      A new _config instance.
     """
-    configs, group_overrides = args, kwargs
-    child_configs = [_default.derive(x, grouped=True) for x in configs]
-    group_overrides['child_configs'] = child_configs
-    return configs[0].add_config(name, **group_overrides)
+    child_configs = [_default.derive(x, grouped=True) for x in args]
+    return args[0].add_config(name, child_configs=child_configs)
 
 _default = _config(**_settings)
 
@@ -1404,7 +1404,7 @@ internal_pre_cq = internal_paladin.derive(
   description='Verifies compilation and unit tests',
 )
 
-internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
+_config.add_group(constants.PRE_CQ_BUILDER_NAME,
   internal_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
   internal_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
@@ -1849,13 +1849,13 @@ _release.add_config('x86-mario-release',
 _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
+    critical_for_chrome=True,
   ),
   _grouped_variant_release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
   ),
-  critical_for_chrome=True,
 )
 
 _config.add_group('x86-zgb-release-group',
@@ -1882,7 +1882,7 @@ release_pgo = _release.derive(
   dev_installer_prebuilts=False,
 )
 
-release_pgo.add_group('x86-alex-release-pgo',
+_config.add_group('x86-alex-release-pgo',
   release_pgo.add_config('x86-alex-release-pgo-generate',
     boards=['x86-alex'],
     pgo_generate=True,
@@ -1893,7 +1893,7 @@ release_pgo.add_group('x86-alex-release-pgo',
   ),
 )
 
-release_pgo.add_group('lumpy-release-pgo',
+_config.add_group('lumpy-release-pgo',
   release_pgo.add_config('lumpy-release-pgo-generate',
     boards=['lumpy'],
     pgo_generate=True,
@@ -1904,7 +1904,7 @@ release_pgo.add_group('lumpy-release-pgo',
   ),
 )
 
-release_pgo.add_group('parrot-release-pgo',
+_config.add_group('parrot-release-pgo',
   release_pgo.add_config('parrot-release-pgo-generate',
     boards=['parrot'],
     pgo_generate=True,
@@ -1915,7 +1915,7 @@ release_pgo.add_group('parrot-release-pgo',
   ),
 )
 
-release_pgo.add_group('daisy-release-pgo',
+_config.add_group('daisy-release-pgo',
   release_pgo.add_config('daisy-release-pgo-generate',
     boards=['daisy'],
     pgo_generate=True,
@@ -2018,7 +2018,7 @@ _release.add_config('panther-release',
   boards=['panther'],
 )
 
-_release.add_group('parrot-release-group',
+_config.add_group('parrot-release-group',
   _release.add_config('parrot-release',
     boards=['parrot'],
   ),
