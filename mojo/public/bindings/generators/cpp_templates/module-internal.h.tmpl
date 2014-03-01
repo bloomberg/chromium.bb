@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 {%- set header_guard = "%s_INTERNAL_H_"|
-        format(module_name|upper|replace("/","_")|replace(".","_")) %}
+        format(module.path|upper|replace("/","_")|replace(".","_")) %}
 
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
 #include "mojo/public/bindings/lib/bindings_internal.h"
 {%- for import in imports %}
-#include "{{include_prefix}}{{import.module_name|camel_to_underscores}}-internal.h"
+#include "{{import.module.path}}-internal.h"
 {%- endfor %}
 
 namespace {{namespace}} {

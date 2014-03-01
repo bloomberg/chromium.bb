@@ -37,10 +37,6 @@ def IsObjectKind(kind):
 def IsHandleKind(kind):
   return kind.spec.startswith('h') or isinstance(kind, mojom.Interface)
 
-def CamelToUnderscores(camel):
-  s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel)
-  return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
-
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]
 
@@ -69,7 +65,6 @@ class Generator(object):
   # files to stdout.
   def __init__(self, module, output_dir=None):
     self.module = module
-    self.header_dir = os.path.dirname(module.path);
     self.output_dir = output_dir
 
   def GetStructsFromMethods(self):

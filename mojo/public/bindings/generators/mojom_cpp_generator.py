@@ -145,7 +145,6 @@ _HEADER_SIZE = 8
 class Generator(mojom_generator.Generator):
 
   cpp_filters = {
-    "camel_to_underscores": mojom_generator.CamelToUnderscores,
     "cpp_const_wrapper_type": GetCppConstWrapperType,
     "cpp_field_type": GetCppFieldType,
     "cpp_type": GetCppType,
@@ -167,15 +166,12 @@ class Generator(mojom_generator.Generator):
   def GetJinjaExports(self):
     return {
       "module": self.module,
-      "module_name": self.module.name,
-      "module_path": self.module.path,
       "namespace": self.module.namespace,
       "imports": self.module.imports,
       "kinds": self.module.kinds,
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,
-      "include_prefix": self.GetIncludePrefix(),
     }
 
   @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)
@@ -195,10 +191,3 @@ class Generator(mojom_generator.Generator):
     self.Write(self.GenerateModuleInternalHeader(),
         "%s-internal.h" % self.module.name)
     self.Write(self.GenerateModuleSource(), "%s.cc" % self.module.name)
-
-  def GetIncludePrefix(self):
-    if not self.header_dir:
-      return ""
-    if self.header_dir[-1] == "/":
-      return self.header_dir
-    return self.header_dir + "/"
