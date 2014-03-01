@@ -24,4 +24,8 @@ bool AreUsageStatsEnabled(const wchar_t* exe_path);
 // if stats collecting is permitted by this policy and false if not.
 bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);
 
+// Returns true if invoked in a Chrome process other than the main browser
+// process. False otherwise.
+bool IsNonBrowserProcess();
+
 #endif  // CHROME_ELF_CHROME_ELF_UTIL_H_

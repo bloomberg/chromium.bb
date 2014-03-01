@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "chrome_elf/blacklist/blacklist_interceptions.h"
 #include "chrome_elf/chrome_elf_constants.h"
+#include "chrome_elf/chrome_elf_util.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
@@ -140,17 +141,6 @@ class OSInfo {
 
   DISALLOW_COPY_AND_ASSIGN(OSInfo);
 };
-
-bool IsNonBrowserProcess() {
-  typedef bool (*IsSandboxedProcessFunc)();
-  IsSandboxedProcessFunc is_sandboxed_process =
-      reinterpret_cast<IsSandboxedProcessFunc>(
-          GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
-  if (is_sandboxed_process && is_sandboxed_process())
-    return true;
-
-  return false;
-}
 
 // Record that the thunk setup completed succesfully and close the registry
 // key handle since it is no longer needed.

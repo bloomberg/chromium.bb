@@ -191,3 +191,19 @@ bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
 
   return false;
 }
+
+bool IsNonBrowserProcess() {
+  typedef bool (*IsSandboxedProcessFunc)();
+  IsSandboxedProcessFunc is_sandboxed_process_func =
+      reinterpret_cast<IsSandboxedProcessFunc>(
+          GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
+  bool is_sandboxed_process =
+      is_sandboxed_process_func && is_sandboxed_process_func();
+
+  // TODO(robertshield): Drop the command line check when we drop support for
+  // enabling chrome_elf in unsandboxed processes.
+  wchar_t* command_line = GetCommandLine();
+  bool has_process_type_flag = command_line && wcsstr(command_line, L"--type");
+
+  return (has_process_type_flag || is_sandboxed_process);
+}

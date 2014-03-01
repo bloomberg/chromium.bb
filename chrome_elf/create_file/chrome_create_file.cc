@@ -254,8 +254,7 @@ HANDLE CreateFileNTDLL(
 
 bool ShouldBypass(LPCWSTR file_path) {
   // Do not redirect in non-browser processes.
-  wchar_t* command_line = ::GetCommandLine();
-  if (command_line && wcsstr(command_line, L"--type"))
+  if (IsNonBrowserProcess())
     return false;
 
   // If the shell functions are not present, forward the call to kernel32.
