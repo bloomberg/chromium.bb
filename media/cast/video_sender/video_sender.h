@@ -139,6 +139,8 @@ class VideoSender : public base::NonThreadSafe,
   RtpTimestamp frame_id_to_rtp_timestamp_[256];
 
   bool initialized_;
+  // Indicator for receiver acknowledgments.
+  bool active_session_;
   base::WeakPtrFactory<VideoSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoSender);

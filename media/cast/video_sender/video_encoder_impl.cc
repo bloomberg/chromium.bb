@@ -108,8 +108,6 @@ bool VideoEncoderImpl::EncodeVideoFrame(
 
   if (skip_next_frame_) {
     ++skip_count_;
-    skip_next_frame_ = false;
-    VLOG(1) << "Skip encoding frame";
     return false;
   }
 

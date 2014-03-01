@@ -110,9 +110,11 @@ VideoSender::VideoSender(
       last_skip_count_(0),
       congestion_control_(cast_environment->Clock(),
                           video_config.congestion_control_back_off,
-                          video_config.max_bitrate, video_config.min_bitrate,
+                          video_config.max_bitrate,
+                          video_config.min_bitrate,
                           video_config.start_bitrate),
       initialized_(false),
+      active_session_(false),
       weak_factory_(this) {
   max_unacked_frames_ =
       static_cast<uint8>(video_config.rtp_config.max_delay_ms *
@@ -126,8 +128,8 @@ VideoSender::VideoSender(
 
   if (video_config.use_external_encoder) {
     CHECK(gpu_factories);
-    video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
-        video_config, gpu_factories));
+    video_encoder_.reset(new ExternalVideoEncoder(
+        cast_environment, video_config, gpu_factories));
   } else {
     video_encoder_.reset(new VideoEncoderImpl(
         cast_environment, video_config, max_unacked_frames_));
@@ -150,7 +152,8 @@ VideoSender::VideoSender(
   // TODO(pwestin): pass cast_initialization to |video_encoder_|
   // and remove this call.
   cast_environment_->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
+      CastEnvironment::MAIN,
+      FROM_HERE,
       base::Bind(initialization_status, STATUS_INITIALIZED));
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
 
@@ -185,10 +188,10 @@ void VideoSender::InsertRawVideoFrame(
       kFrameIdUnknown);
 
   if (!video_encoder_->EncodeVideoFrame(
-           video_frame,
-           capture_time,
-           base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
-                      weak_factory_.GetWeakPtr()))) {
+          video_frame,
+          capture_time,
+          base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
+                     weak_factory_.GetWeakPtr()))) {
   }
 }
 
@@ -322,15 +325,13 @@ void VideoSender::ResendCheck() {
     base::TimeDelta time_since_last_send =
         cast_environment_->Clock()->NowTicks() - last_send_time_;
     if (time_since_last_send > rtp_max_delay_) {
-      if (last_acked_frame_id_ == -1) {
-        // We have not received any ack, send a key frame.
-        video_encoder_->GenerateKeyFrame();
-        last_acked_frame_id_ = -1;
-        last_sent_frame_id_ = -1;
-        UpdateFramesInFlight();
+      if (!active_session_) {
+        // We have not received any acks, resend the first encoded frame (id 0),
+        // which must also be a key frame.
+        VLOG(1) << "ACK timeout resend first key frame";
+        ResendFrame(0);
       } else {
         DCHECK_LE(0, last_acked_frame_id_);
-
         uint32 frame_id = static_cast<uint32>(last_acked_frame_id_ + 1);
         VLOG(1) << "ACK timeout resend frame:" << static_cast<int>(frame_id);
         ResendFrame(frame_id);
@@ -451,6 +452,7 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
 
   VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;
+  active_session_ = true;
   UpdateFramesInFlight();
 }
 
@@ -458,7 +460,7 @@ void VideoSender::UpdateFramesInFlight() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (last_sent_frame_id_ != -1) {
     DCHECK_LE(0, last_sent_frame_id_);
-    uint32 frames_in_flight;
+    uint32 frames_in_flight = 0;
     if (last_acked_frame_id_ != -1) {
       DCHECK_LE(0, last_acked_frame_id_);
       frames_in_flight = static_cast<uint32>(last_sent_frame_id_) -
@@ -466,12 +468,14 @@ void VideoSender::UpdateFramesInFlight() {
     } else {
       frames_in_flight = static_cast<uint32>(last_sent_frame_id_) + 1;
     }
-    VLOG(1) << "Frames in flight; last sent: " << last_sent_frame_id_
+    VLOG(1) << frames_in_flight
+            << " Frames in flight; last sent: " << last_sent_frame_id_
             << " last acked:" << last_acked_frame_id_;
     if (frames_in_flight >= max_unacked_frames_) {
       video_encoder_->SkipNextFrame(true);
       return;
     }
+    DCHECK(frames_in_flight <= max_unacked_frames_);
   }
   video_encoder_->SkipNextFrame(false);
 }

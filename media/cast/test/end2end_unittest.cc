@@ -743,7 +743,8 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
 }
 
-// This tests start sending audio and video before the receiver is ready.
+// This tests start sending audio and video at start-up time before the receiver
+// is ready; it sends 2 frames before the receiver comes online.
 TEST_F(End2EndTest, StartSenderBeforeReceiver) {
   SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
@@ -753,11 +754,16 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
 
   sender_to_receiver_.SetSendPackets(false);
 
-  for (int i = 0; i < 3; ++i) {
+  const int test_delay_ms = 100;
+
+  base::TimeTicks initial_send_time;
+  for (int i = 0; i < 2; ++i) {
     int num_10ms_blocks = audio_diff / 10;
     audio_diff -= num_10ms_blocks * 10;
 
     base::TimeTicks send_time = testing_clock_sender_->NowTicks();
+    if (initial_send_time.is_null())
+      initial_send_time = send_time;
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
@@ -767,16 +773,27 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
+    // Frame will be rendered with 100mS delay, as the transmission is delayed.
+    // The receiver at this point cannot be synced to the sender's clock, as no
+    // packets, and specifically no RTCP packets were sent.
+    test_receiver_video_callback_->AddExpectedResult(
+        video_start,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        initial_send_time +
+            base::TimeDelta::FromMilliseconds(test_delay_ms + kFrameTimerMs));
+
     SendVideoFrame(video_start, send_time);
     RunTasks(kFrameTimerMs);
     audio_diff += kFrameTimerMs;
     video_start++;
   }
-  RunTasks(100);
+
+  RunTasks(test_delay_ms);
   sender_to_receiver_.SetSendPackets(true);
 
   int j = 0;
-  const int number_of_audio_frames_to_ignore = 3;
+  const int number_of_audio_frames_to_ignore = 2;
   for (; j < 10; ++j) {
     int num_10ms_blocks = audio_diff / 10;
     audio_diff -= num_10ms_blocks * 10;

@@ -28,7 +28,6 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const uint8 kPixelValue = 123;
 static const int kWidth = 320;
 static const int kHeight = 240;
-}
 
 using testing::_;
 using testing::AtLeast;
@@ -58,7 +57,6 @@ class TestPacketSender : public transport::PacketSender {
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
 };
 
-namespace {
 class PeerVideoSender : public VideoSender {
  public:
   PeerVideoSender(
@@ -266,6 +264,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
 
     base::TimeTicks capture_time;
     video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+    RunTasks(33);
   }
 
   task_runner_->RunTasks();
@@ -283,6 +282,54 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   EXPECT_EQ(num_frames - 1u, frame_events.rbegin()->frame_id);
 
   cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
+}
+
+TEST_F(VideoSenderTest, StopSendingIntheAbsenceOfAck) {
+  InitEncoder(false);
+  // Send a stream of frames and don't ACK; by default we shouldn't have more
+  // than 4 frames in flight.
+  // Store size in packets of frame 0, as it should be resent sue to timeout.
+  scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+  base::TimeTicks capture_time;
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+  RunTasks(33);
+  const int size_of_frame0 = transport_.number_of_rtp_packets();
+
+  for (int i = 1; i < 4; ++i) {
+    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    base::TimeTicks capture_time;
+    video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+    RunTasks(33);
+  }
+
+  const int number_of_packets_sent = transport_.number_of_rtp_packets();
+  // Send 4 more frames - they should not be sent to the transport, as we have
+  // received any acks.
+  for (int i = 0; i < 3; ++i) {
+    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    base::TimeTicks capture_time;
+    video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+    RunTasks(33);
+  }
+
+  EXPECT_EQ(number_of_packets_sent + size_of_frame0,
+            transport_.number_of_rtp_packets());
+
+  // Start acking and make sure we're back to steady-state.
+  RtcpCastMessage cast_feedback(1);
+  cast_feedback.media_ssrc_ = 2;
+  cast_feedback.ack_frame_id_ = 0;
+  video_sender_->OnReceivedCastFeedback(cast_feedback);
+  EXPECT_GE(
+      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
+      4);
+
+  // Empty the pipeline.
+  RunTasks(100);
+  // Should have sent at least 7 packets.
+  EXPECT_GE(
+      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
+      7);
 }
 
 }  // namespace cast
