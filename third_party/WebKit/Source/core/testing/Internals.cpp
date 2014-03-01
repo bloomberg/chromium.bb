@@ -2102,7 +2102,7 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node* 
     } else if (node->hasTagName(HTMLNames::iframeTag)) {
         document = toHTMLIFrameElement(node)->contentDocument();
     } else {
-        exceptionState.throwDOMException(TypeError, "The node provided is neither a document nor an IFrame.");
+        exceptionState.throwTypeError("The node provided is neither a document nor an IFrame.");
         return;
     }
     document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);

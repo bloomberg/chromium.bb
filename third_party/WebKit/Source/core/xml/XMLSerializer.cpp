@@ -32,7 +32,7 @@ namespace WebCore {
 String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(TypeError, "Invalid node value.");
+        exceptionState.throwTypeError("Invalid node value.");
         return String();
     }
 

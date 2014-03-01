@@ -192,7 +192,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, Blob* blob, ExceptionState& exceptionState)
 {
     if (!blob) {
-        exceptionState.throwDOMException(TypeError, "The blob provided is invalid.");
+        exceptionState.throwTypeError("The blob provided is invalid.");
         return ScriptPromise();
     }
     ScriptPromise promise = ScriptPromise::createPending(eventTarget.executionContext());
@@ -206,7 +206,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, Blob* blob, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
     if (!blob) {
-        exceptionState.throwDOMException(TypeError, "The blob provided is invalid.");
+        exceptionState.throwTypeError("The blob provided is invalid.");
         return ScriptPromise();
     }
     if (!sw || !sh) {

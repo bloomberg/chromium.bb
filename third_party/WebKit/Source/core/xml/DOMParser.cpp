@@ -34,7 +34,7 @@ PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String&
         && contentType != "application/xml"
         && contentType != "application/xhtml+xml"
         && contentType != "image/svg+xml") {
-        exceptionState.throwDOMException(TypeError, "Unsupported mime-type specified.");
+        exceptionState.throwTypeError("Unsupported mime-type specified.");
         return nullptr;
     }
 

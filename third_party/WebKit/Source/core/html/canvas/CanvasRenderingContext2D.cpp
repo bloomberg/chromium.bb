@@ -579,7 +579,7 @@ void CanvasRenderingContext2D::setCurrentTransform(PassRefPtr<SVGMatrixTearOff> 
 
     // FIXME: bindings should do null checking and throw: http://crbug.com/321518
     if (!matrixTearOff) {
-        exceptionState.throwDOMException(TypeError, "currentTransform only accepts a SVGMatrix.");
+        exceptionState.throwTypeError("currentTransform only accepts a SVGMatrix.");
         return;
     }
 

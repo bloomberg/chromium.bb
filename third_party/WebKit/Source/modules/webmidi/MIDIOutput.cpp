@@ -66,15 +66,15 @@ private:
     {
         while (!isEndOfData() && acceptRealTimeMessages()) {
             if (!isStatusByte()) {
-                exceptionState.throwDOMException(TypeError, "Running status is not allowed " + getPositionString());
+                exceptionState.throwTypeError("Running status is not allowed " + getPositionString());
                 return false;
             }
             if (isEndOfSysEx()) {
-                exceptionState.throwDOMException(TypeError, "Unexpected end of system exclusive message " + getPositionString());
+                exceptionState.throwTypeError("Unexpected end of system exclusive message " + getPositionString());
                 return false;
             }
             if (isReservedStatusByte()) {
-                exceptionState.throwDOMException(TypeError, "Reserved status is not allowed " + getPositionString());
+                exceptionState.throwTypeError("Reserved status is not allowed " + getPositionString());
                 return false;
             }
             if (isSysEx()) {
@@ -84,17 +84,17 @@ private:
                 }
                 if (!acceptCurrentSysEx()) {
                     if (isEndOfData())
-                        exceptionState.throwDOMException(TypeError, "System exclusive message is not ended by end of system exclusive message.");
+                        exceptionState.throwTypeError("System exclusive message is not ended by end of system exclusive message.");
                     else
-                        exceptionState.throwDOMException(TypeError, "System exclusive message contains a status byte " + getPositionString());
+                        exceptionState.throwTypeError("System exclusive message contains a status byte " + getPositionString());
                     return false;
                 }
             } else {
                 if (!acceptCurrentMessage()) {
                     if (isEndOfData())
-                        exceptionState.throwDOMException(TypeError, "Message is incomplete.");
+                        exceptionState.throwTypeError("Message is incomplete.");
                     else
-                        exceptionState.throwDOMException(TypeError, "Unexpected status byte at index " + getPositionString());
+                        exceptionState.throwTypeError("Unexpected status byte at index " + getPositionString());
                     return false;
                 }
             }
@@ -211,7 +211,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
 
     for (size_t i = 0; i < unsignedData.size(); ++i) {
         if (unsignedData[i] > 0xff) {
-            exceptionState.throwDOMException(TypeError, "The value at index " + String::number(i) + " (" + String::number(unsignedData[i]) + ") is greater than 0xFF.");
+            exceptionState.throwTypeError("The value at index " + String::number(i) + " (" + String::number(unsignedData[i]) + ") is greater than 0xFF.");
             return;
         }
         unsigned char value = unsignedData[i] & 0xff;
