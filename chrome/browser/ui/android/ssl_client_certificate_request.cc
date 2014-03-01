@@ -105,7 +105,7 @@ void StartClientCertificateRequest(
   scoped_ptr<chrome::SelectCertificateCallback> request(
       new chrome::SelectCertificateCallback(callback));
 
-  jint request_id = reinterpret_cast<jint>(request.get());
+  jlong request_id = reinterpret_cast<intptr_t>(request.get());
 
   if (!chrome::android::
       Java_SSLClientCertificateRequest_selectClientCertificate(
@@ -144,7 +144,7 @@ namespace android {
 static void OnSystemRequestCompletion(
     JNIEnv* env,
     jclass clazz,
-    jint request_id,
+    jlong request_id,
     jobjectArray encoded_chain_ref,
     jobject private_key_ref) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

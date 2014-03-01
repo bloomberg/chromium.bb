@@ -9,7 +9,7 @@ package org.chromium.chrome.browser;
  */
 public class DevToolsServer {
 
-    private int mNativeDevToolsServer = 0;
+    private long mNativeDevToolsServer = 0;
 
     public DevToolsServer(String socketNamePrefix) {
         mNativeDevToolsServer = nativeInitRemoteDebugging(socketNamePrefix);
@@ -28,8 +28,8 @@ public class DevToolsServer {
         nativeSetRemoteDebuggingEnabled(mNativeDevToolsServer, enabled);
     }
 
-    private native int nativeInitRemoteDebugging(String socketNamePrefix);
-    private native void nativeDestroyRemoteDebugging(int devToolsServer);
-    private native boolean nativeIsRemoteDebuggingEnabled(int devToolsServer);
-    private native void nativeSetRemoteDebuggingEnabled(int devToolsServer, boolean enabled);
+    private native long nativeInitRemoteDebugging(String socketNamePrefix);
+    private native void nativeDestroyRemoteDebugging(long devToolsServer);
+    private native boolean nativeIsRemoteDebuggingEnabled(long devToolsServer);
+    private native void nativeSetRemoteDebuggingEnabled(long devToolsServer, boolean enabled);
 }

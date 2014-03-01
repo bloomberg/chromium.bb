@@ -439,27 +439,27 @@ bool RegisterDevToolsServer(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static jint InitRemoteDebugging(JNIEnv* env,
+static jlong InitRemoteDebugging(JNIEnv* env,
                                 jobject obj,
                                 jstring socket_name_prefix) {
   DevToolsServer* server = new DevToolsServer(
       base::android::ConvertJavaStringToUTF8(env, socket_name_prefix));
-  return reinterpret_cast<jint>(server);
+  return reinterpret_cast<intptr_t>(server);
 }
 
-static void DestroyRemoteDebugging(JNIEnv* env, jobject obj, jint server) {
+static void DestroyRemoteDebugging(JNIEnv* env, jobject obj, jlong server) {
   delete reinterpret_cast<DevToolsServer*>(server);
 }
 
 static jboolean IsRemoteDebuggingEnabled(JNIEnv* env,
                                          jobject obj,
-                                         jint server) {
+                                         jlong server) {
   return reinterpret_cast<DevToolsServer*>(server)->IsStarted();
 }
 
 static void SetRemoteDebuggingEnabled(JNIEnv* env,
                                       jobject obj,
-                                      jint server,
+                                      jlong server,
                                       jboolean enabled) {
   DevToolsServer* devtools_server = reinterpret_cast<DevToolsServer*>(server);
   if (enabled) {

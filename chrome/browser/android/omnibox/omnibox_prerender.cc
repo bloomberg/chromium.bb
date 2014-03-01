@@ -63,7 +63,7 @@ void OmniboxPrerender::PrerenderMaybe(JNIEnv* env,
                                       jobject obj,
                                       jstring j_url,
                                       jstring j_current_url,
-                                      jint jsource_match,
+                                      jlong jsource_match,
                                       jobject j_profile_android,
                                       jobject j_tab) {
   AutocompleteResult* autocomplete_result =

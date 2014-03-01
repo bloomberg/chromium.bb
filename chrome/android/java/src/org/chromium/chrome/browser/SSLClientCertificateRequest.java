@@ -54,9 +54,9 @@ public class SSLClientCertificateRequest {
         private AndroidPrivateKey mAndroidPrivateKey;
 
         // Pointer to the native certificate request needed to return the results.
-        private final int mNativePtr;
+        private final long mNativePtr;
 
-        CertAsyncTask(int nativePtr) {
+        CertAsyncTask(long nativePtr) {
             mNativePtr = nativePtr;
         }
 
@@ -106,7 +106,7 @@ public class SSLClientCertificateRequest {
         final Context mContext;
         final String mAlias;
 
-        CertAsyncTaskKeyChain(Context context, int nativePtr, String alias) {
+        CertAsyncTaskKeyChain(Context context, long nativePtr, String alias) {
             super(nativePtr);
             mContext = context;
             assert alias != null;
@@ -151,7 +151,7 @@ public class SSLClientCertificateRequest {
         private final String mHostName;
         private final int mPort;
 
-        CertAsyncTaskPKCS11(int nativePtr, String hostName, int port,
+        CertAsyncTaskPKCS11(long nativePtr, String hostName, int port,
                 PKCS11AuthenticationManager pkcs11CardAuthManager) {
             super(nativePtr);
             mHostName = hostName;
@@ -180,10 +180,10 @@ public class SSLClientCertificateRequest {
      * certificate selected by the user.
      */
     private static class KeyChainCertSelectionCallback implements KeyChainAliasCallback {
-        private final int mNativePtr;
+        private final long mNativePtr;
         private final Context mContext;
 
-        KeyChainCertSelectionCallback(Context context, int nativePtr) {
+        KeyChainCertSelectionCallback(Context context, long nativePtr) {
             mContext = context;
             mNativePtr = nativePtr;
         }
@@ -224,7 +224,7 @@ public class SSLClientCertificateRequest {
      * Note that nativeOnSystemRequestComplete will be called iff this method returns true.
      */
     @CalledByNative
-    private static boolean selectClientCertificate(final int nativePtr, final WindowAndroid window,
+    private static boolean selectClientCertificate(final long nativePtr, final WindowAndroid window,
             final String[] keyTypes, byte[][] encodedPrincipals, final String hostName,
             final int port) {
         ThreadUtils.assertOnUiThread();
@@ -305,5 +305,5 @@ public class SSLClientCertificateRequest {
 
     // Called to pass request results to native side.
     private static native void nativeOnSystemRequestCompletion(
-            int requestPtr, byte[][] certChain, AndroidPrivateKey androidKey);
+            long requestPtr, byte[][] certChain, AndroidPrivateKey androidKey);
 }
