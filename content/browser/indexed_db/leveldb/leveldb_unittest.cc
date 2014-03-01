@@ -6,9 +6,9 @@
 #include <cstring>
 #include <string>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
@@ -63,13 +63,9 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   EXPECT_FALSE(leveldb);
 
   base::FilePath file_path = temp_directory.path().AppendASCII("CURRENT");
-  base::PlatformFile handle = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
-      NULL,
-      NULL);
-  base::TruncatePlatformFile(handle, 0);
-  base::ClosePlatformFile(handle);
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+  file.SetLength(0);
+  file.Close();
 
   status = LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_FALSE(leveldb);
