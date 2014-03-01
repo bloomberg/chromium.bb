@@ -18,6 +18,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/image_view.h"
@@ -87,6 +88,11 @@ uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
       }
       break;
     }
+    case KeyPress: {
+      if (ui::KeyboardCodeFromXKeyEvent(xev) == ui::VKEY_ESCAPE)
+        EndMoveLoop();
+      break;
+    }
   }
 
   return POST_DISPATCH_NONE;
@@ -100,7 +106,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   // Start a capture on the host, so that it continues to receive events during
   // the drag. This may be second time we are capturing the mouse events - the
   // first being when a mouse is first pressed. That first capture needs to be
-  // released before the call to GrabPointerWithCursor below, otherwise it may
+  // released before the call to GrabPointerAndKeyboard below, otherwise it may
   // get released while we still need the pointer grab, which is why we restrict
   // the scope here.
   {
@@ -120,9 +126,9 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     // X11ScopedCapture will not prematurely release grab that will be acquired
     // below.
   }
-  // TODO(varkha): Consider integrating GrabPointerWithCursor with
+  // TODO(varkha): Consider integrating GrabPointerAndKeyboard with
   // ScopedCapturer to avoid possibility of logically keeping multiple grabs.
-  if (!GrabPointerWithCursor(cursor))
+  if (!GrabPointerAndKeyboard(cursor))
     return false;
 
   // We are handling a mouse drag outside of the aura::RootWindow system. We
@@ -147,7 +153,7 @@ void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
     // If we're still in the move loop, regrab the pointer with the updated
     // cursor. Note: we can be called from handling an XdndStatus message after
     // EndMoveLoop() was called, but before we return from the nested RunLoop.
-    GrabPointerWithCursor(cursor);
+    GrabPointerAndKeyboard(cursor);
   }
 }
 
@@ -168,6 +174,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   // Ungrab before we let go of the window.
   XDisplay* display = gfx::GetXDisplay();
   XUngrabPointer(display, CurrentTime);
+  XUngrabKeyboard(display, CurrentTime);
 
   base::MessagePumpX11::Current()->RemoveDispatcherForWindow(
       grab_input_window_);
@@ -188,9 +195,10 @@ void X11WholeScreenMoveLoop::SetDragImage(const gfx::ImageSkia& image,
   drag_offset_.set_y(0.f);
 }
 
-bool X11WholeScreenMoveLoop::GrabPointerWithCursor(gfx::NativeCursor cursor) {
+bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
   XDisplay* display = gfx::GetXDisplay();
   XGrabServer(display);
+
   XUngrabPointer(display, CurrentTime);
   int ret = XGrabPointer(
       display,
@@ -202,14 +210,26 @@ bool X11WholeScreenMoveLoop::GrabPointerWithCursor(gfx::NativeCursor cursor) {
       None,
       cursor.platform(),
       CurrentTime);
-  XUngrabServer(display);
   if (ret != GrabSuccess) {
-    DLOG(ERROR) << "Grabbing new tab for dragging failed: "
+    DLOG(ERROR) << "Grabbing pointer for dragging failed: "
                 << ui::GetX11ErrorString(display, ret);
-    return false;
+  } else {
+    XUngrabKeyboard(display, CurrentTime);
+    ret = XGrabKeyboard(
+        display,
+        grab_input_window_,
+        False,
+        GrabModeAsync,
+        GrabModeAsync,
+        CurrentTime);
+    if (ret != GrabSuccess) {
+      DLOG(ERROR) << "Grabbing keyboard for dragging failed: "
+                  << ui::GetX11ErrorString(display, ret);
+    }
   }
 
-  return true;
+  XUngrabServer(display);
+  return ret == GrabSuccess;
 }
 
 Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
@@ -222,7 +242,7 @@ Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.event_mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
-                   StructureNotifyMask;
+                   KeyPressMask | KeyReleaseMask | StructureNotifyMask;
   swa.override_redirect = True;
   Window window = XCreateWindow(display,
                                 DefaultRootWindow(display),

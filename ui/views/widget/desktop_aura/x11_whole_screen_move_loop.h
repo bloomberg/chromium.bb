@@ -48,9 +48,9 @@ class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
   void SetDragImage(const gfx::ImageSkia& image, gfx::Vector2dF offset);
 
  private:
-  // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if
-  // the grab was successful.
-  bool GrabPointerWithCursor(gfx::NativeCursor cursor);
+  // Grabs the pointer and keyboard, setting the mouse cursor to |cursor|.
+  // Returns true if the grab was successful.
+  bool GrabPointerAndKeyboard(gfx::NativeCursor cursor);
 
   // Creates an input-only window to be used during the drag.
   Window CreateDragInputWindow(XDisplay* display);
