@@ -2085,6 +2085,9 @@ def CMDtry(parser, args):
             "available. Can also be used to specify gtest_filter, e.g. "
             "-bwin_rel:base_unittests:ValuesTest.*Value"))
   group.add_option(
+      "-m", "--master", default='',
+      help=("Specify a try master where to run the tries."))           
+  group.add_option(
       "-r", "--revision",
       help="Revision to use for the try job; default: the "
            "revision will be determined by the try server; see "
@@ -2117,50 +2120,74 @@ def CMDtry(parser, args):
   if not options.name:
     options.name = cl.GetBranch()
 
-  # Process --bot and --testfilter.
-  if not options.bot:
-    # Get try slaves from PRESUBMIT.py files if not specified.
-    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
-    options.bot = presubmit_support.DoGetTrySlaves(
-        change,
-        change.LocalPaths(),
-        settings.GetRoot(),
-        None,
-        None,
-        options.verbose,
-        sys.stdout)
-  if not options.bot:
-    parser.error('No default try builder to try, use --bot')
+  def GetMasterMap():
+    # Process --bot and --testfilter.
+    if not options.bot:
+      change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
 
-  builders_and_tests = {}
-  old_style = filter(lambda x: isinstance(x, basestring), options.bot)
-  new_style = filter(lambda x: isinstance(x, tuple), options.bot)
+      # Get try masters from PRESUBMIT.py files.
+      masters = presubmit_support.DoGetTryMasters(
+          change,
+          change.LocalPaths(),
+          settings.GetRoot(),
+          None,
+          None,
+          options.verbose,
+          sys.stdout)
+      if masters:
+        return masters
 
-  for bot in old_style:
-    if ':' in bot:
-      builder, tests = bot.split(':', 1)
-      builders_and_tests.setdefault(builder, []).extend(tests.split(','))
-    elif ',' in bot:
-      parser.error('Specify one bot per --bot flag')
-    else:
-      builders_and_tests.setdefault(bot, []).append('defaulttests')
+      # Fall back to deprecated method: get try slaves from PRESUBMIT.py files.
+      options.bot = presubmit_support.DoGetTrySlaves(
+          change,
+          change.LocalPaths(),
+          settings.GetRoot(),
+          None,
+          None,
+          options.verbose,
+          sys.stdout)
+    if not options.bot:
+      parser.error('No default try builder to try, use --bot')
 
-  for bot, tests in new_style:
-    builders_and_tests.setdefault(bot, []).extend(tests)
+    builders_and_tests = {}
+    # TODO(machenbach): The old style command-line options don't support
+    # multiple try masters yet.
+    old_style = filter(lambda x: isinstance(x, basestring), options.bot)
+    new_style = filter(lambda x: isinstance(x, tuple), options.bot)
+
+    for bot in old_style:
+      if ':' in bot:
+        builder, tests = bot.split(':', 1)
+        builders_and_tests.setdefault(builder, []).extend(tests.split(','))
+      elif ',' in bot:
+        parser.error('Specify one bot per --bot flag')
+      else:
+        builders_and_tests.setdefault(bot, []).append('defaulttests')
+
+    for bot, tests in new_style:
+      builders_and_tests.setdefault(bot, []).extend(tests)
+
+    # Return a master map with one master to be backwards compatible. The
+    # master name defaults to an empty string, which will cause the master
+    # not to be set on rietveld (deprecated).
+    return {options.master: builders_and_tests}
+
+  masters = GetMasterMap()
 
   if options.testfilter:
     forced_tests = sum((t.split(',') for t in options.testfilter), [])
-    builders_and_tests = dict(
-      (b, forced_tests) for b, t in builders_and_tests.iteritems()
-      if t != ['compile'])
+    masters = dict((master, dict(
+        (b, forced_tests) for b, t in slaves.iteritems()
+        if t != ['compile'])) for master, slaves in masters.iteritems())
 
-  if any('triggered' in b for b in builders_and_tests):
-    print >> sys.stderr, (
-        'ERROR You are trying to send a job to a triggered bot.  This type of'
-        ' bot requires an\ninitial job from a parent (usually a builder).  '
-        'Instead send your job to the parent.\n'
-        'Bot list: %s' % builders_and_tests)
-    return 1
+  for builders in masters.itervalues():
+    if any('triggered' in b for b in builders):
+      print >> sys.stderr, (
+          'ERROR You are trying to send a job to a triggered bot. This type of'
+          ' bot requires an\ninitial job from a parent (usually a builder).  '
+          'Instead send your job to the parent.\n'
+          'Bot list: %s' % builders)
+      return 1
 
   patchset = cl.GetMostRecentPatchset()
   if patchset and patchset != cl.GetPatchset():
@@ -2169,18 +2196,22 @@ def CMDtry(parser, args):
         'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
         'Continuing using\npatchset %s.\n' % patchset)
   try:
-    cl.RpcServer().trigger_try_jobs(
+    cl.RpcServer().trigger_distributed_try_jobs(
         cl.GetIssue(), patchset, options.name, options.clobber,
-        options.revision, builders_and_tests)
+        options.revision, masters)
   except urllib2.HTTPError, e:
     if e.code == 404:
       print('404 from rietveld; '
             'did you mean to use "git try" instead of "git cl try"?')
       return 1
   print('Tried jobs on:')
-  length = max(len(builder) for builder in builders_and_tests)
-  for builder in sorted(builders_and_tests):
-    print '  %*s: %s' % (length, builder, ','.join(builders_and_tests[builder]))
+
+  for (master, builders) in masters.iteritems():
+    if master:
+      print 'Master: %s' % master
+    length = max(len(builder) for builder in builders)
+    for builder in sorted(builders):
+      print '  %*s: %s' % (length, builder, ','.join(builders[builder]))
   return 0
 
 

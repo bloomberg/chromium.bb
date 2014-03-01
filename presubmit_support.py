@@ -19,6 +19,7 @@ import contextlib
 import fnmatch
 import glob
 import inspect
+import itertools
 import json  # Exposed through the API.
 import logging
 import marshal  # Exposed through the API.
@@ -1007,6 +1008,8 @@ class GetTrySlavesExecuter(object):
   @staticmethod
   def ExecPresubmitScript(script_text, presubmit_path, project, change):
     """Executes GetPreferredTrySlaves() from a single presubmit script.
+    
+    This will soon be deprecated and replaced by GetPreferredTryMasters().
 
     Args:
       script_text: The text of the presubmit script.
@@ -1074,6 +1077,36 @@ class GetTrySlavesExecuter(object):
     return result
 
 
+class GetTryMastersExecuter(object):
+  @staticmethod
+  def ExecPresubmitScript(script_text, presubmit_path, project, change):
+    """Executes GetPreferredTryMasters() from a single presubmit script.
+
+    Args:
+      script_text: The text of the presubmit script.
+      presubmit_path: Project script to run.
+      project: Project name to pass to presubmit script for bot selection.
+
+    Return:
+      A map of try masters to map of builders to set of tests.
+    """
+    context = {}
+    try:
+      exec script_text in context
+    except Exception, e:
+      raise PresubmitFailure('"%s" had an exception.\n%s'
+                             % (presubmit_path, e))
+
+    function_name = 'GetPreferredTryMasters'
+    if function_name not in context:
+      return {}
+    get_preferred_try_masters = context[function_name]
+    if not len(inspect.getargspec(get_preferred_try_masters)[0]) == 2:
+      raise PresubmitFailure(
+          'Expected function "GetPreferredTryMasters" to take two arguments.')
+    return get_preferred_try_masters(project, change)
+
+
 def DoGetTrySlaves(change,
                    changed_files,
                    repository_root,
@@ -1081,7 +1114,7 @@ def DoGetTrySlaves(change,
                    project,
                    verbose,
                    output_stream):
-  """Get the list of try servers from the presubmit scripts.
+  """Get the list of try servers from the presubmit scripts (deprecated).
 
   Args:
     changed_files: List of modified files.
@@ -1130,6 +1163,68 @@ def DoGetTrySlaves(change,
     output_stream.write(', '.join((str(x) for x in slaves)))
     output_stream.write('\n')
   return slaves
+
+
+def _MergeMasters(masters1, masters2):
+  """Merges two master maps. Merges also the tests of each builder."""
+  result = {}
+  for (master, builders) in itertools.chain(masters1.iteritems(),
+                                            masters2.iteritems()):
+    new_builders = result.setdefault(master, {})
+    for (builder, tests) in builders.iteritems():
+      new_builders.setdefault(builder, set([])).update(tests)
+  return result
+
+
+def DoGetTryMasters(change,
+                    changed_files,
+                    repository_root,
+                    default_presubmit,
+                    project,
+                    verbose,
+                    output_stream):
+  """Get the list of try masters from the presubmit scripts.
+
+  Args:
+    changed_files: List of modified files.
+    repository_root: The repository root.
+    default_presubmit: A default presubmit script to execute in any case.
+    project: Optional name of a project used in selecting trybots.
+    verbose: Prints debug info.
+    output_stream: A stream to write debug output to.
+
+  Return:
+    Map of try masters to map of builders to set of tests.
+  """
+  presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
+  if not presubmit_files and verbose:
+    output_stream.write("Warning, no PRESUBMIT.py found.\n")
+  results = {}
+  executer = GetTryMastersExecuter()
+
+  if default_presubmit:
+    if verbose:
+      output_stream.write("Running default presubmit script.\n")
+    fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
+    results = _MergeMasters(results, executer.ExecPresubmitScript(
+        default_presubmit, fake_path, project, change))
+  for filename in presubmit_files:
+    filename = os.path.abspath(filename)
+    if verbose:
+      output_stream.write("Running %s\n" % filename)
+    # Accept CRLF presubmit script.
+    presubmit_script = gclient_utils.FileRead(filename, 'rU')
+    results = _MergeMasters(results, executer.ExecPresubmitScript(
+        presubmit_script, filename, project, change))
+
+  # Make sets to lists again for later JSON serialization.
+  for builders in results.itervalues():
+    for builder in builders:
+      builders[builder] = list(builders[builder])
+
+  if results and verbose:
+    output_stream.write('%s\n' % str(results))
+  return results
 
 
 class PresubmitExecuter(object):

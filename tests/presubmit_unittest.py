@@ -8,6 +8,7 @@
 # pylint: disable=E1101,E1103
 
 import functools
+import itertools
 import logging
 import os
 import StringIO
@@ -58,6 +59,11 @@ def GetPreferredTrySlaves(project):
     return %s
   else:
     return %s
+"""
+
+  presubmit_trymaster = """
+def GetPreferredTryMasters(project, change):
+  return %s
 """
 
   presubmit_diffs = """
@@ -170,7 +176,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
-      'urllib2', 'warn', 'multiprocessing',
+      'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
+      'GetTryMastersExecuter', 'itertools',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -1026,6 +1033,103 @@ def CheckChangeOnCommit(input_api, output_api):
       self.fail()
     except presubmit.PresubmitFailure:
       pass
+
+  def testGetTryMastersExecuter(self):
+    self.mox.ReplayAll()
+    change = presubmit.Change(
+        'foo',
+        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
+        self.fake_root_dir,
+        None,
+        0,
+        0,
+        None)
+    executer = presubmit.GetTryMastersExecuter()
+    self.assertEqual({}, executer.ExecPresubmitScript('', '', '', change))
+    self.assertEqual({},
+        executer.ExecPresubmitScript('def foo():\n  return\n', '', '', change))
+
+    expected_result = {'m1': {'s1': set(['t1', 't2'])},
+                       'm2': {'s1': set(['defaulttests']),
+                              's2': set(['defaulttests'])}}
+    empty_result1 = {}
+    empty_result2 = {'m': {}}
+    space_in_name_result = {'m r': {'s\tv': set(['t1'])}}
+    for result in (
+        expected_result, empty_result1, empty_result2, space_in_name_result):
+      self.assertEqual(
+          result,
+          executer.ExecPresubmitScript(
+              self.presubmit_trymaster % result, '', '', change))
+
+  def testMergeMasters(self):
+    merge = presubmit._MergeMasters
+    self.assertEqual({}, merge({}, {}))
+    self.assertEqual({'m1': {}}, merge({}, {'m1': {}}))
+    self.assertEqual({'m1': {}}, merge({'m1': {}}, {}))
+    parts = [
+      {'try1.cr': {'win': set(['defaulttests'])}},
+      {'try1.cr': {'linux1': set(['test1'])},
+       'try2.cr': {'linux2': set(['defaulttests'])}},
+      {'try1.cr': {'mac1': set(['defaulttests']),
+                   'mac2': set(['test1', 'test2']),
+                   'linux1': set(['defaulttests'])}},
+    ]
+    expected = {
+      'try1.cr': {'win': set(['defaulttests']),
+                  'linux1': set(['defaulttests', 'test1']),
+                  'mac1': set(['defaulttests']),
+                  'mac2': set(['test1', 'test2'])},
+      'try2.cr': {'linux2': set(['defaulttests'])},
+    }
+    for permutation in itertools.permutations(parts):
+      self.assertEqual(expected, reduce(merge, permutation, {}))
+
+  def testDoGetTryMasters(self):
+    root_text = (self.presubmit_trymaster
+        % '{"t1.cr": {"win": set(["defaulttests"])}}')
+    linux_text = (self.presubmit_trymaster
+        % ('{"t1.cr": {"linux1": set(["t1"])},'
+           ' "t2.cr": {"linux2": set(["defaulttests"])}}'))
+
+    join = presubmit.os.path.join
+    isfile = presubmit.os.path.isfile
+    FileRead = presubmit.gclient_utils.FileRead
+    filename = 'foo.cc'
+    filename_linux = join('linux_only', 'penguin.cc')
+    root_presubmit = join(self.fake_root_dir, 'PRESUBMIT.py')
+    linux_presubmit = join(self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
+    inherit_path = join(self.fake_root_dir, self._INHERIT_SETTINGS)
+
+    isfile(inherit_path).AndReturn(False)
+    isfile(root_presubmit).AndReturn(True)
+    FileRead(root_presubmit, 'rU').AndReturn(root_text)
+
+    isfile(inherit_path).AndReturn(False)
+    isfile(root_presubmit).AndReturn(True)
+    isfile(linux_presubmit).AndReturn(True)
+    FileRead(root_presubmit, 'rU').AndReturn(root_text)
+    FileRead(linux_presubmit, 'rU').AndReturn(linux_text)
+    self.mox.ReplayAll()
+
+    change = presubmit.Change(
+        'mychange', '', self.fake_root_dir, [], 0, 0, None)
+
+    output = StringIO.StringIO()
+    self.assertEqual({'t1.cr': {'win': ['defaulttests']}},
+                     presubmit.DoGetTryMasters(change, [filename],
+                                               self.fake_root_dir,
+                                               None, None, False, output))
+    output = StringIO.StringIO()
+    expected = {
+      't1.cr': {'win': ['defaulttests'], 'linux1': ['t1']},
+      't2.cr': {'linux2': ['defaulttests']},
+    }
+    self.assertEqual(expected,
+                     presubmit.DoGetTryMasters(change,
+                                               [filename, filename_linux],
+                                               self.fake_root_dir, None, None,
+                                               False, output))
 
   def testMainUnversioned(self):
     # OptParser calls presubmit.os.path.exists and is a pain when mocked.

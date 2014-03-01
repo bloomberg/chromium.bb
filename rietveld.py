@@ -331,10 +331,12 @@ class Rietveld(object):
       cursor = '&cursor=%s' % data['cursor']
 
   def trigger_try_jobs(
-      self, issue, patchset, reason, clobber, revision, builders_and_tests):
+      self, issue, patchset, reason, clobber, revision, builders_and_tests,
+      master=None):
     """Requests new try jobs.
 
     |builders_and_tests| is a map of builders: [tests] to run.
+    |master| is the name of the try master the builders belong to.
 
     Returns the keys of the new TryJobResult entites.
     """
@@ -346,7 +348,23 @@ class Rietveld(object):
     ]
     if revision:
       params.append(('revision', revision))
+    if master:
+      # Temporarily allow empty master names for old configurations. The try
+      # job will not be associated with a master name on rietveld. This is
+      # going to be deprecated.
+      params.append(('master', master))
     return self.post('/%d/try/%d' % (issue, patchset), params)
+
+  def trigger_distributed_try_jobs(
+      self, issue, patchset, reason, clobber, revision, masters):
+    """Requests new try jobs.
+
+    |masters| is a map of masters: map of builders: [tests] to run.
+    """
+    for (master, builders_and_tests) in masters.iteritems():
+      self.trigger_try_jobs(
+          issue, patchset, reason, clobber, revision, builders_and_tests,
+          master)
 
   def get_pending_try_jobs(self, cursor=None, limit=100):
     """Retrieves the try job requests in pending state.
@@ -539,6 +557,12 @@ class ReadOnlyRietveld(object):
     ReadOnlyRietveld._local_changes.setdefault(issue, {})[flag] = value
 
   def trigger_try_jobs(  # pylint:disable=R0201
-      self, issue, patchset, reason, clobber, revision, builders_and_tests):
+      self, issue, patchset, reason, clobber, revision, builders_and_tests,
+      master=None):
     logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %
         (builders_and_tests, issue))
+
+  def trigger_distributed_try_jobs(  # pylint:disable=R0201
+      self, issue, patchset, reason, clobber, revision, masters):
+    logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %
+        (masters, issue))
