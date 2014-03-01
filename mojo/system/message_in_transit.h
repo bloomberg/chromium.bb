@@ -83,11 +83,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
       return RoundUpMessageAlignment(sizeof(Header) + header()->num_bytes);
     }
     const void* secondary_buffer() const {
-      return (message_size_ > main_buffer_size()) ?
+      return (total_size() > main_buffer_size()) ?
           static_cast<const char*>(buffer_) + main_buffer_size() : NULL;
     }
     size_t secondary_buffer_size() const {
-      return message_size_ - main_buffer_size();
+      return total_size() - main_buffer_size();
     }
     size_t total_size() const { return header()->total_size; }
     uint32_t num_bytes() const { return header()->num_bytes; }
@@ -103,7 +103,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
    private:
     const Header* header() const { return static_cast<const Header*>(buffer_); }
 
-    const size_t message_size_;
     const void* const buffer_;
 
     // Though this struct is trivial, disallow copy and assign, since it doesn't

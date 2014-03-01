@@ -48,12 +48,13 @@ STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
 
 MessageInTransit::View::View(size_t message_size, const void* buffer)
-    : message_size_(message_size),
-      buffer_(buffer) {
+    : buffer_(buffer) {
   size_t next_message_size = 0;
-  DCHECK(MessageInTransit::GetNextMessageSize(buffer_, message_size_,
+  DCHECK(MessageInTransit::GetNextMessageSize(buffer_, message_size,
                                               &next_message_size));
-  DCHECK_EQ(message_size_, next_message_size);
+  DCHECK_EQ(message_size, next_message_size);
+  // This should be equivalent.
+  DCHECK_EQ(message_size, total_size());
 }
 
 MessageInTransit::MessageInTransit(Type type,
