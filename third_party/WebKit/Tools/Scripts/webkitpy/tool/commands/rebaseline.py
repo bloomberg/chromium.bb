@@ -595,7 +595,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
     # Rietveld uploader stinks. Limit the number of rebaselines in a given patch to keep upload from failing.
     # FIXME: http://crbug.com/263676 Obviously we should fix the uploader here.
-    MAX_LINES_TO_REBASELINE = 200
+    MAX_LINES_TO_REBASELINE = 50
 
     def __init__(self):
         super(AutoRebaseline, self).__init__(options=[
