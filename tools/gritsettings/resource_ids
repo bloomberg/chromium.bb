@@ -173,6 +173,9 @@
   "chrome/browser/resources/memory_internals_resources.grd": {
     "includes": [27500],
   },
+  "chrome/browser/resources/password_manager_internals_resources.grd": {
+    "includes": [27800],
+  },
   "device/bluetooth/bluetooth_strings.grd": {
     "messages": [28000],
   },

@@ -102,6 +102,7 @@ class JSChecker(object):
         path.join(resources, 'network_action_predictor'),
         path.join(resources, 'ntp4'),
         path.join(resources, 'options'),
+        path.join(resources, 'password_manager_internals'),
         path.join(resources, 'print_preview'),
         path.join(resources, 'profiler'),
         path.join(resources, 'sync_promo'),

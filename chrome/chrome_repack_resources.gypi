@@ -14,6 +14,7 @@
       '<(grit_out_dir)/invalidations_resources.pak',
       '<(grit_out_dir)/memory_internals_resources.pak',
       '<(grit_out_dir)/net_internals_resources.pak',
+      '<(grit_out_dir)/password_manager_internals_resources.pak',
       '<(grit_out_dir)/signin_internals_resources.pak',
       '<(grit_out_dir)/sync_internals_resources.pak',
       '<(grit_out_dir)/translate_internals_resources.pak',

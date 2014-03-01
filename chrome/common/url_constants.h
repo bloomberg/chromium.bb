@@ -60,6 +60,7 @@ extern const char kChromeUINetInternalsURL[];
 extern const char kChromeUINewProfile[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUIOmniboxURL[];
+extern const char kChromeUIPasswordManagerInternalsHost[];
 extern const char kChromeUIPerformanceMonitorURL[];
 extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPolicyURL[];

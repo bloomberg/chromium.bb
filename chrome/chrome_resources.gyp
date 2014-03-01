@@ -38,6 +38,13 @@
           'includes': ['../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'password_manager_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/password_manager_internals_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'signin_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/signin_internals_resources.grd',

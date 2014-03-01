@@ -2550,6 +2550,8 @@
         'browser/ui/webui/options/search_engine_manager_handler.h',
         'browser/ui/webui/options/startup_pages_handler.cc',
         'browser/ui/webui/options/startup_pages_handler.h',
+        'browser/ui/webui/password_manager_internals/password_manager_internals_ui.cc',
+        'browser/ui/webui/password_manager_internals/password_manager_internals_ui.h',
         'browser/ui/webui/performance_monitor/performance_monitor_l10n.cc',
         'browser/ui/webui/performance_monitor/performance_monitor_l10n.h',
         'browser/ui/webui/performance_monitor/performance_monitor_ui_constants.cc',
