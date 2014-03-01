@@ -140,6 +140,8 @@ void EnableThemeSupportOnAllWindowStations() {
     // Could not set the alternate window station. There is a possibility
     // that the theme wont be correctly initialized.
     NOTREACHED() << "Unable to switch to WinSta0, we: "<< ::GetLastError();
+    ::CloseWindowStation(winsta0);
+    return;
   }
 
   HWND window = ::CreateWindowExW(0, L"Static", L"", WS_POPUP | WS_DISABLED,
