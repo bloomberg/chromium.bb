@@ -31,10 +31,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -405,7 +405,7 @@ class GLRenderingVDAClient
   virtual void NotifyResetDone() OVERRIDE;
   virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
 
-  void OutputFrameDeliveryTimes(base::PlatformFile output);
+  void OutputFrameDeliveryTimes(base::File* output);
 
   void NotifyFrameDropped(int32 picture_buffer_id);
 
@@ -740,17 +740,17 @@ void GLRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
   SetState(CS_ERROR);
 }
 
-void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::PlatformFile output) {
+void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::File* output) {
   std::string s = base::StringPrintf("frame count: %" PRIuS "\n",
                                      frame_delivery_times_.size());
-  base::WritePlatformFileAtCurrentPos(output, s.data(), s.length());
+  output->WriteAtCurrentPos(s.data(), s.length());
   base::TimeTicks t0 = initialize_done_ticks_;
   for (size_t i = 0; i < frame_delivery_times_.size(); ++i) {
     s = base::StringPrintf("frame %04" PRIuS ": %" PRId64 " us\n",
                            i,
                            (frame_delivery_times_[i] - t0).InMicroseconds());
     t0 = frame_delivery_times_[i];
-    base::WritePlatformFileAtCurrentPos(output, s.data(), s.length());
+    output->WriteAtCurrentPos(s.data(), s.length());
   }
 }
 
@@ -1143,13 +1143,9 @@ void VideoDecodeAcceleratorTest::WaitUntilIdle() {
 void VideoDecodeAcceleratorTest::OutputLogFile(
     const base::FilePath::CharType* log_path,
     const std::string& content) {
-  base::PlatformFile file = base::CreatePlatformFile(
-      base::FilePath(log_path),
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-      NULL,
-      NULL);
-  base::WritePlatformFileAtCurrentPos(file, content.data(), content.length());
-  base::ClosePlatformFile(file);
+  base::File file(base::FilePath(log_path),
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  file.WriteAtCurrentPos(content.data(), content.length());
 }
 
 // Test parameters:
@@ -1387,15 +1383,12 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   // We can only make performance/correctness assertions if the decoder was
   // allowed to finish.
   if (g_output_log != NULL && delete_decoder_state >= CS_FLUSHED) {
-    base::PlatformFile output_file = base::CreatePlatformFile(
+    base::File output_file(
         base::FilePath(g_output_log),
-        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-        NULL,
-        NULL);
+        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     for (size_t i = 0; i < num_concurrent_decoders; ++i) {
-      clients[i]->OutputFrameDeliveryTimes(output_file);
+      clients[i]->OutputFrameDeliveryTimes(&output_file);
     }
-    base::ClosePlatformFile(output_file);
   }
 
   rendering_loop_proxy_->PostTask(
