@@ -244,3 +244,6 @@ race:WebCore::ThreadState::visitRoots
 
 # https://code.google.com/p/v8/issues/detail?id=3143
 race:v8::internal::FLAG_track_double_fields
+
+# http://crbug.com/348324
+race:gpu::gles2::QueryManager::Query::MarkAsCompleted

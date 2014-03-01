@@ -1164,3 +1164,15 @@
   fun:printing::PrintJob::Stop
   fun:PrintJobTest_SimplePrint_Test::TestBody
 }
+{
+   bug_348324
+   ThreadSanitizer:Race
+   fun:gpu::gles2::QueryManager::Query::MarkAsCompleted
+   fun:gpu::gles2::CommandsIssuedQuery::End
+   fun:gpu::gles2::QueryManager::EndQuery
+   fun:gpu::gles2::GLES2DecoderImpl::HandleEndQueryEXT
+   fun:gpu::gles2::GLES2DecoderImpl::DoCommand
+   fun:gpu::CommandParser::ProcessCommand
+   fun:gpu::GpuScheduler::PutChanged
+   fun:gpu::InProcessCommandBuffer::PumpCommands
+}
