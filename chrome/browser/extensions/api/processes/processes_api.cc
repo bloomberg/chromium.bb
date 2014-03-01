@@ -437,7 +437,6 @@ void ProcessesEventRouter::ProcessHangEvent(content::RenderWidgetHost* widget) {
     }
   }
 
-  DCHECK(process);
   if (process == NULL)
     return;
 
