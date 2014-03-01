@@ -45,8 +45,7 @@ file.
     <output filename="virtual_driver_setup_resources_mr.rc" type="rc_all" lang="mr" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_ms.rc" type="rc_all" lang="ms" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_nl.rc" type="rc_all" lang="nl" language_section="lang"/>
-    <!-- The translation console uses 'no' for Norwegian Bokmål. It should
-         be 'nb'. -->
+    <!-- The translation console uses 'no' for Norwegian Bokmål. It should be 'nb'. -->
     <output filename="virtual_driver_setup_resources_nb.rc" type="rc_all" lang="no" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_pl.rc" type="rc_all" lang="pl" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_pt-BR.rc" type="rc_all" lang="pt-BR" language_section="lang"/>
@@ -57,6 +56,7 @@ file.
     <output filename="virtual_driver_setup_resources_sl.rc" type="rc_all" lang="sl" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_sr.rc" type="rc_all" lang="sr" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_sv.rc" type="rc_all" lang="sv" language_section="lang"/>
+    <output filename="virtual_driver_setup_resources_sw.rc" type="rc_all" lang="sw" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_ta.rc" type="rc_all" lang="ta" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_te.rc" type="rc_all" lang="te" language_section="lang"/>
     <output filename="virtual_driver_setup_resources_th.rc" type="rc_all" lang="th" language_section="lang"/>
@@ -99,7 +99,7 @@ file.
     <file path="resources/virtual_driver_setup_resources_mr.xtb" lang="mr" />
     <file path="resources/virtual_driver_setup_resources_ms.xtb" lang="ms" />
     <file path="resources/virtual_driver_setup_resources_nl.xtb" lang="nl" />
-    <file path="resources/virtual_driver_setup_resources_nb.xtb" lang="nb" />
+    <file path="resources/virtual_driver_setup_resources_no.xtb" lang="no" />
     <file path="resources/virtual_driver_setup_resources_pl.xtb" lang="pl" />
     <file path="resources/virtual_driver_setup_resources_pt-BR.xtb" lang="pt-BR" />
     <file path="resources/virtual_driver_setup_resources_pt-PT.xtb" lang="pt-PT" />
@@ -109,6 +109,7 @@ file.
     <file path="resources/virtual_driver_setup_resources_sl.xtb" lang="sl" />
     <file path="resources/virtual_driver_setup_resources_sr.xtb" lang="sr" />
     <file path="resources/virtual_driver_setup_resources_sv.xtb" lang="sv" />
+    <file path="resources/virtual_driver_setup_resources_sw.xtb" lang="sw" />
     <file path="resources/virtual_driver_setup_resources_ta.xtb" lang="ta" />
     <file path="resources/virtual_driver_setup_resources_te.xtb" lang="te" />
     <file path="resources/virtual_driver_setup_resources_th.xtb" lang="th" />
@@ -130,7 +131,7 @@ file.
       </message>
       <message name="IDS_ERROR_NO_XPS"
                meaning="Error message" desc="XPS driver is not installed.">
-        <ph name="xps_url">&lt;a=&quot;http://www.microsoft.com/download/details.aspx?id=11816&quot;&gt;<ex>http://www.microsoft.com/download/details.aspx?id=11816</ex></ph>XPS driver<ph name="xps_url_end">&lt;/a&gt;</ph> is not installed.
+        <ph name="xps_url">&lt;a href=&quot;http://www.microsoft.com/download/details.aspx?id=11816&quot;&gt;<ex>&lt;a href=&quot;http://www.microsoft.com/download/details.aspx?id=11816&quot;&gt;</ex></ph>XPS driver<ph name="xps_url_end">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is not installed.
       </message>
     </messages>
     <includes>
