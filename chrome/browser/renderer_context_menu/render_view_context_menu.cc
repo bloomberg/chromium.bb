@@ -40,6 +40,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 #include "chrome/browser/renderer_context_menu/spellchecker_submenu_observer.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
@@ -414,11 +415,10 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)),
-      command_executed_(false),
-      is_guest_(false) {
-  RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
-  if (rvh && rvh->GetProcess()->IsGuest())
-    is_guest_ = true;
+      command_executed_(false) {
+  content_type_.reset(ContextMenuContentTypeFactory::Create(
+                          source_web_contents_,
+                          render_frame_host, params));
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -562,120 +562,125 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   UMA_HISTOGRAM_COUNTS("Extensions.ContextMenus_ItemCount", index);
 }
 
+void RenderViewContextMenu::AppendCurrentExtensionItems() {
+  // Avoid appending extension related items when |extension| is null.
+  // For Panel, this happens when the panel is navigated to a url outside of the
+  // extension's package.
+  const Extension* extension = GetExtension();
+  if (extension) {
+    // Only add extension items from this extension.
+    int index = 0;
+    extension_items_.AppendExtensionItems(extension->id(),
+                                          PrintableSelectionText(), &index);
+  }
+}
+
 void RenderViewContextMenu::InitMenu() {
-  if (chrome::IsRunningInForcedAppMode()) {
-    AppendAppModeItems();
-    return;
-  }
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_CUSTOM)) {
+    AppendCustomItems();
 
-  extensions::ViewType view_type =
-      extensions::GetViewType(source_web_contents_);
-  if (view_type == extensions::VIEW_TYPE_APP_WINDOW) {
-    AppendPlatformAppItems();
-    return;
-  } else if (view_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {
-    AppendPopupExtensionItems();
-    return;
-  } else if (view_type == extensions::VIEW_TYPE_PANEL) {
-    AppendPanelItems();
-    return;
-  }
-
-  const bool has_link = !params_.unfiltered_link_url.is_empty();
-  const bool has_selection = !params_.selection_text.empty();
-
-  if (AppendCustomItems()) {
-    // If there's a selection, don't early return when there are custom items,
-    // but fall through to adding the normal ones after the custom ones.
+    const bool has_selection = !params_.selection_text.empty();
     if (has_selection) {
+      // We will add more items if there's a selection, so add a separator.
+      // TODO(lazyboy): Clean up separator logic.
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    } else {
-      // Don't add items for Pepper menu.
-      if (!params_.custom_context.is_pepper_menu)
-        AppendDeveloperItems();
-      return;
     }
   }
 
-  // When no special node or text is selected and selection has no link,
-  // show page items.
-  if (params_.media_type == WebContextMenuData::MediaTypeNone &&
-      !has_link &&
-      !params_.is_editable &&
-      !is_guest_ &&
-      !has_selection) {
-    if (!params_.page_url.is_empty()) {
-      bool is_devtools = IsDevToolsURL(params_.page_url);
-      if (!is_devtools && !IsInternalResourcesURL(params_.page_url)) {
-        AppendPageItems();
-        // Merge in frame items if we clicked within a frame that needs them.
-        if (!params_.frame_url.is_empty()) {
-          is_devtools = IsDevToolsURL(params_.frame_url);
-          if (!is_devtools && !IsInternalResourcesURL(params_.frame_url)) {
-            menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-            AppendFrameItems();
-          }
-        }
-      }
-    } else {
-      DCHECK(params_.frame_url.is_empty());
-    }
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE))
+    AppendPageItems();
+
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_FRAME)) {
+    // Merge in frame items with page items if we clicked within a frame that
+    // needs them.
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    AppendFrameItems();
   }
 
-  // Do not show link related items for guest.
-  if (has_link && !is_guest_) {
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK)) {
     AppendLinkItems();
     if (params_.media_type != WebContextMenuData::MediaTypeNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  switch (params_.media_type) {
-    case WebContextMenuData::MediaTypeNone:
-      break;
-    case WebContextMenuData::MediaTypeImage:
-      AppendImageItems();
-      break;
-    case WebContextMenuData::MediaTypeVideo:
-      AppendVideoItems();
-      break;
-    case WebContextMenuData::MediaTypeAudio:
-      AppendAudioItems();
-      break;
-    case WebContextMenuData::MediaTypePlugin:
-      AppendPluginItems();
-      break;
-#ifdef WEBCONTEXT_MEDIATYPEFILE_DEFINED
-    case WebContextMenuData::MediaTypeFile:
-      break;
-#endif
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+    AppendImageItems();
   }
 
-  if (params_.is_editable)
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_SEARCHWEBFORIMAGE)) {
+    AppendSearchWebForImageItems();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_VIDEO)) {
+    AppendVideoItems();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_AUDIO)) {
+    AppendAudioItems();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
+    AppendPluginItems();
+  }
+
+  // ITEM_GROUP_MEDIA_FILE has no specific items.
+
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_EDITABLE))
     AppendEditableItems();
-  else if (has_selection)
+
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
+    DCHECK(!content_type_->SupportsGroup(
+               ContextMenuContentType::ITEM_GROUP_EDITABLE));
     AppendCopyItem();
-
-  if (!is_guest_ && has_selection) {
-    AppendSearchProvider();
-    if (!IsDevToolsURL(params_.page_url))
-      AppendPrintItem();
   }
 
-  if (!IsDevToolsURL(params_.page_url) && !is_guest_)
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT))
+    AppendPrintItem();
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_ALL_EXTENSION)) {
+    DCHECK(!content_type_->SupportsGroup(
+               ContextMenuContentType::ITEM_GROUP_CURRENT_EXTENSION));
     AppendAllExtensionItems();
-
-  AppendDeveloperItems();
-
-  if (!is_guest_) {
-#if defined(ENABLE_FULL_PRINTING)
-    if (!print_preview_menu_observer_.get()) {
-      print_preview_menu_observer_.reset(
-          new PrintPreviewContextMenuObserver(source_web_contents_));
-    }
-
-    observers_.AddObserver(print_preview_menu_observer_.get());
-#endif
   }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_CURRENT_EXTENSION)) {
+    DCHECK(!content_type_->SupportsGroup(
+               ContextMenuContentType::ITEM_GROUP_ALL_EXTENSION));
+    AppendCurrentExtensionItems();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
+    AppendDeveloperItems();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_DEVTOOLS_UNPACKED_EXT)) {
+    AppendDevtoolsForUnpackedExtensions();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_PRINT_PREVIEW)) {
+    AppendPrintPreviewItems();
+  }
+}
+
+void RenderViewContextMenu::AppendPrintPreviewItems() {
+#if defined(ENABLE_FULL_PRINTING)
+  if (!print_preview_menu_observer_.get()) {
+    print_preview_menu_observer_.reset(
+        new PrintPreviewContextMenuObserver(source_web_contents_));
+  }
+
+  observers_.AddObserver(print_preview_menu_observer_.get());
+#endif
 }
 
 const Extension* RenderViewContextMenu::GetExtension() const {
@@ -687,93 +692,6 @@ const Extension* RenderViewContextMenu::GetExtension() const {
 
   return system->process_manager()->GetExtensionForRenderViewHost(
       source_web_contents_->GetRenderViewHost());
-}
-
-void RenderViewContextMenu::AppendAppModeItems() {
-  const bool has_selection = !params_.selection_text.empty();
-
-  if (params_.is_editable)
-    AppendEditableItems();
-  else if (has_selection)
-    AppendCopyItem();
-}
-
-void RenderViewContextMenu::AppendPlatformAppItems() {
-  const Extension* platform_app = GetExtension();
-
-  // The RVH might be for a process sandboxed from the extension.
-  if (!platform_app)
-    return;
-
-  DCHECK(platform_app->is_platform_app());
-
-  const bool has_selection = !params_.selection_text.empty();
-
-  // Add undo/redo, cut/copy/paste etc for text fields.
-  if (params_.is_editable)
-    AppendEditableItems();
-  else if (has_selection)
-    AppendCopyItem();
-
-  int index = 0;
-  extension_items_.AppendExtensionItems(platform_app->id(),
-                                        PrintableSelectionText(), &index);
-
-  // Add dev tools for unpacked extensions.
-  if (extensions::Manifest::IsUnpackedLocation(platform_app->location()) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDebugPackedApps)) {
-    // Add a separator if there are any items already in the menu.
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
-                                    IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP);
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP,
-                                    IDS_CONTENT_CONTEXT_RESTART_APP);
-    AppendDeveloperItems();
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE,
-                                    IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE);
-  }
-}
-
-void RenderViewContextMenu::AppendPopupExtensionItems() {
-  const bool has_selection = !params_.selection_text.empty();
-
-  if (params_.is_editable)
-    AppendEditableItems();
-  else if (has_selection)
-    AppendCopyItem();
-
-  if (has_selection)
-    AppendSearchProvider();
-
-  AppendAllExtensionItems();
-  AppendDeveloperItems();
-}
-
-void RenderViewContextMenu::AppendPanelItems() {
-  bool has_selection = !params_.selection_text.empty();
-
-  // Checking link should take precedence before checking selection since on Mac
-  // right-clicking a link will also make it selected.
-  if (params_.unfiltered_link_url.is_valid())
-    AppendLinkItems();
-
-  if (params_.is_editable)
-    AppendEditableItems();
-  else if (has_selection)
-    AppendCopyItem();
-
-  // Avoid appending extension related items when |extension| is null. This
-  // happens when the panel is navigated to a url outside of the extension's
-  // package.
-  const Extension* extension = GetExtension();
-  if (extension) {
-    // Only add extension items from this extension.
-    int index = 0;
-    extension_items_.AppendExtensionItems(extension->id(),
-                                          PrintableSelectionText(), &index);
-  }
 }
 
 void RenderViewContextMenu::AddMenuItem(int command_id,
@@ -842,6 +760,19 @@ void RenderViewContextMenu::AppendDeveloperItems() {
                                   IDS_CONTENT_CONTEXT_INSPECTELEMENT);
 }
 
+void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
+  // Add a separator if there are any items already in the menu.
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
+                                  IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP,
+                                  IDS_CONTENT_CONTEXT_RESTART_APP);
+  AppendDeveloperItems();
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE,
+                                  IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE);
+}
+
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
@@ -874,10 +805,13 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+}
+
+void RenderViewContextMenu::AppendSearchWebForImageItems() {
   const TemplateURL* const default_provider =
       TemplateURLServiceFactory::GetForProfile(profile_)->
           GetDefaultSearchProvider();
-  if (!is_guest_ && params_.has_image_contents && default_provider &&
+  if (params_.has_image_contents && default_provider &&
       !default_provider->image_url().empty() &&
       default_provider->image_url_ref().IsValid()) {
     menu_model_.AddItem(
@@ -885,7 +819,6 @@ void RenderViewContextMenu::AppendImageItems() {
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
                                    default_provider->short_name()));
   }
-  AppendPrintItem();
 }
 
 void RenderViewContextMenu::AppendAudioItems() {

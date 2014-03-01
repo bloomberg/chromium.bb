@@ -14,6 +14,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/renderer_context_menu/context_menu_content_type.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
@@ -203,12 +204,10 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // Gets the extension (if any) associated with the WebContents that we're in.
   const extensions::Extension* GetExtension() const;
-  void AppendAppModeItems();
-  void AppendPlatformAppItems();
-  void AppendPopupExtensionItems();
-  void AppendPanelItems();
   bool AppendCustomItems();
+
   void AppendDeveloperItems();
+  void AppendDevtoolsForUnpackedExtensions();
   void AppendLinkItems();
   void AppendImageItems();
   void AppendAudioItems();
@@ -222,6 +221,9 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendEditableItems();
   void AppendSearchProvider();
   void AppendAllExtensionItems();
+  void AppendCurrentExtensionItems();
+  void AppendPrintPreviewItems();
+  void AppendSearchWebForImageItems();
   void AppendSpellingSuggestionsSubMenu();
   void AppendSpellcheckOptionsSubMenu();
   void AppendSpeechInputOptionsSubMenu();
@@ -287,12 +289,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // should be notified of menu closing without execution.
   bool command_executed_;
 
-  // Whether or not the menu was triggered for a browser plugin guest.
-  // Guests are rendered inside chrome apps, but have most of the actions
-  // that a regular web page has.
-  // Currently actions/items that are suppressed from guests are: searching,
-  // printing, speech and instant.
-  bool is_guest_;
+  scoped_ptr<ContextMenuContentType> content_type_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
