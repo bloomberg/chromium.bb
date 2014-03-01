@@ -40,8 +40,8 @@ bool ValidatePointer(const void* ptr, const Message& message) {
   if (reinterpret_cast<ptrdiff_t>(data) % 8 != 0)
     return false;
 
-  const uint8_t* data_start = reinterpret_cast<const uint8_t*>(message.data);
-  const uint8_t* data_end = data_start + message.data->header.num_bytes;
+  const uint8_t* data_start = reinterpret_cast<const uint8_t*>(message.data());
+  const uint8_t* data_end = data_start + message.data()->header.num_bytes;
 
   return data >= data_start && data < data_end;
 }

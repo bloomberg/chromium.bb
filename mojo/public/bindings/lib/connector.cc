@@ -41,18 +41,19 @@ bool Connector::Accept(Message* message) {
 
   MojoResult rv = WriteMessageRaw(
       message_pipe_.get(),
-      message->data,
-      message->data->header.num_bytes,
-      message->handles.empty() ? NULL :
-          reinterpret_cast<const MojoHandle*>(&message->handles[0]),
-      static_cast<uint32_t>(message->handles.size()),
+      message->data(),
+      message->data()->header.num_bytes,
+      message->mutable_handles()->empty() ? NULL :
+          reinterpret_cast<const MojoHandle*>(
+              &message->mutable_handles()->front()),
+      static_cast<uint32_t>(message->mutable_handles()->size()),
       MOJO_WRITE_MESSAGE_FLAG_NONE);
 
   switch (rv) {
     case MOJO_RESULT_OK:
       // The handles were successfully transferred, so we don't need the message
       // to track their lifetime any longer.
-      message->handles.clear();
+      message->mutable_handles()->clear();
       break;
     case MOJO_RESULT_FAILED_PRECONDITION:
       // There's no point in continuing to write to this pipe since the other
@@ -118,16 +119,17 @@ void Connector::ReadMore() {
     }
 
     Message message;
-    message.data = static_cast<MessageData*>(malloc(num_bytes));
-    message.handles.resize(num_handles);
+    message.AllocData(num_bytes);
+    message.mutable_handles()->resize(num_handles);
 
-    rv = ReadMessageRaw(message_pipe_.get(),
-                        message.data,
-                        &num_bytes,
-                        message.handles.empty() ? NULL :
-                            reinterpret_cast<MojoHandle*>(&message.handles[0]),
-                        &num_handles,
-                        MOJO_READ_MESSAGE_FLAG_NONE);
+    rv = ReadMessageRaw(
+        message_pipe_.get(),
+        message.mutable_data(),
+        &num_bytes,
+        message.mutable_handles()->empty() ? NULL :
+            reinterpret_cast<MojoHandle*>(&message.mutable_handles()->front()),
+        &num_handles,
+        MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv != MOJO_RESULT_OK) {
       error_ = true;
       break;

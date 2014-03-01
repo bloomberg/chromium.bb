@@ -14,6 +14,7 @@ namespace mojo {
 #pragma pack(push, 1)
 
 struct MessageHeader {
+  //uint32_t deprecated_num_bytes;
   uint32_t num_bytes;
   uint32_t name;
 };
@@ -35,13 +36,23 @@ class Message {
   Message();
   ~Message();
 
+  // These may only be called on a newly initialized Message object.
+  void AllocData(uint32_t num_bytes);  // |data()| is uninitialized.
+  void AdoptData(MessageData* data);
+
+  // Swaps data and handles between this Message and another.
   void Swap(Message* other);
 
-  MessageData* data;  // Heap-allocated using malloc.
-  // TODO(davemoore): Turn these into ScopedHandles and fix bindings generation.
-  std::vector<Handle> handles;
+  const MessageData* data() const { return data_; }
+  MessageData* mutable_data() { return data_; }
+
+  const std::vector<Handle>* handles() const { return &handles_; }
+  std::vector<Handle>* mutable_handles() { return &handles_; }
 
  private:
+  MessageData* data_;  // Heap-allocated using malloc.
+  std::vector<Handle> handles_;
+
   MOJO_DISALLOW_COPY_AND_ASSIGN(Message);
 };
 

@@ -30,18 +30,17 @@ bool WaitForMessageAndDispatch(MessagePipeHandle handle,
   }
 
   Message message;
-  message.data = static_cast<MessageData*>(malloc(num_bytes));
-  message.handles.resize(num_handles);
+  message.AllocData(num_bytes);
+  message.mutable_handles()->resize(num_handles);
 
-  MojoResult rv =
-      ReadMessageRaw(handle,
-                     message.data,
-                     &num_bytes,
-                     message.handles.empty()
-                         ? NULL
-                         : reinterpret_cast<MojoHandle*>(&message.handles[0]),
-                     &num_handles,
-                     MOJO_READ_MESSAGE_FLAG_NONE);
+  MojoResult rv = ReadMessageRaw(
+      handle,
+      message.mutable_data(),
+      &num_bytes,
+      message.mutable_handles()->empty() ? NULL :
+          reinterpret_cast<MojoHandle*>(&message.mutable_handles()->front()),
+      &num_handles,
+      MOJO_READ_MESSAGE_FLAG_NONE);
   if (rv != MOJO_RESULT_OK)
     return false;
   return receiver->Accept(&message);

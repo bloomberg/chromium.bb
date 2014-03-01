@@ -270,8 +270,8 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
     // Imagine some IPC happened here.
 
     if (g_dump_message_as_hex) {
-      DumpHex(reinterpret_cast<const uint8_t*>(message->data),
-              message->data->header.num_bytes);
+      DumpHex(reinterpret_cast<const uint8_t*>(message->data()),
+              message->data()->header.num_bytes);
     }
 
     // In the receiving process, an implementation of ServiceStub is known to

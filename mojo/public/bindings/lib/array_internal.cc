@@ -49,7 +49,7 @@ bool ArraySerializationHelper<Handle>::DecodePointersAndHandles(
     ElementType* elements,
     Message* message) {
   for (uint32_t i = 0; i < header->num_elements; ++i) {
-    if (!DecodeHandle(&elements[i], &message->handles))
+    if (!DecodeHandle(&elements[i], message->mutable_handles()))
       return false;
   }
   return true;

@@ -76,7 +76,8 @@ if (!mojo::internal::Decode(&{{pf.field.name}}_, message))
   return false;
 {%    endfor %}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
-if (!mojo::internal::DecodeHandle(&{{pf.field.name}}_, &message->handles))
+if (!mojo::internal::DecodeHandle(&{{pf.field.name}}_,
+                                  message->mutable_handles()))
   return false;
 {%    endfor %}
 {%- endmacro -%}

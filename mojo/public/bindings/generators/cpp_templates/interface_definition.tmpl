@@ -47,9 +47,9 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 {%-   endfor %}
 
   mojo::Message message;
-  params->EncodePointersAndHandles(&message.handles);
+  params->EncodePointersAndHandles(message.mutable_handles());
 
-  message.data = builder.Finish();
+  message.AdoptData(builder.Finish());
 
   receiver_->Accept(&message);
 }
@@ -76,12 +76,12 @@ params->{{param.name}}()
 {%- endmacro %}
 
 bool {{class_name}}Stub::Accept(mojo::Message* message) {
-  switch (message->data->header.name) {
+  switch (message->data()->header.name) {
 {%- for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
       internal::{{class_name}}_{{method.name}}_Params_Data* params =
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
-              message->data->payload);
+              message->mutable_data()->payload);
 
       if (!params->DecodePointersAndHandles(message))
         return false;
