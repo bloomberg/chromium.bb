@@ -84,8 +84,6 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
                                  const gfx::Rect& clip) {
   draw_gl_input_.frame_id++;
   draw_gl_input_.scroll_offset = scroll;
-  client_->UpdateGlobalVisibleRect();
-  shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
   if (clear_view_)
     return false;
   if (is_hardware_canvas && attached_to_window_) {
@@ -108,6 +106,11 @@ void BrowserViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (!hardware_renderer_) {
     hardware_renderer_.reset(new HardwareRenderer(shared_renderer_state_));
   }
+
+  // TODO(boliu): We should remove dependency on UpdateGlobalVisibleRect
+  // in DrawGL.
+  client_->UpdateGlobalVisibleRect();
+  shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
 
   hardware_renderer_->DrawGL(draw_info);
   const DrawGLResult result = shared_renderer_state_->GetDrawGLResult();
