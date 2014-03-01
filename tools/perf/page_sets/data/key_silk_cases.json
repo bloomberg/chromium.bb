@@ -1,28 +1,6 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "key_silk_cases_001.wpr": [
-            "http://groupcloned.com/test/plain/list-recycle-transform.html", 
-            "http://groupcloned.com/test/plain/list-animation-simple.html", 
-            "http://www.polymer-project.org/polymer-all/labs/list/static-scroll-display.html", 
-            "http://www.polymer-project.org/polymer-all/labs/list/virtual-scroll-examples.html", 
-            "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html", 
-            "http://pr.gg/scroll6_even_faster.html", 
-            "http://jsfiddle.net/mdxJ7/3/embedded/result/", 
-            "http://jsfiddle.net/3yDKh/1/embedded/result", 
-            "http://jsfiddle.net/3yDKh/3/embedded/result", 
-            "http://jsfiddle.net/R8DX9/1/embedded/result/", 
-            "http://jsfiddle.net/rF9Gh/1/embedded/result/", 
-            "http://jsfiddle.net/uHqN9/embedded/result/", 
-            "http://jsfiddle.net/humper/yEX8u/3/embedded/result/", 
-            "http://jsfiddle.net/humper/cKB9D/3/embedded/result/", 
-            "http://jsfiddle.net/vBQHH/3/embedded/result/", 
-            "http://www.google.com/nexus/5/#/", 
-            "https://play.google.com/store/devices/details/Nexus_5_16GB_White?id=nexus_5_white_16gb", 
-            "http://jsfiddle.net/426x6/2/embedded/result", 
-            "http://jsfiddle.net/FtR7p/42/embedded/result/", 
-            "http://jsfiddle.net/ugkd4/9/embedded/result/"
-        ], 
         "key_silk_cases_000.wpr": [
             "http://staff.tumblr.com/", 
             "http://jsfiddle.net/mdxJ7/3/show", 
@@ -46,6 +24,39 @@
             "http://s.codepen.io/befamous/fullpage/kbxnH?select", 
             "http://famo.us?scroll", 
             "http://famo.us?tap"
+        ], 
+        "key_silk_cases_001.wpr": [
+            "http://groupcloned.com/test/plain/list-recycle-transform.html", 
+            "http://groupcloned.com/test/plain/list-animation-simple.html", 
+            "http://www.polymer-project.org/polymer-all/labs/list/static-scroll-display.html", 
+            "http://www.polymer-project.org/polymer-all/labs/list/virtual-scroll-examples.html", 
+            "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html", 
+            "http://pr.gg/scroll6_even_faster.html", 
+            "http://jsfiddle.net/mdxJ7/3/embedded/result/", 
+            "http://jsfiddle.net/3yDKh/1/embedded/result", 
+            "http://jsfiddle.net/3yDKh/3/embedded/result", 
+            "http://jsfiddle.net/R8DX9/1/embedded/result/", 
+            "http://jsfiddle.net/rF9Gh/1/embedded/result/", 
+            "http://jsfiddle.net/uHqN9/embedded/result/", 
+            "http://jsfiddle.net/humper/yEX8u/3/embedded/result/", 
+            "http://jsfiddle.net/humper/cKB9D/3/embedded/result/", 
+            "http://jsfiddle.net/vBQHH/3/embedded/result/", 
+            "http://www.google.com/nexus/5/#/", 
+            "https://play.google.com/store/devices/details/Nexus_5_16GB_White?id=nexus_5_white_16gb", 
+            "http://jsfiddle.net/426x6/2/embedded/result", 
+            "http://jsfiddle.net/FtR7p/42/embedded/result/", 
+            "http://jsfiddle.net/ugkd4/9/embedded/result/"
+        ], 
+        "key_silk_cases_004.wpr": [
+            "http://jankfree.org/silk/text-mask.html", 
+            "http://jankfree.org/silk/rectangle_transition.html"
+        ], 
+        "key_silk_cases_006.wpr": [
+            "http://jsfiddle.net/rF9Gh/3/embedded/result/"
+        ], 
+        "key_silk_cases_005.wpr": [
+            "http://jsfiddle.net/3yDKh/4/embedded/result", 
+            "http://jsfiddle.net/3yDKh/6/embedded/result"
         ]
     }
 }

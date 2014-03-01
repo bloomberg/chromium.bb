@@ -1,7 +1,10 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.",
     "archives": {
-        "key_desktop_sites_000.wpr" : [
+        "key_desktop_sites_001.wpr": [
+            "http://www.google.com/nexus/5/#/"
+        ],
+        "key_desktop_sites_000.wpr": [
             "http://facebook.com",
             "http://youtube.com",
             "http://twitter.com/nbc",

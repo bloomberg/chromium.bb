@@ -11,7 +11,7 @@
   "pages": [
     {
       "url": "http://groupcloned.com/test/plain/list-recycle-transform.html",
-      "why": "best case infinite scroll from sencha",
+      "why": "Infinite scroll. Brings out all of our perf issues.",
       "smoothness": {
         "action": "scroll",
         "scrollable_element_function": "function(callback) { callback(document.getElementById('scrollable')); }"
@@ -19,124 +19,80 @@
     },
     {
       "url": "http://groupcloned.com/test/plain/list-animation-simple.html",
-      "why": "lots of layers all animating",
+      "why": "Brings out layer management bottlenecks.",
       "smoothness": { "action": "wait", "seconds": 2 }
     },
     {
-      "url": "http://www.polymer-project.org/polymer-all/labs/list/static-scroll-display.html",
-      "why": "",
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }"
-      }
-    },
-    {
-      "url": "http://www.polymer-project.org/polymer-all/labs/list/virtual-scroll-examples.html",
-      "why": "",
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }"
-      }
-    },
-    {
       "url": "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html",
-      "why": "",
+      "why": "Best-known method for fake sticky. Janks sometimes. Interacts badly with compositor scrolls.",
       "smoothness": {
         "action": "scroll",
         "scrollable_element_function": "function(callback) { callback(document.getElementById('container')); }"
       }
     },
     {
-      "url": "http://pr.gg/scroll6_even_faster.html",
-      "why": "reduced version of ui toolkit static scroll case",
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }"
-      }
-    },
-    {
-      "url": "http://jsfiddle.net/mdxJ7/3/embedded/result/",
-      "why": "only the green div should repaint",
+      "url": "http://jsfiddle.net/3yDKh/4/embedded/result",
+      "why": "Card expansion: only the card should repaint, but in reality lots of storms happen.",
       "smoothness": { "action": "wait", "seconds": 3 }
     },
     {
-      "url": "http://jsfiddle.net/3yDKh/1/embedded/result",
-      "why": "only the red div should repaint",
-      "smoothness": { "action": "wait", "seconds": 3 }
-    },
-    {
-      "url": "http://jsfiddle.net/3yDKh/3/embedded/result",
-      "why": "margin top animation",
+      "url": "http://jsfiddle.net/3yDKh/6/embedded/result",
+      "why": "Card fly-in: It should be fast to animate in a bunch of cards using margin-top and letting layout do the rest.",
       "smoothness": { "action": "wait", "seconds": 3 }
     },
     {
       "url": "http://jsfiddle.net/R8DX9/1/embedded/result/",
+      "why": "Image search expands a spacer div when you click an image to accomplish a zoomin effect. Each image has a layer. Even so, this triggers a lot of unnecessary repainting.",
       "smoothness": { "action": "wait", "seconds": 3 }
     },
     {
-      "url": "http://jsfiddle.net/rF9Gh/1/embedded/result/",
+      "url": "http://jsfiddle.net/rF9Gh/3/embedded/result/",
+      "why": "Swipe to dismiss of an element that has a fixed-position child that is its pseudo-sticky header. Brings out issues with layer creation and repainting.",
       "smoothness": { "action": "wait", "seconds": 3 }
-    },
-    {
-      "url": "http://jsfiddle.net/uHqN9/embedded/result/",
-      "smoothness": { "action": "wait", "seconds": 4 }
     },
     {
       "url": "http://jsfiddle.net/humper/yEX8u/3/embedded/result/",
-      "smoothness": { "action": "wait", "seconds": 4 }
+      "why": "Horizontal and vertical expansion of a card that is cheap to layout but costly to rasterize.",
+      "smoothness": { "action": "wait", "seconds": 4 },
+      "gpu_raster": true
     },
     {
       "url": "http://jsfiddle.net/humper/cKB9D/3/embedded/result/",
-      "smoothness": { "action": "wait", "seconds": 4 }
+      "why": "Vertical Expansion of a card that is cheap to layout but costly to rasterize.",
+      "smoothness": { "action": "wait", "seconds": 4 },
+      "gpu_raster": true
     },
     {
       "url": "http://jsfiddle.net/vBQHH/3/embedded/result/",
-      "smoothness": { "action": "wait", "seconds": 4 }
-    },
-    {
-      "url": "http://www.google.com/nexus/5/#/",
-      "smoothness": { "action": "scroll" }
-    },
-    {
-      "url": "https://play.google.com/store/devices/details/Nexus_5_16GB_White?id=nexus_5_white_16gb",
-      "smoothness": {
-        "action": "toggle",
-        "repeat": 3
-      },
-      "toggle": [
-        {
-          "action": "click_element",
-          "selector": ".details-info .play-button:not(.selected)"
-        },
-        { "action": "wait", "seconds": 2}
-      ]
-    },
-    {
-      "url": "http://jsfiddle.net/426x6/2/embedded/result",
-      "smoothness": { "action": "wait", "seconds": 2 }
-    },
-    {
-      "url": "http://jsfiddle.net/FtR7p/42/embedded/result/",
-      "smoothness": { "action": "wait", "seconds": 5 }
+      "why": "Parallax effect is common on photo-viewer-like applications, overloading software rasterization",
+      "smoothness": { "action": "wait", "seconds": 4 },
+      "gpu_raster": true
     },
     {
       "url": "http://jsfiddle.net/ugkd4/9/embedded/result/",
+      "why": "Addressing paint storms during coordinated animations.",
       "smoothness": { "action": "wait", "seconds": 5 }
     },
     {
-      "url": "file://key_silk_cases/text-mask.html",
-      "smoothness": { "action": "wait", "seconds": 4 }
+      "url": "http://jankfree.org/silk/text-mask.html",
+      "why": "Mask transitions are common mobile use cases.",
+      "smoothness": { "action": "wait", "seconds": 4 },
+      "gpu_raster": true
     },
     {
-      "url": "file://key_silk_cases/rectangle_transition.html",
-      "smoothness": { "action": "wait", "seconds": 5 }
+      "url": "http://jankfree.org/silk/rectangle_transition.html",
+      "why": "Card expansions with images and text are pretty and common.",
+      "smoothness": { "action": "wait", "seconds": 4 },
+      "gpu_raster": true
     },
     {
       "url": "file://key_silk_cases/font_wipe.html",
+      "why": "Coordinated animations for expanding elements.",
       "smoothness": { "action": "wait", "seconds": 5 }
     },
     {
       "url": "file://key_silk_cases/inbox_app.html?swipe_to_dismiss",
+      "why": "",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 }
@@ -161,6 +117,7 @@
     },
     {
       "url": "file://key_silk_cases/inbox_app.html?stress_hidey_bars",
+      "why": "",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 }
@@ -191,6 +148,7 @@
     },
     {
       "url": "file://key_silk_cases/inbox_app.html?toggle_drawer",
+      "why": "",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 }
@@ -209,6 +167,7 @@
     },
     {
       "url": "file://key_silk_cases/old_inbox_app.html?slide_drawer",
+      "why": "",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 }
@@ -232,69 +191,11 @@
     },
     {
       "url": "file://key_silk_cases/infinite_scrolling.html",
+      "why": "Shadow DOM infinite scrolling.",
       "smoothness": {
         "action": "scroll",
         "scrollable_element_function": "function(callback) { callback(document.getElementById('container')); }",
         "speed": 5000
-      }
-    },
-    {
-      "disabled": "The page isn't scrollable on large screen sizes (e.g. tablets); crbug.com/333923",
-      "url": "http://forecast.io?scroll",
-      "navigate_steps": [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": {
-        "action": "scroll_timeline"
-      },
-      "scroll_timeline": {
-        "action": "scroll",
-        "direction": "right",
-        "scroll_requires_touch": "true",
-        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('scroll')[0]); }"
-      }
-    },
-    {
-      "url": "http://forecast.io?swipe",
-      "navigate_steps": [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": {
-        "action": "slide_next_7_days"
-      },
-      "slide_next_7_days": {
-        "action": "swipe",
-        "direction": "up",
-        "distance": 200,
-        "wait_after": { "javascript": "document.getElementsByClassName('grippy')[0].getBoundingClientRect().top == 12" }
-      }
-    },
-    {
-      "url": "http://forecast.io?tap",
-      "disabled": "Synthetic swipe not supported on reference builds. Can be re-enabled after reference build roll",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
-        { "action": "wait", "seconds": 2 },
-        { "action": "slide_next_7_days" }
-      ],
-      "smoothness": {
-        "action": "tap_day"
-      },
-      "slide_next_7_days" : {
-        "action": "swipe",
-        "direction": "up",
-        "distance": 200,
-        "wait_after": { "javascript": "document.getElementsByClassName('grippy')[0].getBoundingClientRect().top == 12" }
-      },
-      "tap_day": {
-        "action": "tap",
-        "element_function": "function(callback) { callback(document.getElementsByClassName('day')[2]); }",
-        "wait_after": { "javascript": "document.getElementById('day_timeline').style['display'] == 'block'" }
       }
     },
     {
@@ -320,18 +221,6 @@
       }
     },
     {
-      "url": "http://pr.gg/scroll6.html",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 1 }
-      ],
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }"
-      }
-    },
-    {
-      "disabled": "Times out on Windows; crbug.com/338838",
       "url": "http://plus.google.com/app/basic/stream",
       "credentials": "google",
       "navigate_steps" : [
@@ -346,6 +235,7 @@
     },
     {
       "url": "http://jsbin.com/UVIgUTa/6/quiet",
+      "why": "Physical simulation demo that does a lot of element.style mutation triggering JS and recalc slowness",
       "smoothness": {
         "action": "scroll",
         "scroll_requires_touch": true,
@@ -353,14 +243,6 @@
         "scroll_distance_function": "function() { return window.innerHeight / 2; }",
         "wait_after": { "seconds": 1 }
       }
-    },
-    {
-      "url": "http://mobile-news.sandbox.google.com/news/pt1",
-      "why": "Google News: accelerated scrolling version",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 10 }
-      ]
     },
     {
       "url": "http://mobile-news.sandbox.google.com/news/pt0?scroll",
@@ -403,78 +285,6 @@
       "smoothness": {
         "action": "scroll",
         "scroll_distance_function": "function() { return 5000; }"
-      }
-    },
-    {
-      "disabled": "Android Chrome freezes; crbug.com/335772",
-      "url": "http://s.codepen.io/befamous/fullpage/pFsqb?flip",
-      "why": "famo.us twitter demo",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementsByClassName('tweet').length > 0" }
-      ],
-      "smoothness": {
-        "action": "tap",
-        "element_function": "function(callback) { callback(document.getElementsByClassName('navigation')[2]); }",
-        "wait_after": { "javascript": "document.getElementsByClassName('header')[0].getBoundingClientRect().top == 0" }
-      }
-    },
-    {
-      "disabled": "Android Chrome freezes; crbug.com/335772",
-      "url": "http://s.codepen.io/befamous/fullpage/kbxnH?scroll",
-      "why": "famo.us lightbox demo",
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }"
-      }
-    },
-    {
-      "disabled": "Android Chrome freezes; crbug.com/335772",
-      "url": "http://s.codepen.io/befamous/fullpage/kbxnH?select",
-      "why": "famo.us lightbox demo",
-      "smoothness": {
-        "action": "tap",
-        "element_function": "function(callback) { callback(document.getElementsByClassName('surface')[2]); }",
-        "_comment": "The wait_after condition is split into a condition for phones and portrait tablets, and one for landscape tablets",
-        "wait_after": { "javascript": "document.getElementsByClassName('surface')[1].getBoundingClientRect().left == 860 || Math.abs(document.getElementsByClassName('lightbox-title')[0].getBoundingClientRect().left - 907.77) < 0.1" }
-      }
-    },
-    {
-      "url": "http://famo.us?scroll",
-      "disabled": "Times out",
-      "navigate_steps": [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 },
-        { "action": "close_signup_box" }
-      ],
-      "smoothness": {
-        "action": "scroll",
-        "direction": "right",
-        "scroll_distance_function": "function() { return 5000; }"
-      },
-      "close_signup_box": {
-        "action": "tap",
-        "element_function": "function(callback) { callback(document.getElementsByClassName('signup-hide')[0]); }",
-        "wait_after": { "javascript": "document.getElementsByClassName('signup-hide')[0].getBoundingClientRect().left < 0" }
-      }
-    },
-    {
-      "url": "http://famo.us?tap",
-      "disabled": "Times out",
-      "navigate_steps": [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 },
-        { "action": "close_signup_box" }
-      ],
-      "smoothness": {
-        "action": "tap",
-        "element_function": "function(callback) { callback(document.getElementsByClassName('periodic-item')[47]); }",
-        "wait_after": { "seconds": 3 }
-      },
-      "close_signup_box": {
-        "action": "tap",
-        "element_function": "function(callback) { callback(document.getElementsByClassName('signup-hide')[0]); }",
-        "wait_after": { "javascript": "document.getElementsByClassName('signup-hide')[0].getBoundingClientRect().left < 0" }
       }
     }
   ]

@@ -8,6 +8,9 @@
       "url": "http://facebook.com",
       "credentials": "facebook"
     },
+    {
+      "url": "http://www.google.com/nexus/5/#/"
+    },
     { "url": "http://youtube.com" },
     { "url": "http://twitter.com/nbc" },
     { "url": "http://bbc.co.uk" },
