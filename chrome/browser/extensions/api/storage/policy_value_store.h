@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store.h"
 
 namespace policy {
 class PolicyMap;

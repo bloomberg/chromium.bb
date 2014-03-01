@@ -1,19 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
-#define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
-
-#include "testing/gtest/include/gtest/gtest.h"
+#ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
+#define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/value_store/value_store.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/value_store/value_store.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 // Parameter type for the value-parameterized tests.
 typedef ValueStore* (*ValueStoreTestParam)(const base::FilePath& file_path);
@@ -71,4 +69,4 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
   content::TestBrowserThread file_thread_;
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_
+#endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_UNITTEST_H_

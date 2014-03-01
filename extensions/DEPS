@@ -8,7 +8,7 @@ include_rules = [
 
 # More specific rules for what we are allowed to include.
 specific_include_rules = {
-  ".*test\.cc$": [
+  ".*test\.(h|cc)$": [
     "+content/public/test",
   ],
   # Temporary includes for tests.

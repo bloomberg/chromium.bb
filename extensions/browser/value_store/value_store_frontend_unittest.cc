@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/value_store/value_store_frontend.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/value_store/value_store_frontend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

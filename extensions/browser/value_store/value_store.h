@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
-#define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
+#ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_
+#define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/value_store/value_store_change.h"
+#include "extensions/browser/value_store/value_store_change.h"
 
 // Interface for a storage area for Value objects.
 class ValueStore {
@@ -218,4 +218,4 @@ class ValueStore {
   virtual bool RestoreKey(const std::string& key) = 0;
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_
+#endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_WEAK_UNLIMITED_SETTINGS_STORAGE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store.h"
 
 namespace extensions {
 

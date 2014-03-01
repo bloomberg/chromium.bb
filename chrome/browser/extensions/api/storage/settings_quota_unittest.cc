@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
-#include "chrome/browser/value_store/testing_value_store.h"
+#include "extensions/browser/value_store/testing_value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;

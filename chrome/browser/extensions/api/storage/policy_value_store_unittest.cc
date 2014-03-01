@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
-#include "chrome/browser/value_store/leveldb_value_store.h"
-#include "chrome/browser/value_store/value_store_unittest.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/value_store/leveldb_value_store.h"
+#include "extensions/browser/value_store/value_store_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

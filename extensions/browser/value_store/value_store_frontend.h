@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
-#define CHROME_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
+#ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
+#define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store.h"
 
 namespace base {
 class FilePath;
@@ -54,4 +54,4 @@ class ValueStoreFrontend
   DISALLOW_COPY_AND_ASSIGN(ValueStoreFrontend);
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_
+#endif  // EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_FRONTEND_H_

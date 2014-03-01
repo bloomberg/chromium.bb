@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
-#define CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
+#ifndef EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
+#define EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store.h"
 
 // ValueStore for testing, with an in-memory storage but the ability to
 // optionally fail all operations.
@@ -59,4 +59,4 @@ class TestingValueStore : public ValueStore {
   DISALLOW_COPY_AND_ASSIGN(TestingValueStore);
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
+#endif  // EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_

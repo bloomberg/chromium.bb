@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
@@ -30,6 +29,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/value_store/testing_value_store.h"
 
 using content::BrowserThread;
 

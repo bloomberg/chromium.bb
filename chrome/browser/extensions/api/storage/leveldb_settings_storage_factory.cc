@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/browser/value_store/leveldb_value_store.h"
+#include "extensions/browser/value_store/leveldb_value_store.h"
 
 namespace extensions {
 

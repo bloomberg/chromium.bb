@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/value_store/value_store_unittest.h"
+#include "extensions/browser/value_store/value_store_unittest.h"
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/value_store/leveldb_value_store.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/value_store/leveldb_value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"

@@ -3,6 +3,7 @@ include_rules = [
   "+components/user_prefs",
   "+content/public/browser",
   "+sync",
+  "+third_party/leveldatabase",
 
   # Temporarily allowed includes as part of the app shell/extensions refactor.
   #

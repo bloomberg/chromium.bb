@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
-#define CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
+#ifndef EXTENSIONS_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
+#define EXTENSIONS_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 // Value store area, backed by a leveldb database.
@@ -96,4 +96,4 @@ class LeveldbValueStore : public ValueStore {
   DISALLOW_COPY_AND_ASSIGN(LeveldbValueStore);
 };
 
-#endif  // CHROME_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
+#endif  // EXTENSIONS_BROWSER_VALUE_STORE_LEVELDB_VALUE_STORE_H_
