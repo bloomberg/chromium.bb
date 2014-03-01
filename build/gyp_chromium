@@ -471,9 +471,8 @@ if __name__ == '__main__':
   # If on Windows, request that depot_tools install/update the automatic
   # toolchain, and then use it (unless opted-out).
   vs2013_runtime_dll_dirs = None
-  # TODO(scottmg): Temporarily default to off, see http://crbug.com/345993.
   depot_tools_win_toolchain = \
-      bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '0')))
+      bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
