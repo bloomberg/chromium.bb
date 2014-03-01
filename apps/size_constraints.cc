@@ -4,6 +4,8 @@
 
 #include "apps/size_constraints.h"
 
+#include <algorithm>
+
 namespace apps {
 
 SizeConstraints::SizeConstraints()
