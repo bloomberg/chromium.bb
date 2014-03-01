@@ -13,6 +13,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -356,8 +357,9 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    //@SmallTest
+    //@Feature({"AndroidWebView"})
+    @DisabledTest
     public void testReceivingSizeAfterLoadUpdatesLayout() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView = createDetachedTestContainerViewOnMainSync(
