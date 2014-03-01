@@ -175,4 +175,29 @@ TEST(WTF, clampToUnsignedLongLong)
     EXPECT_EQ(clampTo<unsigned>(-1), 0u);
 }
 
+// Make sure that various +-inf cases are handled properly (they aren't
+// by default on VS).
+TEST(WTF, infinityMath)
+{
+    double posInf = std::numeric_limits<double>::infinity();
+    double negInf = -std::numeric_limits<double>::infinity();
+    double nan = std::numeric_limits<double>::quiet_NaN();
+
+    EXPECT_EQ(atan2(posInf, posInf), M_PI_4);
+    EXPECT_EQ(atan2(posInf, negInf), 3.0 * M_PI_4);
+    EXPECT_EQ(atan2(negInf, posInf), -M_PI_4);
+    EXPECT_EQ(atan2(negInf, negInf), -3.0 * M_PI_4);
+
+    EXPECT_EQ(fmod(0.0, posInf), 0.0);
+    EXPECT_EQ(fmod(7.0, posInf), 7.0);
+    EXPECT_EQ(fmod(-7.0, posInf), -7.0);
+    EXPECT_EQ(fmod(0.0, negInf), 0.0);
+    EXPECT_EQ(fmod(7.0, negInf), 7.0);
+    EXPECT_EQ(fmod(-7.0, negInf), -7.0);
+
+    EXPECT_EQ(pow(5.0, 0.0), 1.0);
+    EXPECT_EQ(pow(-5.0, 0.0), 1.0);
+    EXPECT_EQ(pow(nan, 0.0), 1.0);
+}
+
 } // namespace
