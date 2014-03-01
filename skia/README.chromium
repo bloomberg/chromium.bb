@@ -18,7 +18,3 @@ with any changes in the Skia tree so that our options are preserved and we
 also pick up any important changes they make.
 
  -- brettw@google.com, 28 December 2006
-
-Patches we are tracking locally (until Skia is fixed upstream):
-fix_for_1186198.diff -- eseidel, 6/4/08, BUG=1186198
-linux_patch.diff
