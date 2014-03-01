@@ -80,9 +80,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   items_.push_back(Item(model->other_node(), Item::TYPE_NODE));
   if (model->mobile_node()->IsVisible())
     items_.push_back(Item(model->mobile_node(), Item::TYPE_NODE));
-#if defined(USE_AURA) || defined(TOOLKIT_GTK)
   items_.push_back(Item(NULL, Item::TYPE_SEPARATOR));
-#endif
   items_.push_back(Item(NULL, Item::TYPE_CHOOSE_ANOTHER_FOLDER));
 
   std::vector<Item>::iterator it = std::find(items_.begin(),
