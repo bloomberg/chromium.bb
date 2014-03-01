@@ -215,6 +215,17 @@ cr.define('print_preview', function() {
     ERROR: 'error'
   };
 
+  /**
+   * What can happen when print preview tries to print.
+   * @enum {string}
+   * @private
+   */
+  PrintPreview.PrintAttemptResult_ = {
+    NOT_READY: 'not-ready',
+    PRINTED: 'printed',
+    READY_WAITING_FOR_PREVIEW: 'ready-waiting-for-preview'
+  };
+
   PrintPreview.prototype = {
     __proto__: print_preview.Component.prototype,
 
@@ -414,43 +425,50 @@ cr.define('print_preview', function() {
       }
       this.setIsEnabled_(false);
       this.printHeader_.isCancelButtonEnabled = true;
-      if (this.printIfReady_() &&
-          ((this.destinationStore_.selectedDestination.isLocal &&
-            !this.destinationStore_.selectedDestination.isPrivet &&
-            this.destinationStore_.selectedDestination.id !=
-                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) ||
-           this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW)) {
-        // Hide the dialog for now. The actual print command will be issued when
-        // the preview generation is done.
-        this.nativeLayer_.startHideDialog();
+      var printAttemptResult = this.printIfReady_();
+      if (printAttemptResult == PrintPreview.PrintAttemptResult_.PRINTED ||
+          printAttemptResult ==
+              PrintPreview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW) {
+        if ((this.destinationStore_.selectedDestination.isLocal &&
+             !this.destinationStore_.selectedDestination.isPrivet &&
+             this.destinationStore_.selectedDestination.id !=
+                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) ||
+             this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW) {
+          // Hide the dialog for now. The actual print command will be issued
+          // when the preview generation is done.
+          this.nativeLayer_.startHideDialog();
+        }
       }
     },
 
     /**
      * Attempts to print if needed and if ready.
-     * @return {boolean} Whether a print request was issued.
+     * @return {PrintPreview.PrintAttemptResult_} Attempt result.
      * @private
      */
     printIfReady_: function() {
-      if ((this.uiState_ == PrintPreview.UiState_.PRINTING ||
+      var okToPrint =
+          (this.uiState_ == PrintPreview.UiState_.PRINTING ||
               this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW ||
               this.uiState_ == PrintPreview.UiState_.FILE_SELECTION ||
               this.isInKioskAutoPrintMode_) &&
-          !this.isPreviewGenerationInProgress_ &&
           this.destinationStore_.selectedDestination &&
-          this.destinationStore_.selectedDestination.capabilities) {
-        assert(this.printTicketStore_.isTicketValid(),
-               'Trying to print with invalid ticket');
-        this.nativeLayer_.startPrint(
-            this.destinationStore_.selectedDestination,
-            this.printTicketStore_,
-            this.cloudPrintInterface_,
-            this.documentInfo_,
-            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
-        return true;
-      } else {
-        return false;
+          this.destinationStore_.selectedDestination.capabilities;
+      if (!okToPrint) {
+        return PrintPreview.PrintAttemptResult_.NOT_READY;
       }
+      if (this.isPreviewGenerationInProgress_) {
+        return PrintPreview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW;
+      }
+      assert(this.printTicketStore_.isTicketValid(),
+          'Trying to print with invalid ticket');
+      this.nativeLayer_.startPrint(
+          this.destinationStore_.selectedDestination,
+          this.printTicketStore_,
+          this.cloudPrintInterface_,
+          this.documentInfo_,
+          this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
+      return PrintPreview.PrintAttemptResult_.PRINTED;
     },
 
     /**

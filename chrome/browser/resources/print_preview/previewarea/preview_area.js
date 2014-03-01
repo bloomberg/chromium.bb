@@ -520,6 +520,8 @@ cr.define('print_preview', function() {
      */
     onTicketChange_: function() {
       if (this.previewGenerator_ && this.previewGenerator_.requestPreview()) {
+        cr.dispatchSimpleEvent(
+            this, PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS);
         if (this.loadingTimeout_ == null) {
           this.loadingTimeout_ = setTimeout(
               this.showMessage_.bind(this, PreviewArea.MessageId_.LOADING),
