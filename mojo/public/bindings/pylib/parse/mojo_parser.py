@@ -130,9 +130,15 @@ class Parser(object):
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 
+  def p_response(self, p):
+    """response : RESPONSE LPAREN parameters RPAREN
+                | """
+    if len(p) > 3:
+      p[0] = p[3]
+
   def p_method(self, p):
-    """method : NAME LPAREN parameters RPAREN ordinal SEMI"""
-    p[0] = ('METHOD', p[1], p[3], p[5])
+    """method : NAME ordinal LPAREN parameters RPAREN response SEMI"""
+    p[0] = ('METHOD', p[1], p[4], p[2], p[6])
 
   def p_parameters(self, p):
     """parameters : parameter

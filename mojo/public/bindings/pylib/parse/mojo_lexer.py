@@ -81,6 +81,9 @@ class Lexer(object):
     # Conditional operator (?)
     'CONDOP',
 
+    # Request / response
+    'RESPONSE',
+
     # Delimeters
     'LPAREN', 'RPAREN',         # ( )
     'LBRACKET', 'RBRACKET',     # [ ]
@@ -188,6 +191,9 @@ class Lexer(object):
 
   # ?
   t_CONDOP            = r'\?'
+
+  # =>
+  t_RESPONSE          = r'=>'
 
   # Delimeters
   t_LPAREN            = r'\('

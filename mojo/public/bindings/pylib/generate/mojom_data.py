@@ -198,6 +198,9 @@ def MethodToData(method):
   }
   if method.ordinal != None:
     data[istr(2, 'ordinal')] = method.ordinal
+  if method.response_parameters != None:
+    data[istr(3, 'response_parameters')] = map(
+        ParameterToData, method.response_parameters)
   return data
 
 def MethodFromData(module, data, interface):
@@ -207,6 +210,10 @@ def MethodFromData(module, data, interface):
   method.default = data.get('default')
   method.parameters = map(lambda parameter:
       ParameterFromData(module, parameter, interface), data['parameters'])
+  if data.has_key('response_parameters'):
+    method.response_parameters = map(
+        lambda parameter: ParameterFromData(kinds, parameter),
+                          data['response_parameters'])
   return method
 
 def InterfaceToData(interface):

@@ -79,9 +79,12 @@ class MojomBuilder():
     if methods:
       for method in methods:
         if method[0] == 'METHOD':
-          out.append({'name': method[1],
-                      'parameters': self.MapParameters(method[2]),
-                      'ordinal': self.MapOrdinal(method[3])})
+          method_dict = {'name': method[1],
+                         'parameters': self.MapParameters(method[2]),
+                         'ordinal': self.MapOrdinal(method[3])}
+          if method[4] != None:
+            method_dict['response_parameters'] = self.MapParameters(method[4])
+          out.append(method_dict)
     return out
 
 

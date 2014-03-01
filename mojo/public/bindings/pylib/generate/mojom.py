@@ -117,10 +117,18 @@ class Method(object):
     self.name = name
     self.ordinal = ordinal
     self.parameters = []
+    self.response_parameters = None
 
   def AddParameter(self, name, kind, ordinal = None, default = None):
     parameter = Parameter(name, kind, ordinal, default)
     self.parameters.append(parameter)
+    return parameter
+
+  def AddResponseParameter(self, name, kind, ordinal = None, default = None):
+    if self.response_parameters == None:
+      self.response_parameters = []
+    parameter = Parameter(name, kind, ordinal, default)
+    self.response_parameters.append(parameter)
     return parameter
 
 

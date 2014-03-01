@@ -52,7 +52,7 @@ struct DefaultsTest {
 };
 
 interface Port {
-  PostMessage(string message_text @0) @0;
+  PostMessage@0(string message_text @0);
 };
 
 [Peer=ServiceClient]
@@ -61,12 +61,12 @@ interface Service {
     BAZ_REGULAR = 0,
     BAZ_EXTRA
   };
-  Frobinate(Foo foo @0, BazOptions baz @1, Port port @2) @0;
+  Frobinate@0(Foo foo @0, BazOptions baz @1, Port port @2);
 };
 
 [Peer=Service]
 interface ServiceClient {
-  DidFrobinate(int32 result @0) @0;
+  DidFrobinate@0(int32 result @0);
 };
 
 }
