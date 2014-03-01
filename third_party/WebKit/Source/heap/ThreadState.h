@@ -547,6 +547,7 @@ public:
 
 // FIXME: Experiment if the threading affinity really matters for performance.
 // FIXME: Move these macros and other related structures to a separate file.
+USED_FROM_MULTIPLE_THREADS(CloseEvent);
 USED_FROM_MULTIPLE_THREADS(Crypto);
 USED_FROM_MULTIPLE_THREADS(DOMParser);
 USED_FROM_MULTIPLE_THREADS(DOMURL);
@@ -577,6 +578,7 @@ USED_FROM_MULTIPLE_THREADS(WebKitNotification);
 USED_FROM_MULTIPLE_THREADS(WorkerCrypto);
 USED_FROM_MULTIPLE_THREADS(WorkerPerformance);
 USED_FROM_MULTIPLE_THREADS(XMLHttpRequest);
+USED_FROM_MULTIPLE_THREADS(XMLHttpRequestProgressEvent);
 USED_FROM_MULTIPLE_THREADS(XMLSerializer);
 USED_FROM_MULTIPLE_THREADS(XPathEvaluator);
 USED_FROM_MULTIPLE_THREADS(XPathExpression);
