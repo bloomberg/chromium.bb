@@ -1,5 +1,8 @@
 <html>
 <head>
+<script>
+    window.targetScaleFactor = 2;
+</script>
 <script src="resources/srcset-helper.js"></script>
 <script src="../../resources/js-test.js"></script>
 <script>
@@ -14,8 +17,8 @@
 </head>
 
 <body id="body">
-    <div>This test passes if this img tag below is a green square regardless of the scale factor. It ensures that invalid inputs
-    from srcset are ignored, and src is selected (since it's the only candidate left)</div>
-    <img id="foo" src="resources/green-400-px-square.png" srcset="1x 5w,  ,     , resources/blue-100-px-square.png 2px,      2x 3h,,">
+    <div>This test passes if the div below is a blue 100px square when the deviceScaleFactor is 1. 
+        It simply ensures that when both src and srcset are specified for the same DPR, srcset wins.</div>
+    <img id="foo" src="resources/blue-100-px-square.png" srcset="resources/green-400-px-square.png 1x">
 </body>
 </html>

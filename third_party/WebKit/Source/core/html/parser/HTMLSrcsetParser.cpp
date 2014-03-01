@@ -51,8 +51,9 @@ template<typename CharType>
 static bool parseDescriptors(const CharType* descriptorsStart, const CharType* descriptorsEnd, float& imgScaleFactor)
 {
     const CharType* position = descriptorsStart;
-    bool isValid = true;
-    bool isScaleFactorFound = false;
+    bool isValid = false;
+    bool isFoundScaleFactor = false;
+    bool isEmptyDescriptor = !(descriptorsEnd > descriptorsStart);
     while (position < descriptorsEnd) {
         // 13.1. Let descriptor list be the result of splitting unparsed descriptors on spaces.
         skipWhile<CharType, isHTMLSpace<CharType> >(position, descriptorsEnd);
@@ -65,15 +66,15 @@ static bool parseDescriptors(const CharType* descriptorsStart, const CharType* d
         --currentDescriptorEnd;
         unsigned descriptorLength = currentDescriptorEnd - currentDescriptorStart;
         if (*currentDescriptorEnd == 'x') {
-            if (isScaleFactorFound)
+            if (isFoundScaleFactor)
                 return false;
             imgScaleFactor = charactersToFloat(currentDescriptorStart, descriptorLength, &isValid);
-            isScaleFactorFound = true;
+            isFoundScaleFactor = true;
         } else {
             continue;
         }
     }
-    return isValid;
+    return isEmptyDescriptor || isValid;
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content-1.html#processing-the-image-candidates
@@ -138,11 +139,18 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, Vector<Ima
     std::stable_sort(imageCandidates.begin(), imageCandidates.end(), compareByScaleFactor);
 
     unsigned i;
-    for (i = 0; i < imageCandidates.size() - 1; ++i) {
+    for (i = 0; i < imageCandidates.size() - 1; ++i)
         if (imageCandidates[i].scaleFactor() >= deviceScaleFactor)
             break;
-    }
-    return imageCandidates[i];
+
+    float winningScaleFactor = imageCandidates[i].scaleFactor();
+    unsigned winner = i;
+    // 16. If an entry b in candidates has the same associated ... pixel density as an earlier entry a in candidates,
+    // then remove entry b
+    while ((i > 0) && (imageCandidates[--i].scaleFactor() == winningScaleFactor))
+        winner = i;
+
+    return imageCandidates[winner];
 }
 
 ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, const String& srcsetAttribute)
