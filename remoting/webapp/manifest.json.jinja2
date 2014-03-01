@@ -1,0 +1,88 @@
+{
+  {{ MANIFEST_KEY_FOR_UNOFFICIAL_BUILD }}
+  "name": "__MSG_PRODUCT_NAME__",
+  "version": "{{ FULL_APP_VERSION }}",
+  "description": "__MSG_PRODUCT_DESCRIPTION__",
+  "manifest_version": 2,
+  "default_locale": "en",
+  "minimum_chrome_version": "32",
+  "app": {
+{% if webapp_type == 'v1' %}
+    "launch": {
+      "local_path": "main.html"
+    }
+{% else %}
+    "background": {
+      "scripts": ["background.js"]
+     }
+{% endif %}
+  },
+  "icons": {
+    "128": "chromoting128.webp",
+    "48": "chromoting48.webp",
+    "16": "chromoting16.webp"
+  },
+{% if webapp_type == 'v1' %}
+  "content_scripts": [
+    {
+      "matches": [
+        "{{ OAUTH2_REDIRECT_URL }}"
+      ],
+      "js": [ "cs_oauth2_trampoline.js" ]
+    },
+    {
+      "matches": [
+        "{{ THIRD_PARTY_AUTH_REDIRECT_URL }}"
+      ],
+      "js": [ "cs_third_party_auth_trampoline.js" ]
+    }
+  ],
+  "content_security_policy": "default-src 'self'; script-src 'self' {{ TALK_GADGET_HOST }}; style-src 'self' https://fonts.googleapis.com; img-src 'self' {{ TALK_GADGET_HOST }}; font-src *; connect-src 'self' {{ OAUTH2_ACCOUNTS_HOST }} {{ GOOGLE_API_HOSTS }} {{ TALK_GADGET_HOST }} https://relay.google.com",
+{% endif %}
+  "optional_permissions": [
+    "<all_urls>"
+  ],
+  "permissions": [
+    "{{ OAUTH2_ACCOUNTS_HOST }}/*",
+    "{{ OAUTH2_API_BASE_URL }}/*",
+    "{{ DIRECTORY_API_BASE_URL }}/*",
+    "{{ TALK_GADGET_HOST }}/talkgadget/*",
+    "https://relay.google.com/*",
+    "storage",
+    "clipboardRead",
+    "clipboardWrite",
+    "nativeMessaging"
+{% if webapp_type != 'v1' %}
+    ,
+    "fullscreen",
+    "identity",
+    "contextMenus",
+    "overrideEscFullscreen"
+{% endif %}
+  ],
+
+{% if webapp_type == 'v1' %}
+  "plugins": [
+    { "path": "remoting_host_plugin.dll", "public": false },
+    { "path": "libremoting_host_plugin.ia32.so", "public": false },
+    { "path": "libremoting_host_plugin.x64.so", "public": false },
+    { "path": "remoting_host_plugin.plugin", "public": false }
+  ],
+  "requirements": {
+    "plugins": {
+      "npapi": false
+    }
+  }
+{% else %}
+  "oauth2": {
+    "client_id": "{{ REMOTING_IDENTITY_API_CLIENT_ID }}",
+    "scopes": [
+      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
+    ]
+  },
+  "sandbox": {
+    "pages": [ "wcs_sandbox.html" ]
+  }
+{% endif %}
+
+}

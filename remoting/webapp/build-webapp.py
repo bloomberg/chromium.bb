@@ -14,6 +14,7 @@ a zip archive for all of the above is produced.
 # Python 2.5 compatibility
 from __future__ import with_statement
 
+import io
 import os
 import platform
 import re
@@ -55,35 +56,43 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def replaceUrl(destination, url_name, url_value):
-  """Updates a URL in both plugin_settings.js and manifest.json."""
+def replaceString(destination, placeholder, value):
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'" + url_name + "'", "'" + url_value + "'")
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 url_name, url_value)
+                 "'" + placeholder + "'", "'" + value + "'")
 
 
-def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
-                files, locales, patches):
+def processJinjaTemplate(input_file, output_file, context):
+  jinja2_path = os.path.normpath(
+      os.path.join(os.path.abspath(__file__),
+                   '../../../third_party/jinja2'))
+  sys.path.append(os.path.split(jinja2_path)[0])
+  import jinja2
+  (template_path, template_name) = os.path.split(input_file)
+  env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path))
+  template = env.get_template(template_name)
+  rendered = template.render(context)
+  io.open(output_file, 'w', encoding='utf-8').write(rendered)
+
+
+
+def buildWebApp(buildtype, version, mimetype, destination, zip_path,
+                manifest_template, webapp_type, plugin, files, locales):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
-    buildtype: the type of build ("Official" or "Dev")
+    buildtype: the type of build ("Official" or "Dev").
     mimetype: A string with mimetype of plugin.
     destination: A string with path to directory where the webapp will be
                  written.
     zipfile: A string with path to the zipfile to create containing the
              contents of |destination|.
+    manifest_template: jinja2 template file for manifest.
+    webapp_type: webapp type ("v1", "v2" or "v2_pnacl").
     plugin: A string with path to the binary plugin for this webapp.
     files: An array of strings listing the paths for resources to include
            in this webapp.
     locales: An array of strings listing locales, which are copied, along
              with their directory structure from the _locales directory down.
-    patches: An array of strings listing patch files to be applied to the
-             webapp directory. Paths in the patch file should be relative to
-             the remoting/webapp directory, for example a/main.html. Since
-             'git diff -p' works relative to the src/ directory, patches
-             obtained this way will need to be edited.
   """
   # Ensure a fresh directory.
   try:
@@ -174,24 +183,11 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
     if ((platform.system() == 'Linux') and (buildtype == 'Official')):
       subprocess.call(["strip", newPluginPath])
 
-  # Patch the files, if necessary. Do this before updating any placeholders
-  # in case any of the diff contexts refer to the placeholders.
-  for patch in patches:
-    patchfile = os.path.join(os.getcwd(), patch)
-    if subprocess.call(['patch', '-d', destination, '-i', patchfile,
-                        '-p1', '-F0', '-s']) != 0:
-      print 'Patch ' + patch + ' failed to apply.'
-      return 1
-
-  # Set the version number in the manifest version.
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 'FULL_APP_VERSION',
-                 version)
-
   # Set the correct mimetype.
+  hostPluginMimeType = os.environ.get(
+      'HOST_PLUGIN_MIMETYPE', 'application/vnd.chromium.remoting-host')
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 'HOST_PLUGIN_MIMETYPE',
-                 mimetype)
+                 'HOST_PLUGIN_MIMETYPE', hostPluginMimeType)
 
   # Allow host names for google services/apis to be overriden via env vars.
   oauth2AccountsHost = os.environ.get(
@@ -203,16 +199,12 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   oauth2BaseUrl = oauth2AccountsHost + '/o/oauth2'
   oauth2ApiBaseUrl = oauth2ApiHost + '/oauth2'
   directoryApiBaseUrl = directoryApiHost + '/chromoting/v1'
-  replaceUrl(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
-  replaceUrl(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
-  replaceUrl(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
+  replaceString(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
+  replaceString(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
+  replaceString(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
   # Substitute hosts in the manifest's CSP list.
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 'OAUTH2_ACCOUNTS_HOST', oauth2AccountsHost)
   # Ensure we list the API host only once if it's the same for multiple APIs.
   googleApiHosts = ' '.join(set([oauth2ApiHost, directoryApiHost]))
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 'GOOGLE_API_HOSTS', googleApiHosts)
 
   # WCS and the OAuth trampoline are both hosted on talkgadget. Split them into
   # separate suffix/prefix variables to allow for wildcards in manifest.json.
@@ -244,16 +236,11 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   else:
     oauth2RedirectUrlJs = "'" + oauth2RedirectBaseUrlJs + "/dev'"
     oauth2RedirectUrlJson = oauth2RedirectBaseUrlJson + '/dev*'
-  thirdPartyAuthUrlJs = "'" + oauth2RedirectBaseUrlJs + "/thirdpartyauth'"
+  thirdPartyAuthUrlJs = oauth2RedirectBaseUrlJs + "/thirdpartyauth"
   thirdPartyAuthUrlJson = oauth2RedirectBaseUrlJson + '/thirdpartyauth*'
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'TALK_GADGET_URL'", "'" + talkGadgetBaseUrl + "'")
+  replaceString(destination, "TALK_GADGET_URL", talkGadgetBaseUrl)
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 'TALK_GADGET_HOST', talkGadgetHostJson)
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 'OAUTH2_REDIRECT_URL', oauth2RedirectUrlJson)
 
   # Configure xmpp server and directory bot settings in the plugin.
   xmppServerAddress = os.environ.get(
@@ -263,17 +250,11 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
       'DIRECTORY_BOT_JID', 'remoting@bot.talk.google.com')
 
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'XMPP_SERVER_ADDRESS'", "'" + xmppServerAddress + "'")
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "Boolean('XMPP_SERVER_USE_TLS')", xmppServerUseTls)
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'DIRECTORY_BOT_JID'", "'" + directoryBotJid + "'")
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'THIRD_PARTY_AUTH_REDIRECT_URL'",
-                 thirdPartyAuthUrlJs)
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 "THIRD_PARTY_AUTH_REDIRECT_URL",
-                 thirdPartyAuthUrlJson)
+  replaceString(destination, "XMPP_SERVER_ADDRESS", xmppServerAddress)
+  replaceString(destination, "DIRECTORY_BOT_JID", directoryBotJid)
+  replaceString(destination, "THIRD_PARTY_AUTH_REDIRECT_URL",
+                thirdPartyAuthUrlJs)
 
   # Set the correct API keys.
   # For overriding the client ID/secret via env vars, see google_api_keys.py.
@@ -281,23 +262,33 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
   apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
 
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'API_CLIENT_ID'",
-                 "'" + apiClientId + "'")
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "'API_CLIENT_SECRET'",
-                 "'" + apiClientSecret + "'")
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 '"REMOTING_IDENTITY_API_CLIENT_ID"',
-                 '"' + apiClientIdV2 + '"')
+  replaceString(destination, "API_CLIENT_ID", apiClientId)
+  replaceString(destination, "API_CLIENT_SECRET", apiClientSecret)
 
   # Use a consistent extension id for unofficial builds.
   if buildtype != 'Official':
     manifestKey = '"key": "remotingdevbuild",'
   else:
     manifestKey = ''
-  findAndReplace(os.path.join(destination, 'manifest.json'),
-                 'MANIFEST_KEY_FOR_UNOFFICIAL_BUILD', manifestKey)
+
+  # Generate manifest.
+  context = {
+    'webapp_type': webapp_type,
+    'FULL_APP_VERSION': version,
+    'MANIFEST_KEY_FOR_UNOFFICIAL_BUILD': manifestKey,
+    'OAUTH2_REDIRECT_URL': oauth2RedirectUrlJson,
+    'TALK_GADGET_HOST': talkGadgetHostJson,
+    'THIRD_PARTY_AUTH_REDIRECT_URL': thirdPartyAuthUrlJson,
+    'REMOTING_IDENTITY_API_CLIENT_ID': apiClientIdV2,
+    'OAUTH2_BASE_URL': oauth2BaseUrl,
+    'OAUTH2_API_BASE_URL': oauth2ApiBaseUrl,
+    'DIRECTORY_API_BASE_URL': directoryApiBaseUrl,
+    'OAUTH2_ACCOUNTS_HOST': oauth2AccountsHost,
+    'GOOGLE_API_HOSTS': googleApiHosts,
+  }
+  processJinjaTemplate(manifest_template,
+                       os.path.join(destination, 'manifest.json'),
+                       context)
 
   # Make the zipfile.
   createZip(zip_path, destination)
@@ -309,22 +300,19 @@ def main():
   if len(sys.argv) < 6:
     print ('Usage: build-webapp.py '
            '<build-type> <version> <mime-type> <dst> <zip-path> '
-           '<other files...> [--plugin <plugin>] [--patches <patches...>] '
-           '[--locales <locales...>]')
+           '<manifest_template> <webapp_type> <other files...> '
+           '[--plugin <plugin>] [--locales <locales...>]')
     return 1
 
   arg_type = ''
   files = []
   locales = []
-  patches = []
   plugin = ""
-  for arg in sys.argv[7:]:
-    if arg in ['--locales', '--patches', '--plugin']:
+  for arg in sys.argv[8:]:
+    if arg in ['--locales', '--plugin']:
       arg_type = arg
     elif arg_type == '--locales':
       locales.append(arg)
-    elif arg_type == '--patches':
-      patches.append(arg)
     elif arg_type == '--plugin':
       plugin = arg
       arg_type = ''
@@ -332,7 +320,8 @@ def main():
       files.append(arg)
 
   return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-                     sys.argv[5], plugin, files, locales, patches)
+                     sys.argv[5], sys.argv[6], sys.argv[7], plugin,
+                     files, locales)
 
 
 if __name__ == '__main__':

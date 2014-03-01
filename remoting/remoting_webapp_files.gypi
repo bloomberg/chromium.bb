@@ -8,7 +8,6 @@
       'resources/chromoting16.webp',
       'resources/chromoting48.webp',
       'resources/chromoting128.webp',
-      'webapp/manifest.json',
     ],
 
     # Jscompile proto files.

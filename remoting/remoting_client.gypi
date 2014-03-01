@@ -96,13 +96,7 @@
       'type': 'none',
       'dependencies': [
         'remoting_webapp_v1',
-      ],
-      'conditions': [
-        ['OS != "win"', {
-          'dependencies': [
-            'remoting_webapp_v2',
-          ],
-        }],
+        'remoting_webapp_v2',
       ],
     },  # end of target 'remoting_webapp'
 
@@ -110,6 +104,7 @@
       'target_name': 'remoting_webapp_v1',
       'type': 'none',
       'variables': {
+        'webapp_type': 'v1',
         'include_host_plugin': '<(enable_remoting_host)',
         'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
         'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
@@ -117,23 +112,16 @@
       'includes': [ 'remoting_webapp.gypi', ],
     },  # end of target 'remoting_webapp_v1'
 
+    {
+      'target_name': 'remoting_webapp_v2',
+      'type': 'none',
+      'variables': {
+        'webapp_type': 'v2',
+        'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
+        'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
+        'extra_files': [ 'webapp/background.js' ],
+      },
+      'includes': [ 'remoting_webapp.gypi', ],
+    },  # end of target 'remoting_webapp_v2'
   ],  # end of targets
-
-  'conditions': [
-    ['OS != "win"', {
-      'targets': [
-        {
-          'target_name': 'remoting_webapp_v2',
-          'type': 'none',
-          'variables': {
-            'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
-            'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
-            'patch_files': [ 'webapp/appsv2.patch' ],
-            'extra_files': [ 'webapp/background.js' ],
-          },
-          'includes': [ 'remoting_webapp.gypi', ],
-        },  # end of target 'remoting_webapp_v2'
-      ],
-    }],
-  ],
 }

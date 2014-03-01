@@ -198,7 +198,6 @@
           'webapp/host_list.js',
           'webapp/host_setup_dialog.js',
           'webapp/host_table_entry.js',
-          'webapp/manifest.json',
           'webapp/paired_client_manager.js',
           'webapp/remoting.js',
         ],

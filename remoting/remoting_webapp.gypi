@@ -8,7 +8,6 @@
   'type': 'none',
   'variables': {
     'include_host_plugin%': 0,
-    'patch_files%': [],
     'extra_files%': [],
     'generated_html_files': [
       '<(SHARED_INTERMEDIATE_DIR)/main.html',
@@ -65,6 +64,7 @@
       'action_name': 'Build Remoting WebApp',
       'inputs': [
         'webapp/build-webapp.py',
+        'webapp/manifest.json.jinja2',
         '<(chrome_version_path)',
         '<(remoting_version_path)',
         '<@(generated_html_files)',
@@ -91,12 +91,13 @@
         '<(host_plugin_mime_type)',
         '<(output_dir)',
         '<(zip_path)',
+        'webapp/manifest.json.jinja2',
+        '<(webapp_type)',
         '<@(generated_html_files)',
         '<@(remoting_webapp_files)',
         '<@(extra_files)',
         '<@(plugin_args)',
         '--locales', '<@(remoting_webapp_locale_files)',
-        '--patches', '<@(patch_files)',
       ],
     },
   ],
