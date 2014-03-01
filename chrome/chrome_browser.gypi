@@ -3665,7 +3665,7 @@
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogControllerAndroid.java',
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogResult.java',
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java',
-            'android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupGlue.java',
+            'android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java',
             'android/java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java',
             'android/java/src/org/chromium/chrome/browser/BookmarksBridge.java',
             'android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java',

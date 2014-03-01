@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,11 @@ import org.chromium.ui.base.WindowAndroid;
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.
 */
 @JNINamespace("autofill")
-public class AutofillPopupGlue implements AutofillPopupDelegate{
+public class AutofillPopupBridge implements AutofillPopupDelegate{
     private final long mNativeAutofillPopup;
     private final AutofillPopup mAutofillPopup;
 
-    public AutofillPopupGlue(long nativeAutofillPopupViewAndroid, WindowAndroid windowAndroid,
+    public AutofillPopupBridge(long nativeAutofillPopupViewAndroid, WindowAndroid windowAndroid,
             ViewAndroidDelegate containerViewDelegate) {
         mNativeAutofillPopup = nativeAutofillPopupViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
@@ -44,9 +44,9 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     }
 
     @CalledByNative
-    private static AutofillPopupGlue create(long nativeAutofillPopupViewAndroid,
+    private static AutofillPopupBridge create(long nativeAutofillPopupViewAndroid,
             WindowAndroid windowAndroid, ViewAndroid viewAndroid) {
-        return new AutofillPopupGlue(nativeAutofillPopupViewAndroid, windowAndroid,
+        return new AutofillPopupBridge(nativeAutofillPopupViewAndroid, windowAndroid,
                 viewAndroid.getViewAndroidDelegate());
     }
 

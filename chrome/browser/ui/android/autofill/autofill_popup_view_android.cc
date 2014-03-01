@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "content/public/browser/android/content_view_core.h"
-#include "jni/AutofillPopupGlue_jni.h"
+#include "jni/AutofillPopupBridge_jni.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
 #include "ui/gfx/rect.h"
@@ -28,7 +28,7 @@ void AutofillPopupViewAndroid::Show() {
 
   DCHECK(view_android);
 
-  java_object_.Reset(Java_AutofillPopupGlue_create(
+  java_object_.Reset(Java_AutofillPopupBridge_create(
       env,
       reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject().obj(),
@@ -39,13 +39,13 @@ void AutofillPopupViewAndroid::Show() {
 
 void AutofillPopupViewAndroid::Hide() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillPopupGlue_hide(env, java_object_.obj());
+  Java_AutofillPopupBridge_hide(env, java_object_.obj());
   delete this;
 }
 
 void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillPopupGlue_setAnchorRect(env,
+  Java_AutofillPopupBridge_setAnchorRect(env,
                                        java_object_.obj(),
                                        controller_->element_bounds().x(),
                                        controller_->element_bounds().y(),
@@ -56,7 +56,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
   size_t count = controller_->names().size();
 
   ScopedJavaLocalRef<jobjectArray> data_array =
-      Java_AutofillPopupGlue_createAutofillSuggestionArray(env, count);
+      Java_AutofillPopupBridge_createAutofillSuggestionArray(env, count);
 
   for (size_t i = 0; i < count; ++i) {
     ScopedJavaLocalRef<jstring> name =
@@ -64,7 +64,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
     ScopedJavaLocalRef<jstring> subtext =
         base::android::ConvertUTF16ToJavaString(env,
                                                 controller_->subtexts()[i]);
-    Java_AutofillPopupGlue_addToAutofillSuggestionArray(
+    Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env,
         data_array.obj(),
         i,
@@ -73,7 +73,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
         controller_->identifiers()[i]);
   }
 
-  Java_AutofillPopupGlue_show(env, java_object_.obj(), data_array.obj());
+  Java_AutofillPopupBridge_show(env, java_object_.obj(), data_array.obj());
 }
 
 void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
