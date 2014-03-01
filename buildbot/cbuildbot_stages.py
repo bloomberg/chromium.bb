@@ -17,7 +17,6 @@ import platform
 import re
 import shutil
 import sys
-import urllib
 from xml.etree import ElementTree
 
 from chromite.buildbot import builderstage as bs
@@ -1819,7 +1818,7 @@ class PreCQLauncherStage(SyncStage):
     validation_pool.ValidationPool.AcquirePool(
         self._run.config.overlays, self.repo,
         self._run.buildnumber,
-        urllib.quote(constants.PRE_CQ_LAUNCHER_NAME),
+        constants.PRE_CQ_LAUNCHER_NAME,
         dryrun=self._run.options.debug,
         changes_query=self._run.options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges)
