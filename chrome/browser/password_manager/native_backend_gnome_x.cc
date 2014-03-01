@@ -133,6 +133,8 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   DCHECK(date_ok);
   form->date_created = base::Time::FromTimeT(date_created);
   form->blacklisted_by_user = uint_attr_map["blacklisted_by_user"];
+  form->type = static_cast<PasswordForm::Type>(uint_attr_map["type"]);
+  form->times_used = uint_attr_map["times_used"];
   form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
 
   return form.Pass();
@@ -187,6 +189,11 @@ void ConvertFormList(GList* found,
 }
 
 // Schema is analagous to the fields in PasswordForm.
+// TODO(gcasto): Adding 'form_data' would be nice, but we would need to
+// serialize in a way that is guaranteed to not have any embedded NULLs. Pickle
+// doesn't make this guarantee, so we just don't serialize this field. Since
+// it's only used to crowd source data collection it doesn't matter that much
+// if it's not available on this platform.
 const GnomeKeyringPasswordSchema kGnomeSchema = {
   GNOME_KEYRING_ITEM_GENERIC_SECRET, {
     { "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
@@ -201,6 +208,8 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
     { "date_created", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { "blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     { "scheme", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
+    { "type", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
+    { "times_used", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     // This field is always "chrome" so that we can search for it.
     { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { NULL }
@@ -311,6 +320,8 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "preferred", form.preferred,
       "date_created", base::Int64ToString(date_created).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,
+      "type", form.type,
+      "times_used", form.times_used,
       "scheme", form.scheme,
       "application", app_string,
       NULL);
@@ -567,10 +578,9 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   // Based on LoginDatabase::UpdateLogin(), we search for forms to update by
   // origin_url, username_element, username_value, password_element, and
   // signon_realm. We then compare the result to the updated form. If they
-  // differ in any of the action, password_value, ssl_valid, or preferred
-  // fields, then we remove the original, and then add the new entry. We'd add
-  // the new one first, and then delete the original, but then the delete might
-  // actually delete the newly-added entry!
+  // differ in any of the mutable fields, then we remove the original, and
+  // then add the new entry. We'd add the new one first, and then delete the
+  // original, but then the delete might actually delete the newly-added entry!
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -595,19 +605,15 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
     if (forms[i]->action != form.action ||
         forms[i]->password_value != form.password_value ||
         forms[i]->ssl_valid != form.ssl_valid ||
-        forms[i]->preferred != form.preferred) {
+        forms[i]->preferred != form.preferred ||
+        forms[i]->times_used != form.times_used) {
       RemoveLogin(*forms[i]);
-    }
-  }
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (forms[i]->action != form.action ||
-        forms[i]->password_value != form.password_value ||
-        forms[i]->ssl_valid != form.ssl_valid ||
-        forms[i]->preferred != form.preferred) {
+
       forms[i]->action = form.action;
       forms[i]->password_value = form.password_value;
       forms[i]->ssl_valid = form.ssl_valid;
       forms[i]->preferred = form.preferred;
+      forms[i]->times_used = form.times_used;
       if (!RawAddLogin(*forms[i]))
         ok = false;
     }

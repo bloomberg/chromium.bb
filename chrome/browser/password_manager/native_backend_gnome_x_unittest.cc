@@ -300,6 +300,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.password_value = UTF8ToUTF16("seekrit");
     form_google_.submit_element = UTF8ToUTF16("submit");
     form_google_.signon_realm = "http://www.google.com/";
+    form_google_.type = PasswordForm::TYPE_GENERATED;
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
     form_facebook_.action = GURL("http://www.facebook.com/login");
@@ -373,7 +374,7 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ("login", item->keyring);
     EXPECT_EQ(form.origin.spec(), item->display_name);
     EXPECT_EQ(UTF16ToUTF8(form.password_value), item->password);
-    EXPECT_EQ(13u, item->attributes.size());
+    EXPECT_EQ(15u, item->attributes.size());
     CheckStringAttribute(item, "origin_url", form.origin.spec());
     CheckStringAttribute(item, "action_url", form.action.spec());
     CheckStringAttribute(item, "username_element",
@@ -389,6 +390,8 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckUint32Attribute(item, "preferred", form.preferred);
     // We don't check the date created. It varies.
     CheckUint32Attribute(item, "blacklisted_by_user", form.blacklisted_by_user);
+    CheckUint32Attribute(item, "type", form.type);
+    CheckUint32Attribute(item, "times_used", form.times_used);
     CheckUint32Attribute(item, "scheme", form.scheme);
     CheckStringAttribute(item, "application", app_string);
   }
@@ -519,6 +522,42 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
   CheckCredentialAvailability(form_google_,
                               "http://one.google.com/",
                               /*should_credential_be_available_to_url=*/false);
+}
+
+TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
+  // Pretend that the migration has already taken place.
+  profile_.GetPrefs()->SetBoolean(prefs::kPasswordsUseLocalProfileId, true);
+
+  NativeBackendGnome backend(42, profile_.GetPrefs());
+  backend.Init();
+
+  // First add google login.
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunBothThreads();
+
+  PasswordForm new_form_google(form_google_);
+  new_form_google.times_used = 1;
+  new_form_google.action = GURL("http://www.google.com/different/login");
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+
+  // Update login
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::UpdateLogin),
+                 base::Unretained(&backend), new_form_google));
+
+  RunBothThreads();
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], new_form_google, "chrome-42");
 }
 
 TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
