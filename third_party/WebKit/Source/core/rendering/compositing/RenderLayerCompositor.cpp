@@ -119,29 +119,18 @@ public:
         beginNewOverlapTestingContext();
     }
 
-    void add(const RenderLayer* layer, const IntRect& bounds)
+    void add(const IntRect& bounds)
     {
         // Layers do not contribute to overlap immediately--instead, they will
         // contribute to overlap as soon as they have been recursively processed
         // and popped off the stack.
         ASSERT(m_overlapStack.size() >= 2);
         m_overlapStack[m_overlapStack.size() - 2].add(bounds);
-        m_layers.add(layer);
-    }
-
-    bool contains(const RenderLayer* layer)
-    {
-        return m_layers.contains(layer);
     }
 
     bool overlapsLayers(const IntRect& bounds) const
     {
         return m_overlapStack.last().overlapsLayers(bounds);
-    }
-
-    bool isEmpty()
-    {
-        return m_layers.isEmpty();
     }
 
     void beginNewOverlapTestingContext()
@@ -169,7 +158,6 @@ public:
 
 private:
     Vector<OverlapMapContainer> m_overlapStack;
-    HashSet<const RenderLayer*> m_layers;
     RenderGeometryMap m_geometryMap;
 };
 
@@ -455,7 +443,8 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
             // should be removed as soon as proper overlap testing based on
             // scrolling and animation bounds is implemented (crbug.com/252472).
             Vector<RenderLayer*> unclippedDescendants;
-            computeCompositingRequirements(0, updateRoot, overlapMap, recursionData, saw3DTransform, unclippedDescendants);
+            IntRect absoluteDecendantBoundingBox;
+            computeCompositingRequirements(0, updateRoot, overlapMap, recursionData, saw3DTransform, unclippedDescendants, absoluteDecendantBoundingBox);
         }
 
         {
@@ -866,49 +855,14 @@ RenderLayer* RenderLayerCompositor::enclosingNonStackingClippingLayer(const Rend
     return 0;
 }
 
-void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer* layer, IntRect& layerBounds, bool& boundsComputed)
+void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer* layer, IntRect& layerBounds)
 {
     if (layer->isRootLayer())
         return;
 
-    if (!boundsComputed) {
-        // FIXME: If this layer's overlap bounds include its children, we don't need to add its
-        // children's bounds to the overlap map.
-        layerBounds = enclosingIntRect(overlapMap.geometryMap().absoluteRect(layer->overlapBounds()));
-        // Empty rects never intersect, but we need them to for the purposes of overlap testing.
-        if (layerBounds.isEmpty())
-            layerBounds.setSize(IntSize(1, 1));
-        boundsComputed = true;
-    }
-
     IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(rootRenderLayer(), AbsoluteClipRects)).rect());
     clipRect.intersect(layerBounds);
-    overlapMap.add(layer, clipRect);
-}
-
-void RenderLayerCompositor::addToOverlapMapRecursive(OverlapMap& overlapMap, RenderLayer* layer, RenderLayer* ancestorLayer)
-{
-    if (!canBeComposited(layer) || overlapMap.contains(layer))
-        return;
-
-    // A null ancestorLayer is an indication that 'layer' has already been pushed.
-    if (ancestorLayer)
-        overlapMap.geometryMap().pushMappingsToAncestor(layer, ancestorLayer);
-
-    IntRect bounds;
-    bool haveComputedBounds = false;
-    addToOverlapMap(overlapMap, layer, bounds, haveComputedBounds);
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(layer->stackingNode());
-#endif
-
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        addToOverlapMapRecursive(overlapMap, curNode->layer(), layer);
-
-    if (ancestorLayer)
-        overlapMap.geometryMap().popMappingsToAncestor(ancestorLayer);
+    overlapMap.add(clipRect);
 }
 
 //  Recurse through the layers in z-index and overflow order (which is equivalent to painting order)
@@ -920,7 +874,7 @@ void RenderLayerCompositor::addToOverlapMapRecursive(OverlapMap& overlapMap, Ren
 //      must be compositing so that its contents render over that child.
 //      This implies that its positive z-index children must also be compositing.
 //
-void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer* layer, OverlapMap* overlapMap, CompositingRecursionData& currentRecursionData, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants)
+void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer* layer, OverlapMap* overlapMap, CompositingRecursionData& currentRecursionData, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox)
 {
     layer->stackingNode()->updateLayerListsIfNeeded();
 
@@ -977,19 +931,19 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
             unclippedDescendants.append(layer);
     }
 
-    bool haveComputedBounds = false;
     IntRect absBounds;
-    // If we know for sure the layer is going to be composited, don't bother looking it up in the overlap map.
-    if (overlapMap && !overlapMap->isEmpty() && currentRecursionData.m_testingOverlap && !requiresCompositingOrSquashing(directReasons)) {
-        // If we're testing for overlap, we only need to composite if we overlap something that is already composited.
+    if (overlapMap && !layer->isRootLayer()) {
         absBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(layer->overlapBounds()));
-
-        // Empty rects never intersect, but we need them to for the purposes of overlap testing.
+        // Setting the absBounds to 1x1 instead of 0x0 makes very little sense,
+        // but removing this code will make JSGameBench sad.
+        // See https://codereview.chromium.org/13912020/
         if (absBounds.isEmpty())
             absBounds.setSize(IntSize(1, 1));
-        haveComputedBounds = true;
-        overlapCompositingReason = overlapMap->overlapsLayers(absBounds) ? CompositingReasonOverlap : CompositingReasonNone;
     }
+    absoluteDecendantBoundingBox = absBounds;
+
+    if (overlapMap && currentRecursionData.m_testingOverlap && !requiresCompositingOrSquashing(directReasons))
+        overlapCompositingReason = overlapMap->overlapsLayers(absBounds) ? CompositingReasonOverlap : CompositingReasonNone;
 
     reasonsToComposite |= overlapCompositingReason;
 
@@ -1035,7 +989,9 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     if (layer->stackingNode()->isStackingContainer()) {
         RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next()) {
-            computeCompositingRequirements(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants);
+            IntRect absoluteChildDecendantBoundingBox;
+            computeCompositingRequirements(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants, absoluteChildDecendantBoundingBox);
+            absoluteDecendantBoundingBox.unite(absoluteChildDecendantBoundingBox);
 
             // If we have to make a layer for this child, make one now so we can have a contents layer
             // (since we need to ensure that the -ve z-order child renders underneath our contents).
@@ -1056,9 +1012,8 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
                     if (overlapMap) {
                         overlapMap->geometryMap().pushMappingsToAncestor(curNode->layer(), layer);
                         IntRect childAbsBounds = enclosingIntRect(overlapMap->geometryMap().absoluteRect(curNode->layer()->overlapBounds()));
-                        bool boundsComputed = true;
                         overlapMap->beginNewOverlapTestingContext();
-                        addToOverlapMap(*overlapMap, curNode->layer(), childAbsBounds, boundsComputed);
+                        addToOverlapMap(*overlapMap, curNode->layer(), childAbsBounds);
                         overlapMap->finishCurrentOverlapTestingContext();
                         overlapMap->geometryMap().popMappingsToAncestor(layer);
                     }
@@ -1086,8 +1041,11 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     }
 
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        computeCompositingRequirements(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants);
+    while (RenderLayerStackingNode* curNode = iterator.next()) {
+        IntRect absoluteChildDecendantBoundingBox;
+        computeCompositingRequirements(layer, curNode->layer(), overlapMap, childRecursionData, anyDescendantHas3DTransform, unclippedDescendants, absoluteChildDecendantBoundingBox);
+        absoluteDecendantBoundingBox.unite(absoluteChildDecendantBoundingBox);
+    }
 
     currentRecursionData.m_mostRecentCompositedLayer = childRecursionData.m_mostRecentCompositedLayer;
 
@@ -1103,7 +1061,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // the overlap map. Layers that are not separately composited will paint into their
     // compositing ancestor's backing, and so are still considered for overlap.
     if (overlapMap && childRecursionData.m_compositingAncestor && !childRecursionData.m_compositingAncestor->isRootLayer())
-        addToOverlapMap(*overlapMap, layer, absBounds, haveComputedBounds);
+        addToOverlapMap(*overlapMap, layer, absBounds);
 
     if (layer->stackingNode()->isStackingContext()) {
         layer->setShouldIsolateCompositedDescendants(childRecursionData.m_hasUnisolatedCompositedBlendingDescendant);
@@ -1122,7 +1080,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
             // now, because the code is designed to push overlap information to the
             // second-from-top context of the stack.
             overlapMap->beginNewOverlapTestingContext();
-            addToOverlapMapRecursive(*overlapMap, layer);
+            addToOverlapMap(*overlapMap, layer, absoluteDecendantBoundingBox);
         }
         willBeCompositedOrSquashed = true;
     }
