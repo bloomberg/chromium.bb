@@ -194,6 +194,9 @@ struct DXVAVideoDecodeAccelerator::DXVAPictureBuffer {
   media::PictureBuffer picture_buffer_;
   EGLSurface decoding_surface_;
   base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;
+  // Set to true if RGB is supported by the texture.
+  // Defaults to true.
+  bool use_rgb_;
 
   DISALLOW_COPY_AND_ASSIGN(DXVAPictureBuffer);
 };
@@ -208,10 +211,14 @@ DXVAVideoDecodeAccelerator::DXVAPictureBuffer::Create(
 
   EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
 
+  EGLint use_rgb = 1;
+  eglGetConfigAttrib(egl_display, egl_config, EGL_BIND_TO_TEXTURE_RGB,
+                     &use_rgb);
+
   EGLint attrib_list[] = {
     EGL_WIDTH, buffer.size().width(),
     EGL_HEIGHT, buffer.size().height(),
-    EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB,
+    EGL_TEXTURE_FORMAT, use_rgb ? EGL_TEXTURE_RGB : EGL_TEXTURE_RGBA,
     EGL_TEXTURE_TARGET, EGL_TEXTURE_2D,
     EGL_NONE
   };
@@ -240,13 +247,14 @@ DXVAVideoDecodeAccelerator::DXVAPictureBuffer::Create(
       buffer.size().height(),
       1,
       D3DUSAGE_RENDERTARGET,
-      D3DFMT_X8R8G8B8,
+      use_rgb ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8,
       D3DPOOL_DEFAULT,
       picture_buffer->decoding_texture_.Receive(),
       &share_handle);
 
   RETURN_ON_HR_FAILURE(hr, "Failed to create texture",
                        linked_ptr<DXVAPictureBuffer>(NULL));
+  picture_buffer->use_rgb_ = !!use_rgb;
   return picture_buffer;
 }
 
@@ -254,7 +262,8 @@ DXVAVideoDecodeAccelerator::DXVAPictureBuffer::DXVAPictureBuffer(
     const media::PictureBuffer& buffer)
     : available_(true),
       picture_buffer_(buffer),
-      decoding_surface_(NULL) {
+      decoding_surface_(NULL),
+      use_rgb_(true) {
 }
 
 DXVAVideoDecodeAccelerator::DXVAPictureBuffer::~DXVAPictureBuffer() {
@@ -303,7 +312,8 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
   }
 
   hr = decoder.d3d9_->CheckDeviceFormatConversion(
-      D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, surface_desc.Format, D3DFMT_X8R8G8B8);
+      D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, surface_desc.Format,
+      use_rgb_ ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8);
   RETURN_ON_HR_FAILURE(hr, "Device does not support format converision", false);
 
   // This function currently executes in the context of IPC handlers in the
