@@ -165,16 +165,4 @@ TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
     EXPECT_EQ(scrollPosition, WebPoint(scrollableArea.scrollPosition()));
 }
 
-TEST_F(GraphicsLayerTest, DISABLED_setContentsToSolidColor)
-{
-    m_graphicsLayer->setContentsToSolidColor(Color::transparent);
-    EXPECT_FALSE(m_graphicsLayer->contentsLayer());
-
-    m_graphicsLayer->setContentsToSolidColor(Color::white);
-    EXPECT_TRUE(m_graphicsLayer->contentsLayer());
-
-    m_graphicsLayer->setContentsToSolidColor(Color());
-    EXPECT_FALSE(m_graphicsLayer->contentsLayer());
-}
-
 } // namespace

@@ -74,6 +74,7 @@ public:
 
     virtual WebNinePatchLayer* createNinePatchLayer() { return 0; }
 
+    // TODO(dshwang): This isn't used anymore.
     virtual WebSolidColorLayer* createSolidColorLayer() { return 0; }
 
     // The ownership of the WebScrollbarThemeGeometry pointer is passed to Chromium.

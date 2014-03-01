@@ -15,6 +15,8 @@ CASE 1, original layer tree:
           (position 100.00 150.00)
           (bounds 300.00 300.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #D3D3D3)
         )
         (GraphicsLayer
           (children 2
@@ -22,6 +24,8 @@ CASE 1, original layer tree:
               (position 0.00 100.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #00FF00)
             )
             (GraphicsLayer
               (position 0.00 200.00)
@@ -51,6 +55,8 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           (position 100.00 230.00)
           (bounds 300.00 300.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #D3D3D3)
         )
         (GraphicsLayer
           (children 2
@@ -58,6 +64,8 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
               (position 0.00 200.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #00FFFF)
             )
             (GraphicsLayer
               (position 0.00 300.00)
@@ -83,6 +91,8 @@ CASE 3, scrolling y to 120, no repaints expected:
           (position 100.00 270.00)
           (bounds 300.00 300.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #D3D3D3)
         )
         (GraphicsLayer
           (children 2
@@ -90,6 +100,8 @@ CASE 3, scrolling y to 120, no repaints expected:
               (position 0.00 200.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #00FFFF)
             )
             (GraphicsLayer
               (position 0.00 300.00)
@@ -119,6 +131,8 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           (position 100.00 320.00)
           (bounds 300.00 300.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #D3D3D3)
         )
         (GraphicsLayer
           (children 2
@@ -126,6 +140,8 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
               (position 0.00 300.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #00FF00)
             )
             (GraphicsLayer
               (position 0.00 400.00)

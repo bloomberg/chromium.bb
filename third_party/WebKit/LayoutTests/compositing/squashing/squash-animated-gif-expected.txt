@@ -14,6 +14,8 @@ Repaint rect of the animated gif:
               (position 100.00 100.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 180.00 180.00)

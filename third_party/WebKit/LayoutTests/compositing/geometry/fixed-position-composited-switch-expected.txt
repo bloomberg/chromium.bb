@@ -13,6 +13,8 @@ After (should not be empty):
           (position 480.00 30.00)
           (bounds 300.00 100.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #008000)
         )
       )
     )
