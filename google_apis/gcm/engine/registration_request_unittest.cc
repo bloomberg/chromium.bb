@@ -293,7 +293,8 @@ TEST_F(RegistrationRequestTest, ResponseAuthenticationError) {
   CreateRequest("sender1,sender2");
   request_->Start();
 
-  SetResponseStatusAndString(net::HTTP_OK, "Error=AUTHENTICATION_FAILED");
+  SetResponseStatusAndString(net::HTTP_UNAUTHORIZED,
+                             "Error=AUTHENTICATION_FAILED");
   CompleteFetch();
 
   EXPECT_FALSE(callback_called_);
@@ -324,6 +325,18 @@ TEST_F(RegistrationRequestTest, ResponseInvalidSender) {
   request_->Start();
 
   SetResponseStatusAndString(net::HTTP_OK, "Error=INVALID_SENDER");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(RegistrationRequest::INVALID_SENDER, status_);
+  EXPECT_EQ(std::string(), registration_id_);
+}
+
+TEST_F(RegistrationRequestTest, ResponseInvalidSenderBadRequest) {
+  CreateRequest("sender1");
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_BAD_REQUEST, "Error=INVALID_SENDER");
   CompleteFetch();
 
   EXPECT_TRUE(callback_called_);

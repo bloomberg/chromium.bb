@@ -54,13 +54,15 @@ void BuildFormEncoding(const std::string& key,
 
 // Gets correct status from the error message.
 RegistrationRequest::Status GetStatusFromError(const std::string& error) {
-  if (error == kDeviceRegistrationError)
+  // TODO(fgorski): Improve error parsing in case there is nore then just an
+  // Error=ERROR_STRING in response.
+  if (error.find(kDeviceRegistrationError) != std::string::npos)
     return RegistrationRequest::DEVICE_REGISTRATION_ERROR;
-  if (error == kAuthenticationFailed)
+  if (error.find(kAuthenticationFailed) != std::string::npos)
     return RegistrationRequest::AUTHENTICATION_FAILED;
-  if (error == kInvalidSender)
+  if (error.find(kInvalidSender) != std::string::npos)
     return RegistrationRequest::INVALID_SENDER;
-  if (error == kInvalidParameters)
+  if (error.find(kInvalidParameters) != std::string::npos)
     return RegistrationRequest::INVALID_PARAMETERS;
   return RegistrationRequest::UNKNOWN_ERROR;
 }
@@ -189,29 +191,39 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
     LOG(ERROR) << "URL fetching failed.";
     return URL_FETCHING_FAILED;
   }
-  if (source->GetResponseCode() != net::HTTP_OK) {
-    LOG(ERROR) << "URL fetching HTTP response code is not OK. It is "
-               << source->GetResponseCode();
-    return HTTP_NOT_OK;
-  }
+
   std::string response;
   if (!source->GetResponseAsString(&response)) {
     LOG(ERROR) << "Failed to parse registration response as a string.";
     return RESPONSE_PARSING_FAILED;
   }
 
-  DVLOG(1) << "Parsing registration response: " << response;
-  size_t token_pos = response.find(kTokenPrefix);
-  if (token_pos != std::string::npos) {
-    *token = response.substr(token_pos + arraysize(kTokenPrefix) - 1);
-    return SUCCESS;
+  if (source->GetResponseCode() == net::HTTP_OK) {
+    size_t token_pos = response.find(kTokenPrefix);
+    if (token_pos != std::string::npos) {
+      *token = response.substr(token_pos + arraysize(kTokenPrefix) - 1);
+      return SUCCESS;
+    }
   }
 
+  // If we are able to parse a meaningful known error, let's do so. Some errors
+  // will have HTTP_BAD_REQUEST, some will have HTTP_OK response code.
   size_t error_pos = response.find(kErrorPrefix);
-  if (error_pos == std::string::npos)
-    return UNKNOWN_ERROR;
-  std::string error = response.substr(error_pos + arraysize(kErrorPrefix) - 1);
-  return GetStatusFromError(error);
+  if (error_pos != std::string::npos) {
+    std::string error = response.substr(
+        error_pos + arraysize(kErrorPrefix) - 1);
+    return GetStatusFromError(error);
+  }
+
+  // If we cannot tell what the error is, but at least we know response code was
+  // not OK.
+  if (source->GetResponseCode() != net::HTTP_OK) {
+    DLOG(ERROR) << "URL fetching HTTP response code is not OK. It is "
+                << source->GetResponseCode();
+    return HTTP_NOT_OK;
+  }
+
+  return UNKNOWN_ERROR;
 }
 
 void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
