@@ -362,11 +362,6 @@ const char kDisableInfoBars[]               = "disable-infobars";
 // can be overidden by the "enable-ipv6" flag.
 const char kDisableIPv6[]                   = "disable-ipv6";
 
-// Disables IP Pooling within the networks stack (SPDY only). When a connection
-// is needed for a domain which shares an IP with an existing connection,
-// attempt to use the existing connection.
-const char kDisableIPPooling[]              = "disable-ip-pooling";
-
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
@@ -632,11 +627,6 @@ const char kEnableWebBasedSignin[]            = "enable-web-based-signin";
 // "disable-ipv6" which appears elswhere in this file.
 const char kEnableIPv6[]                    = "enable-ipv6";
 
-// Enables IP Pooling within the networks stack (SPDY only). When a connection
-// is needed for a domain which shares an IP with an existing connection,
-// attempt to use the existing connection.
-const char kEnableIPPooling[]               = "enable-ip-pooling";
-
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 
@@ -742,11 +732,8 @@ const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 // Enables save password prompt bubble.
 const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 
-// Controls the support for SDCH filtering (dictionary based expansion of
-// content). By default SDCH filtering is enabled. To disable SDCH filtering,
-// use "--enable-sdch=0" as command line argument. SDCH is currently only
-// supported server-side for searches on google.com.
-const char kEnableSdch[]                    = "enable-sdch";
+// Enables SDCH for https schemes.
+const char kEnableSdchOverHttps[] = "enable-sdch-over-https";
 
 // Controls which branch of the "search button in omnibox" experiment is
 // enabled.
@@ -763,9 +750,9 @@ const char kEnableSearchButtonInOmniboxForStr[] =
 const char kEnableSearchButtonInOmniboxForStrOrIip[] =
     "enable-search-button-in-omnibox-for-str-or-iip";
 
-// Enable SPDY/2. This is a temporary testing flag. See
-// http://crbug.com/303957 .
-const char kEnableSpdy2[]                   = "enable-spdy2";
+// Certificate Transparency: Enable showing the SCT viewer when an SSL
+// certificate is accompanied by, or contains, SCTs.
+const char kEnableSignedCertificateTimestampsViewer[] = "enable-sct-viewer";
 
 // Enable SPDY/4 alpha 2. This is a temporary testing flag.
 const char kEnableSpdy4a2[]                 = "enable-spdy4a2";
@@ -1474,9 +1461,6 @@ const char kUseSpdy[]                       = "use-spdy";
 // Disables use of the spelling web service and only provides suggestions.
 // This will only work if asynchronous spell checking is not disabled.
 const char kUseSpellingSuggestions[]        = "use-spelling-suggestions";
-
-// Sets the maximum concurrent streams over a SPDY session.
-const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 
 // Specifies the user data directory, which is where the browser will look for
 // all of its state.

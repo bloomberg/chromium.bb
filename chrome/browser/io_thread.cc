@@ -776,22 +776,11 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     std::string spdy_trial_group =
         base::FieldTrialList::FindFullName(kSpdyFieldTrialName);
 
-    if (command_line.HasSwitch(switches::kEnableIPPooling))
-      globals_->enable_spdy_ip_pooling.set(true);
-
-    if (command_line.HasSwitch(switches::kDisableIPPooling))
-      globals_->enable_spdy_ip_pooling.set(false);
-
     if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
       // Enable WebSocket over SPDY.
       net::WebSocketJob::set_websocket_over_spdy_enabled(true);
     }
 
-    if (command_line.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
-      globals_->max_spdy_concurrent_streams_limit.set(
-          GetSwitchValueAsInt(command_line,
-                              switches::kMaxSpdyConcurrentStreams));
-    }
     if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
       globals_->trusted_spdy_proxy.set(
           command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
@@ -809,8 +798,6 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
       net::HttpStreamFactory::EnableNpnSpdy4a2();
     } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
       net::HttpStreamFactory::EnableNpnSpdy3();
-    } else if (command_line.HasSwitch(switches::kEnableSpdy2)) {
-      net::HttpStreamFactory::EnableNpnSpdy31WithSpdy2();
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       net::HttpStreamFactory::EnableNpnHttpOnly();
     } else {
@@ -998,12 +985,8 @@ void IOThread::InitializeNetworkSessionParams(
 
   globals_->initial_max_spdy_concurrent_streams.CopyToIfSet(
       &params->spdy_initial_max_concurrent_streams);
-  globals_->max_spdy_concurrent_streams_limit.CopyToIfSet(
-      &params->spdy_max_concurrent_streams_limit);
   globals_->force_spdy_single_domain.CopyToIfSet(
       &params->force_spdy_single_domain);
-  globals_->enable_spdy_ip_pooling.CopyToIfSet(
-      &params->enable_spdy_ip_pooling);
   globals_->enable_spdy_compression.CopyToIfSet(
       &params->enable_spdy_compression);
   globals_->enable_spdy_ping_based_connection_checking.CopyToIfSet(

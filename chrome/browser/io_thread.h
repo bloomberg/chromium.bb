@@ -156,9 +156,7 @@ class IOThread : public content::BrowserThreadDelegate {
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
     Optional<size_t> initial_max_spdy_concurrent_streams;
-    Optional<size_t> max_spdy_concurrent_streams_limit;
     Optional<bool> force_spdy_single_domain;
-    Optional<bool> enable_spdy_ip_pooling;
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;

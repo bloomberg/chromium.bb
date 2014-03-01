@@ -32,7 +32,6 @@ SpdySessionPool::SpdySessionPool(
     SSLConfigService* ssl_config_service,
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
     bool force_single_domain,
-    bool enable_ip_pooling,
     bool enable_compression,
     bool enable_ping_based_connection_checking,
     NextProto default_protocol,
@@ -47,7 +46,6 @@ SpdySessionPool::SpdySessionPool(
       verify_domain_authentication_(true),
       enable_sending_initial_data_(true),
       force_single_domain_(force_single_domain),
-      enable_ip_pooling_(enable_ip_pooling),
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
@@ -129,7 +127,7 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
   // potentially be pooled with this one. Because GetPeerAddress()
   // reports the proxy's address instead of the origin server, check
   // to see if this is a direct connection.
-  if (enable_ip_pooling_  && key.proxy_server().is_direct()) {
+  if (key.proxy_server().is_direct()) {
     IPEndPoint address;
     if ((*available_session)->GetPeerAddress(&address) == OK)
       aliases_[address] = key;
@@ -150,9 +148,6 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
         it->second->net_log().source().ToEventParametersCallback());
     return it->second;
   }
-
-  if (!enable_ip_pooling_)
-    return base::WeakPtr<SpdySession>();
 
   // Look up the key's from the resolver's cache.
   net::HostResolver::RequestInfo resolve_info(key.host_port_pair());
