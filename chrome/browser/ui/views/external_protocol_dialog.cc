@@ -38,7 +38,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       new ExternalProtocolDialogDelegate(url,
                                          render_process_host_id,
                                          routing_id));
-  if (delegate->command().empty()) {
+  if (delegate->program_name().empty()) {
     // ShellExecute won't do anything. Don't bother warning the user.
     return;
   }

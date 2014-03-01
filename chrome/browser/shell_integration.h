@@ -59,9 +59,11 @@ class ShellIntegration {
   // client application for specific protocols.
   static DefaultWebClientSetPermission CanSetAsDefaultProtocolClient();
 
-  // Returns the path of the application to be launched given the protocol
-  // of the requested url. Returns an empty string on failure.
-  static base::string16 GetApplicationForProtocol(const GURL& url);
+  // Returns a string representing the application to be launched given the
+  // protocol of the requested url. This string may be a name or a path, but
+  // neither is guaranteed and it should only be used as a display string.
+  // Returns an empty string on failure.
+  static base::string16 GetApplicationNameForProtocol(const GURL& url);
 
   // On Linux, it may not be possible to determine or set the default browser
   // on some desktop environments or configurations. So, we use this enum and

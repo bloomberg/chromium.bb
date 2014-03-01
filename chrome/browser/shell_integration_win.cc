@@ -5,6 +5,7 @@
 #include "chrome/browser/shell_integration.h"
 
 #include <windows.h>
+#include <shlwapi.h>
 #include <shobjidl.h>
 #include <propkey.h>
 
@@ -176,6 +177,63 @@ void MigrateChromiumShortcutsCallback() {
   }
 }
 
+// Windows 8 introduced a new protocol->executable binding system which cannot
+// be retrieved in the HKCR registry subkey method implemented below. We call
+// AssocQueryString with the new Win8-only flag ASSOCF_IS_PROTOCOL instead.
+base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
+  base::string16 url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
+  // Don't attempt to query protocol association on an empty string.
+  if (url_spec.empty())
+    return base::string16();
+
+  // Elide the colon from the end of the spec or Windows will not find it in
+  // the protocol association map.
+  DCHECK(*url_spec.rbegin() == ':');
+  url_spec.erase(url_spec.length() - 1);
+
+  // Query AssocQueryString for a human-readable description of the program
+  // that will be invoked given the provided URL spec. This is used only to
+  // populate the external protocol dialog box the user sees when invoking
+  // an unknown external protocol.
+  wchar_t out_buffer[1024];
+  DWORD buffer_size = arraysize(out_buffer);
+  HRESULT hr = AssocQueryString(ASSOCF_IS_PROTOCOL,
+                                ASSOCSTR_FRIENDLYAPPNAME,
+                                url_spec.c_str(),
+                                NULL,
+                                out_buffer,
+                                &buffer_size);
+  if (FAILED(hr)) {
+    DLOG(WARNING) << "AssocQueryString failed!";
+    return base::string16();
+  }
+  return base::string16(out_buffer);
+}
+
+base::string16 GetAppForProtocolUsingRegistry(const GURL& url) {
+  base::string16 url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
+  const base::string16 cmd_key_path =
+      base::ASCIIToWide(url.scheme() + "\\shell\\open\\command");
+  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT,
+                            cmd_key_path.c_str(),
+                            KEY_READ);
+  size_t split_offset = url_spec.find(L':');
+  if (split_offset == base::string16::npos)
+    return base::string16();
+  const base::string16 parameters = url_spec.substr(split_offset + 1,
+                                                    url_spec.length() - 1);
+  base::string16 application_to_launch;
+  if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
+    ReplaceSubstringsAfterOffset(&application_to_launch,
+                                 0,
+                                 L"%1",
+                                 parameters);
+    return application_to_launch;
+  }
+  return base::string16();
+}
+
+
 ShellIntegration::DefaultWebClientState
     GetDefaultWebClientStateFromShellUtilDefaultState(
         ShellUtil::DefaultState default_state) {
@@ -296,23 +354,13 @@ ShellIntegration::DefaultWebClientState
           base::UTF8ToUTF16(protocol)));
 }
 
-base::string16 ShellIntegration::GetApplicationForProtocol(const GURL& url) {
-  std::wstring url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
-  std::wstring cmd_key_path =
-      base::ASCIIToWide(url.scheme() + "\\shell\\open\\command");
-  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT, cmd_key_path.c_str(), KEY_READ);
-  size_t split_offset = url_spec.find(L':');
-  if (split_offset == std::wstring::npos)
-    return std::wstring();
-  std::wstring parameters = url_spec.substr(split_offset + 1,
-                                            url_spec.length() - 1);
-  std::wstring application_to_launch;
-  if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
-    ReplaceSubstringsAfterOffset(&application_to_launch, 0, L"%1", parameters);
-    return application_to_launch;
-  }
-
-  return std::wstring();
+base::string16 ShellIntegration::GetApplicationNameForProtocol(
+    const GURL& url) {
+  // Windows 8 or above requires a new protocol association query.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return GetAppForProtocolUsingAssocQuery(url);
+  else
+    return GetAppForProtocolUsingRegistry(url);
 }
 
 // There is no reliable way to say which browser is default on a machine (each

@@ -510,7 +510,8 @@ ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
 }
 
 // static
-base::string16 ShellIntegration::GetApplicationForProtocol(const GURL& url) {
+base::string16 ShellIntegration::GetApplicationNameForProtocol(
+    const GURL& url) {
   return base::ASCIIToUTF16("xdg-open");
 }
 
