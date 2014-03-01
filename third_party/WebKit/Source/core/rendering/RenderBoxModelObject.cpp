@@ -42,7 +42,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/DrawLooperBuilder.h"
+#include "platform/graphics/DrawLooper.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/Path.h"
 #include "wtf/CurrentTime.h"
@@ -477,7 +477,7 @@ static void applyBoxShadowForBackground(GraphicsContext* context, const RenderOb
             continue;
         FloatSize shadowOffset(boxShadow.x(), boxShadow.y());
         context->setShadow(shadowOffset, boxShadow.blur(), boxShadow.color(),
-            DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
+            DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         return;
     }
 }
@@ -2526,10 +2526,10 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             }
 
             // Draw only the shadow.
-            OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-            drawLooperBuilder->addShadow(shadowOffset, shadowBlur, shadowColor,
-                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
-            context->setDrawLooper(drawLooperBuilder.release());
+            DrawLooper drawLooper;
+            drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+            context->setDrawLooper(drawLooper);
 
             if (hasBorderRadius) {
                 RoundedRect influenceRect(pixelSnappedIntRect(LayoutRect(shadowRect)), border.radii());

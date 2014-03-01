@@ -315,8 +315,8 @@ void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient)
 }
 
 void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color,
-    DrawLooperBuilder::ShadowTransformMode shadowTransformMode,
-    DrawLooperBuilder::ShadowAlphaMode shadowAlphaMode)
+    DrawLooper::ShadowTransformMode shadowTransformMode,
+    DrawLooper::ShadowAlphaMode shadowAlphaMode)
 {
     if (paintingDisabled())
         return;
@@ -326,18 +326,18 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         return;
     }
 
-    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-    drawLooperBuilder->addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
-    drawLooperBuilder->addUnmodifiedContent();
-    setDrawLooper(drawLooperBuilder.release());
+    DrawLooper drawLooper;
+    drawLooper.addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
+    drawLooper.addUnmodifiedContent();
+    setDrawLooper(drawLooper);
 }
 
-void GraphicsContext::setDrawLooper(PassOwnPtr<DrawLooperBuilder> drawLooperBuilder)
+void GraphicsContext::setDrawLooper(const DrawLooper& drawLooper)
 {
     if (paintingDisabled())
         return;
 
-    mutableState()->m_looper = drawLooperBuilder->detachDrawLooper();
+    mutableState()->m_looper = drawLooper.skDrawLooper();
 }
 
 void GraphicsContext::clearDrawLooper()
@@ -758,10 +758,10 @@ void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shad
         clip(rect.rect());
     }
 
-    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-    drawLooperBuilder->addShadow(shadowOffset, shadowBlur, shadowColor,
-        DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
-    setDrawLooper(drawLooperBuilder.release());
+    DrawLooper drawLooper;
+    drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
+        DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+    setDrawLooper(drawLooper);
     fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
     restore();
     clearDrawLooper();

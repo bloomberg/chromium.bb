@@ -60,8 +60,8 @@
 #include "core/rendering/RenderTheme.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/DrawLooper.h"
 #include "platform/text/TextRun.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CheckedArithmetic.h"
@@ -1230,7 +1230,7 @@ void CanvasRenderingContext2D::applyShadow()
 
     if (shouldDrawShadows()) {
         c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor,
-            DrawLooperBuilder::ShadowIgnoresTransforms);
+            DrawLooper::ShadowIgnoresTransforms);
     } else {
         c->clearShadow();
     }

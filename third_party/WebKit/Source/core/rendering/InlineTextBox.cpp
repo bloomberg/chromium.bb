@@ -46,7 +46,7 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/WidthIterator.h"
-#include "platform/graphics/DrawLooperBuilder.h"
+#include "platform/graphics/DrawLooper.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -396,17 +396,17 @@ static void paintTextWithShadows(GraphicsContext* context,
     bool hasShadow = shadowList && !context->printing();
 
     if (hasShadow) {
-        OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
+        DrawLooper drawLooper;
         for (size_t i = shadowList->shadows().size(); i--; ) {
             const ShadowData& shadow = shadowList->shadows()[i];
             float shadowX = horizontal ? shadow.x() : shadow.y();
             float shadowY = horizontal ? shadow.y() : -shadow.x();
             FloatSize offset(shadowX, shadowY);
-            drawLooperBuilder->addShadow(offset, shadow.blur(), shadow.color(),
-                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
+            drawLooper.addShadow(offset, shadow.blur(), shadow.color(),
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         }
-        drawLooperBuilder->addUnmodifiedContent();
-        context->setDrawLooper(drawLooperBuilder.release());
+        drawLooper.addUnmodifiedContent();
+        context->setDrawLooper(drawLooper);
     }
 
     TextRunPaintInfo textRunPaintInfo(textRun);
