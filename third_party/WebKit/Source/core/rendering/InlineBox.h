@@ -34,7 +34,7 @@ class RootInlineBox;
 // some RenderObject (i.e., it represents a portion of that RenderObject).
 class InlineBox {
 public:
-    InlineBox(RenderObject* obj)
+    InlineBox(RenderObject& obj)
         : m_next(0)
         , m_prev(0)
         , m_parent(0)
@@ -46,7 +46,7 @@ public:
     {
     }
 
-    InlineBox(RenderObject* obj, FloatPoint topLeft, float logicalWidth, bool firstLine, bool constructed,
+    InlineBox(RenderObject& obj, FloatPoint topLeft, float logicalWidth, bool firstLine, bool constructed,
               bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
         : m_next(next)
         , m_prev(prev)
@@ -173,7 +173,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    RenderObject* renderer() const { return m_renderer; }
+    RenderObject& renderer() const { return m_renderer; }
 
     InlineFlowBox* parent() const
     {
@@ -270,15 +270,15 @@ public:
 
     int expansion() const { return m_bitfields.expansion(); }
 
-    bool visibleToHitTestRequest(const HitTestRequest& request) const { return renderer()->visibleToHitTestRequest(request); }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const { return renderer().visibleToHitTestRequest(request); }
 
-    EVerticalAlign verticalAlign() const { return renderer()->style(m_bitfields.firstLine())->verticalAlign(); }
+    EVerticalAlign verticalAlign() const { return renderer().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
     RenderBoxModelObject* boxModelObject() const
     {
-        if (!m_renderer->isText())
-            return toRenderBoxModelObject(m_renderer);
+        if (!renderer().isText())
+            return toRenderBoxModelObject(&renderer());
         return 0;
     }
 
@@ -377,6 +377,7 @@ private:
     InlineBox* m_prev; // The previous element on the same line as us.
 
     InlineFlowBox* m_parent; // The box that contains us.
+    RenderObject& m_renderer;
 
 protected:
     // For RootInlineBox
@@ -397,8 +398,6 @@ protected:
 
     // For InlineFlowBox and InlineTextBox
     bool extracted() const { return m_bitfields.extracted(); }
-
-    RenderObject* m_renderer;
 
     FloatPoint m_topLeft;
     float m_logicalWidth;

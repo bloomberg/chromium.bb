@@ -32,7 +32,7 @@ class SVGRootInlineBox;
 
 class SVGInlineTextBox FINAL : public InlineTextBox {
 public:
-    SVGInlineTextBox(RenderObject*);
+    SVGInlineTextBox(RenderObject&);
 
     virtual bool isSVGInlineTextBox() const OVERRIDE { return true; }
 

@@ -3045,14 +3045,14 @@ Position RenderBlock::positionForBox(InlineBox *box, bool start) const
     if (!box)
         return Position();
 
-    if (!box->renderer()->nonPseudoNode())
+    if (!box->renderer().nonPseudoNode())
         return createLegacyEditingPosition(nonPseudoNode(), start ? caretMinOffset() : caretMaxOffset());
 
     if (!box->isInlineTextBox())
-        return createLegacyEditingPosition(box->renderer()->nonPseudoNode(), start ? box->renderer()->caretMinOffset() : box->renderer()->caretMaxOffset());
+        return createLegacyEditingPosition(box->renderer().nonPseudoNode(), start ? box->renderer().caretMinOffset() : box->renderer().caretMaxOffset());
 
     InlineTextBox* textBox = toInlineTextBox(box);
-    return createLegacyEditingPosition(box->renderer()->nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
+    return createLegacyEditingPosition(box->renderer().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
 }
 
 static inline bool isEditingBoundary(RenderObject* ancestor, RenderObject* child)
@@ -3167,9 +3167,9 @@ PositionWithAffinity RenderBlock::positionForPointWithInlineChildren(const Layou
         LayoutPoint point(pointInLogicalContents.x(), closestBox->root()->blockDirectionPointInLine());
         if (!isHorizontalWritingMode())
             point = point.transposedPoint();
-        if (closestBox->renderer()->isReplaced())
-            return positionForPointRespectingEditingBoundaries(this, toRenderBox(closestBox->renderer()), point);
-        return closestBox->renderer()->positionForPoint(point);
+        if (closestBox->renderer().isReplaced())
+            return positionForPointRespectingEditingBoundaries(this, &toRenderBox(closestBox->renderer()), point);
+        return closestBox->renderer().positionForPoint(point);
     }
 
     if (lastRootBoxWithChildren) {

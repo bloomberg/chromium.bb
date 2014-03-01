@@ -1218,6 +1218,14 @@ private:
     LayoutRect m_newRepaintRect;
 };
 
+// Allow equality comparisons of RenderObject's by reference or pointer, interchangeably.
+inline bool operator==(const RenderObject& a, const RenderObject& b) { return &a == &b; }
+inline bool operator==(const RenderObject& a, const RenderObject* b) { return &a == b; }
+inline bool operator==(const RenderObject* a, const RenderObject& b) { return a == &b; }
+inline bool operator!=(const RenderObject& a, const RenderObject& b) { return !(a == b); }
+inline bool operator!=(const RenderObject& a, const RenderObject* b) { return !(a == b); }
+inline bool operator!=(const RenderObject* a, const RenderObject& b) { return !(a == b); }
+
 inline bool RenderObject::documentBeingDestroyed() const
 {
     return !document().renderer();

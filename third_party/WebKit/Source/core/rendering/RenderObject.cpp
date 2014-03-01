@@ -3212,7 +3212,7 @@ PositionWithAffinity RenderObject::createPositionWithAffinity(const Position& po
 ETextAlign RenderObject::simplifiedTextAlign(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox) const
 {
     TextDirection direction;
-    if (rootInlineBox && rootInlineBox->renderer()->style()->unicodeBidi() == Plaintext)
+    if (rootInlineBox && rootInlineBox->renderer().style()->unicodeBidi() == Plaintext)
         direction = rootInlineBox->direction();
     else
         direction = style()->direction();

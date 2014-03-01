@@ -50,10 +50,7 @@ void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(!paintInfo.context->paintingDisabled());
 
-    RenderObject* boxRenderer = renderer();
-    ASSERT(boxRenderer);
-
-    SVGRenderingContext renderingContext(boxRenderer, paintInfo, SVGRenderingContext::SaveGraphicsContext);
+    SVGRenderingContext renderingContext(&renderer(), paintInfo, SVGRenderingContext::SaveGraphicsContext);
     if (renderingContext.isRenderingPrepared()) {
         for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
             child->paint(paintInfo, paintOffset, 0, 0);

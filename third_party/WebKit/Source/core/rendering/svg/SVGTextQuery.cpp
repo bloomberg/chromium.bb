@@ -90,7 +90,7 @@ void SVGTextQuery::collectTextBoxesInFlowBox(InlineFlowBox* flowBox)
     for (InlineBox* child = flowBox->firstChild(); child; child = child->nextOnLine()) {
         if (child->isInlineFlowBox()) {
             // Skip generated content.
-            if (!child->renderer()->node())
+            if (!child->renderer().node())
                 continue;
 
             collectTextBoxesInFlowBox(toInlineFlowBox(child));
@@ -112,8 +112,7 @@ bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fra
     // Loop over all text boxes
     for (unsigned textBoxPosition = 0; textBoxPosition < textBoxCount; ++textBoxPosition) {
         queryData->textBox = m_textBoxes.at(textBoxPosition);
-        queryData->textRenderer = toRenderSVGInlineText(queryData->textBox->textRenderer());
-        ASSERT(queryData->textRenderer);
+        queryData->textRenderer = &toRenderSVGInlineText(queryData->textBox->textRenderer());
         ASSERT(queryData->textRenderer->style());
         ASSERT(queryData->textRenderer->style()->svgStyle());
 

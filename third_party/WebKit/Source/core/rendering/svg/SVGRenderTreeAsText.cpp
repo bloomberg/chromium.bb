@@ -401,11 +401,10 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     if (fragments.isEmpty())
         return;
 
-    RenderSVGInlineText* textRenderer = toRenderSVGInlineText(textBox->textRenderer());
-    ASSERT(textRenderer);
+    RenderSVGInlineText& textRenderer = toRenderSVGInlineText(textBox->textRenderer());
 
-    const SVGRenderStyle* svgStyle = textRenderer->style()->svgStyle();
-    String text = textBox->textRenderer()->text();
+    const SVGRenderStyle* svgStyle = textRenderer.style()->svgStyle();
+    String text = textBox->textRenderer().text();
 
     unsigned fragmentsSize = fragments.size();
     for (unsigned i = 0; i < fragmentsSize; ++i) {

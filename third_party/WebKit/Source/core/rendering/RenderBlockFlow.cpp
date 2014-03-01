@@ -2810,7 +2810,7 @@ TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& fon
 
 RootInlineBox* RenderBlockFlow::createRootInlineBox()
 {
-    return new RootInlineBox(this);
+    return new RootInlineBox(*this);
 }
 
 void RenderBlockFlow::createMultiColumnFlowThreadIfNeeded()

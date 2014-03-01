@@ -256,7 +256,7 @@ RootInlineBox* RenderBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
         if (!box)
             continue;
 
-        if (!rootHasSelectedChildren && box->renderer()->selectionState() != RenderObject::SelectionNone)
+        if (!rootHasSelectedChildren && box->renderer().selectionState() != RenderObject::SelectionNone)
             rootHasSelectedChildren = true;
 
         // If we have no parent box yet, or if the run is not simply a sibling,
@@ -961,9 +961,9 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         // adjust the height accordingly.
         // A line break can be either the first or the last object on a line, depending on its direction.
         if (InlineBox* lastLeafChild = lastRootBox()->lastLeafChild()) {
-            RenderObject* lastObject = lastLeafChild->renderer();
+            RenderObject* lastObject = &lastLeafChild->renderer();
             if (!lastObject->isBR())
-                lastObject = lastRootBox()->firstLeafChild()->renderer();
+                lastObject = &lastRootBox()->firstLeafChild()->renderer();
             if (lastObject->isBR()) {
                 EClear clear = lastObject->style()->clear();
                 if (clear != CNONE)
@@ -1423,7 +1423,7 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
         if (layoutState.checkForFloatsFromLastLine()) {
             LayoutUnit bottomVisualOverflow = lastRootBox()->logicalBottomVisualOverflow();
             LayoutUnit bottomLayoutOverflow = lastRootBox()->logicalBottomLayoutOverflow();
-            TrailingFloatsRootInlineBox* trailingFloatsLineBox = new TrailingFloatsRootInlineBox(this);
+            TrailingFloatsRootInlineBox* trailingFloatsLineBox = new TrailingFloatsRootInlineBox(*this);
             m_lineBoxes.appendLineBox(trailingFloatsLineBox);
             trailingFloatsLineBox->setConstructed();
             GlyphOverflowAndFallbackFontsMap textBoxDataMap;

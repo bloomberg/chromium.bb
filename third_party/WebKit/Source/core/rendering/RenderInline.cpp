@@ -559,7 +559,7 @@ void RenderInline::generateCulledLineBoxRects(GeneratorContext& yield, const Ren
             RenderBox* currBox = toRenderBox(curr);
             if (currBox->inlineBoxWrapper()) {
                 RootInlineBox* rootBox = currBox->inlineBoxWrapper()->root();
-                int logicalTop = rootBox->logicalTop() + (rootBox->renderer()->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent());
+                int logicalTop = rootBox->logicalTop() + (rootBox->renderer().style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox->isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
                     yield(FloatRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, currBox->width() + currBox->marginWidth(), logicalHeight));
@@ -574,7 +574,7 @@ void RenderInline::generateCulledLineBoxRects(GeneratorContext& yield, const Ren
             else {
                 for (InlineFlowBox* childLine = currInline->firstLineBox(); childLine; childLine = childLine->nextLineBox()) {
                     RootInlineBox* rootBox = childLine->root();
-                    int logicalTop = rootBox->logicalTop() + (rootBox->renderer()->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent());
+                    int logicalTop = rootBox->logicalTop() + (rootBox->renderer().style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent());
                     int logicalHeight = container->style(rootBox->isFirstLineStyle())->font().fontMetrics().height();
                     if (isHorizontal)
                         yield(FloatRect(childLine->x() - childLine->marginLogicalLeft(),
@@ -592,7 +592,7 @@ void RenderInline::generateCulledLineBoxRects(GeneratorContext& yield, const Ren
             RenderText* currText = toRenderText(curr);
             for (InlineTextBox* childText = currText->firstTextBox(); childText; childText = childText->nextTextBox()) {
                 RootInlineBox* rootBox = childText->root();
-                int logicalTop = rootBox->logicalTop() + (rootBox->renderer()->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent());
+                int logicalTop = rootBox->logicalTop() + (rootBox->renderer().style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox->isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox->isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
                     yield(FloatRect(childText->x(), logicalTop, childText->logicalWidth(), logicalHeight));
@@ -1270,7 +1270,7 @@ void RenderInline::deleteLineBoxTree()
 
 InlineFlowBox* RenderInline::createInlineFlowBox()
 {
-    return new InlineFlowBox(this);
+    return new InlineFlowBox(*this);
 }
 
 InlineFlowBox* RenderInline::createAndAppendInlineFlowBox()

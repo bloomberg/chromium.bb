@@ -536,14 +536,13 @@ static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* bo
         affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM;
         break;
     }
-    int textStartOffset = box->renderer()->isText() ? toRenderText(box->renderer())->textStartOffset() : 0;
-    return box->renderer()->createPositionWithAffinity(offset + textStartOffset, affinity);
+    int textStartOffset = box->renderer().isText() ? toRenderText(box->renderer()).textStartOffset() : 0;
+    return box->renderer().createPositionWithAffinity(offset + textStartOffset, affinity);
 }
 
 static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(const InlineTextBox* box, int offset, ShouldAffinityBeDownstream shouldAffinityBeDownstream)
 {
     ASSERT(box);
-    ASSERT(box->renderer());
     ASSERT(offset >= 0);
 
     if (offset && static_cast<unsigned>(offset) < box->len())
@@ -555,7 +554,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
         const InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
         if ((prevBox && prevBox->bidiLevel() == box->bidiLevel())
-            || box->renderer()->containingBlock()->style()->direction() == box->direction()) // FIXME: left on 12CBA
+            || box->renderer().containingBlock()->style()->direction() == box->direction()) // FIXME: left on 12CBA
             return createPositionWithAffinityForBox(box, box->caretLeftmostOffset(), shouldAffinityBeDownstream);
 
         if (prevBox && prevBox->bidiLevel() > box->bidiLevel()) {
@@ -585,7 +584,7 @@ static PositionWithAffinity createPositionWithAffinityForBoxAfterAdjustingOffset
 
     const InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
     if ((nextBox && nextBox->bidiLevel() == box->bidiLevel())
-        || box->renderer()->containingBlock()->style()->direction() == box->direction())
+        || box->renderer().containingBlock()->style()->direction() == box->direction())
         return createPositionWithAffinityForBox(box, box->caretRightmostOffset(), shouldAffinityBeDownstream);
 
     // offset is on the right edge
@@ -1429,7 +1428,7 @@ void RenderText::dirtyLineBoxes(bool fullLayout)
 
 InlineTextBox* RenderText::createTextBox()
 {
-    return new InlineTextBox(this);
+    return new InlineTextBox(*this);
 }
 
 InlineTextBox* RenderText::createInlineTextBox()

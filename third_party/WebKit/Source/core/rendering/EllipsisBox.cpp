@@ -36,7 +36,7 @@ namespace WebCore {
 void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
     GraphicsContext* context = paintInfo.context;
-    RenderStyle* style = m_renderer->style(isFirstLineStyle());
+    RenderStyle* style = renderer().style(isFirstLineStyle());
 
     const Font& font = style->font();
     FloatPoint boxOrigin = locationIncludingFlipping();
@@ -50,7 +50,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         context->concatCTM(InlineTextBox::rotation(boxRect, InlineTextBox::Clockwise));
     FloatPoint textOrigin = FloatPoint(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
-    Color styleTextColor = m_renderer->resolveColor(style, CSSPropertyWebkitTextFillColor);
+    Color styleTextColor = renderer().resolveColor(style, CSSPropertyWebkitTextFillColor);
     if (styleTextColor != context->fillColor())
         context->setFillColor(styleTextColor);
 
@@ -58,7 +58,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         paintSelection(context, boxOrigin, style, font);
 
         // Select the correct color for painting the text.
-        Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
+        Color foreground = paintInfo.forceBlackText() ? Color::black : renderer().selectionForegroundColor();
         if (foreground != styleTextColor)
             context->setFillColor(foreground);
     }
@@ -80,7 +80,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         context->setDrawLooper(drawLooperBuilder.release());
     }
 
-    TextRun textRun = RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
+    TextRun textRun = RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = boxRect;
     context->drawText(font, textRunPaintInfo, textOrigin);
@@ -97,18 +97,18 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
 
 InlineBox* EllipsisBox::markupBox() const
 {
-    if (!m_shouldPaintMarkupBox || !m_renderer->isRenderBlock())
+    if (!m_shouldPaintMarkupBox || !renderer().isRenderBlock())
         return 0;
 
-    RenderBlock* block = toRenderBlock(m_renderer);
-    RootInlineBox* lastLine = block->lineAtIndex(block->lineCount() - 1);
+    RenderBlock& block = toRenderBlock(renderer());
+    RootInlineBox* lastLine = block.lineAtIndex(block.lineCount() - 1);
     if (!lastLine)
         return 0;
 
     // If the last line-box on the last line of a block is a link, -webkit-line-clamp paints that box after the ellipsis.
     // It does not actually move the link.
     InlineBox* anchorBox = lastLine->lastChild();
-    if (!anchorBox || !anchorBox->renderer()->style()->isLink())
+    if (!anchorBox || !anchorBox->renderer().style()->isLink())
         return 0;
 
     return anchorBox;
@@ -122,21 +122,21 @@ void EllipsisBox::paintMarkupBox(PaintInfo& paintInfo, const LayoutPoint& paintO
 
     LayoutPoint adjustedPaintOffset = paintOffset;
     adjustedPaintOffset.move(x() + m_logicalWidth - markupBox->x(),
-        y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer()->style(isFirstLineStyle())->fontMetrics().ascent()));
+        y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().style(isFirstLineStyle())->fontMetrics().ascent()));
     markupBox->paint(paintInfo, adjustedPaintOffset, lineTop, lineBottom);
 }
 
 IntRect EllipsisBox::selectionRect()
 {
-    RenderStyle* style = m_renderer->style(isFirstLineStyle());
+    RenderStyle* style = renderer().style(isFirstLineStyle());
     const Font& font = style->font();
-    return enclosingIntRect(font.selectionRectForText(RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root()->selectionTopAdjustedForPrecedingBlock()), root()->selectionHeightAdjustedForPrecedingBlock()));
+    return enclosingIntRect(font.selectionRectForText(RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root()->selectionTopAdjustedForPrecedingBlock()), root()->selectionHeightAdjustedForPrecedingBlock()));
 }
 
 void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font)
 {
-    Color textColor = m_renderer->resolveColor(style, CSSPropertyColor);
-    Color c = m_renderer->selectionBackgroundColor();
+    Color textColor = renderer().resolveColor(style, CSSPropertyColor);
+    Color c = renderer().selectionBackgroundColor();
     if (!c.alpha())
         return;
 
@@ -149,12 +149,12 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& box
     LayoutUnit selectionBottom = root()->selectionBottom();
     LayoutUnit top = root()->selectionTop();
     LayoutUnit h = root()->selectionHeight();
-    const int deltaY = roundToInt(renderer()->style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - top);
+    const int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - top);
     const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h));
     alignSelectionRectToDevicePixels(clipRect);
     context->clip(clipRect);
-    context->drawHighlightForText(font, RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
+    context->drawHighlightForText(font, RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
 }
 
 bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
@@ -163,11 +163,11 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
     // Hit test the markup box.
     if (InlineBox* markupBox = this->markupBox()) {
-        RenderStyle* style = m_renderer->style(isFirstLineStyle());
+        RenderStyle* style = renderer().style(isFirstLineStyle());
         LayoutUnit mtx = adjustedLocation.x() + m_logicalWidth - markupBox->x();
-        LayoutUnit mty = adjustedLocation.y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer()->style(isFirstLineStyle())->fontMetrics().ascent());
+        LayoutUnit mty = adjustedLocation.y() + style->fontMetrics().ascent() - (markupBox->y() + markupBox->renderer().style(isFirstLineStyle())->fontMetrics().ascent());
         if (markupBox->nodeAtPoint(request, result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {
-            renderer()->updateHitTestResult(result, locationInContainer.point() - LayoutSize(mtx, mty));
+            renderer().updateHitTestResult(result, locationInContainer.point() - LayoutSize(mtx, mty));
             return true;
         }
     }
@@ -176,8 +176,8 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     boxOrigin.moveBy(accumulatedOffset);
     FloatRect boundsRect(boxOrigin, size());
     if (visibleToHitTestRequest(request) && boundsRect.intersects(HitTestLocation::rectForPoint(locationInContainer.point(), 0, 0, 0, 0))) {
-        renderer()->updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
-        if (!result.addNodeToRectBasedTestResult(renderer()->node(), request, locationInContainer, boundsRect))
+        renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
+        if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, boundsRect))
             return true;
     }
 
