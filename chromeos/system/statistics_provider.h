@@ -46,6 +46,9 @@ CHROMEOS_EXPORT extern const char kOffersCouponCodeKey[];
 // Offer group key.
 CHROMEOS_EXPORT extern const char kOffersGroupCodeKey[];
 
+// Release Brand Code key.
+CHROMEOS_EXPORT extern const char kRlzBrandCodeKey[];
+
 // This interface provides access to Chrome OS statistics.
 class CHROMEOS_EXPORT StatisticsProvider {
  public:
