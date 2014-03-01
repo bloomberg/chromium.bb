@@ -1680,15 +1680,11 @@ RenderLayer* RenderLayer::scrollParent() const
 
 RenderLayer* RenderLayer::clipParent() const
 {
-    const bool needsAncestorClip = compositor()->clippedByAncestor(this);
-
-    RenderLayer* clipParent = 0;
-    if ((compositingReasons() & CompositingReasonOutOfFlowClipping) && !needsAncestorClip) {
+    if (compositingReasons() & CompositingReasonOutOfFlowClipping && !compositor()->clippedByAncestor(this)) {
         if (RenderObject* containingBlock = renderer()->containingBlock())
-            clipParent = containingBlock->enclosingLayer()->enclosingCompositingLayer();
+            return containingBlock->enclosingLayer()->enclosingCompositingLayer();
     }
-
-    return clipParent;
+    return 0;
 }
 
 void RenderLayer::didUpdateNeedsCompositedScrolling()
