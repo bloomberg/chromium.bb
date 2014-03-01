@@ -503,10 +503,9 @@ size_t CalculatePositionsInFrame(
     // Set the proper state (hover or normal) once the mouse has been released,
     // and call |OnMousePressed| if the button was released while the mouse was
     // within the bounds of the button.
-    const NSPoint mouseLocation =
-        [[controlView window] mouseLocationOutsideOfEventStream];
+    const NSPoint mouseLocation = [[NSApp currentEvent] locationInWindow];
     const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
-    if (NSMouseInRect(point, cellFrame, [controlView isFlipped])) {
+    if (NSMouseInRect(point, decorationRect, [controlView isFlipped])) {
       button->SetButtonState(ButtonDecoration::kButtonStateHover);
       [controlView setNeedsDisplay:YES];
       handled = decoration->AsButtonDecoration()->OnMousePressed(

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
@@ -11,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
+#import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,6 +40,20 @@ class MockDecoration : public LocationBarDecoration {
   MOCK_METHOD0(GetMenu, NSMenu*());
 };
 
+class MockButtonDecoration : public ButtonDecoration {
+ public:
+  MockButtonDecoration()
+      : ButtonDecoration(IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON),
+                         IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
+                         IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON_HOVER),
+                         IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
+                         IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON_PRESSED),
+                         IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
+                         3) {}
+  void Hide() { SetVisible(false); }
+  MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
+};
+
 // Mock up an incrementing event number.
 NSUInteger eventNumber = 0;
 
@@ -46,6 +62,7 @@ NSUInteger eventNumber = 0;
 // nifty accessors to create these things and inject them.  It could
 // even provide functions for "Click and drag mouse from point A to
 // point B".
+// TODO(groby): This is very similar to cocoa_testing_utils - unify.
 NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type,
                const NSUInteger clickCount) {
   NSWindow* window([view window]);
@@ -769,6 +786,62 @@ TEST_F(AutocompleteTextFieldTest, HideFocusState) {
                             ofView:field_];
   EXPECT_TRUE([[field_ cell] showsFirstResponder]);
   EXPECT_TRUE([FieldEditor() shouldDrawInsertionPoint]);
+}
+
+// Verify that OnSetFocus for button decorations is only sent after the
+// decoration is picked as the target for the subsequent -mouseDown:. Otherwise
+// hiding a ButtonDecoration in OnSetFocus will prevent a call to
+// OnMousePressed, since it is already hidden at the time of mouseDown.
+TEST_F(AutocompleteTextFieldObserverTest, ButtonDecorationFocus) {
+  // Add the mock button.
+  MockButtonDecoration mock_button;
+  mock_button.SetVisible(true);
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  [cell addLeftDecoration:&mock_button];
+
+  // Ensure button is hidden when OnSetFocus() is called.
+  EXPECT_CALL(field_observer_, OnSetFocus(false)).WillOnce(
+      testing::InvokeWithoutArgs(&mock_button, &MockButtonDecoration::Hide));
+
+  // Ignore incidental calls.
+  EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(_))
+      .WillRepeatedly(testing::Return(NSMakeRange(0, 0)));
+  EXPECT_CALL(field_observer_, OnMouseDown(_));
+
+  // Still expect an OnMousePressed on the button.
+  EXPECT_CALL(mock_button, OnMousePressed(_)).WillOnce(testing::Return(true));
+
+  // Get click point for button decoration.
+  NSRect button_rect =
+      [cell frameForDecoration:&mock_button inFrame:[field_ bounds]];
+  EXPECT_FALSE(NSIsEmptyRect(button_rect));
+  NSPoint click_location =
+      NSMakePoint(NSMidX(button_rect), NSMidY(button_rect));
+
+  // Ensure the field is currently not first responder.
+  [test_window() makePretendKeyWindowAndSetFirstResponder:nil];
+  EXPECT_NSNE([[field_ window] firstResponder], field_);
+
+  // Execute button click event sequence.
+  NSEvent* downEvent = Event(field_, click_location, NSLeftMouseDown);
+  NSEvent* upEvent = Event(field_, click_location, NSLeftMouseUp);
+
+  // Can't just use -sendEvent:, since that doesn't populate -currentEvent.
+  [NSApp postEvent:downEvent atStart:YES];
+  [NSApp postEvent:upEvent atStart:NO];
+  NSEvent* next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                           untilDate:nil
+                                              inMode:NSDefaultRunLoopMode
+                                             dequeue:YES];
+  [NSApp sendEvent:next_event];
+
+  // Expectations check that both OnSetFocus and OnMouseDown were called.
+  // Additionally, ensure button is hidden and field is firstResponder.
+  EXPECT_FALSE(mock_button.IsVisible());
+  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+                                             inFrame:[field_ bounds]]));
+  EXPECT_TRUE([base::mac::ObjCCastStrict<NSView>(
+      [[field_ window] firstResponder]) isDescendantOf:field_]);
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
