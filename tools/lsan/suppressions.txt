@@ -10,15 +10,6 @@ leak:libfontconfig
 # TODO(earthdok): Annotate.
 leak:WTF::BitVector::resizeOutOfLine
 
-# V8 leak, expect 1024 bytes leaked per process. http://crbug.com/99304
-leak:v8::internal::V8::Initialize
-
-# V8 GC issues in ProxyResolver tests, probably harmless. http://crbug.com/67378
-leak:net::ProxyResolverV8::SetPacScript
-leak:net::(anonymous namespace)::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
-leak:net::(anonymous namespace)::InitResolver
-leak:net::ProxyResolverScriptData::FromUTF8
-
 # A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
 leak:WebCore::V8GCController::collectGarbage
 
@@ -49,9 +40,6 @@ leak:libnss3
 leak:libplds4
 leak:libnssckbi
 
-# Skia leaks. http://crbug.com/189170
-leak:FontConfigTypeface::LegacyCreateTypeface
-
 # Skia leaks GrGpuGL::ProgramCache::Entry. http://crbug.com/262934
 leak:GrGpuGL::flushGraphicsState
 
@@ -66,23 +54,15 @@ leak:v8::internal::Genesis::Genesis
 # Those should only fire in (browser)tests. If you see one of them in Chrome,
 # then it's a real leak.
 # http://crbug.com/328552
-leak:extensions::ObjectBackedNativeHandler::RouteFunction
-leak:toString<WTF::AtomicString>
-leak:WebCore::StringCache::createStringAndInsertIntoCache
 leak:WebCore::V8WindowShell::initializeIfNeeded
-leak:WebCore::V8MouseEvent::constructorCallback
 leak:WebCore::*::*GetterCallback
-leak:WebCore::*::*SetterCallback
-leak:WebCore::*::errorMethodCallback
-leak:WebCore::v8StringToWebCoreString
-leak:WTF::StringImpl::createUninitialized
-leak:ResourceBundleSourceMap::GetSource
-leak:WebCore::ScriptState::forContext
-leak:TranslateScriptBrowserTest::ExecuteScript
 
 #### Actual bugs in Chromium code ####
-# PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
-# introduce memory leaks should be reverted.
+# PLEASE DO NOT ADD SUPPRESSIONS FOR NEW LEAKS.
+# Instead, commits that introduce memory leaks should be reverted. Suppressing
+# the leak is acceptable in some cases when reverting is impossible, i.e. when
+# enabling leak detection for the first time for a test target with pre-existing
+# leaks.
 
 # Small test-only leak in ppapi_unittests. http://crbug.com/258113
 leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test
@@ -90,9 +70,6 @@ leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test
 # Leak in cc_unittests. http://crbug.com/285174
 leak:gpu::gles2::GLES2DecoderImpl::DoBindRenderbuffer
 leak:gpu::gles2::GLES2DecoderImpl::DoRenderbufferStorage
-
-# Leak in cc_unittests. http://crbug.com/317965
-leak:cc::ThreadProxy::ReadyToFinalizeTextureUpdates
 
 # Leak in unit_tests and browser_tests. http://crbug.com/309468
 leak:TranslateBubbleView::CreateViewBeforeTranslate()
@@ -113,4 +90,4 @@ leak:base::EnsureProcessTerminated
 # http://crbug.com/322671
 leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread
 
-# PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
+# PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
