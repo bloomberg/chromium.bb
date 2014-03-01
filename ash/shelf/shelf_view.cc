@@ -584,8 +584,12 @@ void ShelfView::CreateDragIconProxy(
 
 void ShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
-  drag_image_->SetScreenPosition(
-      location_in_screen_coordinates - drag_image_offset_);
+  // TODO(jennyz): Investigate why drag_image_ becomes NULL at this point per
+  // crbug.com/34722, while the app list item is still being dragged around.
+  if (drag_image_) {
+    drag_image_->SetScreenPosition(
+        location_in_screen_coordinates - drag_image_offset_);
+  }
 }
 
 void ShelfView::DestroyDragIconProxy() {
