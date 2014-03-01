@@ -2531,6 +2531,52 @@ TEST_F(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_F(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
+  InitDecoder(
+      "GL_ARB_sync", // extensions
+      "opengl es 3.0",   // gl version
+      true,    // has alpha
+      false,   // has depth
+      false,   // has stencil
+      true,    // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+
+  EXPECT_CALL(*gl_, GetError())
+     // first error check must pass to get to the test
+     .WillOnce(Return(GL_NO_ERROR))
+     // second check is after BufferData, simulate fail here
+     .WillOnce(Return(GL_INVALID_OPERATION))
+     // third error check is fall-through call to sync ReadPixels
+     .WillOnce(Return(GL_NO_ERROR))
+     .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, ReadPixels(0, 0, kWidth, kHeight, GL_RGB,
+    GL_UNSIGNED_BYTE, _)).Times(1);
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _)).Times(1);
+  EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, _)).Times(2);
+  EXPECT_CALL(*gl_, BufferData(GL_PIXEL_PACK_BUFFER_ARB, _, NULL,
+    GL_STREAM_READ)).Times(1);
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset,
+           true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 TEST_F(GLES2DecoderTest, BindAttribLocation) {
   const GLint kLocation = 2;
   const char* kName = "testing";

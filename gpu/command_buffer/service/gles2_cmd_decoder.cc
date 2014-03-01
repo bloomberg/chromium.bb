@@ -7369,6 +7369,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
             c, buffer));
         glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
         return error::kNoError;
+      } else {
+        // On error, unbind pack buffer and fall through to sync readpixels
+        glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
       }
     }
     glReadPixels(x, y, width, height, format, type, pixels);
