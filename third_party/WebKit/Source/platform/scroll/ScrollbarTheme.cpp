@@ -33,6 +33,7 @@
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarBehavior.h"
 
 #if !OS(MACOSX)
