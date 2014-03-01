@@ -192,6 +192,81 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="appcache.CheckResponseResult"
+    enum="AppCacheCheckResponseResult">
+  <summary>AppCache check response result code.</summary>
+</histogram>
+
+<histogram name="appcache.CompletionQueueTime" units="milliseconds">
+  <summary>
+    Time elapsed between a completion task being queued and run.
+  </summary>
+</histogram>
+
+<histogram name="appcache.CompletionRunTime" units="milliseconds">
+  <summary>
+    The amount of time taken to run a completion task on the IO thread.
+  </summary>
+</histogram>
+
+<histogram name="appcache.CorruptionDetected">
+  <summary>
+    Tracks the number of times corruption is detected in the sql database.
+  </summary>
+</histogram>
+
+<histogram name="appcache.InitResult" enum="AppCacheInitResult">
+  <summary>AppCache initialization result code.</summary>
+</histogram>
+
+<histogram name="appcache.JobStartDelay.AppCache" units="milliseconds">
+  <summary>
+    How long URLRequests to be retrieved from the appcache are delayed.
+  </summary>
+</histogram>
+
+<histogram name="appcache.JobStartDelay.Error" units="milliseconds">
+  <summary>
+    How long URLRequests that result in a synthesized error are delayed.
+  </summary>
+</histogram>
+
+<histogram name="appcache.JobStartDelay.Network" units="milliseconds">
+  <summary>
+    How long URLRequests to be retrieved over the network are delayed.
+  </summary>
+</histogram>
+
+<histogram name="appcache.MissingManifestDetectedAtCallsite"
+    enum="AppCacheErrorSite">
+  <summary>Identifies where a missing manifest was detected occured.</summary>
+</histogram>
+
+<histogram name="appcache.MissingManifestEntry" enum="BooleanSuccess">
+  <summary>
+    Logged on each occurrence of there being no record for the manifest file in
+    the entries table.
+  </summary>
+</histogram>
+
+<histogram name="appcache.ReinitAttempt">
+  <summary>
+    Tracks the number of times the appcache reinit process occurs. The boolean
+    value indicates whether it was a repeated attempt to reinitialize during a
+    browsing session.
+  </summary>
+</histogram>
+
+<histogram name="appcache.TaskQueueTime" units="milliseconds">
+  <summary>
+    Time elapsed between a background task being queued and run.
+  </summary>
+</histogram>
+
+<histogram name="appcache.TaskRunTime" units="milliseconds">
+  <summary>The amount of time taken to run a background task.</summary>
+</histogram>
+
 <histogram name="Apps.AppLaunch" enum="AppLaunch">
   <summary>
     The number of times v2 packaged apps are launched grouped by
@@ -24350,6 +24425,27 @@ other types of suffix sets.
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
   <int value="3" label="LowMemory"/>
+</enum>
+
+<enum name="AppCacheCheckResponseResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Manifest obsolete"/>
+  <int value="2" label="Response obsolete"/>
+  <int value="3" label="Entry not found"/>
+  <int value="4" label="Read headers error"/>
+  <int value="5" label="Read data error"/>
+  <int value="6" label="Unexpected size"/>
+  <int value="7" label="Check canceled"/>
+</enum>
+
+<enum name="AppCacheErrorSite" type="int">
+  <summary>Identifies the point of failure, see sources.</summary>
+</enum>
+
+<enum name="AppCacheInitResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="SQL Database Error"/>
+  <int value="2" label="Disk Cache Error"/>
 </enum>
 
 <enum name="AppLaunch" type="int">
