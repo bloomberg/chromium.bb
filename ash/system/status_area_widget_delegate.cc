@@ -89,6 +89,13 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
   if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
       alignment_ == SHELF_ALIGNMENT_TOP) {
+    // Alternate shelf layout insets are all handled by tray_background_view.
+    if (!ash::switches::UseAlternateShelfLayout()) {
+      if (alignment_ == SHELF_ALIGNMENT_TOP)
+        layout->SetInsets(kStatusTrayOffsetFromScreenEdge, 0, 0, 0);
+      else
+        layout->SetInsets(0, 0, kStatusTrayOffsetFromScreenEdge, 0);
+    }
     bool is_first_visible_child = true;
     for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);
@@ -108,6 +115,12 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
         layout->AddView(child);
     }
   } else {
+    if (!ash::switches::UseAlternateShelfLayout()) {
+      if (alignment_ == SHELF_ALIGNMENT_LEFT)
+        layout->SetInsets(0, kStatusTrayOffsetFromScreenEdge, 0, 0);
+      else
+        layout->SetInsets(0, 0, 0, kStatusTrayOffsetFromScreenEdge);
+    }
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);

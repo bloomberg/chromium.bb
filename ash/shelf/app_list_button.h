@@ -8,9 +8,6 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
-
-class ShelfWidget;
-
 namespace internal {
 
 class ShelfButtonHost;
@@ -18,16 +15,14 @@ class ShelfButtonHost;
 // Button used for the AppList icon on the shelf.
 class AppListButton : public views::ImageButton {
  public:
-  // Bounds size (inset) required for the app icon image (in pixels).
-  static const int kImageBoundsSize;
-
-  AppListButton(views::ButtonListener* listener,
-                ShelfButtonHost* host,
-                ShelfWidget* shelf_widget);
+  AppListButton(views::ButtonListener* listener, ShelfButtonHost* host);
   virtual ~AppListButton();
 
+  void StartLoadingAnimation();
+  void StopLoadingAnimation();
+
  protected:
-  // views::ImageButton overrides:
+  // views::ImageButton:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
@@ -35,17 +30,10 @@ class AppListButton : public views::ImageButton {
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-
-  // ui::EventHandler overrides:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   ShelfButtonHost* host_;
-  // Reference to the shelf widget containing this button, owned by the
-  // root window controller.
-  ShelfWidget* shelf_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

@@ -961,6 +961,14 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
+      "ash-use-alternate-shelf",
+      IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME,
+      IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION,
+      kOsCrOS,
+      ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshUseAlternateShelfLayout,
+                                ash::switches::kAshDisableAlternateShelfLayout)
+  },
+  {
       "ash-disable-drag-off-shelf",
       IDS_FLAGS_DRAG_OFF_SHELF_NAME,
       IDS_FLAGS_DRAG_OFF_SHELF_DESCRIPTION,

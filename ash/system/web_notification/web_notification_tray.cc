@@ -124,10 +124,11 @@ void WorkAreaObserver::SetSystemTrayHeight(int height) {
   // should be reduced by the height of shelf's shown height.
   if (shelf_ && shelf_->visibility_state() == SHELF_AUTO_HIDE &&
       shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
-    system_tray_height_ -= kShelfSize - ShelfLayoutManager::kAutoHideSize;
+    system_tray_height_ -= ShelfLayoutManager::GetPreferredShelfSize() -
+        ShelfLayoutManager::kAutoHideSize;
   }
 
-  if (system_tray_height_ > 0)
+  if (system_tray_height_ > 0 && ash::switches::UseAlternateShelfLayout())
     system_tray_height_ += message_center::kMarginBetweenItems;
 
   if (!shelf_)
@@ -173,7 +174,8 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
       new_state == SHELF_AUTO_HIDE_SHOWN) {
     // Since the work_area is already reduced by kAutoHideSize, the inset width
     // should be just the difference.
-    width = kShelfSize - ShelfLayoutManager::kAutoHideSize;
+    width = ShelfLayoutManager::GetPreferredShelfSize() -
+        ShelfLayoutManager::kAutoHideSize;
   }
   work_area.Inset(shelf_->SelectValueForShelfAlignment(
       gfx::Insets(0, 0, width, 0),
@@ -218,7 +220,8 @@ class WebNotificationBubbleWrapper {
     }
     views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
         tray->GetBubbleWindowContainer(), anchor, tray, &init_params);
-    bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+    if (ash::switches::UseAlternateShelfLayout())
+      bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
     bubble->InitializeContents(bubble_view);
   }
@@ -345,7 +348,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       new message_center::MessageCenterBubble(
           message_center(),
           message_center_tray_.get(),
-          true);
+          ash::switches::UseAlternateShelfLayout());
 
   int max_height = 0;
   aura::Window* status_area_window = status_area_widget()->GetNativeView();
