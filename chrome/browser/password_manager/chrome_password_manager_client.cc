@@ -32,19 +32,6 @@
 #include "chrome/browser/android/password_authentication_manager.h"
 #endif  // OS_ANDROID
 
-namespace {
-
-void ReportOsPassword() {
-  password_manager_util::OsPasswordStatus status =
-      password_manager_util::GetOsPasswordStatus();
-
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
-                            status,
-                            password_manager_util::MAX_PASSWORD_STATUS);
-}
-
-}  // namespace
-
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
 ChromePasswordManagerClient::ChromePasswordManagerClient(
@@ -53,12 +40,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       driver_(web_contents, this),
       observer_(NULL),
       weak_factory_(this) {
-  // Avoid checking OS password until later on in browser startup
-  // since it calls a few Windows APIs.
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ReportOsPassword),
-      base::TimeDelta::FromSeconds(10));
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
