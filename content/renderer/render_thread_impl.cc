@@ -116,6 +116,20 @@
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_external_bitmap_impl.h"
 
+#if defined(OS_ANDROID)
+#include <cpu-features.h>
+#include "content/renderer/android/synchronous_compositor_factory.h"
+#include "content/renderer/media/android/renderer_demuxer_android.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/renderer/webscrollbarbehavior_impl_mac.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "ipc/ipc_channel_posix.h"
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>
@@ -123,16 +137,6 @@
 // TODO(port)
 #include "base/memory/scoped_handle.h"
 #include "content/child/npapi/np_channel_base.h"
-#endif
-
-#if defined(OS_POSIX)
-#include "ipc/ipc_channel_posix.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include <cpu-features.h>
-#include "content/renderer/android/synchronous_compositor_factory.h"
-#include "content/renderer/media/android/renderer_demuxer_android.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -1314,9 +1318,11 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
     bool jump_on_track_click,
     blink::ScrollerStyle preferred_scroller_style,
     bool redraw) {
+  static_cast<WebScrollbarBehaviorImpl*>(
+      webkit_platform_support_->scrollbarBehavior())->set_jump_on_track_click(
+          jump_on_track_click);
   blink::WebScrollbarTheme::updateScrollbars(initial_button_delay,
                                              autoscroll_button_delay,
-                                             jump_on_track_click,
                                              preferred_scroller_style,
                                              redraw);
 }

@@ -77,18 +77,20 @@
 #include "webkit/common/gpu/context_provider_web_context.h"
 #include "webkit/common/quota/quota_types.h"
 
-#if defined(OS_WIN)
-#include "content/common/child_process_messages.h"
-#include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
+#if defined(OS_ANDROID)
+#include "content/renderer/media/android/audio_decoder_android.h"
 #endif
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
+#include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <map>
 #include <string>
 
@@ -98,13 +100,18 @@
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
-
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "content/renderer/media/android/audio_decoder_android.h"
+#if defined(OS_WIN)
+#include "content/common/child_process_messages.h"
+#include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
+#endif
+
+#if defined(TOOLKIT_GTK) || defined(USE_AURA)
+#include "content/renderer/webscrollbarbehavior_impl_gtkoraura.h"
+#elif !defined(OS_MACOSX)
+#include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
+#define WebScrollbarBehaviorImpl blink::WebScrollbarBehavior
 #endif
 
 using blink::Platform;
@@ -211,7 +218,8 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
-      child_thread_loop_(base::MessageLoopProxy::current()) {
+      child_thread_loop_(base::MessageLoopProxy::current()),
+      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(
         new RendererWebKitPlatformSupportImpl::SandboxSupport);
@@ -879,6 +887,13 @@ void RendererWebKitPlatformSupportImpl::screenColorProfile(
   gfx::ColorProfile profile;
   *to_profile = profile.profile();
 #endif
+}
+
+//------------------------------------------------------------------------------
+
+blink::WebScrollbarBehavior*
+    RendererWebKitPlatformSupportImpl::scrollbarBehavior() {
+  return web_scrollbar_behavior_.get();
 }
 
 //------------------------------------------------------------------------------

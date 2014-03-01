@@ -536,6 +536,10 @@
     'renderer/webgraphicscontext3d_provider_impl.h',
     'renderer/webpublicsuffixlist_impl.cc',
     'renderer/webpublicsuffixlist_impl.h',
+    'renderer/webscrollbarbehavior_impl_gtkoraura.cc',
+    'renderer/webscrollbarbehavior_impl_gtkoraura.h',
+    'renderer/webscrollbarbehavior_impl_mac.mm',
+    'renderer/webscrollbarbehavior_impl_mac.h',
     'renderer/websharedworker_proxy.cc',
     'renderer/websharedworker_proxy.h',
   ],
@@ -560,6 +564,13 @@
     ['OS=="mac"', {
       'sources!': [
         'common/process_watcher_posix.cc',
+        'renderer/webscrollbarbehavior_impl_gtkoraura.cc',
+        'renderer/webscrollbarbehavior_impl_gtkoraura.h',
+      ],
+    }, {
+      'sources!': [
+        'renderer/webscrollbarbehavior_impl_mac.mm',
+        'renderer/webscrollbarbehavior_impl_mac.h',
       ],
     }],
     ['OS=="win" and win_use_allocator_shim==1', {
