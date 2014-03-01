@@ -40,4 +40,7 @@ PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [none] at 0
 PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 0.6
 PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1
 PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1.5
+PASS: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(20% at right 10% bottom 20px)] at 0
+FAIL: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(25% at calc(((100% - 10%) * 0.5) + ((100% - 20%) * 0.5)) calc(((100% - 20px) * 0.5) + ((100% - 30px) * 0.5)))] at 0.5, expected [circle(25% at right 15% bottom 25px)]
+PASS: shape-outside from [circle(20% at right 10% bottom 20px)] to [circle(30% at right 20% bottom 30px)] was [circle(30% at right 20% bottom 30px)] at 1
 

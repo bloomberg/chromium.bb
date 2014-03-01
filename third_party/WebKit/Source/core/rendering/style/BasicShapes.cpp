@@ -31,11 +31,29 @@
 #include "core/rendering/style/BasicShapes.h"
 
 #include "core/css/BasicShapeFunctions.h"
+#include "platform/CalculationValue.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Path.h"
 
 namespace WebCore {
+
+void BasicShapeCenterCoordinate::updateComputedLength()
+{
+    if (m_direction == TopLeft) {
+        m_computedLength = m_length.isUndefined() ? Length(0, Fixed) : m_length;
+        return;
+    }
+    if (m_length.isUndefined()) {
+        m_computedLength = Length(100, Percent);
+        return;
+    }
+
+    OwnPtr<CalcExpressionLength> lhs = adoptPtr(new CalcExpressionLength(Length(100, Percent)));
+    OwnPtr<CalcExpressionLength> rhs = adoptPtr(new CalcExpressionLength(m_length));
+    OwnPtr<CalcExpressionBinaryOperation> op = adoptPtr(new CalcExpressionBinaryOperation(lhs.release(), rhs.release(), CalcSubtract));
+    m_computedLength = Length(CalculationValue::create(op.release(), ValueRangeAll));
+}
 
 bool BasicShape::canBlend(const BasicShape* other) const
 {
@@ -53,9 +71,7 @@ bool BasicShape::canBlend(const BasicShape* other) const
     if (type() == BasicShape::BasicShapeCircleType) {
         const BasicShapeCircle* thisCircle = static_cast<const BasicShapeCircle*>(this);
         const BasicShapeCircle* otherCircle = static_cast<const BasicShapeCircle*>(other);
-        if (!thisCircle->radius().canBlend(otherCircle->radius())
-            || !thisCircle->centerX().canBlend(otherCircle->centerX())
-            || !thisCircle->centerY().canBlend(otherCircle->centerY()))
+        if (!thisCircle->radius().canBlend(otherCircle->radius()))
             return false;
     }
 
@@ -66,9 +82,7 @@ bool BasicShape::canBlend(const BasicShape* other) const
     const BasicShapeEllipse* thisEllipse = static_cast<const BasicShapeEllipse*>(this);
     const BasicShapeEllipse* otherEllipse = static_cast<const BasicShapeEllipse*>(other);
     return (thisEllipse->radiusX().canBlend(otherEllipse->radiusX())
-        && thisEllipse->radiusY().canBlend(otherEllipse->radiusY())
-        && thisEllipse->centerX().canBlend(otherEllipse->centerX())
-        && thisEllipse->centerY().canBlend(otherEllipse->centerY()));
+        && thisEllipse->radiusY().canBlend(otherEllipse->radiusY()));
 }
 
 void BasicShapeRectangle::path(Path& path, const FloatRect& boundingBox)

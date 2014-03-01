@@ -129,39 +129,48 @@ DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeRectangle);
 
 class BasicShapeCenterCoordinate {
 public:
-    enum Keyword {
-        None,
-        Top,
-        Right,
-        Bottom,
-        Left
+    enum Direction {
+        TopLeft,
+        BottomRight
     };
-    BasicShapeCenterCoordinate() : m_keyword(None), m_length(Undefined) { }
-    explicit BasicShapeCenterCoordinate(Length length) : m_keyword(None), m_length(length) { }
-    BasicShapeCenterCoordinate(Keyword keyword, Length length) : m_keyword(keyword), m_length(length) { }
-    BasicShapeCenterCoordinate(const BasicShapeCenterCoordinate& other) : m_keyword(other.keyword()), m_length(other.length()) { }
-    bool operator==(const BasicShapeCenterCoordinate& other) const { return m_keyword == other.m_keyword && m_length == other.m_length; }
-
-    Keyword keyword() const { return m_keyword; }
-    const Length& length() const { return m_length; }
-
-    bool canBlend(const BasicShapeCenterCoordinate& other) const
+    BasicShapeCenterCoordinate()
+        : m_direction(TopLeft)
+        , m_length(Undefined)
     {
-        // FIXME determine how to interpolate between keywords. See issue 330248.
-        return m_keyword == None && other.keyword() == None;
+        updateComputedLength();
     }
+
+    BasicShapeCenterCoordinate(Direction direction, Length length)
+        : m_direction(direction)
+        , m_length(length)
+    {
+        updateComputedLength();
+    }
+
+    BasicShapeCenterCoordinate(const BasicShapeCenterCoordinate& other)
+        : m_direction(other.direction())
+        , m_length(other.length())
+        , m_computedLength(other.m_computedLength)
+    {
+    }
+
+    bool operator==(const BasicShapeCenterCoordinate& other) const { return m_direction == other.m_direction && m_length == other.m_length && m_computedLength == other.m_computedLength; }
+
+    Direction direction() const { return m_direction; }
+    const Length& length() const { return m_length; }
+    const Length& computedLength() const { return m_computedLength; }
 
     BasicShapeCenterCoordinate blend(const BasicShapeCenterCoordinate& other, double progress) const
     {
-        if (m_keyword != None || other.keyword() != None)
-            return BasicShapeCenterCoordinate(other);
-
-        return BasicShapeCenterCoordinate(m_length.blend(other.length(), progress, ValueRangeAll));
+        return BasicShapeCenterCoordinate(TopLeft, m_computedLength.blend(other.m_computedLength, progress, ValueRangeAll));
     }
 
 private:
-    Keyword m_keyword;
+    Direction m_direction;
     Length m_length;
+    Length m_computedLength;
+
+    void updateComputedLength();
 };
 
 class BasicShapeRadius {

@@ -93,5 +93,16 @@ assertInterpolation({
   {at: 1, is: 'ellipse(100% 100% at 0% 0%)'},
   {at: 1.5, is: 'ellipse(100% 100% at 0% 0%)'}
 ]);
+
+// TODO: add intermediate keyframe tests when CSS shapes position computed values are cleaned up
+assertInterpolation({
+  property: 'shape-outside',
+  from: 'circle(20% at right 10% bottom 20px)',
+  to: 'circle(30% at right 20% bottom 30px)',
+}, [
+  {at: 0, is: 'circle(20% at right 10% bottom 20px)'},
+  {at: 0.5, is: 'circle(25% at right 15% bottom 25px)'},
+  {at: 1, is: 'circle(30% at right 20% bottom 30px)'},
+]);
 </script>
 </body>
