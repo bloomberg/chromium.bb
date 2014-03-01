@@ -175,6 +175,7 @@ void GetUpdatesProcessor::PrepareGetUpdates(
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();
     handler_it->second->GetDownloadProgress(progress_marker);
+    progress_marker->clear_gc_directive();
   }
   delegate_.HelpPopulateGuMessage(get_updates);
 }

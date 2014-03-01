@@ -29,6 +29,8 @@ namespace syncer {
 
 using syncable::UNITTEST;
 
+static const int64 kDefaultVersion = 1000;
+
 // A test harness for tests that focus on processing updates.
 //
 // Update processing is what occurs when we first download updates.  It converts
@@ -75,6 +77,13 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
     return ui_worker_;
   }
 
+  bool EntryExists(const std::string& id) {
+    syncable::ReadTransaction trans(FROM_HERE, dir());
+    syncable::Entry e(&trans, syncable::GET_BY_ID,
+                      syncable::Id::CreateFromServerId(id));
+    return e.good() && !e.GetIsDel();
+  }
+
  private:
   base::MessageLoop loop_;  // Needed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
@@ -91,7 +100,7 @@ DirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(
   e->set_parent_id_string(parent);
   e->set_non_unique_name(id);
   e->set_name(id);
-  e->set_version(1000);
+  e->set_version(kDefaultVersion);
   AddDefaultFieldValue(type, e->mutable_specifics());
   return e.Pass();
 }
@@ -230,6 +239,59 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
 
   EXPECT_EQ(progress.token(), saved.token());
   EXPECT_EQ(progress.data_type_id(), saved.data_type_id());
+}
+
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
+  DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker());
+  sessions::StatusController status;
+
+  sync_pb::DataTypeProgressMarker progress;
+  progress.set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS));
+  progress.set_token("token");
+  progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
+
+  scoped_ptr<sync_pb::SyncEntity> type_root =
+      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("root")),
+                   syncable::GetNullId().GetServerId(),
+                   SYNCED_NOTIFICATIONS);
+  type_root->set_server_defined_unique_tag(
+      ModelTypeToRootTag(SYNCED_NOTIFICATIONS));
+  type_root->set_folder(true);
+
+  scoped_ptr<sync_pb::SyncEntity> e1 =
+      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e1")),
+                   type_root->id_string(),
+                   SYNCED_NOTIFICATIONS);
+
+  scoped_ptr<sync_pb::SyncEntity> e2 =
+      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e2")),
+                   type_root->id_string(),
+                   SYNCED_NOTIFICATIONS);
+  e2->set_version(kDefaultVersion + 100);
+
+  // Add to the applicable updates list.
+  SyncEntityList updates;
+  updates.push_back(type_root.get());
+  updates.push_back(e1.get());
+  updates.push_back(e2.get());
+
+  // Process and apply updates.
+  handler.ProcessGetUpdatesResponse(progress, updates, &status);
+  handler.ApplyUpdates(&status);
+
+  // Verify none is deleted because they are unapplied during GC.
+  EXPECT_TRUE(EntryExists(type_root->id_string()));
+  EXPECT_TRUE(EntryExists(e1->id_string()));
+  EXPECT_TRUE(EntryExists(e2->id_string()));
+
+  // Process and apply again. Old entry is deleted but not root.
+  progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 20);
+  handler.ProcessGetUpdatesResponse(progress, SyncEntityList(), &status);
+  handler.ApplyUpdates(&status);
+  EXPECT_TRUE(EntryExists(type_root->id_string()));
+  EXPECT_FALSE(EntryExists(e1->id_string()));
+  EXPECT_TRUE(EntryExists(e2->id_string()));
 }
 
 // A test harness for tests that focus on applying updates.

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/process_updates_util.h"
 #include "sync/engine/update_handler.h"
@@ -17,6 +18,7 @@
 
 namespace sync_pb {
 class DataTypeProgressMarker;
+class GarbageCollectionDirective;
 class GetUpdatesResponse;
 }
 
@@ -82,10 +84,18 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status);
 
+  // Expires entries according to GC directives.
+  void ExpireEntriesIfNeeded(
+      syncable::ModelNeutralWriteTransaction* trans,
+      const sync_pb::DataTypeProgressMarker& progress_marker);
+
   // Stores the given progress marker in the directory.
   // Its type must match this update handler's type.
   void UpdateProgressMarker(
       const sync_pb::DataTypeProgressMarker& progress_marker);
+
+  bool IsValidProgressMarker(
+      const sync_pb::DataTypeProgressMarker& progress_marker) const;
 
   // Skips all checks and goes straight to applying the updates.
   SyncerError ApplyUpdatesImpl(sessions::StatusController* status);
@@ -93,6 +103,8 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
   syncable::Directory* dir_;
   ModelType type_;
   scoped_refptr<ModelSafeWorker> worker_;
+
+  scoped_ptr<sync_pb::GarbageCollectionDirective> cached_gc_directive_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryUpdateHandler);
 };

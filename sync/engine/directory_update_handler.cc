@@ -37,7 +37,11 @@ void DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     sessions::StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
   UpdateSyncEntities(&trans, applicable_updates, status);
-  UpdateProgressMarker(progress_marker);
+
+  if (IsValidProgressMarker(progress_marker)) {
+    ExpireEntriesIfNeeded(&trans, progress_marker);
+    UpdateProgressMarker(progress_marker);
+  }
 }
 
 void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
@@ -147,8 +151,8 @@ void DirectoryUpdateHandler::UpdateSyncEntities(
   ProcessDownloadedUpdates(dir_, trans, type_, applicable_updates, status);
 }
 
-void DirectoryUpdateHandler::UpdateProgressMarker(
-    const sync_pb::DataTypeProgressMarker& progress_marker) {
+bool DirectoryUpdateHandler::IsValidProgressMarker(
+    const sync_pb::DataTypeProgressMarker& progress_marker) const {
   int field_number = progress_marker.data_type_id();
   ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
   if (!IsRealDataType(model_type) || type_ != model_type) {
@@ -156,8 +160,50 @@ void DirectoryUpdateHandler::UpdateProgressMarker(
         << "Update handler of type " << ModelTypeToString(type_)
         << " asked to process progress marker with invalid type "
         << field_number;
+    return false;
   }
-  dir_->SetDownloadProgress(type_, progress_marker);
+  return true;
+}
+
+void DirectoryUpdateHandler::UpdateProgressMarker(
+    const sync_pb::DataTypeProgressMarker& progress_marker) {
+  if (progress_marker.has_gc_directive() || !cached_gc_directive_) {
+    dir_->SetDownloadProgress(type_, progress_marker);
+  } else {
+    sync_pb::DataTypeProgressMarker merged_marker = progress_marker;
+    merged_marker.mutable_gc_directive()->CopyFrom(*cached_gc_directive_);
+    dir_->SetDownloadProgress(type_, merged_marker);
+  }
+}
+
+void DirectoryUpdateHandler::ExpireEntriesIfNeeded(
+    syncable::ModelNeutralWriteTransaction* trans,
+    const sync_pb::DataTypeProgressMarker& progress_marker) {
+  if (!cached_gc_directive_) {
+    sync_pb::DataTypeProgressMarker current_marker;
+    GetDownloadProgress(&current_marker);
+    if (current_marker.has_gc_directive()) {
+      cached_gc_directive_.reset(new sync_pb::GarbageCollectionDirective(
+          current_marker.gc_directive()));
+    }
+  }
+
+  if (!progress_marker.has_gc_directive())
+    return;
+
+  const sync_pb::GarbageCollectionDirective& new_gc_directive =
+      progress_marker.gc_directive();
+
+  if (new_gc_directive.has_version_watermark() &&
+      (!cached_gc_directive_ ||
+          cached_gc_directive_->version_watermark() <
+              new_gc_directive.version_watermark())) {
+    ExpireEntriesByVersion(dir_, trans, type_,
+                           new_gc_directive.version_watermark());
+  }
+
+  cached_gc_directive_.reset(
+      new sync_pb::GarbageCollectionDirective(new_gc_directive));
 }
 
 }  // namespace syncer

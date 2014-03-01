@@ -300,4 +300,28 @@ void ProcessDownloadedUpdates(
   }
 }
 
+void ExpireEntriesByVersion(syncable::Directory* dir,
+                            syncable::ModelNeutralWriteTransaction* trans,
+                            ModelType type,
+                            int64 version_watermark) {
+  syncable::Directory::Metahandles handles;
+  dir->GetMetaHandlesOfType(trans, type, &handles);
+  for (size_t i = 0; i < handles.size(); ++i) {
+    syncable::ModelNeutralMutableEntry entry(trans, syncable::GET_BY_HANDLE,
+                                             handles[i]);
+    if (!entry.good() || !entry.GetId().ServerKnows() ||
+        entry.GetUniqueServerTag() == ModelTypeToRootTag(type) ||
+        entry.GetIsUnappliedUpdate() || entry.GetIsUnsynced() ||
+        entry.GetIsDel() || entry.GetServerIsDel() ||
+        entry.GetBaseVersion() >= version_watermark) {
+      continue;
+    }
+
+    // Mark entry as deleted by server.
+    entry.PutServerIsDel(true);
+    entry.PutServerVersion(version_watermark);
+    entry.PutIsUnappliedUpdate(true);
+  }
+}
+
 }  // namespace syncer

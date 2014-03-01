@@ -903,6 +903,21 @@ void Directory::GetUnappliedUpdateMetaHandles(
   }
 }
 
+void Directory::GetMetaHandlesOfType(BaseTransaction* trans,
+                                     ModelType type,
+                                     std::vector<int64>* result) {
+  result->clear();
+  ScopedKernelLock lock(this);
+  for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
+       it != kernel_->metahandles_map.end(); ++it) {
+    EntryKernel* entry = it->second;
+    const ModelType entry_type =
+        GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
+    if (entry_type == type)
+      result->push_back(it->first);
+  }
+}
+
 void Directory::CollectMetaHandleCounts(
     std::vector<int>* num_entries_by_type,
     std::vector<int>* num_to_delete_entries_by_type) {

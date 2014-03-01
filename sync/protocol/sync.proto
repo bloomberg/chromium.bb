@@ -473,6 +473,32 @@ message GetUpdateTriggers {
   optional bool server_dropped_hints = 6;
 }
 
+message GarbageCollectionDirective {
+  enum Type {
+    UNKNOWN = 0;
+    VERSION_WATERMARK = 1;
+    AGE_WATERMARK = 2;
+    MAX_ITEM_COUNT = 3;
+  }
+
+  optional Type type = 1 [default = UNKNOWN];
+
+  // This field specifies the watermark for the versions which should get
+  // garbage collected.  The client should purge all sync entities with a
+  // version smaller than version_watermark locally.
+  optional int64 version_watermark = 2;
+
+  // This field specifies the watermark in terms of age in days.  The client
+  // should purge all sync entities which are older than this specific value
+  // based on last modified time.
+  optional int32 age_watermark_in_days = 3;
+
+  // This field specifies the max number of items that the client should keep
+  // for a specific datatype.  If the number of items exceeds this limit, the
+  // client should purge the extra sync entities based on the LRU rule.
+  optional int32 max_number_of_items = 4;
+}
+
 message DataTypeProgressMarker {
   // An integer identifying the data type whose progress is tracked by this
   // marker.  The legitimate values of this field correspond to the protobuf
@@ -520,6 +546,12 @@ message DataTypeProgressMarker {
 
   // This field will be included only in GetUpdates with origin GU_TRIGGER.
   optional GetUpdateTriggers get_update_triggers = 5;
+
+  // The garbage collection directive for this data type.  The client should
+  // purge items locally based on this directive.  Since this directive is
+  // designed to be sent from server only, the client should persist it locally
+  // as needed and avoid sending it to the server.
+  optional GarbageCollectionDirective gc_directive = 6;
 }
 
 message GetUpdatesMessage {

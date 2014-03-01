@@ -315,6 +315,11 @@ class SYNC_EXPORT Directory {
                                      FullModelTypeSet server_types,
                                      std::vector<int64>* result);
 
+  // Get all the metahandles of entries of |type|.
+  void GetMetaHandlesOfType(BaseTransaction* trans,
+                            ModelType type,
+                            Metahandles* result);
+
   // Get metahandle counts for various criteria to show on the
   // about:sync page. The information is computed on the fly
   // each time. If this results in a significant performance hit,

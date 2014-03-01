@@ -34,6 +34,13 @@ void ProcessDownloadedUpdates(
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status);
 
+// Tombstones all entries of |type| whose versions are older than
+// |version_watermark| unless they are type root or unsynced/unapplied.
+void ExpireEntriesByVersion(syncable::Directory* dir,
+                            syncable::ModelNeutralWriteTransaction* trans,
+                            ModelType type,
+                            int64 version_watermark);
+
 }  // namespace syncer
 
 #endif  // SYNC_ENGINE_PROCESS_UPDATES_UTIL_H_
