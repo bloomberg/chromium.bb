@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_messages.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -65,7 +67,9 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
                                    int id,
                                    P2PMessageThrottler* throttler)
     : P2PSocketHost(message_sender, id),
-      socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
+      socket_(new net::UDPServerSocket(
+          GetContentClient()->browser()->GetNetLog(),
+          net::NetLog::Source())),
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
       throttler_(throttler) {
