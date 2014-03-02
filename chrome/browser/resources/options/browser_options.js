@@ -18,6 +18,16 @@ cr.define('options', function() {
 
   cr.addSingletonGetter(BrowserOptions);
 
+  /**
+   * @param {HTMLElement} section The section to show or hide.
+   * @return {boolean} Whether the section should be shown.
+   * @private
+   */
+  BrowserOptions.shouldShowSection_ = function(section) {
+    // If the section is hidden or hiding, it should be shown.
+    return section.style.height == '' || section.style.height == '0px';
+  };
+
   BrowserOptions.prototype = {
     __proto__: options.OptionsPage.prototype,
 
@@ -44,6 +54,14 @@ cr.define('options', function() {
      * @private
      */
     initializationComplete_: false,
+
+    /**
+     * When a section is waiting to change its height, this will be a number.
+     * Otherwise it'll be null.
+     * @type {?number}
+     * @private
+     */
+    sectionHeightChangeTimeout_: null,
 
     /** @override */
     initializePage: function() {
@@ -72,7 +90,7 @@ cr.define('options', function() {
           if (focusElement)
             focusElement.focus();
         }
-      }
+      };
 
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
@@ -571,6 +589,35 @@ cr.define('options', function() {
     },
 
     /**
+     * Animatedly changes height |from| a px number |to| a px number.
+     * @param {HTMLElement} section The section to animate.
+     * @param {HTMLElement} container The container of |section|.
+     * @param {boolean} showing Whether to go from 0 -> container height or
+     *     container height -> 0.
+     * @private
+     */
+    animatedSectionHeightChange_: function(section, container, showing) {
+      // If the section is already animating, dispatch a synthetic transition
+      // end event as the upcoming code will cancel the current one.
+      if (section.classList.contains('sliding'))
+        cr.dispatchSimpleEvent(section, 'webkitTransitionEnd');
+
+      this.addTransitionEndListener_(section);
+
+      section.hidden = false;
+      section.style.height = (showing ? 0 : container.offsetHeight) + 'px';
+      section.classList.add('sliding');
+
+      if (this.sectionHeightChangeTimeout_ !== null)
+        clearTimeout(this.sectionHeightChangeTimeout_);
+
+      this.sectionHeightChangeTimeout_ = setTimeout(function() {
+        section.style.height = (showing ? container.offsetHeight : 0) + 'px';
+        this.sectionHeightChangeTimeout_ = null;
+      });
+    },
+
+    /**
      * Shows the given section.
      * @param {HTMLElement} section The section to be shown.
      * @param {HTMLElement} container The container for the section. Must be
@@ -579,30 +626,13 @@ cr.define('options', function() {
      * @private
      */
     showSection_: function(section, container, animate) {
-      if (animate)
-        this.addTransitionEndListener_(section);
-
-      // Unhide
-      section.hidden = false;
-      section.style.height = '0px';
-
-      var expander = function() {
-        // Reveal the section using a WebKit transition if animating.
-        if (animate) {
-          section.classList.add('sliding');
-          section.style.height = container.offsetHeight + 'px';
-        } else {
-          section.style.height = 'auto';
-        }
-      };
-
       // Delay starting the transition if animating so that hidden change will
       // be processed.
       if (animate)
-        setTimeout(expander, 0);
+        this.animatedSectionHeightChange_(section, container, true);
       else
-        expander();
-      },
+        section.style.height = 'auto';
+    },
 
     /**
      * Shows the given section, with animation.
@@ -612,33 +642,29 @@ cr.define('options', function() {
      * @private
      */
     showSectionWithAnimation_: function(section, container) {
-      this.showSection_(section, container, /*animate */ true);
+      this.showSection_(section, container, /* animate */ true);
     },
 
     /**
-     * See showSectionWithAnimation_.
+     * Hides the given |section| with animation.
+     * @param {HTMLElement} section The section to be hidden.
+     * @param {HTMLElement} container The container for the section. Must be
+     *     inside of |section|.
+     * @private
      */
     hideSectionWithAnimation_: function(section, container) {
-      this.addTransitionEndListener_(section);
-
-      // Before we start hiding the section, we need to set
-      // the height to a pixel value.
-      section.style.height = container.offsetHeight + 'px';
-
-      // Delay starting the transition so that the height change will be
-      // processed.
-      setTimeout(function() {
-        // Hide the section using a WebKit transition.
-        section.classList.add('sliding');
-        section.style.height = '0px';
-      }, 0);
+      this.animatedSectionHeightChange_(section, container, false);
     },
 
     /**
-     * See showSectionWithAnimation_.
+     * Toggles the visibility of |section| in an animated way.
+     * @param {HTMLElement} section The section to be toggled.
+     * @param {HTMLElement} container The container for the section. Must be
+     *     inside of |section|.
+     * @private
      */
     toggleSectionWithAnimation_: function(section, container) {
-      if (section.style.height == '' || section.style.height == '0px')
+      if (BrowserOptions.shouldShowSection_(section))
         this.showSectionWithAnimation_(section, container);
       else
         this.hideSectionWithAnimation_(section, container);
@@ -708,16 +734,22 @@ cr.define('options', function() {
 
     /**
      * Called after an animation transition has ended.
+     * @param {Event} The webkitTransitionEnd event. NOTE: May be synthetic.
      * @private
      */
     onTransitionEnd_: function(event) {
-      if (event.propertyName != 'height')
+      if (event.propertyName && event.propertyName != 'height') {
+        // If not a synthetic event or a real transition we care about, bail.
         return;
+      }
 
       var section = event.target;
-
-      // Disable WebKit transitions.
       section.classList.remove('sliding');
+
+      if (!event.propertyName) {
+        // Only real transitions past this point.
+        return;
+      }
 
       if (section.style.height == '0px') {
         // Hide the content so it can't get tab focus.
@@ -730,9 +762,10 @@ cr.define('options', function() {
       }
     },
 
+    /** @private */
     updateAdvancedSettingsExpander_: function() {
       var expander = $('advanced-settings-expander');
-      if ($('advanced-settings').style.height == '0px')
+      if (BrowserOptions.shouldShowSection_($('advanced-settings')))
         expander.textContent = loadTimeData.getString('showAdvancedSettings');
       else
         expander.textContent = loadTimeData.getString('hideAdvancedSettings');
