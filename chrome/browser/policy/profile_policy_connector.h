@@ -55,10 +55,6 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
  private:
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
-  void InitializeDeviceLocalAccountPolicyProvider(
-      const std::string& username,
-      SchemaRegistry* schema_registry);
-
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this
   // connector belongs to the first signed-in Profile, and in that case that

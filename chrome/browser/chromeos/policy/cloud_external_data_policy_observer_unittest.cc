@@ -318,7 +318,8 @@ void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
   device_local_account_policy_provider_.reset(
       new DeviceLocalAccountPolicyProvider(
           user_id,
-          device_local_account_policy_service_.get()));
+          device_local_account_policy_service_.get(),
+          scoped_ptr<PolicyMap>()));
 
   PolicyServiceImpl::Providers providers;
   providers.push_back(device_local_account_policy_provider_.get());

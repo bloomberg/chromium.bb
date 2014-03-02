@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -88,17 +89,17 @@ void ProfilePolicyConnector::Init(
     // This case occurs for the signin profile.
     special_user_policy_provider_.reset(
         new LoginProfilePolicyProvider(connector->GetPolicyService()));
-    special_user_policy_provider_->Init(schema_registry);
   } else {
     // |user| should never be NULL except for the signin profile.
     is_primary_user_ = user == chromeos::UserManager::Get()->GetPrimaryUser();
-    if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT) {
-      InitializeDeviceLocalAccountPolicyProvider(user->email(),
-                                                 schema_registry);
-    }
+    special_user_policy_provider_ = DeviceLocalAccountPolicyProvider::Create(
+        user->email(),
+        connector->GetDeviceLocalAccountPolicyService());
   }
-  if (special_user_policy_provider_)
+  if (special_user_policy_provider_) {
+    special_user_policy_provider_->Init(schema_registry);
     providers.push_back(special_user_policy_provider_.get());
+  }
 #endif
 
   policy_service_.reset(new PolicyServiceImpl(providers));
@@ -142,21 +143,5 @@ std::string ProfilePolicyConnector::GetManagementDomain() const {
     return gaia::ExtractDomainName(store->policy()->username());
   return "";
 }
-
-#if defined(OS_CHROMEOS)
-void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
-    const std::string& username,
-    SchemaRegistry* schema_registry) {
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  DeviceLocalAccountPolicyService* device_local_account_policy_service =
-      connector->GetDeviceLocalAccountPolicyService();
-  if (!device_local_account_policy_service)
-    return;
-  special_user_policy_provider_.reset(new DeviceLocalAccountPolicyProvider(
-      username, device_local_account_policy_service));
-  special_user_policy_provider_->Init(schema_registry);
-}
-#endif
 
 }  // namespace policy

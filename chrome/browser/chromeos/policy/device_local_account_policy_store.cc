@@ -6,15 +6,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
 
@@ -83,37 +81,6 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
   }
 
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
-  // Exit the session when the lid is closed. The default behavior is to
-  // suspend while leaving the session running, which is not desirable for
-  // public sessions.
-  policy_map_.Set(key::kLidCloseAction,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  base::Value::CreateIntegerValue(
-                      chromeos::PowerPolicyController::ACTION_STOP_SESSION),
-                  NULL);
-  // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the ash
-  // shelf does not auto-hide.
-  policy_map_.Set(key::kShelfAutoHideBehavior,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  base::Value::CreateStringValue("Never"),
-                  NULL);
-  // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
-  // red logout button is shown in the ash system tray.
-  policy_map_.Set(key::kShowLogoutButtonInTray,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  base::Value::CreateBooleanValue(true),
-                  NULL);
-  // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
-  // shelf cannot be hidden by entering fullscreen mode.
-  policy_map_.Set(key::kFullscreenAllowed,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  base::Value::CreateBooleanValue(false),
-                  NULL);
-
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
