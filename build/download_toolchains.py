@@ -392,11 +392,11 @@ def main(args):
     print '-' * 70
     return 0
 
-  os = pynacl.platform.GetOS()
+  host_os = pynacl.platform.GetOS()
   arch = pynacl.platform.GetArch()
   platform_mapping = toolchainbinaries.PLATFORM_MAPPING
   flavors = [flavor
-             for flavor in platform_mapping[os][arch]
+             for flavor in platform_mapping[host_os][arch]
              if IsFlavorNeeded(options, flavor)]
 
   for flavor in flavors:
