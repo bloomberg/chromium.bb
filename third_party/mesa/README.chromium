@@ -41,3 +41,6 @@ Modifications made:
 
 - #ifdef out inline definitions of math functions that are present in
   VS2013's standard library.
+
+- #pragma optimize off around _swrast_write_zoomed_z_span, ICEing on
+  VS2013: http://crbug.com/348350.
