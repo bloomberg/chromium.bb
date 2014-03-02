@@ -24,8 +24,6 @@ Recommended build:
   export board=x86-alex
   sudo rm -rf /build/$board
   cd ~/trunk/src/scripts
-  # TODO: setup_board should generate static list of packages that can be used
-  # by this script.
   ./setup_board --board=$board
   # If you wonder why we need to build
   # chromeos just to run emerge -p -v chromeos-base/chromeos on it, we don't.
@@ -36,12 +34,16 @@ Recommended build:
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
   cd ~/trunk/chromite/licensing
-  %(prog)s [--debug] --board $board -o out.html 2>&1 | tee output.sav
+  %(prog)s [--debug] [--all-packages] --board $board -o out.html 2>&1 | tee out
 
 You can check the licenses and/or generate a HTML file for a list of
 packages using --package or -p:
   %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package
   "net-misc/wget-1.14" --board $board -o out.html
+
+If you want to check licensing against all ChromeOS packages, you should
+run ./build_packages --board=$board to build everything and then run
+this script with --all-packages.
 
 By default, when no package is specified, this script processes all
 packages for the board. The output HTML file is meant to update
@@ -106,7 +108,6 @@ from chromite.lib import osutils
 debug = False
 
 STOCK_LICENSE_DIRS = [
-    os.path.join(constants.SOURCE_ROOT, 'src/third_party/portage/licenses'),
     os.path.join(constants.SOURCE_ROOT,
                  'src/third_party/portage-stable/licenses'),
 ]
@@ -127,8 +128,6 @@ COPYRIGHT_ATTRIBUTION_DIR = (
 # chromeos-base contains google platform packages that are covered by the
 # general license at top of tree, so we skip those too.
 SKIPPED_CATEGORIES = [
-    'chromeos-base',  # TODO: it wouldn't hurt to remove this and make sure our
-                      # packages all come with a BSD-Google license.
     'virtual',
 ]
 
@@ -154,15 +153,6 @@ SKIPPED_PACKAGES = [
     'app-i18n/ibus-mozc-chewing',
     'app-i18n/ibus-mozc-hangul',
     'app-i18n/ibus-mozc-pinyin',
-
-    # Those have License: Proprietary in the ebuild.
-    # FIXME? Should the code detect 'Proprietary' and exclude the packages, or
-    # list them with a license that says 'Proprietary'?
-    'app-i18n/GoogleChineseInput-cangjie',
-    'app-i18n/GoogleChineseInput-pinyin',
-    'app-i18n/GoogleChineseInput-wubi',
-    'app-i18n/GoogleChineseInput-zhuyin',
-    'app-i18n/GoogleKoreanInput',
 
     # These are all X.org sub-packages; shouldn't be any need to list them
     # individually.
@@ -290,6 +280,18 @@ PACKAGE_LICENSES = {
     # will be removed in the near future, so don't rely on adding anything here
     # longterm.
     # 'sys-libs/ncurses': ['ncurses'],
+
+    # TODO: replace the naive license parsing code in this script with a hook
+    # into portage's license parsing. See http://crbug.com/348779
+
+    # Chrome (the browser) is complicated, it has a morphing license that is
+    # either BSD-Google, or BSD-Google,Google-TOS depending on how it was
+    # built. We bypass this problem for now by hardcoding the Google-TOS bit as
+    # per ChromeOS with non free bits
+    'chromesos-base/chromeos-chrome': ['BSD-Google', 'Google-TOS'],
+
+    # Currently the code cannot parse LGPL-3 || ( LGPL-2.1 MPL-1.1 )
+    'dev-python/pycairo': ['LGPL-3', 'LGPL-2.1'],
 }
 
 # Any license listed list here found in the ebuild will make the code look for
@@ -742,6 +744,27 @@ being scraped currently).""",
       logging.info("Read licenses from ebuild for %s: %s", self.fullnamerev,
                    ",".join(self.ebuild_license_names))
 
+    # Lots of packages in chromeos-base have their license set to BSD instead
+    # of BSD-Google:
+    new_license_names = []
+    for license_name in self.ebuild_license_names:
+      # TODO: temp workaround for http;//crbug.com/348750 , remove when the bug
+      # is fixed.
+      if license_name == "BSD" and fullnamewithrev.startswith("chromeos-base/"):
+        license_name = "BSD-Google"
+        logging.error(
+            "Fixed BSD->BSD-Google for %s because it's in chromeos-base. "
+            "Please fix the LICENSE field in the ebuild", self.fullnamerev)
+      # TODO: temp workaround for http;//crbug.com/348749 , remove when the bug
+      # is fixed.
+      if license_name == "Proprietary":
+        license_name = "Google-TOS"
+        logging.error(
+            "Fixed Proprietary -> Google-TOS for %s. "
+            "Please fix the LICENSE field in the ebuild", self.fullnamerev)
+      new_license_names.append(license_name)
+    self.ebuild_license_names = new_license_names
+
   def GetLicenses(self, fullnamewithrev):
     """Get licenses from the ebuild field and the unpacked source code.
 
@@ -783,10 +806,11 @@ being scraped currently).""",
 
     # This is not invalid, but the parser can't deal with it, so if it ever
     # happens, error out to tell the programmer to do something.
+    # dev-python/pycairo-1.10.0-r4: LGPL-3 || ( LGPL-2.1 MPL-1.1 )
     if "||" in self.ebuild_license_names[1:]:
-      raise AssertionError("%s: Can't parse || in the middle of a license: %s"
-                           % (self.fullnamerev,
-                              ' '.join(self.ebuild_license_names)))
+      logging.error("%s: Can't parse || in the middle of a license: %s",
+                    self.fullnamerev, ' '.join(self.ebuild_license_names))
+      raise PackageLicenseError()
 
     or_licenses_and_one_is_no_attribution = False
     # We do a quick early pass first so that the longer pass below can
@@ -949,8 +973,8 @@ find the new licenses under licenses, and add them to portage-stable/licenses
 
 b) if it's a non gentoo package with a custom license, you can copy that license
 to third_party/chromiumos-overlay/licenses/""" %
-                           (license_name,
-                            '\n'.join(STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS))
+                         (license_name,
+                          '\n'.join(STOCK_LICENSE_DIRS + CUSTOM_LICENSE_DIRS))
                          )
 
   @staticmethod
@@ -1082,48 +1106,50 @@ to third_party/chromiumos-overlay/licenses/""" %
                       self.EvaluateTemplate(file_template, env).encode('UTF-8'))
 
 
-def ListInstalledPackages(board):
+def ListInstalledPackages(board, all_packages=False):
   """Return a list of all packages installed for a particular board."""
 
-  # Please leave the following as documentation of what options are available
-  # and why we chose the current one.
+  # If all_packages is set to True, all packages visible in the build
+  # chroot are used to generate the licensing file. This is not what you want
+  # for a release license file, but it's a way to run licensing checks against
+  # all packages.
+  # If it's set to False, it will only generate a licensing file that contains
+  # packages used for a release build (as determined by the dependencies for
+  # chromeos-base/chromeos).
 
-  # The following returns all packages that were part of the build tree
-  # (many get built or used during the build, but do not get shipped).
-  # Note that it also contains packages that are in the build as
-  # defined by build_packages but not part of the image we ship.
-  # args = "/usr/local/bin/equery-%s list '*'" % board
+  if all_packages:
+    # The following returns all packages that were part of the build tree
+    # (many get built or used during the build, but do not get shipped).
+    # Note that it also contains packages that are in the build as
+    # defined by build_packages but not part of the image we ship.
+    args = ["equery-%s" % board, "list", "*"]
+    packages = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                         redirect_stdout=True
+                                        ).output.splitlines()
+  else:
+    # The following returns all packages that were part of the build tree
+    # (many get built or used during the build, but do not get shipped).
+    # Note that it also contains packages that are in the build as
+    # defined by build_packages but not part of the image we ship.
+    args = ["emerge-%s" % board, "--with-bdeps=y", "--usepkgonly",
+            "--emptytree", "--pretend", "--color=n", "chromeos-base/chromeos"]
+    emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
+                                       redirect_stdout=True).output.splitlines()
+    # Another option which we've decided not to use, is bdeps=n.  This outputs
+    # just the packages we ship, but does not packages that were used to build
+    # them, including a package like flex which generates a .a that is included
+    # and shipped in ChromeOS.
+    # We've decided to credit build packages, even if we're not legally required
+    # to (it's always nice to do), and that way we get corner case packages like
+    # flex. This is why we use bdep=y and not bdep=n.
 
-  # This is better because it only lists packages that are in the
-  # chromeos-base/chromeos dependency chain and ignores packages that
-  # just happen to be available in your build tree.
-  # args = "emerge-%s --with-bdeps=y --usepkgonly --emptytree \
-  #       --pretend chromeos-base/chromeos | \
-  #       sed -n -E -e 's/^\[[^]]*\] ([^ ]*) .*$/\\1/p'" % board
-
-  # Another option which we've decided not to use, is bdeps=n. This
-  # outputs just the packages we ship, but does not list packages
-  # that were used to build them, including a package like flex which
-  # generates a .a that is included and shipped in ChromeOS.
-  # We've decided to credit build packages, even if we're not legally
-  # required to (it's always nice to do), and that way we get corner
-  # case packages like flex.
-  #
-  # return cros_build_lib.RunCommand(args, print_cmd=debug, shell=True,
-  #                                 redirect_stdout=True).output.splitlines()
-
-  args = ["emerge-%s" % board, "--with-bdeps=y", "--usepkgonly", "--emptytree",
-          "--pretend", "--color=n", "chromeos-base/chromeos"]
-  emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
-                                     redirect_stdout=True).output.splitlines()
-
-  packages = []
-  # [binary   R    ] x11-libs/libva-1.1.1 to /build/x86-alex/
-  pkg_rgx = re.compile(r'\[[^]]+\] (.+) to /build/.*')
-  for line in emerge:
-    match = pkg_rgx.search(line)
-    if match:
-      packages.append(match.group(1))
+    packages = []
+    # [binary   R    ] x11-libs/libva-1.1.1 to /build/x86-alex/
+    pkg_rgx = re.compile(r'\[[^]]+\] (.+) to /build/.*')
+    for line in emerge:
+      match = pkg_rgx.search(line)
+      if match:
+        packages.append(match.group(1))
 
   return packages
 
@@ -1166,6 +1192,7 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
   Raises:
     Assertion error: if non-whitelisted illegal XML characters
       are found in the file.
+    ValueError: returned if we get invalid XML.
   """
 
   try:
@@ -1190,7 +1217,6 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
 
 def main(args):
   # pylint: disable=W0603
-  global SKIPPED_PACKAGES
   global debug
   # pylint: enable=W0603
 
@@ -1200,11 +1226,14 @@ def main(args):
   parser.add_argument("-p", "--package", action="append", default=[],
                       help="check the license of the package, e.g.,"
                       "dev-libs/libatomic_ops-7.2d")
+  parser.add_argument("-a", "--all-packages", action="store_true",
+                      help="Run licensing against all packages in the "
+                      "build tree", dest="all_packages"),
   parser.add_argument("-o", "--output", type="path",
                       help="which html file to create with output")
   opts = parser.parse_args(args)
   debug = opts.debug
-  board, output_file = opts.board, opts.output
+  board, all_packages, output_file = opts.board, opts.all_packages, opts.output
   logging.info("Using board %s.", board)
 
   packages_mode = bool(opts.package)
@@ -1219,20 +1248,10 @@ def main(args):
         "FATAL: %s missing.\n"
         "Did you give the right board and build that tree?" % builddir)
 
-  # We have a hardcoded list of skipped packages for various reasons,
-  # but we also exclude any google platform package from needing a
-  # license since they are covered by the top license in the tree.
-  # TODO: find a better way to deal with this because running
-  # cros_workon for individual packages (with -p) is too costly.
-  cmd = "cros_workon info --all --host | grep src/platform/ | awk '{print $1}'"
-  packages = cros_build_lib.RunCommand(cmd, shell=True, print_cmd=debug,
-                                       redirect_stdout=True).output.splitlines()
-  SKIPPED_PACKAGES += packages
-
   if packages_mode:
     packages = opts.package
   else:
-    packages = ListInstalledPackages(board)
+    packages = ListInstalledPackages(board, all_packages)
   if not packages:
     raise AssertionError('FATAL: Could not get any packages for board %s' %
                          board)
