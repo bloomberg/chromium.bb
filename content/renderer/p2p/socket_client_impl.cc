@@ -82,11 +82,11 @@ void P2PSocketClientImpl::DoInit(P2PSocketType type,
 void P2PSocketClientImpl::SendWithDscp(
     const net::IPEndPoint& address,
     const std::vector<char>& data,
-    net::DiffServCodePoint dscp) {
+    const talk_base::PacketOptions& options) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(
         FROM_HERE, base::Bind(
-            &P2PSocketClientImpl::SendWithDscp, this, address, data, dscp));
+            &P2PSocketClientImpl::SendWithDscp, this, address, data, options));
     return;
   }
 
@@ -96,13 +96,14 @@ void P2PSocketClientImpl::SendWithDscp(
     uint64 unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
     TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", unique_id);
     dispatcher_->SendP2PMessage(new P2PHostMsg_Send(socket_id_, address, data,
-                                                    dscp, unique_id));
+                                                    options, unique_id));
   }
 }
 
 void P2PSocketClientImpl::Send(const net::IPEndPoint& address,
                                const std::vector<char>& data) {
-  SendWithDscp(address, data, net::DSCP_DEFAULT);
+  talk_base::PacketOptions options(talk_base::DSCP_DEFAULT);
+  SendWithDscp(address, data, options);
 }
 
 void P2PSocketClientImpl::SetOption(P2PSocketOption option,

@@ -21,6 +21,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace talk_base {
+struct PacketOptions;
+}
+
 namespace content {
 
 class P2PSocketHost;
@@ -72,7 +76,7 @@ class P2PSocketDispatcherHost
   void OnSend(int socket_id,
               const net::IPEndPoint& socket_address,
               const std::vector<char>& data,
-              net::DiffServCodePoint dscp,
+              const talk_base::PacketOptions& options,
               uint64 packet_id);
   void OnSetOption(int socket_id, P2PSocketOption option, int value);
   void OnDestroySocket(int socket_id);
