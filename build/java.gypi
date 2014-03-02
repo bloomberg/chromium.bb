@@ -270,9 +270,6 @@
             '--output-path=<(jar_path)',
             '--proguard-config=<(proguard_config)',
             '--classpath=<(android_sdk_jar) >(input_jars_paths)',
-
-            # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-            '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
           ]
         },
       ],
