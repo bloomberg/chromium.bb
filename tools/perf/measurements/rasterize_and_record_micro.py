@@ -19,15 +19,15 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
                       help='Wait time before the benchmark is started ' +
                       '(must be long enought to load all content)')
     parser.add_option('--rasterize-repeat', dest='rasterize_repeat',
-                      default=100,
+                      default=50,
                       help='Repeat each raster this many times. Increase ' +
                       'this value to reduce variance.')
     parser.add_option('--record-repeat', dest='record_repeat',
-                      default=100,
+                      default=50,
                       help='Repeat each record this many times. Increase ' +
                       'this value to reduce variance.')
     parser.add_option('--timeout', dest='timeout',
-                      default=120,
+                      default=180,
                       help='The length of time to wait for the micro ' +
                       'benchmark to finish, expressed in seconds.')
     parser.add_option('--report-detailed-results',
@@ -128,4 +128,3 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
           total_picture_layers_with_no_content)
       results.Add('total_picture_layers_off_screen', 'count',
           total_picture_layers_off_screen)
-
