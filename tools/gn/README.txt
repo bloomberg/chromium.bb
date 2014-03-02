@@ -1,4 +1,5 @@
 GN "Generate Ninja"
 
-This tool is an experimental metabuildsystem. It is not currently in a state
-where it is ready for public consumption.
+GN is a meta-build system that generates ninja files. It's meant to be faster
+and simpler than GYP. It outputs Ninja build files and optionally GYP files
+during the transitional period.
