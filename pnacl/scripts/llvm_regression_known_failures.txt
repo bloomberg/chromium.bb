@@ -34,6 +34,9 @@ LLVM::BugPoint/remove_arguments_test.ll win
 # These fail under cygwin (I've not tried them under msys):
 Clang::Analysis/crash-trace.c win
 Clang::Parser/crash-report.c win
+# These tests appear to be flaky:
+Clang::Index/targeted-annotation.c win
+Clang::Index/targeted-cursor.c win
 # Fails with a crash in llvm-rtdyld, which we don't care about for PNaCl.
 LLVM::DebugInfo/debuglineinfo.test win
 # Tries to open LLVMHello.dll, but that apparently does not get built.
