@@ -739,7 +739,7 @@ bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue) {
 
   micro_benchmark_controller_.DidUpdateLayers();
 
-  return result || next_commit_forces_redraw_;
+  return result;
 }
 
 static Layer* FindFirstScrollableLayer(Layer* layer) {
