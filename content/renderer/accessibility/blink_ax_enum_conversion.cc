@@ -372,7 +372,7 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
     default:
       // We can't add an assertion here, that prevents us
       // from adding new event enums in Blink.
-      return static_cast<ui::AXEvent>(-1);
+      return ui::AX_EVENT_NONE;
   }
 }
 

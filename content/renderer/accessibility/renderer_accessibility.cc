@@ -50,18 +50,20 @@ const std::string RendererAccessibility::AccessibilityEventToString(
       return "active descendant changed";
     case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
       return "aria attribute changed";
+    case ui::AX_EVENT_ALERT:
+      return "alert";
     case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
       return "autocorrection occurred";
     case ui::AX_EVENT_BLUR:
       return "blur";
-    case ui::AX_EVENT_ALERT:
-      return "alert";
     case ui::AX_EVENT_CHECKED_STATE_CHANGED:
       return "check state changed";
     case ui::AX_EVENT_CHILDREN_CHANGED:
       return "children changed";
     case ui::AX_EVENT_FOCUS:
       return "focus changed";
+    case ui::AX_EVENT_HIDE:
+      return "object hide";
     case ui::AX_EVENT_INVALID_STATUS_CHANGED:
       return "invalid status changed";
     case ui::AX_EVENT_LAYOUT_COMPLETE:
@@ -70,18 +72,26 @@ const std::string RendererAccessibility::AccessibilityEventToString(
       return "live region changed";
     case ui::AX_EVENT_LOAD_COMPLETE:
       return "load complete";
+    case ui::AX_EVENT_LOCATION_CHANGED:
+      return "location changed";
+    case ui::AX_EVENT_MENU_END:
+      return "menu end";
     case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
       return "menu list item selected";
     case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
       return "menu list changed";
-    case ui::AX_EVENT_SHOW:
-      return "object show";
-    case ui::AX_EVENT_HIDE:
-      return "object hide";
-    case ui::AX_EVENT_ROW_COUNT_CHANGED:
-      return "row count changed";
+    case ui::AX_EVENT_MENU_POPUP_END:
+      return "menu popup end";
+    case ui::AX_EVENT_MENU_POPUP_START:
+      return "menu popup start";
+    case ui::AX_EVENT_MENU_START:
+      return "menu start";
+    case ui::AX_EVENT_NONE:
+      return "none";
     case ui::AX_EVENT_ROW_COLLAPSED:
       return "row collapsed";
+    case ui::AX_EVENT_ROW_COUNT_CHANGED:
+      return "row count changed";
     case ui::AX_EVENT_ROW_EXPANDED:
       return "row expanded";
     case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
@@ -92,6 +102,10 @@ const std::string RendererAccessibility::AccessibilityEventToString(
       return "selected children changed";
     case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
       return "selected text changed";
+    case ui::AX_EVENT_SELECTION_CHANGED:
+      return "selection changed";
+    case ui::AX_EVENT_SHOW:
+      return "object show";
     case ui::AX_EVENT_TEXT_CHANGED:
       return "text changed";
     case ui::AX_EVENT_TEXT_INSERTED:
