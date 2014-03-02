@@ -1660,28 +1660,32 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         documentElement()->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
+    EOverflow overflowX = OAUTO;
+    EOverflow overflowY = OAUTO;
+    float columnGap = 0;
+    if (overflowStyle) {
+        overflowX = overflowStyle->overflowX();
+        overflowY = overflowStyle->overflowY();
+        // Visible overflow on the viewport is meaningless, and the spec says to treat it as 'auto':
+        if (overflowX == OVISIBLE)
+            overflowX = OAUTO;
+        if (overflowY == OVISIBLE)
+            overflowY = OAUTO;
+        // Column-gap is (ab)used by the current paged overflow implementation (in lack of other
+        // ways to specify gaps between pages), so we have to propagate it too.
+        columnGap = overflowStyle->columnGap();
+    }
+
     RefPtr<RenderStyle> documentStyle = renderView()->style();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
-        || (overflowStyle && (documentStyle->overflowX() != overflowStyle->overflowX() || documentStyle->overflowY() != overflowStyle->overflowY()))) {
+        || documentStyle->overflowX() != overflowX
+        || documentStyle->overflowY() != overflowY
+        || documentStyle->columnGap() != columnGap) {
         RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
-        EOverflow overflowX = OAUTO;
-        EOverflow overflowY = OAUTO;
-        if (overflowStyle) {
-            overflowX = overflowStyle->overflowX();
-            overflowY = overflowStyle->overflowY();
-            // Visible overflow on the viewport is meaningless, and the spec says to treat it as 'auto':
-            if (overflowX == OVISIBLE)
-                overflowX = OAUTO;
-            if (overflowY == OVISIBLE)
-                overflowY = OAUTO;
-
-            // Column-gap is (ab)used by the current paged overflow implementation (in lack of other
-            // ways to specify gaps between pages), so we have to propagate it too.
-            newStyle->setColumnGap(overflowStyle->columnGap());
-        }
+        newStyle->setColumnGap(columnGap);
         newStyle->setOverflowX(overflowX);
         newStyle->setOverflowY(overflowY);
         renderView()->setStyle(newStyle);

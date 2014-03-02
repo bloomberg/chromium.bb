@@ -3375,6 +3375,8 @@ bool WebViewImpl::isTransparent() const
 
 void WebViewImpl::setBaseBackgroundColor(WebColor color)
 {
+    layout();
+
     if (m_baseBackgroundColor == color)
         return;
 
