@@ -92,6 +92,8 @@ message MountReply {
   // failure to Mount nor is it 'true' when a CreateRequest creates
   // a cryptohome for the first time.
   optional bool recreated = 1 [default=false];
+  // Returns the filesystem-sanitized username.
+  optional string sanitized_username = 2;
 };
 
 message CreateRequest {
