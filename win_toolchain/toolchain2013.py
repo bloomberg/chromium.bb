@@ -248,7 +248,7 @@ class SourceImages(object):
     self.wdk_path = wdk_path
 
 
-def GetSourceImages(local_dir, pro, bot_mode):
+def GetSourceImages(local_dir, pro):
   """Downloads the various sources that we need.
 
   Of note: Because Express does not include ATL, there's an additional download
@@ -256,9 +256,7 @@ def GetSourceImages(local_dir, pro, bot_mode):
   |pro| this is not necessary (and CHROME_HEADLESS always implies Pro).
   """
   url = GetMainIsoUrl(pro)
-  if bot_mode:
-    return SourceImages(GetVSInternal(), GetSDKInternal(), wdk_path=None)
-  elif local_dir:
+  if local_dir:
     wdk_path = (os.path.join(local_dir, os.path.basename(WDK_ISO_URL))
                 if not pro else None)
     return SourceImages(os.path.join(local_dir, os.path.basename(url)),
@@ -425,6 +423,16 @@ def GenerateSetEnvCmd(target_dir, pro):
                '%~dp0..\\..\\VC\\atlmfc\\lib\\amd64\n')
 
 
+def DoTreeMirror(target_dir, tree_sha1):
+  """In order to save temporary space on bots that do not have enough space to
+  download ISOs, unpack them, and copy to the target location, the whole tree
+  is uploaded as a zip to internal storage, and then mirrored here."""
+  local_zip = DownloadUsingGsutil(tree_sha1 + '.zip')
+  sys.stdout.write('Extracting %s...\n' % local_zip)
+  sys.stdout.flush()
+  RunOrDie('7z x "%s" -y "-o%s" >nul' % (local_zip, target_dir))
+
+
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option('--targetdir', metavar='DIR',
@@ -437,6 +445,9 @@ def main():
                     help='use downloaded files from DIR')
   parser.add_option('--express',
                     help='use VS Express instead of Pro', action='store_true')
+  parser.add_option('--sha1',
+                    help='tree sha1 that can be used to mirror an internal '
+                         'copy (used if --bot-mode)')
   parser.add_option('--bot-mode',
                     help='Use internal servers to pull isos',
                     default=bool(int(os.environ.get('CHROME_HEADLESS', 0))),
@@ -446,18 +457,20 @@ def main():
     target_dir = os.path.abspath(options.targetdir)
     if os.path.exists(target_dir):
       parser.error('%s already exists. Please [re]move it or use '
-                   '--targetdir to select a different target.\n' %
-                   target_dir)
+                  '--targetdir to select a different target.\n' %
+                  target_dir)
     # Set the working directory to 7z subdirectory. 7-zip doesn't find its
     # codec dll very well, so this is the simplest way to make sure it runs
     # correctly, as we don't otherwise care about working directory.
     os.chdir(os.path.join(BASEDIR, '7z'))
-    images = GetSourceImages(
-        options.local, not options.express, options.bot_mode)
-    extracted = ExtractComponents(images)
-    CopyToFinalLocation(extracted, target_dir)
+    if options.bot_mode and options.sha1:
+      DoTreeMirror(target_dir, options.sha1)
+    else:
+      images = GetSourceImages(options.local, not options.express)
+      extracted = ExtractComponents(images)
+      CopyToFinalLocation(extracted, target_dir)
+      GenerateSetEnvCmd(target_dir, not options.express)
 
-    GenerateSetEnvCmd(target_dir, not options.express)
     data = {
         'path': target_dir,
         'version': '2013e' if options.express else '2013',

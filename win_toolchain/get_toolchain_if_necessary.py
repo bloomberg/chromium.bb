@@ -152,7 +152,8 @@ def main():
                     help='write information about toolchain to FILE')
   options, args = parser.parse_args()
 
-  desired_hashes = set(args)
+  # We assume that the Pro hash is the first one.
+  desired_hashes = args
 
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
@@ -171,7 +172,7 @@ def main():
     print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
           ('Pro' if should_get_pro else 'Express'))
     print('  current_hash: %s' % current_hash)
-    print('  desired_hashes: %s' % desired_hashes)
+    print('  desired_hashes: %s' % ', '.join(desired_hashes))
     DelayBeforeRemoving(target_dir)
     # This stays resident and will make the rmdir below fail.
     with open(os.devnull, 'wb') as nul:
@@ -181,7 +182,8 @@ def main():
       subprocess.check_call('rmdir /s/q "%s"' % target_dir, shell=True)
     args = [sys.executable,
             'toolchain2013.py',
-            '--targetdir', target_dir]
+            '--targetdir', target_dir,
+            '--sha1', desired_hashes[0]]
     if not should_get_pro:
       args.append('--express')
     subprocess.check_call(args)
@@ -190,7 +192,7 @@ def main():
       print >> sys.stderr, (
           'Got wrong hash after pulling a new toolchain. '
           'Wanted one of \'%s\', got \'%s\'.' % (
-              desired_hashes, current_hash))
+              ', '.join(desired_hashes), current_hash))
       return 1
     SaveTimestampsAndHash(target_dir, current_hash)
 
