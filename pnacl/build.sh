@@ -1151,7 +1151,7 @@ install-unwind-header() {
   # across compilers or C libraries.
   local install="/usr/bin/install -c -m 644"
   ${install} ${TC_SRC_GCC}/gcc/unwind-generic.h \
-             ${LLVM_INSTALL_DIR}/lib/clang/3.3/include/unwind.h
+             ${LLVM_INSTALL_DIR}/lib/clang/3.4/include/unwind.h
 }
 
 #########################################################################
@@ -2816,7 +2816,7 @@ HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
   # On windows, copy the cygwin DLLs needed by the driver tools
   if ${BUILD_PLATFORM_WIN}; then
     StepBanner "DRIVER" "Copying cygwin libraries"
-    local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z"
+    local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z ncurses-10"
     for name in ${deps}; do
       cp "/bin/cyg${name}.dll" "${destdir}"
     done

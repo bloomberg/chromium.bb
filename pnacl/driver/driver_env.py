@@ -143,8 +143,8 @@ INITIAL_ENV = {
   # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
   # 'clang++' doesn't work on Windows (outside of Cygwin),
-  # because it is a symlink. '-ccc-cxx' enables C++ mode.
-  'CLANGXX'       : '${BASE_LLVM_BIN}/clang${EXEC_EXT} -ccc-cxx',
+  # because it is a symlink.
+  'CLANGXX'       : '${BASE_LLVM_BIN}/clang${EXEC_EXT} --driver-mode=g++',
   'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
   'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
   'LLVM_NM'       : '${BASE_LLVM_BIN}/llvm-nm${EXEC_EXT}',

@@ -193,7 +193,7 @@ def CopyWindowsHostLibs(host):
     return []
   if command.Runnable.use_cygwin:
     libs = ('cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygwin1.dll', 'cygintl-8.dll',
-            'cygstdc++-6.dll', 'cygz.dll')
+            'cygstdc++-6.dll', 'cygz.dll', 'cygncurses-10.dll')
     return [command.Copy(
                     os.path.join(CYGWIN_PATH, 'bin', lib),
                     os.path.join('%(output)s', 'bin', lib))
