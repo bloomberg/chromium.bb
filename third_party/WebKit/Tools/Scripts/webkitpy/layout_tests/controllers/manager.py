@@ -250,6 +250,11 @@ class Manager(object):
         summarized_failing_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=True)
 
         exit_code = summarized_failing_results['num_regressions']
+        if exit_code > test_run_results.MAX_FAILURES_EXIT_STATUS:
+            _log.warning('num regressions (%d) exceeds max exit status (%d)' %
+                         (exit_code, test_run_results.MAX_FAILURES_EXIT_STATUS))
+            exit_code = test_run_results.MAX_FAILURES_EXIT_STATUS
+
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
             self._upload_json_files()

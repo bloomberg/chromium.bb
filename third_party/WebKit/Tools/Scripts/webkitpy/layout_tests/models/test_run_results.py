@@ -58,6 +58,9 @@ ERROR_CODES = (
     UNEXPECTED_ERROR_EXIT_STATUS,
 )
 
+# In order to avoid colliding with the above codes, we put a ceiling on
+# the value returned by num_regressions
+MAX_FAILURES_EXIT_STATUS = 101
 
 class TestRunException(Exception):
     def __init__(self, code, msg):
