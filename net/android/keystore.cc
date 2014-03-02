@@ -134,7 +134,7 @@ EVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key_ref) {
   // Given that this routine shall only be called on Android < 4.2,
   // this won't be a problem in the far future (e.g. when Android gets
   // ported to 64-bit environments, if ever).
-  int pkey = Java_AndroidKeyStore_getOpenSSLHandleForPrivateKey(
+  long pkey = Java_AndroidKeyStore_getOpenSSLHandleForPrivateKey(
       env,
       GetKeyStore(private_key_ref).obj(),
       private_key_ref);

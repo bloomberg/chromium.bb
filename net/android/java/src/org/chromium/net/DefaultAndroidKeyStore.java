@@ -143,7 +143,7 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
     }
 
     @Override
-    public int getOpenSSLHandleForPrivateKey(AndroidPrivateKey key) {
+    public long getOpenSSLHandleForPrivateKey(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
         // Sanity checks
         if (javaKey == null) {
@@ -207,9 +207,9 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
                 return 0;
             }
             getPkeyContext.setAccessible(true);
-            int evp_pkey = 0;
+            long evp_pkey = 0;
             try {
-                evp_pkey = (Integer) getPkeyContext.invoke(opensslKey);
+                evp_pkey = (Long) getPkeyContext.invoke(opensslKey);
             } finally {
                 getPkeyContext.setAccessible(false);
             }
