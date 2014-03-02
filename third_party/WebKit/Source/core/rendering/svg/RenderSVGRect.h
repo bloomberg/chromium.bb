@@ -42,7 +42,7 @@ private:
     virtual const char* renderName() const OVERRIDE { return "RenderSVGRect"; }
 
     virtual void updateShapeFromElement() OVERRIDE;
-    virtual bool isEmpty() const OVERRIDE { return m_usePathFallback ? RenderSVGShape::isEmpty() : m_fillBoundingBox.isEmpty(); }
+    virtual bool isShapeEmpty() const OVERRIDE { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
     virtual void fillShape(GraphicsContext*) const OVERRIDE;
     virtual void strokeShape(GraphicsContext*) const OVERRIDE;
     virtual bool shapeDependentStrokeContains(const FloatPoint&) OVERRIDE;

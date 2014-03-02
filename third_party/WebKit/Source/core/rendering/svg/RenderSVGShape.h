@@ -65,7 +65,7 @@ public:
 
 protected:
     virtual void updateShapeFromElement();
-    virtual bool isEmpty() const OVERRIDE;
+    virtual bool isShapeEmpty() const { return path().isEmpty(); }
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
     float strokeWidth() const;

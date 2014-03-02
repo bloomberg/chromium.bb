@@ -63,18 +63,13 @@ void RenderSVGShape::updateShapeFromElement()
 {
     m_path.clear();
     m_path = adoptPtr(new Path);
-    ASSERT(RenderSVGShape::isEmpty());
+    ASSERT(RenderSVGShape::isShapeEmpty());
 
     updatePathFromGraphicsElement(toSVGGraphicsElement(element()), path());
     processMarkerPositions();
 
     m_fillBoundingBox = calculateObjectBoundingBox();
     m_strokeBoundingBox = calculateStrokeBoundingBox();
-}
-
-bool RenderSVGShape::isEmpty() const
-{
-    return path().isEmpty();
 }
 
 void RenderSVGShape::fillShape(GraphicsContext* context) const
@@ -243,7 +238,7 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
 
-    if (paintInfo.context->paintingDisabled() || style()->visibility() == HIDDEN || isEmpty())
+    if (paintInfo.context->paintingDisabled() || style()->visibility() == HIDDEN || isShapeEmpty())
         return;
     FloatRect boundingBox = repaintRectInLocalCoordinates();
     if (!SVGRenderSupport::paintInfoIntersectsRepaintRect(boundingBox, m_localTransform, paintInfo))
