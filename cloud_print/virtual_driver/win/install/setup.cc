@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <comdef.h>
 #include <iomanip>
 #include <windows.h>
 #include <winspool.h>
@@ -271,8 +270,6 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
   base::FilePath ui_help_path = temp_path.path().Append(kHelpName);
 
   if (!base::PathExists(xps_path)) {
-    SetGoogleUpdateError(kGoogleUpdateProductId,
-                         LoadLocalString(IDS_ERROR_NO_XPS));
     return HRESULT_FROM_WIN32(ERROR_BAD_DRIVER);
   }
 
@@ -537,17 +534,26 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
                    __in  HINSTANCE hPrevInstance,
                    __in  LPSTR lpCmdLine,
                    __in  int nCmdShow) {
+  using namespace cloud_print;
+
   base::AtExitManager at_exit_manager;
   CommandLine::Init(0, NULL);
-  HRESULT retval = cloud_print::ExecuteCommands();
 
-  VLOG(0) << _com_error(retval).ErrorMessage() << " HRESULT=0x" <<
-            std::setbase(16) << retval;
+  HRESULT retval = ExecuteCommands();
+
+  if (retval == HRESULT_FROM_WIN32(ERROR_BAD_DRIVER)) {
+    SetGoogleUpdateError(kGoogleUpdateProductId,
+                         LoadLocalString(IDS_ERROR_NO_XPS));
+  } else if (FAILED(retval)) {
+    SetGoogleUpdateError(kGoogleUpdateProductId, retval);
+  }
+
+  VLOG(0) << GetErrorMessage(retval)
+          << " HRESULT=0x" << std::setbase(16) << retval;
 
   // Installer is silent by default as required by Google Update.
   if (CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
-    cloud_print::DisplayWindowsMessage(NULL, retval,
-        cloud_print::LoadLocalString(IDS_DRIVER_NAME));
+    DisplayWindowsMessage(NULL, retval, LoadLocalString(IDS_DRIVER_NAME));
   }
   return retval;
 }

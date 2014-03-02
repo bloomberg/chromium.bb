@@ -21,6 +21,9 @@ void SetGoogleUpdateKeys(const base::string16& product_id,
 void SetGoogleUpdateError(const base::string16& product_id,
                           const base::string16& message);
 
+// Sets custom system error code to show by Google Update installer
+void SetGoogleUpdateError(const base::string16& product_id, HRESULT hr);
+
 // Deletes Google Update reg keys on product uninstall.
 void DeleteGoogleUpdateKeys(const base::string16& product_id);
 

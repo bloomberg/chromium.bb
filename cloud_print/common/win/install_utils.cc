@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/win/registry.h"
+#include "cloud_print/common/win/cloud_print_utils.h"
 
 namespace cloud_print {
 
@@ -24,9 +25,15 @@ const wchar_t kClientStateKey[] = L"SOFTWARE\\Google\\Update\\ClientState\\";
 const wchar_t* kUsageKey = L"dr";
 const wchar_t kVersionKey[] = L"pv";
 const wchar_t kNameKey[] = L"name";
-const DWORD kInstallerResultFailedCustomError = 1;
+
+enum InstallerResult {
+  INSTALLER_RESULT_FAILED_CUSTOM_ERROR = 1,
+  INSTALLER_RESULT_FAILED_SYSTEM_ERROR = 3,
+};
+
 const wchar_t kRegValueInstallerResult[] = L"InstallerResult";
 const wchar_t kRegValueInstallerResultUIString[] = L"InstallerResultUIString";
+const wchar_t kRegValueInstallerError[] = L"InstallerError";
 
 // Uninstall related constants.
 const wchar_t kUninstallKey[] =
@@ -84,10 +91,26 @@ void SetGoogleUpdateError(const base::string16& product_id,
   }
 
   if (key.WriteValue(kRegValueInstallerResult,
-                     kInstallerResultFailedCustomError) != ERROR_SUCCESS ||
+                     INSTALLER_RESULT_FAILED_CUSTOM_ERROR) != ERROR_SUCCESS ||
       key.WriteValue(kRegValueInstallerResultUIString,
                      message.c_str()) != ERROR_SUCCESS) {
       LOG(ERROR) << "Unable to set registry keys";
+  }
+}
+
+void SetGoogleUpdateError(const base::string16& product_id, HRESULT hr) {
+  LOG(ERROR) << cloud_print::GetErrorMessage(hr);
+  base::win::RegKey key;
+  if (key.Create(HKEY_LOCAL_MACHINE,
+    (cloud_print::kClientStateKey + product_id).c_str(),
+    KEY_SET_VALUE) != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to open key";
+  }
+
+  if (key.WriteValue(kRegValueInstallerResult,
+                     INSTALLER_RESULT_FAILED_SYSTEM_ERROR) != ERROR_SUCCESS ||
+      key.WriteValue(kRegValueInstallerError, hr) != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to set registry keys";
   }
 }
 
