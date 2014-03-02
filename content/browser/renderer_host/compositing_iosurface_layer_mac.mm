@@ -7,6 +7,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/gl.h>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
@@ -91,6 +92,13 @@
 }
 
 - (void)waitForResizedFrameInContext:(CGLContextObj)glContext {
+  // This appears to be causing crashes on 10.6. Temporarily disable the
+  // synchronized resize on 10.6 to verify that the crashes go away.
+  // TODO(ccameron): Remove this.
+  // http://crbug.com/348328
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   // Cache a copy of renderWidgetHostView_ because it may be reset if
   // a software frame is received in GetBackingStore.
   content::RenderWidgetHostViewMac* cached_view = renderWidgetHostView_;

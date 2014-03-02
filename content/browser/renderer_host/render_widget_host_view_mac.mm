@@ -4194,7 +4194,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // Call GetBackingStore to stall until a software frame of the same size as
   // the window comes in from the renderer.
   BackingStoreMac* backingStore = NULL;
-  if (renderWidgetHostView_ &&
+
+  // This appears to be causing crashes on 10.6. Temporarily disable the
+  // synchronized resize on 10.6 to verify that the crashes go away.
+  // TODO(ccameron): Remove this.
+  // http://crbug.com/348328
+  if (!base::mac::IsOSSnowLeopard() &&
+      renderWidgetHostView_ &&
       renderWidgetHostView_->render_widget_host_ &&
       !renderWidgetHostView_->render_widget_host_->is_hidden()) {
     // GetBackingStore will dispatch some messages from the run loop, so make
