@@ -1012,6 +1012,34 @@ def _CheckCygwinShell(input_api, output_api):
   return []
 
 
+def _CheckUserActionUpdate(input_api, output_api):
+  """Checks if any new user action has been added."""
+  if any('chromeactions.txt' == input_api.os_path.basename(f) for f in
+         input_api.LocalPaths()):
+    # If chromeactions.txt is already included in the changelist, the PRESUBMIT
+    # for chromeactions.txt will do a more complete presubmit check.
+    return []
+
+  with open('tools/metrics/actions/chromeactions.txt') as f:
+    current_actions = f.read()
+
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm'))
+  action_re = r'[^a-zA-Z]UserMetricsAction\("([^"]*)'
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      match = input_api.re.search(action_re, line)
+      if match:
+        for action_name in match.groups():
+          name_pattern = r'\t%s\n' % action_name
+          if name_pattern not in current_actions:
+            return [output_api.PresubmitPromptWarning(
+              'File %s line %d: %s is missing in '
+              'tools/metrics/actions/chromeactions.txt. Please run '
+              'tools/metrics/actions/extract_actions.py --hash to update.'
+              % (f.LocalPath(), line_num, action_name))]
+  return []
+
+
 def _CheckJavaStyle(input_api, output_api):
   """Runs checkstyle on changed java files and returns errors if any exist."""
   original_sys_path = sys.path
@@ -1061,6 +1089,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckSpamLogging(input_api, output_api))
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
+  results.extend(_CheckUserActionUpdate(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
