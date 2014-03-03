@@ -71,8 +71,10 @@ const size_t kEchoToConsoleTraceEventBufferChunks = 256;
 
 const int kThreadFlushTimeoutMs = 3000;
 
+#if !defined(OS_NACL)
 // These categories will cause deadlock when ECHO_TO_CONSOLE. crbug.com/325575.
 const char kEchoToConsoleCategoryFilter[] = "-ipc,-task";
+#endif
 
 const char kSyntheticDelayCategoryFilterPrefix[] = "DELAY(";
 
