@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/system/message_pipe_endpoint.h"
 
 namespace mojo {
 namespace system {
@@ -70,6 +71,10 @@ void Channel::Shutdown() {
 
 MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
     scoped_refptr<MessagePipe> message_pipe, unsigned port) {
+  DCHECK(port == 0 || port == 1);
+  // Note: This assertion must *not* be done under |lock_|.
+  DCHECK_EQ(message_pipe->GetType(port), MessagePipeEndpoint::kTypeProxy);
+
   MessageInTransit::EndpointId local_id;
   {
     base::AutoLock locker(lock_);

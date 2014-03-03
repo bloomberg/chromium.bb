@@ -32,6 +32,12 @@ unsigned MessagePipe::GetPeerPort(unsigned port) {
   return port ^ 1;
 }
 
+MessagePipeEndpoint::Type MessagePipe::GetType(unsigned port) {
+  DCHECK(port == 0 || port == 1);
+  base::AutoLock locker(lock_);
+  return endpoints_[port]->GetType();
+}
+
 void MessagePipe::CancelAllWaiters(unsigned port) {
   DCHECK(port == 0 || port == 1);
 
@@ -54,7 +60,6 @@ void MessagePipe::Close(unsigned port) {
   endpoints_[port].reset();
 }
 
-// TODO(vtl): Support sending handles.
 // TODO(vtl): Handle flags.
 MojoResult MessagePipe::WriteMessage(
     unsigned port,

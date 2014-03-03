@@ -24,6 +24,10 @@ LocalMessagePipeEndpoint::~LocalMessagePipeEndpoint() {
   DCHECK(message_queue_.empty());  // Should be implied by not being open.
 }
 
+MessagePipeEndpoint::Type LocalMessagePipeEndpoint::GetType() const {
+  return kTypeLocal;
+}
+
 void LocalMessagePipeEndpoint::Close() {
   DCHECK(is_open_);
   is_open_ = false;

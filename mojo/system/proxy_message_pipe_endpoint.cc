@@ -29,6 +29,10 @@ ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
   DCHECK(paused_message_queue_.empty());
 }
 
+MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
+  return kTypeProxy;
+}
+
 void ProxyMessagePipeEndpoint::Close() {
   DCHECK(is_open_);
   is_open_ = false;

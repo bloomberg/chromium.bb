@@ -14,13 +14,13 @@
 #include "mojo/public/system/core.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
 class Channel;
-class MessagePipeEndpoint;
 class Waiter;
 
 // |MessagePipe| is the secondary object implementing a message pipe (see the
@@ -39,6 +39,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
 
   // Gets the other port number (i.e., 0 -> 1, 1 -> 0).
   static unsigned GetPeerPort(unsigned port);
+
+  // Gets the type of the endpoint (used for assertions, etc.).
+  MessagePipeEndpoint::Type GetType(unsigned port);
 
   // These are called by the dispatcher to implement its methods of
   // corresponding names. In all cases, the port |port| must be open.

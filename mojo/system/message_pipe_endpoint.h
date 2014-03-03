@@ -35,6 +35,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
  public:
   virtual ~MessagePipeEndpoint() {}
 
+  enum Type {
+    kTypeLocal,
+    kTypeProxy
+  };
+  virtual Type GetType() const = 0;
+
   // All implementations must implement these.
   virtual void Close() = 0;
   virtual void OnPeerClose() = 0;
