@@ -36,24 +36,25 @@ function test()
 
     function step3()
     {
-        function dumpFormattedRecord(record, prefix)
+        function dumpFormattedRecord(presentationRecord, prefix)
         {
-             prefix = prefix || "";
-             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
-             if (!record.coalesced && record.type !== "GCEvent")
-                 InspectorTest.addResult(prefix + record.type);
-             // Ignore stray paint & rendering events for better stability.
-             if (record.category.name !== "loading" && record.category.name !== "scripting")
-                 return;
-             if (record._children) {
-                 var childPrefix = prefix + (record.coalesced ? "" : "    ");
-                 for (var i = 0; i < record._children.length; ++i)
-                     dumpFormattedRecord(record._children[i], childPrefix);
-             }
+            var record = presentationRecord.record();
+            prefix = prefix || "";
+            // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
+            if (!presentationRecord.coalesced() && record.type !== "GCEvent")
+                InspectorTest.addResult(prefix + record.type);
+            // Ignore stray paint & rendering events for better stability.
+            if (record.category.name !== "loading" && record.category.name !== "scripting")
+                return;
+            if (presentationRecord.presentationChildren()) {
+                var childPrefix = prefix + (presentationRecord.coalesced() ? "" : "    ");
+                for (var i = 0; i < presentationRecord.presentationChildren().length; ++i)
+                    dumpFormattedRecord(presentationRecord.presentationChildren()[i], childPrefix);
+            }
         }
         WebInspector.panels.timeline._model._collectionEnabled = false;
 
-        var records = WebInspector.panels.timeline._currentViews[0]._rootRecord().children;
+        var records = WebInspector.panels.timeline._currentViews[0]._rootRecord().presentationChildren();
         for (var i = 0; i < records.length; ++i)
             dumpFormattedRecord(records[i]);
         InspectorTest.completeTest();

@@ -18,7 +18,6 @@ function test()
     var requestId;
     var scriptUrl = "timeline-network-resource.js";
 
-    WebInspector.TimelineModel._doNotAssignEndTime = true;
     var model = WebInspector.panels.timeline._model;
     var presentationModel = InspectorTest.timelinePresentationModel();
 
@@ -53,7 +52,7 @@ function test()
                 lastRecordStartTime = record.startTime;
             }
         }
-        WebInspector.TimelinePresentationModel.forAllRecords([presentationModel.rootRecord()], format);
+        model.forAllRecords(format);
         InspectorTest.completeTest();
     }
 

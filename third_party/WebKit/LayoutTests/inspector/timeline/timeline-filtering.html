@@ -44,12 +44,12 @@ function test()
     function printRecord(record)
     {
         var prefix = [];
-        var current = record.parent;
+        var current = record.presentationParent();
         while (current) {
-            current = current.parent;
+            current = current.presentationParent();
             prefix.push(" ");
         }
-        var mark = record.expandable ? (record.collapsed ? "+" : "-") : " ";
+        var mark = record.expandable() ? (record.collapsed() ? "+" : "-") : " ";
         InspectorTest.addResult(prefix.join("") + mark + record._record.data.message);
     }
 
@@ -76,7 +76,7 @@ function test()
     for (var i = 0; i < records.length; ++i) {
         var record = records[i];
         if (collapseList[record._record.data.message]) {
-            record.collapsed = true;
+            record.setCollapsed(true);
             record.clicked = true;
         }
     }

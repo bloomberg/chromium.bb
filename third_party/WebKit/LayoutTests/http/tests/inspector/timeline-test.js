@@ -152,9 +152,7 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
         prefix = "----" + prefix;
     if (level > 0)
         prefix = prefix + "> ";
-    if (record.coalesced) {
-        suffix = " x " + record.children.length;
-    } else if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp
+    if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type === WebInspector.TimelineModel.RecordType.ConsoleTime) {
         suffix = " : " + record.data.message;
     }
@@ -170,6 +168,36 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
     }
 }
 
+// Dump just the record name, indenting output on separate lines for subrecords
+InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallback, level, filterTypes)
+{
+    var record = presentationRecord.record();
+    if (typeof level !== "number")
+        level = 0;
+    var prefix = "";
+    var suffix = "";
+    for (var i = 0; i < level ; ++i)
+        prefix = "----" + prefix;
+    if (level > 0)
+        prefix = prefix + "> ";
+    if (presentationRecord.coalesced()) {
+        suffix = " x " + presentationRecord.presentationChildren().length;
+    } else if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp
+        || record.type === WebInspector.TimelineModel.RecordType.ConsoleTime) {
+        suffix = " : " + record.data.message;
+    }
+    if (detailsCallback)
+        suffix += " " + detailsCallback(record);
+    InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type) + suffix);
+
+    var numChildren = presentationRecord.presentationChildren() ? presentationRecord.presentationChildren().length : 0;
+    for (var i = 0; i < numChildren; ++i) {
+        if (filterTypes && filterTypes.indexOf(presentationRecord.presentationChildren()[i].record().type) == -1)
+            continue;
+        InspectorTest.dumpPresentationRecord(presentationRecord.presentationChildren()[i], detailsCallback, level + 1, filterTypes);
+    }
+}
+
 InspectorTest.dumpTimelineRecords = function(timelineRecords)
 {
     for (var i = 0; i < timelineRecords.length; ++i)
@@ -180,6 +208,8 @@ InspectorTest.printTimelineRecordProperties = function(record)
 {
     InspectorTest.addResult(InspectorTest._timelineAgentTypeToString(record.type) + " Properties:");
     // Use this recursive routine to print the properties
+    if (record instanceof WebInspector.TimelineModel.Record)
+        record = record._record;
     InspectorTest.addObject(record, InspectorTest.timelinePropertyFormatters);
 };
 
@@ -202,8 +232,7 @@ InspectorTest.findPresentationRecord = function(type)
         result = record;
         return true;
     }
-    var records = WebInspector.panel("timeline")._currentViews[0]._rootRecord().children;
-    WebInspector.TimelinePresentationModel.forAllRecords(records, findByType);
+    WebInspector.panel("timeline")._model.forAllRecords(findByType);
     return result;
 }
 

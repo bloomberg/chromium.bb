@@ -9,7 +9,7 @@ function initialize_TimelineCoalescing()
 
 InspectorTest.dumpStats = function(record)
 {
-    if (!record.parent)
+    if (record.type === "Root")
         return "";
     var aggregatedStats = record.aggregatedStats;
     var timeByCategory = "";
@@ -84,8 +84,8 @@ function test()
     InspectorTest.loadTimelineRecords(records);
 
     var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
-    InspectorTest.dumpTimelineRecord(rootRecord, InspectorTest.dumpStats);
-    var coalesced = rootRecord.children[0];
+    InspectorTest.dumpPresentationRecord(rootRecord, InspectorTest.dumpStats);
+    var coalesced = rootRecord.presentationChildren()[0];
     InspectorTest.addResult("coalesced record's hasWarnings(): " + coalesced.hasWarnings());
     InspectorTest.addResult("coalesced record's childHasWarnings(): " + coalesced.childHasWarnings());
     InspectorTest.completeTest();

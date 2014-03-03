@@ -78,7 +78,7 @@ function test()
         function callback()
         {
             var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
-            InspectorTest.dumpTimelineRecord(rootRecord, undefined, undefined, ["FunctionCall", "ConsoleTime", "TimeStamp"]);
+            InspectorTest.dumpPresentationRecord(rootRecord, undefined, undefined, ["FunctionCall", "ConsoleTime", "TimeStamp"]);
             InspectorTest.timelinePresentationModel().reset();
             next();
         }
