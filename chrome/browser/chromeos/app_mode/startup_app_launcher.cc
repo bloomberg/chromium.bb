@@ -171,8 +171,9 @@ void StartupAppLauncher::InitializeTokenService() {
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
-  if (profile_token_service->RefreshTokenIsAvailable(
-          signin_manager->GetAuthenticatedAccountId()) ||
+  const std::string primary_account_id =
+      signin_manager->GetAuthenticatedAccountId();
+  if (profile_token_service->RefreshTokenIsAvailable(primary_account_id) ||
       auth_params_.refresh_token.empty()) {
     MaybeInitializeNetwork();
   } else {
@@ -191,7 +192,7 @@ void StartupAppLauncher::InitializeTokenService() {
     profile_token_service->AddObserver(this);
 
     profile_token_service->UpdateCredentials(
-        "kiosk_mode@localhost",
+        primary_account_id,
         auth_params_.refresh_token);
   }
 }
