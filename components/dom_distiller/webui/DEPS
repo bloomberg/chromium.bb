@@ -1,5 +1,6 @@
 include_rules = [
   "+components/dom_distiller/webui",
+  "+net/base",
   "+ui/webui/resources",
   # The webui of this component needs to depend on content, but since it is
   # also supposed to be working on iOS, and there is currently no concrete plan

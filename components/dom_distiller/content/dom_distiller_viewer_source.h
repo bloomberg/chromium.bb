@@ -11,16 +11,20 @@
 
 namespace dom_distiller {
 
-class DomDistillerService;
+class DomDistillerServiceInterface;
+class DomDistillerViewerSourceTest;
+class ViewerHandle;
+class ViewRequestDelegate;
 
 // Serves HTML and resources for viewing distilled articles.
 class DomDistillerViewerSource : public content::URLDataSource {
  public:
-  DomDistillerViewerSource(DomDistillerService* dom_distiller_service,
+  DomDistillerViewerSource(DomDistillerServiceInterface* dom_distiller_service,
                            const std::string& scheme);
   virtual ~DomDistillerViewerSource();
 
- private:
+  class RequestViewerHandle;
+
   // Overridden from content::URLDataSource:
   virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
@@ -29,18 +33,27 @@ class DomDistillerViewerSource : public content::URLDataSource {
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual bool ShouldServiceRequest(const net::URLRequest* request)
-      const OVERRIDE;
+  virtual bool ShouldServiceRequest(const net::URLRequest* request) const
+      OVERRIDE;
   virtual void WillServiceRequest(const net::URLRequest* request,
                                   std::string* path) const OVERRIDE;
   virtual std::string GetContentSecurityPolicyObjectSrc() const OVERRIDE;
+
+ private:
+  friend class DomDistillerViewerSourceTest;
+
+  // Based on the given path, calls into the DomDistillerServiceInterface for
+  // viewing distilled content based on the |path|.
+  scoped_ptr<ViewerHandle> CreateViewRequest(
+      const std::string& path,
+      ViewRequestDelegate* view_request_delegate);
 
   // The scheme this URLDataSource is hosted under.
   std::string scheme_;
 
   // The service which contains all the functionality needed to interact with
   // the list of articles.
-  DomDistillerService* dom_distiller_service_;
+  DomDistillerServiceInterface* dom_distiller_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };

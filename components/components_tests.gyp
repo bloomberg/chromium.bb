@@ -32,6 +32,7 @@
             'dom_distiller/core/dom_distiller_service_unittest.cc',
             'dom_distiller/core/dom_distiller_store_unittest.cc',
             'dom_distiller/core/task_tracker_unittest.cc',
+            'dom_distiller/core/url_utils_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
@@ -157,9 +158,15 @@
           ],
           'conditions': [
             ['OS != "ios"', {
+              'sources': [
+                'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+              ],
               'dependencies': [
                 # Dependencies of browser_context_keyed_service
                 'components.gyp:browser_context_keyed_service',
+
+                # Dependencies of dom_distiller
+                'components.gyp:dom_distiller_content',
 
                 # Dependencies of
                 # intercept_navigation_resource_throttle_unittest.cc

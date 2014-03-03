@@ -10,11 +10,17 @@
   <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_URL" desc="The label for the URL of an entry on the DOM Distiller debug page.">
     URL
   </message>
-  <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD" desc="The label for for the button for adding a new entry on the DOM Distiller debug page.">
+  <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD" desc="The label for the button for adding a new entry on the DOM Distiller debug page.">
     Add
   </message>
   <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD_FAILED" desc="The label to show when adding an article failed on the DOM Distiller debug page.">
     Failed to add article.
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_VIEW_URL" desc="The label for the button for viewing a URL on the DOM Distiller debug page.">
+    View
+  </message>
+  <message name="IDS_DOM_DISTILLER_WEBUI_VIEW_URL_FAILED" desc="The label to show when viewing a URL failed on the DOM Distiller debug page.">
+    Failed to view article.
   </message>
   <message name="IDS_DOM_DISTILLER_WEBUI_REFRESH" desc="The label for the button for refreshing the list of entries on the DOM Distiller debug page.">
     Refresh

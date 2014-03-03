@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,6 +22,7 @@
 #include "components/dom_distiller/core/fake_db.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "components/dom_distiller/core/task_tracker.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -138,7 +140,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
     return service;
   }
 
-  void ViewSingleDistilledPage();
+  void ViewSingleDistilledPage(const GURL& url);
 
   // Database entries.
   static FakeDB::EntryMap* database_model_;
@@ -153,10 +155,12 @@ bool DomDistillerViewerSourceBrowserTest::expect_distillation_ = false;
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
                        NoWebUIBindingsArticleExists) {
   // Ensure there is one item in the database, which will trigger distillation.
-  ArticleEntry entry = CreateEntry("DISTILLED", "http://example.com/1");
+  const ArticleEntry entry = CreateEntry("DISTILLED", "http://example.com/1");
   AddEntry(entry, database_model_);
   expect_distillation_ = true;
-  ViewSingleDistilledPage();
+  const GURL url = url_utils::GetDistillerViewUrlFromEntryId(
+      chrome::kDomDistillerScheme, entry.entry_id());
+  ViewSingleDistilledPage(url);
 }
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
@@ -165,10 +169,25 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
                        NoWebUIBindingsArticleNotFound) {
   // The article does not exist, so assume no distillation will happen.
   expect_distillation_ = false;
-  ViewSingleDistilledPage();
+  const GURL url(std::string(chrome::kDomDistillerScheme) + "://" +
+                 base::GenerateGUID() + "/");
+  ViewSingleDistilledPage(url);
 }
 
-void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage() {
+// The DomDistillerViewerSource renders untrusted content, so ensure no bindings
+// are enabled when requesting to view an arbitrary URL.
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       NoWebUIBindingsViewUrl) {
+  // We should expect distillation for any valid URL.
+  expect_distillation_ = true;
+  GURL view_url("http://www.example.com/1");
+  const GURL url = url_utils::GetDistillerViewUrlFromUrl(
+      chrome::kDomDistillerScheme, view_url);
+  ViewSingleDistilledPage(url);
+}
+
+void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
+    const GURL& url) {
   // Create the service.
   DomDistillerContextKeyedService* service =
       static_cast<DomDistillerContextKeyedService*>(
@@ -187,8 +206,6 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage() {
   LoadSuccessObserver observer(contents);
 
   // Navigate to a URL which the source should respond to.
-  std::string url_without_scheme = "://distilled";
-  GURL url(chrome::kDomDistillerScheme + url_without_scheme);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // A navigation should have succeeded to the correct URL.

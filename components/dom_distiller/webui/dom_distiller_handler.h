@@ -19,8 +19,7 @@ class DomDistillerService;
 class DomDistillerHandler : public content::WebUIMessageHandler {
  public:
   // The lifetime of |service| has to outlive this handler.
-  DomDistillerHandler(DomDistillerService* service,
-                      const std::string& scheme);
+  DomDistillerHandler(DomDistillerService* service, const std::string& scheme);
   virtual ~DomDistillerHandler();
 
   // content::WebUIMessageHandler implementation.
@@ -39,6 +38,10 @@ class DomDistillerHandler : public content::WebUIMessageHandler {
   // in |args| should be a string representing the ID of the entry to be
   // selected.
   void HandleSelectArticle(const base::ListValue* args);
+
+  // Callback from JavaScript for when viewing a URL is requested. The first
+  // element in |args| should be a string representing the URL to be viewed.
+  void HandleViewUrl(const base::ListValue* args);
 
  private:
   // Callback from DomDistillerService when an article is available.

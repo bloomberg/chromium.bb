@@ -26,22 +26,25 @@ DomDistillerUi::DomDistillerUi(content::WebUI* web_ui,
   source->SetDefaultResource(IDR_ABOUT_DOM_DISTILLER_HTML);
   source->AddResourcePath("about_dom_distiller.css",
                           IDR_ABOUT_DOM_DISTILLER_CSS);
-  source->AddResourcePath("about_dom_distiller.js",
-                          IDR_ABOUT_DOM_DISTILLER_JS);
+  source->AddResourcePath("about_dom_distiller.js", IDR_ABOUT_DOM_DISTILLER_JS);
 
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("domDistillerTitle",
-      IDS_DOM_DISTILLER_WEBUI_TITLE);
+                             IDS_DOM_DISTILLER_WEBUI_TITLE);
   source->AddLocalizedString("addArticleUrl",
-      IDS_DOM_DISTILLER_WEBUI_ENTRY_URL);
+                             IDS_DOM_DISTILLER_WEBUI_ENTRY_URL);
   source->AddLocalizedString("addArticleAddButtonLabel",
-      IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD);
+                             IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD);
   source->AddLocalizedString("addArticleFailedLabel",
-      IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD_FAILED);
+                             IDS_DOM_DISTILLER_WEBUI_ENTRY_ADD_FAILED);
+  source->AddLocalizedString("viewUrlButtonLabel",
+                             IDS_DOM_DISTILLER_WEBUI_VIEW_URL);
+  source->AddLocalizedString("viewUrlFailedLabel",
+                             IDS_DOM_DISTILLER_WEBUI_VIEW_URL_FAILED);
   source->AddLocalizedString("loadingEntries",
-      IDS_DOM_DISTILLER_WEBUI_FETCHING_ENTRIES);
+                             IDS_DOM_DISTILLER_WEBUI_FETCHING_ENTRIES);
   source->AddLocalizedString("refreshButtonLabel",
-      IDS_DOM_DISTILLER_WEBUI_REFRESH);
+                             IDS_DOM_DISTILLER_WEBUI_REFRESH);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

@@ -10,11 +10,29 @@
 #include "base/values.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "net/base/escape.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
+
+namespace {
+
+GURL GetViewUrlFromArgs(const std::string& scheme,
+                        const base::ListValue* args) {
+  std::string url;
+  if (args->GetString(0, &url)) {
+    const GURL gurl(url);
+    if (url_utils::IsUrlDistillable(gurl)) {
+      return url_utils::GetDistillerViewUrlFromUrl(scheme, gurl);
+    }
+  }
+  return GURL();
+}
+
+}  // namespace
 
 DomDistillerHandler::DomDistillerHandler(DomDistillerService* service,
                                          const std::string& scheme)
@@ -35,6 +53,9 @@ void DomDistillerHandler::RegisterMessages() {
       "selectArticle",
       base::Bind(&DomDistillerHandler::HandleSelectArticle,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "viewUrl",
+      base::Bind(&DomDistillerHandler::HandleViewUrl, base::Unretained(this)));
 }
 
 void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
@@ -51,13 +72,29 @@ void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
   }
 }
 
+void DomDistillerHandler::HandleViewUrl(const base::ListValue* args) {
+  GURL view_url = GetViewUrlFromArgs(article_scheme_, args);
+  if (view_url.is_valid()) {
+    web_ui()->GetWebContents()->GetController().LoadURL(
+        view_url,
+        content::Referrer(),
+        content::PAGE_TRANSITION_GENERATED,
+        std::string());
+  } else {
+    web_ui()->CallJavascriptFunction("domDistiller.onViewUrlFailed");
+  }
+}
+
 void DomDistillerHandler::HandleSelectArticle(const base::ListValue* args) {
   std::string entry_id;
   args->GetString(0, &entry_id);
-  GURL url(article_scheme_ + std::string("://") + entry_id);
+  GURL url =
+      url_utils::GetDistillerViewUrlFromEntryId(article_scheme_, entry_id);
   DCHECK(url.is_valid());
-  web_ui()->GetWebContents()->GetController().LoadURL(url,
-      content::Referrer(), content::PAGE_TRANSITION_GENERATED,
+  web_ui()->GetWebContents()->GetController().LoadURL(
+      url,
+      content::Referrer(),
+      content::PAGE_TRANSITION_GENERATED,
       std::string());
 }
 
@@ -74,9 +111,10 @@ void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {
     std::string title = (!article.has_title() || article.title().empty())
                             ? article.entry_id()
                             : article.title();
-    entry->SetString("title", title);
+    entry->SetString("title", net::EscapeForHTML(title));
     entries.Append(entry.release());
   }
+  // TODO(nyquist): Write a test that ensures we sanitize the data we send.
   web_ui()->CallJavascriptFunction("domDistiller.onReceivedEntries", entries);
 }
 

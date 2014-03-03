@@ -37,18 +37,43 @@ var domDistiller = {
     $('add-entry-error').classList.remove('hidden');
   },
 
+  /**
+   * Callback from the backend when viewing a URL failed.
+   */
+  onViewUrlFailed: function() {
+    $('view-url-error').classList.remove('hidden');
+  },
+
   removeAllChildren: function(root) {
     while(root.firstChild) {
       root.removeChild(root.firstChild);
     }
   },
 
+  /**
+   * Sends a request to the browser process to add the URL specified to the list
+   * of articles.
+   */
   onAddArticle: function() {
     $('add-entry-error').classList.add('hidden');
     var url = $('article_url').value;
     chrome.send('addArticle', [url]);
   },
 
+  /**
+   * Sends a request to the browser process to view a distilled version of the
+   * URL specified.
+   */
+  onViewUrl: function() {
+    $('view-url-error').classList.add('hidden');
+    var url = $('article_url').value;
+    chrome.send('viewUrl', [url]);
+  },
+
+  /**
+   * Sends a request to the browser process to view a distilled version of the
+   * selected article.
+   */
   onSelectArticle: function(articleId) {
     chrome.send('selectArticle', [articleId]);
   },
@@ -58,12 +83,16 @@ var domDistiller = {
     $('list-section').classList.remove('hidden');
     $('entries-list-loading').classList.add('hidden');
     $('add-entry-error').classList.add('hidden');
+    $('view-url-error').classList.add('hidden');
 
     $('refreshbutton').addEventListener('click', function(event) {
       domDistiller.onRequestEntries();
     }, false);
     $('addbutton').addEventListener('click', function(event) {
       domDistiller.onAddArticle();
+    }, false);
+    $('viewbutton').addEventListener('click', function(event) {
+      domDistiller.onViewUrl();
     }, false);
     domDistiller.onRequestEntries();
   },

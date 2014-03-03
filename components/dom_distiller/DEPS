@@ -3,6 +3,7 @@ include_rules = [
   "+sync/api",
   "+sync/protocol",
   "+third_party/leveldatabase/src/include",
+  "+net/base",
   "+net/http",
   "+net/url_request",
   "+ui/base/resource",

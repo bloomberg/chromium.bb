@@ -24,9 +24,8 @@ class DistilledArticleProto;
 // A handle to a request to view a DOM distiller entry or URL. The request will
 // be cancelled when the handle is destroyed.
 class ViewerHandle {
-  typedef base::Callback<void()> CancelCallback;
-
  public:
+  typedef base::Callback<void()> CancelCallback;
   explicit ViewerHandle(CancelCallback callback);
   ~ViewerHandle();
 

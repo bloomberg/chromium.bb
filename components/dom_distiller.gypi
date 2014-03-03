@@ -71,6 +71,10 @@
             'dom_distiller/core/page_distiller.h',
             'dom_distiller/core/task_tracker.cc',
             'dom_distiller/core/task_tracker.h',
+            'dom_distiller/core/url_constants.cc',
+            'dom_distiller/core/url_constants.h',
+            'dom_distiller/core/url_utils.cc',
+            'dom_distiller/core/url_utils.h',
           ],
         },
         {
