@@ -16,6 +16,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 CONTENT_EXPORT extern const char kAcceleratedCanvas2dMSAASampleCount[];
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
+CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAuditAllHandles[];
@@ -192,7 +193,6 @@ CONTENT_EXPORT extern const char kHostResolverRules[];
 CONTENT_EXPORT extern const char kIgnoreCertificateErrors[];
 CONTENT_EXPORT extern const char kIgnoreGpuBlacklist[];
 extern const char kInProcessGPU[];
-CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
 CONTENT_EXPORT extern const char kIpResolverRules[];
 CONTENT_EXPORT extern const char kJavaScriptFlags[];
 extern const char kLoadPlugin[];

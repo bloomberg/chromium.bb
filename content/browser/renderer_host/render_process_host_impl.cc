@@ -957,6 +957,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
+    switches::kAllowLoopbackInPeerConnection,
     switches::kAudioBufferSize,
     switches::kAuditAllHandles,
     switches::kAuditHandles,
@@ -1062,7 +1063,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebMIDI,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
-    switches::kAllowLoopbackInPeerConnection,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
     switches::kMaxUntiledLayerWidth,

@@ -16,6 +16,10 @@ const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
+// Allows loopback interface to be added in network list for peer connection.
+const char kAllowLoopbackInPeerConnection[] =
+    "allow-loopback-in-peer-connection";
+
 // Enables the sandboxed processes to run without a job object assigned to them.
 // This flag is required to allow Chrome to run in RemoteApps or Citrix. This
 // flag can reduce the security of the sandboxed processes and allow them to do
@@ -661,10 +665,6 @@ const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
-
-// Allows loopback interface to be added in network list for peer connection.
-const char kAllowLoopbackInPeerConnection[] =
-    "allow-loopback-in-peer-connection";
 
 // These mappings only apply to the host resolver, and can insert additional
 // resolutions in front of resolutions that match a pattern.
