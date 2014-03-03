@@ -935,9 +935,8 @@ bool HTMLElement::matchesReadOnlyPseudoClass() const
 
 bool HTMLElement::matchesReadWritePseudoClass() const
 {
-    if (fastHasAttribute(contenteditableAttr)) {
-        const AtomicString& value = fastGetAttribute(contenteditableAttr);
-
+    const AtomicString& value = fastGetAttribute(contenteditableAttr);
+    if (!value.isNull()) {
         if (value.isEmpty() || equalIgnoringCase(value, "true") || equalIgnoringCase(value, "plaintext-only"))
             return true;
         if (equalIgnoringCase(value, "false"))
