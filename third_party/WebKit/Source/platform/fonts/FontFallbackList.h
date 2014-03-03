@@ -78,6 +78,7 @@ public:
     void determinePitch(const FontDescription&) const;
 
     bool loadingCustomFonts() const;
+    bool shouldSkipDrawing() const;
 
     FontSelector* fontSelector() const { return m_fontSelector.get(); }
     // FIXME: It should be possible to combine fontSelectorVersion and generation.
@@ -114,7 +115,7 @@ private:
     mutable int m_familyIndex;
     unsigned short m_generation;
     mutable unsigned m_pitch : 3; // Pitch
-    mutable bool m_loadingCustomFonts : 1;
+    mutable bool m_hasLoadingFallback : 1;
 
     friend class Font;
 };

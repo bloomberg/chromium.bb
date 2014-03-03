@@ -73,20 +73,30 @@ bool SegmentedFontData::isLoading() const
     return false;
 }
 
-// Returns true only if all of the sub fonts are loadingFallback.
+// Returns true if any of the sub fonts are loadingFallback.
 bool SegmentedFontData::isLoadingFallback() const
 {
     Vector<FontDataRange>::const_iterator end = m_ranges.end();
     for (Vector<FontDataRange>::const_iterator it = m_ranges.begin(); it != end; ++it) {
-        if (!it->fontData()->isLoadingFallback())
-            return false;
+        if (it->fontData()->isLoadingFallback())
+            return true;
     }
-    return true;
+    return false;
 }
 
 bool SegmentedFontData::isSegmented() const
 {
     return true;
+}
+
+bool SegmentedFontData::shouldSkipDrawing() const
+{
+    Vector<FontDataRange>::const_iterator end = m_ranges.end();
+    for (Vector<FontDataRange>::const_iterator it = m_ranges.begin(); it != end; ++it) {
+        if (it->fontData()->shouldSkipDrawing())
+            return true;
+    }
+    return false;
 }
 
 #ifndef NDEBUG

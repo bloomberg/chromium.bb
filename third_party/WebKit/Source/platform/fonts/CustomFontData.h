@@ -37,9 +37,10 @@ struct WidthIterator;
 
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
 public:
-    static PassRefPtr<CustomFontData> create(bool isLoadingFallback = false)
+    enum FallbackVisibility { InvisibleFallback, VisibleFallback };
+    static PassRefPtr<CustomFontData> create(bool isLoadingFallback = false, FallbackVisibility visibility = VisibleFallback)
     {
-        return adoptRef(new CustomFontData(isLoadingFallback));
+        return adoptRef(new CustomFontData(isLoadingFallback, visibility));
     }
 
     virtual ~CustomFontData() { }
@@ -47,6 +48,7 @@ public:
     virtual void beginLoadIfNeeded() const { };
     bool isLoading() const { return m_isLoadingFallback && m_isUsed; }
     bool isLoadingFallback() const { return m_isLoadingFallback; }
+    bool shouldSkipDrawing() const { return m_fallbackVisibility == InvisibleFallback && m_isUsed; }
 
     virtual bool isSVGFont() const { return false; }
     virtual void initializeFontData(SimpleFontData*, float) { }
@@ -58,13 +60,15 @@ public:
     virtual void clearCSSFontFaceSource() { }
 
 protected:
-    CustomFontData(bool isLoadingFallback)
+    CustomFontData(bool isLoadingFallback, FallbackVisibility visibility = VisibleFallback)
         : m_isLoadingFallback(isLoadingFallback)
+        , m_fallbackVisibility(visibility)
         , m_isUsed(false)
     {
     }
 
-    bool m_isLoadingFallback; // Whether or not this is a temporary font data for a custom font which is not yet loaded.
+    bool m_isLoadingFallback;
+    FallbackVisibility m_fallbackVisibility;
     mutable bool m_isUsed;
 };
 

@@ -59,6 +59,7 @@ public:
 
     virtual void didStartFontLoad(FontResource*) OVERRIDE;
     virtual void fontLoaded(FontResource*) OVERRIDE;
+    virtual void fontLoadWaitLimitExceeded(FontResource*) OVERRIDE;
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 

@@ -87,6 +87,14 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
         m_segmentedFontFace->fontLoaded(this);
 }
 
+void CSSFontFace::fontLoadWaitLimitExceeded(CSSFontFaceSource* source)
+{
+    if (!isValid() || source != m_sources.first())
+        return;
+    if (m_segmentedFontFace)
+        m_segmentedFontFace->fontLoadWaitLimitExceeded(this);
+}
+
 PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontDescription)
 {
     if (!isValid())

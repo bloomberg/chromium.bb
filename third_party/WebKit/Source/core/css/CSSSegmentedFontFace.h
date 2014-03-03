@@ -52,6 +52,7 @@ public:
     FontTraitsMask traitsMask() const { return m_traitsMask; }
 
     void fontLoaded(CSSFontFace*);
+    void fontLoadWaitLimitExceeded(CSSFontFace*);
 
     void addFontFace(PassRefPtr<FontFace>, bool cssConnected);
     void removeFontFace(PassRefPtr<FontFace>);

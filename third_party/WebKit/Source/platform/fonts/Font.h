@@ -175,6 +175,11 @@ private:
         return m_fontFallbackList && m_fontFallbackList->loadingCustomFonts();
     }
 
+    bool shouldSkipDrawing() const
+    {
+        return m_fontFallbackList && m_fontFallbackList->shouldSkipDrawing();
+    }
+
     FontDescription m_fontDescription;
     mutable RefPtr<FontFallbackList> m_fontFallbackList;
 };

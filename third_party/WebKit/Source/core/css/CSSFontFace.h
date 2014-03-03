@@ -68,6 +68,7 @@ public:
 
     void beginLoadIfNeeded(CSSFontFaceSource*, CSSFontSelector* = 0);
     void fontLoaded(CSSFontFaceSource*);
+    void fontLoadWaitLimitExceeded(CSSFontFaceSource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 

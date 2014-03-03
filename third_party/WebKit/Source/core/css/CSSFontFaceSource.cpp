@@ -126,6 +126,13 @@ void CSSFontFaceSource::fontLoaded(FontResource*)
         m_face->fontLoaded(this);
 }
 
+void CSSFontFaceSource::fontLoadWaitLimitExceeded(FontResource*)
+{
+    pruneTable();
+    if (m_face)
+        m_face->fontLoadWaitLimitExceeded(this);
+}
+
 PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription)
 {
     // If the font hasn't loaded or an error occurred, then we've got nothing.
@@ -223,7 +230,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
             ASSERT_NOT_REACHED();
             return nullptr;
         }
-        RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(true);
+        RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(true, m_font->exceedsFontLoadWaitLimit() ? CustomFontData::VisibleFallback : CustomFontData::InvisibleFallback);
         cssFontData->setCSSFontFaceSource(this);
         fontData = SimpleFontData::create(temporaryFont->platformData(), cssFontData);
     }

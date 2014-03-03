@@ -147,6 +147,7 @@ public:
     virtual bool isLoading() const OVERRIDE { return m_customFontData ? m_customFontData->isLoading() : false; }
     virtual bool isLoadingFallback() const OVERRIDE { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
     virtual bool isSegmented() const OVERRIDE;
+    virtual bool shouldSkipDrawing() const OVERRIDE { return m_customFontData && m_customFontData->shouldSkipDrawing(); }
 
     const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
     void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }

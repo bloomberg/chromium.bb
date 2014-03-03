@@ -85,6 +85,12 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
     }
 }
 
+void CSSSegmentedFontFace::fontLoadWaitLimitExceeded(CSSFontFace*)
+{
+    m_fontSelector->fontLoaded();
+    pruneTable();
+}
+
 void CSSSegmentedFontFace::addFontFace(PassRefPtr<FontFace> prpFontFace, bool cssConnected)
 {
     RefPtr<FontFace> fontFace = prpFontFace;

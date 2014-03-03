@@ -45,7 +45,7 @@ FontFallbackList::FontFallbackList()
     , m_familyIndex(0)
     , m_generation(FontCache::fontCache()->generation())
     , m_pitch(UnknownPitch)
-    , m_loadingCustomFonts(false)
+    , m_hasLoadingFallback(false)
 {
 }
 
@@ -58,7 +58,7 @@ void FontFallbackList::invalidate(PassRefPtr<FontSelector> fontSelector)
     m_cachedPrimarySimpleFontData = 0;
     m_familyIndex = 0;
     m_pitch = UnknownPitch;
-    m_loadingCustomFonts = false;
+    m_hasLoadingFallback = false;
     m_fontSelector = fontSelector;
     m_fontSelectorVersion = m_fontSelector ? m_fontSelector->version() : 0;
     m_generation = FontCache::fontCache()->generation();
@@ -93,15 +93,26 @@ void FontFallbackList::determinePitch(const FontDescription& fontDescription) co
 
 bool FontFallbackList::loadingCustomFonts() const
 {
-    if (m_loadingCustomFonts)
-        return true;
+    if (!m_hasLoadingFallback)
+        return false;
 
     unsigned numFonts = m_fontList.size();
     for (unsigned i = 0; i < numFonts; ++i) {
-        if (m_fontList[i]->isCustomFont() && m_fontList[i]->isLoading()) {
-            m_loadingCustomFonts = true;
+        if (m_fontList[i]->isLoading())
             return true;
-        }
+    }
+    return false;
+}
+
+bool FontFallbackList::shouldSkipDrawing() const
+{
+    if (!m_hasLoadingFallback)
+        return false;
+
+    unsigned numFonts = m_fontList.size();
+    for (unsigned i = 0; i < numFonts; ++i) {
+        if (m_fontList[i]->shouldSkipDrawing())
+            return true;
     }
     return false;
 }
@@ -199,8 +210,8 @@ const FontData* FontFallbackList::fontDataAt(const FontDescription& fontDescript
     RefPtr<FontData> result = getFontData(fontDescription, m_familyIndex);
     if (result) {
         m_fontList.append(result);
-        if (result->isLoading())
-            m_loadingCustomFonts = true;
+        if (result->isLoadingFallback())
+            m_hasLoadingFallback = true;
     }
     return result.get();
 }

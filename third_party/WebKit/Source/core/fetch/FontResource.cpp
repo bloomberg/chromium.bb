@@ -44,9 +44,13 @@
 
 namespace WebCore {
 
+static const double fontLoadWaitLimitSec = 3.0;
+
 FontResource::FontResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Font)
     , m_loadInitiated(false)
+    , m_exceedsFontLoadWaitLimit(false)
+    , m_fontLoadWaitLimitTimer(this, &FontResource::fontLoadWaitLimitCallback)
 {
 }
 
@@ -74,6 +78,7 @@ void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
     if (!m_loadInitiated) {
         m_loadInitiated = true;
         Resource::load(dl, m_options);
+        m_fontLoadWaitLimitTimer.startOneShot(fontLoadWaitLimitSec);
 
         ResourceClientWalker<FontResourceClient> walker(m_clients);
         while (FontResourceClient* client = walker.next())
@@ -155,6 +160,16 @@ SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 }
 #endif
 
+void FontResource::fontLoadWaitLimitCallback(Timer<FontResource>*)
+{
+    if (!isLoading())
+        return;
+    m_exceedsFontLoadWaitLimit = true;
+    ResourceClientWalker<FontResourceClient> walker(m_clients);
+    while (FontResourceClient* client = walker.next())
+        client->fontLoadWaitLimitExceeded(this);
+}
+
 void FontResource::allClientsRemoved()
 {
     m_fontData.clear();
@@ -163,6 +178,7 @@ void FontResource::allClientsRemoved()
 
 void FontResource::checkNotify()
 {
+    m_fontLoadWaitLimitTimer.stop();
     ResourceClientWalker<FontResourceClient> w(m_clients);
     while (FontResourceClient* c = w.next())
         c->fontLoaded(this);

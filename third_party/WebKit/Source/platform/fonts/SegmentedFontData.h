@@ -77,6 +77,7 @@ private:
     virtual bool isLoading() const OVERRIDE;
     virtual bool isLoadingFallback() const OVERRIDE;
     virtual bool isSegmented() const OVERRIDE;
+    virtual bool shouldSkipDrawing() const OVERRIDE;
 
     Vector<FontDataRange, 1> m_ranges;
 };

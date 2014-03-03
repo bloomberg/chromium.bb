@@ -107,7 +107,7 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, c
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
     // font).
-    if (loadingCustomFonts() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
+    if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
         return;
 
     CodePath codePathToUse = codePath(runInfo.run);
@@ -123,7 +123,7 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, c
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
 {
-    if (loadingCustomFonts())
+    if (shouldSkipDrawing())
         return;
 
     CodePath codePathToUse = codePath(runInfo.run);

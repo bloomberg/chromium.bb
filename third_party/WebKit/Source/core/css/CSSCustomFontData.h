@@ -28,9 +28,9 @@ namespace WebCore {
 
 class CSSCustomFontData FINAL : public CustomFontData {
 public:
-    static PassRefPtr<CSSCustomFontData> create(bool isLoadingFallback = false)
+    static PassRefPtr<CSSCustomFontData> create(bool isLoadingFallback = false, FallbackVisibility visibility = VisibleFallback)
     {
-        return adoptRef(new CSSCustomFontData(isLoadingFallback));
+        return adoptRef(new CSSCustomFontData(isLoadingFallback, visibility));
     }
 
     virtual ~CSSCustomFontData() { }
@@ -47,8 +47,8 @@ public:
     virtual void clearCSSFontFaceSource() OVERRIDE { m_fontFaceSource = 0; }
 
 private:
-    CSSCustomFontData(bool isLoadingFallback)
-        : CustomFontData(isLoadingFallback)
+    CSSCustomFontData(bool isLoadingFallback, FallbackVisibility visibility)
+        : CustomFontData(isLoadingFallback, visibility)
         , m_fontFaceSource(0)
     {
     }

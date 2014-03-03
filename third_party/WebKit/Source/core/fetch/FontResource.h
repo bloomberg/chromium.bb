@@ -28,6 +28,7 @@
 
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
+#include "platform/Timer.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "wtf/OwnPtr.h"
@@ -54,6 +55,7 @@ public:
     virtual void allClientsRemoved() OVERRIDE;
     void beginLoadIfNeeded(ResourceFetcher* dl);
     virtual bool stillNeedsLoad() const OVERRIDE { return !m_loadInitiated; }
+    bool exceedsFontLoadWaitLimit() const { return m_exceedsFontLoadWaitLimit; }
 
     bool ensureCustomFontData();
     FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
@@ -65,8 +67,12 @@ public:
 
 private:
     virtual void checkNotify() OVERRIDE;
+    void fontLoadWaitLimitCallback(Timer<FontResource>*);
+
     OwnPtr<FontCustomPlatformData> m_fontData;
     bool m_loadInitiated;
+    bool m_exceedsFontLoadWaitLimit;
+    Timer<FontResource> m_fontLoadWaitLimitTimer;
 
 #if ENABLE(SVG_FONTS)
     RefPtr<WebCore::SVGDocument> m_externalSVGDocument;
@@ -84,6 +90,7 @@ public:
     virtual ResourceClientType resourceClientType() const OVERRIDE FINAL { return expectedType(); }
     virtual void fontLoaded(FontResource*) { }
     virtual void didStartFontLoad(FontResource*) { }
+    virtual void fontLoadWaitLimitExceeded(FontResource*) { }
 };
 
 }
