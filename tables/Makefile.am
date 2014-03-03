@@ -29,12 +29,18 @@ table_files = \
 	cy-cy-g1.utb \
 	cy-cy-g2.ctb \
 	Cz-Cz-g1.utb \
-	da-1252.ctb \
-	da.ctb \
+	da-ansi6.dis \
+	da-ansi8.dis \
 	da-dk.dis \
-	da-dk-g1.utb \
-	da-dk-g2.ctb \
 	da-lt.ctb \
+	da-chardefs6.cti \
+	da-chardefs8.cti \
+	da-dk-g16.utb \
+	da-dk-g18.utb \
+	da-dk-g26.ctb \
+	da-dk-g28.ctb \
+	da-dk-g28caps.cti \
+	da-dk-g2core.cti \
 	de-ch-accents.cti \
 	de-chardefs6.cti \
 	de-chardefs8.cti \

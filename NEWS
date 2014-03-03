@@ -76,6 +76,7 @@ back-translation.
      both for the time being so that users can test and give feedback
      on which is most correct. Thanks to Him Prasad Gautam, and Mesar
      Hameed
+   - Much improved danish grade 1 and grade 2 6 and 8 dot braille, thanks to Bue Vester-Andersen and Mesar Hameed
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now provided
