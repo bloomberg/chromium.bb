@@ -129,7 +129,7 @@ bool SetuidSandboxClient::ChrootMe() {
   // We need to reap the chroot helper process in any event.
   pid_t helper_pid = GetHelperPID(env_);
   // If helper_pid is -1 we wait for any child.
-  if (waitpid(helper_pid, NULL, 0) < 0) {
+  if (HANDLE_EINTR(waitpid(helper_pid, NULL, 0)) < 0) {
     PLOG(ERROR) << "Failed to wait for setuid helper to die";
     return false;
   }
@@ -182,4 +182,3 @@ void SetuidSandboxClient::SetupLaunchEnvironment() {
 }
 
 }  // namespace sandbox
-
