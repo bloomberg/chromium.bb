@@ -97,7 +97,7 @@ int32_t NaClSysGetpid(struct NaClAppThread *natp) {
   if (NaClAclBypassChecks) {
     pid = GETPID();
   } else {
-    pid = -NACL_ABI_EACCES;
+    pid = -NACL_ABI_ENOSYS;
   }
   NaClLog(4, "NaClSysGetpid: returning %d\n", pid);
 

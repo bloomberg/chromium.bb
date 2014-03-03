@@ -13,6 +13,6 @@
 int main(void) {
   int pid = getpid();
   ASSERT_EQ(pid, -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOSYS);
   return 0;
 }

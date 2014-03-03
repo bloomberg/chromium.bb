@@ -60,7 +60,7 @@ static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random), NULL },
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock), NULL },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
-    sizeof(nacl_irt_dev_getpid), NULL },
+    sizeof(nacl_irt_dev_getpid), file_access_filter },
   { NACL_IRT_EXCEPTION_HANDLING_v0_1, &nacl_irt_exception_handling,
     sizeof(nacl_irt_exception_handling), NULL },
   { NACL_IRT_DEV_LIST_MAPPINGS_v0_1, &nacl_irt_dev_list_mappings,
