@@ -41,6 +41,15 @@
 
 namespace WebCore {
 
+static bool isKeySystemSupportedWithContentType(const String& keySystem, const String& contentType)
+{
+    ASSERT(!keySystem.isEmpty());
+
+    ContentType type(contentType);
+    String codecs = type.parameter("codecs");
+    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
+}
+
 PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, const String& keySystem, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
@@ -53,7 +62,7 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
     }
 
     // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NotSupportedError and abort these steps.
-    if (!ContentDecryptionModule::supportsKeySystem(keySystem)) {
+    if (!isKeySystemSupportedWithContentType(keySystem, "")) {
         exceptionState.throwDOMException(NotSupportedError, "The '" + keySystem + "' key system is not supported.");
         return nullptr;
     }
@@ -108,7 +117,7 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
 
     // 1. If type contains a MIME type that is not supported or is not supported by the keySystem,
     // throw a NOT_SUPPORTED_ERR exception and abort these steps.
-    if (!m_cdm->supportsMIMEType(contentType)) {
+    if (!isKeySystemSupportedWithContentType(m_keySystem, contentType)) {
         exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + contentType + "') is unsupported.");
         return nullptr;
     }
@@ -141,7 +150,7 @@ bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentTy
 
     // 2. If keySystem contains an unrecognized or unsupported Key System, return false and abort
     // these steps. Key system string comparison is case-sensitive.
-    if (!MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, "", ""))
+    if (!isKeySystemSupportedWithContentType(keySystem, ""))
         return false;
 
     // 3. If contentType is null or an empty string, return true and abort these steps.
@@ -150,10 +159,7 @@ bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentTy
 
     // 4. If the Key System specified by keySystem does not support decrypting the container and/or
     // codec specified by contentType, return false and abort these steps.
-    ContentType type(contentType);
-    String codecs = type.parameter("codecs");
-
-    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
+    return isKeySystemSupportedWithContentType(keySystem, contentType);
 }
 
 void MediaKeys::setMediaElement(HTMLMediaElement* element)

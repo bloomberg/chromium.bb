@@ -37,14 +37,6 @@
 
 namespace WebCore {
 
-bool ContentDecryptionModule::supportsKeySystem(const String& keySystem)
-{
-    // FIXME: Chromium should handle this, possibly using
-    // MIMETypeRegistry::isSupportedEncryptedMediaMIMEType().
-    notImplemented();
-    return keySystem == "org.w3.clearkey";
-}
-
 PassOwnPtr<ContentDecryptionModule> ContentDecryptionModule::create(const String& keySystem)
 {
     ASSERT(!keySystem.isEmpty());
@@ -62,14 +54,6 @@ ContentDecryptionModule::ContentDecryptionModule(PassOwnPtr<blink::WebContentDec
 
 ContentDecryptionModule::~ContentDecryptionModule()
 {
-}
-
-bool ContentDecryptionModule::supportsMIMEType(const String& mimeType)
-{
-    // FIXME: Chromium should handle this, possibly using
-    // MIMETypeRegistry::isSupportedEncryptedMediaMIMEType().
-    notImplemented();
-    return mimeType == "video/webm";
 }
 
 PassOwnPtr<ContentDecryptionModuleSession> ContentDecryptionModule::createSession(ContentDecryptionModuleSessionClient* client)

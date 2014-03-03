@@ -45,14 +45,12 @@ class ContentDecryptionModuleSessionClient;
 class PLATFORM_EXPORT ContentDecryptionModule {
     WTF_MAKE_NONCOPYABLE(ContentDecryptionModule);
 public:
-    static bool supportsKeySystem(const String&);
     static PassOwnPtr<ContentDecryptionModule> create(const String& keySystem);
 
     ContentDecryptionModule(PassOwnPtr<blink::WebContentDecryptionModule>);
     ~ContentDecryptionModule();
 
     // ContentDecryptionModule
-    bool supportsMIMEType(const String&);
     PassOwnPtr<ContentDecryptionModuleSession> createSession(ContentDecryptionModuleSessionClient*);
 
     blink::WebContentDecryptionModule* contentDecryptionModule() { return m_cdm.get(); }
