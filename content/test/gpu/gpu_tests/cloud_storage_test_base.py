@@ -21,6 +21,30 @@ default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 
 error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 
+def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio):
+  for expectation in expectations:
+    location = expectation["location"]
+    x = location[0] * device_pixel_ratio
+    y = location[1] * device_pixel_ratio
+
+    if x < 0 or y < 0 or x > screenshot.width or y > screenshot.height:
+      raise page_test.Failure(
+          'Expected pixel location [%d, %d] is out of range on [%d, %d] image' %
+          (x, y, screenshot.width, screenshot.height))
+
+    actual_color = screenshot.GetPixelColor(x, y)
+    expected_color = bitmap.RgbaColor(
+        expectation["color"][0],
+        expectation["color"][1],
+        expectation["color"][2])
+    if not actual_color.IsEqual(expected_color, expectation["tolerance"]):
+      raise page_test.Failure('Expected pixel at ' + str(location) +
+          ' to be ' +
+          str(expectation["color"]) + " but got [" +
+          str(actual_color.r) + ", " +
+          str(actual_color.g) + ", " +
+          str(actual_color.b) + "]")
+
 class ValidatorBase(page_test.PageTest):
   def __init__(self, test_method_name):
     super(ValidatorBase, self).__init__(test_method_name)
@@ -171,6 +195,24 @@ class ValidatorBase(page_test.PageTest):
     print ('See http://%s.commondatastorage.googleapis.com/'
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
+
+  def _ValidateScreenshotSamples(self, url,
+                                 screenshot, expectations, device_pixel_ratio):
+    """Samples the given screenshot and verifies pixel color values.
+       The sample locations and expected color values are given in expectations.
+       In case any of the samples do not match the expected color, it raises
+       a Failure and dumps the screenshot locally or cloud storage depending on
+       what machine the test is being run."""
+    try:
+      _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio)
+    except page_test.Failure:
+      image_name = self._UrlToImageName(url)
+      if self.options.test_machine_name:
+        self._UploadErrorImagesToCloudStorage(image_name, screenshot, None)
+      else:
+        self._WriteErrorImages(self.options.generated_dir, image_name,
+                               screenshot, None)
+      raise
 
 class TestBase(test.Test):
   @staticmethod
