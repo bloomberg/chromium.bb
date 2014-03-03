@@ -1,0 +1,18 @@
+SVG 1.1 dynamic update tests
+
+Text content
+Tests dynamic updates of the 'transform' property of the SVGTextElement object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS textElement.transform.baseVal.getItem(0).matrix.f is 0.0
+PASS textElement.transform.baseVal.getItem(0).matrix.f is -200.0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+(repaint rects
+  (rect 8 209 79 18)
+  (rect 8 9 79 18)
+)
+
