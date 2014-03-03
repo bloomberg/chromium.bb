@@ -59,65 +59,19 @@ enum V8ContextEmbedderDataField {
     v8ContextPerContextDataIndex = static_cast<int>(gin::kPerContextDataStartIndex + gin::kEmbedderBlink),
 };
 
-class V8PerContextDataHolder {
-    WTF_MAKE_NONCOPYABLE(V8PerContextDataHolder);
-public:
-    static void install(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
-    {
-        new V8PerContextDataHolder(context, world);
-    }
-
-    static V8PerContextDataHolder* from(v8::Handle<v8::Context> context)
-    {
-        return static_cast<V8PerContextDataHolder*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
-    }
-
-    V8PerContextData* perContextData() const { return m_perContextData; }
-    void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
-
-    DOMWrapperWorld* world() const { return m_world; }
-
-private:
-    V8PerContextDataHolder(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
-        : m_context(v8::Isolate::GetCurrent(), context)
-        , m_perContextData(0)
-        , m_world(world)
-    {
-        m_context.setWeak(this, &V8PerContextDataHolder::weakCallback);
-        context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
-    }
-
-    ~V8PerContextDataHolder() {}
-
-    static void weakCallback(const v8::WeakCallbackData<v8::Context, V8PerContextDataHolder>& data)
-    {
-        data.GetValue()->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
-        delete data.GetParameter();
-    }
-
-    ScopedPersistent<v8::Context> m_context;
-    V8PerContextData* m_perContextData;
-    // This should not be a RefPtr. Otherwise, it creates a cycle:
-    // V8PerContextData => DOMWrapperWorld => DOMDataStore => global objects
-    // => Window or WorkerGlobalScope => V8PerContextData.
-    DOMWrapperWorld* m_world;
-};
-
 class V8PerContextData {
 public:
-    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context> context)
+    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
     {
-        return adoptPtr(new V8PerContextData(context));
+        return adoptPtr(new V8PerContextData(context, world));
     }
+
+    static V8PerContextData* from(v8::Handle<v8::Context>);
+    static DOMWrapperWorld* world(v8::Handle<v8::Context>);
 
     ~V8PerContextData();
 
-    bool init();
-
-    static V8PerContextData* from(v8::Handle<v8::Context> context)
-    {
-        return V8PerContextDataHolder::from(context)->perContextData();
-    }
+    v8::Handle<v8::Context> context() { return m_context.newLocal(m_isolate); }
 
     // To create JS Wrapper objects, we create a cache of a 'boiler plate'
     // object, and then simply Clone that object each time we need a new one.
@@ -138,33 +92,16 @@ public:
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
-    V8NPObjectMap* v8NPObjectMap()
-    {
-        return &m_v8NPObjectMap;
-    }
-
-    V8DOMActivityLogger* activityLogger()
-    {
-        return m_activityLogger;
-    }
-
-    void setActivityLogger(V8DOMActivityLogger* logger)
-    {
-        m_activityLogger = logger;
-    }
+    V8NPObjectMap* v8NPObjectMap() { return &m_v8NPObjectMap; }
+    V8DOMActivityLogger* activityLogger() { return m_activityLogger; }
+    void setActivityLogger(V8DOMActivityLogger* logger) { m_activityLogger = logger; }
 
     void addCustomElementBinding(CustomElementDefinition*, PassOwnPtr<CustomElementBinding>);
     void clearCustomElementBinding(CustomElementDefinition*);
     CustomElementBinding* customElementBinding(CustomElementDefinition*);
 
 private:
-    explicit V8PerContextData(v8::Handle<v8::Context> context)
-        : m_activityLogger(0)
-        , m_isolate(v8::Isolate::GetCurrent())
-        , m_context(m_isolate, context)
-        , m_customElementBindings(adoptPtr(new CustomElementBindingMap()))
-    {
-    }
+    V8PerContextData(v8::Handle<v8::Context>, DOMWrapperWorld*);
 
     v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
     v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);
@@ -182,7 +119,10 @@ private:
     // corresponding to this context. The ownership of the pointer is retained
     // by the DOMActivityLoggerMap in DOMWrapperWorld.
     V8DOMActivityLogger* m_activityLogger;
+
     v8::Isolate* m_isolate;
+    OwnPtr<gin::ContextHolder> m_contextHolder;
+
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 

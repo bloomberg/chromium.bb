@@ -99,8 +99,7 @@ namespace WebCore {
         // Evaluate a script file in the current execution environment.
         ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState*);
 
-        // Returns a local handle of the context.
-        v8::Local<v8::Context> context() { return m_contextHolder ? m_contextHolder->context() : v8::Local<v8::Context>(); }
+        v8::Local<v8::Context> context() { return m_perContextData ? m_perContextData->context() : v8::Local<v8::Context>(); }
 
         // Send a notification about current thread is going to be idle.
         // Returns true if the embedder should stop calling idleNotification
@@ -115,7 +114,6 @@ namespace WebCore {
 
         WorkerGlobalScope& m_workerGlobalScope;
         OwnPtr<gin::IsolateHolder> m_isolateHolder;
-        OwnPtr<gin::ContextHolder> m_contextHolder;
         OwnPtr<V8PerContextData> m_perContextData;
         String m_disableEvalPending;
         RefPtr<DOMWrapperWorld> m_world;

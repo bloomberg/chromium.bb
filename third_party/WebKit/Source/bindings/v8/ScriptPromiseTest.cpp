@@ -55,10 +55,8 @@ public:
 
     void SetUp()
     {
-        v8::Handle<v8::Context> context(m_context.newLocal(m_isolate));
-        V8PerContextDataHolder::install(context, DOMWrapperWorld::current(m_isolate));
-        m_perContextData = V8PerContextData::create(context);
-        m_perContextData->init();
+        // FIXME: Create a new world and pass it to V8PerContextData.
+        m_perContextData = V8PerContextData::create(m_context.newLocal(m_isolate), 0);
     }
 
     void TearDown()

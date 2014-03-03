@@ -68,7 +68,7 @@ public:
     static DOMWrapperWorld* world(v8::Handle<v8::Context> context)
     {
         ASSERT(contextHasCorrectPrototype(context));
-        return V8PerContextDataHolder::from(context)->world();
+        return V8PerContextData::world(context);
     }
 
     // Will return null if there is no DOMWrapperWorld for the current v8::Context

@@ -120,30 +120,20 @@ WorkerScriptController::~WorkerScriptController()
 void WorkerScriptController::disposeContext()
 {
     m_perContextData.clear();
-    m_contextHolder.clear();
 }
 
 bool WorkerScriptController::initializeContextIfNeeded()
 {
-    if (m_contextHolder)
+    if (m_perContextData)
         return true;
 
     v8::Handle<v8::Context> context = v8::Context::New(isolate());
     if (context.IsEmpty())
         return false;
 
-    m_contextHolder = adoptPtr(new gin::ContextHolder(isolate()));
-    m_contextHolder->SetContext(context);
+    m_perContextData = V8PerContextData::create(context, m_world.get());
 
     v8::Context::Scope scope(context);
-
-    V8PerContextDataHolder::install(context, m_world.get());
-
-    m_perContextData = V8PerContextData::create(context);
-    if (!m_perContextData->init()) {
-        disposeContext();
-        return false;
-    }
 
     // Set DebugId for the new context.
     context->SetEmbedderData(0, v8AtomicString(isolate(), "worker"));
@@ -164,7 +154,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtr<WorkerGlobalScope>(m_workerGlobalScope), contextType, jsWorkerGlobalScope, isolate(), WrapperConfiguration::Dependent);
 
     // Insert the object instance as the prototype of the shadow object.
-    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_contextHolder->context()->Global()->GetPrototype());
+    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_perContextData->context()->Global()->GetPrototype());
     globalObject->SetPrototype(jsWorkerGlobalScope);
 
     return true;
@@ -177,7 +167,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (!initializeContextIfNeeded())
         return ScriptValue();
 
-    v8::Handle<v8::Context> context = m_contextHolder->context();
+    v8::Handle<v8::Context> context = m_perContextData->context();
     if (!m_disableEvalPending.isEmpty()) {
         context->AllowCodeGenerationFromStrings(false);
         context->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), m_disableEvalPending));
