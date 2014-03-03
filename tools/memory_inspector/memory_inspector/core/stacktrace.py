@@ -11,21 +11,21 @@ class Stacktrace(object):
   """Models a stack-trace, which is a sequence of stack |Frame|s."""
 
   def __init__(self):
-    self._frames = []
+    self.frames = []
 
   def Add(self, frame):
     assert(isinstance(frame, Frame))
-    self._frames += [frame]
+    self.frames += [frame]
 
   @property
   def depth(self):
-    return len(self._frames)
+    return len(self.frames)
 
   def __getitem__(self, index):
-    return self._frames[index]
+    return self.frames[index]
 
   def __str__(self):
-    return ', '.join([str(x) for x in self._frames])
+    return ', '.join([str(x) for x in self.frames])
 
 
 class Frame(object):

@@ -13,10 +13,19 @@ class NativeHeap(object):
 
   def __init__(self):
     self.allocations = []
+    self.stack_frames = {}  # absolute_address (int) -> |stacktrace.Frame|.
 
   def Add(self, allocation):
     assert(isinstance(allocation, Allocation))
     self.allocations += [allocation]
+
+  def GetStackFrame(self, absolute_addr):
+    assert(isinstance(absolute_addr, int))
+    stack_frame = self.stack_frames.get(absolute_addr)
+    if not stack_frame:
+      stack_frame = stacktrace.Frame(absolute_addr)
+      self.stack_frames[absolute_addr] = stack_frame
+    return stack_frame
 
 
 class Allocation(object):

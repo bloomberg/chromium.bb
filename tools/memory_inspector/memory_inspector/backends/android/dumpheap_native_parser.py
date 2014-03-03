@@ -49,7 +49,6 @@ def Parse(lines):
   state = STATE_PARSING_BACKTRACES
   skip_first_n_lines = 5
   mmap = memory_map.Map()
-  stack_frames = {}  # absolute_address (int) -> |stacktrace.Frame|.
   nativeheap = native_heap.NativeHeap()
 
   for line in lines:
@@ -74,10 +73,7 @@ def Parse(lines):
       # to ease the complexity of the final de-offset pass.
       for absolute_addr in alloc_bt_str.split():
         absolute_addr = int(absolute_addr, 16)
-        stack_frame = stack_frames.get(absolute_addr)
-        if not stack_frame:
-          stack_frame = stacktrace.Frame(absolute_addr)
-          stack_frames[absolute_addr] = stack_frame
+        stack_frame = nativeheap.GetStackFrame(absolute_addr)
         strace.Add(stack_frame)
       nativeheap.Add(native_heap.Allocation(alloc_size, alloc_count, strace))
 
@@ -109,7 +105,7 @@ def Parse(lines):
 
   # Final pass: translate all the stack frames' absolute addresses into
   # relative offsets (exec_file + offset) using the memory maps just processed.
-  for abs_addr, stack_frame in stack_frames.iteritems():
+  for abs_addr, stack_frame in nativeheap.stack_frames.iteritems():
     assert(abs_addr == stack_frame.address)
     map_entry = mmap.Lookup(abs_addr)
     if not map_entry:
