@@ -2354,7 +2354,7 @@
               # KeygenHandler::GenKeyAndSignChallenge() is not ported to iOS.
               'base/keygen_handler_unittest.cc',
               'disk_cache/backend_unittest.cc',
-              'disk_cache/block_files_unittest.cc',
+              'disk_cache/blockfile/block_files_unittest.cc',
               # Need to read input data files.
               'filter/gzip_filter_unittest.cc',
               'socket/ssl_server_socket_unittest.cc',
