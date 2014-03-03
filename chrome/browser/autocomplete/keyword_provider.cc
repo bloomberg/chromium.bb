@@ -129,7 +129,7 @@ base::string16 KeywordProvider::SplitReplacementStringFromInput(
     bool trim_leading_whitespace) {
   // The input may contain leading whitespace, strip it.
   base::string16 trimmed_input;
-  TrimWhitespace(input, TRIM_LEADING, &trimmed_input);
+  base::TrimWhitespace(input, base::TRIM_LEADING, &trimmed_input);
 
   // And extract the replacement string.
   base::string16 remaining_input;

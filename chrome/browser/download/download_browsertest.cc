@@ -1950,11 +1950,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_History) {
   EXPECT_EQ(download_url, item->GetURL());
   // The following are set by download-test1.lib.mock-http-headers.
   std::string etag = item->GetETag();
-  TrimWhitespaceASCII(etag, TRIM_ALL, &etag);
+  base::TrimWhitespaceASCII(etag, base::TRIM_ALL, &etag);
   EXPECT_EQ("abracadabra", etag);
 
   std::string last_modified = item->GetLastModifiedTime();
-  TrimWhitespaceASCII(last_modified, TRIM_ALL, &last_modified);
+  base::TrimWhitespaceASCII(last_modified, base::TRIM_ALL, &last_modified);
   EXPECT_EQ("Mon, 13 Nov 2006 20:31:09 GMT", last_modified);
 }
 

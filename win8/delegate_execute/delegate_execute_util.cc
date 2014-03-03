@@ -43,7 +43,7 @@ base::string16 ParametersFromSwitch(const char* a_switch) {
   cmd_line.AppendSwitch(a_switch);
 
   base::string16 command_string(cmd_line.GetCommandLineString());
-  TrimWhitespace(command_string, TRIM_ALL, &command_string);
+  base::TrimWhitespace(command_string, base::TRIM_ALL, &command_string);
   return command_string;
 }
 

@@ -132,7 +132,7 @@ Value DoConvertInputToValue(const std::string& input,
   const char kTrimPrefix[] = "trim ";
   if (StartsWithASCII(input_conversion, kTrimPrefix, true)) {
     std::string trimmed;
-    TrimWhitespaceASCII(input, TRIM_ALL, &trimmed);
+    base::TrimWhitespaceASCII(input, base::TRIM_ALL, &trimmed);
 
     // Remove "trim" prefix from the input conversion and re-run.
     return DoConvertInputToValue(

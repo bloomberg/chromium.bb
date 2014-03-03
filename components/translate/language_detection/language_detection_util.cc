@@ -278,7 +278,7 @@ void CorrectLanguageCodeTypo(std::string* code) {
     // There are more than 1 language specified, just keep the first one.
     *code = code->substr(0, coma_index);
   }
-  TrimWhitespaceASCII(*code, TRIM_ALL, code);
+  base::TrimWhitespaceASCII(*code, base::TRIM_ALL, code);
 
   // An underscore instead of a dash is a frequent mistake.
   size_t underscore_index = code->find('_');

@@ -736,7 +736,7 @@ std::string WifiConfigView::GetSsid() const {
   std::string result;
   if (ssid_textfield_ != NULL) {
     std::string untrimmed = base::UTF16ToUTF8(ssid_textfield_->text());
-    TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
+    base::TrimWhitespaceASCII(untrimmed, base::TRIM_ALL, &result);
   }
   return result;
 }

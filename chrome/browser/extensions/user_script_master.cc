@@ -51,7 +51,7 @@ static bool GetDeclarationValue(const base::StringPiece& line,
   if (temp.empty() || !IsWhitespace(temp[0]))
     return false;
 
-  TrimWhitespaceASCII(temp, TRIM_ALL, value);
+  base::TrimWhitespaceASCII(temp, base::TRIM_ALL, value);
   return true;
 }
 

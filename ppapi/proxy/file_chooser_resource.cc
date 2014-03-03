@@ -84,7 +84,7 @@ void FileChooserResource::PopulateAcceptTypes(
 
   for (size_t i = 0; i < type_list.size(); ++i) {
     std::string type = type_list[i];
-    TrimWhitespaceASCII(type, TRIM_ALL, &type);
+    base::TrimWhitespaceASCII(type, base::TRIM_ALL, &type);
 
     // If the type is a single character, it definitely cannot be valid. In the
     // case of a file extension it would be a single ".". In the case of a MIME

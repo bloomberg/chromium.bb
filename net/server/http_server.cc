@@ -281,7 +281,7 @@ bool HttpServer::ParseHeaders(HttpConnection* connection,
           buffer.clear();
           break;
         case ST_VALUE:
-          TrimWhitespaceASCII(buffer, TRIM_LEADING, &header_value);
+          base::TrimWhitespaceASCII(buffer, base::TRIM_LEADING, &header_value);
           // TODO(mbelshe): Deal better with duplicate headers
           DCHECK(info->headers.find(header_name) == info->headers.end());
           info->headers[header_name] = header_value;

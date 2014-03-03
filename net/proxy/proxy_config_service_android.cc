@@ -106,7 +106,7 @@ void AddBypassRules(const std::string& scheme,
   while (tokenizer.GetNext()) {
     std::string token = tokenizer.token();
     std::string pattern;
-    TrimWhitespaceASCII(token, TRIM_ALL, &pattern);
+    base::TrimWhitespaceASCII(token, base::TRIM_ALL, &pattern);
     if (pattern.empty())
       continue;
     // '?' is not one of the specified pattern characters above.

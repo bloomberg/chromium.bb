@@ -307,7 +307,7 @@ bool AutofillProfile::SetInfo(const AutofillType& type,
     return false;
 
   base::string16 trimmed_value;
-  TrimWhitespace(value, TRIM_ALL, &trimmed_value);
+  base::TrimWhitespace(value, base::TRIM_ALL, &trimmed_value);
   return form_group->SetInfo(type, trimmed_value, app_locale);
 }
 

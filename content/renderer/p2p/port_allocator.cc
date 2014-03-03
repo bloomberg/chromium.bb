@@ -225,8 +225,8 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
        it != value_pairs.end(); ++it) {
     std::string key;
     std::string value;
-    TrimWhitespaceASCII(it->first, TRIM_ALL, &key);
-    TrimWhitespaceASCII(it->second, TRIM_ALL, &value);
+    base::TrimWhitespaceASCII(it->first, base::TRIM_ALL, &key);
+    base::TrimWhitespaceASCII(it->second, base::TRIM_ALL, &value);
 
     if (key == "username") {
       if (value != username()) {

@@ -144,7 +144,7 @@ void DeterminePossibleFieldTypesForUpload(
       matching_types.insert(autofill::PASSWORD);
     } else {
       base::string16 value;
-      TrimWhitespace(field->value, TRIM_ALL, &value);
+      base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
       for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
            it != profiles.end(); ++it) {
         it->GetMatchingTypes(value, app_locale, &matching_types);

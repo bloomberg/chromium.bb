@@ -113,7 +113,7 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   if (!GetToolOutput(argc, argv, output_string))
     return false;
 
-  TrimWhitespaceASCII(output_string, TRIM_ALL, &output_string);
+  base::TrimWhitespaceASCII(output_string, base::TRIM_ALL, &output_string);
   AddNameValuePair(key, output_string);
   return true;
 }

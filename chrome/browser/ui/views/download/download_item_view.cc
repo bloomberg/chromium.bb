@@ -1231,7 +1231,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
     return;
 
   base::string16 label_text = dangerous_download_label_->text();
-  TrimWhitespace(label_text, TRIM_ALL, &label_text);
+  base::TrimWhitespace(label_text, base::TRIM_ALL, &label_text);
   DCHECK_EQ(base::string16::npos, label_text.find('\n'));
 
   // Make the label big so that GetPreferredSize() is not constrained by the

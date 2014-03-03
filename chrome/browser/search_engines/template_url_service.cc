@@ -336,7 +336,7 @@ base::string16 TemplateURLService::CleanUserInputKeyword(
     const base::string16& keyword) {
   // Remove the scheme.
   base::string16 result(base::i18n::ToLower(keyword));
-  TrimWhitespace(result, TRIM_ALL, &result);
+  base::TrimWhitespace(result, base::TRIM_ALL, &result);
   url_parse::Component scheme_component;
   if (url_parse::ExtractScheme(base::UTF16ToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),

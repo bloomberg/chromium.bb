@@ -144,9 +144,9 @@ String16Vector String16VectorFromString16(
       size_t initial_whitespace = 0;
       if (break_on_space) {
         base::string16 trimmed_word;
-        TrimWhitespace(word, TRIM_LEADING, &trimmed_word);
+        base::TrimWhitespace(word, base::TRIM_LEADING, &trimmed_word);
         initial_whitespace = word.length() - trimmed_word.length();
-        TrimWhitespace(trimmed_word, TRIM_TRAILING, &word);
+        base::TrimWhitespace(trimmed_word, base::TRIM_TRAILING, &word);
       }
       if (word.empty())
         continue;

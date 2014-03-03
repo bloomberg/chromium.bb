@@ -30,7 +30,7 @@ std::string ReadBrandFromFile() {
   base::FilePath brand_file_path(kRLZBrandFilePath);
   if (!base::ReadFileToString(brand_file_path, &brand))
     LOG(WARNING) << "Brand code file missing: " << brand_file_path.value();
-  TrimWhitespace(brand, TRIM_ALL, &brand);
+  base::TrimWhitespace(brand, base::TRIM_ALL, &brand);
   return brand;
 }
 

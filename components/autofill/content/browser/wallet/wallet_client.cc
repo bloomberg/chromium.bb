@@ -65,9 +65,7 @@ std::string RiskCapabilityToString(
 
 WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
   std::string trimmed;
-  TrimWhitespaceASCII(error_type,
-                      TRIM_ALL,
-                      &trimmed);
+  base::TrimWhitespaceASCII(error_type, base::TRIM_ALL, &trimmed);
   if (LowerCaseEqualsASCII(trimmed, "buyer_account_error"))
     return WalletClient::BUYER_ACCOUNT_ERROR;
   if (LowerCaseEqualsASCII(trimmed, "unsupported_merchant"))
@@ -92,9 +90,7 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
 WalletClient::ErrorType BuyerErrorStringToErrorType(
     const std::string& message_type_for_buyer) {
   std::string trimmed;
-  TrimWhitespaceASCII(message_type_for_buyer,
-                      TRIM_ALL,
-                      &trimmed);
+  base::TrimWhitespaceASCII(message_type_for_buyer, base::TRIM_ALL, &trimmed);
   if (LowerCaseEqualsASCII(trimmed, "bla_country_not_supported"))
     return WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED;
   if (LowerCaseEqualsASCII(trimmed, "buyer_kyc_error"))
@@ -632,9 +628,7 @@ void WalletClient::OnURLFetchComplete(
       std::string auth_result;
       if (response_dict->GetString(kAuthResultKey, &auth_result)) {
         std::string trimmed;
-        TrimWhitespaceASCII(auth_result,
-                            TRIM_ALL,
-                            &trimmed);
+        base::TrimWhitespaceASCII(auth_result, base::TRIM_ALL, &trimmed);
         delegate_->OnDidAuthenticateInstrument(
             LowerCaseEqualsASCII(trimmed, "success"));
       } else {

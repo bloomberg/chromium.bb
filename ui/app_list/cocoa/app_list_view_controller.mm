@@ -334,7 +334,7 @@ void AppListModelObserverBridge::OnProfilesChanged() {
     return;
 
   base::string16 query;
-  TrimWhitespace(searchBoxModel->text(), TRIM_ALL, &query);
+  base::TrimWhitespace(searchBoxModel->text(), base::TRIM_ALL, &query);
   BOOL shouldShowSearch = !query.empty();
   [self revealSearchResults:shouldShowSearch];
   if (shouldShowSearch)

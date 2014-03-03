@@ -262,7 +262,7 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
     const std::string& raw_untrimmed,
     bool use_hostname_suffix_matching) {
   std::string raw;
-  TrimWhitespaceASCII(raw_untrimmed, TRIM_ALL, &raw);
+  base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
 
   // This is the special syntax used by WinInet's bypass list -- we allow it
   // on all platforms and interpret it the same way.

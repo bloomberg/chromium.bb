@@ -97,7 +97,7 @@ void ReplaceIllegalCharactersInPath(base::FilePath::StringType* file_name,
   DCHECK(!(IllegalCharacters::GetInstance()->contains(replace_char)));
 
   // Remove leading and trailing whitespace.
-  TrimWhitespace(*file_name, TRIM_ALL, file_name);
+  base::TrimWhitespace(*file_name, base::TRIM_ALL, file_name);
 
   IllegalCharacters* illegal = IllegalCharacters::GetInstance();
   int cursor = 0;  // The ICU macros expect an int.

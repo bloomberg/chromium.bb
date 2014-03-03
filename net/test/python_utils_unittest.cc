@@ -56,6 +56,6 @@ TEST(PythonUtils, PythonRunTime) {
   cmd_line.AppendArg(python_cmd);
   std::string output;
   EXPECT_TRUE(base::GetAppOutput(cmd_line, &output));
-  TrimWhitespace(output, TRIM_TRAILING, &output);
+  base::TrimWhitespace(output, base::TRIM_TRAILING, &output);
   EXPECT_EQ(input, output);
 }

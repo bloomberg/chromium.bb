@@ -176,7 +176,7 @@ std::string GetLinuxDistro() {
 
 void SetLinuxDistro(const std::string& distro) {
   std::string trimmed_distro;
-  TrimWhitespaceASCII(distro, TRIM_ALL, &trimmed_distro);
+  base::TrimWhitespaceASCII(distro, base::TRIM_ALL, &trimmed_distro);
   base::strlcpy(g_linux_distro, trimmed_distro.c_str(), kDistroSize);
 }
 

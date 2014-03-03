@@ -110,7 +110,7 @@ bool FeatureSwitch::IsEnabled() const {
 
   std::string temp = command_line_->GetSwitchValueASCII(switch_name_);
   std::string switch_value;
-  TrimWhitespaceASCII(temp, TRIM_ALL, &switch_value);
+  base::TrimWhitespaceASCII(temp, base::TRIM_ALL, &switch_value);
 
   if (switch_value == "1")
     return true;

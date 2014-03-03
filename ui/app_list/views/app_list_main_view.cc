@@ -220,7 +220,7 @@ void AppListMainView::GetShortcutPathForApp(
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {
   base::string16 query;
-  TrimWhitespace(model_->search_box()->text(), TRIM_ALL, &query);
+  base::TrimWhitespace(model_->search_box()->text(), base::TRIM_ALL, &query);
   bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
 

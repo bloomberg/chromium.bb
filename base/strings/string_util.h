@@ -188,16 +188,6 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         const size_t byte_size,
                                         std::string* output);
 
-}  // namespace base
-
-#if defined(OS_WIN)
-#include "base/strings/string_util_win.h"
-#elif defined(OS_POSIX)
-#include "base/strings/string_util_posix.h"
-#else
-#error Define string operations appropriately for your platform
-#endif
-
 // Trims any whitespace from either end of the input string.  Returns where
 // whitespace was found.
 // The non-wide version has two functions:
@@ -211,7 +201,7 @@ enum TrimPositions {
   TRIM_TRAILING = 1 << 1,
   TRIM_ALL      = TRIM_LEADING | TRIM_TRAILING,
 };
-BASE_EXPORT TrimPositions TrimWhitespace(const base::string16& input,
+BASE_EXPORT TrimPositions TrimWhitespace(const string16& input,
                                          TrimPositions positions,
                                          base::string16* output);
 BASE_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
@@ -223,6 +213,16 @@ BASE_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
 BASE_EXPORT TrimPositions TrimWhitespace(const std::string& input,
                                          TrimPositions positions,
                                          std::string* output);
+
+}  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
+#elif defined(OS_POSIX)
+#include "base/strings/string_util_posix.h"
+#else
+#error Define string operations appropriately for your platform
+#endif
 
 // Searches  for CR or LF characters.  Removes all contiguous whitespace
 // strings that contain them.  This is useful when trying to deal with text

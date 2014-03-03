@@ -74,7 +74,7 @@ void AppendSwitchesAndArguments(CommandLine& command_line,
   bool parse_switches = true;
   for (size_t i = 1; i < argv.size(); ++i) {
     CommandLine::StringType arg = argv[i];
-    TrimWhitespace(arg, TRIM_ALL, &arg);
+    base::TrimWhitespace(arg, base::TRIM_ALL, &arg);
 
     CommandLine::StringType switch_string;
     CommandLine::StringType switch_value;
@@ -293,7 +293,7 @@ FilePath CommandLine::GetProgram() const {
 }
 
 void CommandLine::SetProgram(const FilePath& program) {
-  TrimWhitespace(program.value(), TRIM_ALL, &argv_[0]);
+  base::TrimWhitespace(program.value(), base::TRIM_ALL, &argv_[0]);
 }
 
 bool CommandLine::HasSwitch(const std::string& switch_string) const {
@@ -422,7 +422,7 @@ void CommandLine::PrependWrapper(const CommandLine::StringType& wrapper) {
 #if defined(OS_WIN)
 void CommandLine::ParseFromString(const std::wstring& command_line) {
   std::wstring command_line_string;
-  TrimWhitespace(command_line, TRIM_ALL, &command_line_string);
+  base::TrimWhitespace(command_line, base::TRIM_ALL, &command_line_string);
   if (command_line_string.empty())
     return;
 

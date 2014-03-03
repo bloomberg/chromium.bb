@@ -596,10 +596,10 @@ base::string16 SanitizeShortcutProfileNameString(
     pos = sanitized.find_first_of(kReservedCharacters, pos + 1);
   }
 
-  TrimWhitespace(sanitized, TRIM_LEADING, &sanitized);
+  base::TrimWhitespace(sanitized, base::TRIM_LEADING, &sanitized);
   if (sanitized.size() > kMaxProfileShortcutFileNameLength)
     sanitized.erase(kMaxProfileShortcutFileNameLength);
-  TrimWhitespace(sanitized, TRIM_TRAILING, &sanitized);
+  base::TrimWhitespace(sanitized, base::TRIM_TRAILING, &sanitized);
 
   return sanitized;
 }

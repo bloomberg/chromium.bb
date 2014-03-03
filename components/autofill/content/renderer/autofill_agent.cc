@@ -77,8 +77,10 @@ void GetDataListSuggestions(const blink::WebInputElement& element,
         element.formControlType() == WebString::fromUTF8("email")) {
       std::vector<base::string16> parts;
       base::SplitStringDontTrim(prefix, ',', &parts);
-      if (parts.size() > 0)
-        TrimWhitespace(parts[parts.size() - 1], TRIM_LEADING, &prefix);
+      if (parts.size() > 0) {
+        base::TrimWhitespace(parts[parts.size() - 1], base::TRIM_LEADING,
+                             &prefix);
+      }
     }
   }
   for (WebOptionElement option = options.firstItem().to<WebOptionElement>();

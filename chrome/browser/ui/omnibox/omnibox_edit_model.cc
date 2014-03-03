@@ -1368,7 +1368,8 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
 
   // Then check if the text before the inserted space matches a keyword.
   base::string16 keyword;
-  TrimWhitespace(new_text.substr(0, space_position), TRIM_LEADING, &keyword);
+  base::TrimWhitespace(new_text.substr(0, space_position), base::TRIM_LEADING,
+                       &keyword);
   return !keyword.empty() && !autocomplete_controller()->keyword_provider()->
       GetKeywordForText(keyword).empty();
 }

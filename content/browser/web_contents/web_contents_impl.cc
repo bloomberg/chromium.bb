@@ -2617,7 +2617,7 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
     final_title = base::UTF8ToUTF16(entry->GetURL().ExtractFileName());
     explicit_set = false;  // Don't count synthetic titles toward the set limit.
   } else {
-    TrimWhitespace(title, TRIM_ALL, &final_title);
+    base::TrimWhitespace(title, base::TRIM_ALL, &final_title);
     explicit_set = true;
   }
 

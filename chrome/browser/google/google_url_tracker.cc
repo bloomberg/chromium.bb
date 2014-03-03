@@ -136,7 +136,7 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   // "<scheme>://[www.]google.<TLD>/".
   std::string url_str;
   source->GetResponseAsString(&url_str);
-  TrimWhitespace(url_str, TRIM_ALL, &url_str);
+  base::TrimWhitespace(url_str, base::TRIM_ALL, &url_str);
   GURL url(url_str);
   if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||
       url.has_ref() ||

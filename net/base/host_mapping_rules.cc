@@ -67,7 +67,7 @@ bool HostMappingRules::RewriteHost(HostPortPair* host_port) const {
 
 bool HostMappingRules::AddRuleFromString(const std::string& rule_string) {
   std::string trimmed;
-  TrimWhitespaceASCII(rule_string, TRIM_ALL, &trimmed);
+  base::TrimWhitespaceASCII(rule_string, base::TRIM_ALL, &trimmed);
   std::vector<std::string> parts;
   base::SplitString(trimmed, ' ', &parts);
 

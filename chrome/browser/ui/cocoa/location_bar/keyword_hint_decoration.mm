@@ -32,7 +32,7 @@ const CGFloat kHintAvailableRatio = 2.0 / 3.0;
 // ends.
 NSString* TrimAndConvert(const base::string16& s) {
   base::string16 output;
-  TrimWhitespace(s, TRIM_ALL, &output);
+  base::TrimWhitespace(s, base::TRIM_ALL, &output);
   return base::SysUTF16ToNSString(output);
 }
 

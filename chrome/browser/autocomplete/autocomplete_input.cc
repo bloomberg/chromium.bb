@@ -61,7 +61,8 @@ AutocompleteInput::AutocompleteInput(
       << "Text: '" << text << "', cp: " << cursor_position;
   // None of the providers care about leading white space so we always trim it.
   // Providers that care about trailing white space handle trimming themselves.
-  if ((TrimWhitespace(text, TRIM_LEADING, &text_) & TRIM_LEADING) != 0)
+  if ((base::TrimWhitespace(text, base::TRIM_LEADING, &text_) &
+       base::TRIM_LEADING) != 0)
     AdjustCursorPositionIfNecessary(text.length() - text_.length(),
                                     &cursor_position_);
 
@@ -83,8 +84,8 @@ AutocompleteInput::AutocompleteInput(
   if (chars_removed) {
     // Remove spaces between opening question mark and first actual character.
     base::string16 trimmed_text;
-    if ((TrimWhitespace(text_, TRIM_LEADING, &trimmed_text) & TRIM_LEADING) !=
-        0) {
+    if ((base::TrimWhitespace(text_, base::TRIM_LEADING, &trimmed_text) &
+         base::TRIM_LEADING) != 0) {
       AdjustCursorPositionIfNecessary(text_.length() - trimmed_text.length(),
                                       &cursor_position_);
       text_ = trimmed_text;

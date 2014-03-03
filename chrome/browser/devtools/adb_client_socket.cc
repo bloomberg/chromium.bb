@@ -164,7 +164,7 @@ class HttpOverAdbSocket {
         if (endline_pos != std::string::npos) {
           std::string len = response_.substr(content_pos + 15,
                                              endline_pos - content_pos - 15);
-          TrimWhitespace(len, TRIM_ALL, &len);
+          base::TrimWhitespace(len, base::TRIM_ALL, &len);
           if (!base::StringToInt(len, &expected_length)) {
             CheckNetResultOrDie(net::ERR_FAILED);
             return;

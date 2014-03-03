@@ -173,7 +173,7 @@ bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
     params = params.substr(program.length());
   }
 
-  TrimWhitespace(params, TRIM_ALL, &params);
+  base::TrimWhitespace(params, base::TRIM_ALL, &params);
 
   HWND uac_foreground_window = CreateUACForegroundWindow();
 

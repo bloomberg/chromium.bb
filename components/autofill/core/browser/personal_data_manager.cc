@@ -249,7 +249,7 @@ bool PersonalDataManager::ImportFormData(
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* field = form.field(i);
     base::string16 value;
-    TrimWhitespace(field->value, TRIM_ALL, &value);
+    base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
     // information into the field, then skip it.

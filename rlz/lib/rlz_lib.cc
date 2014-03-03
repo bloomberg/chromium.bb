@@ -103,7 +103,7 @@ void GetEventsFromResponseString(
     std::vector<ReturnedEvent>* event_array) {
   // Get the string of events.
   std::string events = response_line.substr(field_header.size());
-  TrimWhitespaceASCII(events, TRIM_LEADING, &events);
+  base::TrimWhitespaceASCII(events, base::TRIM_LEADING, &events);
 
   int events_length = events.find_first_of("\r\n ");
   if (events_length < 0)
@@ -438,7 +438,7 @@ bool IsPingResponseValid(const char* response, int* checksum_idx) {
   int checksum_begin = checksum_index + checksum_param.size();
   std::string checksum = response_string.substr(checksum_begin,
       checksum_end - checksum_begin + 1);
-  TrimWhitespaceASCII(checksum, TRIM_ALL, &checksum);
+  base::TrimWhitespaceASCII(checksum, base::TRIM_ALL, &checksum);
 
   if (checksum_idx)
     *checksum_idx = checksum_index;
@@ -549,7 +549,7 @@ bool ParsePingResponse(Product product, const char* response) {
 
       // Get the new RLZ.
       std::string rlz_value(response_line.substr(separator_index + 2));
-      TrimWhitespaceASCII(rlz_value, TRIM_LEADING, &rlz_value);
+      base::TrimWhitespaceASCII(rlz_value, base::TRIM_LEADING, &rlz_value);
 
       size_t rlz_length = rlz_value.find_first_of("\r\n ");
       if (rlz_length == std::string::npos)

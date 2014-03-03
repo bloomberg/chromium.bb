@@ -66,7 +66,7 @@ bool IPMappingRules::RewriteAddresses(AddressList* addresses) const {
 
 bool IPMappingRules::AddRuleFromString(const std::string& rule_string) {
   std::string trimmed;
-  TrimWhitespaceASCII(rule_string, TRIM_ALL, &trimmed);
+  base::TrimWhitespaceASCII(rule_string, base::TRIM_ALL, &trimmed);
   if (trimmed.empty())
     return true;  // Allow empty rules.
 

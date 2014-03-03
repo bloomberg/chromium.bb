@@ -319,7 +319,7 @@ void Setup::FillPythonPath() {
       L"cmd.exe /c python -c \"import sys; print sys.executable\"";
   std::string python_path;
   if (base::GetAppOutput(kGetPython, &python_path)) {
-    TrimWhitespaceASCII(python_path, TRIM_ALL, &python_path);
+    base::TrimWhitespaceASCII(python_path, base::TRIM_ALL, &python_path);
     if (scheduler_.verbose_logging())
       scheduler_.Log("Found python", python_path);
   } else {

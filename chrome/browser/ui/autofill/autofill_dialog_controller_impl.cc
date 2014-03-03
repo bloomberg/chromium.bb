@@ -226,7 +226,7 @@ void GetBillingInfoFromOutputs(const FieldValueMap& output,
        it != output.end(); ++it) {
     const ServerFieldType type = it->first;
     base::string16 trimmed;
-    TrimWhitespace(it->second, TRIM_ALL, &trimmed);
+    base::TrimWhitespace(it->second, base::TRIM_ALL, &trimmed);
 
     // Special case CVC as CreditCard just swallows it.
     if (type == CREDIT_CARD_VERIFICATION_CODE) {

@@ -112,7 +112,7 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
       }
 
       // Trim whitespace off the url scheme.
-      TrimWhitespaceASCII(url_scheme, TRIM_ALL, &url_scheme);
+      base::TrimWhitespaceASCII(url_scheme, base::TRIM_ALL, &url_scheme);
 
       // Add it to the per-scheme mappings (if supported scheme).
       type = TYPE_PROXY_PER_SCHEME;

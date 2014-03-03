@@ -307,7 +307,7 @@ base::string16 GetFirefoxImporterName(const base::FilePath& app_path) {
     const std::string name_attr("Name=");
     bool in_app_section = false;
     for (size_t i = 0; i < lines.size(); ++i) {
-      TrimWhitespace(lines[i], TRIM_ALL, &lines[i]);
+      base::TrimWhitespace(lines[i], base::TRIM_ALL, &lines[i]);
       if (lines[i] == "[App]") {
         in_app_section = true;
       } else if (in_app_section) {

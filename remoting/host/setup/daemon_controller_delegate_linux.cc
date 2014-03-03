@@ -152,7 +152,7 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
     return DaemonController::STATE_UNKNOWN;
   }
 
-  TrimWhitespaceASCII(status, TRIM_ALL, &status);
+  base::TrimWhitespaceASCII(status, base::TRIM_ALL, &status);
 
   if (status == "STARTED") {
     return DaemonController::STATE_STARTED;
@@ -290,7 +290,7 @@ std::string DaemonControllerDelegateLinux::GetVersion() {
     return std::string();
   }
 
-  TrimWhitespaceASCII(version, TRIM_ALL, &version);
+  base::TrimWhitespaceASCII(version, base::TRIM_ALL, &version);
   if (!ContainsOnlyChars(version, "0123456789.")) {
     LOG(ERROR) << "Received invalid host version number: " << version;
     return std::string();

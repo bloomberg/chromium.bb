@@ -580,7 +580,7 @@ int RectangleText::Finalize() {
   // Remove trailing whitespace from the last line or remove the last line
   // completely, if it's just whitespace.
   if (!insufficient_height_ && !lines_->empty()) {
-    TrimWhitespace(lines_->back(), TRIM_TRAILING, &lines_->back());
+    base::TrimWhitespace(lines_->back(), base::TRIM_TRAILING, &lines_->back());
     if (lines_->back().empty() && !last_line_ended_in_lf_)
       lines_->pop_back();
   }
@@ -608,7 +608,8 @@ void RectangleText::AddLine(const base::string16& line) {
           if (truncate) {
             // Trim trailing whitespace from the line that was added.
             const int line = lines_->size() - lines_added;
-            TrimWhitespace(lines_->at(line), TRIM_TRAILING, &lines_->at(line));
+            base::TrimWhitespace(lines_->at(line), base::TRIM_TRAILING,
+                                 &lines_->at(line));
           }
           if (ContainsOnlyWhitespace(word)) {
             // Skip the first space if the previous line was carried over.
@@ -677,7 +678,7 @@ int RectangleText::AddWordOverflow(const base::string16& word) {
 int RectangleText::AddWord(const base::string16& word) {
   int lines_added = 0;
   base::string16 trimmed;
-  TrimWhitespace(word, TRIM_TRAILING, &trimmed);
+  base::TrimWhitespace(word, base::TRIM_TRAILING, &trimmed);
   const float trimmed_width = GetStringWidthF(trimmed, font_list_);
   if (trimmed_width <= available_pixel_width_) {
     // Word can be made to fit, no need to fragment it.

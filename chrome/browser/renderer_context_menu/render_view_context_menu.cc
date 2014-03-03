@@ -938,7 +938,8 @@ void RenderViewContextMenu::AppendPrintItem() {
 void RenderViewContextMenu::AppendSearchProvider() {
   DCHECK(profile_);
 
-  TrimWhitespace(params_.selection_text, TRIM_ALL, &params_.selection_text);
+  base::TrimWhitespace(params_.selection_text, base::TRIM_ALL,
+                       &params_.selection_text);
   if (params_.selection_text.empty())
     return;
 

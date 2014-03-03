@@ -30,7 +30,7 @@ static std::string GetWindowsErrorMessage(DWORD err) {
   if (errorText != NULL) {
     std::string message(base::UTF16ToUTF8(errorText));
     // FormatMessage adds CR/LF to messages so we remove it.
-    TrimWhitespace(message, TRIM_TRAILING, &message);
+    base::TrimWhitespace(message, base::TRIM_TRAILING, &message);
     LocalFree(errorText);
     return message;
   } else {

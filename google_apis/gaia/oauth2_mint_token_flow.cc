@@ -266,12 +266,12 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
       break;
     }
 
-    TrimWhitespace(entry.description, TRIM_ALL, &entry.description);
+    base::TrimWhitespace(entry.description, base::TRIM_ALL, &entry.description);
     static const base::string16 detail_separators =
         base::ASCIIToUTF16(kDetailSeparators);
     Tokenize(detail, detail_separators, &entry.details);
     for (size_t i = 0; i < entry.details.size(); i++)
-      TrimWhitespace(entry.details[i], TRIM_ALL, &entry.details[i]);
+      base::TrimWhitespace(entry.details[i], base::TRIM_ALL, &entry.details[i]);
     issue_advice->push_back(entry);
   }
 

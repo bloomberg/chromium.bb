@@ -1215,8 +1215,8 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
         *(split++) = 0;
         std::string key = line;
         std::string value = split;
-        TrimWhitespaceASCII(key, TRIM_ALL, &key);
-        TrimWhitespaceASCII(value, TRIM_ALL, &value);
+        base::TrimWhitespaceASCII(key, base::TRIM_ALL, &key);
+        base::TrimWhitespaceASCII(value, base::TRIM_ALL, &value);
         // Skip this line if the key name is empty.
         if (key.empty())
           continue;
@@ -1230,7 +1230,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
           // Trim the localization indicator off.
           key.resize(length);
           // Remove any resulting trailing whitespace.
-          TrimWhitespaceASCII(key, TRIM_TRAILING, &key);
+          base::TrimWhitespaceASCII(key, base::TRIM_TRAILING, &key);
           // Skip this line if the key name is now empty.
           if (key.empty())
             continue;

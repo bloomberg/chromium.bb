@@ -115,13 +115,13 @@ const base::string16 CombineAndCollapseWhitespace(
     const base::string16& suffix,
     bool force_whitespace) {
   base::string16 prefix_trimmed;
-  TrimPositions prefix_trailing_whitespace =
-      TrimWhitespace(prefix, TRIM_TRAILING, &prefix_trimmed);
+  base::TrimPositions prefix_trailing_whitespace =
+      base::TrimWhitespace(prefix, base::TRIM_TRAILING, &prefix_trimmed);
 
   // Recursively compute the children's text.
   base::string16 suffix_trimmed;
-  TrimPositions suffix_leading_whitespace =
-      TrimWhitespace(suffix, TRIM_LEADING, &suffix_trimmed);
+  base::TrimPositions suffix_leading_whitespace =
+      base::TrimWhitespace(suffix, base::TRIM_LEADING, &suffix_trimmed);
 
   if (prefix_trailing_whitespace || suffix_leading_whitespace ||
       force_whitespace) {
@@ -190,7 +190,7 @@ base::string16 FindChildText(const WebNode& node) {
 
   const int kChildSearchDepth = 10;
   base::string16 node_text = FindChildTextInner(child, kChildSearchDepth);
-  TrimWhitespace(node_text, TRIM_ALL, &node_text);
+  base::TrimWhitespace(node_text, base::TRIM_ALL, &node_text);
   return node_text;
 }
 
@@ -242,7 +242,7 @@ base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
     // If we have identified a partial label and have reached a non-lightweight
     // element, consider the label to be complete.
     base::string16 trimmed_label;
-    TrimWhitespace(inferred_label, TRIM_ALL, &trimmed_label);
+    base::TrimWhitespace(inferred_label, base::TRIM_ALL, &trimmed_label);
     if (!trimmed_label.empty())
       break;
 
@@ -262,7 +262,7 @@ base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
     break;
   }
 
-  TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+  base::TrimWhitespace(inferred_label, base::TRIM_ALL, &inferred_label);
   return inferred_label;
 }
 

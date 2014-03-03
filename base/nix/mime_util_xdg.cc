@@ -267,7 +267,7 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
       break;
 
     std::string entry;
-    TrimWhitespaceASCII(buf, TRIM_ALL, &entry);
+    base::TrimWhitespaceASCII(buf, base::TRIM_ALL, &entry);
     if (entry.length() == 0 || entry[0] == '#') {
       // Blank line or Comment.
       continue;
@@ -284,10 +284,10 @@ bool IconTheme::LoadIndexTheme(const FilePath& file) {
     if (r.size() < 2)
       continue;
 
-    TrimWhitespaceASCII(r[0], TRIM_ALL, &key);
+    base::TrimWhitespaceASCII(r[0], base::TRIM_ALL, &key);
     for (size_t i = 1; i < r.size(); i++)
       value.append(r[i]);
-    TrimWhitespaceASCII(value, TRIM_ALL, &value);
+    base::TrimWhitespaceASCII(value, base::TRIM_ALL, &value);
 
     if (current_info) {
       if (key == "Size") {
@@ -366,7 +366,8 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
   std::string::size_type pos = 0, epos;
   std::string dir;
   while ((epos = dirs.find(',', pos)) != std::string::npos) {
-    TrimWhitespaceASCII(dirs.substr(pos, epos - pos), TRIM_ALL, &dir);
+    base::TrimWhitespaceASCII(dirs.substr(pos, epos - pos), base::TRIM_ALL,
+                              &dir);
     if (dir.length() == 0) {
       DLOG(WARNING) << "Invalid index.theme: blank subdir";
       return false;
@@ -374,7 +375,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
     subdirs_[dir] = num++;
     pos = epos + 1;
   }
-  TrimWhitespaceASCII(dirs.substr(pos), TRIM_ALL, &dir);
+  base::TrimWhitespaceASCII(dirs.substr(pos), base::TRIM_ALL, &dir);
   if (dir.length() == 0) {
     DLOG(WARNING) << "Invalid index.theme: blank subdir";
     return false;

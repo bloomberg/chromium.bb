@@ -126,14 +126,14 @@ void PluginPlaceholder::HidePlugin() {
     if (EndsWith(width_str, "px", false)) {
       width_str = width_str.substr(0, width_str.length() - 2);
     }
-    TrimWhitespace(width_str, TRIM_TRAILING, &width_str);
+    base::TrimWhitespace(width_str, base::TRIM_TRAILING, &width_str);
     width_str += "[\\s]*px";
     std::string height_str("height:[\\s]*");
     height_str += element.getAttribute("height").utf8().data();
     if (EndsWith(height_str, "px", false)) {
       height_str = height_str.substr(0, height_str.length() - 2);
     }
-    TrimWhitespace(height_str, TRIM_TRAILING, &height_str);
+    base::TrimWhitespace(height_str, base::TRIM_TRAILING, &height_str);
     height_str += "[\\s]*px";
     WebNode parent = element;
     while (!parent.parentNode().isNull()) {

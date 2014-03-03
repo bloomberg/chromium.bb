@@ -242,18 +242,16 @@ void TruncateUTF8ToByteSize(const std::string& input,
     output->clear();
 }
 
-}  // namespace base
-
-TrimPositions TrimWhitespace(const base::string16& input,
+TrimPositions TrimWhitespace(const string16& input,
                              TrimPositions positions,
-                             base::string16* output) {
-  return base::TrimStringT(input, base::kWhitespaceUTF16, positions, output);
+                             string16* output) {
+  return TrimStringT(input, kWhitespaceUTF16, positions, output);
 }
 
 TrimPositions TrimWhitespaceASCII(const std::string& input,
                                   TrimPositions positions,
                                   std::string* output) {
-  return base::TrimStringT(input, base::kWhitespaceASCII, positions, output);
+  return TrimStringT(input, kWhitespaceASCII, positions, output);
 }
 
 // This function is only for backward-compatibility.
@@ -263,6 +261,8 @@ TrimPositions TrimWhitespace(const std::string& input,
                              std::string* output) {
   return TrimWhitespaceASCII(input, positions, output);
 }
+
+}  // namespace base
 
 template<typename STR>
 STR CollapseWhitespaceT(const STR& text,

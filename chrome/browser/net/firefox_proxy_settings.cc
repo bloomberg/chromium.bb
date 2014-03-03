@@ -104,7 +104,7 @@ bool ParsePrefFile(const base::FilePath& pref_file,
     }
     std::string value = line.substr(start_value + 1,
                                     stop_value - start_value - 1);
-    TrimWhitespace(value, TRIM_ALL, &value);
+    base::TrimWhitespace(value, base::TRIM_ALL, &value);
     // Value could be a boolean.
     bool is_value_true = LowerCaseEqualsASCII(value, "true");
     if (is_value_true || LowerCaseEqualsASCII(value, "false")) {
@@ -298,7 +298,7 @@ bool FirefoxProxySettings::GetSettingsFromFile(const base::FilePath& pref_file,
       base::StringTokenizer string_tok(proxy_bypass, ",");
       while (string_tok.GetNext()) {
         std::string token = string_tok.token();
-        TrimWhitespaceASCII(token, TRIM_ALL, &token);
+        base::TrimWhitespaceASCII(token, base::TRIM_ALL, &token);
         if (!token.empty())
           settings->proxy_bypass_list_.push_back(token);
       }

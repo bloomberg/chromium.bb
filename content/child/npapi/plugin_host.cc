@@ -262,7 +262,7 @@ bool PluginHost::SetPostData(const char* buf,
         case GETNAME:
           // Got a value.
           value = std::string(start, ptr - start);
-          TrimWhitespace(value, TRIM_ALL, &value);
+          base::TrimWhitespace(value, base::TRIM_ALL, &value);
           // If the name field is empty, we'll skip this header
           // but we won't error out.
           if (!name.empty() && name != "content-length") {
@@ -274,7 +274,7 @@ bool PluginHost::SetPostData(const char* buf,
         case GETVALUE:
           // Got a header.
           name = StringToLowerASCII(std::string(start, ptr - start));
-          TrimWhitespace(name, TRIM_ALL, &name);
+          base::TrimWhitespace(name, base::TRIM_ALL, &name);
           start = ptr + 1;
           break;
         case GETDATA: {

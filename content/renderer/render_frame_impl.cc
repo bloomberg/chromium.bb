@@ -806,12 +806,13 @@ bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
     const int start = selection_range.GetMin() - selection_text_offset;
     const size_t length = selection_range.length();
     if (start >= 0 && start + length <= selection_text.length()) {
-      TrimWhitespace(selection_text.substr(start, length), TRIM_ALL,
-                     &trimmed_selection_text);
+      base::TrimWhitespace(selection_text.substr(start, length), base::TRIM_ALL,
+                           &trimmed_selection_text);
     }
   }
   base::string16 trimmed_params_text;
-  TrimWhitespace(params.selection_text, TRIM_ALL, &trimmed_params_text);
+  base::TrimWhitespace(params.selection_text, base::TRIM_ALL,
+                       &trimmed_params_text);
   return trimmed_params_text != trimmed_selection_text;
 }
 

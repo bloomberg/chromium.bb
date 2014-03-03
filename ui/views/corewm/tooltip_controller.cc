@@ -288,7 +288,8 @@ void TooltipController::UpdateIfRequired() {
     // If the string consists entirely of whitespace, then don't both showing it
     // (an empty tooltip is useless).
     base::string16 whitespace_removed_text;
-    TrimWhitespace(trimmed_text, TRIM_ALL, &whitespace_removed_text);
+    base::TrimWhitespace(trimmed_text, base::TRIM_ALL,
+                         &whitespace_removed_text);
     if (whitespace_removed_text.empty()) {
       tooltip_->Hide();
     } else {

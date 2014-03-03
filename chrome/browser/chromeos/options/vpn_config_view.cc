@@ -1029,7 +1029,7 @@ const std::string VPNConfigView::GetTextFromField(views::Textfield* textfield,
   if (!trim_whitespace)
     return untrimmed;
   std::string result;
-  TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
+  base::TrimWhitespaceASCII(untrimmed, base::TRIM_ALL, &result);
   return result;
 }
 

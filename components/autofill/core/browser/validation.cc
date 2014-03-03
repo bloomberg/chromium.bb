@@ -28,8 +28,8 @@ bool IsValidCreditCardExpirationDate(const base::string16& year,
                                      const base::string16& month,
                                      const base::Time& now) {
   base::string16 year_cleaned, month_cleaned;
-  TrimWhitespace(year, TRIM_ALL, &year_cleaned);
-  TrimWhitespace(month, TRIM_ALL, &month_cleaned);
+  base::TrimWhitespace(year, base::TRIM_ALL, &year_cleaned);
+  base::TrimWhitespace(month, base::TRIM_ALL, &month_cleaned);
   if (year_cleaned.length() != 4)
     return false;
 

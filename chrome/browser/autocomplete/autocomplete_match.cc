@@ -330,7 +330,7 @@ base::string16 AutocompleteMatch::SanitizeString(const base::string16& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
   // omnibox_custom_bindings.js.
   base::string16 result;
-  TrimWhitespace(text, TRIM_LEADING, &result);
+  base::TrimWhitespace(text, base::TRIM_LEADING, &result);
   base::RemoveChars(result, kInvalidChars, &result);
   return result;
 }

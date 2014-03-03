@@ -25,8 +25,10 @@ base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
   const base::string16 kJsPrefix(
       base::ASCIIToUTF16(content::kJavaScriptScheme) + base::ASCIIToUTF16(":"));
   base::string16 out(text);
-  while (StartsWith(out, kJsPrefix, false))
-    TrimWhitespace(out.substr(kJsPrefix.length()), TRIM_LEADING, &out);
+  while (StartsWith(out, kJsPrefix, false)) {
+    base::TrimWhitespace(out.substr(kJsPrefix.length()), base::TRIM_LEADING,
+                         &out);
+  }
   return out;
 }
 

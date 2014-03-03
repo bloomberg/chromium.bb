@@ -288,7 +288,7 @@ std::string DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
   // the server is giving us back a buffer with embedded NULLs,
   // something is broken anyway.  Finally, trim trailing whitespace.
   std::string result(std::string(data, count_bytes).c_str());
-  TrimWhitespaceASCII(result, TRIM_TRAILING, &result);
+  base::TrimWhitespaceASCII(result, base::TRIM_TRAILING, &result);
   return result;
 }
 

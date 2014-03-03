@@ -95,7 +95,7 @@ void SearchController::Start() {
   Stop();
 
   base::string16 query;
-  TrimWhitespace(search_box_->text(), TRIM_ALL, &query);
+  base::TrimWhitespace(search_box_->text(), base::TRIM_ALL, &query);
 
   dispatching_query_ = true;
   for (Providers::iterator it = providers_.begin();

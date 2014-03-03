@@ -366,7 +366,7 @@ base::string16 FtpUtil::GetStringPartAfterColumns(const base::string16& text,
   }
 
   base::string16 result(text.substr(iter.array_pos()));
-  TrimWhitespace(result, TRIM_ALL, &result);
+  base::TrimWhitespace(result, base::TRIM_ALL, &result);
   return result;
 }
 
