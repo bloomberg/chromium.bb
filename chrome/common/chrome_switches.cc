@@ -422,7 +422,7 @@ const char kDisableQuicPacing[]             = "disable-quic-pacing";
 
 // Disable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if QUIC protocol is enabled.
-const char kDisableQuicPortSelection[]      = "disable-quic-port_selection";
+const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 
 // Prevents the URLs of BackgroundContents from being remembered and
 // re-launched when the browser restarts.

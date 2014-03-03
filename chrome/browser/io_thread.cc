@@ -999,6 +999,8 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
   globals_->enable_quic_pacing.CopyToIfSet(
       &params->enable_quic_pacing);
+  globals_->enable_quic_persist_server_info.CopyToIfSet(
+      &params->enable_quic_persist_server_info);
   globals_->enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
@@ -1090,6 +1092,8 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
         ShouldEnableQuicHttps(command_line, quic_trial_group));
     globals_->enable_quic_pacing.set(
         ShouldEnableQuicPacing(command_line, quic_trial_group));
+    globals_->enable_quic_persist_server_info.set(
+        ShouldEnableQuicPersistServerInfo(command_line));
     globals_->enable_quic_port_selection.set(
         ShouldEnableQuicPortSelection(command_line));
   }
@@ -1177,6 +1181,19 @@ bool IOThread::ShouldEnableQuicPacing(const CommandLine& command_line,
     return false;
 
   return quic_trial_group.ends_with(kQuicFieldTrialPacingSuffix);
+}
+
+bool IOThread::ShouldEnableQuicPersistServerInfo(
+    const CommandLine& command_line) {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  // Avoid persisting of Quic server config information to disk cache when we
+  // have a beta or stable release.  Allow in all other cases, including when we
+  // do a developer build (CHANNEL_UNKNOWN).
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return false;
+  }
+  return true;
 }
 
 size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,

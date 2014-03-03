@@ -83,6 +83,7 @@ HttpNetworkSession::Params::Params()
       enable_quic_https(false),
       enable_quic_port_selection(true),
       enable_quic_pacing(false),
+      enable_quic_persist_server_info(false),
       quic_clock(NULL),
       quic_random(NULL),
       quic_max_packet_length(kDefaultMaxPacketSize),
@@ -206,6 +207,8 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
                    params_.enable_quic_port_selection);
   dict->SetBoolean("enable_quic_pacing",
                    params_.enable_quic_pacing);
+  dict->SetBoolean("enable_quic_persist_server_info",
+                   params_.enable_quic_persist_server_info);
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
   return dict;

@@ -290,7 +290,8 @@ HttpCache::HttpCache(const net::HttpNetworkSession::Params& params,
       backend_factory_(backend_factory),
       building_backend_(false),
       mode_(NORMAL),
-      quic_server_info_factory_(new QuicServerInfoFactoryAdaptor(this)),
+      quic_server_info_factory_(params.enable_quic_persist_server_info ?
+          new QuicServerInfoFactoryAdaptor(this) : NULL),
       network_layer_(new HttpNetworkLayer(new HttpNetworkSession(params))) {
   HttpNetworkSession* session = network_layer_->GetSession();
   session->quic_stream_factory()->set_quic_server_info_factory(

@@ -164,6 +164,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_https;
     Optional<bool> enable_quic_pacing;
+    Optional<bool> enable_quic_persist_server_info;
     Optional<bool> enable_quic_port_selection;
     Optional<size_t> quic_max_packet_length;
     Optional<net::QuicVersionVector> quic_supported_versions;
@@ -284,6 +285,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // QUIC handshake.
   bool ShouldEnableQuicPacing(const CommandLine& command_line,
                               base::StringPiece quic_trial_group);
+
+  // Returns true if Chromium should persist QUIC server config information to
+  // disk cache.
+  bool ShouldEnableQuicPersistServerInfo(const CommandLine& command_line);
 
   // Returns the maximum length for QUIC packets, based on any flags in
   // |command_line| or the field trial.  Returns 0 if there is an error
