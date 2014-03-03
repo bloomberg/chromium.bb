@@ -99,11 +99,12 @@ const char* ScreenOrientation::supplementName()
     return "ScreenOrientation";
 }
 
-Document& ScreenOrientation::document() const
+Document* ScreenOrientation::document() const
 {
-    ASSERT(m_associatedDOMWindow);
+    if (!m_associatedDOMWindow || !m_associatedDOMWindow->isCurrentlyDisplayedInFrame())
+        return 0;
     ASSERT(m_associatedDOMWindow->document());
-    return *m_associatedDOMWindow->document();
+    return m_associatedDOMWindow->document();
 }
 
 ScreenOrientation& ScreenOrientation::from(Screen& screen)
@@ -123,7 +124,9 @@ ScreenOrientation::~ScreenOrientation()
 const AtomicString& ScreenOrientation::orientation(Screen& screen)
 {
     ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
-    ScreenOrientationController& controller = ScreenOrientationController::from(screenOrientation.document());
+    if (!screenOrientation.document())
+        return emptyAtom;
+    ScreenOrientationController& controller = ScreenOrientationController::from(*screenOrientation.document());
     return orientationToString(controller.orientation());
 }
 

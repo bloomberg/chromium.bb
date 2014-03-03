@@ -44,7 +44,6 @@ BarProp::BarProp(LocalFrame* frame, Type type)
 
 bool BarProp::visible() const
 {
-    ASSERT(m_frame);
     if (!m_frame)
         return false;
     FrameHost* host = m_frame->host();

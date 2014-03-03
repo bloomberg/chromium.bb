@@ -38,7 +38,7 @@ private:
     void orientationLockTimerFired(Timer<ScreenOrientation>*);
 
     static const char* supplementName();
-    Document& document() const;
+    Document* document() const;
 
     Timer<ScreenOrientation> m_orientationLockTimer;
     blink::WebScreenOrientations m_lockedOrientations;

@@ -590,7 +590,7 @@ void DOMWindow::resetDOMWindowProperties()
 
 bool DOMWindow::isCurrentlyDisplayedInFrame() const
 {
-    return m_frame && m_frame->domWindow() == this;
+    return m_frame && m_frame->domWindow() == this && m_frame->host();
 }
 
 int DOMWindow::orientation() const
@@ -605,8 +605,6 @@ int DOMWindow::orientation() const
 
 Screen* DOMWindow::screen() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_screen)
         m_screen = Screen::create(m_frame);
     return m_screen.get();
@@ -614,8 +612,6 @@ Screen* DOMWindow::screen() const
 
 History* DOMWindow::history() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_history)
         m_history = History::create(m_frame);
     return m_history.get();
@@ -624,8 +620,6 @@ History* DOMWindow::history() const
 BarProp* DOMWindow::locationbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropLocationbar);
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_locationbar)
         m_locationbar = BarProp::create(m_frame, BarProp::Locationbar);
     return m_locationbar.get();
@@ -634,8 +628,6 @@ BarProp* DOMWindow::locationbar() const
 BarProp* DOMWindow::menubar() const
 {
     UseCounter::count(document(), UseCounter::BarPropMenubar);
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_menubar)
         m_menubar = BarProp::create(m_frame, BarProp::Menubar);
     return m_menubar.get();
@@ -644,8 +636,6 @@ BarProp* DOMWindow::menubar() const
 BarProp* DOMWindow::personalbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropPersonalbar);
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_personalbar)
         m_personalbar = BarProp::create(m_frame, BarProp::Personalbar);
     return m_personalbar.get();
@@ -654,8 +644,6 @@ BarProp* DOMWindow::personalbar() const
 BarProp* DOMWindow::scrollbars() const
 {
     UseCounter::count(document(), UseCounter::BarPropScrollbars);
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_scrollbars)
         m_scrollbars = BarProp::create(m_frame, BarProp::Scrollbars);
     return m_scrollbars.get();
@@ -664,8 +652,6 @@ BarProp* DOMWindow::scrollbars() const
 BarProp* DOMWindow::statusbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropStatusbar);
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_statusbar)
         m_statusbar = BarProp::create(m_frame, BarProp::Statusbar);
     return m_statusbar.get();
@@ -674,8 +660,6 @@ BarProp* DOMWindow::statusbar() const
 BarProp* DOMWindow::toolbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropToolbar);
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_toolbar)
         m_toolbar = BarProp::create(m_frame, BarProp::Toolbar);
     return m_toolbar.get();
@@ -683,8 +667,6 @@ BarProp* DOMWindow::toolbar() const
 
 Console* DOMWindow::console() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_console)
         m_console = Console::create(m_frame);
     return m_console.get();
@@ -708,8 +690,6 @@ ApplicationCache* DOMWindow::applicationCache() const
 
 Navigator* DOMWindow::navigator() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_navigator)
         m_navigator = Navigator::create(m_frame);
     return m_navigator.get();
@@ -717,8 +697,6 @@ Navigator* DOMWindow::navigator() const
 
 Performance* DOMWindow::performance() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_performance)
         m_performance = Performance::create(m_frame);
     return m_performance.get();
@@ -726,8 +704,6 @@ Performance* DOMWindow::performance() const
 
 Location* DOMWindow::location() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
     if (!m_location)
         m_location = Location::create(m_frame);
     return m_location.get();
@@ -867,10 +843,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
 {
     OwnPtr<PostMessageTimer> timer(t);
 
-    // FIXME: The frame()->host() check really does not belong here. We should
-    // move it up into isCurrentlyDisplayedInFrame(); however, doing so breaks a
-    // number of window properties like window.toolbar.
-    if (!isCurrentlyDisplayedInFrame() || !frame()->host())
+    if (!isCurrentlyDisplayedInFrame())
         return;
 
     RefPtr<MessageEvent> event = timer->event();
@@ -1294,8 +1267,6 @@ Document* DOMWindow::document() const
 
 PassRefPtr<StyleMedia> DOMWindow::styleMedia() const
 {
-    if (!isCurrentlyDisplayedInFrame())
-        return nullptr;
     if (!m_media)
         m_media = StyleMedia::create(m_frame);
     return m_media.get();
