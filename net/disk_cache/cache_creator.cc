@@ -7,10 +7,10 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/backend_impl.h"
+#include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/mem_backend_impl.h"
+#include "net/disk_cache/memory/mem_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 
 #ifdef USE_TRACING_CACHE_BACKEND

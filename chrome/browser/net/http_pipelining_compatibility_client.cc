@@ -15,7 +15,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
-#include "net/disk_cache/histogram_macros.h"
+#include "net/disk_cache/blockfile/histogram_macros.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
