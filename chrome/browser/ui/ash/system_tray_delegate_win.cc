@@ -281,6 +281,11 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   virtual void ActiveUserWasChanged() OVERRIDE {
   }
 
+  virtual bool IsNetworkBehindCaptivePortal(
+      const std::string& service_path) const OVERRIDE {
+    return false;
+  }
+
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();

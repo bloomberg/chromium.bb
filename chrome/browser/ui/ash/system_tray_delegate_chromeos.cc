@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -893,6 +894,13 @@ int SystemTrayDelegateChromeOS::GetSystemTrayMenuWidth() {
 
 void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
   GetSystemTrayNotifier()->NotifyUserUpdate();
+}
+
+bool SystemTrayDelegateChromeOS::IsNetworkBehindCaptivePortal(
+    const std::string& service_path) const {
+  NetworkPortalDetector::CaptivePortalState state =
+      NetworkPortalDetector::Get()->GetCaptivePortalState(service_path);
+  return state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
 }
 
 ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
