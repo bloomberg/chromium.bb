@@ -799,9 +799,6 @@ crbug.com/345767 fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failur
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
-Bug(vollick) [ Linux Win Android ] compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-
 crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure ]
 
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-001.html [ Skip ]
