@@ -39,12 +39,10 @@ NetworkChangeNotifierWinTest.NetChangeWin*
 EmbeddedTestServerThreadingTestInstantiation*
 
 # Hang: crbug.com/331468
-MultiThreadedCertVerifierTest.DifferentCACerts
-MultiThreadedCertVerifierTest.CancelRequest
+MultiThreadedCertVerifierTest.*
 
 # Hang: crbug.com/343565
 TestCompletionCallbackTest.Simple
-MultiThreadedCertVerifierTest.CacheHit
 
 # Failing tests: crbug.com/343565
 HttpServerTest.RequestWithTooLargeBody

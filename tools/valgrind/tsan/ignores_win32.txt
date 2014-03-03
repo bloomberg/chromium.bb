@@ -63,3 +63,6 @@ fun_r:_open_osfhandle
 
 # http://crbug.com/272065
 obj:*NLAapi.dll
+
+# Presumably atomic-based optimization in the system allocator.
+fun_r:_heap_alloc_dbg_impl

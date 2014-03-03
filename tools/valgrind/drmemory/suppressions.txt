@@ -457,3 +457,20 @@ KERNELBASE.dll!DuplicateHandle
 KERNEL32.dll!DuplicateHandle
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
+
+UNINITIALIZED READ
+name=http://crbug.com/347967
+osmesa.dll!unpack_RGBA8888
+osmesa.dll!_mesa_unpack_rgba_row
+osmesa.dll!slow_read_rgba_pixels
+osmesa.dll!read_rgba_pixels
+osmesa.dll!_mesa_readpixels
+osmesa.dll!_mesa_ReadnPixelsARB
+osmesa.dll!_mesa_ReadPixels
+gpu.dll!gpu::gles2::GLES2DecoderImpl::HandleReadPixels
+gpu.dll!gpu::gles2::GLES2DecoderImpl::DoCommand
+gpu.dll!gpu::CommandParser::ProcessCommand
+gpu.dll!gpu::GpuScheduler::PutChanged
+gpu.dll!base::internal::Invoker<>::Run
+gpu.dll!gpu::CommandBufferService::Flush
+gpu.dll!gpu::InProcessCommandBuffer::FlushOnGpuThread

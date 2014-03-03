@@ -6094,7 +6094,7 @@
    bug_329960
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7WebCore22V8PerContextDataHolder7installEN2v86HandleINS1_7ContextEEE
+   fun:_ZN7WebCore22V8PerContextDataHolder7installE*
    fun:_ZN7WebCore22WorkerScriptController25initializeContextIfNeededEv
    ...
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
@@ -6325,4 +6325,21 @@
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
    fun:_ZN3gpu22InProcessCommandBuffer12PumpCommandsEv
+}
+{
+   bug_348629
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore11ThreadStateC1Ev
+   fun:_ZN7WebCore11ThreadState6attachEv
+   fun:_ZN7WebCore12WorkerThread12workerThreadEv
+   fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
+   fun:_ZN3WTFL16threadEntryPointEPv
+   fun:_ZN3WTFL19wtfThreadEntryPointEPv
+}
+{
+   bug_348630
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN7content30WebKitPlatformSupportChildImpl18waitMultipleEventsERKN5blink9WebVectorIPNS1_16WebWaitableEventEEE
 }

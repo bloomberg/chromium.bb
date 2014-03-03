@@ -41,6 +41,26 @@
   ...
 }
 
+{
+  NSPStartup
+  ThreadSanitizer:Race
+  fun:NSPStartup
+  ...
+  fun:WahOpenHandleHelper
+  ...
+  fun:WSALookupServiceBeginW
+  ...
+  fun:socket
+}
+
+{
+  __crtIsPackagedApp
+  ThreadSanitizer:Race
+  fun:__crtIsPackagedApp
+  fun:_threadstartex
+  fun:BaseThreadInitThunk
+}
+
 ############################
 # Chromium
 
