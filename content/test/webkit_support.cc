@@ -93,7 +93,6 @@ TestEnvironment* test_environment;
 void SetUpTestEnvironmentForUnitTests() {
   ParseBlinkCommandLineArgumentsForUnitTests();
 
-  blink::WebRuntimeFeatures::enableStableFeatures(true);
   blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
   blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
 
