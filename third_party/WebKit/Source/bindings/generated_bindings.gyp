@@ -235,7 +235,6 @@
         '<@(generated_idl_files)',
       ],
       'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
       ],
@@ -244,8 +243,6 @@
         'scripts/compute_interfaces_info.py',
         '--idl-files-list',
         '<(idl_files_list)',
-        '--interface-dependencies-file',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
         '--interfaces-info-file',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
         '--event-names-file',

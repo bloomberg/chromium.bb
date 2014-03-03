@@ -74,7 +74,6 @@ moving or deleting files (hence requiring a full rebuild anyway) or significant
 code changes (for inherited extended attributes).
 
 FIXME: also generates EventNames.in; factor out.  http://crbug.com/341748
-FIXME: also generates InterfaceDependencies.txt for Perl.  http://crbug.com/239771
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
@@ -114,14 +113,11 @@ def parse_options():
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--event-names-file', help='output file')
     parser.add_option('--idl-files-list', help='file listing IDL files')
-    parser.add_option('--interface-dependencies-file', help='output file')
     parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
     options, args = parser.parse_args()
     if options.event_names_file is None:
         parser.error('Must specify an output file using --event-names-file.')
-    if options.interface_dependencies_file is None:
-        parser.error('Must specify an output file using --interface-dependencies-file.')
     if options.interfaces_info_file is None:
         parser.error('Must specify an output file using --interfaces-info-file.')
     if options.idl_files_list is None:
@@ -135,33 +131,6 @@ def parse_options():
 ################################################################################
 # Write files
 ################################################################################
-
-def write_dependencies_file(dependencies_filename, only_if_changed):
-    """Write the interface dependencies file.
-
-    The format is as follows:
-
-    Document.idl P.idl
-    Event.idl
-    Window.idl Q.idl R.idl S.idl
-    ...
-
-    The above indicates that:
-    Document.idl depends on P.idl,
-    Event.idl depends on no other IDL files, and
-    Window.idl depends on Q.idl, R.idl, and S.idl.
-
-    An IDL that is a dependency of another IDL (e.g. P.idl) does not have its
-    own line in the dependency file.
-    """
-    # FIXME: remove this file once Perl is gone http://crbug.com/239771
-    dependencies_list = sorted(
-        (interface_info['full_path'], sorted(interface_info['dependencies_full_paths']))
-        for interface_info in interfaces_info.values())
-    lines = ['%s %s\n' % (idl_file, ' '.join(dependency_files))
-             for idl_file, dependency_files in dependencies_list]
-    write_file(lines, dependencies_filename, only_if_changed)
-
 
 def write_event_names_file(destination_filename, only_if_changed):
     # Generate event names for all interfaces that inherit from Event,
@@ -363,7 +332,6 @@ def main():
     only_if_changed = options.write_file_only_if_changed
     compute_interfaces_info(idl_files)
     write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)
-    write_dependencies_file(options.interface_dependencies_file, only_if_changed)
     write_event_names_file(options.event_names_file, only_if_changed)
 
 

@@ -97,7 +97,6 @@ class BindingsTests(object):
         self.verbose = verbose
         self.executive = executive.Executive()
         self.provider = provider
-        _, self.interface_dependencies_filename = provider.new_temp_file()
         _, self.interfaces_info_filename = provider.new_temp_file()
         # Generate output into the reference directory if resetting results, or
         # a temp directory if not.
@@ -152,7 +151,6 @@ class BindingsTests(object):
             cmd = ['python',
                    'bindings/scripts/compute_interfaces_info.py',
                    '--idl-files-list', idl_files_list_filename,
-                   '--interface-dependencies-file', self.interface_dependencies_filename,
                    '--interfaces-info-file', self.interfaces_info_filename,
                    '--event-names-file', event_names_filename,
                    '--write-file-only-if-changed', '0']
