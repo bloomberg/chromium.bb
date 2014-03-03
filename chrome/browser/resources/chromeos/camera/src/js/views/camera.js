@@ -1093,7 +1093,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
             // Reset the controls.
             this.resetTakePicture_();
           } else {
-            setTimeout(takePicture, 500);
+            setTimeout(takePicture, 250);
           }
         }.bind(this));
       }.bind(this);
