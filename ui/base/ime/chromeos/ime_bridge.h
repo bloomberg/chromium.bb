@@ -104,9 +104,9 @@ class UI_BASE_EXPORT IMEEngineHandlerInterface {
 };
 
 // A interface to handle the candidate window related method call.
-class UI_BASE_EXPORT IBusPanelCandidateWindowHandlerInterface {
+class UI_BASE_EXPORT IMECandidateWindowHandlerInterface {
  public:
-  virtual ~IBusPanelCandidateWindowHandlerInterface() {}
+  virtual ~IMECandidateWindowHandlerInterface() {}
 
   // Called when the IME updates the lookup table.
   virtual void UpdateLookupTable(const ui::CandidateWindow& candidate_window,
@@ -127,7 +127,7 @@ class UI_BASE_EXPORT IBusPanelCandidateWindowHandlerInterface {
   virtual void FocusStateChanged(bool is_focused) {}
 
  protected:
-  IBusPanelCandidateWindowHandlerInterface() {}
+  IMECandidateWindowHandlerInterface() {}
 };
 
 
@@ -182,13 +182,13 @@ class UI_BASE_EXPORT IMEBridge {
 
   // Returns current CandidateWindowHandler. This function returns NULL if
   // current candidate window is not ready to use.
-  virtual IBusPanelCandidateWindowHandlerInterface*
-      GetCandidateWindowHandler() const = 0;
+  virtual IMECandidateWindowHandlerInterface* GetCandidateWindowHandler()
+      const = 0;
 
   // Updates current CandidatWindowHandler. If there is no active candidate
   // window service, pass NULL for |handler|. Caller must release |handler|.
   virtual void SetCandidateWindowHandler(
-      IBusPanelCandidateWindowHandlerInterface* handler) = 0;
+      IMECandidateWindowHandlerInterface* handler) = 0;
 
  protected:
   IMEBridge();

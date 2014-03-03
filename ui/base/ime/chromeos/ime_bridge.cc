@@ -84,21 +84,21 @@ class IMEBridgeImpl : public IMEBridge {
   }
 
   // IMEBridge override.
-  virtual IBusPanelCandidateWindowHandlerInterface*
-  GetCandidateWindowHandler() const OVERRIDE {
+  virtual IMECandidateWindowHandlerInterface* GetCandidateWindowHandler() const
+      OVERRIDE {
     return candidate_window_handler_;
   }
 
   // IMEBridge override.
   virtual void SetCandidateWindowHandler(
-      IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE {
+      IMECandidateWindowHandlerInterface* handler) OVERRIDE {
     candidate_window_handler_ = handler;
   }
 
  private:
   IBusInputContextHandlerInterface* input_context_handler_;
   IMEEngineHandlerInterface* engine_handler_;
-  IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
+  IMECandidateWindowHandlerInterface* candidate_window_handler_;
   std::map<std::string, IMEEngineHandlerInterface*> engine_handler_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEBridgeImpl);

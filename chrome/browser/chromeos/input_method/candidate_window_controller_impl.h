@@ -40,7 +40,7 @@ class CandidateWindowControllerImpl
     : public CandidateWindowController,
       public ash::ime::CandidateWindowView::Observer,
       public views::WidgetObserver,
-      public IBusPanelCandidateWindowHandlerInterface {
+      public IMECandidateWindowHandlerInterface {
  public:
   CandidateWindowControllerImpl();
   virtual ~CandidateWindowControllerImpl();
@@ -65,7 +65,7 @@ class CandidateWindowControllerImpl
   // views::WidgetObserver implementation.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
-  // IBusPanelCandidateWindowHandlerInterface implementation.
+  // IMECandidateWindowHandlerInterface implementation.
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) OVERRIDE;
   virtual void UpdateLookupTable(

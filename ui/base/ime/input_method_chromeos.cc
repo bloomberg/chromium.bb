@@ -171,7 +171,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     composition_head = rect;
   }
 
-  chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+  chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window)
     return;
@@ -305,7 +305,7 @@ void InputMethodChromeOS::UpdateContextFocusState() {
 
   // Propagate the focus event to the candidate window handler which also
   // manages the input method mode indicator.
-  chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+  chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
     candidate_window->FocusStateChanged(context_focused_);
@@ -493,7 +493,7 @@ void InputMethodChromeOS::UpdateCompositionText(
     return;
 
   if (!CanComposeInline()) {
-    chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+    chromeos::IMECandidateWindowHandlerInterface* candidate_window =
         chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
     if (candidate_window)
       candidate_window->UpdatePreeditText(text.text(), cursor_pos, visible);

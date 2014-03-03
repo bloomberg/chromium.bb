@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
   imm->EnableLoginLayouts("fr", keyboard_layouts);
   ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
 
-  chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+  chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   candidate_window->FocusStateChanged(true);
 
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
   imm->EnableLoginLayouts("fr", keyboard_layouts);
   ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
 
-  chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+  chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   candidate_window->FocusStateChanged(true);
 

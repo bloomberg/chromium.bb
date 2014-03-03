@@ -12,7 +12,7 @@
 namespace chromeos {
 
 class UI_BASE_EXPORT MockIMECandidateWindowHandler
-    : public IBusPanelCandidateWindowHandlerInterface {
+    : public IMECandidateWindowHandlerInterface {
  public:
   struct UpdateLookupTableArg {
     ui::CandidateWindow lookup_table;
@@ -27,7 +27,7 @@ class UI_BASE_EXPORT MockIMECandidateWindowHandler
   MockIMECandidateWindowHandler();
   virtual ~MockIMECandidateWindowHandler();
 
-  // IBusPanelCandidateWindowHandlerInterface override.
+  // IMECandidateWindowHandlerInterface override.
   virtual void UpdateLookupTable(
       const ui::CandidateWindow& candidate_window,
       bool visible) OVERRIDE;

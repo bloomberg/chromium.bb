@@ -280,7 +280,7 @@ void InputMethodEngine::SetCandidateWindowProperty(
   candidate_window_property_ = property;
 
   if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* cw_handler =
+    IMECandidateWindowHandlerInterface* cw_handler =
         IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
       cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
@@ -295,8 +295,8 @@ bool InputMethodEngine::SetCandidateWindowVisible(bool visible,
   }
 
   window_visible_ = visible;
-  IBusPanelCandidateWindowHandlerInterface* cw_handler =
-    IMEBridge::Get()->GetCandidateWindowHandler();
+  IMECandidateWindowHandlerInterface* cw_handler =
+      IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
@@ -335,8 +335,8 @@ bool InputMethodEngine::SetCandidates(
     candidate_window_->mutable_candidates()->push_back(entry);
   }
   if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* cw_handler =
-      IMEBridge::Get()->GetCandidateWindowHandler();
+    IMECandidateWindowHandlerInterface* cw_handler =
+        IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
       cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
@@ -362,8 +362,8 @@ bool InputMethodEngine::SetCursorPosition(int context_id, int candidate_id,
   }
 
   candidate_window_->set_cursor_position(position->second);
-  IBusPanelCandidateWindowHandlerInterface* cw_handler =
-    IMEBridge::Get()->GetCandidateWindowHandler();
+  IMECandidateWindowHandlerInterface* cw_handler =
+      IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
