@@ -189,11 +189,6 @@ class FrameCaptionButtonContainerViewTestAlternateStyle
 // Test how the alternate button style affects which buttons are visible in the
 // default case.
 TEST_F(FrameCaptionButtonContainerViewTestAlternateStyle, ButtonVisibility) {
-  // Using the alternate caption button style is dependant on all snapped
-  // windows being 50% of the screen's width.
-  if (!switches::UseAlternateFrameCaptionButtonStyle())
-    return;
-
   // Both the minimize button and the maximize button should be visible when
   // both minimizing and maximizing are allowed when using the alternate
   // button style.

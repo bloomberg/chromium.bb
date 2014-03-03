@@ -172,8 +172,8 @@ const char kForceAshToDesktop[] = "ash-force-desktop";
 #endif
 
 bool UseAlternateFrameCaptionButtonStyle() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(kAshDisableAlternateFrameCaptionButtonStyle);
 }
 
 bool UseAlternateShelfLayout() {

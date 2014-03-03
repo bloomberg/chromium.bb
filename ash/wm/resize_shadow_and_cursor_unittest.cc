@@ -59,7 +59,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
     AshTestBase::SetUp();
 
     views::Widget* widget(views::Widget::CreateWindowWithContextAndBounds(
-        new TestWidgetDelegate(), CurrentContext(), gfx::Rect(0, 0, 100, 100)));
+        new TestWidgetDelegate(), CurrentContext(), gfx::Rect(0, 0, 200, 100)));
     widget->Show();
     window_ = widget->GetNativeView();
 
@@ -67,7 +67,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
     // handles and the resize shadows are shown when the mouse is
     // ash::kResizeInsideBoundsSize inside of |window_|'s edges.
     aura::Window* child = CreateTestWindowInShell(
-        SK_ColorWHITE, 0, gfx::Rect(0, 10, 100, 90));
+        SK_ColorWHITE, 0, gfx::Rect(0, 10, 200, 90));
     window_->AddChild(child);
   }
 
@@ -131,7 +131,7 @@ TEST_F(ResizeShadowAndCursorTest, MouseHover) {
   EXPECT_FALSE(HasResizeShadow());
   EXPECT_EQ(ui::kCursorNull, GetCurrentCursorType());
 
-  generator.MoveMouseTo(100, 100);
+  generator.MoveMouseTo(200, 100);
   EXPECT_EQ(HTBOTTOMRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorSouthEastResize, GetCurrentCursorType());
 
@@ -163,12 +163,12 @@ TEST_F(ResizeShadowAndCursorTest, MouseDrag) {
   ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
   gfx::Size initial_size(window()->bounds().size());
 
-  generator.MoveMouseTo(100, 50);
+  generator.MoveMouseTo(200, 50);
   generator.PressLeftButton();
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorEastResize, GetCurrentCursorType());
 
-  generator.MoveMouseTo(110, 50);
+  generator.MoveMouseTo(210, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorEastResize, GetCurrentCursorType());
 
@@ -185,11 +185,12 @@ TEST_F(ResizeShadowAndCursorTest, Touch) {
   ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
-  int start = 100 + ash::kResizeOutsideBoundsSize - 1;
+  int start_x = 200 + ash::kResizeOutsideBoundsSize - 1;
+  int start_y = 100 + ash::kResizeOutsideBoundsSize - 1;
   generator.GestureScrollSequenceWithCallback(
-      gfx::Point(start, start),
-      gfx::Point(start + 50, start + 50),
-      base::TimeDelta::FromMilliseconds(100),
+      gfx::Point(start_x, start_y),
+      gfx::Point(start_x + 50, start_y + 50),
+      base::TimeDelta::FromMilliseconds(200),
       3,
       base::Bind(&ResizeShadowAndCursorTest::ProcessBottomRightResizeGesture,
                  base::Unretained(this)));
@@ -201,10 +202,10 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
 
-  generator.MoveMouseTo(100, 50);
+  generator.MoveMouseTo(200, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorEastResize, GetCurrentCursorType());
-  generator.MoveMouseTo(100 - ash::kResizeInsideBoundsSize, 50);
+  generator.MoveMouseTo(200 - ash::kResizeInsideBoundsSize, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorEastResize, GetCurrentCursorType());
 
@@ -217,10 +218,10 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   EXPECT_EQ(ui::kCursorNull, GetCurrentCursorType());
 
   ash::wm::GetWindowState(window())->Restore();
-  generator.MoveMouseTo(100, 50);
+  generator.MoveMouseTo(200, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorEastResize, GetCurrentCursorType());
-  generator.MoveMouseTo(100 - ash::kResizeInsideBoundsSize, 50);
+  generator.MoveMouseTo(200 - ash::kResizeInsideBoundsSize, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::kCursorEastResize, GetCurrentCursorType());
 }
