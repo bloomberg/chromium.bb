@@ -1595,11 +1595,27 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     webViewHelper.webView()->layout();
 
     webViewHelper.webView()->setPageScaleFactor(3, WebPoint());
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader().saveDocumentAndScrollState();
-    webViewHelper.webView()->setPageScaleFactor(1, WebPoint());
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader().setLoadType(WebCore::FrameLoadTypeBackForward);
-    webViewHelper.webViewImpl()->page()->mainFrame()->loader().restoreScrollPositionAndViewState();
-    EXPECT_EQ(3, webViewHelper.webView()->pageScaleFactor());
+    EXPECT_EQ(3, webViewHelper.webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+}
+
+TEST_F(WebFrameTest, initialScaleWrittenToHistoryItem)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client, enableViewportSettings);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->layout();
+
+    int defaultFixedLayoutWidth = 980;
+    float minimumPageScaleFactor = viewportWidth / (float) defaultFixedLayoutWidth;
+    EXPECT_EQ(minimumPageScaleFactor, webViewHelper.webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)

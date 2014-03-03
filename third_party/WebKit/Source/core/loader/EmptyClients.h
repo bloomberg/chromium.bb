@@ -148,8 +148,6 @@ public:
 
     virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) OVERRIDE;
 
-    virtual void formStateDidChange(const Node*) OVERRIDE { }
-
     virtual void setCursor(const Cursor&) OVERRIDE { }
 
     virtual void attachRootGraphicsLayer(GraphicsLayer*) OVERRIDE { }

@@ -2061,7 +2061,7 @@ PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
 
 Vector<String> Internals::getReferencedFilePaths() const
 {
-    frame()->loader().saveDocumentAndScrollState();
+    frame()->loader().saveDocumentState();
     return FormController::getReferencedFilePaths(frame()->loader().currentItem()->documentState());
 }
 

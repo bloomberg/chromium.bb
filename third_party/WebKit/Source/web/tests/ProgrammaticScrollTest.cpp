@@ -61,10 +61,11 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
     frame->loader().setLoadType(FrameLoadTypeBackForward);
 
-    // Scale and scroll the page and save that state. Then scale and scroll again and restore.
-    webViewImpl->setPageScaleFactor(2.0f, WebPoint(0, 200));
-    frame->loader().saveDocumentAndScrollState();
-    webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 300));
+    webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 500));
+    frame->view()->setWasScrolledByUser(false);
+    frame->loader().currentItem()->setPageScaleFactor(2);
+    frame->loader().currentItem()->setScrollPoint(WebPoint(0, 200));
+
     // Flip back the wasScrolledByUser flag which was set to true by setPageScaleFactor
     // because otherwise FrameLoader::restoreScrollPositionAndViewState does nothing.
     frame->view()->setWasScrolledByUser(false);
@@ -89,16 +90,12 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
     frame->loader().setLoadType(FrameLoadTypeBackForward);
 
-    // Scale and scroll the page and save that state, but then set scale to zero. Then scale and
-    // scroll again and restore.
-    webViewImpl->setPageScaleFactor(2.0f, WebPoint(0, 400));
-    frame->loader().saveDocumentAndScrollState();
     webViewImpl->setPageScaleFactor(3.0f, WebPoint(0, 500));
-    // Flip back the wasScrolledByUser flag which was set to true by setPageScaleFactor
-    // because otherwise FrameLoader::restoreScrollPositionAndViewState does nothing.
     frame->view()->setWasScrolledByUser(false);
+    frame->loader().currentItem()->setPageScaleFactor(0);
+    frame->loader().currentItem()->setScrollPoint(WebPoint(0, 400));
+
     // FrameLoader::restoreScrollPositionAndViewState flows differently if scale is zero.
-    frame->loader().currentItem()->setPageScaleFactor(0.0f);
     frame->loader().restoreScrollPositionAndViewState();
 
     // Expect that only the scroll position was restored, and that it was not a programmatic scroll.

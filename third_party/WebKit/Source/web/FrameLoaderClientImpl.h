@@ -129,6 +129,7 @@ public:
     virtual WebCore::ObjectContentType objectContentType(
         const WebCore::KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) OVERRIDE;
     virtual void didChangeScrollOffset() OVERRIDE;
+    virtual void didUpdateCurrentHistoryItem() OVERRIDE;
     virtual bool allowScript(bool enabledPerSettings) OVERRIDE;
     virtual bool allowScriptFromSource(bool enabledPerSettings, const WebCore::KURL& scriptURL) OVERRIDE;
     virtual bool allowPlugins(bool enabledPerSettings) OVERRIDE;

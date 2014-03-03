@@ -1033,6 +1033,11 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     // We're shutting down.
     if (!frame()->loader().documentLoader())
         return WebHistoryItem();
+
+    // Lazily update the document state if it was dirtied. Doing it here
+    // avoids synchronously serializing forms as they're changing.
+    frame()->loader().saveDocumentState();
+
     return WebHistoryItem(frame()->page()->historyController().currentItemForExport());
 }
 

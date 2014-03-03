@@ -130,8 +130,6 @@ public:
     FrameLoadType loadType() const;
     void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
 
-    void didFirstLayout();
-
     void checkLoadComplete(DocumentLoader*);
     void checkLoadComplete();
 
@@ -189,14 +187,12 @@ public:
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
-    void saveDocumentAndScrollState();
+    void markDocumentStateDirty();
+    void saveDocumentState();
+    void saveScrollState();
     void clearScrollPositionAndViewState();
 
-    enum RestorePolicy {
-        StandardRestore,
-        ForcedRestoreForSameDocumentHistoryNavigation
-    };
-    void restoreScrollPositionAndViewState(RestorePolicy = StandardRestore);
+    void restoreScrollPositionAndViewState();
 
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants

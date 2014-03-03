@@ -486,6 +486,20 @@ void FrameView::setContentsSize(const IntSize& size)
     page->chrome().contentsSizeChanged(m_frame.get(), size);
 }
 
+IntPoint FrameView::clampOffsetAtScale(const IntPoint& offset, float scale) const
+{
+    IntPoint maxScrollExtent(contentsSize().width() - scrollOrigin().x(), contentsSize().height() - scrollOrigin().y());
+    FloatSize scaledSize = unscaledVisibleContentSize();
+    if (scale)
+        scaledSize.scale(1 / scale);
+
+    IntPoint clampedOffset = offset;
+    clampedOffset = clampedOffset.shrunkTo(maxScrollExtent - expandedIntSize(scaledSize));
+    clampedOffset = clampedOffset.expandedTo(-scrollOrigin());
+
+    return clampedOffset;
+}
+
 void FrameView::adjustViewSize()
 {
     RenderView* renderView = this->renderView();
@@ -1656,6 +1670,8 @@ void FrameView::scrollPositionChanged()
 
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
         cache->handleScrollPositionChanged(this);
+
+    frame().loader().saveScrollState();
 }
 
 void FrameView::didScrollTimerFired(Timer<FrameView>*)
@@ -2012,10 +2028,8 @@ void FrameView::performPostLayoutTasks()
 
     ASSERT(m_frame->document());
     if (m_nestedLayoutCount <= 1) {
-        if (m_firstLayoutCallbackPending) {
+        if (m_firstLayoutCallbackPending)
             m_firstLayoutCallbackPending = false;
-            m_frame->loader().didFirstLayout();
-        }
 
         // Ensure that we always send this eventually.
         if (!m_frame->document()->parsing() && m_frame->loader().stateMachine()->committedFirstRealDocumentLoad())

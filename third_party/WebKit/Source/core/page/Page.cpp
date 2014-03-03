@@ -346,6 +346,8 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 
         if (view)
             view->viewportConstrainedVisibleContentSizeChanged(true, true);
+
+        mainFrame()->loader().saveScrollState();
     }
 
     if (view && view->scrollPosition() != origin)

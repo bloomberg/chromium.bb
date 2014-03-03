@@ -79,6 +79,7 @@ public:
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation) OVERRIDE;
 
     virtual void setContentsSize(const IntSize&) OVERRIDE;
+    IntPoint clampOffsetAtScale(const IntPoint& offset, float scale) const;
 
     void layout(bool allowSubtree = true);
     bool didFirstLayout() const;

@@ -102,6 +102,11 @@ bool isBackForwardLoadType(FrameLoadType type)
     return type == FrameLoadTypeBackForward;
 }
 
+static bool needsHistoryItemRestore(FrameLoadType type)
+{
+    return type == FrameLoadTypeBackForward || type == FrameLoadTypeReload || type == FrameLoadTypeReloadFromOrigin;
+}
+
 class FrameLoader::FrameProgressTracker {
 public:
     static PassOwnPtr<FrameProgressTracker> create(LocalFrame* frame) { return adoptPtr(new FrameProgressTracker(frame)); }
@@ -206,21 +211,39 @@ void FrameLoader::stopLoading()
     m_frame->navigationScheduler().cancel();
 }
 
-void FrameLoader::saveDocumentAndScrollState()
+void FrameLoader::markDocumentStateDirty()
 {
-    if (!m_currentItem)
+    Document* document = m_frame->document();
+    document->setHistoryItemDocumentStateDirty(true);
+    m_client->didUpdateCurrentHistoryItem();
+}
+
+void FrameLoader::saveDocumentState()
+{
+    Document* document = m_frame->document();
+    if (!m_currentItem || !document->historyItemDocumentStateDirty())
         return;
 
-    Document* document = m_frame->document();
     if (m_currentItem->isCurrentDocument(document) && document->isActive())
         m_currentItem->setDocumentState(document->formElementsState());
 
-    if (!m_frame->view())
+    document->setHistoryItemDocumentStateDirty(false);
+}
+
+void FrameLoader::saveScrollState()
+{
+    if (!m_currentItem || !m_frame->view())
+        return;
+
+    // Shouldn't clobber anything if we might still restore later.
+    if (needsHistoryItemRestore(m_loadType) && !m_frame->view()->wasScrolledByUser())
         return;
 
     m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
     if (m_frame->isMainFrame() && !m_frame->page()->inspectorController().deviceEmulationEnabled())
         m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
+
+    m_client->didUpdateCurrentHistoryItem();
 }
 
 void FrameLoader::clearScrollPositionAndViewState()
@@ -234,7 +257,8 @@ void FrameLoader::clearScrollPositionAndViewState()
 
 bool FrameLoader::closeURL()
 {
-    saveDocumentAndScrollState();
+    saveDocumentState();
+    saveScrollState();
 
     // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())
@@ -568,7 +592,8 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = nullptr;
     }
-    saveDocumentAndScrollState();
+    saveDocumentState();
+    saveScrollState();
 
     KURL oldURL = m_frame->document()->url();
     // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
@@ -578,8 +603,11 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
-    m_documentLoader->setReplacesCurrentHistoryItem(updateBackForwardList == DoNotUpdateBackForwardList);
+    bool replacesCurrentHistoryItem = updateBackForwardList == DoNotUpdateBackForwardList;
+    m_documentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, updateBackForwardList);
+
+    m_frame->view()->setWasScrolledByUser(false);
 
     // It's important to model this as a load that starts and immediately finishes.
     // Otherwise, the parent frame may think we never finished loading.
@@ -963,7 +991,8 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     // Maybe there are bugs because of that, or extra work we can skip because
     // the new page is ready.
 
-    // If the user had a scroll point, scroll to it, overriding the anchor point if any.
+    // Retry restoring scroll offset since FrameStateComplete disables content
+    // size clamping.
     restoreScrollPositionAndViewState();
 
     if (!m_stateMachine.committedFirstRealDocumentLoad())
@@ -979,39 +1008,34 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     m_loadType = FrameLoadTypeStandard;
 }
 
-// There is a race condition between the layout and load completion that affects restoring the scroll position.
-// We try to restore the scroll position at both the first layout and upon load completion.
-// 1) If first layout happens before the load completes, we want to restore the scroll position then so that the
-// first time we draw the page is already scrolled to the right place, instead of starting at the top and later
-// jumping down. It is possible that the old scroll position is past the part of the doc laid out so far, in
-// which case the restore silent fails and we will fix it in when we try to restore on doc completion.
-// 2) If the layout happens after the load completes, the attempt to restore at load completion time silently
-// fails. We then successfully restore it when the layout happens.
-void FrameLoader::restoreScrollPositionAndViewState(RestorePolicy restorePolicy)
+void FrameLoader::restoreScrollPositionAndViewState()
 {
-    if (!isBackForwardLoadType(m_loadType) && m_loadType != FrameLoadTypeReload && m_loadType != FrameLoadTypeReloadFromOrigin && restorePolicy != ForcedRestoreForSameDocumentHistoryNavigation)
-        return;
-    if (!m_frame->page() || !m_currentItem || !m_stateMachine.committedFirstRealDocumentLoad())
+    FrameView* view = m_frame->view();
+    if (!m_frame->page() || !view || !m_currentItem || !m_stateMachine.committedFirstRealDocumentLoad())
         return;
 
-    if (FrameView* view = m_frame->view()) {
-        if (m_frame->isMainFrame()) {
-            if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
-                scrollingCoordinator->frameViewRootLayerDidChange(view);
-        }
+    if (!needsHistoryItemRestore(m_loadType))
+        return;
 
-        if (!view->wasScrolledByUser() || restorePolicy == ForcedRestoreForSameDocumentHistoryNavigation) {
-            if (m_frame->isMainFrame() && m_currentItem->pageScaleFactor())
-                m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), m_currentItem->scrollPoint());
-            else
-                view->setScrollPositionNonProgrammatically(m_currentItem->scrollPoint());
-        }
+    // This tries to balance 1. restoring as soon as possible, 2. detecting
+    // clamping to avoid repeatedly popping the scroll position down as the
+    // page height increases, 3. ignore clamp detection after load completes
+    // because that may be because the page will never reach its previous
+    // height.
+    bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), m_currentItem->pageScaleFactor()) == m_currentItem->scrollPoint();
+    bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_state == FrameStateComplete);
+    if (!canRestoreWithoutAnnoyingUser)
+        return;
+
+    if (m_frame->isMainFrame() && m_currentItem->pageScaleFactor())
+        m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), m_currentItem->scrollPoint());
+    else
+        view->setScrollPositionNonProgrammatically(m_currentItem->scrollPoint());
+
+    if (m_frame->isMainFrame()) {
+        if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
+            scrollingCoordinator->frameViewRootLayerDidChange(view);
     }
-}
-
-void FrameLoader::didFirstLayout()
-{
-    restoreScrollPositionAndViewState();
 }
 
 void FrameLoader::detachChildren()
@@ -1396,8 +1420,9 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
 {
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
+        m_loadType = FrameLoadTypeBackForward;
         loadInSameDocument(item->url(), item->stateObject(), DoNotUpdateBackForwardList, NotClientRedirect);
-        restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
+        restoreScrollPositionAndViewState();
         return;
     }
     loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData());

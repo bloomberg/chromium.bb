@@ -190,6 +190,7 @@ class FetchRequest;
         virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) = 0;
 
         virtual void didChangeScrollOffset() { }
+        virtual void didUpdateCurrentHistoryItem() { }
 
         virtual bool allowScript(bool enabledPerSettings) { return enabledPerSettings; }
         virtual bool allowScriptFromSource(bool enabledPerSettings, const KURL&) { return enabledPerSettings; }

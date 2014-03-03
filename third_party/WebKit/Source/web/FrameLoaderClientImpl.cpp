@@ -172,6 +172,12 @@ void FrameLoaderClientImpl::didChangeScrollOffset()
         m_webFrame->client()->didChangeScrollOffset(m_webFrame);
 }
 
+void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didUpdateCurrentHistoryItem(m_webFrame);
+}
+
 bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
 {
     if (m_webFrame->permissionClient())

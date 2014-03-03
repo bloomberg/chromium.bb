@@ -136,7 +136,6 @@ public:
     virtual void runOpenPanel(WebCore::LocalFrame*, PassRefPtr<WebCore::FileChooser>) OVERRIDE;
     virtual void enumerateChosenDirectory(WebCore::FileChooser*) OVERRIDE;
     virtual void setCursor(const WebCore::Cursor&) OVERRIDE;
-    virtual void formStateDidChange(const WebCore::Node*) OVERRIDE;
     virtual void needTouchEvents(bool needTouchEvents) OVERRIDE;
     virtual void setTouchAction(WebCore::TouchAction) OVERRIDE;
 

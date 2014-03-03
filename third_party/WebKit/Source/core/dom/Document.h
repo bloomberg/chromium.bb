@@ -596,6 +596,9 @@ public:
     void setParsing(bool);
     bool parsing() const { return m_isParsing; }
 
+    void setHistoryItemDocumentStateDirty(bool dirty) { m_historyItemDocumentStateDirty = dirty; }
+    bool historyItemDocumentStateDirty() const { return m_historyItemDocumentStateDirty; }
+
     bool shouldScheduleLayout();
     bool shouldParserYieldAgressivelyBeforeScriptExecution();
     int elapsedTime() const;
@@ -1217,6 +1220,7 @@ private:
     bool m_visuallyOrdered;
     ReadyState m_readyState;
     bool m_isParsing;
+    bool m_historyItemDocumentStateDirty;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;

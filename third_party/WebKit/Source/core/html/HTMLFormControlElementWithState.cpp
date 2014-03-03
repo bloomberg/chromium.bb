@@ -70,7 +70,7 @@ void HTMLFormControlElementWithState::notifyFormStateChanged()
     // selection before the document is active (or even in a frame).
     if (!document().isActive())
         return;
-    document().frame()->host()->chrome().client().formStateDidChange(this);
+    document().frame()->loader().markDocumentStateDirty();
 }
 
 bool HTMLFormControlElementWithState::shouldSaveAndRestoreFormControlState() const

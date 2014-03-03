@@ -2676,15 +2676,7 @@ IntPoint WebViewImpl::clampOffsetAtScale(const IntPoint& offset, float scale)
     if (!view)
         return offset;
 
-    IntPoint maxScrollExtent(contentsSize().width() - view->scrollOrigin().x(), contentsSize().height() - view->scrollOrigin().y());
-    FloatSize scaledSize = view->unscaledVisibleContentSize();
-    scaledSize.scale(1 / scale);
-
-    IntPoint clampedOffset = offset;
-    clampedOffset = clampedOffset.shrunkTo(maxScrollExtent - expandedIntSize(scaledSize));
-    clampedOffset = clampedOffset.expandedTo(-view->scrollOrigin());
-
-    return clampedOffset;
+    return view->clampOffsetAtScale(offset, scale);
 }
 
 void WebViewImpl::setPageScaleFactor(float scaleFactor, const WebPoint& origin)
@@ -2939,7 +2931,6 @@ void WebViewImpl::resetScrollAndScaleState()
 
     // Clear out the values for the current history item. This will prevent the history item from clobbering the
     // value determined during page scale initialization, which may be less than 1.
-    page()->mainFrame()->loader().saveDocumentAndScrollState();
     page()->mainFrame()->loader().clearScrollPositionAndViewState();
     m_pageScaleConstraintsSet.setNeedsReset(true);
 

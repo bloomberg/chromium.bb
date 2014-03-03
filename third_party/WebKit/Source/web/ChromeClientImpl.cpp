@@ -514,6 +514,8 @@ void ChromeClientImpl::contentsSizeChanged(LocalFrame* frame, const IntSize& siz
     webframe->didChangeContentsSize(size);
     if (webframe->client())
         webframe->client()->didChangeContentsSize(webframe, size);
+
+    frame->loader().restoreScrollPositionAndViewState();
 }
 
 void ChromeClientImpl::deviceOrPageScaleFactorChanged() const
@@ -656,15 +658,6 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor)
 void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor)
 {
     setCursor(cursor);
-}
-
-void ChromeClientImpl::formStateDidChange(const Node* node)
-{
-    // The current history item is not updated yet.  That happens lazily when
-    // WebFrame::currentHistoryItem is requested.
-    WebFrameImpl* webframe = WebFrameImpl::fromFrame(node->document().frame());
-    if (webframe->client())
-        webframe->client()->didUpdateCurrentHistoryItem(webframe);
 }
 
 void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification)

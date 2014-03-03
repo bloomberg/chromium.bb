@@ -775,23 +775,10 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader().saveDocumentAndScrollState();
-
-    // Confirm that restoring the page state restores the parameters.
-    webViewImpl->setPageScaleFactor(1.5f, WebPoint(16, 24));
-    EXPECT_EQ(1.5f, webViewImpl->pageScaleFactor());
-    EXPECT_EQ(16, webViewImpl->mainFrame()->scrollOffset().width);
-    EXPECT_EQ(24, webViewImpl->mainFrame()->scrollOffset().height);
-    // WebViewImpl::setPageScaleFactor is performing user scrolls, which will set the
-    // wasScrolledByUser flag on the main frame, and prevent restoreScrollPositionAndViewState
-    // from restoring the scrolling position.
-    webViewImpl->page()->mainFrame()->view()->setWasScrolledByUser(false);
-    webViewImpl->page()->mainFrame()->loader().setLoadType(WebCore::FrameLoadTypeBackForward);
-    webViewImpl->page()->mainFrame()->loader().restoreScrollPositionAndViewState();
-    EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-    EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
-    EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader().saveDocumentAndScrollState();
+    webViewImpl->page()->mainFrame()->loader().saveScrollState();
+    EXPECT_EQ(2.0f, webViewImpl->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(116, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().x());
+    EXPECT_EQ(84, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().y());
 
     // Confirm that resetting the page state resets the saved scroll position.
     // The HistoryController treats a page scale factor of 0.0f as special and avoids
@@ -800,10 +787,9 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
-    webViewImpl->page()->mainFrame()->loader().restoreScrollPositionAndViewState();
-    EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
-    EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
-    EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+    EXPECT_EQ(0.0f, webViewImpl->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+    EXPECT_EQ(0, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().x());
+    EXPECT_EQ(0, webViewImpl->page()->mainFrame()->loader().currentItem()->scrollPoint().y());
 }
 
 class EnterFullscreenWebViewClient : public WebViewClient {
