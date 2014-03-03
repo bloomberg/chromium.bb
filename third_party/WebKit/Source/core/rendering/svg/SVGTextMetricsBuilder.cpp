@@ -112,29 +112,23 @@ void SVGTextMetricsBuilder::initializeMeasurementWithTextRenderer(RenderSVGInlin
 struct MeasureTextData {
     MeasureTextData(SVGCharacterDataMap* characterDataMap)
         : allCharactersMap(characterDataMap)
-        , hasLastCharacter(false)
-        , lastCharacter(0)
-        , processRenderer(false)
+        , lastCharacterWasWhiteSpace(true)
         , valueListPosition(0)
-        , skippedCharacters(0)
     {
     }
 
     SVGCharacterDataMap* allCharactersMap;
-    bool hasLastCharacter;
-    UChar lastCharacter;
-    bool processRenderer;
+    bool lastCharacterWasWhiteSpace;
     unsigned valueListPosition;
-    unsigned skippedCharacters;
 };
 
-void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data)
+void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data, bool processRenderer)
 {
     ASSERT(text);
 
     SVGTextLayoutAttributes* attributes = text->layoutAttributes();
     Vector<SVGTextMetrics>* textMetricsValues = &attributes->textMetricsValues();
-    if (data->processRenderer) {
+    if (processRenderer) {
         if (data->allCharactersMap)
             attributes->clear();
         else
@@ -143,21 +137,22 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
 
     initializeMeasurementWithTextRenderer(text);
     bool preserveWhiteSpace = text->style()->whiteSpace() == PRE;
-    int surrogatePairCharacters = 0;
+    unsigned surrogatePairCharacters = 0;
+    unsigned skippedCharacters = 0;
 
     while (advance()) {
-        UChar currentCharacter = m_run[m_textPosition];
-        if (currentCharacter == ' ' && !preserveWhiteSpace && (!data->hasLastCharacter || data->lastCharacter == ' ')) {
-            if (data->processRenderer)
+        bool characterIsWhiteSpace = m_run[m_textPosition] == ' ';
+        if (characterIsWhiteSpace && !preserveWhiteSpace && data->lastCharacterWasWhiteSpace) {
+            if (processRenderer)
                 textMetricsValues->append(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
             if (data->allCharactersMap)
-                data->skippedCharacters += m_currentMetrics.length();
+                skippedCharacters += m_currentMetrics.length();
             continue;
         }
 
-        if (data->processRenderer) {
+        if (processRenderer) {
             if (data->allCharactersMap) {
-                const SVGCharacterDataMap::const_iterator it = data->allCharactersMap->find(data->valueListPosition + m_textPosition - data->skippedCharacters - surrogatePairCharacters + 1);
+                const SVGCharacterDataMap::const_iterator it = data->allCharactersMap->find(data->valueListPosition + m_textPosition - skippedCharacters - surrogatePairCharacters + 1);
                 if (it != data->allCharactersMap->end())
                     attributes->characterDataMap().set(m_textPosition + 1, it->value);
             }
@@ -167,15 +162,13 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
         if (data->allCharactersMap && currentCharacterStartsSurrogatePair())
             surrogatePairCharacters++;
 
-        data->hasLastCharacter = true;
-        data->lastCharacter = currentCharacter;
+        data->lastCharacterWasWhiteSpace = characterIsWhiteSpace;
     }
 
     if (!data->allCharactersMap)
         return;
 
-    data->valueListPosition += m_textPosition - data->skippedCharacters;
-    data->skippedCharacters = 0;
+    data->valueListPosition += m_textPosition - skippedCharacters;
 }
 
 void SVGTextMetricsBuilder::walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
@@ -184,8 +177,7 @@ void SVGTextMetricsBuilder::walkTree(RenderObject* start, RenderSVGInlineText* s
     while (child) {
         if (child->isSVGInlineText()) {
             RenderSVGInlineText* text = toRenderSVGInlineText(child);
-            data->processRenderer = !stopAtLeaf || stopAtLeaf == text;
-            measureTextRenderer(text, data);
+            measureTextRenderer(text, data, !stopAtLeaf || stopAtLeaf == text);
             if (stopAtLeaf && stopAtLeaf == text)
                 return;
         } else if (child->isSVGInline()) {

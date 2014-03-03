@@ -48,7 +48,7 @@ private:
 
     void initializeMeasurementWithTextRenderer(RenderSVGInlineText*);
     void walkTree(RenderObject*, RenderSVGInlineText* stopAtLeaf, MeasureTextData*);
-    void measureTextRenderer(RenderSVGInlineText*, MeasureTextData*);
+    void measureTextRenderer(RenderSVGInlineText*, MeasureTextData*, bool processRenderer);
 
     RenderSVGInlineText* m_text;
     TextRun m_run;
