@@ -12,6 +12,8 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/win/dpi.h"
+
 
 namespace views {
 namespace corewm {
@@ -90,6 +92,10 @@ void TooltipWin::PositionTooltip() {
   tooltip_bounds.AdjustToFit(display.work_area());
   if (tooltip_bounds.y() < initial_y)
     tooltip_bounds.set_y(initial_y - tooltip_bounds.height() - 2);
+
+  // Convert the tooltip bounds to pixel coordinates. SetWindowPos works in
+  // pixel coordinates.
+  tooltip_bounds = gfx::win::DIPToScreenRect(tooltip_bounds);
   SetWindowPos(tooltip_hwnd_, NULL, tooltip_bounds.x(), tooltip_bounds.y(), 0,
                0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
