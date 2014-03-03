@@ -2199,15 +2199,6 @@ void RenderViewImpl::moveValidationMessage(
                                              anchor_in_root_view));
 }
 
-#if !defined(SHOW_CONTEXT_MENU_ON_WEB_FRAME_CLIENT)
-void RenderViewImpl::showContextMenu(
-    WebFrame* frame, const blink::WebContextMenuData& data) {
-  // TODO(jam): move this method to WebFrameClient.
-  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
-  render_frame->showContextMenu(data);
-}
-#endif
-
 void RenderViewImpl::clearContextMenu() {
   context_menu_node_.reset();
 }

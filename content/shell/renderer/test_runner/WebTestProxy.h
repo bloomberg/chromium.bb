@@ -314,13 +314,6 @@ public:
         WebTestProxyBase::didStopLoading();
         Base::didStopLoading();
     }
-#if !defined(SHOW_CONTEXT_MENU_ON_WEB_FRAME_CLIENT)
-    virtual void showContextMenu(blink::WebFrame* frame, const blink::WebContextMenuData& contextMenuData)
-    {
-        WebTestProxyBase::showContextMenu(frame, contextMenuData);
-        Base::showContextMenu(frame, contextMenuData);
-    }
-#endif
     virtual blink::WebUserMediaClient* userMediaClient()
     {
         return WebTestProxyBase::userMediaClient();

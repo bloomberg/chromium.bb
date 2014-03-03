@@ -1588,6 +1588,59 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
+void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
+  ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
+  params.source_type = GetRenderWidget()->context_menu_source_type();
+  if (params.source_type == ui::MENU_SOURCE_TOUCH_EDIT_MENU) {
+    params.x = GetRenderWidget()->touch_editing_context_menu_location().x();
+    params.y = GetRenderWidget()->touch_editing_context_menu_location().y();
+  }
+  GetRenderWidget()->OnShowHostContextMenu(&params);
+
+  // Plugins, e.g. PDF, don't currently update the render view when their
+  // selected text changes, but the context menu params do contain the updated
+  // selection. If that's the case, update the render view's state just prior
+  // to showing the context menu.
+  // TODO(asvitkine): http://crbug.com/152432
+  if (ShouldUpdateSelectionTextFromContextMenuParams(
+          render_view_->selection_text_,
+          render_view_->selection_text_offset_,
+          render_view_->selection_range_,
+          params)) {
+    render_view_->selection_text_ = params.selection_text;
+    // TODO(asvitkine): Text offset and range is not available in this case.
+    render_view_->selection_text_offset_ = 0;
+    render_view_->selection_range_ =
+        gfx::Range(0, render_view_->selection_text_.length());
+    Send(new ViewHostMsg_SelectionChanged(
+        routing_id_,
+        render_view_->selection_text_,
+        render_view_->selection_text_offset_,
+        render_view_->selection_range_));
+  }
+
+  params.frame_id = routing_id_;
+
+  // Serializing a GURL longer than kMaxURLChars will fail, so don't do
+  // it.  We replace it with an empty GURL so the appropriate items are disabled
+  // in the context menu.
+  // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
+  //                 data encoded images.  We should have a way to save them.
+  if (params.src_url.spec().size() > GetMaxURLChars())
+    params.src_url = GURL();
+  render_view_->context_menu_node_ = data.node;
+
+#if defined(OS_ANDROID)
+  gfx::Rect start_rect;
+  gfx::Rect end_rect;
+  render_view_->GetSelectionBounds(&start_rect, &end_rect);
+  params.selection_start = gfx::Point(start_rect.x(), start_rect.bottom());
+  params.selection_end = gfx::Point(end_rect.right(), end_rect.bottom());
+#endif
+
+  Send(new FrameHostMsg_ContextMenu(routing_id_, params));
+}
+
 void RenderFrameImpl::willRequestAfterPreconnect(
     blink::WebFrame* frame,
     blink::WebURLRequest& request) {
@@ -2021,59 +2074,6 @@ void RenderFrameImpl::didLoseWebGLContext(blink::WebFrame* frame,
       GURL(frame->top()->document().securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       arb_robustness_status_code));
-}
-
-void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
-  ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
-  params.source_type = GetRenderWidget()->context_menu_source_type();
-  if (params.source_type == ui::MENU_SOURCE_TOUCH_EDIT_MENU) {
-    params.x = GetRenderWidget()->touch_editing_context_menu_location().x();
-    params.y = GetRenderWidget()->touch_editing_context_menu_location().y();
-  }
-  GetRenderWidget()->OnShowHostContextMenu(&params);
-
-  // Plugins, e.g. PDF, don't currently update the render view when their
-  // selected text changes, but the context menu params do contain the updated
-  // selection. If that's the case, update the render view's state just prior
-  // to showing the context menu.
-  // TODO(asvitkine): http://crbug.com/152432
-  if (ShouldUpdateSelectionTextFromContextMenuParams(
-          render_view_->selection_text_,
-          render_view_->selection_text_offset_,
-          render_view_->selection_range_,
-          params)) {
-    render_view_->selection_text_ = params.selection_text;
-    // TODO(asvitkine): Text offset and range is not available in this case.
-    render_view_->selection_text_offset_ = 0;
-    render_view_->selection_range_ =
-        gfx::Range(0, render_view_->selection_text_.length());
-    Send(new ViewHostMsg_SelectionChanged(
-        routing_id_,
-        render_view_->selection_text_,
-        render_view_->selection_text_offset_,
-        render_view_->selection_range_));
-  }
-
-  params.frame_id = routing_id_;
-
-  // Serializing a GURL longer than kMaxURLChars will fail, so don't do
-  // it.  We replace it with an empty GURL so the appropriate items are disabled
-  // in the context menu.
-  // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
-  //                 data encoded images.  We should have a way to save them.
-  if (params.src_url.spec().size() > GetMaxURLChars())
-    params.src_url = GURL();
-  render_view_->context_menu_node_ = data.node;
-
-#if defined(OS_ANDROID)
-  gfx::Rect start_rect;
-  gfx::Rect end_rect;
-  render_view_->GetSelectionBounds(&start_rect, &end_rect);
-  params.selection_start = gfx::Point(start_rect.x(), start_rect.bottom());
-  params.selection_end = gfx::Point(end_rect.right(), end_rect.bottom());
-#endif
-
-  Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 
 void RenderFrameImpl::forwardInputEvent(const blink::WebInputEvent* event) {
