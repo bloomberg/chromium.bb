@@ -335,7 +335,11 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
     if (rootParent->inDocument()) {
         m_fontElement = 0;
         document().accessSVGExtensions().unregisterSVGFontFaceElement(this);
-        document().styleEngine()->fontSelector()->fontFaceCache()->remove(m_fontFaceRule.get());
+        // FIXME: HTMLTemplateElement's document or imported  document can be active?
+        // If so, we also need to check whether fontSelector() is nullptr or not.
+        // Otherwise, we will use just document().isActive() here.
+        if (document().isActive() && document().styleEngine()->fontSelector())
+            document().styleEngine()->fontSelector()->fontFaceCache()->remove(m_fontFaceRule.get());
         m_fontFaceRule->mutableProperties().clear();
 
         document().styleResolverChanged(RecalcStyleDeferred);
