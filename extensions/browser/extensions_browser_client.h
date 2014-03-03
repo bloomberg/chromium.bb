@@ -70,7 +70,7 @@ class ExtensionsBrowserClient {
       content::BrowserContext* context) = 0;
 
   // Returns true if |context| corresponds to a guest session.
-  virtual bool IsGuestSession(content::BrowserContext* context) = 0;
+  virtual bool IsGuestSession(content::BrowserContext* context) const = 0;
 
   // Returns true if |extension_id| can run in an incognito window.
   virtual bool IsExtensionIncognitoEnabled(

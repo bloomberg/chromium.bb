@@ -177,11 +177,21 @@ struct ProcessManager::BackgroundPageData {
 
 // static
 ProcessManager* ProcessManager::Create(BrowserContext* context) {
+  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
+  if (client->IsGuestSession(context)) {
+    // In the guest session, there is a single off-the-record context.  Unlike
+    // a regular incognito mode, background pages of extensions must be
+    // created regardless of whether extensions use "spanning" or "split"
+    // incognito behavior.
+    BrowserContext* original_context = client->GetOriginalContext(context);
+    return new ProcessManager(context, original_context);
+  }
+
   if (context->IsOffTheRecord()) {
-    BrowserContext* original_context =
-        ExtensionsBrowserClient::Get()->GetOriginalContext(context);
+    BrowserContext* original_context = client->GetOriginalContext(context);
     return new IncognitoProcessManager(context, original_context);
   }
+
   return new ProcessManager(context, context);
 }
 

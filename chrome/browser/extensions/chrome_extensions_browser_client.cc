@@ -82,20 +82,22 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
 }
 
 bool ChromeExtensionsBrowserClient::IsGuestSession(
-    content::BrowserContext* context) {
+    content::BrowserContext* context) const {
   return static_cast<Profile*>(context)->IsGuestSession();
 }
 
 bool ChromeExtensionsBrowserClient::IsExtensionIncognitoEnabled(
     const std::string& extension_id,
     content::BrowserContext* context) const {
-  return util::IsIncognitoEnabled(extension_id, context);
+  return IsGuestSession(context)
+      || util::IsIncognitoEnabled(extension_id, context);
 }
 
 bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
     const extensions::Extension* extension,
     content::BrowserContext* context) const {
-  return util::CanCrossIncognito(extension, context);
+  return IsGuestSession(context)
+      || util::CanCrossIncognito(extension, context);
 }
 
 PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(

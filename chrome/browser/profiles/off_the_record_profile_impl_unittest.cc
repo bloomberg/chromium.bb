@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_io_thread_state.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "net/dns/mock_host_resolver.h"
@@ -84,21 +85,23 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
   virtual ~OffTheRecordProfileImplTest() {}
 
   virtual void SetUp() OVERRIDE {
-    prefs_.reset(new TestingPrefServiceSimple());
-    chrome::RegisterLocalState(prefs_->registry());
+    profile_manager_.reset(new TestingProfileManager(browser_process()));
+    ASSERT_TRUE(profile_manager_->SetUp());
 
-    browser_process()->SetLocalState(prefs_.get());
     testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
     testing_io_thread_state_->io_thread_state()->globals()->host_resolver.reset(
         new net::MockHostResolver());
+
     BrowserWithTestWindowTest::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
-    BrowserWithTestWindowTest::TearDown();
-    testing_io_thread_state_.reset();
-    browser_process()->SetLocalState(NULL);
     DestroyBrowserAndProfile();
+    BrowserWithTestWindowTest::TearDown();
+
+    testing_io_thread_state_.reset();
+
+    profile_manager_.reset();
   }
 
  private:
@@ -106,7 +109,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
     return TestingBrowserProcess::GetGlobal();
   }
 
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
+  scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImplTest);

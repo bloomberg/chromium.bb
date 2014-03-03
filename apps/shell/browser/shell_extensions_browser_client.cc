@@ -82,7 +82,8 @@ BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
   return context;
 }
 
-bool ShellExtensionsBrowserClient::IsGuestSession(BrowserContext* context) {
+bool ShellExtensionsBrowserClient::IsGuestSession(
+    BrowserContext* context) const {
   return false;
 }
 
