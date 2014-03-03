@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEBUI_EXTENSION_H_
-#define CONTENT_RENDERER_WEBUI_EXTENSION_H_
+#ifndef CONTENT_RENDERER_WEB_UI_EXTENSION_H_
+#define CONTENT_RENDERER_WEB_UI_EXTENSION_H_
 
 #include <string>
 
@@ -32,4 +32,4 @@ class WebUIExtension {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WEBUI_EXTENSION_H_
+#endif  // CONTENT_RENDERER_WEB_UI_EXTENSION_H_
