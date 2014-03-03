@@ -758,6 +758,7 @@
 
   function onIceCandidate(event, target) {
     if (event.candidate) {
+      console.log("onIceCandidate, candidate is:" + event.candidate.candidate);
       var candidate = new RTCIceCandidate(event.candidate);
       candidate.candidate = transformCandidate(candidate.candidate);
       target.addIceCandidate(candidate);
