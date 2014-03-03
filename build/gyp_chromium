@@ -527,10 +527,12 @@ if __name__ == '__main__':
     os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
     # TODO(scottmg): Temporarily add free space print to try to see how close
     # we're getting to failures on windows bots. http://crbug.com/348350
-    print('Using automatic toolchain in %s (%s edition), free space: %dM.' % (
+    out_dir = os.path.abspath(GetOutputDirectory())
+    print('Using automatic toolchain in %s (%s edition), '
+          'free space in %s: %dM.' % (
               toolchain,
               'Pro' if version_is_pro else 'Express',
-              GetFreeSpaceMBWindows(GetOutputDirectory())))
+              out_dir, GetFreeSpaceMBWindows(out_dir)))
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
