@@ -10,4 +10,8 @@ PASS lineElement.getAttribute('x2') is "200"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 13 15 100 196)
+  (rect 14 14 198 198)
+)
 

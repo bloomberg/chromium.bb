@@ -20,4 +20,11 @@ PASS lineElement.getBBox().height is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 24 24 188 188)
+  (rect 24 24 188 188)
+  (rect 24 24 188 188)
+  (rect 24 24 188 188)
+  (rect 24 24 188 188)
+)
 

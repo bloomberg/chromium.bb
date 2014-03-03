@@ -10,4 +10,8 @@ PASS filterElement.filterUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUND
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 1 1)
+  (rect 8 8 200 200)
+)
 

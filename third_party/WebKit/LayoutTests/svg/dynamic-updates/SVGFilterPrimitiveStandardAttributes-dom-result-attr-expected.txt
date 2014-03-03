@@ -10,4 +10,7 @@ PASS gradientElement.getAttribute('result') is "res2"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 200 200)
+)
 

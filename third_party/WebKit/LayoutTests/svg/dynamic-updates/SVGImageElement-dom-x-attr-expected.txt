@@ -10,4 +10,8 @@ PASS imageElement.getAttribute('x') is "0"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 10 200)
+  (rect 8 8 200 200)
+)
 

@@ -18,4 +18,19 @@ PASS foreignObjectElement.getBBox().height is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 200 18)
+  (rect 8 8 200 18)
+  (rect 8 8 200 200)
+  (rect 8 8 200 18)
+  (rect 8 8 200 200)
+  (rect 8 8 200 18)
+  (rect 8 8 200 18)
+  (rect 8 8 200 200)
+  (rect 8 8 200 18)
+  (rect 8 8 200 200)
+  (rect 8 8 200 18)
+  (rect 8 8 200 18)
+  (rect 8 8 200 200)
+)
 
