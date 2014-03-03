@@ -314,8 +314,6 @@
                  'falken@chromium.org' ],
     'wtf': [ 'abarth@chromium.org',
              'adamk+blink@chromium.org',
-             'loislo+blink@chromium.org',
-             'yurys+blink@chromium.org',
              'ch.dumez@samsung.com',
              'mikhail.pozdnyakov@intel.com' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
