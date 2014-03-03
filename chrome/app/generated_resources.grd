@@ -14564,10 +14564,10 @@ Do you accept?
 
     <!-- Desktop media picker UI for Desktop Capture API -->
     <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE" desc="Title for the window picker dialog shown when desktop capture is requrested by an app.">
-      Desktop sharing - <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph>
+      Share your screen - <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph>
     </message>
     <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT" desc="Text for the window picker dialog shown when desktop capture is requrested by an app.">
-      <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> requested to share content of your desktop. Please select a window or the whole screen to share.
+      <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> would like to share the content of your screen. Please select the whole screen or a particular window.
     </message>
     <message name="IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there is only one monitor.">
       Screen
