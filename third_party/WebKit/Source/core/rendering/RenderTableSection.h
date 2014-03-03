@@ -129,14 +129,14 @@ public:
         SpanningRowsHeight()
             : totalRowsHeight(0)
             , spanningCellHeightIgnoringBorderSpacing(0)
-            , rowWithOnlySpanningCells(false)
+            , isAnyRowWithOnlySpanningCells(false)
         {
         }
 
         Vector<int> rowHeight;
         int totalRowsHeight;
         int spanningCellHeightIgnoringBorderSpacing;
-        bool rowWithOnlySpanningCells;
+        bool isAnyRowWithOnlySpanningCells;
     };
 
     const BorderValue& borderAdjoiningTableStart() const

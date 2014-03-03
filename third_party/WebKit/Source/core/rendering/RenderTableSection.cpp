@@ -289,7 +289,7 @@ void RenderTableSection::populateSpanningRowsHeightFromCell(RenderTableCell* cel
 
         spanningRowsHeight.rowHeight[row] = m_rowPos[actualRow + 1] - m_rowPos[actualRow] - borderSpacingForRow(actualRow);
         if (!spanningRowsHeight.rowHeight[row])
-            spanningRowsHeight.rowWithOnlySpanningCells |= rowHasOnlySpanningCells(actualRow);
+            spanningRowsHeight.isAnyRowWithOnlySpanningCells |= rowHasOnlySpanningCells(actualRow);
 
         spanningRowsHeight.totalRowsHeight += spanningRowsHeight.rowHeight[row];
         spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing -= borderSpacingForRow(actualRow);
@@ -542,14 +542,31 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         populateSpanningRowsHeightFromCell(cell, spanningRowsHeight);
 
-        if (spanningRowsHeight.rowWithOnlySpanningCells)
+        // Here we are handling only row(s) who have only rowspanning cells and do not have any empty cell.
+        if (spanningRowsHeight.isAnyRowWithOnlySpanningCells)
             updateRowsHeightHavingOnlySpanningCells(cell, spanningRowsHeight);
 
-        if (!spanningRowsHeight.totalRowsHeight || spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight) {
+        // This code handle row(s) that have rowspanning cell(s) and at least one empty cell.
+        // Such rows are not handled below and end up having a height of 0. That would mean
+        // content overlapping if one of their cells has any content. To avoid the problem, we
+        // add all the remaining spanning cells' height to the last spanned row.
+        // This means that we could grow a row past its 'height' or break percentage spreading
+        // however this is better than overlapping content.
+        // FIXME: Is there a better algorithm?
+        if (!spanningRowsHeight.totalRowsHeight) {
+            if (spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing)
+                m_rowPos[spanningCellEndIndex] += spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing + borderSpacingForRow(spanningCellEndIndex - 1);
+
+            extraHeightToPropagate = m_rowPos[spanningCellEndIndex] - originalBeforePosition;
+            continue;
+        }
+
+        if (spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight) {
             extraHeightToPropagate = m_rowPos[rowIndex + rowSpan] - originalBeforePosition;
             continue;
         }
 
+        // Below we are handling only row(s) who have at least one visible cell without rowspan value.
         int totalPercent = 0;
         int totalAutoRowsHeight = 0;
         int totalRemainingRowsHeight = spanningRowsHeight.totalRowsHeight;
