@@ -28,6 +28,8 @@
         'password_manager/core/browser/login_model.h',
         'password_manager/core/browser/password_form_manager.cc',
         'password_manager/core/browser/password_form_manager.h',
+        'password_manager/core/browser/password_generation_manager.cc',
+        'password_manager/core/browser/password_generation_manager.h',
         'password_manager/core/browser/password_manager.cc',
         'password_manager/core/browser/password_manager.h',
         'password_manager/core/browser/password_manager_client.cc',

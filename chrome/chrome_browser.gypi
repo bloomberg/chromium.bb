@@ -1487,8 +1487,6 @@
         'browser/password_manager/native_backend_gnome_x.h',
         'browser/password_manager/native_backend_kwallet_x.cc',
         'browser/password_manager/native_backend_kwallet_x.h',
-        'browser/password_manager/password_generation_manager.cc',
-        'browser/password_manager/password_generation_manager.h',
         'browser/password_manager/password_manager_util.h',
         'browser/password_manager/password_manager_util_android.cc',
         'browser/password_manager/password_manager_util_mac.mm',
