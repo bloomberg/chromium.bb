@@ -75,12 +75,30 @@ def write_file(new_text, destination_filename, only_if_changed):
         destination_file.write(new_text)
 
 
+class IdlCompiler(object):
+    def __init__(self, output_directory, interfaces_info, idl_attributes_file, only_if_changed=False):
+        self.output_directory = output_directory
+        self.only_if_changed = only_if_changed
+        self.reader = IdlReader(interfaces_info, idl_attributes_file, output_directory)
+        self.code_generator = CodeGeneratorV8(interfaces_info, output_directory)
+
+    def compile(self, idl_filename):
+        basename = os.path.basename(idl_filename)
+        interface_name, _ = os.path.splitext(basename)
+
+        definitions = self.reader.read_idl_definitions(idl_filename)
+        header_text, cpp_text = self.code_generator.generate_code(definitions, interface_name)
+
+        header_filename = os.path.join(self.output_directory,
+                                       'V8%s.h' % interface_name)
+        cpp_filename = os.path.join(self.output_directory,
+                                    'V8%s.cpp' % interface_name)
+        write_file(header_text, header_filename, self.only_if_changed)
+        write_file(cpp_text, cpp_filename, self.only_if_changed)
+
+
 def main():
     options, idl_filename = parse_options()
-    basename = os.path.basename(idl_filename)
-    interface_name, _ = os.path.splitext(basename)
-    output_directory = options.output_directory
-    only_if_changed = options.write_file_only_if_changed
 
     interfaces_info_filename = options.interfaces_info_file
     if interfaces_info_filename:
@@ -89,17 +107,11 @@ def main():
     else:
         interfaces_info = None
 
-    reader = IdlReader(interfaces_info, options.idl_attributes_file, output_directory)
-    definitions = reader.read_idl_definitions(idl_filename)
-
-    code_generator = CodeGeneratorV8(interfaces_info, output_directory)
-    header_text, cpp_text = code_generator.generate_code(definitions, interface_name)
-
-    header_filename = os.path.join(output_directory, 'V8%s.h' % interface_name)
-    cpp_filename = os.path.join(output_directory, 'V8%s.cpp' % interface_name)
-    write_file(header_text, header_filename, only_if_changed)
-    write_file(cpp_text, cpp_filename, only_if_changed)
-
+    idl_compiler = IdlCompiler(options.output_directory,
+                               interfaces_info,
+                               options.idl_attributes_file,
+                               options.write_file_only_if_changed)
+    idl_compiler.compile(idl_filename)
 
 if __name__ == '__main__':
     sys.exit(main())
