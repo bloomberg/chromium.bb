@@ -775,7 +775,8 @@ void OmniboxViewMac::OnSetFocus(bool control_down) {
   model()->OnSetFocus(control_down);
   controller()->OnSetFocus();
 
-  if (chrome::ShouldDisplayOriginChipV2()) {
+  if (chrome::GetOriginChipV2HideTrigger() ==
+      chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
     controller()->GetToolbarModel()->set_origin_chip_enabled(false);
     controller()->OnChanged();
   }
