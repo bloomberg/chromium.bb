@@ -2609,6 +2609,16 @@ TEST(HeapTest, EmbeddedInVector)
     EXPECT_EQ(8, SimpleFinalizedObject::s_destructorCalls);
 }
 
+TEST(HeapTest, RawPtrInHash)
+{
+    HashSet<RawPtr<int> > set;
+    set.add(new int(42));
+    set.add(new int(42));
+    EXPECT_EQ(2u, set.size());
+    for (HashSet<RawPtr<int> >::iterator it = set.begin(); it != set.end(); ++it)
+        EXPECT_EQ(42, **it);
+}
+
 } // WebCore namespace
 
 namespace WTF {
