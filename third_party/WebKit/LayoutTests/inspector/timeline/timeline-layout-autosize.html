@@ -10,11 +10,8 @@
 }
 </style>
 <script>
-
-function prepare()
-{
+if (window.internals)
     window.internals.settings.setTextAutosizingEnabled(true);
-}
 
 function performActions()
 {
@@ -30,15 +27,13 @@ function invalidateAndForceLayout(element)
 
 function test()
 {
-    InspectorTest.evaluateInPage("prepare()", function() {
-        InspectorTest.performActionsAndPrint("performActions()", "AutosizeText");
-    });
+    InspectorTest.performActionsAndPrint("performActions()", "AutosizeText");
 }
 
 </script>
 </head>
 
-<body onload="runTest()">
+<body onload="runTestAfterDisplay()">
 <p>
 Tests the Timeline API instrumentation of a Layout event with Text Autosizing enabled.
 </p>

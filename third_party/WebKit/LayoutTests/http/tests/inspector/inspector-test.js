@@ -650,6 +650,15 @@ function runTest(enableWatchDogWhileDebugging)
     }
 }
 
+function runTestAfterDisplay(enableWatchDogWhileDebugging)
+{
+    if (!window.testRunner)
+        return;
+
+    testRunner.waitUntilDone();
+    requestAnimationFrame(runTest.bind(this, enableWatchDogWhileDebugging));
+}
+
 function didEvaluateForTestInFrontend(callId)
 {
     if (callId !== completeTestCallId)
