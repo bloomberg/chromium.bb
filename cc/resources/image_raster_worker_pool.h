@@ -43,8 +43,6 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   const unsigned texture_target_;
 
-  RasterTaskQueue raster_tasks_;
-
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;
 
