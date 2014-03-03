@@ -77,9 +77,6 @@ ASH_EXPORT bool UseDragOffShelf();
 // immersive fullscreen via <F4>.
 ASH_EXPORT bool UseImmersiveFullscreenForAllWindows();
 
-// Returns true if multiple user icons are allowed in the tray.
-ASH_EXPORT bool UseMultiUserTray();
-
 // Returns true if overview mode should be activated for window switching.
 ASH_EXPORT bool UseOverviewMode();
 

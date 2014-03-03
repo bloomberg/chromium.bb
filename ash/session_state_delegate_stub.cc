@@ -93,10 +93,4 @@ void SessionStateDelegateStub::RemoveSessionStateObserver(
     ash::SessionStateObserver* observer) {
 }
 
-bool SessionStateDelegateStub::TransferWindowToDesktopOfUser(
-    aura::Window* window,
-    ash::MultiProfileIndex index) {
-  return false;
-}
-
 }  // namespace ash

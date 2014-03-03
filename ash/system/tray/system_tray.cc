@@ -164,11 +164,9 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   ash::Shell* shell = ash::Shell::GetInstance();
   int maximum_user_profiles =
           shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers();
-  for (int i = 0; i < maximum_user_profiles; i++) {
-    internal::TrayUser* tray_user = new internal::TrayUser(this, i);
-    AddTrayItem(tray_user);
-    user_items_.push_back(tray_user);
-  }
+  for (int i = 0; i < maximum_user_profiles; i++)
+    AddTrayItem(new internal::TrayUser(this, i));
+
   if (maximum_user_profiles > 1) {
     // Add a special double line separator between users and the rest of the
     // menu if more then one user is logged in.
@@ -239,10 +237,6 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 
 const std::vector<SystemTrayItem*>& SystemTray::GetTrayItems() const {
   return items_.get();
-}
-
-const std::vector<internal::TrayUser*>& SystemTray::GetTrayUserItems() const {
-  return user_items_;
 }
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
@@ -684,11 +678,6 @@ views::View* SystemTray::GetTrayItemViewForTest(SystemTrayItem* item) {
   std::map<SystemTrayItem*, views::View*>::iterator it =
       tray_item_map_.find(item);
   return it == tray_item_map_.end() ? NULL : it->second;
-}
-
-void SystemTray::AddTrayUserItemForTest(internal::TrayUser* tray_user) {
-  AddTrayItem(tray_user);
-  user_items_.push_back(tray_user);
 }
 
 internal::TrayDate* SystemTray::GetTrayDateForTesting() const {

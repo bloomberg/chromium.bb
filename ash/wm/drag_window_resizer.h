@@ -15,7 +15,6 @@ namespace ash {
 namespace internal {
 
 class DragWindowController;
-class TrayUser;
 
 // DragWindowResizer is a decorator of WindowResizer and adds the ability to
 // drag windows across displays.
@@ -49,14 +48,6 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
 
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp();
-
-  // Get the user drop target underneath the given |point_in_screen| or NULL.
-  TrayUser* GetTrayUserItemAtPoint(const gfx::Point& point_in_screen);
-
-  // Check if a completed drag might cause the window to change active desktops.
-  // If the call was causing a "transfer of ownership to another desktop" and it
-  // will return false indicating that no further processing is needed.
-  bool TryDraggingToNewUser();
 
   scoped_ptr<WindowResizer> next_window_resizer_;
 

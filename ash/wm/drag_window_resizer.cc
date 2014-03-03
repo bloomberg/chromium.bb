@@ -5,11 +5,8 @@
 #include "ash/wm/drag_window_resizer.h"
 
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/user/tray_user.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_state.h"
@@ -32,9 +29,6 @@ namespace {
 
 // The maximum opacity of the drag phantom window.
 const float kMaxOpacity = 0.8f;
-
-// The opacity of the window when dragging it over a user item in the tray.
-const float kOpacityWhenDraggedOverUserIcon = 0.4f;
 
 // Returns true if Ash has more than one root window.
 bool HasSecondaryRootWindow() {
@@ -78,13 +72,6 @@ DragWindowResizer* DragWindowResizer::Create(
 
 void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   base::WeakPtr<DragWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
-
-  // If we are on top of a window to desktop transfer button, we move the window
-  // temporarily back to where it was initially and make it semi-transparent.
-  GetTarget()->layer()->SetOpacity(
-      GetTrayUserItemAtPoint(location) ? kOpacityWhenDraggedOverUserIcon :
-                                         details().initial_opacity);
-
   next_window_resizer_->Drag(location, event_flags);
 
   if (!resizer)
@@ -104,9 +91,6 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DragWindowResizer::CompleteDrag() {
-  if (TryDraggingToNewUser())
-    return;
-
   next_window_resizer_->CompleteDrag();
 
   GetTarget()->layer()->SetOpacity(details().initial_opacity);
@@ -225,62 +209,6 @@ bool DragWindowResizer::ShouldAllowMouseWarp() {
       !views::corewm::GetTransientParent(GetTarget()) &&
       (GetTarget()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
        GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
-}
-
-TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
-    const gfx::Point& point_in_screen) {
-  // Unit tests might not have an ash shell.
-  if (!ash::Shell::GetInstance())
-    return NULL;
-
-  // Check that this is a drag move operation from a suitable window.
-  if (details().window_component != HTCAPTION ||
-      views::corewm::GetTransientParent(GetTarget()) ||
-      (GetTarget()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
-       GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
-       GetTarget()->type() != ui::wm::WINDOW_TYPE_POPUP))
-    return NULL;
-
-  // We only allow to drag the window onto a tray of it's own RootWindow.
-  SystemTray* tray = internal::GetRootWindowController(
-      GetTarget()->GetRootWindow())->GetSystemTray();
-
-  // Again - unit tests might not have a tray.
-  if (!tray)
-    return NULL;
-
-  const std::vector<internal::TrayUser*> tray_users = tray->GetTrayUserItems();
-  if (tray_users.size() <= 1)
-    return NULL;
-
-  std::vector<internal::TrayUser*>::const_iterator it = tray_users.begin();
-  for (; it != tray_users.end(); ++it) {
-    if ((*it)->CanDropWindowHereToTransferToUser(point_in_screen))
-      return *it;
-  }
-  return NULL;
-}
-
-bool DragWindowResizer::TryDraggingToNewUser() {
-  TrayUser* tray_user = GetTrayUserItemAtPoint(last_mouse_location_);
-  // No need to try dragging if there is no user.
-  if (!tray_user)
-    return false;
-
-  // We have to avoid a brief flash caused by the RevertDrag operation.
-  // To do this, we first set the opacity of our target window to 0, so that no
-  // matter what the RevertDrag does the window will stay hidden. Then transfer
-  // the window to the new owner (which will hide it). RevertDrag will then do
-  // it's thing and return the transparency to its original value.
-  int old_opacity = GetTarget()->layer()->opacity();
-  GetTarget()->layer()->SetOpacity(0);
-  GetTarget()->SetBounds(details().initial_bounds_in_parent);
-  if (!tray_user->TransferWindowToUser(GetTarget())) {
-    GetTarget()->layer()->SetOpacity(old_opacity);
-    return false;
-  }
-  RevertDrag();
-  return true;
 }
 
 }  // namespace internal

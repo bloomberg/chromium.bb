@@ -21,10 +21,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/tray/system_tray_notifier.h"
-#endif
-
 namespace ash {
 namespace internal {
 
@@ -70,24 +66,6 @@ class TrayUserTest : public ash::test::AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(TrayUserTest);
 };
-
-#if defined(OS_CHROMEOS)
-// The tray user test which tests functionality where multiple tray items are
-// visible in the system tray.
-class MultiTrayUserTest : public TrayUserTest {
- public:
-  MultiTrayUserTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(ash::switches::kAshEnableMultiUserTray);
-    TrayUserTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MultiTrayUserTest);
-};
-#endif
 
 TrayUserTest::TrayUserTest()
     : shelf_(NULL),
@@ -264,54 +242,6 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   // user_id.
   EXPECT_NE(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
   tray()->CloseSystemBubble();
-}
-
-// Make sure that we show items for all users in the tray accordingly.
-TEST_F(MultiTrayUserTest, CheckTrayUserItems) {
-  InitializeParameters(1, true);
-
-  int max_users = delegate()->GetMaximumNumberOfLoggedInUsers();
-  // Checking now for each amount of users that the proper items are visible in
-  // the tray. The proper item is hereby:
-  // 2 -> User #1
-  // 1 -> User #2
-  // 0 -> User #3
-  // Note: Tray items are required to populate system tray items as well as the
-  // system tray menu. The system tray menu changes it's appearance with the
-  // addition of more users, but the system tray does not create new items after
-  // it got created.
-  for (int present_users = 1; present_users <= max_users; ++present_users) {
-    // We simulate the user addition by telling the delegate the new number of
-    // users, then change all user tray items and finally tell the tray to
-    // re-layout itself.
-    delegate()->set_logged_in_users(present_users);
-    Shell::GetInstance()->system_tray_notifier()->NotifyUserAddedToSession();
-    tray()->Layout();
-
-    // Check that the tray items are being shown in the reverse order.
-    for (int i = 0; i < max_users; i++) {
-      gfx::Rect rect =
-          tray()->GetTrayItemViewForTest(tray_user(i))->GetBoundsInScreen();
-      if (max_users - 1 - i < present_users)
-        EXPECT_FALSE(rect.IsEmpty());
-      else
-        EXPECT_TRUE(rect.IsEmpty());
-    }
-  }
-
-  // Click on the last item to see that the user changes.
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.set_async(false);
-
-  // Switch to a new user - again, note that we have to click on the reverse
-  // item in the list. Since the first clickable item is 1, we get user #2.
-  gfx::Point point =
-      tray()->GetTrayItemViewForTest(tray_user(1))->
-                         GetBoundsInScreen().CenterPoint();
-
-  generator.MoveMouseTo(point.x(), point.y());
-  generator.ClickLeftButton();
-  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserID(1));
 }
 
 #endif

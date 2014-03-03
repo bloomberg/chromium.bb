@@ -1167,14 +1167,6 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableTouchViewTesting),
   },
-#if defined(OS_CHROMEOS)
-  { "ash-enable-multi-user-tray",
-      IDS_FLAGS_ENABLE_MULTI_USER_TRAY,
-      IDS_FLAGS_ENABLE_MULTI_USER_TRAY_DESCRIPTION,
-      kOsCrOS,
-      SINGLE_VALUE_TYPE(ash::switches::kAshEnableMultiUserTray),
-  },
-#endif
 #endif
 #if defined(OS_CHROMEOS)
   {

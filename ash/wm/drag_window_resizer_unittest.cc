@@ -25,13 +25,6 @@
 #include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/user/tray_user.h"
-#include "ash/test/test_session_state_delegate.h"
-#include "ash/test/test_shell_delegate.h"
-#endif
-
 namespace ash {
 namespace internal {
 namespace {
@@ -638,93 +631,6 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->CompleteDrag();
   }
 }
-
-#if defined(OS_CHROMEOS)
-// Checks that moving a window to another desktop will properly set and reset
-// the transparency.
-TEST_F(DragWindowResizerTest, DragToOtherDesktopOpacity) {
-  // Set up a few things we need for multi profile.
-  ash::test::TestSessionStateDelegate* session_delegate =
-      static_cast<ash::test::TestSessionStateDelegate*>(
-          ash::Shell::GetInstance()->session_state_delegate());
-  session_delegate->set_logged_in_users(2);
-  ash::test::TestShellDelegate* shell_delegate =
-      static_cast<ash::test::TestShellDelegate*>(
-          ash::Shell::GetInstance()->delegate());
-  shell_delegate->set_multi_profiles_enabled(true);
-
-  // Create one other user where we can drag our stuff onto.
-  SystemTray* tray = Shell::GetPrimaryRootWindowController()->GetSystemTray();
-  TrayUser* tray_user = new TrayUser(tray, 1);
-  tray->AddTrayUserItemForTest(tray_user);
-
-  // Move the view somewhere where we can hit it.
-  views::View* view = tray->GetTrayItemViewForTest(tray_user);
-  view->SetBounds(80, 0, 20, 20);
-  gfx::Point center = view->GetBoundsInScreen().CenterPoint();
-
-  gfx::Rect initial_bounds = gfx::Rect(0, 0, 50, 60);
-  // Drag the window over the icon and let it drop. Test that the window's
-  // layer gets transparent and reverts back.
-  {
-    aura::Window* window = window_.get();
-    window->SetBoundsInScreen(initial_bounds,
-                              Shell::GetScreen()->GetPrimaryDisplay());
-    // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    EXPECT_EQ(1.0, window->layer()->opacity());
-    resizer->Drag(center, 0);
-    EXPECT_NE(1.0, window->layer()->opacity());
-    EXPECT_EQ(0, session_delegate->num_transfer_to_desktop_of_user_calls());
-    resizer->CompleteDrag();
-    EXPECT_EQ(1.0, window->layer()->opacity());
-    EXPECT_EQ(1, session_delegate->num_transfer_to_desktop_of_user_calls());
-    EXPECT_EQ(initial_bounds.ToString(), window->bounds().ToString());
-  }
-
-  // Drag the window over the icon and cancel the operation. Test that the
-  // window's layer gets transparent and reverts back.
-  {
-    aura::Window* window = window_.get();
-    window->SetBoundsInScreen(initial_bounds,
-                              Shell::GetScreen()->GetPrimaryDisplay());
-    // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    EXPECT_EQ(1.0, window->layer()->opacity());
-    resizer->Drag(center, 0);
-    EXPECT_NE(1.0, window->layer()->opacity());
-    resizer->RevertDrag();
-    EXPECT_EQ(1.0, window->layer()->opacity());
-    EXPECT_EQ(1, session_delegate->num_transfer_to_desktop_of_user_calls());
-    EXPECT_EQ(initial_bounds.ToString(), window->bounds().ToString());
-  }
-
-  // Drag the window over the icon and somewhere else and see that it properly
-  // reverts its transparency.
-  {
-    aura::Window* window = window_.get();
-    window->SetBoundsInScreen(initial_bounds,
-                              Shell::GetScreen()->GetPrimaryDisplay());
-    // Grab (0, 0) of the window.
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window, gfx::Point(), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    EXPECT_EQ(1.0, window->layer()->opacity());
-    resizer->Drag(center, 0);
-    EXPECT_NE(1.0, window->layer()->opacity());
-    resizer->Drag(gfx::Point(), 0);
-    EXPECT_EQ(1.0, window->layer()->opacity());
-    resizer->CompleteDrag();
-    EXPECT_EQ(1, session_delegate->num_transfer_to_desktop_of_user_calls());
-    EXPECT_NE(initial_bounds.ToString(), window->bounds().ToString());
-  }
-}
-#endif
-
 
 }  // namespace internal
 }  // namespace ash
