@@ -156,15 +156,50 @@ Test: pre-frame time accounting
     }
 }
 {
-    cpuTime : 26.998
+    cpuTime : 20.998
     duration : 8.001
     endTime : 1071.002
     startTime : 1063.001
     timeByCategory : {
-        other : 12.005
+        other : 6.005
         painting : 2.998
         rendering : 2.998
         scripting : 8.997
+    }
+}
+Test: record processing order
+{
+    cpuTime : 15.999
+    duration : 13.005
+    endTime : 1013.005
+    startTime : 1000
+    timeByCategory : {
+        other : 0.005
+        painting : 3.997
+        rendering : 0
+        scripting : 11.997
+    }
+}
+{
+    cpuTime : 0
+    duration : 16.996
+    endTime : 1030.001
+    startTime : 1013.005
+    timeByCategory : {
+        other : 0
+        rendering : 0
+    }
+}
+{
+    cpuTime : 31.999
+    duration : 32
+    endTime : 1062.001
+    startTime : 1030.001
+    timeByCategory : {
+        other : 1.005
+        painting : 19.997
+        rendering : 0
+        scripting : 10.997
     }
 }
 

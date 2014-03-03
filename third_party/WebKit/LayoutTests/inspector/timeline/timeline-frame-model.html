@@ -145,7 +145,7 @@ function test()
                 {"startTime":1033.401, "endTime":1033.999, "type":"CompositeLayers", "data":{}},
             ]},
             {"startTime":1048.000, "type":"BeginFrame", "thread": "implSide"},
-            {"startTime": 1050.000, "data":{},"endTime":1070.999, "type":"Program", "children":[
+            {"startTime": 1050.000, "data":{},"endTime":1064.999, "type":"Program", "children":[
                 {"startTime":1050.002, "endTime":1058.999, "type":"FunctionCall", "data":{}},
                 {"startTime":1059.000, "type":"InvalidateLayout", "data":{}},
             ]},
@@ -162,6 +162,31 @@ function test()
             {"startTime":1072.000, "type":"BeginFrame", "thread": "implSide"},
             {"startTime": 1073.000, "data":{},"endTime":1073.999, "type":"Program", "children":[
             ]}
+        ],
+        "record processing order": [
+            {"startTime":1000.000, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1000.001, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1000.002, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1013.003, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"1"}},
+            {"startTime":1013.005, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1016.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime": 1001.000, "data":{},"endTime":1016.999, "type":"Program", "children":[
+                {"startTime":1001.001, "type":"BeginFrame", "data":{"id":"1"}},
+                {"startTime":1001.002, "endTime":1012.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1013.002, "endTime":1016.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1030.000, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"1"}},
+            {"startTime":1030.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime":1031.000, "type":"BeginFrame", "thread": "implSide"},
+            {"startTime":1031.002, "type":"RequestMainThreadFrame", "thread": "implSide"},
+            {"startTime":1061.000, "type":"ActivateLayerTree", "thread": "implSide","data":{"id":"1"}},
+            {"startTime":1062.001, "type":"DrawFrame", "thread": "implSide"},
+            {"startTime": 1032.000, "data":{},"endTime":1063.999, "type":"Program", "children":[
+                {"startTime":1032.001, "type":"BeginFrame", "data":{"id":"1"}},
+                {"startTime":1032.002, "endTime":1042.999, "type":"FunctionCall", "data":{}},
+                {"startTime":1043.002, "endTime":1062.999, "type":"CompositeLayers", "data":{}},
+            ]},
+            {"startTime":1080.001, "type":"DrawFrame", "thread": "implSide"}
         ]
     };
 
