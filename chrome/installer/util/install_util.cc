@@ -355,8 +355,7 @@ bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,
                                  bool system_install) {
   DCHECK(dist);
   ProductState state;
-  return state.Initialize(system_install, dist->GetType()) &&
-         state.is_multi_install();
+  return state.Initialize(system_install, dist) && state.is_multi_install();
 }
 
 bool CheckIsChromeSxSProcess() {

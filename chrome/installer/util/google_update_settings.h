@@ -31,6 +31,7 @@ class GoogleUpdateSettings {
     AUTOMATIC_UPDATES   = 1,
     MANUAL_UPDATES_ONLY = 2,
     AUTO_UPDATES_ONLY   = 3,
+    UPDATE_POLICIES_COUNT
   };
 
   // Defines product data that is tracked/used by Google Update.
@@ -226,6 +227,9 @@ class GoogleUpdateSettings {
   // true if an app-specific policy override is in force, or false otherwise.
   static UpdatePolicy GetAppUpdatePolicy(const std::wstring& app_guid,
                                          bool* is_overridden);
+
+  // Records UMA stats about Chrome's update policy.
+  static void RecordChromeUpdatePolicyHistograms();
 
   // Returns Google Update's uninstall command line, or an empty string if none
   // is found.

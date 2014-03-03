@@ -5836,6 +5836,21 @@ other types of suffix sets.
   <summary>Events in Google Now component extension.</summary>
 </histogram>
 
+<histogram name="GoogleUpdate.EffectivePolicy" enum="UpdatePolicy">
+  <summary>
+    The effective update policy for Chrome on Windows. Recorded once per startup
+    (following a 45 seconds delay).
+  </summary>
+</histogram>
+
+<histogram name="GoogleUpdate.UpdatePolicyIsOverridden" enum="Boolean">
+  <summary>
+    True if the effective update policy for Chrome on Windows is the result of
+    an app-specific override; false if it is the default for all apps. Recorded
+    once per startup (following a 45 seconds delay).
+  </summary>
+</histogram>
+
 <histogram name="GPU.AcceleratedSurfaceRefreshRate" units="hz">
   <summary>
     Refresh rate of the display in Hz.  This is recorded every time we present a
@@ -34807,6 +34822,13 @@ other types of suffix sets.
   <int value="0" label="Full"/>
   <int value="1" label="Delta"/>
   <int value="2" label="Forced Full"/>
+</enum>
+
+<enum name="UpdatePolicy" type="int">
+  <int value="0" label="UPDATES_DISABLED"/>
+  <int value="1" label="AUTOMATIC_UPDATES"/>
+  <int value="2" label="MANUAL_UPDATES_ONLY"/>
+  <int value="3" label="AUTO_UPDATES_ONLY"/>
 </enum>
 
 <enum name="UrlResolutionResult" type="int">
