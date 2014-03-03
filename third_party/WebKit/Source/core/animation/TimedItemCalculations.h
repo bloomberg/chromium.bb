@@ -190,9 +190,7 @@ static inline double calculateTransformedTime(double currentIteration, double it
         return directedTime;
     double timeFraction = directedTime / iterationDuration;
     ASSERT(timeFraction >= 0 && timeFraction <= 1);
-    return specified.timingFunction
-        ? multiplyZeroAlwaysGivesZero(iterationDuration, specified.timingFunction->evaluate(timeFraction, accuracyForDuration(iterationDuration)))
-        : directedTime;
+    return multiplyZeroAlwaysGivesZero(iterationDuration, specified.timingFunction->evaluate(timeFraction, accuracyForDuration(iterationDuration)));
 }
 
 } // namespace WebCore

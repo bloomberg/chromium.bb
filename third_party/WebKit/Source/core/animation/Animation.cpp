@@ -102,7 +102,7 @@ void Animation::setStartDelay(Timing& timing, double startDelay)
     if (std::isfinite(startDelay))
         timing.startDelay = startDelay;
     else
-        timing.startDelay = 0;
+        timing.startDelay = Timing::defaults().startDelay;
 }
 
 void Animation::setEndDelay(Timing& timing, double endDelay)
@@ -110,7 +110,7 @@ void Animation::setEndDelay(Timing& timing, double endDelay)
     if (std::isfinite(endDelay))
         timing.endDelay = endDelay;
     else
-        timing.endDelay = 0;
+        timing.endDelay = Timing::defaults().endDelay;
 }
 
 void Animation::setFillMode(Timing& timing, String fillMode)
@@ -124,7 +124,7 @@ void Animation::setFillMode(Timing& timing, String fillMode)
     } else if (fillMode == "forwards") {
         timing.fillMode = Timing::FillModeForwards;
     } else {
-        timing.fillMode = Timing::FillModeAuto;
+        timing.fillMode = Timing::defaults().fillMode;
     }
 }
 
@@ -133,7 +133,7 @@ void Animation::setIterationStart(Timing& timing, double iterationStart)
     if (!std::isnan(iterationStart) && !std::isinf(iterationStart))
         timing.iterationStart = std::max<double>(iterationStart, 0);
     else
-        timing.iterationStart = 0;
+        timing.iterationStart = Timing::defaults().iterationStart;
 }
 
 void Animation::setIterationCount(Timing& timing, double iterationCount)
@@ -141,7 +141,7 @@ void Animation::setIterationCount(Timing& timing, double iterationCount)
     if (!std::isnan(iterationCount))
         timing.iterationCount = std::max<double>(iterationCount, 0);
     else
-        timing.iterationCount = 1;
+        timing.iterationCount = Timing::defaults().iterationCount;
 }
 
 void Animation::setIterationDuration(Timing& timing, double iterationDuration)
@@ -149,7 +149,7 @@ void Animation::setIterationDuration(Timing& timing, double iterationDuration)
     if (!std::isnan(iterationDuration) && iterationDuration >= 0)
         timing.iterationDuration = iterationDuration;
     else
-        timing.iterationDuration = std::numeric_limits<double>::quiet_NaN();
+        timing.iterationDuration = Timing::defaults().iterationDuration;
 }
 
 void Animation::setPlaybackRate(Timing& timing, double playbackRate)
@@ -157,7 +157,7 @@ void Animation::setPlaybackRate(Timing& timing, double playbackRate)
     if (!std::isnan(playbackRate) && !std::isinf(playbackRate))
         timing.playbackRate = playbackRate;
     else
-        timing.playbackRate = 1;
+        timing.playbackRate = Timing::defaults().playbackRate;
 }
 
 void Animation::setPlaybackDirection(Timing& timing, String direction)
@@ -169,7 +169,7 @@ void Animation::setPlaybackDirection(Timing& timing, String direction)
     } else if (direction == "alternate-reverse") {
         timing.direction = Timing::PlaybackDirectionAlternateReverse;
     } else {
-        timing.direction = Timing::PlaybackDirectionNormal;
+        timing.direction = Timing::defaults().direction;
     }
 }
 
@@ -183,7 +183,7 @@ void Animation::setTimingFunction(Timing& timing, String timingFunctionString)
             return;
         }
     }
-    timing.timingFunction = LinearTimingFunction::create();
+    timing.timingFunction = Timing::defaults().timingFunction;
 }
 
 void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)

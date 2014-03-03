@@ -189,7 +189,7 @@ TEST(AnimationTimedItemCalculationsTest, TransformedTime)
     EXPECT_EQ(10, calculateTransformedTime(1, 20, 12, timing));
 
     // PlaybackDirectionReverse
-    timing.timingFunction = nullptr;
+    timing.timingFunction = Timing::defaults().timingFunction;
     timing.direction = Timing::PlaybackDirectionReverse;
     EXPECT_EQ(8, calculateTransformedTime(0, 20, 12, timing));
     EXPECT_EQ(8, calculateTransformedTime(1, 20, 12, timing));

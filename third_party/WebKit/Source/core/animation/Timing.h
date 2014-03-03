@@ -53,6 +53,12 @@ struct Timing {
         PlaybackDirectionAlternateReverse
     };
 
+    static const Timing& defaults()
+    {
+        DEFINE_STATIC_LOCAL(Timing, timing, ());
+        return timing;
+    }
+
     Timing()
         : startDelay(0)
         , endDelay(0)
