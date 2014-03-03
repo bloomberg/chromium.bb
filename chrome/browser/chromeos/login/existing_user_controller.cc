@@ -1015,9 +1015,11 @@ void ExistingUserController::InitializeStartUrls() const {
   std::vector<std::string> start_urls;
 
   const base::ListValue *urls;
+  UserManager* user_manager = UserManager::Get();
   bool can_show_getstarted_guide =
-      UserManager::Get()->GetActiveUser()->GetType() == User::USER_TYPE_REGULAR;
-  if (UserManager::Get()->IsLoggedInAsDemoUser()) {
+      user_manager->GetActiveUser()->GetType() == User::USER_TYPE_REGULAR &&
+      !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
+  if (user_manager->IsLoggedInAsDemoUser()) {
     if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
       // The retail mode user will get start URLs from a special policy if it is
       // set.
@@ -1030,7 +1032,7 @@ void ExistingUserController::InitializeStartUrls() const {
     }
     can_show_getstarted_guide = false;
   // Skip the default first-run behavior for public accounts.
-  } else if (!UserManager::Get()->IsLoggedInAsPublicAccount()) {
+  } else if (!user_manager->IsLoggedInAsPublicAccount()) {
     if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
       const char* url = kChromeVoxTutorialURLPattern;
       PrefService* prefs = g_browser_process->local_state();
@@ -1043,8 +1045,7 @@ void ExistingUserController::InitializeStartUrls() const {
   }
 
   // Only show getting started guide for a new user.
-  const bool should_show_getstarted_guide =
-      UserManager::Get()->IsCurrentUserNew();
+  const bool should_show_getstarted_guide = user_manager->IsCurrentUserNew();
 
   if (can_show_getstarted_guide && should_show_getstarted_guide) {
     // Don't open default Chrome window if we're going to launch the first-run
