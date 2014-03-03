@@ -1214,6 +1214,15 @@ void OneClickSigninHelper::DidStopLoading(
       Profile::FromBrowserContext(contents->GetBrowserContext());
   VLOG(1) << "OneClickSigninHelper::DidStopLoading: url=" << url.spec();
 
+  if (url.scheme() == content::kChromeUIScheme) {
+    // Suppresses OneClickSigninHelper on webUI pages to avoid inteference with
+    // inline signin flows.
+    VLOG(1) << "OneClickSigninHelper::DidStopLoading: suppressed for url="
+            << url.spec();
+    CleanTransientState();
+    return;
+  }
+
   // If an error has already occured during the sign in flow, make sure to
   // display it to the user and abort the process.  Do this only for
   // explicit sign ins.
