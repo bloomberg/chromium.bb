@@ -874,7 +874,6 @@ crbug.com/339373 http/tests/websocket/FIXME-handshake-fail-by-null-subprotocol-s
 crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Skip ]
 crbug.com/339373 http/tests/websocket/close-code-and-reason.html [ Skip ]
 crbug.com/339373 http/tests/websocket/close-event.html [ Skip ]
-crbug.com/339373 http/tests/websocket/compressed-control-frame.html [ Skip ]
 crbug.com/339373 http/tests/websocket/cross-origin.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-comp-bit-onoff.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-invalid-parameter.html [ Skip ]
