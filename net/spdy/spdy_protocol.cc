@@ -95,4 +95,8 @@ void SpdyPushPromiseIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitPushPromise(*this);
 }
 
+void SpdyContinuationIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitContinuation(*this);
+}
+
 }  // namespace net

@@ -54,7 +54,8 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(10, CREDENTIAL);
   EXPECT_EQ(11, BLOCKED);
   EXPECT_EQ(12, PUSH_PROMISE);
-  EXPECT_EQ(12, LAST_CONTROL_TYPE);
+  EXPECT_EQ(13, CONTINUATION);
+  EXPECT_EQ(13, LAST_CONTROL_TYPE);
   EXPECT_EQ(std::numeric_limits<int32>::max(), kSpdyMaximumWindowSize);
 }
 

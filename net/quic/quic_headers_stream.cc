@@ -118,7 +118,7 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY GOAWAY frame received.");
   }
 
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) OVERRIDE {
     CloseConnection("SPDY HEADERS frame received.");
   }
 
@@ -128,9 +128,14 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE {
+                             SpdyStreamId promised_stream_id,
+                             bool end) OVERRIDE {
     LOG(DFATAL) << "PUSH_PROMISE frame received from a SPDY/3 framer";
     CloseConnection("SPDY PUSH_PROMISE frame received.");
+  }
+
+  virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE {
+    CloseConnection("SPDY CONTINUATION frame recevied.");
   }
 
   // SpdyFramerDebugVisitorInterface implementation

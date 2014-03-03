@@ -41,12 +41,14 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD0(OnSettingsEnd, void());
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
                               SpdyGoAwayStatus status));
-  MOCK_METHOD2(OnHeaders, void(SpdyStreamId stream_id, bool fin));
+  MOCK_METHOD3(OnHeaders, void(SpdyStreamId stream_id, bool fin, bool end));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
                                     uint32 delta_window_size));
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
-  MOCK_METHOD2(OnPushPromise, void(SpdyStreamId stream_id,
-                                   SpdyStreamId promised_stream_id));
+  MOCK_METHOD3(OnPushPromise, void(SpdyStreamId stream_id,
+                                   SpdyStreamId promised_stream_id,
+                                   bool end));
+  MOCK_METHOD2(OnContinuation, void(SpdyStreamId stream_id, bool end));
 };
 
 }  // namespace test

@@ -286,6 +286,8 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_INVALID_DATA_FRAME_FLAGS;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS:
       return SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS;
+    case SpdyFramer::SPDY_UNEXPECTED_FRAME:
+      return SPDY_ERROR_UNEXPECTED_FRAME;
     default:
       NOTREACHED();
       return static_cast<SpdyProtocolErrorDetails>(-1);

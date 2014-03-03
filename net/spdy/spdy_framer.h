@@ -200,7 +200,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called when a HEADERS frame is received.
   // Note that header block data is not included. See
   // OnControlFrameHeaderData().
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) = 0;
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) = 0;
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
@@ -232,7 +232,13 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Note that header block data is not included. See
   // OnControlFrameHeaderData().
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) = 0;
+                             SpdyStreamId promised_stream_id,
+                             bool end) = 0;
+
+  // Called when a CONTINUATION frame is received.
+  // Note that header block data is not included. See
+  // OnControlFrameHeaderData().
+  virtual void OnContinuation(SpdyStreamId stream_id, bool end) = 0;
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
@@ -295,6 +301,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_RST_STREAM_FRAME_CORRUPT,     // RST_STREAM frame could not be parsed.
     SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
     SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
+    SPDY_UNEXPECTED_FRAME,             // Frame received out of order.
 
     LAST_ERROR,  // Must be the last entry in the enum.
   };
@@ -315,7 +322,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Retrieve serialized length of SpdyHeaderBlock.
   // TODO(hkhalil): Remove, or move to quic code.
   static size_t GetSerializedLength(const int spdy_version,
-                                    const SpdyHeaderBlock* headers);
+                                    const SpdyHeaderBlock* headers,
+                                    bool begin_block);
 
   // Create a new Framer, provided a SPDY version.
   explicit SpdyFramer(SpdyMajorVersion version);
@@ -408,6 +416,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializePushPromise(
       const SpdyPushPromiseIR& push_promise);
 
+  // Serializes a CONTINUATION frame. The CONTINUATION frame is used
+  // to continue a sequence of header block fragments.
+  SpdySerializedFrame* SerializeContinuation(
+      const SpdyContinuationIR& continuation);
+
   // Serialize a frame of unknown type.
   SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame);
 
@@ -452,6 +465,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetWindowUpdateSize() const;
   size_t GetBlockedSize() const;
   size_t GetPushPromiseMinimumSize() const;
+  size_t GetContinuationMinimumSize() const;
 
   // Returns the minimum size a frame can be (data or control).
   size_t GetFrameMinimumSize() const;
@@ -471,6 +485,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyMajorVersion protocol_version() const { return spdy_version_; }
 
   bool probable_http_response() const { return probable_http_response_; }
+
+  SpdyStreamId expect_continuation() const { return expect_continuation_; }
 
   SpdyPriority GetLowestPriority() const { return spdy_version_ < 3 ? 3 : 7; }
   SpdyPriority GetHighestPriority() const { return 0; }
@@ -532,7 +548,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Retrieve serialized length of SpdyHeaderBlock. If compression is enabled, a
   // maximum estimate is returned.
-  size_t GetSerializedLength(const SpdyHeaderBlock& headers);
+  size_t GetSerializedLength(const SpdyHeaderBlock& headers, bool begin_block);
 
   // Get (and lazily initialize) the ZLib state.
   z_stream* GetHeaderCompressor();
@@ -560,12 +576,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   void SerializeNameValueBlockWithoutCompression(
       SpdyFrameBuilder* builder,
-      const SpdyNameValueBlock& name_value_block) const;
+      const SpdyNameValueBlock& name_value_block,
+      bool begin_block) const;
 
   // Compresses automatically according to enable_compression_.
   void SerializeNameValueBlock(
       SpdyFrameBuilder* builder,
-      const SpdyFrameWithNameValueBlockIR& frame);
+      const SpdyFrameWithNameValueBlockIR& frame,
+      bool begin_block);
 
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);
@@ -653,6 +671,18 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // corrupt data that just looks like HTTP, but deterministic checking requires
   // a lot more state.
   bool probable_http_response_;
+
+  // Set this to the current stream when we receive a HEADERS, PUSH_PROMISE, or
+  // CONTINUATION frame without the END_HEADERS(0x4) bit set. These frames must
+  // be followed by a CONTINUATION frame, or else we throw a PROTOCOL_ERROR.
+  // A value of 0 indicates that we are not expecting a CONTINUATION frame.
+  SpdyStreamId expect_continuation_;
+
+  // If a HEADERS frame is followed by a CONTINUATION frame, the FIN/END_STREAM
+  // flag is still carried in the HEADERS frame. If it's set, flip this so that
+  // we know to terminate the stream when the entire header block has been
+  // processed.
+  bool end_stream_when_done_;
 };
 
 }  // namespace net

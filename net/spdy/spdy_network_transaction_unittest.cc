@@ -1973,6 +1973,7 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
 
 // Test that a POST without any post data works.
 TEST_P(SpdyNetworkTransactionTest, NullPost) {
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
@@ -1982,14 +1983,14 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
   // When request.upload_data_stream is NULL for post, content-length is
   // expected to be 0.
-  scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyPost(kRequestUrl, 1, 0, LOWEST, NULL, 0));
-  // Set the FIN bit since there will be no body.
-  int flags = CONTROL_FLAG_FIN;
-  if (spdy_util_.spdy_version() >= SPDY4) {
-    flags |= HEADERS_FLAG_PRIORITY;
-  }
-  test::SetFrameFlags(req.get(), flags, spdy_util_.spdy_version());
+  SpdySynStreamIR syn_ir(1);
+  syn_ir.set_name_value_block(
+      *spdy_util_.ConstructPostHeaderBlock(kRequestUrl, 0));
+  syn_ir.set_fin(true);  // No body.
+  syn_ir.set_priority(ConvertRequestPriorityToSpdyPriority(
+      LOWEST, spdy_util_.spdy_version()));
+  scoped_ptr<SpdyFrame> req(framer.SerializeFrame(syn_ir));
+
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -2016,6 +2017,7 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
   // Create an empty UploadDataStream.
   ScopedVector<UploadElementReader> element_readers;
   UploadDataStream stream(element_readers.Pass(), 0);
@@ -2027,15 +2029,15 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   request.upload_data_stream = &stream;
 
   const uint64 kContentLength = 0;
-  scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyPost(
-          kRequestUrl, 1, kContentLength, LOWEST, NULL, 0));
-  // Set the FIN bit since there will be no body.
-  int flags = CONTROL_FLAG_FIN;
-  if (spdy_util_.spdy_version() >= SPDY4) {
-    flags |= HEADERS_FLAG_PRIORITY;
-  }
-  test::SetFrameFlags(req.get(), flags, spdy_util_.spdy_version());
+
+  SpdySynStreamIR syn_ir(1);
+  syn_ir.set_name_value_block(
+      *spdy_util_.ConstructPostHeaderBlock(kRequestUrl, kContentLength));
+  syn_ir.set_fin(true);  // No body.
+  syn_ir.set_priority(ConvertRequestPriorityToSpdyPriority(
+      LOWEST, spdy_util_.spdy_version()));
+  scoped_ptr<SpdyFrame> req(framer.SerializeFrame(syn_ir));
+
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -4000,11 +4002,11 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
   MockWrite writes[] = { CreateMockWrite(*req) };
 
   // 5 data frames in a single read.
-  scoped_ptr<SpdyFrame> syn_reply(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  // turn off FIN bit
-  test::SetFrameFlags(
-      syn_reply.get(), CONTROL_FLAG_NONE, spdy_util_.spdy_version());
+  SpdySynReplyIR reply_ir(1);
+  reply_ir.SetHeader(spdy_util_.GetStatusKey(), "200");
+  reply_ir.SetHeader(spdy_util_.GetVersionKey(), "HTTP/1.1");
+
+  scoped_ptr<SpdyFrame> syn_reply(framer.SerializeFrame(reply_ir));
   scoped_ptr<SpdyFrame> data_frame(
       framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
   scoped_ptr<SpdyFrame> data_frame_fin(

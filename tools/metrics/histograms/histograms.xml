@@ -33644,6 +33644,7 @@ other types of suffix sets.
 
   <int value="29" label="GoAway Frame Corrupt"/>
   <int value="30" label="RstStream Frame Corrupt"/>
+  <int value="31" label="Unexpected Frame (Expected Continuation)"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">

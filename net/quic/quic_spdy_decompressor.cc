@@ -49,11 +49,13 @@ class SpdyFramerVisitor : public SpdyFramerVisitorInterface {
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE {}
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {}
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) OVERRIDE {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {}
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE {}
+                             SpdyStreamId promised_stream_id,
+                             bool end) OVERRIDE {}
+  virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE {}
   void set_visitor(QuicSpdyDecompressor::Visitor* visitor) {
     DCHECK(visitor);
     visitor_ = visitor;

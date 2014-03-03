@@ -78,7 +78,8 @@ void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
 }
 
 void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
-                                   bool fin) {
+                                   bool fin,
+                                   bool end) {
   frames_received_++;
   DCHECK(!control_frame_fields_.get());
   control_frame_fields_.reset(new ControlFrameFields());
@@ -213,8 +214,13 @@ void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
 }
 
 void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
-                                       SpdyStreamId promised_stream_id) {
+                                       SpdyStreamId promised_stream_id,
+                                       bool end) {
+  // TODO(jgraettinger): Deliver headers, similar to OnHeaders.
   visitor_->OnPushPromise(stream_id, promised_stream_id);
+}
+
+void BufferedSpdyFramer::OnContinuation(SpdyStreamId stream_id, bool end) {
 }
 
 SpdyMajorVersion BufferedSpdyFramer::protocol_version() {

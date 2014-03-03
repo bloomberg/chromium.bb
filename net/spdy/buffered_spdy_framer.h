@@ -135,7 +135,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                            bool fin,
                            bool unidirectional) OVERRIDE;
   virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE;
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE;
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) OVERRIDE;
   virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                         const char* header_data,
                                         size_t len) OVERRIDE;
@@ -156,10 +156,12 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE;
   virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id) OVERRIDE;
+                             SpdyStreamId promised_stream_id,
+                             bool end) OVERRIDE;
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
                                  bool fin) OVERRIDE;
+  virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

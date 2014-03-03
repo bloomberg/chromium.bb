@@ -4128,6 +4128,9 @@ TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(SPDY_ERROR_GOAWAY_FRAME_CORRUPT,
            MapFramerErrorToProtocolError(
                SpdyFramer::SPDY_GOAWAY_FRAME_CORRUPT));
+  CHECK_EQ(SPDY_ERROR_UNEXPECTED_FRAME,
+           MapFramerErrorToProtocolError(
+               SpdyFramer::SPDY_UNEXPECTED_FRAME));
 }
 
 TEST(MapRstStreamStatusToProtocolError, MapsValues) {
