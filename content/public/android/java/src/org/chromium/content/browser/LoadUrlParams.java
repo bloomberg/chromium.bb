@@ -45,13 +45,29 @@ public class LoadUrlParams {
     String mVirtualUrlForDataUrl;
     boolean mCanLoadLocalResources;
 
+    /**
+     * Creates an instance with default page transition type.
+     * @param url the url to be loaded
+     */
     public LoadUrlParams(String url) {
+        this(url, PageTransitionTypes.PAGE_TRANSITION_LINK);
+    }
+
+    /**
+     * Creates an instance with the given page transition type.
+     * @param url the url to be loaded
+     * @param transitionType the PageTransitionType constant corresponding to the load
+     */
+    public LoadUrlParams(String url, int transitionType) {
         // Check initializeConstants was called.
         assert LOAD_TYPE_DEFAULT != LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
 
         mUrl = url;
+        mTransitionType = transitionType;
+
+        // Initialize other fields to defaults matching defaults of the native
+        // NavigationController::LoadUrlParams.
         mLoadUrlType = LOAD_TYPE_DEFAULT;
-        mTransitionType = PageTransitionTypes.PAGE_TRANSITION_LINK;
         mUaOverrideOption = UA_OVERRIDE_INHERIT;
         mPostData = null;
         mBaseUrlForDataUrl = null;
