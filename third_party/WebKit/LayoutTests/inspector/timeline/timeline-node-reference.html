@@ -29,7 +29,7 @@ function test()
 
     function clickValueLink(record, row)
     {
-        var helper = record.generatePopupContent(record, new WebInspector.Linkifier(), onDetailsContentReady);
+        var helper = WebInspector.TimelineUIUtils.generatePopupContent(record, new WebInspector.Linkifier(), onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {
