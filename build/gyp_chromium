@@ -7,6 +7,7 @@
 # This script is wrapper for Chromium that adds some support for how GYP
 # is invoked by Chromium beyond what can be done in the gclient hooks.
 
+import ctypes
 import glob
 import gyp_helper
 import json
@@ -393,6 +394,14 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   copy_runtime(out_release_nacl64, x64, 'msvc%s120.dll')
 
 
+def GetFreeSpaceMBWindows(path):
+  """Returns the number of mebibytes free for a given directory."""
+  free_bytes = ctypes.c_ulonglong(0)
+  ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+      ctypes.c_wchar_p(path), None, None, ctypes.pointer(free_bytes))
+  return free_bytes.value / 1024 / 1024
+
+
 if __name__ == '__main__':
   args = sys.argv[1:]
 
@@ -516,8 +525,12 @@ if __name__ == '__main__':
     # Include the VS runtime in the PATH in case it's not machine-installed.
     runtime_path = ';'.join(vs2013_runtime_dll_dirs)
     os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
-    print('Using automatic toolchain in %s (%s edition).' % (
-              toolchain, 'Pro' if version_is_pro else 'Express'))
+    # TODO(scottmg): Temporarily add free space print to try to see how close
+    # we're getting to failures on windows bots. http://crbug.com/348350
+    print('Using automatic toolchain in %s (%s edition), free space: %dM.' % (
+              toolchain,
+              'Pro' if version_is_pro else 'Express',
+              GetFreeSpaceMBWindows(GetOutputDirectory())))
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
