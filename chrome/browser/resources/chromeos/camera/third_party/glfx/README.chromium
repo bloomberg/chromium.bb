@@ -8,4 +8,9 @@ Description:
 This directory contains a copy of the glfx.js library obtained from github on
 2013-10-09, with this command:
 
+Command:
 git clone https://github.com/evanw/glfx.js.git
+
+Local Modifications:
+1. Remove expensive gl.checkFramebufferStatus() call.
+2. Do not call gl.getParameter(gl.VIEWPORT) when not necessary (expensive).
