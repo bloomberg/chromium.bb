@@ -27,8 +27,8 @@ class FakeSigninManagerBase : public SigninManagerBase {
   // BrowserContextKeyedService::SetTestingFactory(). In order to match
   // the API of SigninManagerFactory::GetForProfile(), returns a
   // FakeSigninManagerBase* on ChromeOS, and a FakeSigninManager* on all other
-  // platforms.
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile);
+  // platforms. The returned instance is initialized.
+  static BrowserContextKeyedService* Build(content::BrowserContext* context);
 };
 
 #if !defined(OS_CHROMEOS)
@@ -43,6 +43,10 @@ class FakeSigninManager : public SigninManager {
   void set_auth_in_progress(const std::string& username) {
     possibly_invalid_username_ = username;
   }
+
+  void set_password(const std::string& password) { password_ = password; }
+
+  void SignIn(const std::string& username, const std::string& password);
 
   virtual void SignOut() OVERRIDE;
 

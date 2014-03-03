@@ -285,7 +285,6 @@ class SyncSetupHandlerTest : public testing::Test {
             profile_.get(), FakeSigninManagerBase::Build));
     profile_->GetPrefs()->SetString(
         prefs::kGoogleServicesUsername, GetTestUser());
-    mock_signin_->Initialize(profile_.get(), NULL);
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
@@ -322,11 +321,7 @@ class SyncSetupHandlerTest : public testing::Test {
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
-    if (!mock_signin_->IsInitialized()) {
-      profile_->GetPrefs()->SetString(
-          prefs::kGoogleServicesUsername, kTestUser);
-      mock_signin_->Initialize(profile_.get(), NULL);
-    }
+    ASSERT_TRUE(mock_signin_->IsInitialized());
     EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
   }
 
@@ -400,6 +395,9 @@ TEST_F(SyncSetupHandlerFirstSigninTest, DisplayBasicLogin) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
+  // Ensure that the user is not signed in before calling |HandleStartSignin()|.
+  SigninManager* manager = static_cast<SigninManager*>(mock_signin_);
+  manager->SignOut();
   handler_->HandleStartSignin(NULL);
 
   // Sync setup hands off control to the gaia login tab.
@@ -579,12 +577,6 @@ TEST_F(SyncSetupHandlerTest,
 class SyncSetupHandlerNonCrosTest : public SyncSetupHandlerTest {
  public:
   SyncSetupHandlerNonCrosTest() {}
-  virtual void SetUp() OVERRIDE {
-    SyncSetupHandlerTest::SetUp();
-    mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build));
-  }
 };
 
 TEST_F(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure) {

@@ -11,14 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-namespace content {
-class NotificationDetails;
-class NotificationSource;
-}
-
+#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 
 // This class provides access to a list of email addresses for all profiles
 // connected to a Google account, from the IO thread.  The main purpose of
@@ -29,7 +23,8 @@ class NotificationSource;
 // Instance of this class are created and initialized on the UI
 // thread as part of the creation of ProfileIOData, and destroyed along with
 // ProfileIOData.
-class SigninNamesOnIOThread : public content::NotificationObserver {
+class SigninNamesOnIOThread : public SigninManagerBase::Observer,
+                              public SigninManagerFactory::Observer {
  public:
   typedef std::set<base::string16> EmailSet;
 
@@ -46,10 +41,14 @@ class SigninNamesOnIOThread : public content::NotificationObserver {
   void ReleaseResourcesOnUIThread();
 
  private:
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) OVERRIDE;
+  // SigninManagerBase::Observer:
+  virtual void GoogleSigninSucceeded(const std::string& username,
+                                     const std::string& password) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+
+  // SigninManagerFactory::Observer:
+  virtual void SigninManagerCreated(SigninManagerBase* manager) OVERRIDE;
+  virtual void SigninManagerShutdown(SigninManagerBase* manager) OVERRIDE;
 
   // Checks whether the current thread is the IO thread.
   void CheckOnIOThread() const;
@@ -59,13 +58,17 @@ class SigninNamesOnIOThread : public content::NotificationObserver {
 
   // Posts a task to the I/O thread to add or remove the email address from
   // the set.
-  void PostTaskToIOThread(int type, const base::string16& email);
+  void PostTaskToIOThread(bool add, const base::string16& email);
 
   // Updates the email set on the I/O thread.  Protected for testing.
-  void UpdateOnIOThread(int type, const base::string16& email);
+  void UpdateOnIOThread(bool add, const base::string16& email);
 
-  scoped_ptr<content::NotificationRegistrar> registrar_;
   EmailSet emails_;
+
+  // The set of SigninManagerBase instances that this instance is currently
+  // observing. Can only be accessed on the UI thread.
+  std::set<SigninManagerBase*> observed_managers_;
+  bool resources_released_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninNamesOnIOThread);
 };
