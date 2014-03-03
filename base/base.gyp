@@ -808,8 +808,9 @@
           'sources/': [
             # Pull in specific Mac files for iOS (which have been filtered out
             # by file name rules).
-            ['include', '^mac/objc_property_releaser_unittest\\.mm$'],
             ['include', '^mac/bind_objc_block_unittest\\.mm$'],
+            ['include', '^mac/foundation_util_unittest\\.mm$',],
+            ['include', '^mac/objc_property_releaser_unittest\\.mm$'],
             ['include', '^mac/scoped_nsobject_unittest\\.mm$'],
             ['include', '^sys_string_conversions_mac_unittest\\.mm$'],
           ],
