@@ -1154,8 +1154,3 @@ crbug.com/309197 [ Win ] webaudio/oscillator-sine.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] webaudio/oscillator-square.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ XP ] svg/W3C-SVG-1.1/filters-conv-01-f.svg [ NeedsManualRebaseline ]
 crbug.com/309197 [ XP ] svg/transforms/text-with-mask-with-svg-transform.svg [ NeedsManualRebaseline ]
-
-#Below test case need to rebaseline after crbug.com/258420
-crbug.com/258420 [ Win Mac ] fast/table/table-rowspan-cell-with-empty-cell.html [ NeedsRebaseline ]
-crbug.com/258420 [ Win Mac ] fast/table/giantRowspan2.html [ NeedsRebaseline ]
-crbug.com/258420 [ Win Mac ] tables/mozilla/bugs/bug220536.html [ NeedsRebaseline ]
