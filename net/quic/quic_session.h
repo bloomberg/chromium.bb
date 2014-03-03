@@ -19,8 +19,6 @@
 #include "net/quic/quic_headers_stream.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_compressor.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/reliable_quic_stream.h"
 
@@ -183,11 +181,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // connection, or in a write-blocked stream.
   bool HasDataToWrite() const;
 
-  // Marks that |stream_id| is blocked waiting to decompress the
-  // headers identified by |decompression_id|.
-  void MarkDecompressionBlocked(QuicHeaderId decompression_id,
-                                QuicStreamId stream_id);
-
   bool goaway_received() const {
     return goaway_received_;
   }
@@ -195,9 +188,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool goaway_sent() const {
     return goaway_sent_;
   }
-
-  QuicSpdyDecompressor* decompressor() { return &decompressor_; }
-  QuicSpdyCompressor* compressor() { return &compressor_; }
 
   // Gets the SSL connection information.
   virtual bool GetSSLInfo(SSLInfo* ssl_info);
@@ -258,46 +248,18 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   friend class VisitorShim;
 
   // Performs the work required to close |stream_id|.  If |locally_reset|
-  // then the stream has been reset by this endpoint, not by the peer.  This
-  // means the stream may become a zombie stream which needs to stay
-  // around until headers have been decompressed.
+  // then the stream has been reset by this endpoint, not by the peer.
   void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
-
-  // Adds |stream_id| to the zobmie stream map, closing the oldest
-  // zombie stream if the set is full.
-  void AddZombieStream(QuicStreamId stream_id);
-
-  // Closes the zombie stream |stream_id| and removes it from the zombie
-  // stream map.
-  void CloseZombieStream(QuicStreamId stream_id);
-
-  // Adds |stream_id| to the prematurely closed stream map, removing the
-  // oldest prematurely closed stream if the set is full.
-  void AddPrematurelyClosedStream(QuicStreamId stream_id);
 
   scoped_ptr<QuicConnection> connection_;
 
   scoped_ptr<QuicHeadersStream> headers_stream_;
-
-  // Tracks the last 20 streams which closed without decompressing headers.
-  // This is for best-effort detection of an unrecoverable compression context.
-  // Ideally this would be a linked_hash_set as the boolean is unused.
-  linked_hash_map<QuicStreamId, bool> prematurely_closed_streams_;
-
-  // Streams which have been locally reset before decompressing headers
-  // from the peer.  These streams need to stay open long enough to
-  // process any headers from the peer.
-  // Ideally this would be a linked_hash_set as the boolean is unused.
-  linked_hash_map<QuicStreamId, bool> zombie_streams_;
 
   // A shim to stand between the connection and the session, to handle stream
   // deletions.
   scoped_ptr<VisitorShim> visitor_shim_;
 
   std::vector<QuicDataStream*> closed_streams_;
-
-  QuicSpdyDecompressor decompressor_;
-  QuicSpdyCompressor compressor_;
 
   QuicConfig config_;
 
@@ -314,10 +276,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // A list of streams which need to write more data.
   QuicWriteBlockedList write_blocked_streams_;
-
-  // A map of headers waiting to be compressed, and the streams
-  // they are associated with.
-  map<uint32, QuicStreamId> decompression_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
 

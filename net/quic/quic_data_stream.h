@@ -19,10 +19,9 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_compressor.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_stream_sequencer.h"
 #include "net/quic/reliable_quic_stream.h"
+#include "net/spdy/spdy_framer.h"
 
 namespace net {
 
@@ -36,8 +35,7 @@ class QuicSession;
 class SSLInfo;
 
 // All this does right now is send data to subclasses via the sequencer.
-class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream,
-                                          public QuicSpdyDecompressor::Visitor {
+class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
  public:
   // Visitor receives callbacks from the stream.
   class Visitor {
@@ -67,18 +65,12 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream,
   // priority.
   virtual QuicPriority EffectivePriority() const OVERRIDE;
 
-  // QuicSpdyDecompressor::Visitor implementation.
-  virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
-  virtual void OnDecompressionError() OVERRIDE;
-
-  // Overridden by subclasses to process data.  For QUIC_VERSION_12 or less,
-  // data will be delivered in order, first the decompressed headers, then
-  // the body.  For later QUIC versions, the headers will be delivered via
-  // OnStreamHeaders, and only the data will be delivered through this method.
+  // Overridden by subclasses to process data.  The headers will be delivered
+  // via OnStreamHeaders, so only data will be delivered through this method.
   virtual uint32 ProcessData(const char* data, uint32 data_len) = 0;
 
   // Called by the session when decompressed headers data is received
-  // for this stream.  Only called for versions greater than QUIC_VERSION_12.
+  // for this stream.
   // May be called multiple times, with each call providing additional headers
   // data until OnStreamHeadersComplete is called.
   virtual void OnStreamHeaders(base::StringPiece headers_data);
@@ -90,7 +82,6 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream,
   // Called by the session when decompressed headers have been completely
   // delilvered to this stream.  If |fin| is true, then this stream
   // should be closed; no more data will be sent by the peer.
-  // Only called for versions greater than QUIC_VERSION_12.
   virtual void OnStreamHeadersComplete(bool fin, size_t frame_len);
 
   // Writes the headers contained in |header_block| to the dedicated
@@ -107,17 +98,11 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream,
   virtual bool IsDoneReading() const;
   virtual bool HasBytesToRead() const;
 
-  // Called by the session when a decompression blocked stream
-  // becomes unblocked.
-  virtual void OnDecompressorAvailable();
-
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
 
   bool headers_decompressed() const { return headers_decompressed_; }
 
   const IPEndPoint& GetPeerAddress();
-
-  QuicSpdyCompressor* compressor();
 
   // Gets the SSL connection information.
   bool GetSSLInfo(SSLInfo* ssl_info);
@@ -138,12 +123,7 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream,
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
 
-  // Processes raw stream data for QUIC_VERSION_12 and earlier.
-  uint32 ProcessRawData12(const char* data, uint32 data_len);
-
   uint32 ProcessHeaderData();
-
-  uint32 StripPriorityAndHeaderId(const char* data, uint32 data_len);
 
   bool FinishedReadingHeaders();
 
@@ -152,11 +132,6 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream,
   bool headers_decompressed_;
   // The priority of the stream, once parsed.
   QuicPriority priority_;
-  // ID of the header block sent by the peer, once parsed.
-  QuicHeaderId headers_id_;
-  // Buffer into which we write bytes from priority_ and headers_id_
-  // until each is fully parsed.
-  string headers_id_and_priority_buffer_;
   // Contains a copy of the decompressed headers until they are consumed
   // via ProcessData or Readv.
   string decompressed_headers_;

@@ -6,8 +6,6 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_spdy_compressor.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -107,8 +105,6 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
                                  stream_should_process_data));
     stream2_.reset(new TestStream(kStreamId + 2, session_.get(),
                                  stream_should_process_data));
-    compressor_.reset(new QuicSpdyCompressor());
-    decompressor_.reset(new QuicSpdyDecompressor);
     write_blocked_list_ =
         QuicSessionPeer::GetWriteblockedStreams(session_.get());
   }
@@ -121,8 +117,6 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<MockSession> session_;
   scoped_ptr<TestStream> stream_;
   scoped_ptr<TestStream> stream2_;
-  scoped_ptr<QuicSpdyCompressor> compressor_;
-  scoped_ptr<QuicSpdyDecompressor> decompressor_;
   SpdyHeaderBlock headers_;
   QuicWriteBlockedList* write_blocked_list_;
 };

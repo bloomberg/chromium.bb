@@ -242,8 +242,6 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
     msg.SetTaglist(kKEXS, kC255, 0);
   }
   msg.SetTaglist(kAEAD, kAESG, 0);
-  // TODO(rch): Remove once we remove QUIC_VERSION_12.
-  msg.SetValue(kVERS, static_cast<uint16>(0));
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
   if (options.expiry_time.IsZero()) {
@@ -484,7 +482,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   // case, we need to make sure that we actually do not support this version
   // and that it wasn't a downgrade attack.
   QuicTag client_version_tag;
-  // TODO(rch): Make this check mandatory when we remove QUIC_VERSION_12.
+  // TODO(rch): Make this check mandatory.
   if (client_hello.GetUint32(kVER, &client_version_tag) == QUIC_NO_ERROR) {
     QuicVersion client_version = QuicTagToQuicVersion(client_version_tag);
     if (client_version != version) {
@@ -830,7 +828,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
       client_hello_state->client_hello;
   ClientHelloInfo* info = &(client_hello_state->info);
 
-  if (client_hello.size() < kClientHelloMinimumSizeOld) {
+  if (client_hello.size() < kClientHelloMinimumSize) {
     helper.ValidationComplete(QUIC_CRYPTO_INVALID_VALUE_LENGTH,
                               "Client hello too small");
     return;
@@ -979,7 +977,7 @@ void QuicCryptoServerConfig::BuildRejection(
   // token.
   const size_t max_unverified_size =
       client_hello.size() * kMultiplier - kREJOverheadBytes;
-  COMPILE_ASSERT(kClientHelloMinimumSizeOld * kMultiplier >= kREJOverheadBytes,
+  COMPILE_ASSERT(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
                  overhead_calculation_may_underflow);
   if (info.valid_source_address_token ||
       signature.size() + compressed.size() < max_unverified_size) {

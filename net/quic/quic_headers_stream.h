@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/spdy/spdy_framer.h"
 

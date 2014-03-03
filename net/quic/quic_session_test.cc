@@ -218,10 +218,6 @@ TEST_P(QuicSessionTest, IsClosedStreamLocallyCreated) {
   EXPECT_EQ(2u, stream2->id());
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   EXPECT_EQ(4u, stream4->id());
-  if (version() <= QUIC_VERSION_12) {
-    QuicDataStreamPeer::SetHeadersDecompressed(stream2, true);
-    QuicDataStreamPeer::SetHeadersDecompressed(stream4, true);
-  }
 
   CheckClosedStreams();
   CloseStream(4);
@@ -231,7 +227,7 @@ TEST_P(QuicSessionTest, IsClosedStreamLocallyCreated) {
 }
 
 TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
-  QuicStreamId stream_id1 = version() > QUIC_VERSION_12 ? 5 : 3;
+  QuicStreamId stream_id1 = 5;
   QuicStreamId stream_id2 = stream_id1 + 2;
   QuicDataStream* stream1 = session_.GetIncomingDataStream(stream_id1);
   QuicDataStreamPeer::SetHeadersDecompressed(stream1, true);
@@ -252,38 +248,27 @@ TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
 }
 
 TEST_P(QuicSessionTest, StreamIdTooLarge) {
-  QuicStreamId stream_id = version() > QUIC_VERSION_12 ? 5 : 3;
+  QuicStreamId stream_id = 5;
   session_.GetIncomingDataStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
   session_.GetIncomingDataStream(stream_id + 102);
 }
 
 TEST_P(QuicSessionTest, DecompressionError) {
-  if (version() > QUIC_VERSION_12) {
-    QuicHeadersStream* stream = QuicSessionPeer::GetHeadersStream(&session_);
-    const unsigned char data[] = {
-        0x80, 0x03, 0x00, 0x01,  // SPDY/3 SYN_STREAM frame
-        0x00, 0x00, 0x00, 0x25,  // flags/length
-        0x00, 0x00, 0x00, 0x05,  // stream id
-        0x00, 0x00, 0x00, 0x00,  // associated stream id
-        0x00, 0x00,
-        'a',  'b',  'c',  'd'    // invalid compressed data
-    };
-    EXPECT_CALL(*connection_,
-                SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                               "SPDY framing error."));
-    stream->ProcessRawData(reinterpret_cast<const char*>(data),
-                           arraysize(data));
-  } else {
-    ReliableQuicStream* stream = session_.GetIncomingDataStream(3);
-    const char data[] =
-        "\0\0\0\0"   // priority
-        "\1\0\0\0"   // headers id
-        "\0\0\0\4"   // length
-        "abcd";      // invalid compressed data
-    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_DECOMPRESSION_FAILURE));
-    stream->ProcessRawData(data, arraysize(data));
-  }
+  QuicHeadersStream* stream = QuicSessionPeer::GetHeadersStream(&session_);
+  const unsigned char data[] = {
+    0x80, 0x03, 0x00, 0x01,  // SPDY/3 SYN_STREAM frame
+    0x00, 0x00, 0x00, 0x25,  // flags/length
+    0x00, 0x00, 0x00, 0x05,  // stream id
+    0x00, 0x00, 0x00, 0x00,  // associated stream id
+    0x00, 0x00,
+    'a',  'b',  'c',  'd'    // invalid compressed data
+  };
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
+                                             "SPDY framing error."));
+  stream->ProcessRawData(reinterpret_cast<const char*>(data),
+                         arraysize(data));
 }
 
 TEST_P(QuicSessionTest, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
@@ -441,41 +426,6 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
   EXPECT_FALSE(session_.HasPendingWrites());
 }
 
-// Regression test for http://crbug.com/248737
-TEST_P(QuicSessionTest, OutOfOrderHeaders) {
-  QuicSpdyCompressor compressor;
-  vector<QuicStreamFrame> frames;
-  QuicPacketHeader header;
-  header.public_header.connection_id = session_.connection_id();
-
-  TestStream* stream2 = session_.CreateOutgoingDataStream();
-  TestStream* stream4 = session_.CreateOutgoingDataStream();
-  stream2->CloseWriteSide();
-  stream4->CloseWriteSide();
-
-  // Create frame with headers for stream2.
-  string compressed_headers1 = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame1(
-      stream2->id(), false, 0, MakeIOVector(compressed_headers1));
-
-  // Create frame with headers for stream4.
-  string compressed_headers2 = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame2(
-      stream4->id(), true, 0, MakeIOVector(compressed_headers2));
-
-  // Process the second frame first.  This will cause the headers to
-  // be queued up and processed after the first frame is processed.
-  frames.push_back(frame2);
-  session_.OnStreamFrames(frames);
-
-  // Process the first frame, and un-cork the buffered headers.
-  frames[0] = frame1;
-  session_.OnStreamFrames(frames);
-
-  // Ensure that the streams actually close and we don't DCHECK.
-  connection_->CloseConnection(QUIC_CONNECTION_TIMED_OUT, true);
-}
-
 TEST_P(QuicSessionTest, SendGoAway) {
   // After sending a GoAway, ensure new incoming streams cannot be created and
   // result in a RST being sent.
@@ -497,95 +447,14 @@ TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
 }
 
-TEST_P(QuicSessionTest, ZombieStream) {
-  QuicStreamId stream_id1 = version() > QUIC_VERSION_12 ? 5 : 3;
-  QuicStreamId stream_id2 = stream_id1 + 2;
-  StrictMock<MockConnection>* connection =
-      new StrictMock<MockConnection>(false, SupportedVersions(version()));
-  TestSession session(connection);
-
-  TestStream* stream1 = session.CreateOutgoingDataStream();
-  EXPECT_EQ(stream_id1, stream1->id());
-  TestStream* stream2 = session.CreateOutgoingDataStream();
-  EXPECT_EQ(stream_id2, stream2->id());
-  EXPECT_EQ(2u, session.GetNumOpenStreams());
-
-  // Reset the stream, but since the headers have not been decompressed
-  // it will become a zombie and will continue to process data
-  // until the headers are decompressed.
-  EXPECT_CALL(*connection, SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0));
-  session.SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0);
-
-  EXPECT_EQ(1u, session.GetNumOpenStreams());
-
-  vector<QuicStreamFrame> frames;
-  QuicPacketHeader header;
-  header.public_header.connection_id = session_.connection_id();
-
-  // Create frame with headers for stream2.
-  QuicSpdyCompressor compressor;
-  string compressed_headers1 = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame1(
-      stream1->id(), false, 0, MakeIOVector(compressed_headers1));
-
-  // Process the second frame first.  This will cause the headers to
-  // be queued up and processed after the first frame is processed.
-  frames.push_back(frame1);
-  EXPECT_FALSE(stream1->headers_decompressed());
-
-  session.OnStreamFrames(frames);
-  EXPECT_EQ(1u, session.GetNumOpenStreams());
-
-  EXPECT_TRUE(connection->connected());
-}
-
-TEST_P(QuicSessionTest, ZombieStreamConnectionClose) {
-  QuicStreamId stream_id1 = version() > QUIC_VERSION_12 ? 5 : 3;
-  QuicStreamId stream_id2 = stream_id1 + 2;
-  StrictMock<MockConnection>* connection =
-      new StrictMock<MockConnection>(false, SupportedVersions(version()));
-  TestSession session(connection);
-
-  TestStream* stream1 = session.CreateOutgoingDataStream();
-  EXPECT_EQ(stream_id1, stream1->id());
-  TestStream* stream2 = session.CreateOutgoingDataStream();
-  EXPECT_EQ(stream_id2, stream2->id());
-  EXPECT_EQ(2u, session.GetNumOpenStreams());
-
-  stream1->CloseWriteSide();
-  // Reset the stream, but since the headers have not been decompressed
-  // it will become a zombie and will continue to process data
-  // until the headers are decompressed.
-  EXPECT_CALL(*connection, SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0));
-  session.SendRstStream(stream_id1, QUIC_STREAM_CANCELLED, 0);
-
-  EXPECT_EQ(1u, session.GetNumOpenStreams());
-
-  if (GetParam() > QUIC_VERSION_13) {
-    // Stream 2 will send a RST during normal termination.
-    EXPECT_CALL(*connection,
-                SendRstStream(stream_id2, QUIC_STREAM_NO_ERROR, 0));
-  }
-  connection->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
-
-  EXPECT_EQ(0u, session.GetNumOpenStreams());
-}
-
 TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
-  QuicStreamId stream_id1 = version() > QUIC_VERSION_12 ? 5 : 3;
+  QuicStreamId stream_id1 = 5;
   // Send two bytes of payload.
   QuicStreamFrame data1(stream_id1, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   EXPECT_TRUE(session_.OnStreamFrames(frames));
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
-
-  if (version() <= QUIC_VERSION_12) {
-    // Send a reset before the headers have been decompressed.  This causes
-    // an unrecoverable compression context state.
-    EXPECT_CALL(*connection_, SendConnectionClose(
-        QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED));
-  }
 
   QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);

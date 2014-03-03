@@ -57,16 +57,12 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
     }
   }
 
-  // TODO(avd) Remove version argument when QUIC_VERSION_12 is deprecated.
-  void PushBack(QuicStreamId stream_id,
-                QuicPriority priority,
-                QuicVersion version) {
+  void PushBack(QuicStreamId stream_id, QuicPriority priority) {
     if (stream_id == kCryptoStreamId) {
       DCHECK_EQ(kHighestPriority, priority);
       // TODO(avd) Add DCHECK(!crypto_stream_blocked_)
       crypto_stream_blocked_ = true;
-    } else if (version > QUIC_VERSION_12 &&
-               stream_id == kHeadersStreamId) {
+    } else if (stream_id == kHeadersStreamId) {
       DCHECK_EQ(kHighestPriority, priority);
       // TODO(avd) Add DCHECK(!headers_stream_blocked_);
       headers_stream_blocked_ = true;

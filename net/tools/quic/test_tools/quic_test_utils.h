@@ -13,7 +13,6 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_session.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_server_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -139,20 +138,6 @@ class MockQuicServerSessionVisitor : public QuicServerSessionVisitor {
   MOCK_METHOD2(OnConnectionClosed, void(QuicConnectionId connection_id,
                                         QuicErrorCode error));
   MOCK_METHOD1(OnWriteBlocked, void(QuicBlockedWriterInterface* writer));
-};
-
-class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
- public:
-  virtual ~TestDecompressorVisitor() {}
-  virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
-  virtual void OnDecompressionError() OVERRIDE;
-
-  std::string data() { return data_; }
-  bool error() { return error_; }
-
- private:
-  std::string data_;
-  bool error_;
 };
 
 class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {

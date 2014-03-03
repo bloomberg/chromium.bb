@@ -56,8 +56,6 @@ const QuicTag kX59R = TAG('X', '5', '9', 'R');  // X.509 certificate, RSA keys
 const QuicTag kCHID = TAG('C', 'H', 'I', 'D');  // Channel ID.
 
 // Client hello tags
-// TODO(rch): Remove once we remove QUIC_VERSION_12.
-const QuicTag kVERS = TAG('V', 'E', 'R', 'S');  // Version (obsolete)
 const QuicTag kVER  = TAG('V', 'E', 'R', '\0'); // Version (new)
 const QuicTag kNONC = TAG('N', 'O', 'N', 'C');  // The client's nonce
 const QuicTag kKEXS = TAG('K', 'E', 'X', 'S');  // Key exchange methods
@@ -139,12 +137,6 @@ const char kProofSignatureLabel[] = "QUIC server config signature";
 // kClientHelloMinimumSize to make it more likely to receive a complete
 // rejection message.
 const size_t kClientHelloMinimumSize = 1024;
-
-// kClientHelloMinimumSizeOld is the previous value of kClientHelloMinimumSize.
-// To support old clients, the server only enforces this size.
-// TODO(wtc): Replace it with kClientHelloMinimumSize when we drop support for
-// QUIC_VERSION_12 clients.
-const size_t kClientHelloMinimumSizeOld = 512;
 
 }  // namespace net
 

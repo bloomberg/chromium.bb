@@ -165,7 +165,6 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     bool should_include_version,
     bool fin,
     const SpdyHeaderBlock& headers) {
-  EXPECT_LT(QUIC_VERSION_12, version_);
   InitializeHeader(sequence_number, should_include_version);
   SpdySynStreamIR syn_stream(stream_id);
   syn_stream.set_name_value_block(headers);
@@ -185,7 +184,6 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
     bool should_include_version,
     bool fin,
     const SpdyHeaderBlock& headers) {
-  EXPECT_LT(QUIC_VERSION_12, version_);
   InitializeHeader(sequence_number, should_include_version);
   SpdySynReplyIR syn_reply(stream_id);
   syn_reply.set_name_value_block(headers);
@@ -211,14 +209,6 @@ SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
   return headers;
 }
 
-std::string QuicTestPacketMaker::GetRequestString(
-    const std::string& method,
-    const std::string& scheme,
-    const std::string& path) {
-  DCHECK_GE(QUIC_VERSION_12, version_);
-  return SerializeHeaderBlock(GetRequestHeaders(method, scheme, path));
-}
-
 SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
     const std::string& status) {
   SpdyHeaderBlock headers;
@@ -226,12 +216,6 @@ SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
   headers[":version"] = "HTTP/1.1";
   headers["content-type"] = "text/plain";
   return headers;
-}
-
-std::string QuicTestPacketMaker::GetResponseString(const std::string& status,
-                                                   const std::string& body) {
-  DCHECK_GE(QUIC_VERSION_12, version_);
-  return compressor_.CompressHeaders(GetResponseHeaders(status)) + body;
 }
 
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
@@ -257,13 +241,6 @@ void QuicTestPacketMaker::InitializeHeader(
   header_.fec_group = 0;
   header_.entropy_flag = false;
   header_.fec_flag = false;
-}
-
-std::string QuicTestPacketMaker::SerializeHeaderBlock(
-    const SpdyHeaderBlock& headers) {
-  QuicSpdyCompressor compressor;
-  return compressor.CompressHeadersWithPriority(
-      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY), headers);
 }
 
 }  // namespace test

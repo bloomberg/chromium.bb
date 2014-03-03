@@ -571,14 +571,5 @@ QuicVersionVector SupportedVersions(QuicVersion version) {
   return versions;
 }
 
-bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
-  data.AppendToString(&data_);
-  return true;
-}
-
-void TestDecompressorVisitor::OnDecompressionError() {
-  error_ = true;
-}
-
 }  // namespace test
 }  // namespace net

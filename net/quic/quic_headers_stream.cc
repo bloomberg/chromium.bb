@@ -5,7 +5,6 @@
 #include "net/quic/quic_headers_stream.h"
 
 #include "net/quic/quic_session.h"
-#include "net/quic/quic_spdy_decompressor.h"
 
 using base::StringPiece;
 

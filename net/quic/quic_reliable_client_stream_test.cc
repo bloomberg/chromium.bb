@@ -95,17 +95,8 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(uncompressed_headers.data()),
                                         uncompressed_headers.size()));
   QuicStreamOffset offset = 0;
-  if (GetParam() > QUIC_VERSION_12) {
-    stream_->OnStreamHeaders(uncompressed_headers);
-    stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
-  } else {
-    QuicSpdyCompressor compressor;
-    string compressed_headers = compressor.CompressHeaders(headers_);
-    QuicStreamFrame frame1(kStreamId, false, 0,
-                           MakeIOVector(compressed_headers));
-    stream_->OnStreamFrame(frame1);
-    offset = compressed_headers.length();
-  }
+  stream_->OnStreamHeaders(uncompressed_headers);
+  stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
   IOVector iov;
   QuicStreamFrame frame2(kStreamId, true, offset, iov);

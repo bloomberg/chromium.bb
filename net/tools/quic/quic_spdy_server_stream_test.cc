@@ -8,7 +8,6 @@
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
@@ -92,28 +91,6 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
     headers_string_ = SpdyUtils::SerializeRequestHeaders(request_headers);
     stream_.reset(new QuicSpdyServerStreamPeer(3, &session_));
-  }
-
-  QuicConsumedData ValidateHeaders(const IOVector& data) {
-    const iovec* iov = data.iovec();
-    StringPiece headers =
-        StringPiece(static_cast<const char*>(iov[0].iov_base), iov[0].iov_len);
-    headers_string_ = SpdyUtils::SerializeResponseHeaders(
-        response_headers_);
-    QuicSpdyDecompressor decompressor;
-    TestDecompressorVisitor visitor;
-
-    // First the header id, then the compressed data.
-    EXPECT_EQ(1, headers[0]);
-    EXPECT_EQ(0, headers[1]);
-    EXPECT_EQ(0, headers[2]);
-    EXPECT_EQ(0, headers[3]);
-    EXPECT_EQ(static_cast<size_t>(headers.length() - 4),
-              decompressor.DecompressData(headers.substr(4), &visitor));
-
-    EXPECT_EQ(headers_string_, visitor.data());
-
-    return QuicConsumedData(headers.size(), false);
   }
 
   static void SetUpTestCase() {
@@ -235,14 +212,9 @@ TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  if (GetParam() > QUIC_VERSION_12) {
-    EXPECT_CALL(session_,
-                WritevData(kHeadersStreamId, _, 0, false, NULL));
-  } else {
-    EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1)
-        .WillOnce(WithArgs<1>(Invoke(
-            this, &QuicSpdyServerStreamTest::ValidateHeaders)));
-  }
+  EXPECT_CALL(session_,
+              WritevData(kHeadersStreamId, _, 0, false, NULL));
+
 
   EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
@@ -258,14 +230,8 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   response_headers_.ReplaceOrAppendHeader("content-length", "3");
 
   InSequence s;
-  if (GetParam() > QUIC_VERSION_12) {
-    EXPECT_CALL(session_,
-                WritevData(kHeadersStreamId, _, 0, false, NULL));
-  } else {
-    EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1)
-        .WillOnce(WithArgs<1>(Invoke(
-            this, &QuicSpdyServerStreamTest::ValidateHeaders)));
-  }
+  EXPECT_CALL(session_,
+              WritevData(kHeadersStreamId, _, 0, false, NULL));
 
   EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
@@ -277,8 +243,6 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
 
 TEST_P(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
   char arr[] = {
-    0x05, 0x00, 0x00, 0x00,  // ....
-    0x05, 0x00, 0x00, 0x00,  // ....
     0x3a, 0x68, 0x6f, 0x73,  // :hos
     0x74, 0x00, 0x00, 0x00,  // t...
     0x00, 0x00, 0x00, 0x00,  // ....
@@ -301,8 +265,7 @@ TEST_P(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
     0x54, 0x54, 0x50, 0x2f,  // TTP/
     0x31, 0x2e, 0x31,        // 1.1
   };
-  size_t start = GetParam() > QUIC_VERSION_12 ? 8 : 0;
-  StringPiece data(arr + start, arraysize(arr) - start);
+  StringPiece data(arr, arraysize(arr));
   QuicStreamFrame frame(stream_->id(), true, 0, MakeIOVector(data));
   // Verify that we don't crash when we get a invalid headers in stream frame.
   stream_->OnStreamFrame(frame);

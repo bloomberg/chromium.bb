@@ -102,34 +102,12 @@ vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
-    // TODO(rch): since 13 is not 0-RTT compatible with 12, we can not
-    // have the client support both at the same time.
-#if 0
     // Add an entry for server and client supporting all versions.
     params.push_back(TestParams(all_supported_versions,
                                 all_supported_versions,
                                 all_supported_versions[0],
                                 use_pacing != 0));
-#endif
 
-    // Test client supporting 1 version and server supporting all versions.
-    // Simulate an old client and exercise version downgrade in the server.
-    // No protocol negotiation should occur. Skip the i = 0 case because it
-    // is essentially the same as the default case.
-    // TODO(rch): When QUIC_VERSION_12 is removed, change the intialization
-    // of i from 0 back to 1.
-    for (size_t i = 0; i < all_supported_versions.size(); ++i) {
-      QuicVersionVector client_supported_versions;
-      client_supported_versions.push_back(all_supported_versions[i]);
-      params.push_back(TestParams(client_supported_versions,
-                                  all_supported_versions,
-                                  client_supported_versions[0],
-                                  use_pacing != 0));
-    }
-
-    // TODO(rch): since 13 is not 0-RTT compatible with 12, we can not
-    // have the client support both at the same time.
-#if 0
     // Test client supporting all versions and server supporting 1 version.
     // Simulate an old server and exercise version downgrade in the client.
     // Protocol negotiation should occur. Skip the i = 0 case because it is
@@ -142,7 +120,6 @@ vector<TestParams> GetTestParams() {
                                   server_supported_versions[0],
                                   use_pacing != 0));
     }
-#endif
   }
   return params;
 }
@@ -832,23 +809,16 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   client_->client()->WaitForEvents();
   // Transmit the cancel, and ensure the connection is torn down properly.
   SetPacketLossPercentage(0);
-  QuicStreamId stream_id = negotiated_version_ > QUIC_VERSION_12 ? 5 : 3;
+  QuicStreamId stream_id = 5;
   session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
 
   // WaitForEvents waits 50ms and returns true if there are outstanding
   // requests.
   while (client_->client()->WaitForEvents() == true) {
   }
-  if (negotiated_version_ > QUIC_VERSION_12) {
-    // It should be completely fine to RST a stream before any data has bee
-    // received for that stream.
-    EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
-  } else {
-    // Check that the connection is always properly closed
-    // from a stream being RST before headers are decompressed.
-    EXPECT_EQ(QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED,
-              client_->connection_error());
-  }
+  // It should be completely fine to RST a stream before any data has been
+  // received for that stream.
+  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
 
 class WrongAddressWriter : public QuicPacketWriterWrapper {

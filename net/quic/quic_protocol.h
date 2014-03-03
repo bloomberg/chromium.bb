@@ -253,7 +253,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_12 = 12,
   QUIC_VERSION_13 = 13,
   QUIC_VERSION_14 = 14,
   QUIC_VERSION_15 = 15,
@@ -270,8 +269,7 @@ enum QuicVersion {
 static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_16,
                                                      QUIC_VERSION_15,
                                                      QUIC_VERSION_14,
-                                                     QUIC_VERSION_13,
-                                                     QUIC_VERSION_12};
+                                                     QUIC_VERSION_13};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -409,8 +407,9 @@ enum QuicErrorCode {
   QUIC_PUBLIC_RESET = 19,
   // Invalid protocol version.
   QUIC_INVALID_VERSION = 20,
-  // Stream reset before headers decompressed.
-  QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED = 21,
+
+  // deprecated: QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED = 21
+
   // The Header ID for a stream was too far from the previous.
   QUIC_INVALID_HEADER_ID = 22,
   // Negotiable parameter received during handshake had invalid value.

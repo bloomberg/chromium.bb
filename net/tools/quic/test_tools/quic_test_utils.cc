@@ -102,15 +102,6 @@ MockQuicServerSessionVisitor::MockQuicServerSessionVisitor() {
 MockQuicServerSessionVisitor::~MockQuicServerSessionVisitor() {
 }
 
-bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
-  data.AppendToString(&data_);
-  return true;
-}
-
-void TestDecompressorVisitor::OnDecompressionError() {
-  error_ = true;
-}
-
 MockAckNotifierDelegate::MockAckNotifierDelegate() {
 }
 

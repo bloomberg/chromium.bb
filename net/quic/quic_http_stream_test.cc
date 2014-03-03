@@ -126,7 +126,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
         connection_id_(2),
-        stream_id_(GetParam() > QUIC_VERSION_12 ? 5 : 3),
+        stream_id_(5),
         maker_(GetParam(), connection_id_),
         random_generator_(0) {
     IPAddressNumber ip;
@@ -219,19 +219,11 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                   const std::string& path,
                   RequestPriority priority) {
     request_headers_ = maker_.GetRequestHeaders(method, "http", path);
-    request_data_ = GetParam() > QUIC_VERSION_12 ? "" :
-        SerializeHeaderBlock(request_headers_, true, priority);
   }
 
   void SetResponse(const std::string& status, const std::string& body) {
     response_headers_ = maker_.GetResponseHeaders(status);
-    if (GetParam() > QUIC_VERSION_12) {
-      response_data_ = body;
-    } else {
-      response_data_ =
-          SerializeHeaderBlock(response_headers_, false, DEFAULT_PRIORITY) +
-          body;
-    }
+    response_data_ = body;
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
@@ -304,17 +296,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   std::string response_data_;
 
  private:
-  std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers,
-                                   bool write_priority,
-                                   RequestPriority priority) {
-    QuicSpdyCompressor compressor;
-    if (write_priority) {
-      return compressor.CompressHeadersWithPriority(
-          ConvertRequestPriorityToQuicPriority(priority), headers);
-    }
-    return compressor.CompressHeaders(headers);
-  }
-
   const QuicConnectionId connection_id_;
   const QuicStreamId stream_id_;
   QuicTestPacketMaker maker_;
@@ -346,11 +327,7 @@ TEST_P(QuicHttpStreamTest, IsConnectionReusable) {
 
 TEST_P(QuicHttpStreamTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  if (GetParam() > QUIC_VERSION_12) {
-    AddWrite(ConstructRequestHeadersPacket(1, kFin));
-  } else {
-    AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
-  }
+  AddWrite(ConstructRequestHeadersPacket(1, kFin));
   Initialize();
 
   request_.method = "GET";
@@ -369,11 +346,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
             stream_->ReadResponseHeaders(callback_.callback()));
 
   SetResponse("404 Not Found", std::string());
-  if (GetParam() > QUIC_VERSION_12) {
-    ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
-  } else {
-    ProcessPacket(ConstructDataPacket(2, false, kFin, 0, response_data_));
-  }
+  ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
 
   // Now that the headers have been processed, the callback will return.
   EXPECT_EQ(OK, callback_.WaitForResult());
@@ -392,11 +365,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
 // Regression test for http://crbug.com/288128
 TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  if (GetParam() > QUIC_VERSION_12) {
-    AddWrite(ConstructRequestHeadersPacket(1, kFin));
-  } else {
-    AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
-  }
+  AddWrite(ConstructRequestHeadersPacket(1, kFin));
   Initialize();
 
   request_.method = "GET";
@@ -439,60 +408,10 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   EXPECT_TRUE(AtEof());
 }
 
-TEST_P(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
-  SetRequest("GET", "/", DEFAULT_PRIORITY);
-  AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
-  Initialize();
-
-  if (GetParam() > QUIC_VERSION_12) {
-    // we can't put the request and response into a single frame.
-    return;
-  }
-
-  request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
-
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
-                                          net_log_, callback_.callback()));
-  EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
-                                     callback_.callback()));
-  EXPECT_EQ(&response_, stream_->GetResponseInfo());
-
-  // Ack the request.
-  ProcessPacket(ConstructAckPacket(1, 0, 0));
-
-  EXPECT_EQ(ERR_IO_PENDING,
-            stream_->ReadResponseHeaders(callback_.callback()));
-
-  // Send the response with a body.
-  SetResponse("200 OK", "hello world!");
-  ProcessPacket(ConstructDataPacket(2, false, kFin, 0, response_data_));
-
-  // Now that the headers have been processed, the callback will return.
-  EXPECT_EQ(OK, callback_.WaitForResult());
-  ASSERT_TRUE(response_.headers.get());
-  EXPECT_EQ(200, response_.headers->response_code());
-  EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
-
-  // There is no body, so this should return immediately.
-  // Since the body has already arrived, this should return immediately.
-  EXPECT_EQ(12, stream_->ReadResponseBody(read_buffer_.get(),
-                                          read_buffer_->size(),
-                                          callback_.callback()));
-  EXPECT_TRUE(stream_->IsResponseBodyComplete());
-  EXPECT_TRUE(AtEof());
-}
-
 TEST_P(QuicHttpStreamTest, SendPostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
-  if (GetParam() > QUIC_VERSION_12) {
-    AddWrite(ConstructRequestHeadersPacket(1, !kFin));
-    AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, kUploadData));
-  } else {
-    AddWrite(ConstructDataPacket(1, kIncludeVersion, !kFin, 0, request_data_));
-    AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin,
-                                 request_data_.length(), kUploadData));
-  }
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, kUploadData));
   AddWrite(ConstructAckPacket(3, 3, 1));
 
   Initialize();
@@ -517,11 +436,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", std::string());
-  if (GetParam() > QUIC_VERSION_12) {
-    ProcessPacket(ConstructResponseHeadersPacket(2, !kFin));
-  } else {
-    ProcessPacket(ConstructDataPacket(2, false, !kFin, 0, response_data_));
-  }
+  ProcessPacket(ConstructResponseHeadersPacket(2, !kFin));
 
   // Since the headers have already arrived, this should return immediately.
   EXPECT_EQ(OK, stream_->ReadResponseHeaders(callback_.callback()));
@@ -531,12 +446,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 
   // Send the response body.
   const char kResponseBody[] = "Hello world!";
-  if (GetParam() > QUIC_VERSION_12) {
-    ProcessPacket(ConstructDataPacket(3, false, kFin, 0, kResponseBody));
-  } else {
-    ProcessPacket(ConstructDataPacket(3, false, kFin, response_data_.length(),
-                                      kResponseBody));
-  }
+  ProcessPacket(ConstructDataPacket(3, false, kFin, 0, kResponseBody));
   // Since the body has already arrived, this should return immediately.
   EXPECT_EQ(static_cast<int>(strlen(kResponseBody)),
             stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
@@ -549,19 +459,10 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
 TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t chunk_size = strlen(kUploadData);
-  if (GetParam() > QUIC_VERSION_12) {
-    AddWrite(ConstructRequestHeadersPacket(1, !kFin));
-    AddWrite(ConstructDataPacket(2, kIncludeVersion, !kFin, 0, kUploadData));
-    AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, chunk_size,
-                                 kUploadData));
-  } else {
-    AddWrite(ConstructDataPacket(1, kIncludeVersion, !kFin, 0, request_data_));
-    AddWrite(ConstructDataPacket(2, kIncludeVersion, !kFin,
-                                 request_data_.length(), kUploadData));
-    AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin,
-                                 request_data_.length() + chunk_size,
-                                 kUploadData));
-  }
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructDataPacket(2, kIncludeVersion, !kFin, 0, kUploadData));
+  AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, chunk_size,
+                               kUploadData));
   AddWrite(ConstructAckPacket(4, 3, 1));
   Initialize();
 
@@ -586,11 +487,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
 
   // Send the response headers (but not the body).
   SetResponse("200 OK", std::string());
-  if (GetParam() > QUIC_VERSION_12) {
-    ProcessPacket(ConstructResponseHeadersPacket(2, !kFin));
-  } else {
-    ProcessPacket(ConstructDataPacket(2, false, !kFin, 0, response_data_));
-  }
+  ProcessPacket(ConstructResponseHeadersPacket(2, !kFin));
 
   // Since the headers have already arrived, this should return immediately.
   ASSERT_EQ(OK, stream_->ReadResponseHeaders(callback_.callback()));
@@ -614,11 +511,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
 
 TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
-  if (GetParam() > QUIC_VERSION_12) {
-    AddWrite(ConstructRequestHeadersPacket(1, kFin));
-  } else {
-    AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
-  }
+  AddWrite(ConstructRequestHeadersPacket(1, kFin));
   AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
@@ -640,22 +533,14 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   // Send the response with a body.
   SetResponse("404 OK", "hello world!");
   // In the course of processing this packet, the QuicHttpStream close itself.
-  if (GetParam() > QUIC_VERSION_12) {
-    ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
-  } else {
-    ProcessPacket(ConstructDataPacket(2, false, kFin, 0, response_data_));
-  }
+  ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
 
   EXPECT_TRUE(AtEof());
 }
 
 TEST_P(QuicHttpStreamTest, Priority) {
   SetRequest("GET", "/", MEDIUM);
-  if (GetParam() > QUIC_VERSION_12) {
-    AddWrite(ConstructRequestHeadersPacket(1, kFin));
-  } else {
-    AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
-  }
+  AddWrite(ConstructRequestHeadersPacket(1, kFin));
   AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
@@ -689,12 +574,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   // Send the response with a body.
   SetResponse("404 OK", "hello world!");
   // In the course of processing this packet, the QuicHttpStream close itself.
-  if (GetParam() > QUIC_VERSION_12) {
-    ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
-  } else {
-    ProcessPacket(ConstructDataPacket(2, !kIncludeVersion, kFin, 0,
-                                      response_data_));
-  }
+  ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
 
   EXPECT_TRUE(AtEof());
 }
@@ -731,41 +611,6 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
   reliable_stream->SetDelegate(delegate);
-}
-
-TEST_P(QuicHttpStreamTest, DontCompressHeadersWhenNotWritable) {
-  SetRequest("GET", "/", MEDIUM);
-  AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
-  Initialize();
-
-  if (GetParam() > QUIC_VERSION_12) {
-    // The behavior tested here is obsolete.
-    return;
-  }
-  request_.method = "GET";
-  request_.url = GURL("http://www.google.com/");
-
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
-      WillRepeatedly(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(OK, stream_->InitializeStream(&request_, MEDIUM,
-                                          net_log_, callback_.callback()));
-  EXPECT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
-                                                 callback_.callback()));
-
-  // Verify that the headers have not been compressed and buffered in
-  // the stream.
-  QuicReliableClientStream* reliable_stream =
-      QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
-  EXPECT_FALSE(reliable_stream->HasBufferedData());
-  EXPECT_FALSE(AtEof());
-
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
-      WillRepeatedly(Return(QuicTime::Delta::Zero()));
-
-  // Data should flush out now.
-  connection_->OnCanWrite();
-  EXPECT_FALSE(reliable_stream->HasBufferedData());
-  EXPECT_TRUE(AtEof());
 }
 
 }  // namespace test

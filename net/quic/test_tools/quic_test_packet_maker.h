@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -66,12 +65,7 @@ class QuicTestPacketMaker {
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                     const std::string& scheme,
                                     const std::string& path);
-  std::string GetRequestString(const std::string& method,
-                               const std::string& scheme,
-                               const std::string& path);
   SpdyHeaderBlock GetResponseHeaders(const std::string& status);
-  std::string GetResponseString(const std::string& status,
-                                const std::string& body);
 
  private:
   scoped_ptr<QuicEncryptedPacket> MakePacket(
@@ -81,15 +75,12 @@ class QuicTestPacketMaker {
   void InitializeHeader(QuicPacketSequenceNumber sequence_number,
                         bool should_include_version);
 
-  std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers);
-
   QuicVersion version_;
   QuicConnectionId connection_id_;
   SpdyFramer spdy_request_framer_;
   SpdyFramer spdy_response_framer_;
   MockRandom random_generator_;
   QuicPacketHeader header_;
-  QuicSpdyCompressor compressor_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestPacketMaker);
 };

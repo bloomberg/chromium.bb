@@ -17,7 +17,6 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_session.h"
-#include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/spdy/spdy_framer.h"
@@ -473,20 +472,6 @@ class MockEntropyCalculator : public TestEntropyCalculator {
   MOCK_CONST_METHOD1(
       EntropyHash,
       QuicPacketEntropyHash(QuicPacketSequenceNumber sequence_number));
-};
-
-class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
- public:
-  virtual ~TestDecompressorVisitor() {}
-  virtual bool OnDecompressedData(base::StringPiece data) OVERRIDE;
-  virtual void OnDecompressionError() OVERRIDE;
-
-  string data() { return data_; }
-  bool error() { return error_; }
-
- private:
-  string data_;
-  bool error_;
 };
 
 class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {

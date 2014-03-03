@@ -335,8 +335,6 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   if (CryptoUtils::IsValidSNI(server_hostname)) {
     out->SetStringPiece(kSNI, server_hostname);
   }
-  // TODO(rch): Remove once we remove QUIC_VERSION_12.
-  out->SetValue(kVERS, static_cast<uint16>(0));
   out->SetValue(kVER, QuicVersionToQuicTag(preferred_version));
 
   if (!cached->source_address_token().empty()) {
@@ -648,8 +646,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
 
   const QuicTag* supported_version_tags;
   size_t num_supported_versions;
-  // TODO(rch): Once QUIC_VERSION_12 is removed, then make it a failure
-  // if the server does not have a version list.
+
+  // TODO(rch): Make it a failure if the server does not have a version list.
   if (server_hello.GetTaglist(kVER, &supported_version_tags,
                               &num_supported_versions) == QUIC_NO_ERROR) {
     if (!negotiated_versions.empty()) {

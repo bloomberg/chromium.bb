@@ -56,8 +56,8 @@ TEST(QuicProtocolTest, QuicVersionToQuicTag) {
 #endif
 
   // Explicitly test a specific version.
-  EXPECT_EQ(MakeQuicTag('Q', '0', '1', '2'),
-            QuicVersionToQuicTag(QUIC_VERSION_12));
+  EXPECT_EQ(MakeQuicTag('Q', '0', '1', '6'),
+            QuicVersionToQuicTag(QUIC_VERSION_16));
 
   // Loop over all supported versions and make sure that we never hit the
   // default case (i.e. all supported versions should be successfully converted
@@ -95,8 +95,8 @@ TEST(QuicProtocolTest, QuicTagToQuicVersion) {
 #endif
 
   // Explicitly test specific versions.
-  EXPECT_EQ(QUIC_VERSION_12,
-            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '1', '2')));
+  EXPECT_EQ(QUIC_VERSION_16,
+            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '1', '6')));
 
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
     QuicVersion version = kSupportedQuicVersions[i];
@@ -127,23 +127,23 @@ TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
 }
 
 TEST(QuicProtocolTest, QuicVersionToString) {
-  EXPECT_EQ("QUIC_VERSION_12", QuicVersionToString(QUIC_VERSION_12));
+  EXPECT_EQ("QUIC_VERSION_16", QuicVersionToString(QUIC_VERSION_16));
   EXPECT_EQ("QUIC_VERSION_UNSUPPORTED",
             QuicVersionToString(QUIC_VERSION_UNSUPPORTED));
 
-  QuicVersion single_version[] = {QUIC_VERSION_12};
+  QuicVersion single_version[] = {QUIC_VERSION_16};
   QuicVersionVector versions_vector;
   for (size_t i = 0; i < arraysize(single_version); ++i) {
     versions_vector.push_back(single_version[i]);
   }
-  EXPECT_EQ("QUIC_VERSION_12", QuicVersionVectorToString(versions_vector));
+  EXPECT_EQ("QUIC_VERSION_16", QuicVersionVectorToString(versions_vector));
 
-  QuicVersion multiple_versions[] = {QUIC_VERSION_UNSUPPORTED, QUIC_VERSION_12};
+  QuicVersion multiple_versions[] = {QUIC_VERSION_UNSUPPORTED, QUIC_VERSION_16};
   versions_vector.clear();
   for (size_t i = 0; i < arraysize(multiple_versions); ++i) {
     versions_vector.push_back(multiple_versions[i]);
   }
-  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED,QUIC_VERSION_12",
+  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED,QUIC_VERSION_16",
             QuicVersionVectorToString(versions_vector));
 
   // Make sure that all supported versions are present in QuicVersionToString.

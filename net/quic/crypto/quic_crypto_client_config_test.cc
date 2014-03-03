@@ -23,11 +23,6 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicTag cver;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kVER, &cver));
   EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
-
-  // TODO(rch): Remove once we remove QUIC_VERSION_12.
-  uint16 vers;
-  EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint16(kVERS, &vers));
-  EXPECT_EQ(0u, vers);
 }
 
 TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {

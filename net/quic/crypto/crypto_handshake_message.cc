@@ -252,15 +252,6 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
           done = true;
         }
         break;
-      case kVERS:
-        // uint16 value
-        if (it->second.size() == 2) {
-          uint16 value;
-          memcpy(&value, it->second.data(), sizeof(value));
-          ret += base::UintToString(value);
-          done = true;
-        }
-        break;
       case kKEXS:
       case kAEAD:
       case kCGST:
