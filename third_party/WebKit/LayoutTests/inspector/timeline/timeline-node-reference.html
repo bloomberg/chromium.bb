@@ -29,7 +29,7 @@ function test()
 
     function clickValueLink(record, row)
     {
-        var helper = record.generatePopupContent(onDetailsContentReady);
+        var helper = record.generatePopupContent(new WebInspector.Linkifier(), onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {
