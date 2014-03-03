@@ -63,8 +63,6 @@ This test ensures that the descendants of children of non-stacking context overf
               (position 0.00 -200.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #000000)
             )
           )
         )
