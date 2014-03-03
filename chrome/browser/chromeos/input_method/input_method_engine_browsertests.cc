@@ -40,13 +40,13 @@ enum TestType {
   kTestTypeComponent = 2,
 };
 
-class InputMethodEngineIBusBrowserTest
+class InputMethodEngineBrowserTest
     : public ExtensionBrowserTest,
       public ::testing::WithParamInterface<TestType> {
  public:
-  InputMethodEngineIBusBrowserTest()
+  InputMethodEngineBrowserTest()
       : ExtensionBrowserTest() {}
-  virtual ~InputMethodEngineIBusBrowserTest() {}
+  virtual ~InputMethodEngineBrowserTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
@@ -141,17 +141,17 @@ class KeyEventDoneCallback {
   DISALLOW_COPY_AND_ASSIGN(KeyEventDoneCallback);
 };
 
-INSTANTIATE_TEST_CASE_P(InputMethodEngineIBusBrowserTest,
-                        InputMethodEngineIBusBrowserTest,
+INSTANTIATE_TEST_CASE_P(InputMethodEngineBrowserTest,
+                        InputMethodEngineBrowserTest,
                         ::testing::Values(kTestTypeNormal));
-INSTANTIATE_TEST_CASE_P(InputMethodEngineIBusIncognitoBrowserTest,
-                        InputMethodEngineIBusBrowserTest,
+INSTANTIATE_TEST_CASE_P(InputMethodEngineIncognitoBrowserTest,
+                        InputMethodEngineBrowserTest,
                         ::testing::Values(kTestTypeIncognito));
-INSTANTIATE_TEST_CASE_P(InputMethodEngineIBusComponentExtensionBrowserTest,
-                        InputMethodEngineIBusBrowserTest,
+INSTANTIATE_TEST_CASE_P(InputMethodEngineComponentExtensionBrowserTest,
+                        InputMethodEngineBrowserTest,
                         ::testing::Values(kTestTypeComponent));
 
-IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
+IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        BasicScenarioTest) {
   LoadTestInputMethod();
 
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   IMEBridge::Get()->SetCandidateWindowHandler(NULL);
 }
 
-IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
+IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        APIArgumentTest) {
   LoadTestInputMethod();
 
