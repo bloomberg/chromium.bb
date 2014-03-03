@@ -11,13 +11,6 @@
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
-namespace {
-
-const uint16_t kPortScanFrom = 1024;
-const uint16_t kPortScanTo = 1280;
-
-}  // namespace
-
 REGISTER_TEST_CASE(TCPServerSocketPrivateDisallowed);
 
 TestTCPServerSocketPrivateDisallowed::TestTCPServerSocketPrivateDisallowed(
