@@ -889,10 +889,6 @@ crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Skip 
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
-crbug.com/261177 css3/compositing/background-blend-mode-crossfade-image-gradient.html [ NeedsRebaseline ]
-crbug.com/261177 css3/images/cross-fade-invalidation.html [ NeedsRebaseline ]
-crbug.com/261177 css3/images/cross-fade-overflow-position.html [ NeedsRebaseline ]
-
 # Temporary until the oilpan test bots understand the special oilpan test expectations
 crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure Pass ]
 crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure Pass ]
