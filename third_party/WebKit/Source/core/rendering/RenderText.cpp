@@ -937,9 +937,10 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     bool breakAll = (styleToUse->wordBreak() == BreakAllWordBreak || styleToUse->wordBreak() == BreakWordBreak) && styleToUse->autoWrap();
 
     TextRun textRun(text());
-    textRun.setDirection(textDirection);
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-    bidiResolver.setStatus(BidiStatus(textRun.direction(), textRun.directionalOverride()));
+    BidiStatus status(LTR, false);
+    status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
+    bidiResolver.setStatus(status);
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
     bool hardLineBreak = false;
     bool reorderRuns = false;
@@ -950,11 +951,14 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     for (int i = 0; i < len; i++) {
         UChar c = uncheckedCharacterAt(i);
 
-        while (i > run->stop())
+        // Treat adjacent runs with the same resolved directionality
+        // (TextDirection as opposed to WTF::Unicode::Direction) as belonging
+        // to the same run to avoid breaking unnecessarily.
+        while (i > run->stop() || (run->next() && run->next()->direction() == run->direction()))
             run = run->next();
 
         ASSERT(run);
-        ASSERT(i >= run->start() && i <= run->stop());
+        ASSERT(i <= run->stop());
         TextDirection textDirection = run->direction();
 
         bool previousCharacterIsSpace = isSpace;
