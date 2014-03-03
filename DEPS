@@ -1,13 +1,13 @@
 # DEPS files look like -*- Python -*-
 
 vars = {
-  "chrome_rev": "250916",
+  "chrome_rev": "254462",
   # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   # (This is not essential for Breakpad, because we do not use its code
   # in the build that goes into Chromium.  But might as well update it too.)
   "gtest_rev": "643",
-  "gyp_rev": "1846",
+  "gyp_rev": "1857",
   "lss_rev": "24",
   "breakpad_rev": "1271",
 
