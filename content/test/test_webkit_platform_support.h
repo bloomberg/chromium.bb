@@ -69,9 +69,9 @@ class TestWebKitPlatformSupport
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
       const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
      OVERRIDE;
-  virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
+  virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle* handle,
-      webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
+      WebSocketStreamHandleDelegate* delegate) OVERRIDE;
 
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       int device_source,

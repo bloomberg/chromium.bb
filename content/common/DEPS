@@ -5,9 +5,6 @@ include_rules = [
   "-webkit/child",
   "-webkit/renderer",
 
-  # TODO(ananta|jamesr|scottmg) http://crbug.com/237249
-  "!webkit/child/websocketstreamhandle_impl.h",
-
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",

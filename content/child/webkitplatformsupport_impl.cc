@@ -33,10 +33,10 @@ WebKitPlatformSupportImpl::CreateResourceLoader(
   return ChildThread::current()->CreateBridge(request_info);
 }
 
-webkit_glue::WebSocketStreamHandleBridge*
+WebSocketStreamHandleBridge*
 WebKitPlatformSupportImpl::CreateWebSocketStreamBridge(
     blink::WebSocketStreamHandle* handle,
-    webkit_glue::WebSocketStreamHandleDelegate* delegate) {
+    WebSocketStreamHandleDelegate* delegate) {
   SocketStreamDispatcher* dispatcher =
       ChildThread::current()->socket_stream_dispatcher();
   return dispatcher->CreateBridge(handle, delegate);
