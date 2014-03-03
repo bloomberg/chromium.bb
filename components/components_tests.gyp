@@ -17,7 +17,6 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
-            'autofill/core/browser/webdata/autofill_entry_unittest.cc',
             'autofill/core/browser/webdata/web_data_service_unittest.cc',
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',

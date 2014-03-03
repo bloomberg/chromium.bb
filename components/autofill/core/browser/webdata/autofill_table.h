@@ -156,23 +156,23 @@ class AutofillTable : public WebDatabaseTable {
   // Returns whether any form elements are stored in the database.
   bool HasFormElements();
 
-  // Removes rows from autofill_dates if they were created on or after
-  // |delete_begin| and strictly before |delete_end|.  Decrements the
-  // count of the corresponding rows in the autofill table, and
-  // removes those rows if the count goes to 0.  A list of all changed
-  // keys and whether each was updater or removed is returned in the
-  // changes out parameter.
+  // Removes rows from the autofill table if they were created on or after
+  // |delete_begin| and last used strictly before |delete_end|.  For rows where
+  // the time range [date_created, date_last_used] overlaps with [delete_begin,
+  // delete_end), but is not entirely contained within the latter range, updates
+  // the rows so that their resulting time range [new_date_created,
+  // new_date_last_used] lies entirely outside of [delete_begin, delete_end),
+  // updating the count accordingly.  A list of all changed keys and whether
+  // each was updater or removed is returned in the changes out parameter.
   bool RemoveFormElementsAddedBetween(const base::Time& delete_begin,
                                       const base::Time& delete_end,
                                       std::vector<AutofillChange>* changes);
 
-  // Removes rows from autofill_dates if they were accessed strictly before
-  // |AutofillEntry::ExpirationTime()|. Removes the corresponding row from the
-  // autofill table. Also culls timestamps to only two. TODO(georgey): remove
-  // culling in future versions.
+  // Removes rows from the autofill table if they were last accessed strictly
+  // before |AutofillEntry::ExpirationTime()|.
   bool RemoveExpiredFormElements(std::vector<AutofillChange>* changes);
 
-  // Removes row from the autofill tables for the given |name| |value| pair.
+  // Removes the row from the autofill table for the given |name| |value| pair.
   virtual bool RemoveFormElement(const base::string16& name,
                                  const base::string16& value);
 
@@ -182,7 +182,8 @@ class AutofillTable : public WebDatabaseTable {
   // Retrieves a single entry from the autofill table.
   virtual bool GetAutofillTimestamps(const base::string16& name,
                                      const base::string16& value,
-                                     std::vector<base::Time>* timestamps);
+                                     base::Time* date_created,
+                                     base::Time* date_last_used);
 
   // Replaces existing autofill entries with the entries supplied in
   // the argument.  If the entry does not already exist, it will be
@@ -327,7 +328,7 @@ class AutofillTable : public WebDatabaseTable {
                              std::vector<AutofillChange>* changes,
                              base::Time time);
 
-  // Insert a single AutofillEntry into the autofill/autofill_dates tables.
+  // Insert a single AutofillEntry into the autofill table.
   bool InsertAutofillEntry(const AutofillEntry& entry);
 
   // Checks if the trash is empty.

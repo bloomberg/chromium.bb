@@ -40,6 +40,9 @@ using base::Time;
 namespace autofill {
 namespace {
 
+// The period after which Autofill entries should expire in days.
+const int64 kExpirationPeriodInDays = 60;
+
 template<typename T>
 T* address_of(T& v) {
   return &v;
@@ -613,7 +616,8 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
-  base::Time expiration_time = AutofillEntry::ExpirationTime();
+  base::Time expiration_time =
+      base::Time::Now() - base::TimeDelta::FromDays(kExpirationPeriodInDays);
 
   // Query for the name and value of all form elements that were last used
   // before the |expiration_time|.
@@ -669,13 +673,10 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   while (s.Step()) {
     base::string16 name = s.ColumnString16(0);
     base::string16 value = s.ColumnString16(1);
-
-    std::vector<Time> timestamps;
-    timestamps.push_back(Time::FromTimeT(s.ColumnInt64(2)));
-    timestamps.push_back(Time::FromTimeT(s.ColumnInt64(3)));
-    if (timestamps.front() == timestamps.back())
-      timestamps.pop_back();
-    entries->push_back(AutofillEntry(AutofillKey(name, value), timestamps));
+    Time date_created = Time::FromTimeT(s.ColumnInt64(2));
+    Time date_last_used = Time::FromTimeT(s.ColumnInt64(3));
+    entries->push_back(
+        AutofillEntry(AutofillKey(name, value), date_created, date_last_used));
   }
 
   return s.Succeeded();
@@ -683,7 +684,8 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
 
 bool AutofillTable::GetAutofillTimestamps(const base::string16& name,
                                           const base::string16& value,
-                                          std::vector<Time>* timestamps) {
+                                          Time* date_created,
+                                          Time* date_last_used) {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT date_created, date_last_used FROM autofill "
       "WHERE name = ? AND value = ?"));
@@ -692,11 +694,8 @@ bool AutofillTable::GetAutofillTimestamps(const base::string16& name,
   if (!s.Step())
     return false;
 
-  timestamps->clear();
-  timestamps->push_back(Time::FromTimeT(s.ColumnInt64(0)));
-  timestamps->push_back(Time::FromTimeT(s.ColumnInt64(1)));
-  if (timestamps->front() == timestamps->back())
-    timestamps->pop_back();
+  *date_created = Time::FromTimeT(s.ColumnInt64(0));
+  *date_last_used = Time::FromTimeT(s.ColumnInt64(1));
 
   DCHECK(!s.Step());
   return true;
@@ -727,17 +726,6 @@ bool AutofillTable::UpdateAutofillEntries(
 }
 
 bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
-  if (entry.timestamps().empty())
-    return false;
-
-  Time date_created = entry.timestamps().front();
-  Time date_last_used = date_created;
-  for (size_t i = 1; i < entry.timestamps().size(); ++i) {
-    const Time& timestamp = entry.timestamps()[i];
-    date_created = std::min(date_created, timestamp);
-    date_last_used = std::max(date_last_used, timestamp);
-  }
-
   std::string sql =
       "INSERT INTO autofill "
       "(name, value, value_lower, date_created, date_last_used, count) "
@@ -746,13 +734,13 @@ bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
   s.BindString16(0, entry.key().name());
   s.BindString16(1, entry.key().value());
   s.BindString16(2, base::i18n::ToLower(entry.key().value()));
-  s.BindInt64(3, date_created.ToTimeT());
-  s.BindInt64(4, date_last_used.ToTimeT());
+  s.BindInt64(3, entry.date_created().ToTimeT());
+  s.BindInt64(4, entry.date_last_used().ToTimeT());
   // TODO(isherman): The counts column is currently synced implicitly as the
   // number of timestamps.  Sync the value explicitly instead, since the DB now
   // only saves the first and last timestamp, which makes counting timestamps
   // completely meaningless as a way to track frequency of usage.
-  s.BindInt(5, entry.timestamps().size());
+  s.BindInt(5, entry.date_last_used() == entry.date_created() ? 1 : 2);
   return s.Run();
 }
 

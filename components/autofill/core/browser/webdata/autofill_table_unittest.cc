@@ -61,9 +61,6 @@ typedef std::set<AutofillEntry,
 typedef AutofillEntrySet::iterator AutofillEntrySetIterator;
 
 bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
-  std::set<Time> timestamps1(a.timestamps().begin(), a.timestamps().end());
-  std::set<Time> timestamps2(b.timestamps().begin(), b.timestamps().end());
-
   int compVal = a.key().name().compare(b.key().name());
   if (compVal != 0)
     return compVal < 0;
@@ -72,28 +69,21 @@ bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
   if (compVal != 0)
     return compVal < 0;
 
-  if (timestamps1.size() != timestamps2.size())
-    return timestamps1.size() < timestamps2.size();
+  if (a.date_created() != b.date_created())
+    return a.date_created() < b.date_created();
 
-  std::set<Time>::iterator it;
-  for (it = timestamps1.begin(); it != timestamps1.end(); ++it) {
-    timestamps2.erase(*it);
-  }
-
-  return !timestamps2.empty();
+  return a.date_last_used() < b.date_last_used();
 }
 
 AutofillEntry MakeAutofillEntry(const char* name,
                                 const char* value,
-                                time_t timestamp0,
-                                time_t timestamp1) {
-  std::vector<Time> timestamps;
-  if (timestamp0 >= 0)
-    timestamps.push_back(Time::FromTimeT(timestamp0));
-  if (timestamp1 >= 0)
-    timestamps.push_back(Time::FromTimeT(timestamp1));
-  return AutofillEntry(
-      AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
+                                time_t date_created,
+                                time_t date_last_used) {
+  if (date_last_used < 0)
+    date_last_used = date_created;
+  return AutofillEntry(AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)),
+                       Time::FromTimeT(date_created),
+                       Time::FromTimeT(date_last_used));
 }
 
 // Checks |actual| and |expected| contain the same elements.
@@ -371,13 +361,13 @@ TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
   entries.push_back(entry);
   ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
 
-  std::vector<Time> timestamps;
+  Time date_created, date_last_used;
   ASSERT_TRUE(table_->GetAutofillTimestamps(ASCIIToUTF16("foo"),
                                             ASCIIToUTF16("bar"),
-                                            &timestamps));
-  ASSERT_EQ(2U, timestamps.size());
-  EXPECT_EQ(Time::FromTimeT(1), timestamps[0]);
-  EXPECT_EQ(Time::FromTimeT(2), timestamps[1]);
+                                            &date_created,
+                                            &date_last_used));
+  EXPECT_EQ(Time::FromTimeT(1), date_created);
+  EXPECT_EQ(Time::FromTimeT(2), date_last_used);
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
@@ -595,12 +585,12 @@ TEST_F(AutofillTableTest,
                            AutofillKey(field.name, field.value)),
             changes[0]);
   EXPECT_EQ(4, GetAutofillEntryCount(field.name, field.value, db_.get()));
-  std::vector<base::Time> timestamps;
+  base::Time date_created, date_last_used;
   EXPECT_TRUE(
-      table_->GetAutofillTimestamps(field.name, field.value, &timestamps));
-  ASSERT_EQ(2U, timestamps.size());
-  EXPECT_EQ(base::Time::FromTimeT(10), timestamps[0]);
-  EXPECT_EQ(base::Time::FromTimeT(39), timestamps[1]);
+      table_->GetAutofillTimestamps(field.name, field.value,
+                                    &date_created, &date_last_used));
+  EXPECT_EQ(base::Time::FromTimeT(10), date_created);
+  EXPECT_EQ(base::Time::FromTimeT(39), date_last_used);
 }
 
 TEST_F(AutofillTableTest,
@@ -632,12 +622,12 @@ TEST_F(AutofillTableTest,
                            AutofillKey(field.name, field.value)),
             changes[0]);
   EXPECT_EQ(2, GetAutofillEntryCount(field.name, field.value, db_.get()));
-  std::vector<base::Time> timestamps;
+  base::Time date_created, date_last_used;
   EXPECT_TRUE(
-      table_->GetAutofillTimestamps(field.name, field.value, &timestamps));
-  ASSERT_EQ(2U, timestamps.size());
-  EXPECT_EQ(base::Time::FromTimeT(80), timestamps[0]);
-  EXPECT_EQ(base::Time::FromTimeT(90), timestamps[1]);
+      table_->GetAutofillTimestamps(field.name, field.value,
+                                    &date_created, &date_last_used));
+  EXPECT_EQ(base::Time::FromTimeT(80), date_created);
+  EXPECT_EQ(base::Time::FromTimeT(90), date_last_used);
 }
 
 TEST_F(AutofillTableTest, AutofillProfile) {
@@ -1523,7 +1513,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
 
   AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
-  AutofillEntry ae1(ak1, timestamps1);
+  AutofillEntry ae1(ak1, timestamps1.front(), timestamps1.back());
 
   expected_entries.insert(ae1);
 
@@ -1565,8 +1555,8 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
   AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
   AutofillKey ak2(ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Kent"));
-  AutofillEntry ae1(ak1, timestamps1);
-  AutofillEntry ae2(ak2, timestamps2);
+  AutofillEntry ae1(ak1, timestamps1.front(), timestamps1.back());
+  AutofillEntry ae2(ak2, timestamps2.front(), timestamps2.back());
 
   expected_entries.insert(ae1);
   expected_entries.insert(ae2);
@@ -1600,7 +1590,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
 
   AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
-  AutofillEntry ae1(ak1, timestamps);
+  AutofillEntry ae1(ak1, timestamps.front(), timestamps.back());
 
   expected_entries.insert(ae1);
 

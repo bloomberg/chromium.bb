@@ -123,10 +123,11 @@ class AutofillTableMock : public AutofillTable {
                     const base::string16& value));  // NOLINT
   MOCK_METHOD1(GetAllAutofillEntries,
                bool(std::vector<AutofillEntry>* entries));  // NOLINT
-  MOCK_METHOD3(GetAutofillTimestamps,
+  MOCK_METHOD4(GetAutofillTimestamps,
                bool(const base::string16& name,  // NOLINT
                     const base::string16& value,
-                    std::vector<base::Time>* timestamps));
+                    base::Time* date_created,
+                    base::Time* date_last_used));
   MOCK_METHOD1(UpdateAutofillEntries,
                bool(const std::vector<AutofillEntry>&));  // NOLINT
   MOCK_METHOD1(GetAutofillProfiles,
@@ -692,7 +693,8 @@ class ProfileSyncServiceAutofillTest
           timestamps.push_back(Time::FromInternalValue(
               autofill.usage_timestamp(i)));
         }
-        entries->push_back(AutofillEntry(key, timestamps));
+        entries->push_back(
+            AutofillEntry(key, timestamps.front(), timestamps.back()));
       } else if (autofill.has_profile()) {
         AutofillProfile p;
         p.set_guid(autofill.profile().guid());
@@ -734,7 +736,7 @@ class ProfileSyncServiceAutofillTest
 
   void SetIdleChangeProcessorExpectations() {
     EXPECT_CALL(autofill_table_, RemoveFormElement(_, _)).Times(0);
-    EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _)).Times(0);
+    EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _, _)).Times(0);
     EXPECT_CALL(autofill_table_, UpdateAutofillEntries(_)).Times(0);
   }
 
@@ -746,14 +748,13 @@ class ProfileSyncServiceAutofillTest
     // entries.
     static Time base_time = Time::Now().LocalMidnight();
 
-    std::vector<Time> timestamps;
-    if (time_shift0 > 0)
-      timestamps.push_back(base_time + TimeDelta::FromSeconds(time_shift0));
-    if (time_shift1 > 0)
-      timestamps.push_back(base_time + TimeDelta::FromSeconds(time_shift1));
+    base::Time date_created = base_time + TimeDelta::FromSeconds(time_shift0);
+    base::Time date_last_used = date_created;
+    if (time_shift1 >= 0)
+      date_last_used = base_time + TimeDelta::FromSeconds(time_shift1);
     return AutofillEntry(
         AutofillKey(base::ASCIIToUTF16(name), base::ASCIIToUTF16(value)),
-        timestamps);
+        date_created, date_last_used);
   }
 
   static AutofillEntry MakeAutofillEntry(const char* name,
@@ -855,10 +856,10 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     sync_pb::AutofillSpecifics new_autofill;
     new_autofill.set_name(base::UTF16ToUTF8(entry_.key().name()));
     new_autofill.set_value(base::UTF16ToUTF8(entry_.key().value()));
-    const std::vector<base::Time>& ts(entry_.timestamps());
-    for (std::vector<base::Time>::const_iterator timestamp = ts.begin();
-         timestamp != ts.end(); ++timestamp) {
-      new_autofill.add_usage_timestamp(timestamp->ToInternalValue());
+    new_autofill.add_usage_timestamp(entry_.date_created().ToInternalValue());
+    if (entry_.date_created() != entry_.date_last_used()) {
+      new_autofill.add_usage_timestamp(
+          entry_.date_last_used().ToInternalValue());
     }
 
     sync_pb::EntitySpecifics entity_specifics;
@@ -1240,10 +1241,11 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
   ASSERT_TRUE(create_root.success());
 
   AutofillEntry added_entry(MakeAutofillEntry("added", "entry", 1));
-  std::vector<base::Time> timestamps(added_entry.timestamps());
 
-  EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(timestamps), Return(true)));
+  EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _, _)).
+      WillOnce(DoAll(SetArgumentPointee<2>(added_entry.date_created()),
+                     SetArgumentPointee<3>(added_entry.date_last_used()),
+                     Return(true)));
 
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
@@ -1296,10 +1298,11 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   ASSERT_TRUE(create_root.success());
 
   AutofillEntry updated_entry(MakeAutofillEntry("my", "entry", 1, 2));
-  std::vector<base::Time> timestamps(updated_entry.timestamps());
 
-  EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(timestamps), Return(true)));
+  EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _, _)).
+      WillOnce(DoAll(SetArgumentPointee<2>(updated_entry.date_created()),
+                     SetArgumentPointee<3>(updated_entry.date_last_used()),
+                     Return(true)));
 
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::UPDATE,

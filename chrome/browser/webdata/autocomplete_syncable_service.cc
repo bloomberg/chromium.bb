@@ -30,53 +30,32 @@ namespace {
 
 const char kAutofillEntryNamespaceTag[] = "autofill_entry|";
 
-// Merges timestamps from the |autofill| entry and |timestamps|. Returns
-// true if they were different, false if they were the same.
-// All of the timestamp vectors are assummed to be sorted, resulting vector is
-// sorted as well. Only two timestamps - the earliest and the latest are stored.
-bool MergeTimestamps(const sync_pb::AutofillSpecifics& autofill,
-                     const std::vector<base::Time>& timestamps,
-                     std::vector<base::Time>* new_timestamps) {
-  DCHECK(new_timestamps);
-
-  new_timestamps->clear();
-
-  size_t timestamps_count = autofill.usage_timestamp_size();
-  if (timestamps_count == 0 && timestamps.empty())
-    return false;
-
-  if (timestamps_count == 0) {
-    new_timestamps->insert(
-        new_timestamps->begin(), timestamps.begin(), timestamps.end());
+// Merges timestamps from the |sync_timestamps| and the |local_entry|.
+// Returns true if they were different, false if they were the same.  If the
+// timestamps were different, fills |date_created| and |date_last_used| with the
+// merged timestamps.  The |sync_timestamps| vector is assumed to be sorted.
+bool MergeTimestamps(
+    const google::protobuf::RepeatedField<int64_t>& sync_timestamps,
+    const AutofillEntry& local_entry,
+    base::Time* date_created,
+    base::Time* date_last_used) {
+  if (sync_timestamps.size() == 0) {
+    *date_created = local_entry.date_created();
+    *date_last_used = local_entry.date_last_used();
     return true;
   }
 
-  base::Time sync_time_begin =
-      base::Time::FromInternalValue(autofill.usage_timestamp(0));
-  base::Time sync_time_end =
-      base::Time::FromInternalValue(
-          autofill.usage_timestamp(timestamps_count - 1));
+  base::Time sync_date_created =
+      base::Time::FromInternalValue(*sync_timestamps.begin());
+  base::Time sync_date_last_used =
+      base::Time::FromInternalValue(*sync_timestamps.rbegin());
 
-  if (timestamps.empty()) {
-    new_timestamps->push_back(sync_time_begin);
-    if (timestamps_count > 1)
-      new_timestamps->push_back(sync_time_end);
-    return true;
-  }
-
-  if (timestamps.front() == sync_time_begin &&
-      timestamps.back() == sync_time_end) {
-    new_timestamps->insert(new_timestamps->begin(),
-                           timestamps.begin(),
-                           timestamps.end());
+  if (sync_date_created == local_entry.date_created() &&
+      sync_date_last_used == local_entry.date_last_used())
     return false;
-  }
 
-  new_timestamps->push_back(std::min(timestamps.front(), sync_time_begin));
-  if (new_timestamps->back() != timestamps.back() ||
-      new_timestamps->back() != sync_time_end) {
-    new_timestamps->push_back(std::max(timestamps.back(), sync_time_end));
-  }
+  *date_created = std::min(local_entry.date_created(), sync_date_created);
+  *date_last_used = std::max(local_entry.date_last_used(), sync_date_last_used);
   return true;
 }
 
@@ -354,29 +333,26 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
   AutofillKey key(autofill_specifics.name().c_str(),
                   autofill_specifics.value().c_str());
   AutocompleteEntryMap::iterator it = loaded_data->find(key);
+  const google::protobuf::RepeatedField<int64_t>& timestamps =
+      autofill_specifics.usage_timestamp();
   if (it == loaded_data->end()) {
     // New entry.
-    std::vector<base::Time> timestamps;
-    size_t timestamps_count = autofill_specifics.usage_timestamp_size();
-    if (timestamps_count) {
-      timestamps.push_back(base::Time::FromInternalValue(
-          autofill_specifics.usage_timestamp(0)));
+    base::Time date_created, date_last_used;
+    if (timestamps.size() > 0) {
+      date_created = base::Time::FromInternalValue(*timestamps.begin());
+      date_last_used = base::Time::FromInternalValue(*timestamps.rbegin());
     }
-    if (timestamps_count > 1) {
-      timestamps.push_back(base::Time::FromInternalValue(
-          autofill_specifics.usage_timestamp(timestamps_count - 1)));
-    }
-    AutofillEntry new_entry(key, timestamps);
-    new_entries->push_back(new_entry);
+    new_entries->push_back(AutofillEntry(key, date_created, date_last_used));
   } else {
     // Entry already present - merge if necessary.
-    std::vector<base::Time> timestamps;
-    bool different = MergeTimestamps(
-        autofill_specifics, it->second.second->timestamps(), &timestamps);
+    base::Time date_created, date_last_used;
+    bool different = MergeTimestamps(timestamps, *it->second.second,
+                                     &date_created, &date_last_used);
     if (different) {
-      AutofillEntry new_entry(it->second.second->key(), timestamps);
+      AutofillEntry new_entry(
+          it->second.second->key(), date_created, date_last_used);
       new_entries->push_back(new_entry);
-      // Update the sync db if the list of timestamps have changed.
+      // Update the sync db since the timestamps have changed.
       *(it->second.second) = new_entry;
       it->second.first = syncer::SyncChange::ACTION_UPDATE;
     } else {
@@ -392,11 +368,9 @@ void AutocompleteSyncableService::WriteAutofillEntry(
       autofill_specifics->mutable_autofill();
   autofill->set_name(base::UTF16ToUTF8(entry.key().name()));
   autofill->set_value(base::UTF16ToUTF8(entry.key().value()));
-  const std::vector<base::Time>& ts(entry.timestamps());
-  for (std::vector<base::Time>::const_iterator timestamp = ts.begin();
-       timestamp != ts.end(); ++timestamp) {
-    autofill->add_usage_timestamp(timestamp->ToInternalValue());
-  }
+  autofill->add_usage_timestamp(entry.date_created().ToInternalValue());
+  if (entry.date_created() != entry.date_last_used())
+    autofill->add_usage_timestamp(entry.date_last_used().ToInternalValue());
 }
 
 syncer::SyncError AutocompleteSyncableService::AutofillEntryDelete(
@@ -421,16 +395,15 @@ void AutocompleteSyncableService::ActOnChanges(
     switch (change->type()) {
       case AutofillChange::ADD:
       case AutofillChange::UPDATE: {
-        std::vector<base::Time> timestamps;
+        base::Time date_created, date_last_used;
         WebDatabase* db = webdata_backend_->GetDatabase();
         if (!AutofillTable::FromWebDatabase(db)->GetAutofillTimestamps(
-                change->key().name(),
-                change->key().value(),
-                &timestamps)) {
+                change->key().name(), change->key().value(),
+                &date_created, &date_last_used)) {
           NOTREACHED();
           return;
         }
-        AutofillEntry entry(change->key(), timestamps);
+        AutofillEntry entry(change->key(), date_created, date_last_used);
         syncer::SyncChange::SyncChangeType change_type =
            (change->type() == AutofillChange::ADD) ?
             syncer::SyncChange::ACTION_ADD :
@@ -442,8 +415,7 @@ void AutocompleteSyncableService::ActOnChanges(
       }
 
       case AutofillChange::REMOVE: {
-        std::vector<base::Time> timestamps;
-        AutofillEntry entry(change->key(), timestamps);
+        AutofillEntry entry(change->key(), base::Time(), base::Time());
         new_changes.push_back(
             syncer::SyncChange(FROM_HERE,
                                syncer::SyncChange::ACTION_DELETE,
