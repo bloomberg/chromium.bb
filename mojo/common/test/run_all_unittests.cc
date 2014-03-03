@@ -8,8 +8,13 @@
 #include "mojo/common/test/test_support_impl.h"
 #include "mojo/public/tests/test_support_private.h"
 #include "mojo/system/embedder/embedder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 int main(int argc, char** argv) {
+  // Silence death test thread warnings on Linux. We can afford to run our death
+  // tests a little more slowly (< 10 ms per death test on a Z620).
+  testing::GTEST_FLAG(death_test_style) = "threadsafe";
+
   base::TestSuite test_suite(argc, argv);
 
   mojo::embedder::Init();
