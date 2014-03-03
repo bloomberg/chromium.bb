@@ -59,9 +59,11 @@ namespace proxy {
 
 namespace {
 
+#if !defined(OS_NACL)
 const char kSerializationError[] = "Failed to convert a PostMessage "
     "argument from a PP_Var to a Javascript value. It may have cycles or be of "
     "an unsupported type.";
+#endif
 
 void RequestSurroundingText(PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
