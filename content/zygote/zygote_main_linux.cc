@@ -39,6 +39,7 @@
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "crypto/nss_util.h"
+#include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -291,7 +292,7 @@ void PreloadPepperPlugins() {
 
 // This function triggers the static and lazy construction of objects that need
 // to be created before imposing the sandbox.
-static void PreSandboxInit() {
+static void ZygotePreSandboxInit() {
   base::RandUint64();
 
   base::SysInfo::AmountOfPhysicalMemory();
@@ -332,88 +333,102 @@ static void CloseFdAndHandleEintr(int fd) {
   close(fd);
 }
 
-// This will set the *using_suid_sandbox variable to true if the SUID sandbox
-// is enabled. This does not necessarily exclude other types of sandboxing.
-static bool EnterSuidSandbox(LinuxSandbox* linux_sandbox,
-                             bool* using_suid_sandbox,
-                             bool* has_started_new_init) {
-  *using_suid_sandbox = false;
-  *has_started_new_init = false;
+static bool CreateInitProcessReaper() {
+  // This "magic" socket must only appear in one process, so make sure
+  // it gets closed in the parent after fork().
+  base::Closure zygoteid_fd_closer =
+      base::Bind(CloseFdAndHandleEintr, kZygoteIdFd);
+  // The current process becomes init(1), this function returns from a
+  // newly created process.
+  const bool init_created =
+      sandbox::CreateInitProcessReaper(&zygoteid_fd_closer);
+  if (!init_created) {
+    LOG(ERROR) << "Error creating an init process to reap zombies";
+    return false;
+  }
+  return true;
+}
 
-  sandbox::SetuidSandboxClient* setuid_sandbox =
-      linux_sandbox->setuid_sandbox_client();
+// Enter the setuid sandbox. This requires the current process to have been
+// created through the setuid sandbox.
+static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox) {
+  DCHECK(setuid_sandbox);
+  DCHECK(setuid_sandbox->IsSuidSandboxChild());
 
-  if (!setuid_sandbox)
+  // Use the SUID sandbox.  This still allows the seccomp sandbox to
+  // be enabled by the process later.
+
+  if (!setuid_sandbox->IsSuidSandboxUpToDate()) {
+    LOG(WARNING) <<
+        "You are using a wrong version of the setuid binary!\n"
+        "Please read "
+        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
+        "\n\n";
+  }
+
+  if (!setuid_sandbox->ChrootMe())
     return false;
 
-  PreSandboxInit();
+  if (setuid_sandbox->IsInNewPIDNamespace()) {
+    CHECK_EQ(1, getpid())
+        << "The SUID sandbox created a new PID namespace but Zygote "
+           "is not the init process. Please, make sure the SUID "
+           "binary is up to date.";
+  }
+
+  if (getpid() == 1) {
+    // The setuid sandbox has created a new PID namespace and we need
+    // to assume the role of init.
+    CHECK(CreateInitProcessReaper());
+  }
+
+#if !defined(OS_OPENBSD)
+  // Previously, we required that the binary be non-readable. This causes the
+  // kernel to mark the process as non-dumpable at startup. The thinking was
+  // that, although we were putting the renderers into a PID namespace (with
+  // the SUID sandbox), they would nonetheless be in the /same/ PID
+  // namespace. So they could ptrace each other unless they were non-dumpable.
+  //
+  // If the binary was readable, then there would be a window between process
+  // startup and the point where we set the non-dumpable flag in which a
+  // compromised renderer could ptrace attach.
+  //
+  // However, now that we have a zygote model, only the (trusted) zygote
+  // exists at this point and we can set the non-dumpable flag which is
+  // inherited by all our renderer children.
+  //
+  // Note: a non-dumpable process can't be debugged. To debug sandbox-related
+  // issues, one can specify --allow-sandbox-debugging to let the process be
+  // dumpable.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
+    prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
+    if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0)) {
+      LOG(ERROR) << "Failed to set non-dumpable flag";
+      return false;
+    }
+  }
+#endif
+
+  return true;
+}
+
+static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox) {
+  DCHECK(linux_sandbox);
+
+  ZygotePreSandboxInit();
 
   // Check that the pre-sandbox initialization didn't spawn threads.
 #if !defined(THREAD_SANITIZER)
   DCHECK(linux_sandbox->IsSingleThreaded());
 #endif
 
+  sandbox::SetuidSandboxClient* setuid_sandbox =
+      linux_sandbox->setuid_sandbox_client();
+
   if (setuid_sandbox->IsSuidSandboxChild()) {
-    // Use the SUID sandbox.  This still allows the seccomp sandbox to
-    // be enabled by the process later.
-    *using_suid_sandbox = true;
-
-    if (!setuid_sandbox->IsSuidSandboxUpToDate()) {
-      LOG(WARNING) << "You are using a wrong version of the setuid binary!\n"
-       "Please read "
-       "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment."
-       "\n\n";
-    }
-
-    if (!setuid_sandbox->ChrootMe())
-      return false;
-
-    if (getpid() == 1) {
-      // The setuid sandbox has created a new PID namespace and we need
-      // to assume the role of init.
-      // This "magic" socket must only appear in one process, so make sure
-      // it gets closed in the parent after fork().
-      base::Closure zygoteid_fd_closer =
-          base::Bind(CloseFdAndHandleEintr, kZygoteIdFd);
-      const bool init_created =
-          setuid_sandbox->CreateInitProcessReaper(&zygoteid_fd_closer);
-      if (!init_created) {
-        LOG(ERROR) << "Error creating an init process to reap zombies";
-        return false;
-      }
-      *has_started_new_init = true;
-    }
-
-#if !defined(OS_OPENBSD)
-    // Previously, we required that the binary be non-readable. This causes the
-    // kernel to mark the process as non-dumpable at startup. The thinking was
-    // that, although we were putting the renderers into a PID namespace (with
-    // the SUID sandbox), they would nonetheless be in the /same/ PID
-    // namespace. So they could ptrace each other unless they were non-dumpable.
-    //
-    // If the binary was readable, then there would be a window between process
-    // startup and the point where we set the non-dumpable flag in which a
-    // compromised renderer could ptrace attach.
-    //
-    // However, now that we have a zygote model, only the (trusted) zygote
-    // exists at this point and we can set the non-dumpable flag which is
-    // inherited by all our renderer children.
-    //
-    // Note: a non-dumpable process can't be debugged. To debug sandbox-related
-    // issues, one can specify --allow-sandbox-debugging to let the process be
-    // dumpable.
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
-      prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
-      if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0)) {
-        LOG(ERROR) << "Failed to set non-dumpable flag";
-        return false;
-      }
-    }
-#endif
+    CHECK(EnterSuidSandbox(setuid_sandbox)) << "Failed to enter setuid sandbox";
   }
-
-  return true;
 }
 
 bool ZygoteMain(const MainFunctionParams& params,
@@ -432,26 +447,8 @@ bool ZygoteMain(const MainFunctionParams& params,
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
   }
 
-  // Turn on the sandbox.
-  bool using_suid_sandbox = false;
-  bool has_started_new_init = false;
-
-  if (!EnterSuidSandbox(linux_sandbox,
-                        &using_suid_sandbox,
-                        &has_started_new_init)) {
-    LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
-               << errno << ")";
-    return false;
-  }
-
-  sandbox::SetuidSandboxClient* setuid_sandbox =
-      linux_sandbox->setuid_sandbox_client();
-
-  if (setuid_sandbox->IsInNewPIDNamespace() && !has_started_new_init) {
-    LOG(ERROR) << "The SUID sandbox created a new PID namespace but Zygote "
-                  "is not the init process. Please, make sure the SUID "
-                  "binary is up to date.";
-  }
+  // Turn on the first layer of the sandbox if the configuration warrants it.
+  EnterLayerOneSandbox(linux_sandbox);
 
   int sandbox_flags = linux_sandbox->GetStatus();
 
