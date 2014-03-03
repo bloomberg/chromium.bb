@@ -28,7 +28,7 @@ namespace ui {
 // A ui::InputMethod implementation based on IBus.
 class UI_BASE_EXPORT InputMethodChromeOS
     : public InputMethodBase,
-      public chromeos::IBusInputContextHandlerInterface {
+      public chromeos::IMEInputContextHandlerInterface {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   virtual ~InputMethodChromeOS();
@@ -102,7 +102,7 @@ class UI_BASE_EXPORT InputMethodChromeOS
   // true if character composer comsumes key event.
   bool ExecuteCharacterComposer(const ui::KeyEvent& event);
 
-  // chromeos::IBusInputContextHandlerInterface overrides:
+  // chromeos::IMEInputContextHandlerInterface overrides:
   virtual void CommitText(const std::string& text) OVERRIDE;
   virtual void UpdateCompositionText(const chromeos::CompositionText& text,
                                      uint32 cursor_pos,

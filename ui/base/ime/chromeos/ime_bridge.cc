@@ -25,14 +25,14 @@ class IMEBridgeImpl : public IMEBridge {
   }
 
   // IMEBridge override.
-  virtual IBusInputContextHandlerInterface*
+  virtual IMEInputContextHandlerInterface*
       GetInputContextHandler() const OVERRIDE {
     return input_context_handler_;
   }
 
   // IMEBridge override.
   virtual void SetInputContextHandler(
-      IBusInputContextHandlerInterface* handler) OVERRIDE {
+      IMEInputContextHandlerInterface* handler) OVERRIDE {
     input_context_handler_ = handler;
   }
 
@@ -96,7 +96,7 @@ class IMEBridgeImpl : public IMEBridge {
   }
 
  private:
-  IBusInputContextHandlerInterface* input_context_handler_;
+  IMEInputContextHandlerInterface* input_context_handler_;
   IMEEngineHandlerInterface* engine_handler_;
   IMECandidateWindowHandlerInterface* candidate_window_handler_;
   std::map<std::string, IMEEngineHandlerInterface*> engine_handler_map_;

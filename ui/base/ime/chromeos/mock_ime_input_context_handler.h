@@ -12,7 +12,7 @@
 namespace chromeos {
 
 class UI_BASE_EXPORT MockIMEInputContextHandler
-    : public IBusInputContextHandlerInterface {
+    : public IMEInputContextHandlerInterface {
  public:
   struct UpdateCompositionTextArg {
     CompositionText composition_text;

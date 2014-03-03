@@ -46,7 +46,7 @@ namespace {
 void UpdateComposition(const CompositionText& composition_text,
                        uint32 cursor_pos,
                        bool is_visible) {
-  IBusInputContextHandlerInterface* input_context =
+  IMEInputContextHandlerInterface* input_context =
       IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
     input_context->UpdateCompositionText(
@@ -422,7 +422,7 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
 
   // TODO(nona): Return false if there is ongoing composition.
 
-  IBusInputContextHandlerInterface* input_context =
+  IMEInputContextHandlerInterface* input_context =
       IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
     input_context->DeleteSurroundingText(offset, number_of_chars);

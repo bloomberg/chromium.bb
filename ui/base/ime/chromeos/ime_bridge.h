@@ -26,7 +26,7 @@ namespace chromeos {
 
 class CompositionText;
 
-class UI_BASE_EXPORT IBusInputContextHandlerInterface {
+class UI_BASE_EXPORT IMEInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
@@ -148,12 +148,12 @@ class UI_BASE_EXPORT IMEBridge {
 
   // Returns current InputContextHandler. This function returns NULL if input
   // context is not ready to use.
-  virtual IBusInputContextHandlerInterface* GetInputContextHandler() const = 0;
+  virtual IMEInputContextHandlerInterface* GetInputContextHandler() const = 0;
 
   // Updates current InputContextHandler. If there is no active input context,
   // pass NULL for |handler|. Caller must release |handler|.
   virtual void SetInputContextHandler(
-      IBusInputContextHandlerInterface* handler) = 0;
+      IMEInputContextHandlerInterface* handler) = 0;
 
   // Initializes the mapping from |engine_id| to |handler|.
   // |engine_id| must not be empty and |handler| must not be null.
