@@ -811,8 +811,6 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-004.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
 
-crbug.com/346132 fast/url/segments-from-data-url.html [ Failure NeedsRebaseline ]
-
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] css1/classification/list_style_position.html [ Failure ]
