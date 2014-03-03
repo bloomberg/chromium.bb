@@ -51,12 +51,13 @@ function findBugID(message)
     var value = findUsingRegExp(message, regexp);
     if (!value)
         return null;
-    return value.split(/\s*,\s*/).map(function(id) {
+    var result = value.split(/\s*,\s*/).map(function(id) {
         var parsedID = parseInt(id.replace(/[^\d]/g, ''), 10);
         return isNaN(parsedID) ? 0 : parsedID;
     }).filter(function(id) {
         return !!id;
     });
+    return result.length ? result : null;
 }
 
 function findRevision(message)
