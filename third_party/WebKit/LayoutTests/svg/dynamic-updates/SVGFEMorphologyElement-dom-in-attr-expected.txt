@@ -11,4 +11,7 @@ PASS morphologyElement.getAttribute('in') is "SourceGraphic"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 700 200)
+)
 

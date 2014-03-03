@@ -10,4 +10,8 @@ PASS ellipseElement.getAttribute('ry') is "150"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 148 300 20)
+  (rect 8 8 300 300)
+)
 

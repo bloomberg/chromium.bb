@@ -18,4 +18,13 @@ PASS lightenBlend.getAttribute('in2') is "lightenImg"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 33 18 240 20)
+  (rect 33 41 240 20)
+  (rect 33 64 240 20)
+  (rect 33 87 240 20)
+  (rect 33 64 240 43)
+  (rect 33 110 240 20)
+  (rect 33 156 240 20)
+)
 

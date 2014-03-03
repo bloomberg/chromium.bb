@@ -10,4 +10,7 @@ PASS filterElement.getAttribute('primitiveUnits') is "objectBoundingBox"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 200 200)
+)
 

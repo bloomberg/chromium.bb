@@ -10,4 +10,7 @@ PASS overComposite1.getAttribute('in2') is "off1"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 58 8 250 200)
+)
 

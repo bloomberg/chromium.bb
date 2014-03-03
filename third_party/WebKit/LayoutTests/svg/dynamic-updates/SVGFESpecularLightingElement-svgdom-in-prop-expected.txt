@@ -10,4 +10,7 @@ PASS specularElement.in1.baseVal is "SourceGraphic"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 68 28 100 60)
+)
 

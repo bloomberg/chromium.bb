@@ -10,4 +10,8 @@ PASS ellipseElement.rx.baseVal.value is 150
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 148 8 20 300)
+  (rect 8 8 300 300)
+)
 

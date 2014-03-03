@@ -10,4 +10,9 @@ PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTB
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 10 10)
+  (rect 8 8 10 10)
+  (rect 8 8 100 100)
+)
 

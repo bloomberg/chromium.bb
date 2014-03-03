@@ -10,4 +10,7 @@ PASS convolveMatrixElement.getAttribute('order') is "3 3"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 200 200)
+)
 

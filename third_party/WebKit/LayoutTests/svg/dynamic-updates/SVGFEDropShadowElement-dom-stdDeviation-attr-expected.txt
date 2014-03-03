@@ -10,4 +10,7 @@ PASS dropShadowElement.getAttribute('stdDeviation') is "10"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 200 200)
+)
 
