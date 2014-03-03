@@ -3,36 +3,6 @@
 # found in the LICENSE file.
 {
   'variables' : {
-    'chromedriver_unittest_sources': [
-      'test/chromedriver/capabilities_unittest.cc',
-      'test/chromedriver/chrome/chrome_finder_unittest.cc',
-      'test/chromedriver/chrome/console_logger_unittest.cc',
-      'test/chromedriver/chrome/device_manager_unittest.cc',
-      'test/chromedriver/chrome/devtools_client_impl_unittest.cc',
-      'test/chromedriver/chrome/devtools_http_client_unittest.cc',
-      'test/chromedriver/chrome/dom_tracker_unittest.cc',
-      'test/chromedriver/chrome/frame_tracker_unittest.cc',
-      'test/chromedriver/chrome/geolocation_override_manager_unittest.cc',
-      'test/chromedriver/chrome/heap_snapshot_taker_unittest.cc',
-      'test/chromedriver/chrome/javascript_dialog_manager_unittest.cc',
-      'test/chromedriver/chrome/navigation_tracker_unittest.cc',
-      'test/chromedriver/chrome/performance_logger_unittest.cc',
-      'test/chromedriver/chrome/status_unittest.cc',
-      'test/chromedriver/chrome/stub_chrome.cc',
-      'test/chromedriver/chrome/stub_chrome.h',
-      'test/chromedriver/chrome/stub_devtools_client.cc',
-      'test/chromedriver/chrome/stub_devtools_client.h',
-      'test/chromedriver/chrome/stub_web_view.cc',
-      'test/chromedriver/chrome/stub_web_view.h',
-      'test/chromedriver/chrome/web_view_impl_unittest.cc',
-      'test/chromedriver/chrome_launcher_unittest.cc',
-      'test/chromedriver/commands_unittest.cc',
-      'test/chromedriver/logging_unittest.cc',
-      'test/chromedriver/server/http_handler_unittest.cc',
-      'test/chromedriver/session_commands_unittest.cc',
-      'test/chromedriver/session_unittest.cc',
-      'test/chromedriver/util_unittest.cc',
-    ],
     'pyautolib_sources': [
       'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
@@ -840,36 +810,39 @@
         '..,'
       ],
       'sources': [
-        '<@(chromedriver_unittest_sources)',
+        'test/chromedriver/capabilities_unittest.cc',
+        'test/chromedriver/chrome/chrome_finder_unittest.cc',
+        'test/chromedriver/chrome/console_logger_unittest.cc',
+        'test/chromedriver/chrome/device_manager_unittest.cc',
+        'test/chromedriver/chrome/devtools_client_impl_unittest.cc',
+        'test/chromedriver/chrome/devtools_http_client_unittest.cc',
+        'test/chromedriver/chrome/dom_tracker_unittest.cc',
+        'test/chromedriver/chrome/frame_tracker_unittest.cc',
+        'test/chromedriver/chrome/geolocation_override_manager_unittest.cc',
+        'test/chromedriver/chrome/heap_snapshot_taker_unittest.cc',
+        'test/chromedriver/chrome/javascript_dialog_manager_unittest.cc',
+        'test/chromedriver/chrome/navigation_tracker_unittest.cc',
+        'test/chromedriver/chrome/performance_logger_unittest.cc',
+        'test/chromedriver/chrome/status_unittest.cc',
+        'test/chromedriver/chrome/stub_chrome.cc',
+        'test/chromedriver/chrome/stub_chrome.h',
+        'test/chromedriver/chrome/stub_devtools_client.cc',
+        'test/chromedriver/chrome/stub_devtools_client.h',
+        'test/chromedriver/chrome/stub_web_view.cc',
+        'test/chromedriver/chrome/stub_web_view.h',
+        'test/chromedriver/chrome/web_view_impl_unittest.cc',
+        'test/chromedriver/chrome_launcher_unittest.cc',
+        'test/chromedriver/commands_unittest.cc',
+        'test/chromedriver/logging_unittest.cc',
+        'test/chromedriver/server/http_handler_unittest.cc',
+        'test/chromedriver/session_commands_unittest.cc',
+        'test/chromedriver/session_unittest.cc',
+        'test/chromedriver/util_unittest.cc',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
-    # TODO(kkania): Remove when infra no longer references this.
-    {
-      'target_name': 'chromedriver2_unittests',
-      'type': 'executable',
-      'dependencies': [
-        'chromedriver_lib',
-        '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
-        '../net/net.gyp:http_server',
-        '../net/net.gyp:net',
-        '../testing/gtest.gyp:gtest',
-        '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/ui.gyp:ui',
-      ],
-      'include_dirs': [
-        '..,'
-      ],
-      'sources': [
-        '<@(chromedriver_unittest_sources)',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    # ChromeDriver2 tests that aren't run on the main buildbot. Available
+    # ChromeDriver tests that aren't run on the main buildbot. Available
     # as an optional test type on trybots.
     {
       'target_name': 'chromedriver_tests',
