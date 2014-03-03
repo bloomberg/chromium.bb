@@ -678,8 +678,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
-{% if reachable_node_function or
-      set_wrapper_reference_to_list %}
+{% if reachable_node_function or set_wrapper_reference_to_list %}
 void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     {{cpp_class}}* impl = fromInternalPointer(object);
@@ -703,9 +702,7 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
         return;
     }
     {% endif %}
-    {% if reachable_node_function or set_wrapper_reference_to_list %}
     setObjectGroup(object, wrapper, isolate);
-    {% endif %}
 }
 
 {% endif %}
