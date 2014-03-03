@@ -78,12 +78,19 @@ void IpcNetworkManager::OnNetworkListChanged(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowLoopbackInPeerConnection)) {
-    std::string name("loopback");
-    talk_base::IPAddress ip_address(in6addr_loopback);
-    talk_base::Network* network = new talk_base::Network(
-        name, name, ip_address, 32);
-    network->AddIP(ip_address);
-    networks.push_back(network);
+    std::string name_v4("loopback_ipv4");
+    talk_base::IPAddress ip_address_v4(INADDR_LOOPBACK);
+    talk_base::Network* network_v4 = new talk_base::Network(
+        name_v4, name_v4, ip_address_v4, 32);
+    network_v4->AddIP(ip_address_v4);
+    networks.push_back(network_v4);
+
+    std::string name_v6("loopback_ipv6");
+    talk_base::IPAddress ip_address_v6(in6addr_loopback);
+    talk_base::Network* network_v6 = new talk_base::Network(
+        name_v6, name_v6, ip_address_v6, 64);
+    network_v6->AddIP(ip_address_v6);
+    networks.push_back(network_v6);
   }
 
   bool changed = false;
