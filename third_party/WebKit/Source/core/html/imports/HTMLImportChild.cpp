@@ -39,12 +39,14 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(const KURL& url, bool createdByParser)
+HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, bool createdByParser)
     : HTMLImport(createdByParser)
+    , m_master(master)
     , m_url(url)
     , m_customElementMicrotaskStep(0)
     , m_client(0)
 {
+    m_master.guardRef();
 }
 
 HTMLImportChild::~HTMLImportChild()
@@ -60,6 +62,8 @@ HTMLImportChild::~HTMLImportChild()
 
     if (m_client)
         m_client->importChildWasDestroyed(this);
+
+    m_master.guardDeref();
 }
 
 void HTMLImportChild::wasAlreadyLoaded()

@@ -1,10 +1,15 @@
-PASS document.inlineScriptHasRun is undefined
-PASS document.externalScriptHasRun is undefined
-PASS document.corsExternalScriptHasRun is true
-PASS document.evalFromInlineHasRun is undefined
-PASS document.evalFromExternalHasRun is undefined
-FAIL document.evalFromCorsExternalHasRun should be undefined (of type undefined). Was true (of type boolean).
-PASS successfullyParsed is true
+CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/htmlimports/resources/external-script.js' because it violates the following Content Security Policy directive: "script-src http://localhost:8000".
 
-TEST COMPLETE
+CONSOLE ERROR: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src http://localhost:8000".
+
+CONSOLE ERROR: line 2: Uncaught EvalError: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src http://localhost:8000".
+
+CONSOLE ERROR: line 6: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src http://localhost:8000". Either the 'unsafe-inline' keyword, a hash ('sha256-...'), or a nonce ('nonce-...') is required to enable inline execution.
+
+CONSOLE MESSAGE: line 7: PASS
+CONSOLE MESSAGE: line 7: PASS
+CONSOLE MESSAGE: line 7: PASS
+CONSOLE MESSAGE: line 7: PASS
+CONSOLE MESSAGE: line 7: PASS
+CONSOLE MESSAGE: line 7: PASS
 

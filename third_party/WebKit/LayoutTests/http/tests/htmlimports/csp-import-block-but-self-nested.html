@@ -1,19 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script>
-</script>
+<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
 <link id="target" rel="import" href="resources/child-having-self-policy.html">
-<script src="/js-test-resources/js-test.js"></script>
 </head>
 <body>
-<script>
-shouldBe("document.inlineScriptHasRun", "undefined");
-shouldBeTrue("document.externalScriptHasRun");
-shouldBe("document.corsExternalScriptHasRun", "undefined");
-shouldBe("document.evalFromInlineHasRun", "undefined");
-shouldBe("document.evalFromExternalHasRun", "undefined");
-shouldBe("document.evalFromCorsExternalHasRun", "undefined");
-</script>
+<script src="resources/csp-import-block-but-self.js"></script>
 </body>
 </html>

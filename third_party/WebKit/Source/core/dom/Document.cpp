@@ -2934,6 +2934,8 @@ void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& c
 
 void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)
 {
+    if (import() && import()->isChild())
+        return;
     if (equalIgnoringCase(equiv, "content-security-policy"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
@@ -4540,6 +4542,13 @@ void Document::initSecurityContext()
     initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_import));
 }
 
+static PassRefPtr<ContentSecurityPolicy> contentSecurityPolicyFor(Document* document)
+{
+    if (document->import() && document->import()->isChild())
+        return document->import()->master()->contentSecurityPolicy();
+    return ContentSecurityPolicy::create(document);
+}
+
 void Document::initSecurityContext(const DocumentInit& initializer)
 {
     if (haveInitializedSecurityOrigin()) {
@@ -4561,7 +4570,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     m_cookieURL = m_url;
     enforceSandboxFlags(initializer.sandboxFlags());
     setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
-    setContentSecurityPolicy(ContentSecurityPolicy::create(this));
+    setContentSecurityPolicy(contentSecurityPolicyFor(this));
 
     if (Settings* settings = initializer.settings()) {
         if (!settings->webSecurityEnabled()) {

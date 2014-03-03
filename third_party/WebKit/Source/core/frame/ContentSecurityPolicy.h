@@ -33,6 +33,8 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/TextPosition.h"
@@ -55,12 +57,12 @@ class SecurityOrigin;
 typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
 
-class ContentSecurityPolicy {
+class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ContentSecurityPolicy> create(ExecutionContextClient* client)
+    static PassRefPtr<ContentSecurityPolicy> create(ExecutionContextClient* client)
     {
-        return adoptPtr(new ContentSecurityPolicy(client));
+        return adoptRef(new ContentSecurityPolicy(client));
     }
     ~ContentSecurityPolicy();
 

@@ -53,7 +53,7 @@ protected:
     SecurityContext();
     virtual ~SecurityContext();
 
-    void setContentSecurityPolicy(PassOwnPtr<ContentSecurityPolicy>);
+    void setContentSecurityPolicy(PassRefPtr<ContentSecurityPolicy>);
 
     void didFailToInitializeSecurityOrigin() { m_haveInitializedSecurityOrigin = false; }
     bool haveInitializedSecurityOrigin() const { return m_haveInitializedSecurityOrigin; }
@@ -61,7 +61,7 @@ protected:
 private:
     bool m_haveInitializedSecurityOrigin;
     RefPtr<SecurityOrigin> m_securityOrigin;
-    OwnPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 } // namespace WebCore

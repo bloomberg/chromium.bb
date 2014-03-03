@@ -93,7 +93,6 @@ HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceR
     DocumentInit init = DocumentInit(response.url(), 0, m_import->master()->contextDocument(), m_import)
         .withRegistrationContext(m_import->master()->registrationContext());
     m_importedDocument = HTMLDocument::create(init);
-    m_importedDocument->initContentSecurityPolicy(ContentSecurityPolicyResponseHeaders(response));
     m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
 
     return StateLoading;

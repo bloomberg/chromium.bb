@@ -1,19 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script>
-</script>
-<link id="target" rel="import" href="resources/having-domain-policy.html">
-<script src="/js-test-resources/js-test.js"></script>
+<meta http-equiv="Content-Security-Policy" content="script-src http://localhost:8000">
+<link id="target" rel="import" href="http://localhost:8000/htmlimports/resources/having-domain-policy.cgi">
 </head>
 <body>
-<script>
-shouldBe("document.inlineScriptHasRun", "undefined");
-shouldBe("document.externalScriptHasRun", "undefined");
-shouldBeTrue("document.corsExternalScriptHasRun");
-shouldBe("document.evalFromInlineHasRun", "undefined");
-shouldBe("document.evalFromExternalHasRun", "undefined");
-shouldBe("document.evalFromCorsExternalHasRun", "undefined");
-</script>
+<script src="http://localhost:8000/htmlimports/resources/csp-import-block-but-domain.js"></script>
 </body>
 </html>

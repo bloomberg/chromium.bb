@@ -10,15 +10,15 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-if (window.havingDirectiveInMeta.import.querySelector("#shouldBeBlocked").import == null)
+if (window.havingDirectiveInMeta.import.querySelector("#shouldBeBlocked").import != null)
     result.innerHTML += "PASS\n";
 else
-    result.innerHTML += "FAIL: The import should be blocked.\n";
+    result.innerHTML += "FAIL: The import should not be blocked.\n";
 
-if (window.havingDirectiveInHTTP.import.querySelector("#shouldBeBlocked").import == null)
+if (window.havingDirectiveInHTTP.import.querySelector("#shouldBeBlocked").import != null)
     result.innerHTML += "PASS\n";
 else
-    result.innerHTML += "FAIL: The import should be blocked.\n";
+    result.innerHTML += "FAIL: The import should not be blocked.\n";
 
 </script>
 </body>

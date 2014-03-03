@@ -6,14 +6,15 @@
 </head>
 <body>
 <pre id="result"></pre>
+<!-- FIXME: The test should be renamed to csp-block-import-in-import.html -->
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
 
-if (window.target.import.querySelector('#cors').import != null)
+if (window.target.import.querySelector('#cors').import == null)
     result.innerHTML = "PASS\n";
 else
-    result.innerHTML = "FAIL: The import should be allowed.\n";
+    result.innerHTML = "FAIL: The import should be blocked.\n";
 </script>
 </body>
 </html>
