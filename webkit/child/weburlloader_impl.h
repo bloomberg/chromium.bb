@@ -2,32 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
-#define CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
+#ifndef WEBKIT_CHILD_WEBURLLOADER_IMPL_H_
+#define WEBKIT_CHILD_WEBURLLOADER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
+
+class WebKitPlatformSupportImpl;
 struct ResourceResponseInfo;
-}
-
-namespace content {
-
-class BlinkPlatformImpl;
 
 class WebURLLoaderImpl : public blink::WebURLLoader {
  public:
-  explicit WebURLLoaderImpl(BlinkPlatformImpl* platform);
+  explicit WebURLLoaderImpl(WebKitPlatformSupportImpl* platform);
   virtual ~WebURLLoaderImpl();
 
   static blink::WebURLError CreateError(const blink::WebURL& unreachable_url,
                                         bool stale_copy_in_cache,
                                         int reason);
-  CONTENT_EXPORT static void PopulateURLResponse(
+  WEBKIT_CHILD_EXPORT static void PopulateURLResponse(
       const GURL& url,
-      const webkit_glue::ResourceResponseInfo& info,
+      const ResourceResponseInfo& info,
       blink::WebURLResponse* response);
 
   // WebURLLoader methods:
@@ -46,9 +43,9 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
  private:
   class Context;
   scoped_refptr<Context> context_;
-  BlinkPlatformImpl* platform_;
+  WebKitPlatformSupportImpl* platform_;
 };
 
-}  // namespace content
+}  // namespace webkit_glue
 
-#endif  // CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
+#endif  // WEBKIT_CHILD_WEBURLLOADER_IMPL_H_

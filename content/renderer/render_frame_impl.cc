@@ -21,7 +21,6 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
-#include "content/child/web_socket_stream_handle_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/swapped_out_messages.h"
@@ -1997,9 +1996,7 @@ void RenderFrameImpl::requestStorageQuota(
 
 void RenderFrameImpl::willOpenSocketStream(
     blink::WebSocketStreamHandle* handle) {
-  WebSocketStreamHandleImpl* impl =
-      static_cast<WebSocketStreamHandleImpl*>(handle);
-  impl->SetUserData(handle, new SocketStreamHandleData(routing_id_));
+  SocketStreamHandleData::AddToHandle(handle, routing_id_);
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_BLINK_PLATFORM_IMPL_H_
-#define CONTENT_CHILD_BLINK_PLATFORM_IMPL_H_
+#ifndef WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_
+#define WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/platform_file.h"
 #include "base/timer/timer.h"
-#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/layout.h"
 #include "webkit/child/resource_loader_bridge.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace base {
 class MessageLoop;
@@ -23,16 +23,16 @@ namespace blink {
 class WebSocketStreamHandle;
 }
 
-namespace content {
+namespace webkit_glue {
 
 class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
 
-class CONTENT_EXPORT BlinkPlatformImpl
-    : NON_EXPORTED_BASE(public blink::Platform) {
+class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
+    NON_EXPORTED_BASE(public blink::Platform) {
  public:
-  BlinkPlatformImpl();
-  virtual ~BlinkPlatformImpl();
+  WebKitPlatformSupportImpl();
+  virtual ~WebKitPlatformSupportImpl();
 
   // Platform methods (partial implementation):
   virtual base::PlatformFile databaseOpenFile(
@@ -126,8 +126,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
                                             ui::ScaleFactor scale_factor) = 0;
 
   // Creates a ResourceLoaderBridge.
-  virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) = 0;
+  virtual ResourceLoaderBridge* CreateResourceLoader(
+      const ResourceLoaderBridge::RequestInfo& request_info) = 0;
   // Creates a WebSocketStreamHandleBridge.
   virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle* handle,
@@ -144,13 +144,13 @@ class CONTENT_EXPORT BlinkPlatformImpl
   }
 
   base::MessageLoop* main_loop_;
-  base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
+  base::OneShotTimer<WebKitPlatformSupportImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;
   bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
 };
 
-}  // namespace content
+}  // namespace webkit_glue
 
-#endif  // CONTENT_CHILD_BLINK_PLATFORM_IMPL_H_
+#endif  // WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_

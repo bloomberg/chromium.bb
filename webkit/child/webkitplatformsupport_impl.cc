@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/blink_platform_impl.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
 
 #include <math.h>
 
@@ -26,8 +26,6 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "content/child/web_socket_stream_handle_impl.h"
-#include "content/child/web_url_loader_impl.h"
 #include "grit/blink_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -38,6 +36,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/base/layout.h"
 #include "webkit/child/webkit_child_helpers.h"
+#include "webkit/child/websocketstreamhandle_impl.h"
+#include "webkit/child/weburlloader_impl.h"
 #include "webkit/common/user_agent/user_agent.h"
 
 #if defined(OS_ANDROID)
@@ -106,9 +106,9 @@ class MemoryUsageCache {
   base::Lock lock_;
 };
 
-}  // namespace
+}  // anonymous namespace
 
-namespace content {
+namespace webkit_glue {
 
 static int ToMessageID(WebLocalizedString::Name name) {
   switch (name) {
@@ -344,29 +344,29 @@ static int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
-BlinkPlatformImpl::BlinkPlatformImpl()
+WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
     : main_loop_(base::MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0) {}
 
-BlinkPlatformImpl::~BlinkPlatformImpl() {
+WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
 }
 
-WebURLLoader* BlinkPlatformImpl::createURLLoader() {
+WebURLLoader* WebKitPlatformSupportImpl::createURLLoader() {
   return new WebURLLoaderImpl(this);
 }
 
-WebSocketStreamHandle* BlinkPlatformImpl::createSocketStreamHandle() {
+WebSocketStreamHandle* WebKitPlatformSupportImpl::createSocketStreamHandle() {
   return new WebSocketStreamHandleImpl(this);
 }
 
-WebString BlinkPlatformImpl::userAgent(const WebURL& url) {
+WebString WebKitPlatformSupportImpl::userAgent(const WebURL& url) {
   return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
 }
 
-WebData BlinkPlatformImpl::parseDataURL(
+WebData WebKitPlatformSupportImpl::parseDataURL(
     const WebURL& url,
     WebString& mimetype_out,
     WebString& charset_out) {
@@ -380,20 +380,20 @@ WebData BlinkPlatformImpl::parseDataURL(
   return WebData();
 }
 
-WebURLError BlinkPlatformImpl::cancelledError(
+WebURLError WebKitPlatformSupportImpl::cancelledError(
     const WebURL& unreachableURL) const {
   return WebURLLoaderImpl::CreateError(unreachableURL, false, net::ERR_ABORTED);
 }
 
-void BlinkPlatformImpl::decrementStatsCounter(const char* name) {
+void WebKitPlatformSupportImpl::decrementStatsCounter(const char* name) {
   base::StatsCounter(name).Decrement();
 }
 
-void BlinkPlatformImpl::incrementStatsCounter(const char* name) {
+void WebKitPlatformSupportImpl::incrementStatsCounter(const char* name) {
   base::StatsCounter(name).Increment();
 }
 
-void BlinkPlatformImpl::histogramCustomCounts(
+void WebKitPlatformSupportImpl::histogramCustomCounts(
     const char* name, int sample, int min, int max, int bucket_count) {
   // Copied from histogram macro, but without the static variable caching
   // the histogram because name is dynamic.
@@ -404,7 +404,7 @@ void BlinkPlatformImpl::histogramCustomCounts(
   counter->Add(sample);
 }
 
-void BlinkPlatformImpl::histogramEnumeration(
+void WebKitPlatformSupportImpl::histogramEnumeration(
     const char* name, int sample, int boundary_value) {
   // Copied from histogram macro, but without the static variable caching
   // the histogram because name is dynamic.
@@ -415,18 +415,18 @@ void BlinkPlatformImpl::histogramEnumeration(
   counter->Add(sample);
 }
 
-void BlinkPlatformImpl::histogramSparse(const char* name, int sample) {
+void WebKitPlatformSupportImpl::histogramSparse(const char* name, int sample) {
   // For sparse histograms, we can use the macro, as it does not incorporate a
   // static.
   UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample);
 }
 
-const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
+const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
     const char* category_group) {
   return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
 }
 
-long* BlinkPlatformImpl::getTraceSamplingState(
+long* WebKitPlatformSupportImpl::getTraceSamplingState(
     const unsigned thread_bucket) {
   switch (thread_bucket) {
     case 0:
@@ -446,7 +446,7 @@ COMPILE_ASSERT(
         sizeof(base::debug::TraceEventHandle),
     TraceEventHandle_types_must_be_same_size);
 
-blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
+blink::Platform::TraceEventHandle WebKitPlatformSupportImpl::addTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -464,7 +464,7 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
   return result;
 }
 
-void BlinkPlatformImpl::updateTraceEventDuration(
+void WebKitPlatformSupportImpl::updateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle) {
@@ -476,7 +476,7 @@ void BlinkPlatformImpl::updateTraceEventDuration(
 
 namespace {
 
-WebData loadAudioSpatializationResource(BlinkPlatformImpl* platform,
+WebData loadAudioSpatializationResource(WebKitPlatformSupportImpl* platform,
                                         const char* name) {
 #ifdef IDR_AUDIO_SPATIALIZATION_COMPOSITE
   if (!strcmp(name, "Composite")) {
@@ -648,7 +648,7 @@ const DataResource kDataResources[] = {
 
 }  // namespace
 
-WebData BlinkPlatformImpl::loadResource(const char* name) {
+WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
   // Some clients will call into this method with an empty |name| when they have
   // optional resources.  For example, the PopupMenuChromium code can have icons
   // for some Autofill items but not for others.
@@ -675,7 +675,7 @@ WebData BlinkPlatformImpl::loadResource(const char* name) {
   return WebData();
 }
 
-WebString BlinkPlatformImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name) {
   int message_id = ToMessageID(name);
   if (message_id < 0)
@@ -683,12 +683,12 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   return GetLocalizedString(message_id);
 }
 
-WebString BlinkPlatformImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name, int numeric_value) {
   return queryLocalizedString(name, base::IntToString16(numeric_value));
 }
 
-WebString BlinkPlatformImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name, const WebString& value) {
   int message_id = ToMessageID(name);
   if (message_id < 0)
@@ -696,7 +696,7 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   return ReplaceStringPlaceholders(GetLocalizedString(message_id), value, NULL);
 }
 
-WebString BlinkPlatformImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name,
     const WebString& value1,
     const WebString& value2) {
@@ -711,25 +711,25 @@ WebString BlinkPlatformImpl::queryLocalizedString(
       GetLocalizedString(message_id), values, NULL);
 }
 
-double BlinkPlatformImpl::currentTime() {
+double WebKitPlatformSupportImpl::currentTime() {
   return base::Time::Now().ToDoubleT();
 }
 
-double BlinkPlatformImpl::monotonicallyIncreasingTime() {
+double WebKitPlatformSupportImpl::monotonicallyIncreasingTime() {
   return base::TimeTicks::Now().ToInternalValue() /
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
-void BlinkPlatformImpl::cryptographicallyRandomValues(
+void WebKitPlatformSupportImpl::cryptographicallyRandomValues(
     unsigned char* buffer, size_t length) {
   base::RandBytes(buffer, length);
 }
 
-void BlinkPlatformImpl::setSharedTimerFiredFunction(void (*func)()) {
+void WebKitPlatformSupportImpl::setSharedTimerFiredFunction(void (*func)()) {
   shared_timer_func_ = func;
 }
 
-void BlinkPlatformImpl::setSharedTimerFireInterval(
+void WebKitPlatformSupportImpl::setSharedTimerFireInterval(
     double interval_seconds) {
   shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
   if (shared_timer_suspended_) {
@@ -756,45 +756,45 @@ void BlinkPlatformImpl::setSharedTimerFireInterval(
 
   shared_timer_.Stop();
   shared_timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
-                      this, &BlinkPlatformImpl::DoTimeout);
+                      this, &WebKitPlatformSupportImpl::DoTimeout);
   OnStartSharedTimer(base::TimeDelta::FromMicroseconds(interval));
 }
 
-void BlinkPlatformImpl::stopSharedTimer() {
+void WebKitPlatformSupportImpl::stopSharedTimer() {
   shared_timer_.Stop();
 }
 
-void BlinkPlatformImpl::callOnMainThread(
+void WebKitPlatformSupportImpl::callOnMainThread(
     void (*func)(void*), void* context) {
   main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
-base::PlatformFile BlinkPlatformImpl::databaseOpenFile(
+base::PlatformFile WebKitPlatformSupportImpl::databaseOpenFile(
     const blink::WebString& vfs_file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;
 }
 
-int BlinkPlatformImpl::databaseDeleteFile(
+int WebKitPlatformSupportImpl::databaseDeleteFile(
     const blink::WebString& vfs_file_name, bool sync_dir) {
   return -1;
 }
 
-long BlinkPlatformImpl::databaseGetFileAttributes(
+long WebKitPlatformSupportImpl::databaseGetFileAttributes(
     const blink::WebString& vfs_file_name) {
   return 0;
 }
 
-long long BlinkPlatformImpl::databaseGetFileSize(
+long long WebKitPlatformSupportImpl::databaseGetFileSize(
     const blink::WebString& vfs_file_name) {
   return 0;
 }
 
-long long BlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
+long long WebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const blink::WebString& origin_identifier) {
   return 0;
 }
 
-blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(
+blink::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const blink::WebString& challenge,
     const blink::WebURL& url) {
@@ -822,28 +822,28 @@ static size_t getMemoryUsageMB(bool bypass_cache) {
       mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
     return current_mem_usage;
 
-  current_mem_usage = webkit_glue::MemoryUsageKB() >> 10;
+  current_mem_usage = MemoryUsageKB() >> 10;
   mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
   return current_mem_usage;
 }
 
-size_t BlinkPlatformImpl::memoryUsageMB() {
+size_t WebKitPlatformSupportImpl::memoryUsageMB() {
   return getMemoryUsageMB(false);
 }
 
-size_t BlinkPlatformImpl::actualMemoryUsageMB() {
+size_t WebKitPlatformSupportImpl::actualMemoryUsageMB() {
   return getMemoryUsageMB(true);
 }
 
-size_t BlinkPlatformImpl::physicalMemoryMB() {
+size_t WebKitPlatformSupportImpl::physicalMemoryMB() {
   return static_cast<size_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
 }
 
-size_t BlinkPlatformImpl::numberOfProcessors() {
+size_t WebKitPlatformSupportImpl::numberOfProcessors() {
   return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
 }
 
-void BlinkPlatformImpl::startHeapProfiling(
+void WebKitPlatformSupportImpl::startHeapProfiling(
   const blink::WebString& prefix) {
   // FIXME(morrita): Make this built on windows.
 #if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
@@ -851,20 +851,20 @@ void BlinkPlatformImpl::startHeapProfiling(
 #endif
 }
 
-void BlinkPlatformImpl::stopHeapProfiling() {
+void WebKitPlatformSupportImpl::stopHeapProfiling() {
 #if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
   HeapProfilerStop();
 #endif
 }
 
-void BlinkPlatformImpl::dumpHeapProfiling(
+void WebKitPlatformSupportImpl::dumpHeapProfiling(
   const blink::WebString& reason) {
 #if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
   HeapProfilerDump(reason.utf8().data());
 #endif
 }
 
-WebString BlinkPlatformImpl::getHeapProfile() {
+WebString WebKitPlatformSupportImpl::getHeapProfile() {
 #if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
   char* data = GetHeapProfile();
   WebString result = WebString::fromUTF8(std::string(data));
@@ -875,17 +875,17 @@ WebString BlinkPlatformImpl::getHeapProfile() {
 #endif
 }
 
-bool BlinkPlatformImpl::processMemorySizesInBytes(
+bool WebKitPlatformSupportImpl::processMemorySizesInBytes(
     size_t* private_bytes,
     size_t* shared_bytes) {
   return CurrentProcessMetrics()->GetMemoryBytes(private_bytes, shared_bytes);
 }
 
-bool BlinkPlatformImpl::memoryAllocatorWasteInBytes(size_t* size) {
+bool WebKitPlatformSupportImpl::memoryAllocatorWasteInBytes(size_t* size) {
   return base::allocator::GetAllocatorWasteSize(size);
 }
 
-size_t BlinkPlatformImpl::maxDecodedImageBytes() {
+size_t WebKitPlatformSupportImpl::maxDecodedImageBytes() {
 #if defined(OS_ANDROID)
   if (base::android::SysUtils::IsLowEndDevice()) {
     // Limit image decoded size to 3M pixels on low end devices.
@@ -900,11 +900,11 @@ size_t BlinkPlatformImpl::maxDecodedImageBytes() {
 #endif
 }
 
-void BlinkPlatformImpl::SuspendSharedTimer() {
+void WebKitPlatformSupportImpl::SuspendSharedTimer() {
   ++shared_timer_suspended_;
 }
 
-void BlinkPlatformImpl::ResumeSharedTimer() {
+void WebKitPlatformSupportImpl::ResumeSharedTimer() {
   // The shared timer may have fired or been adjusted while we were suspended.
   if (--shared_timer_suspended_ == 0 &&
       (!shared_timer_.IsRunning() ||
@@ -915,4 +915,4 @@ void BlinkPlatformImpl::ResumeSharedTimer() {
   }
 }
 
-}  // namespace content
+}  // namespace webkit_glue

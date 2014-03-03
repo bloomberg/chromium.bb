@@ -14,29 +14,32 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_thread.h"
-#include "content/child/web_socket_stream_handle_bridge.h"
-#include "content/child/web_socket_stream_handle_delegate.h"
-#include "content/child/web_socket_stream_handle_impl.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/socket_stream_messages.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
+#include "webkit/child/websocketstreamhandle_bridge.h"
+#include "webkit/child/websocketstreamhandle_delegate.h"
 
 namespace content {
 
 // IPCWebSocketStreamHandleBridge is owned by each SocketStreamHandle.
 // It communicates with the main browser process via SocketStreamDispatcher.
-class IPCWebSocketStreamHandleBridge : public WebSocketStreamHandleBridge {
+class IPCWebSocketStreamHandleBridge
+    : public webkit_glue::WebSocketStreamHandleBridge {
  public:
-  IPCWebSocketStreamHandleBridge(blink::WebSocketStreamHandle* handle,
-                                 WebSocketStreamHandleDelegate* delegate)
-      : socket_id_(kNoSocketId), handle_(handle), delegate_(delegate) {}
+  IPCWebSocketStreamHandleBridge(
+      blink::WebSocketStreamHandle* handle,
+      webkit_glue::WebSocketStreamHandleDelegate* delegate)
+      : socket_id_(kNoSocketId),
+        handle_(handle),
+        delegate_(delegate) {}
 
   // Returns the handle having given id or NULL if there is no such handle.
   static IPCWebSocketStreamHandleBridge* FromSocketId(int id);
 
-  // WebSocketStreamHandleBridge methods.
+  // webkit_glue::WebSocketStreamHandleBridge methods.
   virtual void Connect(const GURL& url) OVERRIDE;
   virtual bool Send(const std::vector<char>& data) OVERRIDE;
   virtual void Close() OVERRIDE;
@@ -56,7 +59,7 @@ class IPCWebSocketStreamHandleBridge : public WebSocketStreamHandleBridge {
   int socket_id_;
 
   blink::WebSocketStreamHandle* handle_;
-  WebSocketStreamHandleDelegate* delegate_;
+  webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
   // Map from ID to bridge instance.
   static base::LazyInstance<IDMap<IPCWebSocketStreamHandleBridge> >::Leaky
@@ -94,10 +97,8 @@ void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
   socket_id_ = all_bridges.Get().Add(this);
   DCHECK_NE(socket_id_, kNoSocketId);
   int render_frame_id = MSG_ROUTING_NONE;
-  WebSocketStreamHandleImpl* impl =
-      static_cast<WebSocketStreamHandleImpl*>(handle_);
   const SocketStreamHandleData* data =
-      static_cast<SocketStreamHandleData*>(impl->GetUserData(handle_));
+      SocketStreamHandleData::ForHandle(handle_);
   if (data)
     render_frame_id = data->render_frame_id();
   AddRef();  // Released in OnClosed().
@@ -173,10 +174,11 @@ void IPCWebSocketStreamHandleBridge::OnFailed(int error_code,
 SocketStreamDispatcher::SocketStreamDispatcher() {
 }
 
-// static
-WebSocketStreamHandleBridge* SocketStreamDispatcher::CreateBridge(
+/* static */
+webkit_glue::WebSocketStreamHandleBridge*
+SocketStreamDispatcher::CreateBridge(
     blink::WebSocketStreamHandle* handle,
-    WebSocketStreamHandleDelegate* delegate) {
+    webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   return new IPCWebSocketStreamHandleBridge(handle, delegate);
 }
 

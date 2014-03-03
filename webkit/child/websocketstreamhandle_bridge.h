@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEB_SOCKET_STREAM_HANDLE_BRIDGE_H_
-#define CONTENT_CHILD_WEB_SOCKET_STREAM_HANDLE_BRIDGE_H_
+#ifndef WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
+#define WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
 
 #include <vector>
 
@@ -12,7 +12,7 @@
 
 class GURL;
 
-namespace content {
+namespace webkit_glue {
 
 class WebSocketStreamHandleBridge
     : public base::RefCountedThreadSafe<WebSocketStreamHandleBridge> {
@@ -32,6 +32,6 @@ class WebSocketStreamHandleBridge
   DISALLOW_COPY_AND_ASSIGN(WebSocketStreamHandleBridge);
 };
 
-}  // namespace content
+}  // namespace webkit_glue
 
-#endif  // CONTENT_CHILD_WEB_SOCKET_STREAM_HANDLE_BRIDGE_H_
+#endif  // WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
