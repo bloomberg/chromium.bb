@@ -177,7 +177,6 @@
         'test/web_layer_tree_view_impl_for_testing.h',
         'test/webkit_support.cc',
         'test/webkit_support.h',
-        'test/webkit_support_glue.cc',
         'test/weburl_loader_mock.cc',
         'test/weburl_loader_mock.h',
         'test/weburl_loader_mock_factory.cc',
