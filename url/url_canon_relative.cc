@@ -121,6 +121,10 @@ bool DoIsRelativeURL(const char* base,
   int scheme_end = scheme.end();
   for (int i = scheme.begin; i < scheme_end; i++) {
     if (!CanonicalSchemeChar(url[i])) {
+      if (!is_base_hierarchical) {
+        // Don't allow relative URLs if the base scheme doesn't support it.
+        return false;
+      }
       *relative_component = url_parse::MakeRange(begin, url_len);
       *is_relative = true;
       return true;

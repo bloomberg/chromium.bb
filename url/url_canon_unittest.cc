@@ -2072,6 +2072,7 @@ TEST(URLCanonTest, ResolveRelativeURL) {
     {"http://foo/bar", true, false, ":foo", true, true, true, "http://foo/:foo"},
     {"http://foo/bar", true, false, " hello world", true, true, true, "http://foo/hello%20world"},
     {"data:asdf", false, false, ":foo", false, false, false, NULL},
+    {"data:asdf", false, false, "bad(':foo')", false, false, false, NULL},
       // We should treat semicolons like any other character in URL resolving
     {"http://host/a", true, false, ";foo", true, true, true, "http://host/;foo"},
     {"http://host/a;", true, false, ";foo", true, true, true, "http://host/;foo"},
