@@ -10,4 +10,8 @@ PASS maskElement.x.baseVal.valueAsString is "-10%"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 30 30 151 151)
+  (rect 30 30 151 151)
+)
 

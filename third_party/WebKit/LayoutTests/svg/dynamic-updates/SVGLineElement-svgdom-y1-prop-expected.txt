@@ -10,4 +10,8 @@ PASS lineElement.y1.baseVal.value is 10
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 15 103 196 110)
+  (rect 14 14 198 198)
+)
 

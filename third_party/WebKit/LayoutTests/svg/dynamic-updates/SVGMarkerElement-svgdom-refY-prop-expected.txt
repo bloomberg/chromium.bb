@@ -10,4 +10,9 @@ PASS markerElement.refY.baseVal.value is 5
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 2 2)
+  (rect 128 8 70 185)
+  (rect 128 133 70 70)
+)
 

@@ -10,4 +10,9 @@ PASS markerElement.markerUnits.baseVal is SVGMarkerElement.SVG_MARKERUNITS_STROK
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 2 2)
+  (rect 137 138 56 56)
+  (rect 128 133 70 70)
+)
 

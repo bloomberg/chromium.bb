@@ -10,4 +10,7 @@ PASS linearGradientElement.gradientUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_U
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 58 8 200 300)
+)
 
