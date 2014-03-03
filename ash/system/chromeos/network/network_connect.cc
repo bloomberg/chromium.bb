@@ -272,7 +272,7 @@ void ClearPropertiesAndConnect(
 // trigger an error and abort.
 bool GetNetworkProfilePath(bool shared, std::string* profile_path) {
   if (shared) {
-    *profile_path = NetworkProfileHandler::kSharedProfilePath;
+    *profile_path = NetworkProfileHandler::GetSharedProfilePath();
     return true;
   }
 

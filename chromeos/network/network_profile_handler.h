@@ -57,7 +57,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   // userhash.
   const NetworkProfile* GetDefaultUserProfile() const;
 
-  static const char kSharedProfilePath[];
+  static std::string GetSharedProfilePath();
 
  protected:
   friend class ClientCertResolverTest;

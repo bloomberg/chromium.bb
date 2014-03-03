@@ -44,7 +44,6 @@ std::string ValueToString(const base::Value* value) {
   return str.str();
 }
 
-const char kSharedProfilePath[] = "/profile/default";
 const char kUser1[] = "user1";
 const char kUser1ProfilePath[] = "/profile/user1/shill";
 
@@ -208,7 +207,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     network_profile_handler_->
         AddProfileForTest(NetworkProfile(kUser1ProfilePath, kUser1));
     network_profile_handler_->
-        AddProfileForTest(NetworkProfile(kSharedProfilePath, std::string()));
+        AddProfileForTest(NetworkProfile(
+            NetworkProfileHandler::GetSharedProfilePath(), std::string()));
   }
 
   void SetUpEntry(const std::string& path_to_shill_json,

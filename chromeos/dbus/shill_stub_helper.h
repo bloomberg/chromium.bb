@@ -12,17 +12,9 @@
 namespace chromeos {
 namespace shill_stub_helper {
 
-CHROMEOS_EXPORT extern const char kSharedProfilePath[];
-
 // Add default devices, services and profiles. This works only if
 // DBusThreadManager was initialized with the FakeShill*Clients.
 void SetupDefaultEnvironment();
-
-std::string DevicePathForType(const std::string& type);
-
-// Returns true when stub portalled wifi is enabled and it's service
-// path equals to |path|.
-CHROMEOS_EXPORT bool IsStubPortalledWifiEnabled(const std::string& path);
 
 }  // namespace shill_stub_helper
 }  // namespace chromeos

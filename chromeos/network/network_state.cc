@@ -236,7 +236,7 @@ bool NetworkState::IsConnectingState() const {
 
 bool NetworkState::IsPrivate() const {
   return !profile_path_.empty() &&
-      profile_path_ != NetworkProfileHandler::kSharedProfilePath;
+      profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
 }
 
 std::string NetworkState::GetDnsServersAsString() const {

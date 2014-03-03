@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_stub_helper.h"
@@ -337,6 +338,9 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
     bool add_to_watch_list) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddManagerService(service_path, add_to_visible_list, add_to_watch_list);
+  std::string device_path =
+      DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface()->
+      GetDevicePathForType(type);
 
   base::DictionaryValue* properties =
       GetModifiableServiceProperties(service_path, true);
@@ -347,8 +351,7 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
       base::Value::CreateStringValue(name));
   properties->SetWithoutPathExpansion(
       shill::kDeviceProperty,
-      base::Value::CreateStringValue(
-          shill_stub_helper::DevicePathForType(type)));
+      base::Value::CreateStringValue(device_path));
   properties->SetWithoutPathExpansion(
       shill::kTypeProperty,
       base::Value::CreateStringValue(type));

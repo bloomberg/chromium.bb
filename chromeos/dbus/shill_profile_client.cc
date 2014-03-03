@@ -20,6 +20,8 @@ namespace chromeos {
 
 namespace {
 
+const char kSharedProfilePath[] = "/profile/default";
+
 class ShillProfileClientImpl : public ShillProfileClient {
  public:
   ShillProfileClientImpl();
@@ -136,6 +138,11 @@ ShillProfileClient::~ShillProfileClient() {}
 // static
 ShillProfileClient* ShillProfileClient::Create() {
   return new ShillProfileClientImpl();
+}
+
+// static
+std::string ShillProfileClient::GetSharedProfilePath() {
+  return std::string(kSharedProfilePath);
 }
 
 }  // namespace chromeos

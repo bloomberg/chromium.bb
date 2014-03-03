@@ -20,7 +20,6 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/dbus/shill_stub_helper.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -171,8 +170,8 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->SetServiceProperty(
         "stub_ethernet",
         shill::kProfileProperty,
-        base::StringValue(chromeos::shill_stub_helper::kSharedProfilePath));
-    profile_test->AddService(chromeos::shill_stub_helper::kSharedProfilePath,
+        base::StringValue(ShillProfileClient::GetSharedProfilePath()));
+    profile_test->AddService(ShillProfileClient::GetSharedProfilePath(),
                              "stub_ethernet");
 
     service_test->AddService("stub_wifi1", "wifi1",

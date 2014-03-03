@@ -69,7 +69,7 @@ bool FavoriteState::PropertyChanged(const std::string& key,
 
 bool FavoriteState::IsPrivate() const {
   return !profile_path_.empty() &&
-         profile_path_ != NetworkProfileHandler::kSharedProfilePath;
+      profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
 }
 
 }  // namespace chromeos

@@ -20,19 +20,11 @@ namespace shill_stub_helper {
 
 namespace {
 
-const char kDevicePathEthernet[] = "/device/eth1";
-const char kDevicePathWifi[] = "/device/wifi1";
-const char kDevicePathCellular[] = "/device/cellular1";
-const char kDevicePathWimax[] = "/device/wimax1";
-
-const char kStubPortalledWifiName[] = "Portalled Wifi";
-const char kStubPortalledWifiPath[] = "portalled_wifi";
-
-void UpdatePortalledWifiState() {
+void UpdatePortalledWifiState(const std::string& service_path) {
   ShillServiceClient::TestInterface* services =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
 
-  services->SetServiceProperty(kStubPortalledWifiPath,
+  services->SetServiceProperty(service_path,
                                shill::kStateProperty,
                                base::StringValue(shill::kStatePortal));
 }
@@ -57,16 +49,6 @@ bool IsStubNetworkTypeEnabled(const std::string& network_type) {
 
 }  // namespace
 
-const char kSharedProfilePath[] = "/profile/default";
-
-bool IsStubPortalledWifiEnabled(const std::string& path) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           chromeos::switches::kEnableStubPortalledWifi)) {
-    return false;
-  }
-  return path == kStubPortalledWifiPath;
-}
-
 void SetupDefaultEnvironment() {
   ShillServiceClient::TestInterface* services =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
@@ -85,19 +67,19 @@ void SetupDefaultEnvironment() {
   manager->AddTechnology(shill::kTypeCellular, true);
   manager->AddTechnology(shill::kTypeWimax, true);
 
-  profiles->AddProfile(kSharedProfilePath, std::string());
+  std::string shared_profile = ShillProfileClient::GetSharedProfilePath();
+  profiles->AddProfile(shared_profile, std::string());
+
+  devices->AddDevice("/device/eth1", shill::kTypeEthernet, "stub_eth_device1");
+  devices->AddDevice("/device/wifi1", shill::kTypeWifi, "stub_wifi_device1");
 
   devices->AddDevice(
-      kDevicePathEthernet, shill::kTypeEthernet, "stub_eth_device1");
-  devices->AddDevice(kDevicePathWifi, shill::kTypeWifi, "stub_wifi_device1");
-
-  devices->AddDevice(
-      kDevicePathCellular, shill::kTypeCellular, "stub_cellular_device1");
-  devices->SetDeviceProperty(kDevicePathCellular,
+      "/device/cellular1", shill::kTypeCellular, "stub_cellular_device1");
+  devices->SetDeviceProperty("/device/cellular1",
                              shill::kCarrierProperty,
                              base::StringValue(shill::kCarrierSprint));
 
-  devices->AddDevice(kDevicePathWimax, shill::kTypeWimax, "stub_wimax_device1");
+  devices->AddDevice("/device/wimax1", shill::kTypeWimax, "stub_wimax_device1");
 
   const bool add_to_visible = true;
   const bool add_to_watchlist = true;
@@ -108,7 +90,7 @@ void SetupDefaultEnvironment() {
                          shill::kTypeEthernet,
                          shill::kStateOnline,
                          add_to_visible, add_to_watchlist);
-    profiles->AddService(kSharedProfilePath, "eth1");
+    profiles->AddService(shared_profile, "eth1");
   }
 
   // Wifi
@@ -122,7 +104,7 @@ void SetupDefaultEnvironment() {
   services->SetServiceProperty("wifi1",
                                shill::kSecurityProperty,
                                base::StringValue(shill::kSecurityWep));
-  profiles->AddService(kSharedProfilePath, "wifi1");
+  profiles->AddService(shared_profile, "wifi1");
 
   services->AddService("wifi2",
                        "wifi2_PSK",
@@ -135,23 +117,26 @@ void SetupDefaultEnvironment() {
   base::FundamentalValue strength_value(80);
   services->SetServiceProperty(
       "wifi2", shill::kSignalStrengthProperty, strength_value);
-  profiles->AddService(kSharedProfilePath, "wifi2");
+  profiles->AddService(shared_profile, "wifi2");
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableStubPortalledWifi)) {
-    services->AddService(kStubPortalledWifiPath,
-                         kStubPortalledWifiName,
+    const std::string kPortalledWifiPath = "portalled_wifi";
+    services->AddService(kPortalledWifiPath,
+                         "Portalled Wifi",
                          shill::kTypeWifi,
                          shill::kStatePortal,
                          add_to_visible, add_to_watchlist);
-    services->SetServiceProperty(kStubPortalledWifiPath,
+    services->SetServiceProperty(kPortalledWifiPath,
                                  shill::kSecurityProperty,
                                  base::StringValue(shill::kSecurityNone));
-    services->SetConnectBehavior(kStubPortalledWifiPath,
-                                 base::Bind(&UpdatePortalledWifiState));
-    services->SetServiceProperty(kStubPortalledWifiPath,
+    services->SetConnectBehavior(kPortalledWifiPath,
+                                 base::Bind(&UpdatePortalledWifiState,
+                                            kPortalledWifiPath));
+    services->SetServiceProperty(kPortalledWifiPath,
                                  shill::kConnectableProperty,
                                  base::FundamentalValue(true));
+    profiles->AddService(shared_profile, kPortalledWifiPath);
   }
 
   // Wimax
@@ -200,7 +185,7 @@ void SetupDefaultEnvironment() {
                        add_to_visible, add_to_watchlist);
   services->SetServiceProperty(
       "vpn1", shill::kProviderProperty, provider_properties);
-  profiles->AddService(kSharedProfilePath, "vpn1");
+  profiles->AddService(shared_profile, "vpn1");
 
   services->AddService("vpn2",
                        "vpn2",
@@ -211,18 +196,6 @@ void SetupDefaultEnvironment() {
       "vpn2", shill::kProviderProperty, provider_properties);
 
   manager->SortManagerServices();
-}
-
-std::string DevicePathForType(const std::string& type) {
-  if (type == shill::kTypeEthernet)
-    return kDevicePathEthernet;
-  if (type == shill::kTypeWifi)
-    return kDevicePathWifi;
-  if (type == shill::kTypeCellular)
-    return kDevicePathCellular;
-  if (type == shill::kTypeWimax)
-    return kDevicePathWimax;
-  return "";
 }
 
 }  // namespace shill_stub_helper

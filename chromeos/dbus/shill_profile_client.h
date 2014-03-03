@@ -76,6 +76,9 @@ class CHROMEOS_EXPORT ShillProfileClient : public DBusClient {
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static ShillProfileClient* Create();
 
+  // Returns the shared profile path.
+  static std::string GetSharedProfilePath();
+
   // Adds a property changed |observer| for the profile at |profile_path|.
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& profile_path,

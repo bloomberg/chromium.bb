@@ -56,7 +56,9 @@ class ProfilePathEquals {
 }  // namespace
 
 // static
-const char NetworkProfileHandler::kSharedProfilePath[] = "/profile/default";
+std::string NetworkProfileHandler::GetSharedProfilePath() {
+  return ShillProfileClient::GetSharedProfilePath();
+}
 
 void NetworkProfileHandler::AddObserver(NetworkProfileObserver* observer) {
   observers_.AddObserver(observer);

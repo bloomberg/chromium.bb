@@ -10,7 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chromeos/dbus/shill_stub_helper.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/notification_service.h"
@@ -362,11 +363,6 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
   captive_portal::Result result = results.result;
   int response_code = results.response_code;
 
-  if (shill_stub_helper::IsStubPortalledWifiEnabled(default_service_path_)) {
-    result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
-    response_code = 200;
-  }
-
   DCHECK(CalledOnValidThread());
   DCHECK(IsCheckingForPortal());
 
@@ -383,6 +379,16 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
 
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+
+  // If using a fake profile client, also fake being behind a captive portal
+  // if the default network is in portal state.
+  if (result != captive_portal::RESULT_NO_RESPONSE &&
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface() &&
+      default_network &&
+      default_network->connection_state() == shill::kStatePortal) {
+    result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
+    response_code = 200;
+  }
 
   CaptivePortalState state;
   state.response_code = response_code;
