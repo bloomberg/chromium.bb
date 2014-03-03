@@ -64,10 +64,10 @@ function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
     'authenticationManager.isSignedIn',
     'chrome.storage.local.remove',
+    'fillFromChromeLocalStorage',
     'instrumented.metricsPrivate.getVariationParams',
     'instrumented.notifications.getAll',
     'instrumented.notifications.getPermissionLevel',
-    'instrumented.storage.local.get',
     'instrumented.webstorePrivate.getBrowserLogin',
     'tasks.add',
     'updateCardsAttempts.isRunning',
@@ -119,13 +119,10 @@ function expectStateMachineCalls(
           0,
           testNotificationPermissionLevel))
 
-   var storageGetSavedArgs = new SaveMockArguments();
-   fixture.mockApis.expects(once()).
-       instrumented_storage_local_get(
-           storageGetSavedArgs.match(eq('googleNowEnabled')),
-           storageGetSavedArgs.match(ANYTHING)).
-       will(invokeCallback(
-          storageGetSavedArgs, 1, {googleNowEnabled: testGoogleNowEnabled}));
+  expectChromeLocalStorageGet(
+      fixture,
+      {googleNowEnabled: false},
+      {googleNowEnabled: testGoogleNowEnabled});
 
   fixture.mockGlobals.expects(once()).
       setBackgroundEnable(ANYTHING);
@@ -227,7 +224,7 @@ function mockOnNotificationClickedDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
       'chrome.windows.create',
       'chrome.windows.update',
-      'instrumented.storage.local.get',
+      'fillFromChromeLocalStorage',
       'instrumented.tabs.create']);
 }
 
@@ -240,17 +237,14 @@ TEST_F(
 
       // Setup and expectations.
       var testNotificationId = 'TEST_ID';
-      var testNotificationData = {};
+      var testNotificationDataRequest = {notificationsData: {}};
+      var testNotificationData = {notificationsData: {}};
 
       mockOnNotificationClickedDependencies(this);
       this.makeMockLocalFunctions(['selector']);
 
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(eq('notificationsData')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      expectChromeLocalStorageGet(
+          this, testNotificationDataRequest, testNotificationData);
 
       // Invoking the tested function.
       onNotificationClicked(
@@ -268,6 +262,7 @@ TEST_F(
       // Setup and expectations.
       var testActionUrls = undefined;
       var testNotificationId = 'TEST_ID';
+      var testNotificationDataRequest = {notificationsData: {}};
       var testNotificationData = {
           notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
       };
@@ -275,12 +270,9 @@ TEST_F(
       mockOnNotificationClickedDependencies(this);
       this.makeMockLocalFunctions(['selector']);
 
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(eq('notificationsData')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      expectChromeLocalStorageGet(
+          this, testNotificationDataRequest, testNotificationData);
+
       this.mockLocalFunctions.expects(once()).selector(undefined).will(
           returnValue(undefined));
 
@@ -298,6 +290,7 @@ TEST_F(
       // Setup and expectations.
       var testActionUrls = {testField: 'TEST VALUE'};
       var testNotificationId = 'TEST_ID';
+      var testNotificationDataRequest = {notificationsData: {}};
       var testNotificationData = {
           notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
       };
@@ -307,12 +300,8 @@ TEST_F(
       mockOnNotificationClickedDependencies(this);
       this.makeMockLocalFunctions(['selector']);
 
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(eq('notificationsData')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      expectChromeLocalStorageGet(
+          this, testNotificationDataRequest, testNotificationData);
       this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
           returnValue(testActionUrl));
       var chromeTabsCreateSavedArgs = new SaveMockArguments();
@@ -341,6 +330,7 @@ TEST_F(
       // Setup and expectations.
       var testActionUrls = {testField: 'TEST VALUE'};
       var testNotificationId = 'TEST_ID';
+      var testNotificationDataRequest = {notificationsData: {}};
       var testNotificationData = {
         notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
       };
@@ -350,12 +340,8 @@ TEST_F(
       mockOnNotificationClickedDependencies(this);
       this.makeMockLocalFunctions(['selector']);
 
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(eq('notificationsData')),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
+      expectChromeLocalStorageGet(
+          this, testNotificationDataRequest, testNotificationData);
       this.mockLocalFunctions.expects(once()).selector(testActionUrls).will(
           returnValue(testActionUrl));
       var chromeTabsCreateSavedArgs = new SaveMockArguments();
@@ -653,29 +639,26 @@ TEST_F(
       var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
 
       this.makeAndRegisterMockGlobals([
-        'scheduleNextPoll',
         'combineAndShowNotificationCards',
-        'recordEvent'
+        'recordEvent',
+        'scheduleNextPoll'
       ]);
 
       this.makeAndRegisterMockApis([
         'chrome.storage.local.set',
-        'instrumented.storage.local.get'
+        'fillFromChromeLocalStorage'
       ]);
 
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(
-                  eq(['notificationGroups', 'recentDismissals'])),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(
-              storageGetSavedArgs,
-              1,
-              {
-                notificationGroups: storedGroups,
-                recentDismissals: recentDismissals
-              }));
+      expectChromeLocalStorageGet(
+          this,
+          {
+            notificationGroups: {},
+            recentDismissals: {}
+          },
+          {
+            notificationGroups: storedGroups,
+            recentDismissals: recentDismissals
+          });
 
       this.mockGlobals.expects(once()).
           scheduleNextPoll(eqJSON(expectedUpdatedGroups), true);
@@ -738,15 +721,15 @@ TEST_F(
       var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
 
       this.makeAndRegisterMockGlobals([
-        'scheduleNextPoll',
         'combineAndShowNotificationCards',
+        'onStateChange',
         'recordEvent',
-        'onStateChange'
+        'scheduleNextPoll'
       ]);
 
       this.makeAndRegisterMockApis([
         'chrome.storage.local.set',
-        'instrumented.storage.local.get'
+        'fillFromChromeLocalStorage'
       ]);
 
       this.mockApis.expects(once()).
@@ -755,14 +738,16 @@ TEST_F(
 
       this.mockGlobals.expects(once()).onStateChange();
 
-      var storageGetSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_storage_local_get(
-              storageGetSavedArgs.match(
-                  eq(['notificationGroups', 'recentDismissals'])),
-              storageGetSavedArgs.match(ANYTHING)).
-          will(invokeCallback(
-              storageGetSavedArgs, 1, {notificationGroups: storedGroups}));
+      expectChromeLocalStorageGet(
+          this,
+          {
+            notificationGroups: {},
+            recentDismissals: {}
+          },
+          {
+            notificationGroups: storedGroups,
+            recentDismissals: {}
+          });
 
       this.mockGlobals.expects(once()).
           scheduleNextPoll(eqJSON(expectedUpdatedGroups), false);

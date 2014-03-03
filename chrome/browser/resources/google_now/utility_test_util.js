@@ -13,6 +13,11 @@ chrome['identity'] = {
   getAuthToken: emptyMock,
   removeCachedAuthToken: emptyMock
 };
+chrome['storage'] = {
+  local: {
+    get: emptyMock
+  }
+};
 chrome['webstorePrivate'] = {
   getBrowserLogin: emptyMock
 };

@@ -323,7 +323,7 @@ var wrapper = (function() {
           wrapperPluginInstance.prologue();
 
         // Call the original callback.
-        callback.apply(null, arguments);
+        var returnValue = callback.apply(null, arguments);
 
         if (wrapperPluginInstance)
           wrapperPluginInstance.epilogue();
@@ -331,6 +331,8 @@ var wrapper = (function() {
         verify(isInWrappedCallback,
                'Instrumented callback is not instrumented upon exit');
         isInWrappedCallback = false;
+
+        return returnValue;
       } catch (error) {
         reportError(error);
       }
@@ -434,6 +436,7 @@ wrapper.instrumentChromeApiFunction('alarms.onAlarm.addListener', 0);
 wrapper.instrumentChromeApiFunction('identity.getAuthToken', 1);
 wrapper.instrumentChromeApiFunction('identity.onSignInChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
+wrapper.instrumentChromeApiFunction('storage.local.get', 1);
 wrapper.instrumentChromeApiFunction('webstorePrivate.getBrowserLogin', 0);
 
 /**
@@ -569,7 +572,7 @@ function registerPromiseAdapter() {
         var handler = wrapper.wrapCallback(function() {
           if (sameTracker.callbacks) {
             clearTracker(otherTracker);
-            maybeCallback.apply(null, arguments);
+            return maybeCallback.apply(null, arguments);
           }
         }, false);
         sameTracker.callbacks.push(handler);
@@ -617,6 +620,43 @@ function registerPromiseAdapter() {
 }
 
 registerPromiseAdapter();
+
+/**
+ * Control promise rejection.
+ * @enum {number}
+ */
+var PromiseRejection = {
+  /** Disallow promise rejection */
+  DISALLOW: 0,
+  /** Allow promise rejection */
+  ALLOW: 1
+};
+
+/**
+ * Provides the promise equivalent of instrumented.storage.local.get.
+ * @param {Object} defaultStorageObject Default storage object to fill.
+ * @param {PromiseRejection=} opt_allowPromiseRejection If
+ *     PromiseRejection.ALLOW, allow promise rejection on errors, otherwise the
+ *     default storage object is resolved.
+ * @return {Promise} A promise that fills the default storage object. On
+ *     failure, if promise rejection is allowed, the promise is rejected,
+ *     otherwise it is resolved to the default storage object.
+ */
+function fillFromChromeLocalStorage(
+    defaultStorageObject,
+    opt_allowPromiseRejection) {
+  return new Promise(function(resolve, reject) {
+    instrumented.storage.local.get(defaultStorageObject, function(items) {
+      if (items) {
+        resolve(items);
+      } else if (opt_allowPromiseRejection === PromiseRejection.ALLOW) {
+        reject();
+      } else {
+        resolve(defaultStorageObject);
+      }
+    });
+  });
+}
 
 /**
  * Builds the object to manage tasks (mutually exclusive chains of events).
@@ -859,15 +899,17 @@ function buildAttemptManager(
    *     the planning is done.
    */
   function planForNext(callback) {
-    instrumented.storage.local.get(currentDelayStorageKey, function(items) {
-      if (!items) {
-        items = {};
-        items[currentDelayStorageKey] = maximumDelaySeconds;
-      }
-      console.log('planForNext-get-storage ' + JSON.stringify(items));
-      scheduleNextAttempt(items[currentDelayStorageKey]);
-      callback();
-    });
+    var request = {};
+    request[currentDelayStorageKey] = undefined;
+    fillFromChromeLocalStorage(request, PromiseRejection.ALLOW)
+        .catch(function() {
+          request[currentDelayStorageKey] = maximumDelaySeconds;
+          return Promise.resolve(request);
+        }).then(function(items) {
+          console.log('planForNext-get-storage ' + JSON.stringify(items));
+          scheduleNextAttempt(items[currentDelayStorageKey]);
+          callback();
+        });
   }
 
   instrumented.alarms.onAlarm.addListener(function(alarm) {
@@ -957,17 +999,17 @@ function buildAuthenticationManager() {
    */
   function checkAndNotifyListeners() {
     isSignedIn().then(function(signedIn) {
-      instrumented.storage.local.get('lastSignedInState', function(items) {
-        items = items || {};
-        if (items.lastSignedInState != signedIn) {
-          chrome.storage.local.set(
-              {lastSignedInState: signedIn});
-          listeners.forEach(function(callback) {
-            callback();
-          });
-        }
+      fillFromChromeLocalStorage({lastSignedInState: undefined})
+          .then(function(items) {
+            if (items.lastSignedInState != signedIn) {
+              chrome.storage.local.set(
+                  {lastSignedInState: signedIn});
+              listeners.forEach(function(callback) {
+                callback();
+              });
+            }
+        });
       });
-    });
   }
 
   instrumented.identity.onSignInChanged.addListener(function() {

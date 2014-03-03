@@ -207,7 +207,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'WrapperWrapCallbackEvent', function() {
   Mock4JS.verifyAllMocks();
 
   // Step 3. Check that after the callback we are again in non-instrumented
-  // code. 
+  // code.
   // Expectations.
   this.mockGlobals.expects(once()).
       buildErrorWithMessageForServer('Not in instrumented callback').
@@ -505,7 +505,7 @@ function setUpTaskManagerTest(fixture) {
 TEST_F('GoogleNowUtilityUnitTest', 'TaskManager2Sequential', function() {
   // Tests that 2 tasks get successfully executed consecutively, even if the
   // second one conflicts with the first.
-  
+
   // Setup.
   var test = setUpTaskManagerTest(this);
 
@@ -688,7 +688,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'TaskManagerSuspendSuccess', function() {
 });
 
 TEST_F('GoogleNowUtilityUnitTest', 'TaskManager3Tasks', function() {
-  // Tests that 3 tasks can be executed too. In particular, that if the second 
+  // Tests that 3 tasks can be executed too. In particular, that if the second
   // task is a single-step task which execution was originally blocked by task1,
   // unblocking it causes immediate synchronous execution of both tasks 2 and 3.
 
@@ -768,9 +768,20 @@ var testMaximumDelaySeconds = 2239;
 // the moment.
 var testRandomValue = 0.31415926;
 
-function createTestAttempStorageEntry(delaySeconds) {
-  // Creates a test storage object that attempt manager uses to store current
-  // delay.
+/**
+ * Creates a default storage current delay object.
+ */
+function createTestAttemptStorageEntryRequest() {
+  var storageObject = {};
+  storageObject[testAttemptStorageKey] = undefined;
+  return storageObject;
+}
+
+/**
+ * Creates a test storage object that attempt manager uses to store current
+ * delay.
+ */
+function createTestAttemptStorageEntry(delaySeconds) {
   var storageObject = {};
   storageObject[testAttemptStorageKey] = delaySeconds;
   return storageObject;
@@ -789,8 +800,8 @@ function setupAttemptManagerTest(fixture) {
     'chrome.alarms.create',
     'chrome.storage.local.remove',
     'chrome.storage.local.set',
-    'instrumented.alarms.get',
-    'instrumented.storage.local.get'
+    'fillFromChromeLocalStorage',
+    'instrumented.alarms.get'
   ]);
 
   var testAttempts = buildAttemptManager(
@@ -836,7 +847,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerStartStop', function() {
       periodInMinutes: testMaximumDelaySeconds / 60
     }));
   this.mockApis.expects(once()).chrome_storage_local_set(
-      eqJSON(createTestAttempStorageEntry(expectedRetryDelaySeconds)));
+      eqJSON(createTestAttemptStorageEntry(expectedRetryDelaySeconds)));
   // Invocation.
   test.attempts.start();
   Mock4JS.verifyAllMocks();
@@ -902,21 +913,18 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerExponGrowth', function() {
   // Expectations.
   var expectedRetryDelaySeconds =
       testStoredRetryDelay * 2 * (1 + testRandomValue * 0.2);
-  var storageGetSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(once()).instrumented_storage_local_get(
-          storageGetSavedArgs.match(eq(testAttemptStorageKey)),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(
-          storageGetSavedArgs,
-          1,
-          createTestAttempStorageEntry(testStoredRetryDelay)));
+  expectChromeLocalStorageGet(
+      this,
+      createTestAttemptStorageEntryRequest(),
+      createTestAttemptStorageEntry(testStoredRetryDelay),
+      true);
   this.mockApis.expects(once()).chrome_alarms_create(
       testAttemptAlarmName,
       eqJSON({
         delayInMinutes: expectedRetryDelaySeconds / 60,
         periodInMinutes: testMaximumDelaySeconds / 60}));
   this.mockApis.expects(once()).chrome_storage_local_set(
-      eqJSON(createTestAttempStorageEntry(expectedRetryDelaySeconds)));
+      eqJSON(createTestAttemptStorageEntry(expectedRetryDelaySeconds)));
   this.mockLocalFunctions.expects(once()).planForNextCallback();
   // Invocation.
   test.attempts.planForNext(
@@ -934,15 +942,11 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
   // is greater than 1/2 of the maximum delay.
   // Expectations.
   var expectedRetryDelaySeconds = testMaximumDelaySeconds;
-  var storageGetSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(once()).
-      instrumented_storage_local_get(
-          storageGetSavedArgs.match(eq(testAttemptStorageKey)),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(
-          storageGetSavedArgs,
-          1,
-          createTestAttempStorageEntry(testStoredRetryDelay)));
+  expectChromeLocalStorageGet(
+      this,
+      createTestAttemptStorageEntryRequest(),
+      createTestAttemptStorageEntry(testStoredRetryDelay),
+      true);
   this.mockApis.expects(once()).chrome_alarms_create(
       testAttemptAlarmName,
       eqJSON({
@@ -950,7 +954,7 @@ TEST_F('GoogleNowUtilityUnitTest', 'AttemptManagerGrowthLimit', function() {
         periodInMinutes: testMaximumDelaySeconds / 60
       }));
   this.mockApis.expects(once()).chrome_storage_local_set(
-      eqJSON(createTestAttempStorageEntry(expectedRetryDelaySeconds)));
+      eqJSON(createTestAttemptStorageEntry(expectedRetryDelaySeconds)));
   this.mockLocalFunctions.expects(once()).planForNextCallback();
   // Invocation.
   test.attempts.planForNext(

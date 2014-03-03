@@ -129,6 +129,36 @@ var Promise = function() {
     });
     return promise;
   }
+
+  function resolve(value) {
+    var promise = new PromisePrototypeObject(function(resolve) {
+      resolve(value);
+    });
+    return promise;
+  }
+
   PromisePrototypeObject.all = all;
+  PromisePrototypeObject.resolve = resolve;
   return PromisePrototypeObject;
 }();
+
+
+/**
+ * Sets up the test to expect a Chrome Local Storage call.
+ * @param {Object} fixture Mock JS Test Object.
+ * @param {Object} defaultObject Storage request default object.
+ * @param {Object} result Storage result.
+ * @param {boolean=} opt_AllowRejection Allow Promise Rejection
+ */
+function expectChromeLocalStorageGet(
+    fixture, defaultObject, result, opt_AllowRejection) {
+  if (opt_AllowRejection === undefined) {
+    fixture.mockApis.expects(once()).
+      fillFromChromeLocalStorage(eqJSON(defaultObject)).
+      will(returnValue(Promise.resolve(result)));
+  } else {
+    fixture.mockApis.expects(once()).
+      fillFromChromeLocalStorage(eqJSON(defaultObject), opt_AllowRejection).
+      will(returnValue(Promise.resolve(result)));
+  }
+}

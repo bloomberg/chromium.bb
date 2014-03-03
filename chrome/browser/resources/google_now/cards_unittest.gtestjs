@@ -53,13 +53,13 @@ function setUpCardManagerTest(fixture) {
   fixture.makeAndRegisterMockApis([
       'chrome.alarms.clear',
       'chrome.alarms.create',
-      'instrumented.notifications.clear',
       'chrome.storage.local.set',
       'countExplanatoryCard',
+      'fillFromChromeLocalStorage',
       'instrumented.alarms.onAlarm.addListener',
+      'instrumented.notifications.clear',
       'instrumented.notifications.create',
       'instrumented.notifications.update',
-      'instrumented.storage.local.get',
       'tasks.add'
   ]);
 
@@ -510,37 +510,34 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmClear', function() {
           tasksAddSavedArgs.match(eq(UPDATE_CARD_TASK_NAME)),
           tasksAddSavedArgs.match(ANYTHING)).
       will(invokeCallback(tasksAddSavedArgs,1));
-  var storageGetSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(once()).
-      instrumented_storage_local_get(
-          storageGetSavedArgs.match(
-              eqJSON(['notificationsData', 'notificationGroups'])),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(
-          storageGetSavedArgs,
-          1,
-          {
-            notificationsData: {
-              'TEST CARD ID': {
-                actionUrls: testActionUrlsA,
-                timestamp: 299998,
-                combinedCard: [testUncombinedNotification]
-              },
-              'TEST CARD ID 1': {testField: 'TEST VALUE 1'}
-            },
-            notificationGroups: {
-              A: {
-                cards: [
-                  {chromeNotificationId: 'ID1'},
-                  {chromeNotificationId: testCardId}
-                ]
-              },
-              B: {
-                cards: [
-                  {chromeNotificationId: testCardId},
-                  {chromeNotificationId: 'ID2'}
-                ]
-            }}}));
+  expectChromeLocalStorageGet(
+      this,
+      {
+        notificationsData: {},
+        notificationGroups: {}
+      },
+      {
+        notificationsData: {
+          'TEST CARD ID': {
+            actionUrls: testActionUrlsA,
+            timestamp: 299998,
+            combinedCard: [testUncombinedNotification]
+          },
+          'TEST CARD ID 1': {testField: 'TEST VALUE 1'}
+        },
+        notificationGroups: {
+          A: {
+            cards: [
+              {chromeNotificationId: 'ID1'},
+              {chromeNotificationId: testCardId}
+            ]
+          },
+          B: {
+            cards: [
+              {chromeNotificationId: testCardId},
+              {chromeNotificationId: 'ID2'}
+            ]
+        }}});
   this.mockApis.expects(once()).
       instrumented_notifications_clear(testCardId, ANYTHING);
   this.mockApis.expects(once()).
@@ -585,22 +582,21 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmUpdate', function() {
           tasksAddSavedArgs.match(eq(UPDATE_CARD_TASK_NAME)),
           tasksAddSavedArgs.match(ANYTHING)).
       will(invokeCallback(tasksAddSavedArgs,1));
-  var storageGetSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(once()).
-      instrumented_storage_local_get(
-          storageGetSavedArgs.match(
-              eqJSON(['notificationsData', 'notificationGroups'])),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(
-          storageGetSavedArgs,
-          1,
-          {
-            notificationsData: {
-              'TEST CARD ID': {
-                actionUrls: testActionUrlsA,
-                timestamp: 299998,
-                combinedCard: [testUncombinedNotification]
-              }}}));
+  expectChromeLocalStorageGet(
+      this,
+      {
+        notificationsData: {},
+        notificationGroups: {}
+      },
+      {
+        notificationsData: {
+          'TEST CARD ID': {
+            actionUrls: testActionUrlsA,
+            timestamp: 299998,
+            combinedCard: [testUncombinedNotification]
+          }},
+        notificationGroups: {}
+      });
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedAlarmId);
   var chromeNotificationsUpdateSavedArgs = new SaveMockArguments();

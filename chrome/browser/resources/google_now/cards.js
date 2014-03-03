@@ -327,35 +327,33 @@ function buildCardSet() {
       // Alarm to show the card.
       tasks.add(UPDATE_CARD_TASK_NAME, function() {
         var cardId = alarm.name.substring(alarmPrefix.length);
-        instrumented.storage.local.get(
-            ['notificationsData', 'notificationGroups'],
-            function(items) {
-              console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
-              items = items || {};
-              /** @type {Object.<string, NotificationDataEntry>} */
-              items.notificationsData = items.notificationsData || {};
-              /** @type {Object.<string, StoredNotificationGroup>} */
-              items.notificationGroups = items.notificationGroups || {};
+        fillFromChromeLocalStorage({
+          /** @type {Object.<string, NotificationDataEntry>} */
+          notificationsData: {},
+          /** @type {Object.<string, StoredNotificationGroup>} */
+          notificationGroups: {}
+        }).then(function(items) {
+          console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
 
-              var combinedCard =
-                (items.notificationsData[cardId] &&
-                 items.notificationsData[cardId].combinedCard) || [];
+          var combinedCard =
+            (items.notificationsData[cardId] &&
+             items.notificationsData[cardId].combinedCard) || [];
 
-              var cardShownCallback = undefined;
-              if (localStorage['explanatoryCardsShown'] <
-                  EXPLANATORY_CARDS_LINK_THRESHOLD) {
-                 cardShownCallback = countExplanatoryCard;
-              }
+          var cardShownCallback = undefined;
+          if (localStorage['explanatoryCardsShown'] <
+              EXPLANATORY_CARDS_LINK_THRESHOLD) {
+             cardShownCallback = countExplanatoryCard;
+          }
 
-              items.notificationsData[cardId] =
-                  update(
-                      cardId,
-                      combinedCard,
-                      items.notificationGroups,
-                      cardShownCallback);
+          items.notificationsData[cardId] =
+              update(
+                  cardId,
+                  combinedCard,
+                  items.notificationGroups,
+                  cardShownCallback);
 
-              chrome.storage.local.set(items);
-            });
+          chrome.storage.local.set(items);
+        });
       });
     }
   });
