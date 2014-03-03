@@ -61,13 +61,23 @@
             ],
         },
         {
-            'target_name': 'blink_web_test_support',
+            'target_name': 'blink_test_support',
             'type': 'none',
             'dependencies': [
                 '../Source/web/web.gyp:webkit_test_support',
             ],
             'export_dependent_settings': [
                 '../Source/web/web.gyp:webkit_test_support',
+            ],
+        },
+        {
+            'target_name': 'blink_web_test_support',
+            'type': 'none',
+            'dependencies': [
+                'blink_test_support',
+            ],
+            'export_dependent_settings': [
+                'blink_test_support',
             ],
         },
     ],
