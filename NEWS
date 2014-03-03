@@ -1,6 +1,11 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.5.4 (2014-3-1)
+* Noteworthy changes in release 2.5.4 (2014-3-3)
+This release contains nine months worth of braille table improvements
+for example for UEB, en-us, Nemeth, Bulgarian, Slovenian and many
+more. Also there are fixes to the core for table path resolving and
+back-translation.
+
 ** New features
    - Added function lou_registerTableResolver for plugging in a table
      resolver callback from your host language.
@@ -25,7 +30,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - en-us-g2.ctb, en-ueb-g2.ctb: Fixes for that's, can't and s'
      thanks to Ken Perry.
    - en-us-g2.ctb: Fix for backtranslation of things like
-     http://address.com, words including after, capsigns. thanks to Ken Perry.
+     http://address.com, words including after, capsigns. thanks to
+     Ken Perry.
    - Further corrections and testcases to the Hungarian tables thanks
      to Hammer Attila
    - Fixed letter sign in en-us and en-ueb tables. Thanks to John
@@ -50,9 +56,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fix for the lich sign in the German tables. Thanks to Halim
      Sahin.
    - Nemeth improvements thanks to John Boyer.
-     - Spaces in nemethdefs.cti were changed to unbreakable spaces. This
-       was done so that nemeth expressions would not be broken between
-       lines.
+     - Spaces in nemethdefs.cti were changed to unbreakable spaces.
+       This was done so that nemeth expressions would not be broken
+       between lines.
      - The number sign is now inserted between the minus sign and the
        number at the beginning of an expression. Some problems with
        pass2 opcodes have also been corrected.
@@ -65,14 +71,15 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fixes to the Norwegian tables thanks to Lars Bjørndal
      - Fixes for less than / greater than.
      - Add entries for URLs, domains and file names.
-   - Added ne.utb, an alternative Nepali braille table.
-     One of ne.utb or ne.ctb will be removed/merged in a future version.
-     Keeping both for the time being so that users can test and give feedback on which is most correct.
-     Thanks to Him Prasad Gautam, and Mesar Hameed
+   - Added ne.utb, an alternative Nepali braille table. One of ne.utb
+     or ne.ctb will be removed/merged in a future version. Keeping
+     both for the time being so that users can test and give feedback
+     on which is most correct. Thanks to Him Prasad Gautam, and Mesar
+     Hameed
 
 ** Backwards incompatible changes
-   - Delete the table chardefs-ueb.cti as these rules are now
-     provided by en-ueb-chardefs.uti
+   - Delete the table chardefs-ueb.cti as these rules are now provided
+     by en-ueb-chardefs.uti
 
 ** Invisible changes
    - Refactoring in compileTranslationTable.c: separated more clearly
