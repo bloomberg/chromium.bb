@@ -16,6 +16,8 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_request.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 
@@ -112,9 +114,9 @@ GCMNetworkChannelDelegateImpl::GCMNetworkChannelDelegateImpl(Profile* profile)
       profile_(profile),
       ui_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   // Stash account_id. It is needed in RequestToken call on IO thread.
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  account_id_ = oauth2_token_service->GetPrimaryAccountId();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  account_id_ = signin_manager->GetAuthenticatedAccountId();
 }
 
 GCMNetworkChannelDelegateImpl::~GCMNetworkChannelDelegateImpl() {}
@@ -178,7 +180,9 @@ void GCMNetworkChannelDelegateImpl::InvalidateTokenOnUIThread(
 
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  std::string account_id = oauth2_token_service->GetPrimaryAccountId();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  std::string account_id = signin_manager->GetAuthenticatedAccountId();
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
   oauth2_token_service->InvalidateToken(account_id, scopes, token);
