@@ -59,18 +59,17 @@
 namespace WebCore {
 
 WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
-    : m_workerGlobalScope(workerGlobalScope)
+    : m_isolate(v8::Isolate::New())
+    , m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
 {
-    v8::Isolate* isolate = v8::Isolate::New();
-    isolate->Enter();
-    V8Initializer::initializeWorker(isolate);
+    m_isolate->Enter();
+    V8Initializer::initializeWorker(m_isolate);
     v8::V8::Initialize();
-    m_isolateHolder = adoptPtr(new gin::IsolateHolder(isolate, v8ArrayBufferAllocator()));
-    V8PerIsolateData::ensureInitialized(isolate);
+    V8PerIsolateData::ensureInitialized(m_isolate);
     m_world = DOMWrapperWorld::create(WorkerWorldId, -1);
-    m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
+    m_interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
     ThreadState::current()->addInterruptor(m_interruptor.get());
 }
 
@@ -79,24 +78,22 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
 // are destroyed.
 class IsolateCleanupTask : public ThreadState::CleanupTask {
 public:
-    static PassOwnPtr<IsolateCleanupTask> create(PassOwnPtr<gin::IsolateHolder> isolateHolder)
+    static PassOwnPtr<IsolateCleanupTask> create(v8::Isolate* isolate)
     {
-        return adoptPtr(new IsolateCleanupTask(isolateHolder));
+        return adoptPtr(new IsolateCleanupTask(isolate));
     }
 
     virtual void postCleanup()
     {
-        v8::Isolate* isolate = m_isolateHolder->isolate();
-        V8PerIsolateData::dispose(isolate);
-        isolate->Exit();
-        m_isolateHolder.clear();
-        isolate->Dispose();
+        V8PerIsolateData::dispose(m_isolate);
+        m_isolate->Exit();
+        m_isolate->Dispose();
     }
 
 private:
-    explicit IsolateCleanupTask(PassOwnPtr<gin::IsolateHolder> isolateHolder) : m_isolateHolder(isolateHolder)  { }
+    explicit IsolateCleanupTask(v8::Isolate* isolate) : m_isolate(isolate)  { }
 
-    OwnPtr<gin::IsolateHolder> m_isolateHolder;
+    v8::Isolate* m_isolate;
 };
 
 WorkerScriptController::~WorkerScriptController()
@@ -114,7 +111,7 @@ WorkerScriptController::~WorkerScriptController()
 
     disposeContext();
 
-    ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolateHolder.release()));
+    ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolate));
 }
 
 void WorkerScriptController::disposeContext()
@@ -127,7 +124,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     if (m_perContextData)
         return true;
 
-    v8::Handle<v8::Context> context = v8::Context::New(isolate());
+    v8::Handle<v8::Context> context = v8::Context::New(m_isolate);
     if (context.IsEmpty())
         return false;
 
@@ -136,7 +133,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     v8::Context::Scope scope(context);
 
     // Set DebugId for the new context.
-    context->SetEmbedderData(0, v8AtomicString(isolate(), "worker"));
+    context->SetEmbedderData(0, v8AtomicString(m_isolate, "worker"));
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::wrapperTypeInfo;
@@ -151,7 +148,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
         return false;
     }
 
-    V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtr<WorkerGlobalScope>(m_workerGlobalScope), contextType, jsWorkerGlobalScope, isolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtr<WorkerGlobalScope>(m_workerGlobalScope), contextType, jsWorkerGlobalScope, m_isolate, WrapperConfiguration::Dependent);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_perContextData->context()->Global()->GetPrototype());
@@ -162,7 +159,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
 ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState* state)
 {
-    v8::HandleScope handleScope(isolate());
+    v8::HandleScope handleScope(m_isolate);
 
     if (!initializeContextIfNeeded())
         return ScriptValue();
@@ -170,7 +167,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     v8::Handle<v8::Context> context = m_perContextData->context();
     if (!m_disableEvalPending.isEmpty()) {
         context->AllowCodeGenerationFromStrings(false);
-        context->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), m_disableEvalPending));
+        context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));
         m_disableEvalPending = String();
     }
 
@@ -178,9 +175,9 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     v8::TryCatch block;
 
-    v8::Handle<v8::String> scriptString = v8String(isolate(), script);
-    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, isolate());
-    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, &m_workerGlobalScope, isolate());
+    v8::Handle<v8::String> scriptString = v8String(m_isolate, script);
+    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, m_isolate);
+    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, &m_workerGlobalScope, m_isolate);
 
     if (!block.CanContinue()) {
         m_workerGlobalScope.script()->forbidExecution();
@@ -195,7 +192,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->columnNumber = message->GetStartColumn() + 1;
         V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, sourceURL, message->GetScriptResourceName(), ScriptValue());
         state->sourceURL = sourceURL;
-        state->exception = ScriptValue(block.Exception(), isolate());
+        state->exception = ScriptValue(block.Exception(), m_isolate);
         block.Reset();
     } else
         state->hadException = false;
@@ -203,7 +200,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (result.IsEmpty() || result->IsUndefined())
         return ScriptValue();
 
-    return ScriptValue(result, isolate());
+    return ScriptValue(result, m_isolate);
 }
 
 void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr<ErrorEvent>* errorEvent)
@@ -217,7 +214,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
         if (errorEvent) {
             *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
                 ErrorEvent::createSanitizedError(nullptr) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, nullptr);
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), isolate());
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_isolate);
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, nullptr);
@@ -235,7 +232,7 @@ void WorkerScriptController::scheduleExecutionTermination()
         MutexLocker locker(m_scheduledTerminationMutex);
         m_executionScheduledToTerminate = true;
     }
-    v8::V8::TerminateExecution(isolate());
+    v8::V8::TerminateExecution(m_isolate);
 }
 
 bool WorkerScriptController::isExecutionTerminating() const
@@ -265,7 +262,7 @@ void WorkerScriptController::disableEval(const String& errorMessage)
 void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtr<ErrorEvent> errorEvent)
 {
     m_errorEventFromImportedScript = errorEvent;
-    throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), isolate()), isolate());
+    throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), m_isolate), m_isolate);
 }
 
 WorkerScriptController* WorkerScriptController::controllerForContext(v8::Isolate* isolate)

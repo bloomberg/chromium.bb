@@ -30,6 +30,7 @@
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "gin/public/gin_embedders.h"
+#include "gin/public/isolate_holder.h"
 #include <v8.h>
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -63,7 +64,8 @@ public:
     static void dispose(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
 
-    bool isMainThread() { return m_isMainThread; };
+    bool isMainThread() { return m_isMainThread; }
+    v8::Isolate* isolate() { return m_isolate; }
 
     typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
 
@@ -128,6 +130,7 @@ private:
     v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, TemplateMap&);
 
     v8::Isolate* m_isolate;
+    OwnPtr<gin::IsolateHolder> m_isolateHolder;
     bool m_isMainThread; // Caches the result of isMainThread() for performance.
     TemplateMap m_templatesForMainWorld;
     TemplateMap m_templatesForNonMainWorld;

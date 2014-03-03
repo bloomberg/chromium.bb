@@ -32,15 +32,15 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "gin/public/isolate_holder.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
 
-static gin::IsolateHolder* mainIsolateHolder = 0;
+static V8PerIsolateData* mainThreadPerIsolateData = 0;
 
 V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
+    , m_isolateHolder(adoptPtr(new gin::IsolateHolder(m_isolate, v8ArrayBufferAllocator())))
     , m_isMainThread(WTF::isMainThread())
     , m_stringCache(adoptPtr(new StringCache()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
@@ -52,22 +52,20 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_performingMicrotaskCheckpoint(false)
 {
     if (m_isMainThread)
-        mainIsolateHolder = new gin::IsolateHolder(m_isolate, v8ArrayBufferAllocator());
+        mainThreadPerIsolateData = this;
 }
 
 V8PerIsolateData::~V8PerIsolateData()
 {
-    if (m_isMainThread) {
-        delete mainIsolateHolder;
-        mainIsolateHolder = 0;
-    }
+    if (m_isMainThread)
+        mainThreadPerIsolateData = 0;
 }
 
 v8::Isolate* V8PerIsolateData::mainThreadIsolate()
 {
     ASSERT(WTF::isMainThread());
-    ASSERT(mainIsolateHolder);
-    return mainIsolateHolder->isolate();
+    ASSERT(mainThreadPerIsolateData);
+    return mainThreadPerIsolateData->isolate();
 }
 
 void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
