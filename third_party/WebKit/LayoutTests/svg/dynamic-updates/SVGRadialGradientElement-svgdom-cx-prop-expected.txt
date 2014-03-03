@@ -10,4 +10,7 @@ PASS radialGradientElement.cx.baseVal.valueAsString is "150%"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 58 8 200 300)
+)
 

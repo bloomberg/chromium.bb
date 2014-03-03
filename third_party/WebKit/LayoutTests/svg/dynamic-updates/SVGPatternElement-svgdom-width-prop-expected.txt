@@ -10,4 +10,9 @@ PASS patternElement.width.baseVal.value is 50
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 18 18 190 190)
+  (rect 8 8 50 50)
+  (rect 58 8 50 50)
+)
 

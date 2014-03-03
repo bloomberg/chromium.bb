@@ -13,4 +13,14 @@ PASS textElement.getBBox().width is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+(repaint rects
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+  (rect 8 8 29 4)
+)
 
