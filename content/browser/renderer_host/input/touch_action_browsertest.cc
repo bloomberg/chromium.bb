@@ -160,7 +160,9 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
 
-#if defined(USE_AURA) || defined(OS_ANDROID)
+// TouchActionBrowserTest.DefaultAuto fails under ThreadSanitizer v2, see
+// http://crbug.com/348539.
+#if (defined(USE_AURA) && !defined(THREAD_SANITIZER)) || defined(OS_ANDROID)
 #define MAYBE_DefaultAuto DefaultAuto
 #else
 // Mac and Linux GTK don't yet have a gesture recognizer, so can't support
