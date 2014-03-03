@@ -6,9 +6,10 @@
 #define CONTENT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
 
 #include "base/threading/thread_local_storage.h"
-#include "content/child/blink_platform_impl.h"
 #include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
+#include "webkit/child/webkit_child_export.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
 
 #if defined(USE_DEFAULT_RENDER_THEME)
 #include "content/child/webthemeengine_impl_default.h"
@@ -24,7 +25,8 @@ namespace content {
 
 class FlingCurveConfiguration;
 
-class CONTENT_EXPORT WebKitPlatformSupportChildImpl : public BlinkPlatformImpl {
+class CONTENT_EXPORT WebKitPlatformSupportChildImpl :
+    public webkit_glue::WebKitPlatformSupportImpl {
  public:
   WebKitPlatformSupportChildImpl();
   virtual ~WebKitPlatformSupportChildImpl();

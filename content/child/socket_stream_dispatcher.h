@@ -15,10 +15,12 @@ namespace blink {
 class WebSocketStreamHandle;
 }
 
-namespace content {
-
+namespace webkit_glue {
 class WebSocketStreamHandleBridge;
 class WebSocketStreamHandleDelegate;
+}
+
+namespace content {
 
 // Dispatches socket stream related messages sent to a child process from the
 // main browser process.  There is one instance per child process.  Messages
@@ -29,9 +31,9 @@ class SocketStreamDispatcher : public IPC::Listener {
   SocketStreamDispatcher();
   virtual ~SocketStreamDispatcher() {}
 
-  static WebSocketStreamHandleBridge* CreateBridge(
+  static webkit_glue::WebSocketStreamHandleBridge* CreateBridge(
       blink::WebSocketStreamHandle* handle,
-      WebSocketStreamHandleDelegate* delegate);
+      webkit_glue::WebSocketStreamHandleDelegate* delegate);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

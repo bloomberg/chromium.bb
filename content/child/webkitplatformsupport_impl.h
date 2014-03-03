@@ -29,9 +29,9 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
       const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
       OVERRIDE;
-  virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
+  virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle* handle,
-      WebSocketStreamHandleDelegate* delegate) OVERRIDE;
+      webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
   virtual blink::WebSocketHandle* createWebSocketHandle() OVERRIDE;
 };
 

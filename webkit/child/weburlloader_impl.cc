@@ -4,7 +4,7 @@
 
 // An implementation of WebURLLoader in terms of ResourceLoaderBridge.
 
-#include "content/child/web_url_loader_impl.h"
+#include "webkit/child/weburlloader_impl.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "content/child/blink_platform_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -33,6 +32,7 @@
 #include "webkit/child/ftp_directory_listing_response_delegate.h"
 #include "webkit/child/multipart_response_delegate.h"
 #include "webkit/child/resource_loader_bridge.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
 #include "webkit/child/weburlrequest_extradata_impl.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 #include "webkit/common/resource_request_body.h"
@@ -53,15 +53,8 @@ using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-using webkit_glue::FtpDirectoryListingResponseDelegate;
-using webkit_glue::MultipartResponseDelegate;
-using webkit_glue::ResourceDevToolsInfo;
-using webkit_glue::ResourceLoaderBridge;
-using webkit_glue::ResourceRequestBody;
-using webkit_glue::ResourceResponseInfo;
-using webkit_glue::WebURLResponseExtraDataImpl;
 
-namespace content {
+namespace webkit_glue {
 
 // Utilities ------------------------------------------------------------------
 
@@ -231,9 +224,10 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   void Cancel();
   void SetDefersLoading(bool value);
   void DidChangePriority(WebURLRequest::Priority new_priority);
-  void Start(const WebURLRequest& request,
-             ResourceLoaderBridge::SyncLoadResponse* sync_load_response,
-             BlinkPlatformImpl* platform);
+  void Start(
+      const WebURLRequest& request,
+      ResourceLoaderBridge::SyncLoadResponse* sync_load_response,
+      WebKitPlatformSupportImpl* platform);
 
   // ResourceLoaderBridge::Peer methods:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
@@ -311,7 +305,7 @@ void WebURLLoaderImpl::Context::DidChangePriority(
 void WebURLLoaderImpl::Context::Start(
     const WebURLRequest& request,
     ResourceLoaderBridge::SyncLoadResponse* sync_load_response,
-    BlinkPlatformImpl* platform) {
+    WebKitPlatformSupportImpl* platform) {
   DCHECK(!bridge_.get());
 
   request_ = request;  // Save the request.
@@ -691,7 +685,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 
 // WebURLLoaderImpl -----------------------------------------------------------
 
-WebURLLoaderImpl::WebURLLoaderImpl(BlinkPlatformImpl* platform)
+WebURLLoaderImpl::WebURLLoaderImpl(WebKitPlatformSupportImpl* platform)
     : context_(new Context(this)),
       platform_(platform) {
 }
@@ -874,4 +868,4 @@ void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority) {
   context_->DidChangePriority(new_priority);
 }
 
-}  // namespace content
+}  // namespace webkit_glue

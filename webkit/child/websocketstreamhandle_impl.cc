@@ -4,7 +4,7 @@
 
 // An implementation of WebSocketStreamHandle.
 
-#include "content/child/web_socket_stream_handle_impl.h"
+#include "webkit/child/websocketstreamhandle_impl.h"
 
 #include <vector>
 
@@ -13,13 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "content/child/blink_platform_impl.h"
-#include "content/child/web_socket_stream_handle_bridge.h"
-#include "content/child/web_socket_stream_handle_delegate.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebSocketStreamError.h"
 #include "third_party/WebKit/public/platform/WebSocketStreamHandleClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
+#include "webkit/child/websocketstreamhandle_bridge.h"
+#include "webkit/child/websocketstreamhandle_delegate.h"
 
 using blink::WebData;
 using blink::WebSocketStreamError;
@@ -27,7 +27,7 @@ using blink::WebSocketStreamHandle;
 using blink::WebSocketStreamHandleClient;
 using blink::WebURL;
 
-namespace content {
+namespace webkit_glue {
 
 // WebSocketStreamHandleImpl::Context -----------------------------------------
 
@@ -42,7 +42,7 @@ class WebSocketStreamHandleImpl::Context
     client_ = client;
   }
 
-  void Connect(const WebURL& url, BlinkPlatformImpl* platform);
+  void Connect(const WebURL& url, WebKitPlatformSupportImpl* platform);
   bool Send(const WebData& data);
   void Close();
 
@@ -83,8 +83,9 @@ WebSocketStreamHandleImpl::Context::Context(WebSocketStreamHandleImpl* handle)
       client_(NULL) {
 }
 
-void WebSocketStreamHandleImpl::Context::Connect(const WebURL& url,
-                                                 BlinkPlatformImpl* platform) {
+void WebSocketStreamHandleImpl::Context::Connect(
+    const WebURL& url,
+    WebKitPlatformSupportImpl* platform) {
   VLOG(1) << "Connect url=" << url;
   DCHECK(!bridge_.get());
   bridge_ = platform->CreateWebSocketStreamBridge(handle_, this);
@@ -164,7 +165,7 @@ void WebSocketStreamHandleImpl::Context::DidFail(
 // WebSocketStreamHandleImpl ------------------------------------------------
 
 WebSocketStreamHandleImpl::WebSocketStreamHandleImpl(
-    BlinkPlatformImpl* platform)
+    WebKitPlatformSupportImpl* platform)
     : context_(new Context(this)),
       platform_(platform) {
 }
@@ -193,4 +194,4 @@ void WebSocketStreamHandleImpl::close() {
   context_->Close();
 }
 
-}  // namespace content
+}  // namespace webkit_glue

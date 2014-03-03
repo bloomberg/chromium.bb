@@ -11,7 +11,6 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/child/blink_platform_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
@@ -33,6 +32,7 @@
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
 #include "v8/include/v8.h"
 #include "webkit/browser/database/vfs_backend.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 #if defined(OS_MACOSX)
@@ -123,7 +123,7 @@ blink::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
 
 blink::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
   return url_loader_factory_->CreateURLLoader(
-      BlinkPlatformImpl::createURLLoader());
+      webkit_glue::WebKitPlatformSupportImpl::createURLLoader());
 }
 
 blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
@@ -143,7 +143,7 @@ blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
         "\x82";
     return blink::WebData(red_square, arraysize(red_square));
   }
-  return BlinkPlatformImpl::loadResource(name);
+  return webkit_glue::WebKitPlatformSupportImpl::loadResource(name);
 }
 
 blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
@@ -169,7 +169,7 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     case blink::WebLocalizedString::WeekFormatTemplate:
       return base::ASCIIToUTF16("Week $2, $1");
     default:
-      return BlinkPlatformImpl::queryLocalizedString(name);
+      return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
 }
 
@@ -180,7 +180,7 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     return base::ASCIIToUTF16("range underflow");
   if (name == blink::WebLocalizedString::ValidationRangeOverflow)
     return base::ASCIIToUTF16("range overflow");
-  return BlinkPlatformImpl::queryLocalizedString(name, value);
+  return WebKitPlatformSupportImpl::queryLocalizedString(name, value);
 }
 
 blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
@@ -191,7 +191,7 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     return base::ASCIIToUTF16("too long");
   if (name == blink::WebLocalizedString::ValidationStepMismatch)
     return base::ASCIIToUTF16("step mismatch");
-  return BlinkPlatformImpl::queryLocalizedString(name, value1, value2);
+  return WebKitPlatformSupportImpl::queryLocalizedString(name, value1, value2);
 }
 
 blink::WebString TestWebKitPlatformSupport::defaultLocale() {
@@ -230,10 +230,10 @@ TestWebKitPlatformSupport::CreateResourceLoader(
   return NULL;
 }
 
-WebSocketStreamHandleBridge*
+webkit_glue::WebSocketStreamHandleBridge*
 TestWebKitPlatformSupport::CreateWebSocketStreamBridge(
     blink::WebSocketStreamHandle* handle,
-    WebSocketStreamHandleDelegate* delegate) {
+    webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   NOTREACHED();
   return NULL;
 }
