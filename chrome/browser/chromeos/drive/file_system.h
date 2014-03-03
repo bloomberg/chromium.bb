@@ -178,21 +178,18 @@ class FileSystem : public FileSystemInterface,
   internal::SyncClient* sync_client_for_testing() { return sync_client_.get(); }
 
  private:
+  struct CreateDirectoryParams;
+
   // Used for initialization and Reset(). (Re-)initializes sub components that
   // need to be recreated during the reset of resource metadata and the cache.
   void ResetComponents();
 
-  // Loads the contents of the directory from the server if needed.
-  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                             const FileOperationCallback& callback);
-
-  // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
+  // Part of CreateDirectory(). Called after ReadDirectory()
   // is called and made sure that the resource metadata is loaded.
-  void CreateDirectoryAfterLoad(const base::FilePath& directory_path,
-                                bool is_exclusive,
-                                bool is_recursive,
-                                const FileOperationCallback& callback,
-                                FileError load_error);
+  void CreateDirectoryAfterRead(const CreateDirectoryParams& params,
+                                FileError error,
+                                scoped_ptr<ResourceEntryVector> entries,
+                                bool has_more);
 
   void FinishPin(const FileOperationCallback& callback,
                  const std::string* local_id,
@@ -213,22 +210,12 @@ class FileSystem : public FileSystemInterface,
   void OnUpdateChecked(FileError error);
 
   // Part of GetResourceEntry().
-  // Called when LoadDirectoryIfNeeded() is complete.
-  void GetResourceEntryAfterLoad(const base::FilePath& file_path,
+  // Called when ReadDirectory() is complete.
+  void GetResourceEntryAfterRead(const base::FilePath& file_path,
                                  const GetResourceEntryCallback& callback,
-                                 FileError error);
-
-  // Part of ReadDirectory()
-  // 1) Called when LoadDirectoryIfNeeded() is complete.
-  // 2) Called when ResourceMetadata::ReadDirectory() is complete.
-  // |callback| must not be null.
-  void ReadDirectoryAfterLoad(const base::FilePath& directory_path,
-                              const ReadDirectoryCallback& callback,
-                              FileError error);
-  void ReadDirectoryAfterRead(const base::FilePath& directory_path,
-                              const ReadDirectoryCallback& callback,
-                              const ResourceEntryVector* entries,
-                              FileError error);
+                                 FileError error,
+                                 scoped_ptr<ResourceEntryVector> entries,
+                                 bool has_more);
 
   // Part of GetShareUrl. Resolves the resource entry to get the resource it,
   // and then uses it to ask for the share url. |callback| must not be null.

@@ -196,6 +196,54 @@ void DirectoryLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void DirectoryLoader::ReadDirectory(const base::FilePath& directory_path,
+                                    const ReadDirectoryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  LoadDirectoryIfNeeded(directory_path,
+                        base::Bind(&DirectoryLoader::ReadDirectoryAfterLoad,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   directory_path,
+                                   callback));
+}
+
+void DirectoryLoader::ReadDirectoryAfterLoad(
+    const base::FilePath& directory_path,
+    const ReadDirectoryCallback& callback,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
+                                      << FileErrorToString(error);
+
+  ResourceEntryVector* entries = new ResourceEntryVector;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::ReadDirectoryByPath,
+                 base::Unretained(resource_metadata_),
+                 directory_path,
+                 entries),
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterRead,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Passed(scoped_ptr<ResourceEntryVector>(entries))));
+}
+
+void DirectoryLoader::ReadDirectoryAfterRead(
+    const ReadDirectoryCallback& callback,
+    scoped_ptr<ResourceEntryVector> entries,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK)
+    entries.reset();
+  callback.Run(error, entries.Pass(), false);
+}
+
 void DirectoryLoader::LoadDirectoryIfNeeded(
     const base::FilePath& directory_path,
     const FileOperationCallback& callback) {

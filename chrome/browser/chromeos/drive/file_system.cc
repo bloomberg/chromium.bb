@@ -205,7 +205,38 @@ FileError ResetOnBlockingPool(internal::ResourceMetadata* resource_metadata,
  return cache->ClearAll() ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
+// Excludes hosted documents from the given entries.
+// Used to implement ReadDirectory().
+void FilterHostedDocuments(const ReadDirectoryCallback& callback,
+                           FileError error,
+                           scoped_ptr<ResourceEntryVector> entries,
+                           bool has_more) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (entries) {
+    // TODO(kinaba): Stop handling hide_hosted_docs here. crbug.com/256520.
+    scoped_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
+    for (size_t i = 0; i < entries->size(); ++i) {
+      if (entries->at(i).file_specific_info().is_hosted_document()) {
+        continue;
+      }
+      filtered->push_back(entries->at(i));
+    }
+    entries.swap(filtered);
+  }
+  // TODO(hashimoto): Correctly handle empty entries when has_more==true.
+  callback.Run(error, entries.Pass(), has_more);
+}
+
 }  // namespace
+
+struct FileSystem::CreateDirectoryParams {
+  base::FilePath directory_path;
+  bool is_exclusive;
+  bool is_recursive;
+  FileOperationCallback callback;
+};
 
 FileSystem::FileSystem(
     PrefService* pref_service,
@@ -413,28 +444,35 @@ void FileSystem::CreateDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  CreateDirectoryParams params;
+  params.directory_path = directory_path;
+  params.is_exclusive = is_exclusive;
+  params.is_recursive = is_recursive;
+  params.callback = callback;
+
   // Ensure its parent directory is loaded to the local metadata.
-  LoadDirectoryIfNeeded(
-      directory_path.DirName(),
-      base::Bind(&FileSystem::CreateDirectoryAfterLoad,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path, is_exclusive, is_recursive, callback));
+  ReadDirectory(directory_path.DirName(),
+                base::Bind(&FileSystem::CreateDirectoryAfterRead,
+                           weak_ptr_factory_.GetWeakPtr(), params));
 }
 
-void FileSystem::CreateDirectoryAfterLoad(
-    const base::FilePath& directory_path,
-    bool is_exclusive,
-    bool is_recursive,
-    const FileOperationCallback& callback,
-    FileError load_error) {
+void FileSystem::CreateDirectoryAfterRead(
+    const CreateDirectoryParams& params,
+    FileError error,
+    scoped_ptr<ResourceEntryVector> entries,
+    bool has_more) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+  DCHECK(!params.callback.is_null());
 
-  DVLOG_IF(1, load_error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
-                                           << FileErrorToString(load_error);
+  if (has_more)
+    return;
+
+  DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
+                                      << FileErrorToString(error);
 
   create_directory_operation_->CreateDirectory(
-      directory_path, is_exclusive, is_recursive, callback);
+      params.directory_path, params.is_exclusive, params.is_recursive,
+      params.callback);
 }
 
 void FileSystem::CreateFile(const base::FilePath& file_path,
@@ -571,21 +609,26 @@ void FileSystem::GetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadDirectoryIfNeeded(file_path.DirName(),
-                        base::Bind(&FileSystem::GetResourceEntryAfterLoad,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   file_path,
-                                   callback));
+  ReadDirectory(file_path.DirName(),
+                base::Bind(&FileSystem::GetResourceEntryAfterRead,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           file_path,
+                           callback));
 }
 
-void FileSystem::GetResourceEntryAfterLoad(
+void FileSystem::GetResourceEntryAfterRead(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback,
-    FileError error) {
+    FileError error,
+    scoped_ptr<ResourceEntryVector> entries,
+    bool has_more) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
+  if (has_more)
+    return;
+
+  DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
                                       << FileErrorToString(error);
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
@@ -607,63 +650,17 @@ void FileSystem::ReadDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadDirectoryIfNeeded(directory_path,
-                        base::Bind(&FileSystem::ReadDirectoryAfterLoad,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   directory_path,
-                                   callback));
-}
-
-void FileSystem::ReadDirectoryAfterLoad(
-    const base::FilePath& directory_path,
-    const ReadDirectoryCallback& callback,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
-                                      << FileErrorToString(error);
-
-  ResourceEntryVector* entries = new ResourceEntryVector;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::ReadDirectoryByPath,
-                 base::Unretained(resource_metadata_),
-                 directory_path,
-                 entries),
-      base::Bind(&FileSystem::ReadDirectoryAfterRead,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 callback,
-                 base::Owned(entries)));
-}
-
-void FileSystem::ReadDirectoryAfterRead(const base::FilePath& directory_path,
-                                        const ReadDirectoryCallback& callback,
-                                        const ResourceEntryVector* entries,
-                                        FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntryVector>(), false);
-    return;
-  }
-
-  // TODO(satorux): Stop handling hide_hosted_docs here. crbug.com/256520.
   const bool hide_hosted_docs =
       pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
-  scoped_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
-  for (size_t i = 0; i < entries->size(); ++i) {
-    if (hide_hosted_docs &&
-        entries->at(i).file_specific_info().is_hosted_document()) {
-      continue;
-    }
-    filtered->push_back(entries->at(i));
-  }
 
-  callback.Run(FILE_ERROR_OK, filtered.Pass(), false);
+  directory_loader_->ReadDirectory(
+      directory_path,
+      hide_hosted_docs ?
+          base::Bind(&FilterHostedDocuments, callback) : callback);
+
+  // Also start loading all of the user's contents.
+  change_list_loader_->LoadIfNeeded(
+      base::Bind(&util::EmptyFileOperationCallback));
 }
 
 void FileSystem::GetAvailableSpace(
@@ -937,18 +934,6 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   open_file_operation_->OpenFile(file_path, open_mode, mime_type, callback);
-}
-
-void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                                       const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  directory_loader_->LoadDirectoryIfNeeded(directory_path, callback);
-
-  // Also start loading all of the user's contents.
-  change_list_loader_->LoadIfNeeded(
-      base::Bind(&util::EmptyFileOperationCallback));
 }
 
 }  // namespace drive

@@ -16,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
@@ -59,15 +60,26 @@ class DirectoryLoader {
   void AddObserver(ChangeListLoaderObserver* observer);
   void RemoveObserver(ChangeListLoaderObserver* observer);
 
-  // Starts loading the directory contents if needed.
+  // Reads the directory contents.
   // |callback| must not be null.
-  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                             const FileOperationCallback& callback);
+  void ReadDirectory(const base::FilePath& directory_path,
+                     const ReadDirectoryCallback& callback);
 
  private:
   class FeedFetcher;
 
-  // Part of LoadDirectoryIfNeeded().
+  // Part of ReadDirectory().
+  void ReadDirectoryAfterLoad(const base::FilePath& directory_path,
+                              const ReadDirectoryCallback& callback,
+                              FileError error);
+  void ReadDirectoryAfterRead(const ReadDirectoryCallback& callback,
+                              scoped_ptr<ResourceEntryVector> entries,
+                              FileError error);
+
+  // Starts loading the directory contents if needed.
+  // |callback| must not be null.
+  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
+                             const FileOperationCallback& callback);
   void LoadDirectoryIfNeededAfterGetEntry(const base::FilePath& directory_path,
                                           const FileOperationCallback& callback,
                                           bool should_try_loading_parent,
