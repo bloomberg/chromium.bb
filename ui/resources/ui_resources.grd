@@ -116,6 +116,8 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="common/window_shadow_inactive_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="common/window_shadow_inactive_top_right.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_BACK_ARROW" file="common/back_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_FORWARD_ARROW" file="common/forward_arrow.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="common/browser_action_badge_center.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="common/browser_action_badge_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="common/browser_action_badge_right.png" />
