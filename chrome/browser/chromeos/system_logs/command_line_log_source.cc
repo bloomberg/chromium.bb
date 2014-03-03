@@ -31,7 +31,11 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
 
   command = CommandLine((base::FilePath("/usr/bin/cras_test_client")));
   command.AppendArg("--dump_server_info");
+  command.AppendArg("--dump_audio_thread");
   commands.push_back(std::make_pair("cras", command));
+
+  command = CommandLine((base::FilePath("/usr/bin/audio_diagnostics")));
+  commands.push_back(std::make_pair("audio_diagnostics", command));
 
   command = CommandLine((base::FilePath("/usr/bin/cras_test_client")));
   command.AppendArg("--loopback_file");
