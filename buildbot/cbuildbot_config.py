@@ -1874,6 +1874,11 @@ _release.add_config('peppy-release',
   boards=['peppy'],
 )
 
+_release.add_config('quawks-release',
+  boards=['quawks'],
+  hw_tests=[],
+)
+
 _release.add_config('rambi-release',
   boards=['rambi'],
   hw_tests=[],
@@ -2053,6 +2058,7 @@ _x86_firmware_boards = (
   'panther',
   'parrot',
   'peppy',
+  'quawks',
   'rambi',
   'samus',
   'squawks',
@@ -2071,6 +2077,7 @@ _x86_depthcharge_firmware_boards = (
   'glimmer',
   'leon',
   'link',
+  'quawks',
   'rambi',
   'samus',
   'squawks',
