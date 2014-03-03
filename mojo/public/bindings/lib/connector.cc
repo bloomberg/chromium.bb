@@ -4,6 +4,7 @@
 
 #include "mojo/public/bindings/lib/connector.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "mojo/public/bindings/error_handler.h"
@@ -42,7 +43,7 @@ bool Connector::Accept(Message* message) {
   MojoResult rv = WriteMessageRaw(
       message_pipe_.get(),
       message->data(),
-      message->data()->header.num_bytes,
+      message->data_num_bytes(),
       message->mutable_handles()->empty() ? NULL :
           reinterpret_cast<const MojoHandle*>(
               &message->mutable_handles()->front()),
@@ -68,6 +69,13 @@ bool Connector::Accept(Message* message) {
       return false;
   }
   return true;
+}
+
+bool Connector::AcceptWithResponder(Message* message,
+                                    MessageReceiver* responder) {
+  // TODO(darin): Implement this!
+  assert(false);
+  return false;
 }
 
 // static
@@ -119,7 +127,7 @@ void Connector::ReadMore() {
     }
 
     Message message;
-    message.AllocData(num_bytes);
+    message.AllocUninitializedData(num_bytes);
     message.mutable_handles()->resize(num_handles);
 
     rv = ReadMessageRaw(

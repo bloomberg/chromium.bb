@@ -9,19 +9,43 @@
 namespace mojo {
 namespace internal {
 
-MessageBuilder::MessageBuilder(uint32_t message_name, size_t payload_size)
+template <typename Header>
+void Allocate(Buffer* buf, Header** header) {
+  *header = static_cast<Header*>(buf->Allocate(sizeof(Header)));
+  (*header)->num_bytes = sizeof(Header);
+}
+
+MessageBuilder::MessageBuilder(uint32_t name, size_t payload_size)
     : buf_(sizeof(MessageHeader) + payload_size) {
-  MessageHeader* header =
-      static_cast<MessageHeader*>(buf_.Allocate(sizeof(MessageHeader)));
-  header->num_bytes = static_cast<uint32_t>(buf_.size());
-  header->name = message_name;
+  MessageHeader* header;
+  Allocate(&buf_, &header);
+  header->num_fields = 2;
+  header->name = name;
 }
 
 MessageBuilder::~MessageBuilder() {
 }
 
-MessageData* MessageBuilder::Finish() {
-  return static_cast<MessageData*>(buf_.Leak());
+void MessageBuilder::Finish(Message* message) {
+  message->AdoptData(static_cast<uint32_t>(buf_.size()),
+                     static_cast<MessageData*>(buf_.Leak()));
+}
+
+MessageBuilder::MessageBuilder(size_t size)
+    : buf_(size) {
+}
+
+MessageWithRequestIDBuilder::MessageWithRequestIDBuilder(uint32_t name,
+                                                         size_t payload_size,
+                                                         uint32_t flags,
+                                                         uint64_t request_id)
+    : MessageBuilder(sizeof(MessageHeaderWithRequestID) + payload_size) {
+  MessageHeaderWithRequestID* header;
+  Allocate(&buf_, &header);
+  header->num_fields = 3;
+  header->name = name;
+  header->flags = flags;
+  header->request_id = request_id;
 }
 
 }  // namespace internal
