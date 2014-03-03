@@ -41,6 +41,7 @@ scoped_ptr<extensions::MenuItem::Id> GetParentId(
 extern const char kCannotFindItemError[];
 extern const char kCheckedError[];
 extern const char kDuplicateIDError[];
+extern const char kGeneratedIdKey[];
 extern const char kLauncherNotAllowedError[];
 extern const char kOnclickDisallowedError[];
 extern const char kParentsMustBeNormalError[];

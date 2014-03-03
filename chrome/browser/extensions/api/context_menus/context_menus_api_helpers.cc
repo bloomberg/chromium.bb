@@ -14,6 +14,7 @@ const char kCheckedError[] =
     "Only items with type \"radio\" or \"checkbox\" can be checked";
 const char kDuplicateIDError[] =
     "Cannot create item with duplicate id *";
+const char kGeneratedIdKey[] = "generatedId";
 const char kLauncherNotAllowedError[] =
     "Only packaged apps are allowed to use 'launcher' context";
 const char kOnclickDisallowedError[] = "Extensions using event pages cannot "

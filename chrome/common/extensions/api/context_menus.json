@@ -19,6 +19,11 @@
             ],
             "description": "The ID of the menu item that was clicked."
           },
+          "webviewInstanceId": {
+            "type": "integer",
+            "optional": true,
+            "description": "Instance ID of a <webview> if this is associated with a <webview>, empty otherwise."
+          },
           "parentMenuItemId": {
             "choices": [
               { "type": "integer" },

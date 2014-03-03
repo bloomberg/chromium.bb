@@ -15,7 +15,7 @@ var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var DeclarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
-var WebView = require('binding').Binding.create('webview').generate();
+var WebView = require('webview').WebView;
 
 var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
 var WEB_VIEW_ATTRIBUTE_MAXWIDTH = 'maxwidth';
@@ -566,6 +566,7 @@ WebViewInternal.prototype.setupWebviewNodeEvents = function() {
   this.browserPluginNode.addEventListener('-internal-instanceid-allocated',
                                           onInstanceIdAllocated);
   this.setupWebRequestEvents();
+  this.setupExperimentalContextMenus_();
 
   this.on = {};
   var events = self.getEvents();
@@ -1072,6 +1073,12 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToObject = function() {};
 WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
   return [];
 };
+
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebViewInternal.prototype.setupExperimentalContextMenus_ = function() {};
 
 exports.WebView = WebView;
 exports.WebViewInternal = WebViewInternal;

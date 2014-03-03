@@ -27335,6 +27335,12 @@ other types of suffix sets.
   <int value="690" label="SCREENLOCKPRIVATE_SETAUTHTYPE"/>
   <int value="691" label="SCREENLOCKPRIVATE_GETAUTHTYPE"/>
   <int value="692" label="SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT"/>
+  <int value="693" label="WEBVIEW_FIND"/>
+  <int value="694" label="WEBVIEW_STOPFINDING"/>
+  <int value="695" label="WEBVIEW_CONTEXTMENUSCREATE"/>
+  <int value="696" label="WEBVIEW_CONTEXTMENUSUPDATE"/>
+  <int value="697" label="WEBVIEW_CONTEXTMENUSREMOVE"/>
+  <int value="698" label="WEBVIEW_CONTEXTMENUSREMOVEALL"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

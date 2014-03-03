@@ -21,8 +21,6 @@ namespace helpers = extensions::context_menus_api_helpers;
 
 namespace {
 
-const char kGeneratedIdKey[] = "generatedId";
-
 const char kIdRequiredError[] = "Extensions using event pages must pass an "
     "id parameter to chrome.contextMenus.create";
 
@@ -50,8 +48,8 @@ bool ContextMenusCreateFunction::RunImpl() {
     // The Generated Id is added by context_menus_custom_bindings.js.
     base::DictionaryValue* properties = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &properties));
-    EXTENSION_FUNCTION_VALIDATE(properties->GetInteger(kGeneratedIdKey,
-                                                       &id.uid));
+    EXTENSION_FUNCTION_VALIDATE(
+        properties->GetInteger(helpers::kGeneratedIdKey, &id.uid));
   }
 
   return helpers::CreateMenuItem(params->create_properties, GetProfile(),

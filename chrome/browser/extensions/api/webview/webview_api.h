@@ -34,6 +34,70 @@ class WebviewExtensionFunction : public AsyncExtensionFunction {
   virtual bool RunImplSafe(WebViewGuest* guest) = 0;
 };
 
+class WebviewContextMenusCreateFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.contextMenusCreate",
+                             WEBVIEW_CONTEXTMENUSCREATE);
+  WebviewContextMenusCreateFunction() {}
+
+ protected:
+  virtual ~WebviewContextMenusCreateFunction() {}
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusCreateFunction);
+};
+
+class WebviewContextMenusUpdateFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.contextMenusUpdate",
+                             WEBVIEW_CONTEXTMENUSUPDATE);
+  WebviewContextMenusUpdateFunction() {}
+
+ protected:
+  virtual ~WebviewContextMenusUpdateFunction() {}
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusUpdateFunction);
+};
+
+class WebviewContextMenusRemoveFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.contextMenusRemove",
+                             WEBVIEW_CONTEXTMENUSREMOVE);
+  WebviewContextMenusRemoveFunction() {}
+
+ protected:
+  virtual ~WebviewContextMenusRemoveFunction() {}
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusRemoveFunction);
+};
+
+class WebviewContextMenusRemoveAllFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.contextMenusRemoveAll",
+                             WEBVIEW_CONTEXTMENUSREMOVEALL);
+  WebviewContextMenusRemoveAllFunction() {}
+
+ protected:
+  virtual ~WebviewContextMenusRemoveAllFunction() {}
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewContextMenusRemoveAllFunction);
+};
+
 class WebviewClearDataFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.clearData", WEBVIEW_CLEARDATA);

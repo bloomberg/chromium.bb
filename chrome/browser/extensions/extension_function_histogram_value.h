@@ -754,6 +754,10 @@ enum HistogramValue {
   SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT,
   WEBVIEW_FIND,
   WEBVIEW_STOPFINDING,
+  WEBVIEW_CONTEXTMENUSCREATE,
+  WEBVIEW_CONTEXTMENUSUPDATE,
+  WEBVIEW_CONTEXTMENUSREMOVE,
+  WEBVIEW_CONTEXTMENUSREMOVEALL,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

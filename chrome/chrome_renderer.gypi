@@ -247,6 +247,7 @@
         'renderer/resources/extensions/web_request_custom_bindings.js',
         'renderer/resources/extensions/web_view.js',
         'renderer/resources/extensions/web_view_experimental.js',
+        'renderer/resources/extensions/webview_custom_bindings.js',
         'renderer/chrome_content_renderer_client.cc',
         'renderer/chrome_content_renderer_client.h',
         'renderer/chrome_render_frame_observer.cc',

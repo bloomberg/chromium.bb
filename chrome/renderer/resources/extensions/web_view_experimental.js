@@ -12,6 +12,7 @@ var CreateEvent = require('webView').CreateEvent;
 var MessagingNatives = requireNative('messaging_natives');
 var WebViewInternal = require('webView').WebViewInternal;
 var WebView = require('webView').WebView;
+var utils = require('utils');
 
 // WEB_VIEW_EXPERIMENTAL_EVENTS is a map of experimental <webview> DOM event
 //     names to their associated extension event descriptor objects.
@@ -52,6 +53,38 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
     fields: ['oldZoomFactor', 'newZoomFactor']
   }
 };
+
+/**
+ * An instance of this class is exposed as <webview>.contextMenus.
+ * @constructor
+ */
+function WebViewContextMenusImpl(viewInstanceId) {
+  this.viewInstanceId_ = viewInstanceId;
+};
+
+WebViewContextMenusImpl.prototype.create = function() {
+  var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
+  return $Function.apply(WebView.contextMenusCreate, null, args);
+};
+
+WebViewContextMenusImpl.prototype.remove = function() {
+  var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
+  return $Function.apply(WebView.contextMenusRemove, null, args);
+};
+
+WebViewContextMenusImpl.prototype.removeAll = function() {
+  var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
+  return $Function.apply(WebView.contextMenusRemoveAll, null, args);
+};
+
+WebViewContextMenusImpl.prototype.update = function() {
+  var args = $Array.concat([this.viewInstanceId_], $Array.slice(arguments));
+  return $Function.apply(WebView.contextMenusUpdate, null, args);
+};
+
+var WebViewContextMenus = utils.expose(
+    'WebViewContextMenus', WebViewContextMenusImpl,
+    ['create', 'remove', 'removeAll', 'update']);
 
 /**
  * @private
@@ -172,7 +205,7 @@ WebViewInternal.prototype.maybeSetCurrentZoomFactor =
 };
 
 /** @private */
-WebViewInternal.prototype.clearData = function(var_args) {
+WebViewInternal.prototype.clearData = function() {
   if (!this.instanceId) {
     return;
   }
@@ -217,7 +250,7 @@ WebViewInternal.prototype.stopFinding = function(action) {
 };
 
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
-  proto.clearData = function(var_args) {
+  proto.clearData = function() {
     var internal = privates(this).internal;
     $Function.apply(internal.clearData, internal, arguments);
   };
@@ -241,4 +274,30 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.stopFinding = function(action) {
     privates(this).internal.stopFinding(action);
   };
+};
+
+/** @private */
+WebViewInternal.prototype.setupExperimentalContextMenus_ = function() {
+  var self = this;
+  var createContextMenus = function() {
+    return function() {
+      if (self.contextMenus_) {
+        return self.contextMenus_;
+      }
+
+      self.contextMenus_ = new WebViewContextMenus(self.viewInstanceId);
+      // TODO(lazyboy): define 'onClicked' property/event on
+      // |self.contextMenus_|.
+      return self.contextMenus_;
+    };
+  };
+
+  // Expose <webview>.contextMenus object.
+  Object.defineProperty(
+      this.webviewNode,
+      'contextMenus',
+      {
+        get: createContextMenus(),
+        enumerable: true
+      });
 };

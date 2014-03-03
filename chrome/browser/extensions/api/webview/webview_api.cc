@@ -6,7 +6,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
+#include "chrome/browser/extensions/api/context_menus/context_menus_api_helpers.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -19,6 +21,7 @@
 using content::WebContents;
 using extensions::api::tabs::InjectDetails;
 using extensions::api::webview::SetPermission::Params;
+namespace helpers = extensions::context_menus_api_helpers;
 namespace webview = extensions::api::webview;
 
 namespace extensions {
@@ -53,13 +56,76 @@ bool WebviewExtensionFunction::RunImpl() {
   return RunImplSafe(guest);
 }
 
-WebviewClearDataFunction::WebviewClearDataFunction()
-    : remove_mask_(0),
-      bad_message_(false) {
-};
+// TODO(lazyboy): Add checks similar to
+// WebviewExtensionFunction::RunImplSafe(WebViewGuest*).
+bool WebviewContextMenusCreateFunction::RunImpl() {
+  scoped_ptr<webview::ContextMenusCreate::Params> params(
+      webview::ContextMenusCreate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-WebviewClearDataFunction::~WebviewClearDataFunction() {
-};
+  MenuItem::Id id(
+      Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
+      extension_id());
+
+  if (params->create_properties.id.get()) {
+    id.string_uid = *params->create_properties.id;
+  } else {
+    // The Generated Id is added by webview_custom_bindings.js.
+    base::DictionaryValue* properties = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &properties));
+    EXTENSION_FUNCTION_VALIDATE(
+        properties->GetInteger(helpers::kGeneratedIdKey, &id.uid));
+  }
+
+  // TODO(lazyboy): Implement.
+  SendResponse(false);
+  return false;
+}
+
+bool WebviewContextMenusUpdateFunction::RunImpl() {
+  scoped_ptr<webview::ContextMenusUpdate::Params> params(
+      webview::ContextMenusUpdate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  MenuItem::Id item_id(profile->IsOffTheRecord(), extension_id());
+
+  if (params->id.as_string)
+    item_id.string_uid = *params->id.as_string;
+  else if (params->id.as_integer)
+    item_id.uid = *params->id.as_integer;
+  else
+    NOTREACHED();
+
+  // TODO(lazyboy): Implement.
+  SendResponse(false);
+  return false;
+}
+
+bool WebviewContextMenusRemoveFunction::RunImpl() {
+  scoped_ptr<webview::ContextMenusRemove::Params> params(
+      webview::ContextMenusRemove::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // TODO(lazyboy): Implement.
+  SendResponse(false);
+  return false;
+}
+
+bool WebviewContextMenusRemoveAllFunction::RunImpl() {
+  scoped_ptr<webview::ContextMenusRemoveAll::Params> params(
+      webview::ContextMenusRemoveAll::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // TODO(lazyboy): Implement.
+  SendResponse(false);
+  return false;
+}
+
+WebviewClearDataFunction::WebviewClearDataFunction()
+    : remove_mask_(0), bad_message_(false) {}
+
+WebviewClearDataFunction::~WebviewClearDataFunction() {}
 
 // Parses the |dataToRemove| argument to generate the remove mask. Sets
 // |bad_message_| (like EXTENSION_FUNCTION_VALIDATE would if this were a bool
