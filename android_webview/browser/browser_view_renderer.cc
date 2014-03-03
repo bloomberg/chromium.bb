@@ -100,17 +100,17 @@ void BrowserViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (!attached_to_window_ || !has_compositor_)
     return;
 
+  // TODO(boliu): We should remove dependency on UpdateGlobalVisibleRect
+  // in DrawGL.
+  client_->UpdateGlobalVisibleRect();
+  shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
+
   if (draw_gl_input_.global_visible_rect.IsEmpty())
     return;
 
   if (!hardware_renderer_) {
     hardware_renderer_.reset(new HardwareRenderer(shared_renderer_state_));
   }
-
-  // TODO(boliu): We should remove dependency on UpdateGlobalVisibleRect
-  // in DrawGL.
-  client_->UpdateGlobalVisibleRect();
-  shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
 
   hardware_renderer_->DrawGL(draw_info);
   const DrawGLResult result = shared_renderer_state_->GetDrawGLResult();
