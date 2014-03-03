@@ -117,8 +117,12 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
         this._addDetail('title', commitData);
         this._addDetail('author', commitData);
         this._addDetail('reviewer', commitData);
-        // FIXME: Add bugID detail.
-        // this._addDetail('bugID', commitData, bugzilla.bugURL);
+        this._addDetail('bugID', commitData,
+            ui.urlForCrbug,
+            function(value) {
+                return value.split(/\s*,\s*/);
+            }
+        );
     },
     hasRevision: function(revision)
     {
@@ -134,10 +138,17 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
         span.className = part;
         
         if (linkFunction) {
-            var link = base.createLinkNode(linkFunction(content), content);
-            span.appendChild(link);
-        } else
+            var parts = $.isArray(content) ? content : [content];
+            parts.forEach(function(item, index) {
+                if (index > 0)
+                    span.appendChild(document.createTextNode(', '));
+                var link = base.createLinkNode(linkFunction(item), item);
+                link.className = part + '-item';
+                span.appendChild(link);
+            });
+        } else {
             span.textContent = content;
+        }
     }
 });
 

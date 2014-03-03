@@ -149,8 +149,12 @@ ol.notifications>li ul.causes>li>ul.actions {
         }
 
         ol.notifications>li ul.causes>li>div.description>span>span.bugID::before {
-            content: 'bug ';
+            content: '[bug ';
             padding-left: 8px;
+        }
+
+        ol.notifications>li ul.causes>li>div.description>span>span.bugID::after {
+            content: ']';
         }
 
         ol.notifications>li ul.causes>li>div.description>span>span.bugID>a {

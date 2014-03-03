@@ -81,7 +81,7 @@ var kExampleCommitDataXML =
    "core/platform may not depend on core/ even for testing.\n" +
    "\n" +
    "BUG=301947\n" +
-   "R=abarth@chromium.org, abarth\n" +
+   "TBR=abarth@chromium.org, abarth\n" +
    "\n" +
    "Review URL: https://codereview.chromium.org/25284004\n" +
    "\n" +
@@ -93,7 +93,7 @@ var kExampleCommitDataXML =
    "core/platform may not depend on core/ even for testing.\n" +
    "\n" +
    "BUG=301947\n" +
-   "R=abarth@chromium.org, abarth\n" +
+   "TBR=abarth@chromium.org, abarth\n" +
    "\n" +
    "Review URL: https://codereview.chromium.org/25284004\n" +
    "\n" +
@@ -135,6 +135,41 @@ var kExampleCommitDataXML =
    "</pre>\n" +
    "</div>\n" +
    "</content>\n" +
+   "<entry>\n" +
+   "<title>Mark Skia suppressions for rebasline.</title>\n" +
+   "<updated>2014-02-27T14:44:41Z</updated>\n" +
+   "<author>\n" +
+   "<name>fmalita@chromium.org</name>\n" +
+   "</author>\n" +
+   "<published>2014-02-27T14:44:41Z</published>\n" +
+   "<link rel='alternate' type='text/html' href='http://blink.lc/blink/commit/?id=35030357db3c0967974273faf5e65fe3d7cc041b'/>\n" +
+   "<id>35030357db3c0967974273faf5e65fe3d7cc041b</id>\n" +
+   "<content type='text'>\n" +
+   "Unreviewed gardening.\n" +
+   "Stray R=123 in the middle...\n" +
+   "\n" +
+   "BUG=/341448,344497\n" +
+   "TBR=robertphillips@google.com\n" +
+   "\n" +
+   "Review URL: https://codereview.chromium.org/183123002\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@168027 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</content>\n" +
+   "<content type='xhtml'>\n" +
+   "<div xmlns='http://www.w3.org/1999/xhtml'>\n" +
+   "<pre>\n" +
+   "Unreviewed gardening.\n" +
+   "Stray R=123 in the middle...\n" +
+   "\n" +
+   "BUG=/341448 ,   344497/ \n" +
+   "TBR=robertphillips@google.com\n" +
+   "\n" +
+   "Review URL: https://codereview.chromium.org/183123002\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@168027 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</pre>\n" +
+   "</div>\n" +
+   "</content>\n" +
    "</entry>\n" +
    "</feed>\n";
 
@@ -146,7 +181,7 @@ var kExampleCommitDataList = [{
     "summary": "This matches Gecko's behavior for these types of properties.",
     "author": "mkwst@chromium.org",
     "reviewer": "jochen@chromium.org",
-    "bugID": 17325,
+    "bugID": [17325],
     "revertedRevision": undefined
   },
   {
@@ -156,7 +191,7 @@ var kExampleCommitDataList = [{
     "summary": "core/platform may not depend on core/ even for testing.",
     "author": "eseidel@chromium.org",
     "reviewer": "abarth@chromium.org, abarth",
-    "bugID": 301947,
+    "bugID": [301947],
     "revertedRevision": undefined
   },
   {
@@ -166,7 +201,17 @@ var kExampleCommitDataList = [{
     "summary": "These were all failures noticed when running check-blink-deps",
     "author": "eseidel@chromium.org",
     "reviewer": "abarth@chromium.org, abarth",
-    "bugID": 301947,
+    "bugID": [301947],
+    "revertedRevision": undefined
+  },
+  {
+    "revision": 168027,
+    "title": "Mark Skia suppressions for rebasline.",
+    "time": "2014-02-27T14:44:41Z",
+    "summary": "Unreviewed gardening.",
+    "author": "fmalita@chromium.org",
+    "reviewer": "robertphillips@google.com",
+    "bugID": [341448, 344497],
     "revertedRevision": undefined
   }
 ];

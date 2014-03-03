@@ -44,6 +44,11 @@ ui.urlForTest = function(testName)
     return 'http://trac.webkit.org/browser/trunk/LayoutTests/' + testName;
 }
 
+ui.urlForCrbug = function(bugID)
+{
+    return 'http://crbug.com/' + bugID;
+}
+
 ui.urlForFlakinessDashboard = function(opt_testNameList)
 {
     var testsParameter = opt_testNameList ? opt_testNameList.join(',') : '';

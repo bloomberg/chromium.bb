@@ -38,19 +38,25 @@ function findUsingRegExp(string, regexp)
 
 function findReviewer(message)
 {
-    var regexp = /R=(.+)/;
+    var regexp = /(?:^|\n)\s*(?:TB)?R=(.+)/;
     var reviewers = findUsingRegExp(message, regexp);
     if (!reviewers)
         return null;
-    return reviewers.replace(/\s*,\s*/, ", ");
+    return reviewers.replace(/\s*,\s*/, ', ');
 }
 
 function findBugID(message)
 {
-    var regexp = /BUG=(\d+)/;
-    var bugID = parseInt(findUsingRegExp(message, regexp), 10);
-    return isNaN(bugID) ? 0 : bugID;
-
+    var regexp = /(?:^|\n)\s*BUG=(.+)/;
+    var value = findUsingRegExp(message, regexp);
+    if (!value)
+        return null;
+    return value.split(/\s*,\s*/).map(function(id) {
+        var parsedID = parseInt(id.replace(/[^\d]/g, ''), 10);
+        return isNaN(parsedID) ? 0 : parsedID;
+    }).filter(function(id) {
+        return !!id;
+    });
 }
 
 function findRevision(message)
@@ -62,7 +68,7 @@ function findRevision(message)
 
 function parseCommitMessage(message) {
     var lines = message.split('\n');
-    var title = "";
+    var title = '';
     lines.some(function(line) {
         if (line) {
             title = line;

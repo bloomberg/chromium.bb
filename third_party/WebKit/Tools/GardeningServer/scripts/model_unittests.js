@@ -141,7 +141,7 @@ asyncTest("updateRecentCommits", 2, function() {
                 "summary": "This matches Gecko's behavior for these types of properties.",
                 "author": "mkwst@chromium.org",
                 "reviewer": "jochen@chromium.org",
-                "bugID": 13,
+                "bugID": [13],
                 "revertedRevision": undefined,
               },
               {
@@ -151,7 +151,7 @@ asyncTest("updateRecentCommits", 2, function() {
                 "summary": "core/platform may not depend on core/ even for testing.",
                 "author": "eseidel@chromium.org",
                 "reviewer": "abarth@chromium.org, abarth",
-                "bugID": 12,
+                "bugID": [12],
                 "revertedRevision": undefined
               },
               {
@@ -161,7 +161,7 @@ asyncTest("updateRecentCommits", 2, function() {
                 "summary": "These were all failures noticed when running check-blink-deps",
                 "author": "eseidel@chromium.org",
                 "reviewer": "abarth@chromium.org, abarth",
-                "bugID": 11,
+                "bugID": [11],
                 "revertedRevision": undefined
               }
             ]);
@@ -186,10 +186,10 @@ asyncTest("commitDataListForRevisionRange", 6, function() {
                 return commitData.bugID;
             }
 
-            deepEqual(model.commitDataListForRevisionRange(3, 3).map(extractBugIDs), [13]);
-            deepEqual(model.commitDataListForRevisionRange(1, 3).map(extractBugIDs), [11, 12, 13]);
-            deepEqual(model.commitDataListForRevisionRange(0, 1).map(extractBugIDs), [11]);
-            deepEqual(model.commitDataListForRevisionRange(0, 4).map(extractBugIDs), [11, 12, 13]);
+            deepEqual(model.commitDataListForRevisionRange(3, 3).map(extractBugIDs), [[13]]);
+            deepEqual(model.commitDataListForRevisionRange(1, 3).map(extractBugIDs), [[11], [12], [13]]);
+            deepEqual(model.commitDataListForRevisionRange(0, 1).map(extractBugIDs), [[11]]);
+            deepEqual(model.commitDataListForRevisionRange(0, 4).map(extractBugIDs), [[11], [12], [13]]);
             deepEqual(model.commitDataListForRevisionRange(4, 0).map(extractBugIDs), []);
             delete model.state.recentCommits;
         });
