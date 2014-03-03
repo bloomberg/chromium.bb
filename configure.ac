@@ -135,6 +135,7 @@ AC_CONFIG_FILES([
         tables/Makefile
 	liblouis.pc
         tests/Makefile
+        tests/resolve_table.h
         tests/tables/Makefile
         tests/tables/moreTables/Makefile
         tests/tables/resolve_table/Makefile

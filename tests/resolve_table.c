@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "liblouis.h"
+#include "resolve_table.h"
 
 #define ASSERT(test)  \
   do {                \
@@ -40,7 +42,11 @@ main(int argc, char **argv)
    * ====================================================================== */
   
   int result = 0;
-  
+
+  // this test relies on being in the test dir, so that it can test
+  // finding tables by relative path
+  chdir(TEST_SRC_DIR);
+
   // Full path
   setenv ("LOUIS_TABLEPATH", "", 1);
   ASSERT (lou_getTable ("tables/resolve_table/table_1"));
