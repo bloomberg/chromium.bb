@@ -35,7 +35,6 @@ void P2PAsyncAddressResolver::Start(const talk_base::SocketAddress& host_name,
   DCHECK_EQ(STATE_CREATED, state_);
 
   state_ = STATE_SENT;
-  addr_ = host_name;
   ipc_message_loop_->PostTask(FROM_HERE, base::Bind(
       &P2PAsyncAddressResolver::DoSendRequest, this, host_name, done_callback));
 }

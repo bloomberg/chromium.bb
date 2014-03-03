@@ -65,7 +65,6 @@ class P2PAsyncAddressResolver
   // Accessed on the IPC thread only.
   int32 request_id_;
   bool registered_;
-  talk_base::SocketAddress addr_;
   std::vector<talk_base::IPAddress> addresses_;
   DoneCallback done_callback_;
 

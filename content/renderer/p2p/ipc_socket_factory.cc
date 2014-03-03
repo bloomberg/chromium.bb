@@ -182,7 +182,7 @@ class AsyncAddressResolverImpl :  public base::NonThreadSafe,
   virtual void OnAddressResolved(const net::IPAddressList& addresses);
 
   scoped_refptr<P2PAsyncAddressResolver> resolver_;
-  talk_base::SocketAddress addr_;   // Hostname.
+  int port_;   // Port number in |addr| from Start() method.
   std::vector<talk_base::IPAddress> addresses_;  // Resolved addresses.
 };
 
@@ -501,6 +501,10 @@ AsyncAddressResolverImpl::~AsyncAddressResolverImpl() {
 
 void AsyncAddressResolverImpl::Start(const talk_base::SocketAddress& addr) {
   DCHECK(CalledOnValidThread());
+  // Copy port number from |addr|. |port_| must be copied
+  // when resolved address is returned in GetResolvedAddress.
+  port_ = addr.port();
+
   resolver_->Start(addr, base::Bind(
       &AsyncAddressResolverImpl::OnAddressResolved,
       base::Unretained(this)));
@@ -513,10 +517,10 @@ bool AsyncAddressResolverImpl::GetResolvedAddress(
   if (addresses_.empty())
    return false;
 
-  *addr = addr_;
   for (size_t i = 0; i < addresses_.size(); ++i) {
     if (family == addresses_[i].family()) {
       addr->SetIP(addresses_[i]);
+      addr->SetPort(port_);
       return true;
     }
   }
