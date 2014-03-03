@@ -12,6 +12,7 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -84,6 +86,40 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
      */
     boolean mTriedNewAuthToken;
 
+    /** Shows a warning explaining that a Google account is required, then closes the activity. */
+    private void showNoAccountsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.noaccounts_message);
+        builder.setPositiveButton(R.string.noaccounts_add_account,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(Settings.ACTION_ADD_ACCOUNT);
+                        intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES,
+                                new String[] { ACCOUNT_TYPE });
+                        if (intent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(intent);
+                        }
+                        finish();
+                    }
+                });
+        builder.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    finish();
+                }
+            });
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    finish();
+                }
+            });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     /**
      * Called when the activity is first created. Loads the native library and requests an
      * authentication token from the system.
@@ -105,10 +141,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
         mAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
         if (mAccounts.length == 0) {
-            // TODO(lambroslambrou): Show a dialog with message: "To use <App Name>, you'll need
-            // to add a Google Account to your device." and two buttons: "Close", "Add account".
-            // The "Add account" button should navigate to the system "Add a Google Account"
-            // screen.
+            showNoAccountsDialog();
             return;
         }
 

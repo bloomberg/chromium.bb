@@ -186,6 +186,12 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <if expr="_google_chrome">
+        <if expr="is_android">
+          <message desc="Message shown in popup dialog on Android when there are no Google accounts on the device" name="IDS_NOACCOUNTS_MESSAGE" formatter_data="android_java">
+          To use Chrome Remote Desktop, you'll need to add a Google Account to your device.
+          </message>
+        </if>
+
         <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chrome Remote Desktop session.
         </message>
@@ -282,6 +288,12 @@
       </if>
 
       <if expr="not _google_chrome">
+        <if expr="is_android">
+          <message desc="Message shown in popup dialog on Android when there are no Google accounts on the device" name="IDS_NOACCOUNTS_MESSAGE" formatter_data="android_java">
+          To use Chromoting, you'll need to add a Google Account to your device.
+          </message>
+        </if>
+
         <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chromoting session.
         </message>
@@ -390,6 +402,9 @@
         <message desc="Android action-bar menu item for viewing the Play Store page for the application" name="IDS_ACTIONBAR_PLAY_STORE" formatter_data="android_java">
           View in Google Play Store
         </message>
+        <message desc="Label for the button on the Android popup dialog that is shown when there are no Google accounts on the device. Pressing this button launches the Android system screen for adding a new Google account to the device." name="IDS_NOACCOUNTS_ADD_ACCOUNT" formatter_data="android_java">
+          Add account
+        </message>
       </if>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
@@ -413,7 +428,7 @@
       <message desc="In the connection history dialog, clicking this button will delete the connection history." name="IDS_CLEAR_HISTORY">
         Clear history
       </message>
-      <message desc="Label for general-purpose Close buttons." name="IDS_CLOSE">
+      <message desc="Label for general-purpose Close buttons." name="IDS_CLOSE" formatter_data="android_java">
         Close
       </message>
       <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDS_CONNECT_BUTTON">
