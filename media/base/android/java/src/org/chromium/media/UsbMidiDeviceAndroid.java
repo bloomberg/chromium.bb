@@ -11,6 +11,7 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
+import android.util.SparseArray;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -33,7 +34,7 @@ class UsbMidiDeviceAndroid {
     /**
      * A map from endpoint number to UsbEndpoint.
      */
-    private final Map<Integer, UsbEndpoint> mEndpointMap;
+    private final SparseArray<UsbEndpoint> mEndpointMap;
 
     /**
      * A map from UsbEndpoint to UsbRequest associated to it.
@@ -52,7 +53,7 @@ class UsbMidiDeviceAndroid {
      */
     UsbMidiDeviceAndroid(UsbManager manager, UsbDevice device) {
         mConnection = manager.openDevice(device);
-        mEndpointMap = new HashMap<Integer, UsbEndpoint>();
+        mEndpointMap = new SparseArray<UsbEndpoint>();
         mRequestMap = new HashMap<UsbEndpoint, UsbRequest>();
 
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
@@ -81,14 +82,12 @@ class UsbMidiDeviceAndroid {
         if (mConnection == null) {
             return;
         }
-        if (!mEndpointMap.containsKey(endpointNumber)) {
+        UsbEndpoint endpoint = mEndpointMap.get(endpointNumber);
+        if (endpoint == null) {
             return;
         }
-        UsbEndpoint endpoint = mEndpointMap.get(endpointNumber);
-        UsbRequest request;
-        if (mRequestMap.containsKey(endpoint)) {
-            request = mRequestMap.get(endpoint);
-        } else {
+        UsbRequest request = mRequestMap.get(endpoint);
+        if (request == null) {
             request = new UsbRequest();
             request.initialize(mConnection, endpoint);
             mRequestMap.put(endpoint, request);
