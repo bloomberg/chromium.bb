@@ -49,7 +49,6 @@ TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
 
 TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
-      session_tab_id_(),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
@@ -126,6 +125,17 @@ Profile* TabAndroid::GetProfile() const {
 
 browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
   return synced_tab_delegate_.get();
+}
+
+void TabAndroid::SetWindowSessionID(SessionID::id_type window_id) {
+  session_window_id_.set_id(window_id);
+
+  if (!web_contents())
+    return;
+
+  SessionTabHelper* session_tab_helper =
+          SessionTabHelper::FromWebContents(web_contents());
+  session_tab_helper->SetWindowID(session_window_id_);
 }
 
 void TabAndroid::SetSyncId(int sync_id) {
@@ -251,6 +261,8 @@ void TabAndroid::InitWebContents(JNIEnv* env,
   web_contents_.reset(content_view_core->GetWebContents());
   TabHelpers::AttachTabHelpers(web_contents_.get());
 
+  SetWindowSessionID(session_window_id_.id());
+
   session_tab_id_.set_id(
       SessionTabHelper::FromWebContents(web_contents())->session_id().id());
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
@@ -279,17 +291,6 @@ void TabAndroid::InitWebContents(JNIEnv* env,
            &web_contents()->GetController()));
 
   synced_tab_delegate_->SetWebContents(web_contents());
-
-  // Set the window ID if there is a valid TabModel.
-  TabModel* model = TabModelList::GetTabModelWithProfile(GetProfile());
-  if (model) {
-    SessionID window_id;
-    window_id.set_id(model->GetSessionId());
-
-    SessionTabHelper* session_tab_helper =
-        SessionTabHelper::FromWebContents(web_contents());
-    session_tab_helper->SetWindowID(window_id);
-  }
 
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.

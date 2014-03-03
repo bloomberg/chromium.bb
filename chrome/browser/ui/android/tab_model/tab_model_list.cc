@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -42,18 +43,18 @@ void TabModelList::HandlePopupNavigation(chrome::NavigateParams* params) {
   tab->HandlePopupNavigation(params);
 }
 
-
-TabModel* TabModelList::GetTabModelWithProfile(
-    Profile* profile) {
-  if (!profile)
+TabModel* TabModelList::GetTabModelForWebContents(
+    content::WebContents* web_contents) {
+  if (!web_contents)
     return NULL;
 
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); ++i) {
-    Profile* model_profile = (*i)->GetProfile();
-    if (profile->IsSameProfile(model_profile) &&
-        profile->IsOffTheRecord() == model_profile->IsOffTheRecord()) {
-      return *i;
+    TabModel* model = *i;
+    for (int index = 0; index < model->GetTabCount(); index++) {
+      TabAndroid* tab = model->GetTabAt(index);
+      if (web_contents == tab->web_contents())
+        return model;
     }
   }
 
@@ -95,4 +96,9 @@ bool TabModelList::empty() {
 
 size_t TabModelList::size() {
   return tab_models().size();
+}
+
+TabModel* TabModelList::get(size_t index) {
+  DCHECK_LT(index, size());
+  return tab_models()[index];
 }

@@ -642,9 +642,8 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
 void BrowsingHistoryHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
 #if defined(OS_ANDROID)
-  Profile* profile = Profile::FromWebUI(web_ui());
-  const TabModel* tab_model =
-      TabModelList::GetTabModelWithProfile(profile);
+  const TabModel* tab_model = TabModelList::GetTabModelForWebContents(
+      web_ui()->GetWebContents());
   if (tab_model)
     tab_model->OpenClearBrowsingData();
 #else

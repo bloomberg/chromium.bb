@@ -76,6 +76,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   Profile* GetProfile() const;
   browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() const;
 
+  void SetWindowSessionID(SessionID::id_type window_id);
   void SetSyncId(int sync_id);
 
   virtual void HandlePopupNavigation(chrome::NavigateParams* params);
@@ -147,7 +148,11 @@ class TabAndroid : public CoreTabHelperDelegate,
  private:
   JavaObjectWeakGlobalRef weak_java_tab_;
 
+  // The identifier used by session restore for this tab.
   SessionID session_tab_id_;
+
+  // Identifier of the window the tab is in.
+  SessionID session_window_id_;
 
   content::NotificationRegistrar notification_registrar_;
 

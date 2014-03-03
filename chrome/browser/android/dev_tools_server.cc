@@ -292,24 +292,21 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
   virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
       const GURL& url) OVERRIDE {
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile);
+    if (TabModelList::empty())
+      return scoped_ptr<content::DevToolsTarget>();
+    TabModel* tab_model = TabModelList::get(0);
     if (!tab_model)
       return scoped_ptr<content::DevToolsTarget>();
     WebContents* web_contents = tab_model->CreateNewTabForDevTools(url);
     if (!web_contents)
       return scoped_ptr<content::DevToolsTarget>();
 
-    for (int i = 0; i < tab_model->GetTabCount(); ++i) {
-      if (web_contents != tab_model->GetWebContentsAt(i))
-        continue;
-      TabAndroid* tab = tab_model->GetTabAt(i);
-      return scoped_ptr<content::DevToolsTarget>(
-          TabTarget::CreateForWebContents(tab->GetAndroidId(), web_contents));
-    }
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    if (!tab)
+      return scoped_ptr<content::DevToolsTarget>();
 
-    // Newly created tab not found, return no target.
-    return scoped_ptr<content::DevToolsTarget>();
+    return scoped_ptr<content::DevToolsTarget>(
+        TabTarget::CreateForWebContents(tab->GetAndroidId(), web_contents));
   }
 
   virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
