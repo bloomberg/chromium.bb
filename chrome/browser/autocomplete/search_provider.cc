@@ -98,7 +98,7 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
     return AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
   if (type == "INFINITE")
     return AutocompleteMatchType::SEARCH_SUGGEST_INFINITE;
-  if (type == "PERSONALIZED")
+  if (type == "PERSONALIZED_QUERY")
     return AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
   if (type == "PROFILE")
     return AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
