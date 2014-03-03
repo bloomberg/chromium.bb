@@ -195,12 +195,16 @@ void Canvas::Restore() {
   canvas_->restore();
 }
 
-bool Canvas::ClipRect(const Rect& rect) {
-  return canvas_->clipRect(RectToSkRect(rect));
+void Canvas::ClipRect(const Rect& rect) {
+  canvas_->clipRect(RectToSkRect(rect));
 }
 
-bool Canvas::ClipPath(const SkPath& path) {
-  return canvas_->clipPath(path);
+void Canvas::ClipPath(const SkPath& path) {
+  canvas_->clipPath(path);
+}
+
+bool Canvas::IsClipEmpty() const {
+  return canvas_->isClipEmpty();
 }
 
 bool Canvas::GetClipBounds(Rect* bounds) {

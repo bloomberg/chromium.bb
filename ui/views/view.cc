@@ -791,7 +791,8 @@ void View::Paint(gfx::Canvas* canvas) {
   clip_rect.Inset(clip_insets_);
   if (parent_)
     clip_rect.set_x(parent_->GetMirroredXForRect(clip_rect));
-  if (!canvas->ClipRect(clip_rect))
+  canvas->ClipRect(clip_rect);
+  if (canvas->IsClipEmpty())
     return;
 
   // Non-empty clip, translate the graphics such that 0,0 corresponds to

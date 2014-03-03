@@ -959,7 +959,8 @@ void Window::PaintLayerlessChildren(gfx::Canvas* canvas) {
     Window* child = children_[i];
     if (!child->layer_ && child->visible_) {
       gfx::ScopedCanvas scoped_canvas(canvas);
-      if (canvas->ClipRect(child->bounds())) {
+      canvas->ClipRect(child->bounds());
+      if (!canvas->IsClipEmpty()) {
         canvas->Translate(child->bounds().OffsetFromOrigin());
         child->Paint(canvas);
       }
