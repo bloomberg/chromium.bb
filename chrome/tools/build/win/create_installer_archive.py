@@ -443,9 +443,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
 
   # The set of component DLLs required by setup.exe (to be dropped in the
   # archive in the |installer_dir|).
-  # TODO(caitkp): Remove chrome_redirects.dll from setup's dependencies.
   setup_component_dll_names = { 'base.dll',
-                                'chrome_redirects.dll',
                                 'crcrypto.dll',
                                 'crnspr.dll',
                                 'crnss.dll',
