@@ -98,10 +98,12 @@ CSSKeyframesRule::~CSSKeyframesRule()
 {
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
 
+#if !ENABLE(OILPAN)
     for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
         if (m_childRuleCSSOMWrappers[i])
             m_childRuleCSSOMWrappers[i]->setParentRule(0);
     }
+#endif
 }
 
 void CSSKeyframesRule::setName(const String& name)
@@ -207,8 +209,9 @@ void CSSKeyframesRule::trace(Visitor* visitor)
 {
     CSSRule::trace(visitor);
 #if ENABLE(OILPAN)
-    m_childRuleCSSOMWrappers.trace(visitor);
+    visitor->trace(m_childRuleCSSOMWrappers);
 #endif
+    visitor->trace(m_keyframesRule);
 }
 
 } // namespace WebCore

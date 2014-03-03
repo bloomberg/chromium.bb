@@ -54,12 +54,12 @@ public:
 
     CSSStyleDeclaration* style() const;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     CSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);
 
-    RefPtrWillBePersistent<StyleRuleFilter> m_filterRule;
+    RefPtrWillBeMember<StyleRuleFilter> m_filterRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

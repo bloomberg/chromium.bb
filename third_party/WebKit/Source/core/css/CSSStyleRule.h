@@ -52,14 +52,14 @@ public:
     // FIXME: Not CSSOM. Remove.
     StyleRule* styleRule() const { return m_styleRule.get(); }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     CSSStyleRule(StyleRule*, CSSStyleSheet*);
 
     String generateSelectorText() const;
 
-    RefPtrWillBePersistent<StyleRule> m_styleRule;
+    RefPtrWillBeMember<StyleRule> m_styleRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

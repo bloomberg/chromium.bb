@@ -159,6 +159,7 @@ void CSSGroupingRule::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_childRuleCSSOMWrappers);
 #endif
+    visitor->trace(m_groupRule);
 }
 
 } // namespace WebCore

@@ -54,7 +54,7 @@ protected:
 
     void appendCSSTextForItems(StringBuilder&) const;
 
-    RefPtrWillBePersistent<StyleRuleGroup> m_groupRule;
+    RefPtrWillBeMember<StyleRuleGroup> m_groupRule;
     mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };

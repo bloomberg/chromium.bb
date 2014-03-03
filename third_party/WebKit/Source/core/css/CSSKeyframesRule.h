@@ -106,7 +106,7 @@ public:
 private:
     CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
 
-    RefPtrWillBePersistent<StyleRuleKeyframes> m_keyframesRule;
+    RefPtrWillBeMember<StyleRuleKeyframes> m_keyframesRule;
     mutable WillBeHeapVector<RefPtrWillBeMember<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
     bool m_isPrefixed;
