@@ -5,12 +5,10 @@
 #ifndef MOJO_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 #define MOJO_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 
-#include <deque>
-#include <vector>
-
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "mojo/public/system/core.h"
+#include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/system_impl_export.h"
 #include "mojo/system/waiter_list.h"
@@ -50,10 +48,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   bool is_open_;
   bool is_peer_open_;
 
-  // Queue of incoming messages; owns its entries.
-  // TODO(vtl): When C++11 is available, switch this to a deque of
-  // |scoped_ptr|s.
-  std::deque<MessageInTransit*> message_queue_;
+  // Queue of incoming messages.
+  MessageInTransitQueue message_queue_;
   WaiterList waiter_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalMessagePipeEndpoint);

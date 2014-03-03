@@ -6,9 +6,7 @@
 
 #include <string.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 
@@ -26,7 +24,7 @@ ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
   DCHECK(!is_running());
   DCHECK(!is_attached());
   AssertConsistentState();
-  DCHECK(paused_message_queue_.empty());
+  DCHECK(paused_message_queue_.IsEmpty());
 }
 
 MessagePipeEndpoint::Type ProxyMessagePipeEndpoint::GetType() const {
@@ -42,7 +40,7 @@ void ProxyMessagePipeEndpoint::Close() {
   channel_ = NULL;
   local_id_ = MessageInTransit::kInvalidEndpointId;
   remote_id_ = MessageInTransit::kInvalidEndpointId;
-  STLDeleteElements(&paused_message_queue_);
+  paused_message_queue_.Clear();
 }
 
 void ProxyMessagePipeEndpoint::OnPeerClose() {
@@ -78,7 +76,7 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
     if (!channel_->WriteMessage(message.Pass()))
       LOG(WARNING) << "Failed to write message to channel";
   } else {
-    paused_message_queue_.push_back(message.release());
+    paused_message_queue_.AddMessage(message.Pass());
   }
 }
 
@@ -107,11 +105,8 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   remote_id_ = remote_id;
   AssertConsistentState();
 
-  for (std::deque<MessageInTransit*>::iterator it =
-           paused_message_queue_.begin(); it != paused_message_queue_.end();
-       ++it)
-    EnqueueMessage(make_scoped_ptr(*it));
-  paused_message_queue_.clear();
+  while (!paused_message_queue_.IsEmpty())
+    EnqueueMessage(paused_message_queue_.GetMessage());
 }
 
 #ifndef NDEBUG

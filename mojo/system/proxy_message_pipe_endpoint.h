@@ -7,13 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
-
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/system/core.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/message_in_transit_queue.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -86,9 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
 
   // This queue is only used while we're detached, to store messages while we're
   // not ready to send them yet.
-  // TODO(vtl): When C++11 is available, switch this to a deque of
-  // |scoped_ptr|/|unique_ptr|s.
-  std::deque<MessageInTransit*> paused_message_queue_;
+  MessageInTransitQueue paused_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);
 };
