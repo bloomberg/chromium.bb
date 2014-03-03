@@ -90,7 +90,6 @@ struct Timing {
     double iterationStart;
     double iterationCount;
     double iterationDuration;
-    // FIXME: Add activeDuration.
     double playbackRate;
     PlaybackDirection direction;
     RefPtr<TimingFunction> timingFunction;
