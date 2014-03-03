@@ -21,22 +21,23 @@
 <li><a class="reference internal" href="#create-a-static-library" id="id13">Create a static library</a></li>
 <li><a class="reference internal" href="#link-the-application" id="id14">Link the application</a></li>
 <li><a class="reference internal" href="#finalizing-the-pexe-for-deployment" id="id15">Finalizing the <strong>pexe</strong> for deployment</a></li>
+<li><a class="reference internal" href="#compressing-the-pexe-for-deployment" id="id16">Compressing the <strong>pexe</strong> for deployment</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#the-gnu-based-toolchains" id="id16">The GNU-based toolchains</a></p>
+<li><p class="first"><a class="reference internal" href="#the-gnu-based-toolchains" id="id17">The GNU-based toolchains</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#compiling" id="id17">Compiling</a></li>
-<li><a class="reference internal" href="#creating-libraries-and-linking" id="id18">Creating libraries and Linking</a></li>
-<li><a class="reference internal" href="#finalizing-a-nexe-for-deployment" id="id19">Finalizing a <strong>nexe</strong> for deployment</a></li>
+<li><a class="reference internal" href="#compiling" id="id18">Compiling</a></li>
+<li><a class="reference internal" href="#creating-libraries-and-linking" id="id19">Creating libraries and Linking</a></li>
+<li><a class="reference internal" href="#finalizing-a-nexe-for-deployment" id="id20">Finalizing a <strong>nexe</strong> for deployment</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#using-make" id="id20">Using make</a></li>
-<li><a class="reference internal" href="#libraries-and-header-files-provided-with-the-sdk" id="id21">Libraries and header files provided with the SDK</a></li>
-<li><p class="first"><a class="reference internal" href="#troubleshooting" id="id22">Troubleshooting</a></p>
+<li><a class="reference internal" href="#using-make" id="id21">Using make</a></li>
+<li><a class="reference internal" href="#libraries-and-header-files-provided-with-the-sdk" id="id22">Libraries and header files provided with the SDK</a></li>
+<li><p class="first"><a class="reference internal" href="#troubleshooting" id="id23">Troubleshooting</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#undefined-reference-error" id="id23">&#8220;Undefined reference&#8221; error</a></li>
-<li><a class="reference internal" href="#can-t-find-libraries-containing-necessary-symbols" id="id24">Can&#8217;t find libraries containing necessary symbols</a></li>
-<li><a class="reference internal" href="#pnacl-abi-verification-errors" id="id25">PNaCl ABI Verification errors</a></li>
+<li><a class="reference internal" href="#undefined-reference-error" id="id24">&#8220;Undefined reference&#8221; error</a></li>
+<li><a class="reference internal" href="#can-t-find-libraries-containing-necessary-symbols" id="id25">Can&#8217;t find libraries containing necessary symbols</a></li>
+<li><a class="reference internal" href="#pnacl-abi-verification-errors" id="id26">PNaCl ABI Verification errors</a></li>
 </ul>
 </li>
 </ul>
@@ -159,6 +160,8 @@ tools include:</p>
 <dd>C compiler and compiler driver</dd>
 <dt>pnacl-clang++</dt>
 <dd>C++ compiler and compiler driver</dd>
+<dt>pnacl-compress</dt>
+<dd>Size compresses a finalized <strong>pexe</strong> file for deployment.</dd>
 <dt>pnacl-dis</dt>
 <dd>Disassembler for both <strong>pexe</strong> files and <strong>nexe</strong> files</dd>
 <dt>pnacl-finalize</dt>
@@ -286,6 +289,31 @@ stripping out debug information and other metadata.</p>
 refer to the final version of the application before deployment.
 The <code>create_nmf.py</code> tool helps generate an <code>.nmf</code> file, but <code>.nmf</code>
 files can also be written by hand.</p>
+</section><section id="compressing-the-pexe-for-deployment">
+<h3 id="compressing-the-pexe-for-deployment">Compressing the <strong>pexe</strong> for deployment</h3>
+<p>Size compression is an optional step for deployment, and reduces the
+size of the pexe file that must be transmitted over the wire. The tool
+<code>pnacl-compress</code> applies compression strategies that are already built
+into the <strong>stable</strong> binary format of a pexe application. As such,
+compressed pexe files do not need any extra time to be decompressed on
+the client&#8217;s side. All costs are upfront when you call <code>pnacl-compress</code>.</p>
+<p>Currently, this tool will compress pexe files by about 25%. However,
+it is somewhat slow (can take from seconds to minutes on large
+appications). Hence, this step is optional.</p>
+<pre>
+&lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-compress ^
+  hello_world.final.pexe
+</pre>
+<p>Tool <code>pnacl-compress</code> must be called after a pexe file has been finalized
+for deployment (via <code>pnacl-finalize</code>). Alternatively, you can apply this
+step as part of the finalizing step by adding the <code>--compress</code> flag
+to the pnacl-finalize command line.</p>
+<p>Note that this compression step doesn&#8217;t replace gzip. This compression
+step is in addition to gzipping a file for deployment. One should note
+that while the gzipped version of a compressed pexe file is still
+smaller than the corresponding uncompressed pexe file, the gains is
+somewhat smaller after being gzipped. Expected reduction in size
+(after being gzipped) is more like 7.5% to 10%.</p>
 </section></section><section id="the-gnu-based-toolchains">
 <h2 id="the-gnu-based-toolchains">The GNU-based toolchains</h2>
 <p>Besides the PNaCl toolchain, the Native Client SDK also includes modified

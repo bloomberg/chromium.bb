@@ -161,6 +161,8 @@ pnacl-clang
   C compiler and compiler driver
 pnacl-clang++
   C++ compiler and compiler driver
+pnacl-compress
+  Size compresses a finalized **pexe** file for deployment.
 pnacl-dis
   Disassembler for both **pexe** files and **nexe** files
 pnacl-finalize
@@ -323,6 +325,39 @@ refer to the final version of the application before deployment.
 The ``create_nmf.py`` tool helps generate an ``.nmf`` file, but ``.nmf``
 files can also be written by hand.
 
+
+
+Compressing the **pexe** for deployment
+---------------------------------------
+
+Size compression is an optional step for deployment, and reduces the
+size of the pexe file that must be transmitted over the wire. The tool
+``pnacl-compress`` applies compression strategies that are already built
+into the **stable** binary format of a pexe application. As such,
+compressed pexe files do not need any extra time to be decompressed on
+the client's side. All costs are upfront when you call ``pnacl-compress``.
+
+Currently, this tool will compress pexe files by about 25%. However,
+it is somewhat slow (can take from seconds to minutes on large
+appications). Hence, this step is optional.
+
+.. naclcode::
+  :prettyprint: 0
+
+  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-compress ^
+    hello_world.final.pexe
+
+Tool ``pnacl-compress`` must be called after a pexe file has been finalized
+for deployment (via ``pnacl-finalize``). Alternatively, you can apply this
+step as part of the finalizing step by adding the ``--compress`` flag
+to the pnacl-finalize command line.
+
+Note that this compression step doesn't replace gzip. This compression
+step is in addition to gzipping a file for deployment. One should note
+that while the gzipped version of a compressed pexe file is still
+smaller than the corresponding uncompressed pexe file, the gains is
+somewhat smaller after being gzipped. Expected reduction in size
+(after being gzipped) is more like 7.5% to 10%.
 
 The GNU-based toolchains
 ========================
