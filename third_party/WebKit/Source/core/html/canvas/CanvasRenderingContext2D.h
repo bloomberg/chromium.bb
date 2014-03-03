@@ -148,11 +148,13 @@ public:
     PassRefPtr<DOMPath> currentPath();
     void setCurrentPath(DOMPath*);
     void fill(const String& winding = "nonzero");
-    void fill(DOMPath*, const String& winding = "nonzero");
+    void fill(DOMPath*, ExceptionState&);
+    void fill(DOMPath*, const String& winding, ExceptionState&);
     void stroke();
-    void stroke(DOMPath*);
+    void stroke(DOMPath*, ExceptionState&);
     void clip(const String& winding = "nonzero");
-    void clip(DOMPath*, const String& winding = "nonzero");
+    void clip(DOMPath*, ExceptionState&);
+    void clip(DOMPath*, const String& winding, ExceptionState&);
 
     bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
     bool isPointInStroke(const float x, const float y);

@@ -66,6 +66,12 @@ function prepareTestScenario() {
     // Test exception cases.
     shouldThrow("ctx.clip(null)");
     shouldThrow("ctx.clip(null, null)");
+    shouldThrow("ctx.clip(null, 'nonzero')");
+    shouldThrow("ctx.clip([], 'nonzero')");
+    shouldThrow("ctx.clip({}, 'nonzero')");
+    shouldThrow("ctx.clip(null, 'evenodd')");
+    shouldThrow("ctx.clip([], 'evenodd')");
+    shouldThrow("ctx.clip({}, 'evenodd')");
 }
 
 // Run test and allow variation of results.

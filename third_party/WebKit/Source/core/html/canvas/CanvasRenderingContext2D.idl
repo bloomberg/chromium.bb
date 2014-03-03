@@ -78,16 +78,16 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
 
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void fill();
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void fill(Path path);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void fill(Path? path);
     void fill(CanvasWindingRule winding);
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void fill(Path path, CanvasWindingRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void fill(Path? path, CanvasWindingRule winding);
     void stroke();
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void stroke(Path path);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void stroke(Path? path);
     // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     void clip();
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void clip(Path path);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void clip(Path? path);
     void clip(CanvasWindingRule winding);
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void clip(Path path, CanvasWindingRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void clip(Path? path, CanvasWindingRule winding);
     boolean isPointInPath(float x, float y, optional CanvasWindingRule winding);
     boolean isPointInStroke(float x, float y);
 

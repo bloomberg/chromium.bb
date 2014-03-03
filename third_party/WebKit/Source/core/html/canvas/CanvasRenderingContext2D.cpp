@@ -932,8 +932,18 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
     fillInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::fill(DOMPath* domPath, const String& windingRuleString)
+void CanvasRenderingContext2D::fill(DOMPath* domPath, ExceptionState& exceptionState)
 {
+    fill(domPath, "nonzero", exceptionState);
+}
+
+void CanvasRenderingContext2D::fill(DOMPath* domPath, const String& windingRuleString, ExceptionState& exceptionState)
+{
+    if (!domPath) {
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        return;
+    }
+
     fillInternal(domPath->path(), windingRuleString);
 }
 
@@ -970,8 +980,13 @@ void CanvasRenderingContext2D::stroke()
     strokeInternal(m_path);
 }
 
-void CanvasRenderingContext2D::stroke(DOMPath* domPath)
+void CanvasRenderingContext2D::stroke(DOMPath* domPath, ExceptionState& exceptionState)
 {
+    if (!domPath) {
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        return;
+    }
+
     strokeInternal(domPath->path());
 }
 
@@ -999,8 +1014,18 @@ void CanvasRenderingContext2D::clip(const String& windingRuleString)
     clipInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::clip(DOMPath* domPath, const String& windingRuleString)
+void CanvasRenderingContext2D::clip(DOMPath* domPath, ExceptionState& exceptionState)
 {
+    clip(domPath, "nonzero", exceptionState);
+}
+
+void CanvasRenderingContext2D::clip(DOMPath* domPath, const String& windingRuleString, ExceptionState& exceptionState)
+{
+    if (!domPath) {
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        return;
+    }
+
     clipInternal(domPath->path(), windingRuleString);
 }
 

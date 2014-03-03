@@ -64,6 +64,12 @@ function prepareTestScenario() {
     // Test exception cases.
     shouldThrow("ctx.fill(null)");
     shouldThrow("ctx.fill(null, null)");
+    shouldThrow("ctx.fill(null, 'nonzero')");
+    shouldThrow("ctx.fill([], 'nonzero')");
+    shouldThrow("ctx.fill({}, 'nonzero')");
+    shouldThrow("ctx.fill(null, 'evenodd')");
+    shouldThrow("ctx.fill([], 'evenodd')");
+    shouldThrow("ctx.fill({}, 'evenodd')");
 }
 
 // Run test and allow variation of results.
