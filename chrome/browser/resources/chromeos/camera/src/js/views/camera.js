@@ -1099,7 +1099,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
       }.bind(this);
       takePicture();
     } else {
-      this.takePictureTimer_ = setTimeout(onTimerTick, 1000);
+      this.takePictureTimer_ = setTimeout(onTimerTick, 500);
       this.tickSound_.play();
       // Blink the toggle timer button.
       toggleTimer.classList.add('animate');
