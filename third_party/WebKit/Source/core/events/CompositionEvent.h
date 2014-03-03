@@ -40,19 +40,19 @@ struct CompositionEventInit : UIEventInit {
 
 class CompositionEvent FINAL : public UIEvent {
 public:
-    static PassRefPtrWillBeRawPtr<CompositionEvent> create()
+    static PassRefPtr<CompositionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CompositionEvent);
+        return adoptRef(new CompositionEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<CompositionEvent> create(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
+    static PassRefPtr<CompositionEvent> create(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CompositionEvent(type, view, data, underlines));
+        return adoptRef(new CompositionEvent(type, view, data, underlines));
     }
 
-    static PassRefPtrWillBeRawPtr<CompositionEvent> create(const AtomicString& type, const CompositionEventInit& initializer)
+    static PassRefPtr<CompositionEvent> create(const AtomicString& type, const CompositionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CompositionEvent(type, initializer));
+        return adoptRef(new CompositionEvent(type, initializer));
     }
 
     virtual ~CompositionEvent();

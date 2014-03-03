@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, const PlatformGestureEvent& event)
+PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, const PlatformGestureEvent& event)
 {
     AtomicString eventType;
     float deltaX = 0;
@@ -65,7 +65,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractVie
     default:
         return nullptr;
     }
-    return adoptRefWillBeRefCountedGarbageCollected(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY));
+    return adoptRef(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY));
 }
 
 const AtomicString& GestureEvent::interfaceName() const

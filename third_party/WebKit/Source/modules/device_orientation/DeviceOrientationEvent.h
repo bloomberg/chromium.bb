@@ -36,13 +36,13 @@ class DeviceOrientationData;
 class DeviceOrientationEvent FINAL : public Event {
 public:
     virtual ~DeviceOrientationEvent();
-    static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create()
+    static PassRefPtr<DeviceOrientationEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DeviceOrientationEvent);
+        return adoptRef(new DeviceOrientationEvent);
     }
-    static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
+    static PassRefPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DeviceOrientationEvent(eventType, orientation));
+        return adoptRef(new DeviceOrientationEvent(eventType, orientation));
     }
 
     void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceOrientationData*);

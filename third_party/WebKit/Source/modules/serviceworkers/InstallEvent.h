@@ -41,8 +41,8 @@ class ExecutionContext;
 
 class InstallEvent FINAL : public InstallPhaseEvent {
 public:
-    static PassRefPtrWillBeRawPtr<InstallEvent> create();
-    static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+    static PassRefPtr<InstallEvent> create();
+    static PassRefPtr<InstallEvent> create(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
     virtual ~InstallEvent() { }
 
     void replace();

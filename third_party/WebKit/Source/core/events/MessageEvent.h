@@ -49,35 +49,35 @@ struct MessageEventInit : public EventInit {
 
 class MessageEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<MessageEvent> create()
+    static PassRefPtr<MessageEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent);
+        return adoptRef(new MessageEvent);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
+    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(origin, lastEventId, source, ports));
+        return adoptRef(new MessageEvent(origin, lastEventId, source, ports));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
+    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(data, origin, lastEventId, source, ports));
+        return adoptRef(new MessageEvent(data, origin, lastEventId, source, ports));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
+    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = nullptr)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(data, origin, lastEventId, source, channels));
+        return adoptRef(new MessageEvent(data, origin, lastEventId, source, channels));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(const String& data, const String& origin = String())
+    static PassRefPtr<MessageEvent> create(const String& data, const String& origin = String())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(data, origin));
+        return adoptRef(new MessageEvent(data, origin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<Blob> data, const String& origin = String())
+    static PassRefPtr<MessageEvent> create(PassRefPtr<Blob> data, const String& origin = String())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(data, origin));
+        return adoptRef(new MessageEvent(data, origin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<ArrayBuffer> data, const String& origin = String())
+    static PassRefPtr<MessageEvent> create(PassRefPtr<ArrayBuffer> data, const String& origin = String())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(data, origin));
+        return adoptRef(new MessageEvent(data, origin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
+    static PassRefPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
     virtual ~MessageEvent();
 
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray>);

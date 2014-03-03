@@ -39,9 +39,9 @@ typedef EventInit PopStateEventInit;
 class PopStateEvent FINAL : public Event {
 public:
     virtual ~PopStateEvent();
-    static PassRefPtrWillBeRawPtr<PopStateEvent> create();
-    static PassRefPtrWillBeRawPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, PassRefPtr<History>);
-    static PassRefPtrWillBeRawPtr<PopStateEvent> create(const AtomicString&, const PopStateEventInit&);
+    static PassRefPtr<PopStateEvent> create();
+    static PassRefPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, PassRefPtr<History>);
+    static PassRefPtr<PopStateEvent> create(const AtomicString&, const PopStateEventInit&);
 
     SerializedScriptValue* serializedState() const { return m_serializedState.get(); }
     void setSerializedState(PassRefPtr<SerializedScriptValue> state)

@@ -37,27 +37,26 @@ class TouchEvent FINAL : public MouseRelatedEvent {
 public:
     virtual ~TouchEvent();
 
-    static PassRefPtrWillBeRawPtr<TouchEvent> create()
+    static PassRefPtr<TouchEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TouchEvent);
+        return adoptRef(new TouchEvent);
     }
-    static PassRefPtrWillBeRawPtr<TouchEvent> create(TouchList* touches,
+    static PassRefPtr<TouchEvent> create(TouchList* touches,
         TouchList* targetTouches, TouchList* changedTouches,
         const AtomicString& type, PassRefPtr<AbstractView> view,
         int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TouchEvent(
-            touches, targetTouches, changedTouches,
+        return adoptRef(new TouchEvent(touches, targetTouches, changedTouches,
             type, view, screenX, screenY, pageX, pageY,
             ctrlKey, altKey, shiftKey, metaKey));
     }
 
     void initTouchEvent(TouchList* touches, TouchList* targetTouches,
-            TouchList* changedTouches, const AtomicString& type,
-            PassRefPtr<AbstractView> view, int screenX, int screenY,
-            int clientX, int clientY,
-            bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
+        TouchList* changedTouches, const AtomicString& type,
+        PassRefPtr<AbstractView>, int screenX, int screenY,
+        int clientX, int clientY,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
     TouchList* touches() const { return m_touches.get(); }
     TouchList* targetTouches() const { return m_targetTouches.get(); }

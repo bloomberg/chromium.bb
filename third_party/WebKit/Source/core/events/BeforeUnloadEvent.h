@@ -34,9 +34,9 @@ class BeforeUnloadEvent FINAL : public Event {
 public:
     virtual ~BeforeUnloadEvent();
 
-    static PassRefPtrWillBeRawPtr<BeforeUnloadEvent> create()
+    static PassRefPtr<BeforeUnloadEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new BeforeUnloadEvent);
+        return adoptRef(new BeforeUnloadEvent);
     }
 
     virtual bool isBeforeUnloadEvent() const OVERRIDE;

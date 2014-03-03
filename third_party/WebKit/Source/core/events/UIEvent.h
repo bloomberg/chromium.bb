@@ -41,17 +41,17 @@ struct UIEventInit : public EventInit {
 
 class UIEvent : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<UIEvent> create()
+    static PassRefPtr<UIEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new UIEvent);
+        return adoptRef(new UIEvent);
     }
-    static PassRefPtrWillBeRawPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail)
+    static PassRefPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new UIEvent(type, canBubble, cancelable, view, detail));
+        return adoptRef(new UIEvent(type, canBubble, cancelable, view, detail));
     }
-    static PassRefPtrWillBeRawPtr<UIEvent> create(const AtomicString& type, const UIEventInit& initializer)
+    static PassRefPtr<UIEvent> create(const AtomicString& type, const UIEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new UIEvent(type, initializer));
+        return adoptRef(new UIEvent(type, initializer));
     }
     virtual ~UIEvent();
 

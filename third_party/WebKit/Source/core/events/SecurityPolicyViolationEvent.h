@@ -49,14 +49,14 @@ struct SecurityPolicyViolationEventInit : public EventInit {
 
 class SecurityPolicyViolationEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create()
+    static PassRefPtr<SecurityPolicyViolationEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SecurityPolicyViolationEvent());
+        return adoptRef(new SecurityPolicyViolationEvent());
     }
 
-    static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
+    static PassRefPtr<SecurityPolicyViolationEvent> create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SecurityPolicyViolationEvent(type, initializer));
+        return adoptRef(new SecurityPolicyViolationEvent(type, initializer));
     }
 
     const String& documentURI() const { return m_documentURI; }

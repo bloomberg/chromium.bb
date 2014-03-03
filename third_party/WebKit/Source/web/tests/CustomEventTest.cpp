@@ -105,8 +105,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebFrameImpl* frame = toWebFrameImpl(webViewHelper.initializeAndLoad(baseURL + path)->mainFrame());
 
-    // FIXME: oilpan: Remove PassRefPtr<Event>() once we support PassRefPtrWillBeRawPtr in WebDOMEvent.
-    WebDOMEvent event = PassRefPtr<Event>(frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION));
+    WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
 
     v8::Isolate* isolate = toIsolate(frame->frame());

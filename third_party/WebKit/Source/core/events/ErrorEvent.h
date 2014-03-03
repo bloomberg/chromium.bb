@@ -49,17 +49,17 @@ struct ErrorEventInit : public EventInit {
 
 class ErrorEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<ErrorEvent> create()
+    static PassRefPtr<ErrorEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent);
+        return adoptRef(new ErrorEvent);
     }
-    static PassRefPtrWillBeRawPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, PassRefPtr<DOMWrapperWorld> world)
+    static PassRefPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, PassRefPtr<DOMWrapperWorld> world)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent(message, fileName, lineNumber, columnNumber, world));
+        return adoptRef(new ErrorEvent(message, fileName, lineNumber, columnNumber, world));
     }
-    static PassRefPtrWillBeRawPtr<ErrorEvent> create(const AtomicString& type, const ErrorEventInit& initializer)
+    static PassRefPtr<ErrorEvent> create(const AtomicString& type, const ErrorEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent(type, initializer));
+        return adoptRef(new ErrorEvent(type, initializer));
     }
     static PassRefPtr<ErrorEvent> createSanitizedError(PassRefPtr<DOMWrapperWorld> world)
     {

@@ -35,8 +35,8 @@ class RTCIceCandidateEvent FINAL : public Event {
 public:
     virtual ~RTCIceCandidateEvent();
 
-    static PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> create();
-    static PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> create(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate>);
+    static PassRefPtr<RTCIceCandidateEvent> create();
+    static PassRefPtr<RTCIceCandidateEvent> create(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate>);
 
     RTCIceCandidate* candidate() const;
 

@@ -42,17 +42,17 @@ struct WebKitAnimationEventInit : public EventInit {
 
 class WebKitAnimationEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create()
+    static PassRefPtr<WebKitAnimationEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebKitAnimationEvent);
+        return adoptRef(new WebKitAnimationEvent);
     }
-    static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
+    static PassRefPtr<WebKitAnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebKitAnimationEvent(type, animationName, elapsedTime));
+        return adoptRef(new WebKitAnimationEvent(type, animationName, elapsedTime));
     }
-    static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create(const AtomicString& type, const WebKitAnimationEventInit& initializer)
+    static PassRefPtr<WebKitAnimationEvent> create(const AtomicString& type, const WebKitAnimationEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebKitAnimationEvent(type, initializer));
+        return adoptRef(new WebKitAnimationEvent(type, initializer));
     }
 
     virtual ~WebKitAnimationEvent();

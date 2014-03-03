@@ -41,19 +41,19 @@ struct FocusEventInit : public UIEventInit {
 
 class FocusEvent FINAL : public UIEvent {
 public:
-    static PassRefPtrWillBeRawPtr<FocusEvent> create()
+    static PassRefPtr<FocusEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FocusEvent);
+        return adoptRef(new FocusEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail, EventTarget* relatedTarget)
+    static PassRefPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view, int detail, EventTarget* relatedTarget)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
+        return adoptRef(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
     }
 
-    static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, const FocusEventInit& initializer)
+    static PassRefPtr<FocusEvent> create(const AtomicString& type, const FocusEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FocusEvent(type, initializer));
+        return adoptRef(new FocusEvent(type, initializer));
     }
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }

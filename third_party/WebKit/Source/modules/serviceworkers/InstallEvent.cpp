@@ -39,14 +39,14 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create()
+PassRefPtr<InstallEvent> InstallEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new InstallEvent());
+    return adoptRef(new InstallEvent());
 }
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
+PassRefPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new InstallEvent(type, initializer, observer));
+    return adoptRef(new InstallEvent(type, initializer, observer));
 }
 
 void InstallEvent::replace()

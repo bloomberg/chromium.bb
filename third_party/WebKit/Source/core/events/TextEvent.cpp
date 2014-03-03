@@ -31,14 +31,14 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create()
+PassRefPtr<TextEvent> TextEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent);
+    return adoptRef(new TextEvent);
 }
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create(PassRefPtr<AbstractView> view, const String& data, TextEventInputType inputType)
+PassRefPtr<TextEvent> TextEvent::create(PassRefPtr<AbstractView> view, const String& data, TextEventInputType inputType)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, inputType));
+    return adoptRef(new TextEvent(view, data, inputType));
 }
 
 PassRefPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtr<AbstractView> view, const String& data, bool shouldSmartReplace)

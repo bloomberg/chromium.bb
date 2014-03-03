@@ -3731,9 +3731,9 @@ void Document::enqueueResizeEvent()
     ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
 }
 
-PassRefPtrWillBeRawPtr<Event> Document::createEvent(const String& eventType, ExceptionState& exceptionState)
+PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Event> event = EventFactory::create(eventType);
+    RefPtr<Event> event = EventFactory::create(eventType);
     if (event)
         return event.release();
 
@@ -3741,7 +3741,7 @@ PassRefPtrWillBeRawPtr<Event> Document::createEvent(const String& eventType, Exc
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<Event> Document::createEvent(ExceptionState& exceptionState)
+PassRefPtr<Event> Document::createEvent(ExceptionState& exceptionState)
 {
     if (!isSVGDocument()) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, 0));

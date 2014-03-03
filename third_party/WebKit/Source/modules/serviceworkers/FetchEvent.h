@@ -18,15 +18,13 @@ class RespondWithObserver;
 // service worker's response.
 class FetchEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<FetchEvent> create();
-    static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>);
+    static PassRefPtr<FetchEvent> create();
+    static PassRefPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>);
     virtual ~FetchEvent() { }
 
     void respondWith(const ScriptValue&);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-
-    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     FetchEvent();

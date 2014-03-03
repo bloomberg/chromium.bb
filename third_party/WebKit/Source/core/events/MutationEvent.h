@@ -39,15 +39,15 @@ namespace WebCore {
             REMOVAL         = 3
         };
 
-        static PassRefPtrWillBeRawPtr<MutationEvent> create()
+        static PassRefPtr<MutationEvent> create()
         {
-            return adoptRefWillBeRefCountedGarbageCollected(new MutationEvent);
+            return adoptRef(new MutationEvent);
         }
 
-        static PassRefPtrWillBeRawPtr<MutationEvent> create(const AtomicString& type, bool canBubble, PassRefPtr<Node> relatedNode = nullptr,
+        static PassRefPtr<MutationEvent> create(const AtomicString& type, bool canBubble, PassRefPtr<Node> relatedNode = nullptr,
             const String& prevValue = String(), const String& newValue = String(), const String& attrName = String(), unsigned short attrChange = 0)
         {
-            return adoptRefWillBeRefCountedGarbageCollected(new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange));
+            return adoptRef(new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange));
         }
 
         void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<Node> relatedNode,

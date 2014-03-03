@@ -41,17 +41,17 @@ struct TransitionEventInit : public EventInit {
 
 class TransitionEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<TransitionEvent> create()
+    static PassRefPtr<TransitionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionEvent);
+        return adoptRef(new TransitionEvent);
     }
-    static PassRefPtrWillBeRawPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
+    static PassRefPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionEvent(type, propertyName, elapsedTime, pseudoElement));
+        return adoptRef(new TransitionEvent(type, propertyName, elapsedTime, pseudoElement));
     }
-    static PassRefPtrWillBeRawPtr<TransitionEvent> create(const AtomicString& type, const TransitionEventInit& initializer)
+    static PassRefPtr<TransitionEvent> create(const AtomicString& type, const TransitionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionEvent(type, initializer));
+        return adoptRef(new TransitionEvent(type, initializer));
     }
 
     virtual ~TransitionEvent();

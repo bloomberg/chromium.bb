@@ -11,14 +11,14 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
+PassRefPtr<FetchEvent> FetchEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new FetchEvent());
+    return adoptRef(new FetchEvent());
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer)
+PassRefPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new FetchEvent(observer));
+    return adoptRef(new FetchEvent(observer));
 }
 
 void FetchEvent::respondWith(const ScriptValue& value)
@@ -41,11 +41,6 @@ FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer)
     , m_observer(observer)
 {
     ScriptWrappable::init(this);
-}
-
-void FetchEvent::trace(Visitor* visitor)
-{
-    Event::trace(visitor);
 }
 
 } // namespace WebCore

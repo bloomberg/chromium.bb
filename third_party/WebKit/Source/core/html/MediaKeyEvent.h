@@ -47,14 +47,14 @@ class MediaKeyEvent FINAL : public Event {
 public:
     virtual ~MediaKeyEvent();
 
-    static PassRefPtrWillBeRawPtr<MediaKeyEvent> create()
+    static PassRefPtr<MediaKeyEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MediaKeyEvent);
+        return adoptRef(new MediaKeyEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaKeyEvent> create(const AtomicString& type, const MediaKeyEventInit& initializer)
+    static PassRefPtr<MediaKeyEvent> create(const AtomicString& type, const MediaKeyEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MediaKeyEvent(type, initializer));
+        return adoptRef(new MediaKeyEvent(type, initializer));
     }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

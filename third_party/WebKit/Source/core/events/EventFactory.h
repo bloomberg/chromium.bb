@@ -26,7 +26,6 @@
 #ifndef EventFactory_h
 #define EventFactory_h
 
-#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -36,7 +35,7 @@ class Event;
 
 class EventFactory {
 public:
-    static PassRefPtrWillBeRawPtr<Event> create(const String& eventType);
+    static PassRefPtr<Event> create(const String& eventType);
 };
 
 }

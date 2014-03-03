@@ -50,20 +50,20 @@ struct MouseEventInit : public UIEventInit {
 
 class MouseEvent : public MouseRelatedEvent {
 public:
-    static PassRefPtrWillBeRawPtr<MouseEvent> create()
+    static PassRefPtr<MouseEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent);
+        return adoptRef(new MouseEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
+    static PassRefPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
         PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated = false);
 
-    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtr<Node> relatedTarget);
+    static PassRefPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtr<Node> relatedTarget);
 
-    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, const MouseEventInit&);
+    static PassRefPtr<MouseEvent> create(const AtomicString& eventType, const MouseEventInit&);
 
     virtual ~MouseEvent();
 
@@ -91,8 +91,6 @@ public:
     virtual bool isDragEvent() const OVERRIDE FINAL;
     virtual int which() const OVERRIDE FINAL;
 
-    virtual void trace(Visitor*) OVERRIDE;
-
 protected:
     MouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
@@ -104,6 +102,8 @@ protected:
 
     MouseEvent();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     unsigned short m_button;
     bool m_buttonDown;
@@ -113,7 +113,7 @@ private:
 
 class SimulatedMouseEvent FINAL : public MouseEvent {
 public:
-    static PassRefPtrWillBeRawPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
+    static PassRefPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
     virtual ~SimulatedMouseEvent();
 
     virtual void trace(Visitor*) OVERRIDE;

@@ -71,7 +71,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceEventCon
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installPerContextEnabledMethods, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype, true };
+const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installPerContextEnabledMethods, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype, false };
 
 namespace TestInterfaceEventConstructorV8Internal {
 
@@ -284,7 +284,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             setHiddenValue(info.GetIsolate(), info.Holder(), "initializedByEventConstructorReadonlyAnyAttribute", initializedByEventConstructorReadonlyAnyAttribute);
     }
-    RefPtrWillBeRawPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
+    RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld()) {
@@ -415,7 +415,7 @@ TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toNativeWithType
     return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
-v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceEventConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtr<TestInterfaceEventConstructor> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceEventConstructor>(impl.get(), isolate));
@@ -437,9 +437,7 @@ v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtr
 
 void V8TestInterfaceEventConstructor::derefObject(void* object)
 {
-#if !ENABLE(OILPAN)
     fromInternalPointer(object)->deref();
-#endif // !ENABLE(OILPAN)
 }
 
 template<>

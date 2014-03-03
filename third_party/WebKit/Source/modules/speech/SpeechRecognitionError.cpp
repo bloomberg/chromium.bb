@@ -56,19 +56,19 @@ static String ErrorCodeToString(SpeechRecognitionError::ErrorCode code)
     return String();
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionError> SpeechRecognitionError::create(ErrorCode code, const String& message)
+PassRefPtr<SpeechRecognitionError> SpeechRecognitionError::create(ErrorCode code, const String& message)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionError(ErrorCodeToString(code), message));
+    return adoptRef(new SpeechRecognitionError(ErrorCodeToString(code), message));
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionError> SpeechRecognitionError::create()
+PassRefPtr<SpeechRecognitionError> SpeechRecognitionError::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionError(emptyString(), emptyString()));
+    return adoptRef(new SpeechRecognitionError(emptyString(), emptyString()));
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionError> SpeechRecognitionError::create(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
+PassRefPtr<SpeechRecognitionError> SpeechRecognitionError::create(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SpeechRecognitionError(eventName, initializer));
+    return adoptRef(new SpeechRecognitionError(eventName, initializer));
 }
 
 SpeechRecognitionError::SpeechRecognitionError(const String& error, const String& message)

@@ -38,17 +38,17 @@ struct PageTransitionEventInit : public EventInit {
 
 class PageTransitionEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<PageTransitionEvent> create()
+    static PassRefPtr<PageTransitionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PageTransitionEvent);
+        return adoptRef(new PageTransitionEvent);
     }
-    static PassRefPtrWillBeRawPtr<PageTransitionEvent> create(const AtomicString& type, bool persisted)
+    static PassRefPtr<PageTransitionEvent> create(const AtomicString& type, bool persisted)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PageTransitionEvent(type, persisted));
+        return adoptRef(new PageTransitionEvent(type, persisted));
     }
-    static PassRefPtrWillBeRawPtr<PageTransitionEvent> create(const AtomicString& type, const PageTransitionEventInit& initializer)
+    static PassRefPtr<PageTransitionEvent> create(const AtomicString& type, const PageTransitionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PageTransitionEvent(type, initializer));
+        return adoptRef(new PageTransitionEvent(type, initializer));
     }
 
     virtual ~PageTransitionEvent();

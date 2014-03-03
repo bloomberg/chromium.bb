@@ -47,19 +47,19 @@ struct MIDIConnectionEventInit : public EventInit {
 
 class MIDIConnectionEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create()
+    static PassRefPtr<MIDIConnectionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIConnectionEvent());
+        return adoptRef(new MIDIConnectionEvent());
     }
 
-    static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString& type, PassRefPtr<MIDIPort> port)
+    static PassRefPtr<MIDIConnectionEvent> create(const AtomicString& type, PassRefPtr<MIDIPort> port)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIConnectionEvent(type, port));
+        return adoptRef(new MIDIConnectionEvent(type, port));
     }
 
-    static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString& type, const MIDIConnectionEventInit& initializer)
+    static PassRefPtr<MIDIConnectionEvent> create(const AtomicString& type, const MIDIConnectionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIConnectionEvent(type, initializer));
+        return adoptRef(new MIDIConnectionEvent(type, initializer));
     }
 
     RefPtr<MIDIPort> port() { return m_port; }

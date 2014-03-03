@@ -43,19 +43,19 @@ struct BeforeLoadEventInit : public EventInit {
 
 class BeforeLoadEvent FINAL : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<BeforeLoadEvent> create()
+    static PassRefPtr<BeforeLoadEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new BeforeLoadEvent);
+        return adoptRef(new BeforeLoadEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<BeforeLoadEvent> create(const String& url)
+    static PassRefPtr<BeforeLoadEvent> create(const String& url)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new BeforeLoadEvent(url));
+        return adoptRef(new BeforeLoadEvent(url));
     }
 
-    static PassRefPtrWillBeRawPtr<BeforeLoadEvent> create(const AtomicString& type, const BeforeLoadEventInit& initializer)
+    static PassRefPtr<BeforeLoadEvent> create(const AtomicString& type, const BeforeLoadEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new BeforeLoadEvent(type, initializer));
+        return adoptRef(new BeforeLoadEvent(type, initializer));
     }
 
     const String& url() const { return m_url; }
