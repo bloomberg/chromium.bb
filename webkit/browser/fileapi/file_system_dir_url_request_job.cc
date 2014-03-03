@@ -132,11 +132,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
         it->last_modified_time));
   }
 
-  if (has_more) {
-    file_system_context_->operation_runner()->ReadDirectory(
-        url_,
-        base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));
-  } else {
+  if (!has_more) {
     set_expected_content_size(data_.size());
     NotifyHeadersComplete();
   }
