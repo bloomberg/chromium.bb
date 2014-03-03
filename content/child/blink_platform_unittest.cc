@@ -4,17 +4,17 @@
 
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/child/blink_platform_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/child/webkitplatformsupport_impl.h"
 
 namespace content {
 
-// Derives WebKitPlatformSupportImpl for testing shared timers.
-class TestBlinkPlatformImpl : public webkit_glue::WebKitPlatformSupportImpl {
+// Derives BlinkPlatformImpl for testing shared timers.
+class TestBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   TestBlinkPlatformImpl() : mock_monotonically_increasing_time_(0) {}
 
-  // webkit_glue::WebKitPlatformSupportImpl:
+  // webkit_glue::BlinkPlatformImpl:
   virtual base::string16 GetLocalizedString(int) OVERRIDE {
     return base::string16();
   }
@@ -28,9 +28,9 @@ class TestBlinkPlatformImpl : public webkit_glue::WebKitPlatformSupportImpl {
     return NULL;
   }
 
-  virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
+  virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       blink::WebSocketStreamHandle*,
-      webkit_glue::WebSocketStreamHandleDelegate*) OVERRIDE {
+      WebSocketStreamHandleDelegate*) OVERRIDE {
     return NULL;
   }
 
@@ -38,8 +38,7 @@ class TestBlinkPlatformImpl : public webkit_glue::WebKitPlatformSupportImpl {
   virtual double monotonicallyIncreasingTime() OVERRIDE {
     if (mock_monotonically_increasing_time_ > 0.0)
       return mock_monotonically_increasing_time_;
-    return webkit_glue::WebKitPlatformSupportImpl::
-        monotonicallyIncreasingTime();
+    return BlinkPlatformImpl::monotonicallyIncreasingTime();
   }
 
   virtual void OnStartSharedTimer(base::TimeDelta delay) OVERRIDE {

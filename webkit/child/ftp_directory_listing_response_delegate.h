@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebURLLoader;
@@ -22,7 +23,7 @@ class GURL;
 
 namespace webkit_glue {
 
-class FtpDirectoryListingResponseDelegate {
+class WEBKIT_CHILD_EXPORT FtpDirectoryListingResponseDelegate {
  public:
   FtpDirectoryListingResponseDelegate(blink::WebURLLoaderClient* client,
                                       blink::WebURLLoader* loader,

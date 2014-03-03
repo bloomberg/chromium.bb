@@ -6,21 +6,21 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/child/child_thread.h"
-#include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_stream_url.h"
+#include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/web_url_loader_impl.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/child/weburlloader_impl.h"
 #include "webkit/common/resource_request_body.h"
 
 namespace content {
@@ -237,7 +237,7 @@ void PluginURLFetcher::OnReceivedResponse(
     if (response_code == 206) {
       blink::WebURLResponse response;
       response.initialize();
-      webkit_glue::WebURLLoaderImpl::PopulateURLResponse(url_, info, &response);
+      WebURLLoaderImpl::PopulateURLResponse(url_, info, &response);
 
       std::string multipart_boundary;
       if (webkit_glue::MultipartResponseDelegate::ReadMultipartBoundary(

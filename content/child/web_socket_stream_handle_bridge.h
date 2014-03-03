@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
-#define WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
+#ifndef CONTENT_CHILD_WEB_SOCKET_STREAM_HANDLE_BRIDGE_H_
+#define CONTENT_CHILD_WEB_SOCKET_STREAM_HANDLE_BRIDGE_H_
 
 #include <vector>
 
@@ -12,7 +12,7 @@
 
 class GURL;
 
-namespace webkit_glue {
+namespace content {
 
 class WebSocketStreamHandleBridge
     : public base::RefCountedThreadSafe<WebSocketStreamHandleBridge> {
@@ -32,6 +32,6 @@ class WebSocketStreamHandleBridge
   DISALLOW_COPY_AND_ASSIGN(WebSocketStreamHandleBridge);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_WEBSOCKETSTREAMHANDLE_BRIDGE_H_
+#endif  // CONTENT_CHILD_WEB_SOCKET_STREAM_HANDLE_BRIDGE_H_
