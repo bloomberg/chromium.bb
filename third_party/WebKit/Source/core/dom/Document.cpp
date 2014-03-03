@@ -174,6 +174,7 @@
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/TraceEvent.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/PlatformLocale.h"
@@ -2934,9 +2935,9 @@ void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& c
 void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)
 {
     if (equalIgnoringCase(equiv, "content-security-policy"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce, ContentSecurityPolicy::HeaderSourceMeta);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report, ContentSecurityPolicy::HeaderSourceMeta);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceMeta);
     else
         ASSERT_NOT_REACHED();
 }

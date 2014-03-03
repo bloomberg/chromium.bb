@@ -50,6 +50,7 @@
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/NotImplemented.h"
 #include "platform/SharedBuffer.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/Functional.h"
 
 using namespace WebCore;
@@ -244,7 +245,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
             startMode,
             // FIXME: fill appropriate CSP info and policy type.
             String(),
-            ContentSecurityPolicy::Enforce,
+            ContentSecurityPolicyHeaderTypeEnforce,
             workerClients.release());
 
     m_mainScriptLoader.clear();

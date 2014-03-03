@@ -34,6 +34,7 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -45,7 +46,7 @@ class WorkerClients;
 struct WorkerThreadStartupData {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
+    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
     {
         return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, workerClients));
     }
@@ -57,11 +58,11 @@ public:
     String m_sourceCode;
     WorkerThreadStartMode m_startMode;
     String m_contentSecurityPolicy;
-    ContentSecurityPolicy::HeaderType m_contentSecurityPolicyType;
+    ContentSecurityPolicyHeaderType m_contentSecurityPolicyType;
     OwnPtr<WorkerClients> m_workerClients;
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients>);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients>);
 };
 
 } // namespace WebCore

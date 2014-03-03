@@ -109,12 +109,12 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
     );
 }
 
-static UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
+static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)
 {
     switch (type) {
-    case ContentSecurityPolicy::Enforce:
+    case ContentSecurityPolicyHeaderTypeEnforce:
         return UseCounter::ContentSecurityPolicy;
-    case ContentSecurityPolicy::Report:
+    case ContentSecurityPolicyHeaderTypeReport:
         return UseCounter::ContentSecurityPolicyReportOnly;
     }
     ASSERT_NOT_REACHED();
@@ -131,13 +131,13 @@ static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
 class CSPDirectiveList {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicy::HeaderType, ContentSecurityPolicy::HeaderSource);
+    static PassOwnPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     void parse(const UChar* begin, const UChar* end);
 
     const String& header() const { return m_header; }
-    ContentSecurityPolicy::HeaderType headerType() const { return m_headerType; }
-    ContentSecurityPolicy::HeaderSource headerSource() const { return m_headerSource; }
+    ContentSecurityPolicyHeaderType headerType() const { return m_headerType; }
+    ContentSecurityPolicyHeaderSource headerSource() const { return m_headerSource; }
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
@@ -171,7 +171,7 @@ public:
     const Vector<KURL>& reportURIs() const { return m_reportURIs; }
 
 private:
-    CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicy::HeaderType, ContentSecurityPolicy::HeaderSource);
+    CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     bool parseDirective(const UChar* begin, const UChar* end, String& name, String& value);
     void parseReportURI(const String& name, const String& value);
@@ -212,8 +212,8 @@ private:
     ContentSecurityPolicy* m_policy;
 
     String m_header;
-    ContentSecurityPolicy::HeaderType m_headerType;
-    ContentSecurityPolicy::HeaderSource m_headerSource;
+    ContentSecurityPolicyHeaderType m_headerType;
+    ContentSecurityPolicyHeaderSource m_headerSource;
 
     bool m_reportOnly;
     bool m_haveSandboxPolicy;
@@ -242,7 +242,7 @@ private:
     String m_evalDisabledErrorMessage;
 };
 
-CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurityPolicy::HeaderType type, ContentSecurityPolicy::HeaderSource source)
+CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
     : m_policy(policy)
     , m_headerType(type)
     , m_headerSource(source)
@@ -252,10 +252,10 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_didSetReferrerPolicy(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
 {
-    m_reportOnly = type == ContentSecurityPolicy::Report;
+    m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
 
-PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicy::HeaderType type, ContentSecurityPolicy::HeaderSource source)
+PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
     OwnPtr<CSPDirectiveList> directives = adoptPtr(new CSPDirectiveList(policy, type, source));
     directives->parse(begin, end);
@@ -926,24 +926,24 @@ void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
 void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
 {
     if (!headers.contentSecurityPolicy().isEmpty())
-        didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicy::Enforce, ContentSecurityPolicy::HeaderSourceHTTP);
+        didReceiveHeader(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     if (!headers.contentSecurityPolicyReportOnly().isEmpty())
-        didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicy::Report, ContentSecurityPolicy::HeaderSourceHTTP);
+        didReceiveHeader(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
 }
 
-void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType type, HeaderSource source)
+void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
     addPolicyFromHeaderValue(header, type, source);
 }
 
-void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, HeaderType type, HeaderSource source)
+void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
     Document* document = this->document();
     if (document) {
         UseCounter::count(*document, getUseCounterType(type));
 
         // CSP 1.1 defines report-only in a <meta> element as invalid. Measure for now, disable in experimental mode.
-        if (source == ContentSecurityPolicy::HeaderSourceMeta && type == ContentSecurityPolicy::Report) {
+        if (source == ContentSecurityPolicyHeaderSourceMeta && type == ContentSecurityPolicyHeaderTypeReport) {
             UseCounter::count(*document, UseCounter::ContentSecurityPolicyReportOnlyInMeta);
             if (experimentalFeaturesEnabled()) {
                 reportReportOnlyInMeta(header);
@@ -982,7 +982,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Heade
         begin = position;
     }
 
-    if (document && type != Report && didSetReferrerPolicy())
+    if (document && type != ContentSecurityPolicyHeaderTypeReport && didSetReferrerPolicy())
         document->setReferrerPolicy(referrerPolicy());
 }
 
@@ -996,9 +996,9 @@ const String& ContentSecurityPolicy::deprecatedHeader() const
     return m_policies.isEmpty() ? emptyString() : m_policies[0]->header();
 }
 
-ContentSecurityPolicy::HeaderType ContentSecurityPolicy::deprecatedHeaderType() const
+ContentSecurityPolicyHeaderType ContentSecurityPolicy::deprecatedHeaderType() const
 {
-    return m_policies.isEmpty() ? Enforce : m_policies[0]->headerType();
+    return m_policies.isEmpty() ? ContentSecurityPolicyHeaderTypeEnforce : m_policies[0]->headerType();
 }
 
 template<bool (CSPDirectiveList::*allowed)(ContentSecurityPolicy::ReportingStatus) const>

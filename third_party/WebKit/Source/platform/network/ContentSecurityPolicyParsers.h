@@ -15,6 +15,16 @@ static const size_t kMaxDigestSize = 64;
 typedef Vector<uint8_t, kMaxDigestSize> DigestValue;
 typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
+enum ContentSecurityPolicyHeaderType {
+    ContentSecurityPolicyHeaderTypeReport,
+    ContentSecurityPolicyHeaderTypeEnforce
+};
+
+enum ContentSecurityPolicyHeaderSource {
+    ContentSecurityPolicyHeaderSourceHTTP,
+    ContentSecurityPolicyHeaderSourceMeta
+};
+
 enum ContentSecurityPolicyHashAlgorithm {
     ContentSecurityPolicyHashAlgorithmNone = 0,
     ContentSecurityPolicyHashAlgorithmSha1 = 1 << 1,

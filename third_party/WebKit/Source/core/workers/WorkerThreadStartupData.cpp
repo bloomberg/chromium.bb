@@ -31,10 +31,11 @@
 #include "config.h"
 #include "WorkerThreadStartupData.h"
 
+#include "platform/network/ContentSecurityPolicyParsers.h"
 
 namespace WebCore {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())

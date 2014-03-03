@@ -51,6 +51,7 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -100,10 +101,10 @@ WorkerGlobalScope::~WorkerGlobalScope()
     setClient(0);
 }
 
-void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
+void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicyHeaderType contentSecurityPolicyType)
 {
     setContentSecurityPolicy(ContentSecurityPolicy::create(this));
-    contentSecurityPolicy()->didReceiveHeader(policy, contentSecurityPolicyType, ContentSecurityPolicy::HeaderSourceHTTP);
+    contentSecurityPolicy()->didReceiveHeader(policy, contentSecurityPolicyType, ContentSecurityPolicyHeaderSourceHTTP);
 }
 
 ExecutionContext* WorkerGlobalScope::executionContext() const

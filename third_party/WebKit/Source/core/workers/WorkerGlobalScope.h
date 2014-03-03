@@ -37,6 +37,7 @@
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "core/workers/WorkerSupplementable.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -125,7 +126,7 @@ namespace WebCore {
 
     protected:
         WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);
-        void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
+        void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
         void addMessageToWorkerConsole(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);

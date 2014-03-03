@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/Document.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
@@ -65,28 +66,18 @@ public:
 
     void copyStateFrom(const ContentSecurityPolicy*);
 
-    enum HeaderType {
-        Report,
-        Enforce,
-    };
-
-    enum HeaderSource {
-        HeaderSourceHTTP,
-        HeaderSourceMeta
-    };
-
     enum ReportingStatus {
         SendReport,
         SuppressReport
     };
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
-    void didReceiveHeader(const String&, HeaderType, HeaderSource);
+    void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     // These functions are wrong because they assume that there is only one header.
     // FIXME: Replace them with functions that return vectors.
     const String& deprecatedHeader() const;
-    HeaderType deprecatedHeaderType() const;
+    ContentSecurityPolicyHeaderType deprecatedHeaderType() const;
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
@@ -165,7 +156,7 @@ private:
     explicit ContentSecurityPolicy(ExecutionContextClient*);
 
     void logToConsole(const String& message) const;
-    void addPolicyFromHeaderValue(const String&, HeaderType, HeaderSource);
+    void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);
