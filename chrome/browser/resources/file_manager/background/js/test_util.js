@@ -452,10 +452,11 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<Array.<string>>} expected Expected contents of file list.
- * @param {{orderCheck:boolean=, ignoreLastModifiedTime:boolean=}=} opt_options
- *     Options of the comparison. If orderCheck is true, it also compares the
- *     order of files. If ignoreLastModifiedTime is true, it compares the file
- *     without its last modified time.
+ * @param {{orderCheck:boolean=, ignoreFileSize:boolean=,
+ *     ignoreLastModifiedTime:boolean=}=} opt_options Options of the
+ *     comparison. If orderCheck is true, it also compares the order of
+ *     files. If ignoreFileSize is true, it does not compare file size, If
+ *     ignoreLastModifiedTime is true, it does not compare last modified time.
  * @param {function()} callback Callback function to notify the caller that
  *     expected files turned up.
  */
@@ -468,8 +469,12 @@ test.util.async.waitForFiles = function(
       files.sort();
       expected.sort();
     }
-    if (options.ignoreLastModifiedTime) {
-      for (var i = 0; i < Math.min(files.length, expected.length); i++) {
+    for (var i = 0; i < Math.min(files.length, expected.length); i++) {
+      if (options.ignoreFileSize) {
+        files[i][1] = '';
+        expected[i][1] = '';
+      }
+      if (options.ignoreLastModifiedTime) {
         files[i][3] = '';
         expected[i][3] = '';
       }

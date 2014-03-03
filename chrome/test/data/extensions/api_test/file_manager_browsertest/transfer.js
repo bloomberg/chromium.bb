@@ -6,7 +6,7 @@
 
 /**
  * Test function to copy from the specified source to the specified destination.
- * @param {string} targetFile Name of target file to be copied.
+ * @param {TestEntryInfo} targetFile TestEntryInfo of target file to be copied.
  * @param {string} srcName Type of source volume. e.g. downloads, drive,
  *     drive_recent, drive_shared_with_me, drive_offline.
  * @param {Array.<TestEntryInfo>} srcEntries Expected initial contents in the
@@ -44,7 +44,7 @@ function copyBetweenVolumes(targetFile,
     // Select the source file.
     function() {
       callRemoteTestUtil(
-          'selectFile', appId, [targetFile], this.next);
+          'selectFile', appId, [targetFile.nameText], this.next);
     },
     // Copy the file.
     function(result) {
@@ -71,46 +71,36 @@ function copyBetweenVolumes(targetFile,
     // Wait for the file list to change.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFileListChange',
+      var ignoreFileSize =
+          srcName == 'drive_shared_with_me' ||
+          srcName == 'drive_offline' ||
+          dstName == 'drive_shared_with_me' ||
+          dstName == 'drive_offline';
+      var dstContentsAfterPaste = dstContents.slice();
+      var pasteFile = targetFile.getExpectedRow();
+      for (var i = 0; i < dstContentsAfterPaste.length; i++) {
+        if (dstContentsAfterPaste[i][0] === pasteFile[0]) {
+          // Replace the last '.' in filename with ' (1).'.
+          // e.g. 'my.note.txt' -> 'my.note (1).txt'
+          pasteFile[0] = pasteFile[0].replace(/\.(?=[^\.]+$)/, ' (1).');
+          break;
+        }
+      }
+      dstContentsAfterPaste.push(pasteFile);
+      callRemoteTestUtil('waitForFiles',
                          appId,
-                         [dstContents.length],
+                         [
+                           dstContentsAfterPaste,
+                           {
+                             ignoreFileSize: ignoreFileSize,
+                             ignoreLastModifiedTime: true
+                           }
+                         ],
                          this.next);
     },
     // Check the last contents of file list.
-    function(actualFilesAfter) {
-      chrome.test.assertEq(dstContents.length + 1,
-                           actualFilesAfter.length);
-      var copiedItem = null;
-      for (var i = 0; i < srcContents.length; i++) {
-        if (srcContents[i][0] == targetFile) {
-          copiedItem = srcContents[i];
-          break;
-        }
-      }
-      chrome.test.assertTrue(copiedItem != null);
-      for (var i = 0; i < dstContents.length; i++) {
-        if (dstContents[i][0] == targetFile) {
-          // Replace the last '.' in filename with ' (1).'.
-          // e.g. 'my.note.txt' -> 'my.note (1).txt'
-          copiedItem[0] = copiedItem[0].replace(/\.(?=[^\.]+$)/, ' (1).');
-          break;
-        }
-      }
-      // File size can not be obtained on drive_shared_with_me volume and
-      // drive_offline.
-      var ignoreSize = srcName == 'drive_shared_with_me' ||
-                       dstName == 'drive_shared_with_me' ||
-                       srcName == 'drive_offline' ||
-                       dstName == 'drive_offline';
-      for (var i = 0; i < actualFilesAfter.length; i++) {
-        if (actualFilesAfter[i][0] == copiedItem[0] &&
-            (ignoreSize || actualFilesAfter[i][1] == copiedItem[1]) &&
-            actualFilesAfter[i][2] == copiedItem[2]) {
-          checkIfNoErrorsOccured(this.next);
-          return;
-        }
-      }
-      chrome.test.fail();
+    function() {
+      checkIfNoErrorsOccured(this.next);
     }
   ]);
 }
@@ -120,7 +110,7 @@ function copyBetweenVolumes(targetFile,
  */
 testcase.transferFromDriveToDownloads = copyBetweenVolumes.bind(
     null,
-    'hello.txt',
+    ENTRIES.hello,
     'drive',
     BASIC_DRIVE_ENTRY_SET,
     'downloads',
@@ -131,7 +121,7 @@ testcase.transferFromDriveToDownloads = copyBetweenVolumes.bind(
  */
 testcase.transferFromDownloadsToDrive = copyBetweenVolumes.bind(
     null,
-    'hello.txt',
+    ENTRIES.hello,
     'downloads',
     BASIC_LOCAL_ENTRY_SET,
     'drive',
@@ -142,7 +132,7 @@ testcase.transferFromDownloadsToDrive = copyBetweenVolumes.bind(
  */
 testcase.transferFromSharedToDownloads = copyBetweenVolumes.bind(
     null,
-    'Test Shared Document.gdoc',
+    ENTRIES.testSharedDocument,
     'drive_shared_with_me',
     SHARED_WITH_ME_ENTRY_SET,
     'downloads',
@@ -153,7 +143,7 @@ testcase.transferFromSharedToDownloads = copyBetweenVolumes.bind(
  */
 testcase.transferFromSharedToDrive = copyBetweenVolumes.bind(
     null,
-    'Test Shared Document.gdoc',
+    ENTRIES.testSharedDocument,
     'drive_shared_with_me',
     SHARED_WITH_ME_ENTRY_SET,
     'drive',
@@ -164,7 +154,7 @@ testcase.transferFromSharedToDrive = copyBetweenVolumes.bind(
  */
 testcase.transferFromRecentToDownloads = copyBetweenVolumes.bind(
     null,
-    'hello.txt',
+    ENTRIES.hello,
     'drive_recent',
     RECENT_ENTRY_SET,
     'downloads',
@@ -175,7 +165,7 @@ testcase.transferFromRecentToDownloads = copyBetweenVolumes.bind(
  */
 testcase.transferFromRecentToDrive = copyBetweenVolumes.bind(
     null,
-    'hello.txt',
+    ENTRIES.hello,
     'drive_recent',
     RECENT_ENTRY_SET,
     'drive',
@@ -186,7 +176,7 @@ testcase.transferFromRecentToDrive = copyBetweenVolumes.bind(
  */
 testcase.transferFromOfflineToDownloads = copyBetweenVolumes.bind(
     null,
-    'Test Document.gdoc',
+    ENTRIES.testDocument,
     'drive_offline',
     OFFLINE_ENTRY_SET,
     'downloads',
@@ -197,7 +187,7 @@ testcase.transferFromOfflineToDownloads = copyBetweenVolumes.bind(
  */
 testcase.transferFromOfflineToDrive = copyBetweenVolumes.bind(
     null,
-    'Test Document.gdoc',
+    ENTRIES.testDocument,
     'drive_offline',
     OFFLINE_ENTRY_SET,
     'drive',
