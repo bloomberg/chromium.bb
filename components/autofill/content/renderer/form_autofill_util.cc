@@ -576,7 +576,7 @@ void PreviewFormField(const FormFieldData& data,
   // and radio buttons, as there is no provision for setSuggestedCheckedValue
   // in WebInputElement.
   WebInputElement* input_element = toWebInputElement(field);
-  if (IsTextInput(input_element)) {
+  if (IsTextInput(input_element) || IsMonthInput(input_element)) {
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element->setSuggestedValue(
@@ -1064,7 +1064,9 @@ bool ClearPreviewedFormWithElement(const WebInputElement& element,
 
     // Only text input and textarea elements can be previewed.
     WebInputElement* input_element = toWebInputElement(&control_element);
-    if (!IsTextInput(input_element) && !IsTextAreaElement(control_element))
+    if (!IsTextInput(input_element) &&
+        !IsMonthInput(input_element) &&
+        !IsTextAreaElement(control_element))
       continue;
 
     // If the element is not auto-filled, we did not preview it,
@@ -1074,13 +1076,15 @@ bool ClearPreviewedFormWithElement(const WebInputElement& element,
 
     if ((IsTextInput(input_element) &&
          input_element->suggestedValue().isEmpty()) ||
+        (IsMonthInput(input_element) &&
+         input_element->suggestedValue().isEmpty()) ||
         (IsTextAreaElement(control_element) &&
          control_element.to<WebTextAreaElement>().suggestedValue().isEmpty()))
       continue;
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
-    if (IsTextInput(input_element)) {
+    if (IsTextInput(input_element) || IsMonthInput(input_element)) {
       input_element->setSuggestedValue(WebString());
       bool is_initiating_node = (element == *input_element);
       if (is_initiating_node)

@@ -1201,8 +1201,8 @@ TEST_F(FormAutofillTest, PreviewForm) {
       // Fields with "display:none" should not previewed.
       {"text", "displaynone", "", "", false, "suggested displaynone",
        ""},
-      // Regular <input type="month"> should not be previewed.
-      {"month", "month", "", "", false, "2017-11", ""},
+      // Regular <input type="month"> should be previewed.
+      {"month", "month", "", "", true, "2017-11", "2017-11"},
       // Non-empty <input type="month"> should not be previewed.
       {"month", "month-nonempty", "2011-12", "", false, "2017-11", ""},
       // Regular select fields preview is not yet supported
