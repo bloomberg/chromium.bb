@@ -94,7 +94,13 @@ var Shader = (function() {
 
     Shader.prototype.drawRect = function(left, top, right, bottom) {
         var undefined;
-        var viewport = gl.getParameter(gl.VIEWPORT);
+        var viewport;
+        // Getting the viewport is expensive, therefore call it only when
+        // necessary.
+        if (top !== undefined || left !== undefined || right !== undefined ||
+            bottom !== undefined) {
+          viewport = gl.getParameter(gl.VIEWPORT);
+        }
         top = top !== undefined ? (top - viewport[1]) / viewport[3] : 0;
         left = left !== undefined ? (left - viewport[0]) / viewport[2] : 0;
         right = right !== undefined ? (right - viewport[0]) / viewport[2] : 1;
