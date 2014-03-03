@@ -23,9 +23,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
       blacklist::Initialize(false);  // Don't force, abort if beacon is present.
     } __except(GenerateCrashDump(GetExceptionInformation())) {
     }
-
-    // TODO(csharp): Move additions to the DLL blacklist to a sane place.
-    // blacklist::AddDllToBlacklist(L"foo.dll");
   }
 
   return TRUE;

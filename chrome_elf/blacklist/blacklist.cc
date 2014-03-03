@@ -4,6 +4,7 @@
 
 #include "chrome_elf/blacklist/blacklist.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include "base/basictypes.h"
@@ -29,6 +30,9 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   // Keep this null pointer here to mark the end of the list.
   NULL,
 };
+
+bool g_blocked_dlls[kTroublesomeDllsMaxCount] = {};
+int g_num_blocked_dlls = 0;
 
 }  // namespace blacklist
 
@@ -285,6 +289,7 @@ bool AddDllToBlacklist(const wchar_t* dll_name) {
   wcscpy(str_buffer, dll_name);
 
   g_troublesome_dlls[blacklist_size] = str_buffer;
+  g_blocked_dlls[blacklist_size] = false;
   return true;
 }
 
@@ -297,10 +302,50 @@ bool RemoveDllFromBlacklist(const wchar_t* dll_name) {
       delete[] g_troublesome_dlls[i];
       g_troublesome_dlls[i] = g_troublesome_dlls[blacklist_size - 1];
       g_troublesome_dlls[blacklist_size - 1] = NULL;
+
+      // Also update the stats recording if we have blocked this dll or not.
+      if (g_blocked_dlls[i])
+        --g_num_blocked_dlls;
+      g_blocked_dlls[i] = g_blocked_dlls[blacklist_size - 1];
       return true;
     }
   }
   return false;
+}
+
+// TODO(csharp): Maybe store these values in the registry so we can
+// still report them if Chrome crashes early.
+void SuccessfullyBlocked(const wchar_t** blocked_dlls, int* size) {
+  if (size == NULL)
+    return;
+
+  // If the array isn't valid or big enough, just report the size it needs to
+  // be and return.
+  if (blocked_dlls == NULL && *size < g_num_blocked_dlls) {
+    *size = g_num_blocked_dlls;
+    return;
+  }
+
+  *size = g_num_blocked_dlls;
+
+  int strings_to_fill = 0;
+  for (int i = 0; strings_to_fill < g_num_blocked_dlls && g_troublesome_dlls[i];
+       ++i) {
+    if (g_blocked_dlls[i]) {
+      blocked_dlls[strings_to_fill] = g_troublesome_dlls[i];
+      ++strings_to_fill;
+    }
+  }
+}
+
+void BlockedDll(size_t blocked_index) {
+  assert(blocked_index < kTroublesomeDllsMaxCount);
+
+  if (!g_blocked_dlls[blocked_index] &&
+      blocked_index < kTroublesomeDllsMaxCount) {
+    ++g_num_blocked_dlls;
+    g_blocked_dlls[blocked_index] = true;
+  }
 }
 
 bool Initialize(bool force) {

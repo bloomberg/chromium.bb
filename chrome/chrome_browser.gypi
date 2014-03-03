@@ -3413,6 +3413,7 @@
             '../chrome/chrome.gyp:chrome_version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
+            '../chrome_elf/chrome_elf.gyp:dll_hash',
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',

@@ -2,18 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/chrome_elf_init_win.h"
+#include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/chrome_elf_constants.h"
+#include "chrome_elf/dll_hash/dll_hash.h"
+#include "content/public/browser/browser_thread.h"
 #include "version.h"  // NOLINT
 
 namespace {
 
 const char kBrowserBlacklistTrialName[] = "BrowserBlacklist";
 const char kBrowserBlacklistTrialEnabledGroupName[] = "Enabled";
+
+// How long to wait, in seconds, before reporting for the second (and last
+// time), what dlls were blocked from the browser process.
+const int kBlacklistReportingDelaySec = 600;
 
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
@@ -46,6 +55,29 @@ void RecordBlacklistSetupEvent(BlacklistSetupEventType blacklist_setup_event) {
                             BLACKLIST_SETUP_EVENT_MAX);
 }
 
+// Report which DLLs were prevented from being loaded.
+void ReportSuccessfulBlocks() {
+  // Figure out how many dlls were blocked.
+  int num_blocked_dlls = 0;
+  blacklist::SuccessfullyBlocked(NULL, &num_blocked_dlls);
+
+  if (num_blocked_dlls == 0)
+    return;
+
+  // Now retrieve the list of blocked dlls.
+  std::vector<const wchar_t*> blocked_dlls(num_blocked_dlls);
+  blacklist::SuccessfullyBlocked(&blocked_dlls[0], &num_blocked_dlls);
+
+  // Send up the hashes of the blocked dlls via UMA.
+  for (size_t i = 0; i < blocked_dlls.size(); ++i) {
+    std::string dll_name_utf8;
+    base::WideToUTF8(blocked_dlls[i], wcslen(blocked_dlls[i]), &dll_name_utf8);
+    int uma_hash = DllNameToHash(dll_name_utf8);
+
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Blacklist.Blocked", uma_hash);
+  }
+}
+
 }  // namespace
 
 void InitializeChromeElf() {
@@ -57,6 +89,18 @@ void InitializeChromeElf() {
     base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER);
     blacklist_registry_key.DeleteKey(blacklist::kRegistryBeaconPath);
   }
+
+  // Report all successful blacklist interceptions.
+  ReportSuccessfulBlocks();
+
+  // Schedule another task to report all sucessful interceptions later.
+  // This time delay should be long enough to catch any dlls that attempt to
+  // inject after Chrome has started up.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ReportSuccessfulBlocks),
+      base::TimeDelta::FromSeconds(kBlacklistReportingDelaySec));
 }
 
 void BrowserBlacklistBeaconSetup() {

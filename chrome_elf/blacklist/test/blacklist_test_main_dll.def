@@ -6,6 +6,7 @@ LIBRARY  "blacklist_test_main_dll.dll"
 
 EXPORTS
   TestDll_AddDllToBlacklist=AddDllToBlacklist
-  TestDLL_IsBlacklistInitialized=IsBlacklistInitialized
+  TestDll_IsBlacklistInitialized=IsBlacklistInitialized
+  TestDll_SuccessfullyBlocked=SuccessfullyBlocked
   TestDll_RemoveDllFromBlacklist=RemoveDllFromBlacklist
   InitBlacklistTestDll

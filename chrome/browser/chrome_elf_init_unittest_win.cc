@@ -5,47 +5,50 @@
 #include "chrome/browser/chrome_elf_init_win.h"
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "version.h"  // NOLINT
 
 class ChromeBlacklistTrialTest : public testing::Test {
  protected:
-  ChromeBlacklistTrialTest() :
-      blacklist_registry_key_(HKEY_CURRENT_USER,
-                              blacklist::kRegistryBeaconPath,
-                              KEY_QUERY_VALUE | KEY_SET_VALUE) {}
+  ChromeBlacklistTrialTest() {}
+  virtual ~ChromeBlacklistTrialTest() {}
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
 
-    registry_util::RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(HKEY_CURRENT_USER,
-                                      L"browser_blacklist_test");
+    override_manager_.OverrideRegistry(HKEY_CURRENT_USER,
+                                       L"browser_blacklist_test");
 
-
+    blacklist_registry_key_.reset(
+        new base::win::RegKey(HKEY_CURRENT_USER,
+                              blacklist::kRegistryBeaconPath,
+                              KEY_QUERY_VALUE | KEY_SET_VALUE));
   }
 
   DWORD GetBlacklistState() {
     DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
-    blacklist_registry_key_.ReadValueDW(blacklist::kBeaconState,
-                                        &blacklist_state);
+    blacklist_registry_key_->ReadValueDW(blacklist::kBeaconState,
+                                         &blacklist_state);
 
     return blacklist_state;
   }
 
   base::string16 GetBlacklistVersion() {
     base::string16 blacklist_version;
-    blacklist_registry_key_.ReadValue(blacklist::kBeaconVersion,
-                                      &blacklist_version);
+    blacklist_registry_key_->ReadValue(blacklist::kBeaconVersion,
+                                       &blacklist_version);
 
     return blacklist_version;
   }
 
-  base::win::RegKey blacklist_registry_key_;
+  scoped_ptr<base::win::RegKey> blacklist_registry_key_;
+  registry_util::RegistryOverrideManager override_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBlacklistTrialTest);
@@ -55,9 +58,9 @@ class ChromeBlacklistTrialTest : public testing::Test {
 // Ensure that the default trial deletes any existing blacklist beacons.
 TEST_F(ChromeBlacklistTrialTest, DefaultRun) {
   // Set some dummy values as beacons.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_ENABLED);
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconVersion, L"Data");
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_ENABLED);
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion, L"Data");
 
   // This setup code should result in the default group, which should remove
   // all the beacon values.
@@ -82,9 +85,11 @@ TEST_F(ChromeBlacklistTrialTest, VerifyFirstRun) {
 
 TEST_F(ChromeBlacklistTrialTest, SetupFailed) {
   // Set the registry to indicate that the blacklist setup is running,
-  // which means it failed to run correctly last time.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_SETUP_RUNNING);
+  // which means it failed to run correctly last time for this version.
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
+                                      TEXT(CHROME_VERSION_STRING));
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_SETUP_RUNNING);
 
    BrowserBlacklistBeaconSetup();
 
@@ -94,9 +99,11 @@ TEST_F(ChromeBlacklistTrialTest, SetupFailed) {
 
 TEST_F(ChromeBlacklistTrialTest, ThunkSetupFailed) {
   // Set the registry to indicate that the blacklist thunk setup is running,
-  // which means it failed to run correctly last time.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_THUNK_SETUP);
+  // which means it failed to run correctly last time for this version.
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
+                                      TEXT(CHROME_VERSION_STRING));
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_THUNK_SETUP);
 
   BrowserBlacklistBeaconSetup();
 
@@ -106,9 +113,11 @@ TEST_F(ChromeBlacklistTrialTest, ThunkSetupFailed) {
 
 TEST_F(ChromeBlacklistTrialTest, InterceptionFailed) {
   // Set the registry to indicate that an interception is running,
-  // which means it failed to run correctly last time.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_INTERCEPTING);
+  // which means it failed to run correctly last time for this version.
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
+                                      TEXT(CHROME_VERSION_STRING));
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_INTERCEPTING);
 
   BrowserBlacklistBeaconSetup();
 
@@ -119,10 +128,10 @@ TEST_F(ChromeBlacklistTrialTest, InterceptionFailed) {
 TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
   // Mark the blacklist as disabled for an older version, so it should
   // get enabled for this new version.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconVersion,
-                                     L"old_version");
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_DISABLED);
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
+                                      L"old_version");
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_DISABLED);
 
   BrowserBlacklistBeaconSetup();
 

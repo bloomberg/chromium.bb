@@ -9,6 +9,7 @@
     '../build/util/version.gypi',
     '../build/win_precompile.gypi',
     'blacklist.gypi',
+    'dll_hash.gypi',
   ],
   'targets': [
     {
