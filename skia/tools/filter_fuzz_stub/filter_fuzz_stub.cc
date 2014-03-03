@@ -4,7 +4,6 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -74,10 +73,8 @@ int main(int argc, char** argv) {
   int ret = 0;
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, BitmapSize, BitmapSize);
-  bitmap.allocPixels();
-  SkBitmapDevice device(bitmap);
-  SkCanvas canvas(&device);
+  bitmap.allocN32Pixels(BitmapSize, BitmapSize);
+  SkCanvas canvas(bitmap);
   canvas.clear(0x00000000);
 
   for (int i = 1; i < argc; i++)

@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -480,8 +479,10 @@ void BrowserViewRenderer::FallbackTickFired() {
 
 void BrowserViewRenderer::ForceFakeCompositeSW() {
   DCHECK(has_compositor_);
-  SkBitmapDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
-  SkCanvas canvas(&device);
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseColor(0);
+  SkCanvas canvas(bitmap);
   CompositeSW(&canvas);
 }
 
