@@ -26,8 +26,6 @@ This test ensures that a stacking context overflow-scroll div's unclipped descen
                       (position 10.00 139.00)
                       (bounds 180.00 90.00)
                       (contentsOpaque 1)
-                      (drawsContent 1)
-                      (backgroundColor #808080)
                     )
                   )
                 )

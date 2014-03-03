@@ -48,8 +48,6 @@
                       (position 0.00 10.00)
                       (bounds 80.00 10.00)
                       (contentsOpaque 1)
-                      (drawsContent 1)
-                      (backgroundColor #008000)
                       (paintingPhases
                         GraphicsLayerPaintBackground
                         GraphicsLayerPaintForeground
