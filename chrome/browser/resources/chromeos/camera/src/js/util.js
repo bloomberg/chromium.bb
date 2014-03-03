@@ -975,7 +975,7 @@ camera.util.PerformanceMonitor = function() {
  * @type {number}
  * @const
  */
-camera.util.PerformanceMonitor.HISTORY_LENGTH = 10 * 1000;
+camera.util.PerformanceMonitor.HISTORY_LENGTH = 3 * 1000;
 
 camera.util.PerformanceMonitor.prototype = {
   /**
@@ -999,6 +999,7 @@ camera.util.PerformanceMonitor.prototype.start = function() {
  */
 camera.util.PerformanceMonitor.prototype.stop = function() {
   this.tailStartTime_ = null;
+  this.probes_ = [];
 };
 
 /**
