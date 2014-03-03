@@ -15,8 +15,6 @@ CASE 1, original layer tree:
               (position 60.00 60.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #808080)
             )
             (GraphicsLayer
               (position 140.00 140.00)

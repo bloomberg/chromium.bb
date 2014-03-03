@@ -10,8 +10,6 @@ Before:
         (GraphicsLayer
           (position 17.00 119.00)
           (bounds 102.00 102.00)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (transform ...)
         )
         (GraphicsLayer
@@ -23,8 +21,6 @@ Before:
             (GraphicsLayer
               (position 21.00 11.00)
               (bounds 102.00 102.00)
-              (drawsContent 1)
-              (backgroundColor #808080)
               (transform ...)
             )
           )
@@ -32,8 +28,6 @@ Before:
         (GraphicsLayer
           (position 17.00 691.00)
           (bounds 102.00 102.00)
-          (drawsContent 1)
-          (backgroundColor #FFFF00)
         )
       )
     )
@@ -52,8 +46,6 @@ After:
         (GraphicsLayer
           (position 17.00 119.00)
           (bounds 102.00 102.00)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (transform ...)
         )
         (GraphicsLayer
@@ -65,8 +57,6 @@ After:
             (GraphicsLayer
               (position 11.00 11.00)
               (bounds 102.00 102.00)
-              (drawsContent 1)
-              (backgroundColor #808080)
               (transform ...)
             )
             (GraphicsLayer
@@ -94,8 +84,6 @@ After:
         (GraphicsLayer
           (position 17.00 691.00)
           (bounds 102.00 102.00)
-          (drawsContent 1)
-          (backgroundColor #FFFF00)
         )
       )
     )

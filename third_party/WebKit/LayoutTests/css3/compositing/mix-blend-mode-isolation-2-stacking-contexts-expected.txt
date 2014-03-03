@@ -12,8 +12,6 @@
             (GraphicsLayer
               (position 8.00 8.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
               (children 2
                 (GraphicsLayer
                   (bounds 160.00 90.00)
@@ -29,15 +27,12 @@
                   )
                 )
                 (GraphicsLayer
-                  (drawsContent 1)
                 )
               )
             )
             (GraphicsLayer
               (position 8.00 8.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
               (children 2
                 (GraphicsLayer
                   (bounds 160.00 90.00)
@@ -53,7 +48,6 @@
                   )
                 )
                 (GraphicsLayer
-                  (drawsContent 1)
                 )
               )
             )

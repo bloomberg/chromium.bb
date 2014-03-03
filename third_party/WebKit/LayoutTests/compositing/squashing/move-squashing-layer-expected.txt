@@ -12,8 +12,6 @@ This tests that squashed layers' offset from renderer is updated properly. If no
           (position 8.00 50.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FFFF00)
         )
         (GraphicsLayer
           (children 2
@@ -21,8 +19,6 @@ This tests that squashed layers' offset from renderer is updated properly. If no
               (position 100.00 100.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #008000)
             )
             (GraphicsLayer
               (position 8.00 8.00)

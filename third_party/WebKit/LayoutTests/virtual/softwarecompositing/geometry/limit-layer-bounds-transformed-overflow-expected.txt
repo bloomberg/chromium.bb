@@ -15,8 +15,6 @@ middle
           (position 129.00 29.00)
           (bounds 200.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #FF0000)
         )
         (GraphicsLayer
           (position 8.00 8.00)

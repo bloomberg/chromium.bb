@@ -12,14 +12,10 @@ CASE 1, original layer tree:
         (GraphicsLayer
           (bounds 400.00 200.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (children 1
             (GraphicsLayer
               (bounds 50.00 50.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
             )
           )
         )
@@ -27,8 +23,6 @@ CASE 1, original layer tree:
           (position 100.00 50.00)
           (bounds 200.00 4000.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #00FFFF)
         )
       )
     )
@@ -47,14 +41,10 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
           (position 0.00 80.00)
           (bounds 400.00 200.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (children 1
             (GraphicsLayer
               (bounds 50.00 50.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
             )
           )
         )
@@ -62,8 +52,6 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
           (position 100.00 50.00)
           (bounds 200.00 4000.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #00FFFF)
         )
       )
     )

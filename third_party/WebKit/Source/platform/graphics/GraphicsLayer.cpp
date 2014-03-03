@@ -99,6 +99,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_replicaLayer(0)
     , m_replicatedLayer(0)
     , m_paintCount(0)
+    , m_contentsSolidColor(Color::transparent)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
     , m_scrollableArea(0)
@@ -1016,6 +1017,27 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
         registerContentsLayer(m_ninePatchLayer->layer());
     }
     setContentsTo(m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
+}
+
+void GraphicsLayer::setContentsToSolidColor(const Color& color)
+{
+    if (color == m_contentsSolidColor)
+        return;
+
+    m_contentsSolidColor = color;
+    if (color.alpha()) {
+        if (!m_solidColorLayer) {
+            m_solidColorLayer = adoptPtr(Platform::current()->compositorSupport()->createSolidColorLayer());
+            registerContentsLayer(m_solidColorLayer->layer());
+        }
+        m_solidColorLayer->setBackgroundColor(color.rgb());
+    } else {
+        if (!m_solidColorLayer)
+            return;
+        unregisterContentsLayer(m_solidColorLayer->layer());
+        m_solidColorLayer.clear();
+    }
+    setContentsTo(m_solidColorLayer ? m_solidColorLayer->layer() : 0);
 }
 
 bool GraphicsLayer::addAnimation(PassOwnPtr<WebAnimation> popAnimation)

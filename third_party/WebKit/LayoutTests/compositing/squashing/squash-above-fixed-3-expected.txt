@@ -14,29 +14,21 @@ CASE 1, original layer tree:
         (GraphicsLayer
           (bounds 400.00 400.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
         )
         (GraphicsLayer
           (position 100.00 100.00)
           (bounds 100.00 4000.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
           (children 2
             (GraphicsLayer
               (position 0.00 50.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 100.00 0.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #00FF00)
             )
           )
         )
@@ -57,29 +49,21 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
           (position 0.00 10.00)
           (bounds 400.00 400.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
         )
         (GraphicsLayer
           (position 100.00 100.00)
           (bounds 100.00 4000.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
           (children 2
             (GraphicsLayer
               (position 0.00 60.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 100.00 0.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #00FF00)
             )
           )
         )
@@ -100,23 +84,17 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
           (position 0.00 110.00)
           (bounds 400.00 400.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #808080)
         )
         (GraphicsLayer
           (position 100.00 100.00)
           (bounds 200.00 4000.00)
           (drawsContent 1)
           (backgroundColor #008000)
-          (repaint rects
-          )
           (children 1
             (GraphicsLayer
               (position 0.00 160.00)
               (bounds 200.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
           )
         )

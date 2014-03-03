@@ -12,8 +12,6 @@ Even though the fixed-position element's container is nonscrollable, it should s
           (position 10.00 100.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #00FF00)
         )
       )
     )

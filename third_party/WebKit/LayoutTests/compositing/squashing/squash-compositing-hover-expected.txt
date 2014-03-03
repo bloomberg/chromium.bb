@@ -19,8 +19,6 @@ Case 1, original layer tree:
               (position 100.00 100.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 180.00 180.00)
@@ -50,8 +48,6 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
           (position 100.00 100.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
         )
         (GraphicsLayer
           (children 2
@@ -59,8 +55,6 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
               (position 180.00 180.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #008000)
             )
             (GraphicsLayer
               (position 260.00 260.00)
@@ -92,8 +86,6 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
               (position 100.00 100.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 180.00 180.00)
@@ -108,8 +100,6 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
               (position 260.00 260.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #008000)
             )
             (GraphicsLayer
               (position 340.00 340.00)
@@ -141,8 +131,6 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
               (position 100.00 100.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 180.00 180.00)
@@ -155,8 +143,6 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
           (position 340.00 340.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
         )
       )
     )
@@ -181,8 +167,6 @@ Case 5: back to situation in case 1
               (position 100.00 100.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #0000FF)
             )
             (GraphicsLayer
               (position 180.00 180.00)

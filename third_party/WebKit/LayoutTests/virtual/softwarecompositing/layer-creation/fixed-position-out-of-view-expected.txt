@@ -12,8 +12,6 @@
             (GraphicsLayer
               (bounds 10.00 10.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #C0C0C0)
             )
             (GraphicsLayer
               (bounds 785.00 1021.00)
