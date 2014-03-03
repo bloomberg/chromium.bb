@@ -1419,9 +1419,11 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
       LayerTypeAsString(),
       this);
   state->SetInteger("layer_id", id());
-  state->Set("bounds", MathUtil::AsValue(bounds()).release());
+  state->Set("bounds", MathUtil::AsValue(bounds_).release());
+  state->Set("position", MathUtil::AsValue(position_).release());
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
+  state->Set("scroll_offset", MathUtil::AsValue(scroll_offset_).release());
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
