@@ -12068,7 +12068,7 @@ The following application will be launched if you accept this request:
       </message>
 
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-        Use a prediction service to help complete searches and URLs typed in the address bar
+        Use a prediction service to help complete searches and URLs typed in the address bar or the app launcher search box
       </message>
       <message name="IDS_OPTIONS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
         Use a web service to help resolve spelling errors
