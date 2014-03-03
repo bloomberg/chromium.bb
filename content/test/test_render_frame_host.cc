@@ -80,7 +80,6 @@ void TestRenderFrameHost::SendNavigateWithFile(
 
 void TestRenderFrameHost::SendNavigateWithParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  params->frame_id = GetRoutingID();
   FrameHostMsg_DidCommitProvisionalLoad msg(1, *params);
   OnNavigate(msg);
 }
@@ -94,7 +93,6 @@ void TestRenderFrameHost::SendNavigateWithParameters(
     const base::FilePath* file_path_for_history_item) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = page_id;
-  params.frame_id = GetRoutingID();
   params.url = url;
   params.referrer = Referrer();
   params.transition = transition;

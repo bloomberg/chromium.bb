@@ -80,6 +80,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   frame_tree_->UnregisterRenderFrameHost(this);
 }
 
+int RenderFrameHostImpl::GetRoutingID() {
+  return routing_id_;
+}
+
 SiteInstance* RenderFrameHostImpl::GetSiteInstance() {
   return render_view_host_->GetSiteInstance();
 }
@@ -88,10 +92,6 @@ RenderProcessHost* RenderFrameHostImpl::GetProcess() {
   // TODO(nasko): This should return its own process, once we have working
   // cross-process navigation for subframes.
   return render_view_host_->GetProcess();
-}
-
-int RenderFrameHostImpl::GetRoutingID() {
-  return routing_id_;
 }
 
 RenderFrameHost* RenderFrameHostImpl::GetParent() {
@@ -307,6 +307,10 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   }
 
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
+}
+
+int RenderFrameHostImpl::GetEnabledBindings() {
+  return render_view_host_->GetEnabledBindings();
 }
 
 void RenderFrameHostImpl::SwapOut() {

@@ -2116,7 +2116,6 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
   params.is_post = false;
   params.post_id = -1;
   params.page_id = render_view_->page_id_;
-  params.frame_id = routing_id_;
   params.frame_unique_name = frame->uniqueName();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
   params.socket_address.set_port(response.remotePort());

@@ -52,14 +52,12 @@ class CONTENT_EXPORT NavigatorDelegate {
       const GURL& validated_target_url) {}
 
   // A navigation was committed in |render_frame_host|.
-  // TODO(creis): Remove |frame_id| in favor of the RFH's routing ID.
   virtual void DidCommitProvisionalLoad(
-      int64 frame_id,
+      RenderFrameHostImpl* render_frame_host,
       const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
-      PageTransition transition_type,
-      RenderFrameHostImpl* render_frame_host) {}
+      PageTransition transition_type) {}
 
   // Handles post-navigation tasks in navigation AFTER the entry has been
   // committed to the NavigationController. Note that the NavigationEntry is

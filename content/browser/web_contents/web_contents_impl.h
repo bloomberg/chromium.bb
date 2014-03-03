@@ -467,12 +467,11 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* render_frame_host,
       const GURL& validated_target_url) OVERRIDE;
   virtual void DidCommitProvisionalLoad(
-      int64 frame_id,
+      RenderFrameHostImpl* render_frame_host,
       const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
-      PageTransition transition_type,
-      RenderFrameHostImpl* render_frame_host) OVERRIDE;
+      PageTransition transition_type) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;

@@ -134,10 +134,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   //
   // In the case that nothing has changed, the details structure is undefined
   // and it will return false.
-  //
-  // TODO(creis): Change RenderViewHost to RenderFrameHost.
   bool RendererDidNavigate(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       LoadCommittedDetails* details);
 
@@ -235,7 +233,7 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const;
 
   // Causes the controller to load the specified entry. The function assumes
@@ -255,27 +253,25 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The functions taking |did_replace_entry| will fill into the given variable
   // whether the last entry has been replaced or not.
   // See LoadCommittedDetails.did_replace_entry.
-  //
-  // TODO(creis): Change RenderViewHost to RenderFrameHost.
   void RendererDidNavigateToNewPage(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool replace_entry);
   void RendererDidNavigateToExistingPage(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   void RendererDidNavigateToSamePage(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   void RendererDidNavigateInPage(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool* did_replace_entry);
   void RendererDidNavigateNewSubframe(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   bool RendererDidNavigateAutoSubframe(
-      RenderViewHost* rvh,
+      RenderFrameHost* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // Helper function for code shared between Reload() and ReloadIgnoringCache().

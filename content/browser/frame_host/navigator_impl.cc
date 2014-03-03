@@ -464,16 +464,13 @@ void NavigatorImpl::DidNavigate(
     delegate_->SetMainFrameMimeType(params.contents_mime_type);
 
   LoadCommittedDetails details;
-  bool did_navigate = controller_->RendererDidNavigate(rvh, params, &details);
+  bool did_navigate = controller_->RendererDidNavigate(render_frame_host,
+                                                       params, &details);
 
   // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
   // us estimate our process count for implementing OOP iframes.
   // TODO(creis): Remove this when we track which pages commit in each frame.
-  FrameTreeNode* node =
-      frame_tree->FindByRoutingID(params.frame_id,
-                                  render_frame_host->GetProcess()->GetID());
-  if (node)
-    node->set_current_url(params.url);
+  render_frame_host->frame_tree_node()->set_current_url(params.url);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
@@ -495,12 +492,11 @@ void NavigatorImpl::DidNavigate(
           params.transition | PAGE_TRANSITION_FORWARD_BACK);
     }
 
-    delegate_->DidCommitProvisionalLoad(params.frame_id,
+    delegate_->DidCommitProvisionalLoad(render_frame_host,
                                         params.frame_unique_name,
                                         is_main_frame,
                                         params.url,
-                                        transition_type,
-                                        render_frame_host);
+                                        transition_type);
   }
 
   if (!did_navigate)

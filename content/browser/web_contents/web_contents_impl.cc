@@ -2102,18 +2102,18 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
 }
 
 void WebContentsImpl::DidCommitProvisionalLoad(
-    int64 frame_id,
+    RenderFrameHostImpl* render_frame_host,
     const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
-    PageTransition transition_type,
-    RenderFrameHostImpl* render_frame_host) {
+    PageTransition transition_type) {
   RenderViewHost* render_view_host = render_frame_host->render_view_host();
+  int render_frame_id = render_frame_host->GetRoutingID();
   // Notify observers about the commit of the provisional load.
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      DidCommitProvisionalLoadForFrame(frame_id,
+      DidCommitProvisionalLoadForFrame(render_frame_id,
                                        frame_unique_name,
                                        is_main_frame,
                                        url,

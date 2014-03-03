@@ -38,9 +38,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual ~RenderFrameHostImpl();
 
   // RenderFrameHost
+  virtual int GetRoutingID() OVERRIDE;
   virtual SiteInstance* GetSiteInstance() OVERRIDE;
   virtual RenderProcessHost* GetProcess() OVERRIDE;
-  virtual int GetRoutingID() OVERRIDE;
   virtual RenderFrameHost* GetParent() OVERRIDE;
   virtual bool IsCrossProcessSubframe() OVERRIDE;
   virtual GURL GetLastCommittedURL() OVERRIDE;
@@ -77,6 +77,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       CrossProcessFrameConnector* cross_process_frame_connector) {
     cross_process_frame_connector_ = cross_process_frame_connector;
   }
+
+  // Returns a bitwise OR of bindings types that have been enabled for this
+  // RenderFrameHostImpl's RenderView. See BindingsPolicy for details.
+  // TODO(creis): Make bindings frame-specific, to support cases like <webview>.
+  int GetEnabledBindings();
 
   // Hack to get this subframe to swap out, without yet moving over all the
   // SwapOut state and machinery from RenderViewHost.

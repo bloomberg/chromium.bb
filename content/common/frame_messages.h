@@ -109,10 +109,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
                              content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_PARENT(content::FrameNavigateParams)
-  // The frame ID for this navigation. The frame ID uniquely identifies the
-  // frame the navigation happened in for a given renderer.
-  IPC_STRUCT_MEMBER(int64, frame_id)
-
   // The WebFrame's uniqueName().
   IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
 

@@ -27,13 +27,16 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   virtual ~RenderFrameHost() {}
 
+  // Returns the route id for this frame.
+  virtual int GetRoutingID() = 0;
+
+  // Returns the SiteInstance grouping all RenderFrameHosts that have script
+  // access to this RenderFrameHost, and must therefore live in the same
+  // process.
   virtual SiteInstance* GetSiteInstance() = 0;
 
   // Returns the process for this frame.
   virtual RenderProcessHost* GetProcess() = 0;
-
-  // Returns the route id for this frame.
-  virtual int GetRoutingID() = 0;
 
   // Returns the current RenderFrameHost of the parent frame, or NULL if there
   // is no parent. The result may be in a different process than the current
