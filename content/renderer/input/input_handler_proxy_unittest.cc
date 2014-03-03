@@ -190,6 +190,16 @@ TEST_F(InputHandlerProxyTest, MouseWheelByPageMainThread) {
   testing::Mock::VerifyAndClearExpectations(&mock_client_);
 }
 
+TEST_F(InputHandlerProxyTest, MouseWheelWithCtrl) {
+  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  WebMouseWheelEvent wheel;
+  wheel.type = WebInputEvent::MouseWheel;
+  wheel.modifiers = WebInputEvent::ControlKey;
+
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+  testing::Mock::VerifyAndClearExpectations(&mock_client_);
+}
+
 TEST_F(InputHandlerProxyTest, GestureScrollStarted) {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
@@ -468,7 +478,9 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
-  int modifiers = 7;
+  // Note that for trackpad, wheel events with the Control modifier are
+  // special (reserved for zoom), so don't set that here.
+  int modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   gesture_.sourceDevice = WebGestureEvent::Touchpad;
@@ -576,7 +588,9 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
-  int modifiers = 1;
+  // Note that for trackpad, wheel events with the Control modifier are
+  // special (reserved for zoom), so don't set that here.
+  int modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   gesture_.sourceDevice = WebGestureEvent::Touchpad;
@@ -682,7 +696,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   fling_delta = WebFloatPoint(0, -1000);
   fling_point = WebPoint(95, 87);
   fling_global_point = WebPoint(32, 71);
-  modifiers = 2;
+  modifiers = WebInputEvent::AltKey;
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   gesture_.sourceDevice = WebGestureEvent::Touchpad;
@@ -861,7 +875,8 @@ TEST_F(InputHandlerProxyTest, GestureFlingAnimatesTouchscreen) {
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
-  int modifiers = 7;
+  // Note that for touchscreen the control modifier is not special.
+  int modifiers = WebInputEvent::ControlKey;
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   gesture_.sourceDevice = WebGestureEvent::Touchscreen;
@@ -924,7 +939,7 @@ TEST_F(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
-  int modifiers = 7;
+  int modifiers = WebInputEvent::ControlKey;
   gesture_.timeStampSeconds = startTimeOffset.InSecondsF();
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
@@ -985,7 +1000,7 @@ TEST_F(InputHandlerProxyTest,
   WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
   WebPoint fling_point = WebPoint(7, 13);
   WebPoint fling_global_point = WebPoint(17, 23);
-  int modifiers = 7;
+  int modifiers = WebInputEvent::ControlKey | WebInputEvent::AltKey;
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   gesture_.sourceDevice = WebGestureEvent::Touchscreen;

@@ -500,7 +500,7 @@ class CONTENT_EXPORT WebContentsImpl
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool PreHandleWheelEvent(
+  virtual bool HandleWheelEvent(
       const blink::WebMouseWheelEvent& event) OVERRIDE;
   virtual bool PreHandleGestureEvent(
       const blink::WebGestureEvent& event) OVERRIDE;

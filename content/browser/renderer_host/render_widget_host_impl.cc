@@ -973,9 +973,6 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
   if (IgnoreInputEvents())
     return;
 
-  if (delegate_->PreHandleWheelEvent(wheel_event))
-    return;
-
   input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(wheel_event,
                                                                latency_info));
 }
@@ -2062,8 +2059,10 @@ void RenderWidgetHostImpl::OnWheelEventAck(
   }
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  if (!processed && !is_hidden() && view_)
-    view_->UnhandledWheelEvent(wheel_event.event);
+  if (!processed && !is_hidden() && view_) {
+    if (!delegate_->HandleWheelEvent(wheel_event.event))
+      view_->UnhandledWheelEvent(wheel_event.event);
+  }
 }
 
 void RenderWidgetHostImpl::OnGestureEventAck(

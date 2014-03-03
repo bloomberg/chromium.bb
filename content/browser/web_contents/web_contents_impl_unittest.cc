@@ -11,6 +11,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
@@ -2230,6 +2232,95 @@ TEST_F(WebContentsImplTest, GetLastActiveTime) {
   // Simulate activating the WebContents. The active time should update.
   contents()->WasShown();
   EXPECT_FALSE(contents()->GetLastActiveTime().is_null());
+}
+
+class ContentsZoomChangedDelegate : public WebContentsDelegate {
+ public:
+  ContentsZoomChangedDelegate() :
+    contents_zoom_changed_call_count_(0),
+    last_zoom_in_(false) {
+  }
+
+  int GetAndResetContentsZoomChangedCallCount() {
+    int count = contents_zoom_changed_call_count_;
+    contents_zoom_changed_call_count_ = 0;
+    return count;
+  }
+
+  bool last_zoom_in() const {
+    return last_zoom_in_;
+  }
+
+  // WebContentsDelegate:
+  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE {
+    contents_zoom_changed_call_count_++;
+    last_zoom_in_ = zoom_in;
+  }
+
+ private:
+  int contents_zoom_changed_call_count_;
+  bool last_zoom_in_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentsZoomChangedDelegate);
+};
+
+// Tests that some mouseehweel events get turned into browser zoom requests.
+TEST_F(WebContentsImplTest, HandleWheelEvent) {
+  using blink::WebInputEvent;
+
+  scoped_ptr<ContentsZoomChangedDelegate> delegate(
+      new ContentsZoomChangedDelegate());
+  contents()->SetDelegate(delegate.get());
+
+  int modifiers = 0;
+  float dy = 1;
+  // Verify that normal mouse wheel events do nothing to change the zoom level.
+  blink::WebMouseWheelEvent event =
+      SyntheticWebMouseWheelEventBuilder::Build(0, dy, modifiers, false);
+  EXPECT_FALSE(contents()->HandleWheelEvent(event));
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
+
+  modifiers = WebInputEvent::ShiftKey | WebInputEvent::AltKey;
+  event = SyntheticWebMouseWheelEventBuilder::Build(0, dy, modifiers, false);
+  EXPECT_FALSE(contents()->HandleWheelEvent(event));
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
+
+  // But whenever the ctrl modifier is applied, they can increase/decrease zoom.
+  // Except on MacOS where we never want to adjust zoom with mousewheel.
+  modifiers = WebInputEvent::ControlKey;
+  event = SyntheticWebMouseWheelEventBuilder::Build(0, dy, modifiers, false);
+  bool handled = contents()->HandleWheelEvent(event);
+#if defined(OS_MACOSX)
+  EXPECT_FALSE(handled);
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
+#else
+  EXPECT_TRUE(handled);
+  EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
+  EXPECT_TRUE(delegate->last_zoom_in());
+#endif
+
+  modifiers = WebInputEvent::ControlKey | WebInputEvent::ShiftKey |
+      WebInputEvent::AltKey;
+  dy = -5;
+  event = SyntheticWebMouseWheelEventBuilder::Build(2, dy, modifiers, false);
+  handled = contents()->HandleWheelEvent(event);
+#if defined(OS_MACOSX)
+  EXPECT_FALSE(handled);
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
+#else
+  EXPECT_TRUE(handled);
+  EXPECT_EQ(1, delegate->GetAndResetContentsZoomChangedCallCount());
+  EXPECT_FALSE(delegate->last_zoom_in());
+#endif
+
+  // Unless there is no vertical movement.
+  dy = 0;
+  event = SyntheticWebMouseWheelEventBuilder::Build(2, dy, modifiers, false);
+  EXPECT_FALSE(contents()->HandleWheelEvent(event));
+  EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
+
+  // Ensure pointers to the delegate aren't kept beyond it's lifetime.
+  contents()->SetDelegate(NULL);
 }
 
 }  // namespace content

@@ -1164,7 +1164,7 @@ void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
     delegate_->HandleKeyboardEvent(this, event);
 }
 
-bool WebContentsImpl::PreHandleWheelEvent(
+bool WebContentsImpl::HandleWheelEvent(
     const blink::WebMouseWheelEvent& event) {
 #if !defined(OS_MACOSX)
   // On platforms other than Mac, control+mousewheel changes zoom. On Mac, this
@@ -1180,7 +1180,6 @@ bool WebContentsImpl::PreHandleWheelEvent(
     return true;
   }
 #endif
-
   return false;
 }
 

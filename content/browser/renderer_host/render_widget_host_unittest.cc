@@ -429,6 +429,7 @@ class TestView : public TestRenderWidgetHostView {
  public:
   explicit TestView(RenderWidgetHostImpl* rwh)
       : TestRenderWidgetHostView(rwh),
+        unhandled_wheel_event_count_(0),
         acked_event_count_(0),
         gesture_event_type_(-1),
         use_fake_physical_backing_size_(false),
@@ -449,6 +450,9 @@ class TestView : public TestRenderWidgetHostView {
 
   const WebMouseWheelEvent& unhandled_wheel_event() const {
     return unhandled_wheel_event_;
+  }
+  int unhandled_wheel_event_count() const {
+    return unhandled_wheel_event_count_;
   }
   int gesture_event_type() const { return gesture_event_type_; }
   InputEventAckState ack_result() const { return ack_result_; }
@@ -471,6 +475,7 @@ class TestView : public TestRenderWidgetHostView {
     ++acked_event_count_;
   }
   virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
+    unhandled_wheel_event_count_++;
     unhandled_wheel_event_ = event;
   }
   virtual void GestureEventAck(const WebGestureEvent& event,
@@ -486,6 +491,7 @@ class TestView : public TestRenderWidgetHostView {
 
  protected:
   WebMouseWheelEvent unhandled_wheel_event_;
+  int unhandled_wheel_event_count_;
   WebTouchEvent acked_event_;
   int acked_event_count_;
   int gesture_event_type_;
@@ -506,7 +512,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
         prehandle_keyboard_event_called_(false),
         prehandle_keyboard_event_type_(WebInputEvent::Undefined),
         unhandled_keyboard_event_called_(false),
-        unhandled_keyboard_event_type_(WebInputEvent::Undefined) {
+        unhandled_keyboard_event_type_(WebInputEvent::Undefined),
+        handle_wheel_event_(false),
+        handle_wheel_event_called_(false) {
   }
   virtual ~MockRenderWidgetHostDelegate() {}
 
@@ -532,6 +540,14 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     prehandle_keyboard_event_ = handle;
   }
 
+  void set_handle_wheel_event(bool handle) {
+    handle_wheel_event_ = handle;
+  }
+
+  bool handle_wheel_event_called() {
+    return handle_wheel_event_called_;
+  }
+
  protected:
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE {
@@ -546,6 +562,12 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     unhandled_keyboard_event_called_ = true;
   }
 
+  virtual bool HandleWheelEvent(
+      const blink::WebMouseWheelEvent& event) OVERRIDE {
+    handle_wheel_event_called_ = true;
+    return handle_wheel_event_;
+  }
+
  private:
   bool prehandle_keyboard_event_;
   bool prehandle_keyboard_event_called_;
@@ -553,6 +575,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unhandled_keyboard_event_called_;
   WebInputEvent::Type unhandled_keyboard_event_type_;
+
+  bool handle_wheel_event_;
+  bool handle_wheel_event_called_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -1150,7 +1175,31 @@ TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
   // Send the simulated response from the renderer back.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(delegate_->handle_wheel_event_called());
+  EXPECT_EQ(1, view_->unhandled_wheel_event_count());
   EXPECT_EQ(-5, view_->unhandled_wheel_event().deltaX);
+}
+
+TEST_F(RenderWidgetHostTest, HandleWheelEvent) {
+  // Indicate that we're going to handle this wheel event
+  delegate_->set_handle_wheel_event(true);
+
+  SimulateWheelEvent(-5, 0, 0, true);
+
+  // Make sure we sent the input event to the renderer.
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  InputMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // ensure the wheel event handler was invoked
+  EXPECT_TRUE(delegate_->handle_wheel_event_called());
+
+  // and that it suppressed the unhandled wheel event handler.
+  EXPECT_EQ(0, view_->unhandled_wheel_event_count());
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {

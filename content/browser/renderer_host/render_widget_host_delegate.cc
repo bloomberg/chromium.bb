@@ -12,7 +12,7 @@ bool RenderWidgetHostDelegate::PreHandleKeyboardEvent(
   return false;
 }
 
-bool RenderWidgetHostDelegate::PreHandleWheelEvent(
+bool RenderWidgetHostDelegate::HandleWheelEvent(
     const blink::WebMouseWheelEvent& event) {
   return false;
 }

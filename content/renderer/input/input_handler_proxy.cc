@@ -115,6 +115,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       // thread, so punt it to the main thread. http://crbug.com/236639
       return DID_NOT_HANDLE;
     }
+    if (wheel_event.modifiers & WebInputEvent::ControlKey) {
+      // Wheel events involving the control key never trigger scrolling, only
+      // event handlers.  Forward to the main thread.
+      return DID_NOT_HANDLE;
+    }
     cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
         gfx::Point(wheel_event.x, wheel_event.y), cc::InputHandler::Wheel);
     switch (scroll_status) {
