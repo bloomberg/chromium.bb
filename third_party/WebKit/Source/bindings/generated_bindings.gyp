@@ -44,7 +44,7 @@
   ],
 
   'variables': {
-    # For details, see: http://www.chromium.org/developers/web-idl-interfaces
+    # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
     #
     # Interface IDL files / Dependency IDL files
     # Interface IDL files: generate individual bindings (includes testing)
@@ -64,16 +64,21 @@
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
     ],
+    # Write list of main IDL files to a file, so that the command line doesn't
+    # exceed OS length limits.
+    'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
 
     # Static IDL files / Generated IDL files
     # Paths need to be passed separately for static and generated files, as
     # static files are listed in a temporary file (b/c too long for command
-    # line), but generated files must be passed at the command line, as they are
-    # not present at GYP time, when the temporary file is generated
+    # line), but generated files must be passed at the command line, as their
+    # paths are not fixed at GYP time, when the temporary file is generated,
+    # because their paths depend on the build directory, which varies.
     'static_idl_files': [
       '<@(static_interface_idl_files)',
       '<@(static_dependency_idl_files)',
     ],
+    'static_idl_files_list': '<|(static_idl_files_list.tmp <@(static_idl_files))',
     'generated_idl_files': [
       '<@(generated_interface_idl_files)',
       '<@(generated_dependency_idl_files)',
@@ -106,6 +111,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
       '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
+
 
     # Python source
     'jinja_module_files': [
@@ -152,6 +158,7 @@
       'templates/methods.cpp',
     ],
 
+
     'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
 
     'conditions': [
@@ -169,21 +176,18 @@
     ],
   },
 
-  'targets': [{
+  'targets': [
+################################################################################
+  {
     'target_name': 'global_constructors_idls',
     'type': 'none',
     'actions': [{
       'action_name': 'generate_global_constructors_idls',
-      'variables': {
-        # Write list of IDL files to a file, so that the command line doesn't
-        # exceed OS length limits.
-        # Only includes main IDL files (exclude dependencies and testing,
-        # which should not appear on global objects).
-        'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
-      },
       'inputs': [
         'scripts/generate_global_constructors.py',
         'scripts/utilities.py',
+        # Only includes main IDL files (exclude dependencies and testing,
+        # which should not appear on global objects).
         '<(main_interface_idl_files_list)',
         '<@(main_interface_idl_files)',
       ],
@@ -211,26 +215,21 @@
        'message': 'Generating IDL files for constructors on global objects',
       }]
   },
+################################################################################
   {
     'target_name': 'interfaces_info',
     'type': 'none',
     'dependencies': [
+      # Generated IDLs
       'global_constructors_idls',
       '../core/core_generated.gyp:generated_testing_idls',
     ],
     'actions': [{
       'action_name': 'compute_interfaces_info',
-      'variables': {
-        # Write list of static IDL files to a file, so that the command line
-        # doesn't exceed OS length limits.
-        # Generated IDL files cannot be included, as their path depends on the
-        # build directory, and must instead be passed as command line arguments.
-        'idl_files_list': '<|(idl_files_list.tmp <@(static_idl_files))',
-      },
       'inputs': [
         'scripts/compute_interfaces_info.py',
         'scripts/utilities.py',
-        '<(idl_files_list)',
+        '<(static_idl_files_list)',
         '<@(static_idl_files)',
         '<@(generated_idl_files)',
       ],
@@ -242,134 +241,137 @@
         'python',
         'scripts/compute_interfaces_info.py',
         '--idl-files-list',
-        '<(idl_files_list)',
+        '<(static_idl_files_list)',
         '--interfaces-info-file',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
         '--event-names-file',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
         '<@(write_file_only_if_changed)',
         '--',
+        # Generated files must be passed at command line
         '<@(generated_idl_files)',
       ],
       'message': 'Computing global information about IDL files, and generating list of Event interfaces',
       }]
-    },
-    {
-      # A separate pre-caching step is *required* to use bytecode caching in
-      # Jinja (which improves speed significantly), as the bytecode cache is
-      # not concurrency-safe on write; details in code_generator_v8.py.
-      'target_name': 'cached_jinja_templates',
-      'type': 'none',
-      'actions': [{
-        'action_name': 'cache_jinja_templates',
-        'inputs': [
-          '<@(jinja_module_files)',
-          'scripts/code_generator_v8.py',
-          '<@(code_generator_template_files)',
-        ],
-        'outputs': [
-          '<(bindings_output_dir)/cached_jinja_templates.stamp',  # Dummy to track dependency
-        ],
-        'action': [
-          'python',
-          'scripts/code_generator_v8.py',
-          '<(bindings_output_dir)',
-          '<(bindings_output_dir)/cached_jinja_templates.stamp',
-        ],
-        'message': 'Caching bytecode of Jinja templates',
-      }],
-    },
-    {
-      'target_name': 'individual_generated_bindings',
-      'type': 'none',
-      # The 'binding' rule generates .h files, so mark as hard_dependency, per:
-      # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
-      'hard_dependency': 1,
-      'dependencies': [
-        'interfaces_info',
-        'cached_jinja_templates',
-        '../core/core_generated.gyp:generated_testing_idls',
+  },
+################################################################################
+  {
+    # A separate pre-caching step is *required* to use bytecode caching in
+    # Jinja (which improves speed significantly), as the bytecode cache is
+    # not concurrency-safe on write; details in code_generator_v8.py.
+    'target_name': 'cached_jinja_templates',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'cache_jinja_templates',
+      'inputs': [
+        '<@(jinja_module_files)',
+        'scripts/code_generator_v8.py',
+        '<@(code_generator_template_files)',
       ],
-      'sources': [
-        '<@(interface_idl_files)',
+      'outputs': [
+        '<(bindings_output_dir)/cached_jinja_templates.stamp',  # Dummy to track dependency
       ],
-      'rules': [{
-        'rule_name': 'binding',
-        'extension': 'idl',
-        'msvs_external_rule': 1,
-        'inputs': [
-          '<@(idl_compiler_files)',
-          '<(bindings_output_dir)/cached_jinja_templates.stamp',
-          'IDLExtendedAttributes.txt',
-          # If the dependency structure or public interface info (e.g.,
-          # [ImplementedAs]) changes, we rebuild all files, since we're not
-          # computing dependencies file-by-file in the build.
-          # This data is generally stable.
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-          # Further, if any dependency (partial interface or implemented
-          # interface) changes, rebuild everything, since every IDL potentially
-          # depends on them, because we're not computing dependencies
-          # file-by-file.
-          # FIXME: This is too conservative, and causes excess rebuilds:
-          # compute this file-by-file.  http://crbug.com/341748
-          '<@(dependency_idl_files)',
-        ],
-        'outputs': [
-          '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).cpp',
-          '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).h',
-        ],
-        # sanitize-win-build-log.sed uses a regex which matches this command
-        # line (Python script + .idl file being processed).
-        # Update that regex if command line changes (other than changing flags)
-        'action': [
-          'python',
-          'scripts/idl_compiler.py',
-          '--output-dir',
-          '<(bindings_output_dir)',
-          '--idl-attributes-file',
-          'IDLExtendedAttributes.txt',
-          '--interfaces-info',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-          '<@(write_file_only_if_changed)',
-          '<(RULE_INPUT_PATH)',
-        ],
-        'message': 'Generating binding from <(RULE_INPUT_PATH)',
-      }],
-    },
-    {
-      'target_name': 'aggregate_generated_bindings',
-      'type': 'none',
-      'actions': [{
-        'action_name': 'generate_aggregate_generated_bindings',
-        'variables': {
-          # Write list of IDL files to a file, so that the command line doesn't
-          # exceed OS length limits.
-          'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
-          },
-        'inputs': [
-          'scripts/aggregate_generated_bindings.py',
-          '<(main_interface_idl_files_list)',
-        ],
-        'outputs': [
-          '<@(aggregate_generated_bindings_files)',
-        ],
-        'action': [
-          'python',
-          'scripts/aggregate_generated_bindings.py',
-          '<(main_interface_idl_files_list)',
-          '--',
-          '<@(aggregate_generated_bindings_files)',
-        ],
-        'message': 'Generating aggregate generated bindings files',
-      }],
-    },
-    {
-      'target_name': 'generated_bindings',
-      'type': 'none',
-      'dependencies': [
-        'aggregate_generated_bindings',
-        'individual_generated_bindings',
+      'action': [
+        'python',
+        'scripts/code_generator_v8.py',
+        '<(bindings_output_dir)',
+        '<(bindings_output_dir)/cached_jinja_templates.stamp',
       ],
-    },
-  ],
+      'message': 'Caching bytecode of Jinja templates',
+    }],
+  },
+################################################################################
+  {
+    'target_name': 'individual_generated_bindings',
+    'type': 'none',
+    # The 'binding' rule generates .h files, so mark as hard_dependency, per:
+    # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
+    'hard_dependency': 1,
+    'dependencies': [
+      'interfaces_info',
+      'cached_jinja_templates',
+      '../core/core_generated.gyp:generated_testing_idls',
+    ],
+    'sources': [
+      '<@(interface_idl_files)',
+    ],
+    'rules': [{
+      'rule_name': 'binding',
+      'extension': 'idl',
+      'msvs_external_rule': 1,
+      'inputs': [
+        '<@(idl_compiler_files)',
+        '<(bindings_output_dir)/cached_jinja_templates.stamp',
+        'IDLExtendedAttributes.txt',
+        # If the dependency structure or public interface info (e.g.,
+        # [ImplementedAs]) changes, we rebuild all files, since we're not
+        # computing dependencies file-by-file in the build.
+        # This data is generally stable.
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        # Further, if any dependency (partial interface or implemented
+        # interface) changes, rebuild everything, since every IDL potentially
+        # depends on them, because we're not computing dependencies
+        # file-by-file.
+        # FIXME: This is too conservative, and causes excess rebuilds:
+        # compute this file-by-file.  http://crbug.com/341748
+        '<@(dependency_idl_files)',
+      ],
+      'outputs': [
+        '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).cpp',
+        '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).h',
+      ],
+      # sanitize-win-build-log.sed uses a regex which matches this command
+      # line (Python script + .idl file being processed).
+      # Update that regex if command line changes (other than changing flags)
+      'action': [
+        'python',
+        'scripts/idl_compiler.py',
+        '--output-dir',
+        '<(bindings_output_dir)',
+        '--idl-attributes-file',
+        'IDLExtendedAttributes.txt',
+        '--interfaces-info',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        '<@(write_file_only_if_changed)',
+        '<(RULE_INPUT_PATH)',
+      ],
+      'message': 'Generating binding from <(RULE_INPUT_PATH)',
+    }],
+  },
+################################################################################
+  {
+    'target_name': 'aggregate_generated_bindings',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'generate_aggregate_generated_bindings',
+      'inputs': [
+        'scripts/aggregate_generated_bindings.py',
+        # Only includes main IDL files (exclude dependencies and testing,
+        # for which bindings are not included in aggregate bindings).
+        '<(main_interface_idl_files_list)',
+      ],
+      'outputs': [
+        '<@(aggregate_generated_bindings_files)',
+      ],
+      'action': [
+        'python',
+        'scripts/aggregate_generated_bindings.py',
+        '<(main_interface_idl_files_list)',
+        '--',
+        '<@(aggregate_generated_bindings_files)',
+      ],
+      'message': 'Generating aggregate generated bindings files',
+    }],
+  },
+################################################################################
+  {
+    'target_name': 'generated_bindings',
+    'type': 'none',
+    'dependencies': [
+      'aggregate_generated_bindings',
+      'individual_generated_bindings',
+    ],
+  },
+################################################################################
+  ],  # targets
 }
