@@ -2,9 +2,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 2.5.4 (2014-3-3)
 This release contains nine months worth of braille table improvements
-for example for UEB, en-us, Nemeth, Bulgarian, Slovenian and many
-more. Also there are fixes to the core for table path resolving and
-back-translation.
+for example for Danish, UEB, en-us, Nemeth, Bulgarian, Slovenian and
+many more. Also there are fixes to the core for table path resolving
+and back-translation.
 
 ** New features
    - Added function lou_registerTableResolver for plugging in a table
@@ -76,7 +76,8 @@ back-translation.
      both for the time being so that users can test and give feedback
      on which is most correct. Thanks to Him Prasad Gautam, and Mesar
      Hameed
-   - Much improved danish grade 1 and grade 2 6 and 8 dot braille, thanks to Bue Vester-Andersen and Mesar Hameed
+   - Much improved danish grade 1 and grade 2 6 and 8 dot braille,
+     thanks to Bue Vester-Andersen and Mesar Hameed
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now provided

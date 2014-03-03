@@ -19,9 +19,9 @@ Changes in this release
 -----------------------
 
   This release contains nine months worth of braille table improvements
-  for example for UEB, en-us, Nemeth, Bulgarian, Slovenian and many
-  more. Also there are fixes to the core for table path resolving and
-  back-translation.
+  for example for Danish, UEB, en-us, Nemeth, Bulgarian, Slovenian and
+  many more. Also there are fixes to the core for table path resolving
+  and back-translation.
 
 
 New features
@@ -50,6 +50,8 @@ Bug Fixes
 Braille Table Improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  - Much improved danish grade 1 and grade 2 6 and 8 dot braille,
+    thanks to Bue Vester-Andersen and Mesar Hameed
   - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some
     instances.
   - en-us-g2.ctb, en-ueb-g2.ctb: Fixes for that's, can't and s' thanks
