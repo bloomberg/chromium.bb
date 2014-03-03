@@ -40,9 +40,8 @@ void ResourceRequestInfo::AllocateForTesting(
           0,                                 // request_id
           render_frame_id,                   // render_frame_id
           resource_type == ResourceType::MAIN_FRAME,  // is_main_frame
-          0,                                 // frame_id
           false,                             // parent_is_main_frame
-          0,                                 // parent_frame_id
+          0,                                 // parent_render_frame_id
           resource_type,                     // resource_type
           PAGE_TRANSITION_LINK,              // transition_type
           false,                             // should_replace_current_entry
@@ -95,9 +94,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     int request_id,
     int render_frame_id,
     bool is_main_frame,
-    int64 frame_id,
     bool parent_is_main_frame,
-    int64 parent_frame_id,
+    int parent_render_frame_id,
     ResourceType::Type resource_type,
     PageTransition transition_type,
     bool should_replace_current_entry,
@@ -119,9 +117,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       request_id_(request_id),
       render_frame_id_(render_frame_id),
       is_main_frame_(is_main_frame),
-      frame_id_(frame_id),
       parent_is_main_frame_(parent_is_main_frame),
-      parent_frame_id_(parent_frame_id),
+      parent_render_frame_id_(parent_render_frame_id),
       should_replace_current_entry_(should_replace_current_entry),
       is_download_(is_download),
       is_stream_(is_stream),
@@ -169,16 +166,12 @@ bool ResourceRequestInfoImpl::IsMainFrame() const {
   return is_main_frame_;
 }
 
-int64 ResourceRequestInfoImpl::GetFrameID() const {
-  return frame_id_;
-}
-
 bool ResourceRequestInfoImpl::ParentIsMainFrame() const {
   return parent_is_main_frame_;
 }
 
-int64 ResourceRequestInfoImpl::GetParentFrameID() const {
-  return parent_frame_id_;
+int ResourceRequestInfoImpl::GetParentRenderFrameID() const {
+  return parent_render_frame_id_;
 }
 
 ResourceType::Type ResourceRequestInfoImpl::GetResourceType() const {
@@ -266,14 +259,13 @@ void ResourceRequestInfoImpl::UpdateForTransfer(
     int route_id,
     int origin_pid,
     int request_id,
-    int64 frame_id,
-    int64 parent_frame_id,
+    int parent_render_frame_id,
     base::WeakPtr<ResourceMessageFilter> filter) {
   child_id_ = child_id;
   route_id_ = route_id;
   origin_pid_ = origin_pid;
   request_id_ = request_id;
-  frame_id_ = frame_id;
+  parent_render_frame_id_ = parent_render_frame_id;
   filter_ = filter;
 }
 

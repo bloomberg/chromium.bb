@@ -132,9 +132,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     request_.visiblity_state = extra_data->visibility_state();
     request_.render_frame_id = extra_data->render_frame_id();
     request_.is_main_frame = extra_data->is_main_frame();
-    request_.frame_id = extra_data->frame_id();
     request_.parent_is_main_frame = extra_data->parent_is_main_frame();
-    request_.parent_frame_id = extra_data->parent_frame_id();
+    request_.parent_render_frame_id = extra_data->parent_render_frame_id();
     request_.allow_download = extra_data->allow_download();
     request_.transition_type = extra_data->transition_type();
     request_.should_replace_current_entry =
@@ -148,9 +147,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     request_.visiblity_state = blink::WebPageVisibilityStateVisible;
     request_.render_frame_id = MSG_ROUTING_NONE;
     request_.is_main_frame = false;
-    request_.frame_id = -1;
     request_.parent_is_main_frame = false;
-    request_.parent_frame_id = -1;
+    request_.parent_render_frame_id = -1;
     request_.allow_download = true;
     request_.transition_type = PAGE_TRANSITION_LINK;
     request_.should_replace_current_entry = false;

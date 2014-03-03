@@ -71,18 +71,15 @@ class ResourceRequestInfo {
   // just use GetRouteID above.
   virtual int GetRenderFrameID() const = 0;
 
-  // True if GetFrameID() represents a main frame in the RenderView.
+  // True if GetRenderFrameID() represents a main frame in the RenderView.
   virtual bool IsMainFrame() const = 0;
 
-  // Frame ID that sent this resource request. -1 if unknown / invalid.
-  virtual int64 GetFrameID() const = 0;
-
-  // True if GetParentFrameID() represents a main frame in the RenderView.
+  // True if GetParentRenderFrameID() represents a main frame in the RenderView.
   virtual bool ParentIsMainFrame() const = 0;
 
-  // Frame ID of parent frame of frame that sent this resource request.
+  // Routing ID of parent frame of frame that sent this resource request.
   // -1 if unknown / invalid.
-  virtual int64 GetParentFrameID() const = 0;
+  virtual int GetParentRenderFrameID() const = 0;
 
   // Returns the associated resource type.
   virtual ResourceType::Type GetResourceType() const = 0;

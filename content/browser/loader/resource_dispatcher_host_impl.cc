@@ -917,8 +917,8 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   // ResourceRequestInfo rather than caching it locally.  This lets us update
   // the info object when a transfer occurs.
   info->UpdateForTransfer(child_id, route_id, request_data.origin_pid,
-                          request_id, request_data.frame_id,
-                          request_data.parent_frame_id, filter_->GetWeakPtr());
+                          request_id, request_data.parent_render_frame_id,
+                          filter_->GetWeakPtr());
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
@@ -1096,9 +1096,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_id,
           request_data.render_frame_id,
           request_data.is_main_frame,
-          request_data.frame_id,
           request_data.parent_is_main_frame,
-          request_data.parent_frame_id,
+          request_data.parent_render_frame_id,
           request_data.resource_type,
           request_data.transition_type,
           request_data.should_replace_current_entry,
@@ -1294,9 +1293,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       request_id_,
       MSG_ROUTING_NONE,  // render_frame_id
       false,     // is_main_frame
-      -1,        // frame_id
       false,     // parent_is_main_frame
-      -1,        // parent_frame_id
+      -1,        // parent_render_frame_id
       ResourceType::SUB_RESOURCE,
       PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry

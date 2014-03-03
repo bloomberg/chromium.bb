@@ -43,7 +43,7 @@ struct CrossSiteResponseParams {
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
       PageTransition page_transition,
-      int64 frame_id,
+      int render_frame_id,
       bool should_replace_current_entry)
       : render_view_id(render_view_id),
         global_request_id(global_request_id),
@@ -51,7 +51,7 @@ struct CrossSiteResponseParams {
         transfer_url_chain(transfer_url_chain),
         referrer(referrer),
         page_transition(page_transition),
-        frame_id(frame_id),
+        render_frame_id(render_frame_id),
         should_replace_current_entry(should_replace_current_entry) {
   }
 
@@ -61,7 +61,7 @@ struct CrossSiteResponseParams {
   std::vector<GURL> transfer_url_chain;
   Referrer referrer;
   PageTransition page_transition;
-  int64 frame_id;
+  int render_frame_id;
   bool should_replace_current_entry;
 };
 
@@ -79,7 +79,7 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
     rvh->OnCrossSiteResponse(
         params.global_request_id, cross_site_transferring_request.Pass(),
         params.transfer_url_chain, params.referrer,
-        params.page_transition, params.frame_id,
+        params.page_transition, params.render_frame_id,
         params.should_replace_current_entry);
   } else if (leak_requests_for_testing_ && cross_site_transferring_request) {
     // Some unit tests expect requests to be leaked in this case, so they can
@@ -307,11 +307,11 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // occurred, plus the destination URL at the end.
   std::vector<GURL> transfer_url_chain;
   Referrer referrer;
-  int frame_id = -1;
+  int render_frame_id = -1;
   if (should_transfer) {
     transfer_url_chain = request()->url_chain();
     referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
-    frame_id = info->GetFrameID();
+    render_frame_id = info->GetRenderFrameID();
 
     appcache::AppCacheInterceptor::PrepareForCrossSiteTransfer(
         request(), global_id.child_id);
@@ -328,7 +328,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
                                   transfer_url_chain,
                                   referrer,
                                   info->GetPageTransition(),
-                                  frame_id,
+                                  render_frame_id,
                                   info->should_replace_current_entry())));
 }
 

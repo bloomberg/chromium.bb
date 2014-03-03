@@ -148,9 +148,8 @@ class ResourceSchedulerTest : public testing::Test {
         ++next_request_id_,                // request_id
         MSG_ROUTING_NONE,                  // render_frame_id
         false,                             // is_main_frame
-        0,                                 // frame_id
         false,                             // parent_is_main_frame
-        0,                                 // parent_frame_id
+        0,                                 // parent_render_frame_id
         ResourceType::SUB_RESOURCE,        // resource_type
         PAGE_TRANSITION_LINK,              // transition_type
         false,                             // should_replace_current_entry

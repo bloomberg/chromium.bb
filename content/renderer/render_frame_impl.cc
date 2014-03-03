@@ -856,7 +856,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,
     const blink::WebPluginParams& params) {
-  // TODO(creis): |frame| is different from |frame_| here.  This seems wrong.
+  DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
@@ -896,7 +896,7 @@ void RenderFrameImpl::OnChildFrameProcessGone() {
 blink::WebPlugin* RenderFrameImpl::createPlugin(
     blink::WebFrame* frame,
     const blink::WebPluginParams& params) {
-  // TODO(creis): |frame| is different from |frame_| here.  This seems wrong.
+  DCHECK_EQ(frame_, frame);
   blink::WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
@@ -1734,9 +1734,6 @@ void RenderFrameImpl::willSendRequest(
     should_replace_current_entry =
         navigation_state->should_replace_current_entry();
   }
-  // TODO(creis): Remove the second routing ID from the request, now that we
-  // use routing IDs instead of frame IDs.  (This is a viral change, so I'm
-  // splitting it into multiple CLs.)
   int parent_routing_id = frame->parent() ?
       FromWebFrame(frame->parent())->GetRoutingID() : -1;
   request.setExtraData(
@@ -1745,7 +1742,6 @@ void RenderFrameImpl::willSendRequest(
                            was_after_preconnect_request,
                            routing_id_,
                            (frame == top_frame),
-                           routing_id_,
                            GURL(frame->document().securityOrigin().toString()),
                            frame->parent() == top_frame,
                            parent_routing_id,

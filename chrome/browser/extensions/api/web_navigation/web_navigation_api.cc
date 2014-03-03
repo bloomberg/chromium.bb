@@ -591,7 +591,8 @@ void WebNavigationTabObserver::DidGetRedirectForResourceRequest(
       details.resource_type != ResourceType::SUB_FRAME) {
     return;
   }
-  FrameNavigationState::FrameID frame_id(details.frame_id, render_view_host);
+  FrameNavigationState::FrameID frame_id(details.render_frame_id,
+                                         render_view_host);
   navigation_state_.SetIsServerRedirected(frame_id);
 }
 

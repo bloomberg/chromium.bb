@@ -111,9 +111,8 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.appcache_host_id = appcache::kNoHostId;
   request.download_to_file = false;
   request.is_main_frame = true;
-  request.frame_id = 0;
   request.parent_is_main_frame = false;
-  request.parent_frame_id = -1;
+  request.parent_render_frame_id = -1;
   request.transition_type = PAGE_TRANSITION_LINK;
   request.allow_download = true;
   return request;

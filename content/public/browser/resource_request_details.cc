@@ -24,7 +24,7 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       socket_address(request->GetSocketAddress()) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   resource_type = info->GetResourceType();
-  frame_id = info->GetFrameID();
+  render_frame_id = info->GetRenderFrameID();
 
   // If request is from the worker process on behalf of a renderer, use
   // the renderer process id, since it consumes the notification response
@@ -33,9 +33,9 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   // of ssl state change (http://crbug.com/25357). For now, just notify
   // the first one (works for dedicated workers and shared workers with
   // a single process).
-  int render_frame_id;
+  int worker_render_frame_id;
   if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-          info->GetChildID(), &origin_child_id, &render_frame_id)) {
+          info->GetChildID(), &origin_child_id, &worker_render_frame_id)) {
     origin_child_id = info->GetChildID();
   }
 }

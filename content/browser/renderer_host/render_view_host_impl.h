@@ -328,6 +328,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // commit.  We should ensure that the old RenderViewHost runs its unload
   // handler and determine whether a transfer to a different RenderViewHost is
   // needed.
+  // TODO(creis): Change to render_frame_id, then move this to RenderFrameHost.
   void OnCrossSiteResponse(
       const GlobalRequestID& global_request_id,
       scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
