@@ -271,7 +271,9 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
         os.remove(filepath)
 
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
-    if isinstance(flavor, tuple) or 'arm' in flavor or 'pnacl' in flavor:
+    if 'bionic' in flavor:
+      src = os.path.join(untar_dir, flavor)
+    elif isinstance(flavor, tuple) or 'arm' in flavor or 'pnacl' in flavor:
       src = os.path.join(untar_dir)
     elif 'newlib' in flavor:
       src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
