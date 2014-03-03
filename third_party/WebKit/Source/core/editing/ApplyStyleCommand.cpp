@@ -812,13 +812,16 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
 
     for (size_t i = 0; i < runs.size(); i++) {
         removeConflictingInlineStyleFromRun(style, runs[i].start, runs[i].end, runs[i].pastEndNode);
-        runs[i].positionForStyleComputation = positionToComputeInlineStyleChange(runs[i].start, runs[i].dummyElement);
+        if (runs[i].startAndEndAreStillInDocument())
+            runs[i].positionForStyleComputation = positionToComputeInlineStyleChange(runs[i].start, runs[i].dummyElement);
     }
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    for (size_t i = 0; i < runs.size(); i++)
-        runs[i].change = StyleChange(style, runs[i].positionForStyleComputation);
+    for (size_t i = 0; i < runs.size(); i++) {
+        if (runs[i].positionForStyleComputation.isNotNull())
+            runs[i].change = StyleChange(style, runs[i].positionForStyleComputation);
+    }
 
     for (size_t i = 0; i < runs.size(); i++) {
         InlineRunToApplyStyle& run = runs[i];
