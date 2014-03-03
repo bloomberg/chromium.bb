@@ -32,17 +32,19 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
   // QuotaClient method overrides
   virtual ID id() const OVERRIDE;
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
-  virtual void GetOriginUsage(const GURL& origin_url,
-                              quota::StorageType type,
-                              const GetUsageCallback& callback) OVERRIDE;
+  CONTENT_EXPORT virtual void GetOriginUsage(const GURL& origin_url,
+                                             quota::StorageType type,
+                                             const GetUsageCallback& callback)
+      OVERRIDE;
   virtual void GetOriginsForType(quota::StorageType type,
                                  const GetOriginsCallback& callback) OVERRIDE;
   virtual void GetOriginsForHost(quota::StorageType type,
                                  const std::string& host,
                                  const GetOriginsCallback& callback) OVERRIDE;
-  virtual void DeleteOriginData(const GURL& origin,
-                                quota::StorageType type,
-                                const DeletionCallback& callback) OVERRIDE;
+  CONTENT_EXPORT virtual void DeleteOriginData(const GURL& origin,
+                                               quota::StorageType type,
+                                               const DeletionCallback& callback)
+      OVERRIDE;
   virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
 
  private:
