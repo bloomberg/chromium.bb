@@ -381,7 +381,6 @@ void ThreadProxy::SetNeedsAnimate() {
 
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsAnimate");
   main().animate_requested = true;
-  main().can_cancel_commit = false;
   SendCommitRequestToImplThreadIfNeeded();
 }
 
@@ -911,6 +910,17 @@ void ThreadProxy::BeginMainFrame(
 
   layer_tree_host()->WillCommit();
 
+  // Before calling animate, we set main().animate_requested to false. If it is
+  // true now, it means SetNeedAnimate was called again, but during a state when
+  // main().commit_request_sent_to_impl_thread = true. We need to force that
+  // call to happen again now so that the commit request is sent to the impl
+  // thread.
+  if (main().animate_requested) {
+    // Forces SetNeedsAnimate to consider posting a commit task.
+    main().animate_requested = false;
+    SetNeedsAnimate();
+  }
+
   if (!updated && can_cancel_this_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     bool did_handle = true;
@@ -926,18 +936,6 @@ void ThreadProxy::BeginMainFrame(
     layer_tree_host()->CommitComplete();
     layer_tree_host()->DidBeginMainFrame();
     return;
-  }
-
-  // Before calling animate, we set main().animate_requested to false. If it is
-  // true
-  // now, it means SetNeedAnimate was called again, but during a state when
-  // main().commit_request_sent_to_impl_thread = true. We need to force that
-  // call to
-  // happen again now so that the commit request is sent to the impl thread.
-  if (main().animate_requested) {
-    // Forces SetNeedsAnimate to consider posting a commit task.
-    main().animate_requested = false;
-    SetNeedsAnimate();
   }
 
   scoped_refptr<ContextProvider> offscreen_context_provider;
