@@ -1044,6 +1044,9 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (is_always_on_top_)
     state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"));
 
+  if (params.visible_on_all_workspaces)
+    state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_STICKY"));
+
   // Setting _NET_WM_STATE by sending a message to the root_window (with
   // SetWMSpecState) has no effect here since the window has not yet been
   // mapped. So we manually change the state.

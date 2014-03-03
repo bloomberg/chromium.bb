@@ -116,6 +116,7 @@ Widget::InitParams::InitParams()
       accept_events(true),
       can_activate(true),
       keep_on_top(false),
+      visible_on_all_workspaces(false),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
@@ -141,6 +142,7 @@ Widget::InitParams::InitParams(Type type)
       can_activate(type != TYPE_POPUP && type != TYPE_MENU &&
                    type != TYPE_DRAG),
       keep_on_top(type == TYPE_MENU || type == TYPE_DRAG),
+      visible_on_all_workspaces(false),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),

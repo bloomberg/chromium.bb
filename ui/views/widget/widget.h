@@ -182,6 +182,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     bool accept_events;
     bool can_activate;
     bool keep_on_top;
+    bool visible_on_all_workspaces;
     Ownership ownership;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
