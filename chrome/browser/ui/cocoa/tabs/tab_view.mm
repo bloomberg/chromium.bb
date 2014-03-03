@@ -4,8 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -14,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMFadeTruncatingTextFieldCell.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -70,6 +73,21 @@ const CGFloat kRapidCloseDist = 2.5;
   if (self) {
     controller_ = controller;
     closeButton_ = closeButton;
+
+    // Make a text field for the title, but don't add it as a subview.
+    // We will use the cell to draw the text directly into our layer,
+    // so that we can get font smoothing enabled.
+    titleView_.reset([[NSTextField alloc] init]);
+    [titleView_ setAutoresizingMask:NSViewWidthSizable];
+    base::scoped_nsobject<GTMFadeTruncatingTextFieldCell> labelCell(
+        [[GTMFadeTruncatingTextFieldCell alloc] initTextCell:@"Label"]);
+    [labelCell setControlSize:NSSmallControlSize];
+    CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
+    NSFont* font = [NSFont fontWithName:[[labelCell font] fontName]
+                                   size:fontSize];
+    [labelCell setFont:font];
+    [titleView_ setCell:labelCell];
+    titleViewCell_ = labelCell;
   }
   return self;
 }
@@ -436,9 +454,20 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  // Text, close button, and image are drawn by subviews.
+  // Close button and image are drawn by subviews.
   [self drawFill:dirtyRect];
   [self drawStroke:dirtyRect];
+
+  // We draw the title string directly instead of using a NSTextField subview.
+  // This is so that we can get font smoothing to work on earlier OS, and even
+  // when the tab background is a pattern image (when using themes).
+  if (![titleView_ isHidden]) {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+    NSGraphicsContext* context = [NSGraphicsContext currentContext];
+    CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
+    CGContextSetShouldSmoothFonts(cgContext, true);
+    [[titleView_ cell] drawWithFrame:[titleView_ frame] inView:self];
+  }
 }
 
 - (void)setFrameOrigin:(NSPoint)origin {
@@ -465,6 +494,49 @@ const CGFloat kRapidCloseDist = 2.5;
   if ([self window]) {
     [controller_ updateTitleColor];
   }
+}
+
+- (NSString*)title {
+  return [titleView_ stringValue];
+}
+
+- (void)setTitle:(NSString*)title {
+  [titleView_ setStringValue:title];
+
+  base::string16 title16 = base::SysNSStringToUTF16(title);
+  bool isRTL = base::i18n::GetFirstStrongCharacterDirection(title16) ==
+               base::i18n::RIGHT_TO_LEFT;
+  titleViewCell_.truncateMode = isRTL ? GTMFadeTruncatingHead
+                                      : GTMFadeTruncatingTail;
+
+  [self setNeedsDisplayInRect:[titleView_ frame]];
+}
+
+- (NSRect)titleFrame {
+  return [titleView_ frame];
+}
+
+- (void)setTitleFrame:(NSRect)titleFrame {
+  [titleView_ setFrame:titleFrame];
+  [self setNeedsDisplayInRect:titleFrame];
+}
+
+- (NSColor*)titleColor {
+  return [titleView_ textColor];
+}
+
+- (void)setTitleColor:(NSColor*)titleColor {
+  [titleView_ setTextColor:titleColor];
+  [self setNeedsDisplayInRect:[titleView_ frame]];
+}
+
+- (BOOL)titleHidden {
+  return [titleView_ isHidden];
+}
+
+- (void)setTitleHidden:(BOOL)titleHidden {
+  [titleView_ setHidden:titleHidden];
+  [self setNeedsDisplayInRect:[titleView_ frame]];
 }
 
 - (void)setState:(NSCellStateValue)state {

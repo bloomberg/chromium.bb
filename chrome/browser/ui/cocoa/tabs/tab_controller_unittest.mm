@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -187,7 +188,7 @@ class TabControllerTest : public CocoaTest {
     // Make sure the NSView's "isHidden" state jives with the "shouldShowXXX."
     EXPECT_TRUE([controller shouldShowIcon] ==
                 (!![controller iconView] && ![[controller iconView] isHidden]));
-    EXPECT_TRUE([controller mini] == [[controller titleView] isHidden]);
+    EXPECT_TRUE([controller mini] == [[controller tabView] titleHidden]);
     EXPECT_TRUE([controller shouldShowMediaIndicator] ==
                     ![[controller mediaIndicatorView] isHidden]);
     EXPECT_TRUE([controller shouldShowCloseButton] !=
@@ -196,7 +197,7 @@ class TabControllerTest : public CocoaTest {
     // Check positioning of elements with respect to each other, and that they
     // are fully within the tab frame.
     const NSRect tabFrame = [[controller view] frame];
-    const NSRect titleFrame = [[controller titleView] frame];
+    const NSRect titleFrame = [[controller tabView] titleFrame];
     if ([controller shouldShowIcon]) {
       const NSRect iconFrame = [[controller iconView] frame];
       EXPECT_LE(NSMinX(tabFrame), NSMinX(iconFrame));
@@ -435,13 +436,13 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   const NSRect originalTabFrame = [[controller view] frame];
   const NSRect originalIconFrame = [[controller iconView] frame];
   const NSRect originalCloseFrame = [[controller closeButton] frame];
-  const NSRect originalTitleFrame = [[controller titleView] frame];
+  const NSRect originalTitleFrame = [[controller tabView] titleFrame];
 
   // Sanity check the start state.
   EXPECT_FALSE([[controller iconView] isHidden]);
   EXPECT_FALSE([[controller closeButton] isHidden]);
   EXPECT_GT(NSWidth([[controller view] frame]),
-            NSWidth([[controller titleView] frame]));
+            NSWidth([[controller tabView] titleFrame]));
 
   // Resize the tab so that that the it shrinks.
   tabFrame.size.width = [TabController minTabWidth];
@@ -452,13 +453,13 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   EXPECT_TRUE([[controller iconView] isHidden]);
   EXPECT_TRUE([[controller closeButton] isHidden]);
   EXPECT_GT(NSWidth([[controller view] frame]),
-            NSWidth([[controller titleView] frame]));
+            NSWidth([[controller tabView] titleFrame]));
   EXPECT_EQ(LeftMargin(originalTabFrame, originalIconFrame),
             LeftMargin([[controller view] frame],
-                       [[controller titleView] frame]));
+                       [[controller tabView] titleFrame]));
   EXPECT_EQ(RightMargin(originalTabFrame, originalCloseFrame),
             RightMargin([[controller view] frame],
-                        [[controller titleView] frame]));
+                        [[controller tabView] titleFrame]));
 
   // Resize the tab so that that the it grows.
   tabFrame.size.width = static_cast<int>([TabController maxTabWidth] * 0.75);
@@ -469,13 +470,13 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   EXPECT_FALSE([[controller iconView] isHidden]);
   EXPECT_FALSE([[controller closeButton] isHidden]);
   EXPECT_GT(NSWidth([[controller view] frame]),
-            NSWidth([[controller titleView] frame]));
+            NSWidth([[controller tabView] titleFrame]));
   EXPECT_EQ(LeftMargin(originalTabFrame, originalTitleFrame),
             LeftMargin([[controller view] frame],
-                       [[controller titleView] frame]));
+                       [[controller tabView] titleFrame]));
   EXPECT_EQ(RightMargin(originalTabFrame, originalTitleFrame),
             RightMargin([[controller view] frame],
-                        [[controller titleView] frame]));
+                        [[controller tabView] titleFrame]));
 }
 
 // A comprehensive test of the layout and visibility of all elements (favicon,

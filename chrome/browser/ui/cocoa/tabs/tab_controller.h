@@ -20,7 +20,6 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
-@class GTMFadeTruncatingTextFieldCell;
 @class MediaIndicatorView;
 @class MenuController;
 namespace TabControllerInternal {
@@ -43,8 +42,6 @@ class MenuDelegate;
 @interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
   base::scoped_nsobject<NSView> iconView_;
-  base::scoped_nsobject<NSTextField> titleView_;
-  GTMFadeTruncatingTextFieldCell* titleViewCell_;  // weak
   base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
@@ -80,7 +77,6 @@ class MenuDelegate;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
 @property(assign, nonatomic) NSView* iconView;
-@property(readonly, nonatomic) NSTextField* titleView;
 @property(assign, nonatomic) MediaIndicatorView* mediaIndicatorView;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 

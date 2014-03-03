@@ -36,7 +36,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 }  // namespace tabs
 
-@class TabController, TabWindowController;
+@class TabController, TabWindowController, GTMFadeTruncatingTextFieldCell;
 
 // A view that handles the event tracking (clicking and dragging) for a tab
 // on the tab strip. Relies on an associated TabController to provide a
@@ -45,6 +45,9 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 @interface TabView : NSView {
  @private
   TabController* controller_;
+  base::scoped_nsobject<NSTextField> titleView_;
+  GTMFadeTruncatingTextFieldCell* titleViewCell_;  // weak
+
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
   HoverCloseButton* closeButton_;  // Weak.
@@ -78,6 +81,11 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   CGFloat maskCacheWidth_;
   CGFloat maskCacheScale_;
 }
+
+@property(retain, nonatomic) NSString* title;
+@property(assign, nonatomic) NSRect titleFrame;
+@property(retain, nonatomic) NSColor* titleColor;
+@property(assign, nonatomic) BOOL titleHidden;
 
 @property(assign, nonatomic) NSCellStateValue state;
 @property(assign, nonatomic) CGFloat hoverAlpha;
