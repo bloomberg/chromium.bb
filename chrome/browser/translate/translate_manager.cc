@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -239,7 +238,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   if (!prefs->GetBoolean(prefs::kEnableTranslate)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
-    const std::string& locale = g_browser_process->GetApplicationLocale();
+    const std::string& locale =
+        TranslateDownloadManager::GetInstance()->application_locale();
     TranslateBrowserMetrics::ReportLocalesOnDisabledByPrefs(locale);
     return;
   }
@@ -541,7 +541,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
   std::string ui_lang = TranslatePrefs::ConvertLangCodeForTranslation(
       TranslateDownloadManager::GetLanguageCode(
-          g_browser_process->GetApplicationLocale()));
+          TranslateDownloadManager::GetInstance()->application_locale()));
 
   if (TranslateDownloadManager::IsSupportedLanguage(ui_lang))
     return ui_lang;
