@@ -9,7 +9,7 @@ function test()
     var panel = WebInspector.panel("timeline");
     var model = panel._model;
     InspectorTest.assertTrue(!model._clientInitiatedRecording, "timeline is being recorded");
-    InspectorTest.assertTrue(!model.records.length, "timeline has already been recorded");
+    InspectorTest.assertTrue(!model.records().length, "timeline has already been recorded");
 
     WebInspector.showPanel("console");
     InspectorTest.runWhenPageLoads(step1);
@@ -18,7 +18,7 @@ function test()
     function step1()
     {
         InspectorTest.assertTrue(!model._clientInitiatedRecording, "timeline started recording");
-        InspectorTest.assertTrue(!model.records.length, "timeline has been recorded");
+        InspectorTest.assertTrue(!model.records().length, "timeline has been recorded");
 
         WebInspector.showPanel("timeline");
         InspectorTest.runWhenPageLoads(step2);
@@ -27,7 +27,7 @@ function test()
 
     function step2()
     {
-        InspectorTest.assertTrue(model.records.length, "timeline should have been recorded");
+        InspectorTest.assertTrue(model.records().length, "timeline should have been recorded");
         InspectorTest.assertTrue(!model._clientInitiatedRecording, "timeline recording should have finished");
         InspectorTest.completeTest();
     }
