@@ -71,10 +71,24 @@ enum ThreadAffinity {
     MainThreadOnly,
 };
 
-// By default all types are considered to be used on the main thread only.
+class Node;
+class CSSValue;
+
+template<typename T, bool derivesNodeOrCSSValue = WTF::IsSubclass<T, Node>::value || WTF::IsSubclass<T, CSSValue>::value > struct DefaultThreadingTrait;
+
+template<typename T>
+struct DefaultThreadingTrait<T, false> {
+    static const ThreadAffinity Affinity = AnyThread;
+};
+
+template<typename T>
+struct DefaultThreadingTrait<T, true> {
+    static const ThreadAffinity Affinity = MainThreadOnly;
+};
+
 template<typename T>
 struct ThreadingTrait {
-    static const ThreadAffinity Affinity = MainThreadOnly;
+    static const ThreadAffinity Affinity = DefaultThreadingTrait<T>::Affinity;
 };
 
 // Marks the specified class as being used from multiple threads. When
@@ -544,48 +558,6 @@ template<> class ThreadStateFor<AnyThread> {
 public:
     static ThreadState* state() { return ThreadState::current(); }
 };
-
-// FIXME: Experiment if the threading affinity really matters for performance.
-// FIXME: Move these macros and other related structures to a separate file.
-USED_FROM_MULTIPLE_THREADS(CloseEvent);
-USED_FROM_MULTIPLE_THREADS(Crypto);
-USED_FROM_MULTIPLE_THREADS(DOMParser);
-USED_FROM_MULTIPLE_THREADS(DOMURL);
-USED_FROM_MULTIPLE_THREADS(DeprecatedStorageQuota);
-USED_FROM_MULTIPLE_THREADS(ErrorEvent);
-USED_FROM_MULTIPLE_THREADS(Event);
-USED_FROM_MULTIPLE_THREADS(EventSource);
-USED_FROM_MULTIPLE_THREADS(EventTarget);
-USED_FROM_MULTIPLE_THREADS(IDBVersionChangeEvent);
-USED_FROM_MULTIPLE_THREADS(Key);
-USED_FROM_MULTIPLE_THREADS(KeyAlgorithm);
-USED_FROM_MULTIPLE_THREADS(KeyPair);
-USED_FROM_MULTIPLE_THREADS(MemoryInfo);
-USED_FROM_MULTIPLE_THREADS(MessageEvent);
-USED_FROM_MULTIPLE_THREADS(Notification);
-USED_FROM_MULTIPLE_THREADS(NotificationCenter);
-USED_FROM_MULTIPLE_THREADS(Performance);
-USED_FROM_MULTIPLE_THREADS(PerformanceEntry);
-USED_FROM_MULTIPLE_THREADS(PerformanceMark);
-USED_FROM_MULTIPLE_THREADS(PerformanceNavigation);
-USED_FROM_MULTIPLE_THREADS(PerformanceResourceTiming);
-USED_FROM_MULTIPLE_THREADS(PerformanceTiming);
-USED_FROM_MULTIPLE_THREADS(ProgressEvent);
-USED_FROM_MULTIPLE_THREADS(SubtleCrypto);
-USED_FROM_MULTIPLE_THREADS(TextDecoder);
-USED_FROM_MULTIPLE_THREADS(TextEncoder);
-USED_FROM_MULTIPLE_THREADS(UserTiming);
-USED_FROM_MULTIPLE_THREADS(WebKitNotification);
-USED_FROM_MULTIPLE_THREADS(WorkerCrypto);
-USED_FROM_MULTIPLE_THREADS(WorkerPerformance);
-USED_FROM_MULTIPLE_THREADS(XMLHttpRequest);
-USED_FROM_MULTIPLE_THREADS(XMLHttpRequestProgressEvent);
-USED_FROM_MULTIPLE_THREADS(XMLSerializer);
-USED_FROM_MULTIPLE_THREADS(XPathEvaluator);
-USED_FROM_MULTIPLE_THREADS(XPathExpression);
-USED_FROM_MULTIPLE_THREADS(XPathNSResolver);
-USED_FROM_MULTIPLE_THREADS(XPathResult);
-USED_FROM_MULTIPLE_THREADS(XSLTProcessor);
 
 }
 
