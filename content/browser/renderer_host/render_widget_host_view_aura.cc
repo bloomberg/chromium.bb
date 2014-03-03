@@ -3012,7 +3012,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   RenderViewHostDelegate* delegate = NULL;
-  if (popup_type_ == blink::WebPopupTypeNone && !is_fullscreen_)
+  if (host_->IsRenderView())
     delegate = RenderViewHost::From(host_)->GetDelegate();
 
   if (delegate && event->type() == ui::ET_GESTURE_BEGIN &&
