@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/rendering/RenderApplet.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAppletElement.h"
 
 namespace WebCore {
@@ -30,6 +31,7 @@ RenderApplet::RenderApplet(HTMLAppletElement* applet)
     : RenderEmbeddedObject(applet)
 {
     setInline(true);
+    UseCounter::count(document(), UseCounter::HTMLAppletElement);
 }
 
 RenderApplet::~RenderApplet()
