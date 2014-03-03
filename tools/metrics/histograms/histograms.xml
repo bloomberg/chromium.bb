@@ -27838,6 +27838,9 @@ other types of suffix sets.
   <int value="274" label="TextAutosizing"/>
   <int value="275" label="TextAutosizingLayout"/>
   <int value="276" label="HTMLAnchorElementPingAttribute"/>
+  <int value="277" label="JavascriptExhaustedMemory"/>
+  <int value="278" label="InsertAdjacentHTML"/>
+  <int value="279" label="SVGClassName"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
