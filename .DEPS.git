@@ -24,11 +24,11 @@ deps = {
     'third_party/valgrind':
         Var('git_url') + '/chromium/deps/valgrind.git@59886873b4b8258a8e0f098c23e1958e0d0c0a26',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@445903781d67876226456fe5e50aaf14c6fd9f3b',
+        Var('git_url') + '/chromium/src/tools/clang.git@2618c5daf13407001e5b586a92c6cfb9d8807b85',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@e540e6ab6291d4e63f262c8169ef0d0aae11dbec',
+        Var('git_url') + '/external/gyp.git@4bb2a15a7a77d11fb1d36b077c926b740f50c8da',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@e049ca695499949039a204cedefb3ec1f7689b72',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@e1fdb1a7650e53dacffdaf107ff12913fbeee652',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
