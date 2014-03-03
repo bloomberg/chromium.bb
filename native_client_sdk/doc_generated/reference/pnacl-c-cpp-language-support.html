@@ -22,12 +22,12 @@
 <li><a class="reference internal" href="#inline-assembly" id="id11">Inline Assembly</a></li>
 <li><a class="reference internal" href="#undefined-behavior" id="id12">Undefined Behavior</a></li>
 <li><a class="reference internal" href="#floating-point" id="id13">Floating-Point</a></li>
-<li><p class="first"><a class="reference internal" href="#future-directions" id="id14">Future Directions</a></p>
+<li><a class="reference internal" href="#computed-goto" id="id14">Computed <code>goto</code></a></li>
+<li><p class="first"><a class="reference internal" href="#future-directions" id="id15">Future Directions</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#simd" id="id15">SIMD</a></li>
-<li><a class="reference internal" href="#inter-process-communication" id="id16">Inter-Process Communication</a></li>
-<li><a class="reference internal" href="#posix-style-signal-handling" id="id17">POSIX-style Signal Handling</a></li>
-<li><a class="reference internal" href="#computed-goto" id="id18">Computed <code>goto</code></a></li>
+<li><a class="reference internal" href="#simd" id="id16">SIMD</a></li>
+<li><a class="reference internal" href="#inter-process-communication" id="id17">Inter-Process Communication</a></li>
+<li><a class="reference internal" href="#posix-style-signal-handling" id="id18">POSIX-style Signal Handling</a></li>
 </ul>
 </li>
 </ul>
@@ -205,6 +205,16 @@ in the <em>pexe</em>.</li>
 </ul>
 </li>
 </ul>
+</section><section id="computed-goto">
+<h2 id="computed-goto">Computed <code>goto</code></h2>
+<p>PNaCl supports computed <code>goto</code>, a non-standard GCC extension to C used
+by some interpreters, by lowering them to <code>switch</code> statements. The
+resulting use of <code>switch</code> might not be as fast as the original
+indirect branches. If you are compiling a program that has a
+compile-time option for using computed <code>goto</code>, it&#8217;s possible that the
+program will run faster with the option turned off (e.g., if the program
+does extra work to take advantage of computed <code>goto</code>).</p>
+<p>NaCl supports computed <code>goto</code> without any transformation.</p>
 </section><section id="future-directions">
 <h2 id="future-directions">Future Directions</h2>
 <section id="simd">
@@ -243,11 +253,6 @@ or suspension of threads.</p>
 <p>If PNaCl were to support either of these, the interaction of
 <code>volatile</code> and atomics with same-thread signal handling would need
 to be carefully detailed.</p>
-</section><section id="computed-goto">
-<h3 id="computed-goto">Computed <code>goto</code></h3>
-<p>PNaCl currently doesn&#8217;t support computed <code>goto</code>, a non-standard
-extension to C used by some interpreters.</p>
-<p>NaCl supports computed <code>goto</code>.</p>
 </section></section></section>
 
 {{/partials.standard_nacl_article}}

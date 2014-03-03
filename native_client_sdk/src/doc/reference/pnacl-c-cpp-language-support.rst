@@ -225,6 +225,19 @@ mostly IEEE-754 compliant. There are a few caveats:
     currently doesn't, use hardware support if fast-math were provided
     in the *pexe*.
 
+Computed ``goto``
+=================
+
+PNaCl supports computed ``goto``, a non-standard GCC extension to C used
+by some interpreters, by lowering them to ``switch`` statements. The
+resulting use of ``switch`` might not be as fast as the original
+indirect branches. If you are compiling a program that has a
+compile-time option for using computed ``goto``, it's possible that the
+program will run faster with the option turned off (e.g., if the program
+does extra work to take advantage of computed ``goto``).
+
+NaCl supports computed ``goto`` without any transformation.
+
 Future Directions
 =================
 
@@ -273,11 +286,3 @@ POSIX-style signal handling really consists of two different features:
 If PNaCl were to support either of these, the interaction of
 ``volatile`` and atomics with same-thread signal handling would need
 to be carefully detailed.
-
-Computed ``goto``
------------------
-
-PNaCl currently doesn't support computed ``goto``, a non-standard
-extension to C used by some interpreters.
-
-NaCl supports computed ``goto``.
