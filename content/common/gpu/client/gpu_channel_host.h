@@ -36,6 +36,7 @@ struct GPUCreateCommandBufferConfig;
 namespace base {
 class MessageLoop;
 class MessageLoopProxy;
+class WaitableEvent;
 }
 
 namespace IPC {
@@ -63,7 +64,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual bool IsMainThread() = 0;
   virtual base::MessageLoop* GetMainLoop() = 0;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
-  virtual base::WaitableEvent* GetShutDownEvent() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
   virtual int32 CreateViewCommandBuffer(
       int32 surface_id, const GPUCreateCommandBufferConfig& init_params) = 0;
@@ -89,7 +89,8 @@ class GpuChannelHost : public IPC::Sender,
   static scoped_refptr<GpuChannelHost> Create(
       GpuChannelHostFactory* factory,
       const gpu::GPUInfo& gpu_info,
-      const IPC::ChannelHandle& channel_handle);
+      const IPC::ChannelHandle& channel_handle,
+      base::WaitableEvent* shutdown_event);
 
   // Returns true if |handle| is a valid GpuMemoryBuffer handle that
   // can be shared to the GPU process.
@@ -162,7 +163,8 @@ class GpuChannelHost : public IPC::Sender,
   GpuChannelHost(GpuChannelHostFactory* factory,
                  const gpu::GPUInfo& gpu_info);
   virtual ~GpuChannelHost();
-  void Connect(const IPC::ChannelHandle& channel_handle);
+  void Connect(const IPC::ChannelHandle& channel_handle,
+               base::WaitableEvent* shutdown_event);
 
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between

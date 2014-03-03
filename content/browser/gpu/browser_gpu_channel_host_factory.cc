@@ -183,10 +183,6 @@ BrowserGpuChannelHostFactory::GetIOLoopProxy() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
-base::WaitableEvent* BrowserGpuChannelHostFactory::GetShutDownEvent() {
-  return shutdown_event_.get();
-}
-
 scoped_ptr<base::SharedMemory>
 BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
   scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
@@ -360,7 +356,8 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
   gpu_channel_ = GpuChannelHost::Create(this,
                                         pending_request_->gpu_info(),
-                                        pending_request_->channel_handle());
+                                        pending_request_->channel_handle(),
+                                        shutdown_event_.get());
   gpu_host_id_ = pending_request_->gpu_host_id();
   pending_request_ = NULL;
 

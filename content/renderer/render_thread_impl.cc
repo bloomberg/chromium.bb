@@ -338,7 +338,6 @@ void RenderThreadImpl::Init() {
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   idle_notifications_to_skip_ = 0;
   layout_test_mode_ = false;
-  shutdown_event_ = NULL;
 
   appcache_dispatcher_.reset(
       new AppCacheDispatcher(Get(), new AppCacheFrontendImpl()));
@@ -1052,10 +1051,6 @@ scoped_refptr<base::MessageLoopProxy> RenderThreadImpl::GetIOLoopProxy() {
   return io_message_loop_proxy_;
 }
 
-base::WaitableEvent* RenderThreadImpl::GetShutDownEvent() {
-  return shutdown_event_;
-}
-
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     size_t size) {
   return scoped_ptr<base::SharedMemory>(
@@ -1230,9 +1225,10 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   // Cache some variables that are needed on the compositor thread for our
   // implementation of GpuChannelHostFactory.
   io_message_loop_proxy_ = ChildProcess::current()->io_message_loop_proxy();
-  shutdown_event_ = ChildProcess::current()->GetShutDownEvent();
 
-  gpu_channel_ = GpuChannelHost::Create(this, gpu_info, channel_handle);
+  gpu_channel_ = GpuChannelHost::Create(
+      this, gpu_info, channel_handle,
+      ChildProcess::current()->GetShutDownEvent());
   return gpu_channel_.get();
 }
 

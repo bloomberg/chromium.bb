@@ -35,11 +35,11 @@ GpuListenerInfo::~GpuListenerInfo() {}
 scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     GpuChannelHostFactory* factory,
     const gpu::GPUInfo& gpu_info,
-    const IPC::ChannelHandle& channel_handle) {
+    const IPC::ChannelHandle& channel_handle,
+    base::WaitableEvent* shutdown_event) {
   DCHECK(factory->IsMainThread());
-  scoped_refptr<GpuChannelHost> host = new GpuChannelHost(
-      factory, gpu_info);
-  host->Connect(channel_handle);
+  scoped_refptr<GpuChannelHost> host = new GpuChannelHost(factory, gpu_info);
+  host->Connect(channel_handle, shutdown_event);
   return host;
 }
 
@@ -65,7 +65,8 @@ GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory,
   next_gpu_memory_buffer_id_.GetNext();
 }
 
-void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle) {
+void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
+                             base::WaitableEvent* shutdown_event) {
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
   scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
@@ -74,10 +75,9 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle) {
                                       NULL,
                                       io_loop.get(),
                                       true,
-                                      factory_->GetShutDownEvent()));
+                                      shutdown_event));
 
-  sync_filter_ = new IPC::SyncMessageFilter(
-      factory_->GetShutDownEvent());
+  sync_filter_ = new IPC::SyncMessageFilter(shutdown_event);
 
   channel_->AddFilter(sync_filter_.get());
 

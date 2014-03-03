@@ -358,7 +358,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual bool IsMainThread() OVERRIDE;
   virtual base::MessageLoop* GetMainLoop() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
-  virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) OVERRIDE;
   virtual int32 CreateViewCommandBuffer(
@@ -462,7 +461,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Cache of variables that are needed on the compositor thread by
   // GpuChannelHostFactory methods.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-  base::WaitableEvent* shutdown_event_;
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;
