@@ -1,0 +1,90 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x190
+  RenderBlock {HTML} at (0,0) size 800x190.16
+    RenderBody {BODY} at (8,16) size 784x166.16
+      RenderBlock {P} at (0,0) size 784x18
+        RenderText {#text} at (0,0) size 753x18
+          text run at (0,0) width 753: "Test case to check that absolutely positioned text inside table cells with 'relative' positioning are rendered inside the cells"
+      RenderBlock {H1} at (0,34) size 784x18
+        RenderText {#text} at (0,0) size 361x18
+          text run at (0,0) width 361: "Checking different alignments for Left-To-Right text:"
+      RenderTable {TABLE} at (0,62.72) size 614x32
+        RenderTableSection {TBODY} at (0,0) size 614x32
+          RenderTableRow {TR} at (0,2) size 614x28
+      RenderBlock {H1} at (0,105.44) size 784x18
+        RenderText {#text} at (0,0) size 361x18
+          text run at (0,0) width 361: "Checking different alignments for Right-To-Left text:"
+      RenderTable {TABLE} at (0,134.16) size 614x32
+        RenderTableSection {TBODY} at (0,0) size 614x32
+          RenderTableRow {TR} at (0,2) size 614x28
+layer at (10,81) size 100x28
+  RenderTableCell {TD} at (2,2) size 100x28 [bgcolor=#EEAADD] [r=0 c=0 rs=1 cs=1]
+    RenderInline {SPAN} at (0,0) size 59x18
+      RenderText {#text} at (0,5) size 59x18
+        text run at (0,5) width 59: "static text"
+layer at (112,81) size 100x28
+  RenderTableCell {TD} at (104,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=1 rs=1 cs=1]
+layer at (112,88) size 27x18
+  RenderBlock (positioned) {SPAN} at (0,-2) size 27x18
+    RenderText {#text} at (0,0) size 27x18
+      text run at (0,0) width 27: "One"
+layer at (214,81) size 100x28
+  RenderTableCell {TD} at (206,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=2 rs=1 cs=1]
+layer at (284,88) size 30x18
+  RenderBlock (positioned) {SPAN} at (70,-2) size 30x18
+    RenderText {#text} at (0,0) size 30x18
+      text run at (0,0) width 30: "Two"
+layer at (316,81) size 100x28
+  RenderTableCell {TD} at (308,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=3 rs=1 cs=1]
+layer at (366,88) size 37x18
+  RenderBlock (positioned) {SPAN} at (50,-2) size 37x18
+    RenderText {#text} at (0,0) size 37x18
+      text run at (0,0) width 37: "Three"
+layer at (418,81) size 100x28
+  RenderTableCell {TD} at (410,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=4 rs=1 cs=1]
+layer at (418,88) size 30x18
+  RenderBlock (positioned) {SPAN} at (0,-2) size 30x18
+    RenderText {#text} at (0,0) size 30x18
+      text run at (0,0) width 30: "Four"
+layer at (520,81) size 100x28
+  RenderTableCell {TD} at (512,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=5 rs=1 cs=1]
+layer at (592,88) size 28x18
+  RenderBlock (positioned) {SPAN} at (72,-2) size 28x18
+    RenderText {#text} at (0,0) size 28x18
+      text run at (0,0) width 28: "Five"
+layer at (520,152) size 100x28
+  RenderTableCell {TD} at (512,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=0 rs=1 cs=1]
+layer at (520,159) size 27x18
+  RenderBlock (positioned) {SPAN} at (0,-2) size 27x18
+    RenderText {#text} at (0,0) size 27x18
+      text run at (0,0) width 27: "One"
+layer at (418,152) size 100x28
+  RenderTableCell {TD} at (410,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=1 rs=1 cs=1]
+layer at (488,159) size 30x18
+  RenderBlock (positioned) {SPAN} at (70,-2) size 30x18
+    RenderText {#text} at (0,0) size 30x18
+      text run at (0,0) width 30: "Two"
+layer at (316,152) size 100x28
+  RenderTableCell {TD} at (308,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=2 rs=1 cs=1]
+layer at (329,159) size 37x18
+  RenderBlock (positioned) {SPAN} at (13,-2) size 37x18
+    RenderText {#text} at (0,0) size 37x18
+      text run at (0,0) width 37: "Three"
+layer at (214,152) size 100x28
+  RenderTableCell {TD} at (206,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=3 rs=1 cs=1]
+layer at (284,159) size 30x18
+  RenderBlock (positioned) {SPAN} at (70,-2) size 30x18
+    RenderText {#text} at (0,0) size 30x18
+      text run at (0,0) width 30: "Four"
+layer at (112,152) size 100x28
+  RenderTableCell {TD} at (104,11) size 100x10 [bgcolor=#DDEEAA] [r=0 c=4 rs=1 cs=1]
+layer at (112,159) size 28x18
+  RenderBlock (positioned) {SPAN} at (0,-2) size 28x18
+    RenderText {#text} at (0,0) size 28x18
+      text run at (0,0) width 28: "Five"
+layer at (10,152) size 100x28
+  RenderTableCell {TD} at (2,2) size 100x28 [bgcolor=#EEAADD] [r=0 c=5 rs=1 cs=1]
+    RenderInline {SPAN} at (0,0) size 59x18
+      RenderText {#text} at (41,5) size 59x18
+        text run at (41,5) width 59: "static text"
