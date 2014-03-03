@@ -50,7 +50,8 @@ public:
     typedef void (*TraceEventCallback)(char phase, const unsigned char*, const char* name, unsigned long long id,
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
         unsigned char flags, double timestamp);
-    virtual void setTraceEventCallback(TraceEventCallback) { }
+    virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) { }
+    virtual void resetTraceEventCallback() { }
 
     virtual void startGPUEventsRecording() { }
     virtual void stopGPUEventsRecording() { }

@@ -100,10 +100,12 @@ void TraceEventDispatcher::processBackgroundEvents()
 
 void TraceEventDispatcher::innerAddListener(const char* name, char phase, TraceEventTargetBase* instance, TraceEventHandlerMethod method, InspectorClient* client)
 {
+    static const char CategoryFilter[] = "devtools,webkit";
+
     ASSERT(isMainThread());
     MutexLocker locker(m_mutex);
     if (m_handlers.isEmpty())
-        client->setTraceEventCallback(dispatchEventOnAnyThread);
+        client->setTraceEventCallback(CategoryFilter, dispatchEventOnAnyThread);
     HandlersMap::iterator it = m_handlers.find(std::make_pair(name, phase));
     if (it == m_handlers.end())
         m_handlers.add(std::make_pair(name, phase), Vector<BoundTraceEventHandler>()).storedValue->value.append(BoundTraceEventHandler(instance, method));
@@ -133,7 +135,7 @@ void TraceEventDispatcher::removeAllListeners(TraceEventTargetBase* instance, In
         m_handlers.swap(remainingHandlers);
     }
     if (m_handlers.isEmpty())
-        client->setTraceEventCallback(0);
+        client->resetTraceEventCallback();
 }
 
 size_t TraceEventDispatcher::TraceEvent::findParameter(const char* name) const

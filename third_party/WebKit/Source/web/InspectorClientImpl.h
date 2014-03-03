@@ -74,7 +74,8 @@ public:
     virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&) OVERRIDE;
     virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&) OVERRIDE;
 
-    virtual void setTraceEventCallback(TraceEventCallback) OVERRIDE;
+    virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) OVERRIDE;
+    virtual void resetTraceEventCallback() OVERRIDE;
 
     virtual void startGPUEventsRecording() OVERRIDE;
     virtual void stopGPUEventsRecording() OVERRIDE;

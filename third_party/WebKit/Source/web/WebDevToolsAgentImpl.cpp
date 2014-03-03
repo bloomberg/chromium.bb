@@ -466,9 +466,14 @@ void WebDevToolsAgentImpl::dumpUncountedAllocatedObjects(const HashMap<const voi
     m_client->dumpUncountedAllocatedObjects(&provider);
 }
 
-void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
+void WebDevToolsAgentImpl::setTraceEventCallback(const String& categoryFilter, TraceEventCallback callback)
 {
-    m_client->setTraceEventCallback(callback);
+    m_client->setTraceEventCallback(categoryFilter, callback);
+}
+
+void WebDevToolsAgentImpl::resetTraceEventCallback()
+{
+    m_client->resetTraceEventCallback();
 }
 
 void WebDevToolsAgentImpl::startGPUEventsRecording()

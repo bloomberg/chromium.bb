@@ -160,10 +160,16 @@ void InspectorClientImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
         agent->dispatchMouseEvent(event);
 }
 
-void InspectorClientImpl::setTraceEventCallback(TraceEventCallback callback)
+void InspectorClientImpl::setTraceEventCallback(const String& categoryFilter, TraceEventCallback callback)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->setTraceEventCallback(callback);
+        agent->setTraceEventCallback(categoryFilter, callback);
+}
+
+void InspectorClientImpl::resetTraceEventCallback()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->resetTraceEventCallback();
 }
 
 void InspectorClientImpl::startGPUEventsRecording()
