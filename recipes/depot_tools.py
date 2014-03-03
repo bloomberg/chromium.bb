@@ -26,7 +26,7 @@ class DepotTools(recipe_util.Recipe):
       'solutions': [solution],
       'svn_url': 'svn://svn.chromium.org/chrome',
       'svn_branch': 'trunk/tools/depot_tools',
-      'svn_ref': 'git-svn',
+      'svn_ref': 'master',
     }
     if props.get('submodule_git_svn_spec'):
       spec['submodule_git_svn_spec'] = props['submodule_git_svn_spec']

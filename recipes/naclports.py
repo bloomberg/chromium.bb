@@ -26,7 +26,7 @@ class Naclports(recipe_util.Recipe):
       'solutions': [solution],
       'svn_url': 'https://naclports.googlecode.com/svn',
       'svn_branch': 'trunk/src',
-      'svn_ref': 'git-svn',
+      'svn_ref': 'master',
     }
     if props.get('submodule_git_svn_spec'):
       spec['submodule_git_svn_spec'] = props['submodule_git_svn_spec']
