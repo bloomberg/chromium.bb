@@ -20,6 +20,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
@@ -313,5 +314,64 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
                 controller->GetPendingEntry())->frame_tree_node_id());
 }
 
+// Observer class to track the creation of RenderFrameHost objects. It is used
+// in subsequent tests.
+class RenderFrameCreatedObserver : public WebContentsObserver {
+ public:
+  RenderFrameCreatedObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()),
+        last_rfh_(NULL) {
+  }
+
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE {
+    LOG(ERROR) << "RFCreated: " << render_frame_host;
+    last_rfh_ = render_frame_host;
+  }
+
+  RenderFrameHost* last_rfh() const { return last_rfh_; }
+
+ private:
+  RenderFrameHost* last_rfh_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameCreatedObserver);
+};
+
+// Test that creation of new RenderFrameHost objects sends the correct object
+// to the WebContentObservers. See http://crbug.com/347339.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       RenderFrameCreatedCorrectProcessForObservers) {
+  std::string foo_com("foo.com");
+  GURL::Replacements replace_host;
+  net::HostPortPair foo_host_port;
+  GURL cross_site_url;
+
+  // Setup the server to allow serving separate sites, so we can perform
+  // cross-process navigation.
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  foo_host_port = test_server()->host_port_pair();
+  foo_host_port.set_host(foo_com);
+
+  GURL initial_url(test_server()->GetURL("/title1.html"));
+
+  cross_site_url = test_server()->GetURL("/title2.html");
+  replace_host.SetHostStr(foo_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+
+  // Navigate to the initial URL and capture the RenderFrameHost for later
+  // comparison.
+  NavigateToURL(shell(), initial_url);
+  RenderFrameHost* orig_rfh = shell()->web_contents()->GetMainFrame();
+
+  // Install the observer and navigate cross-site.
+  RenderFrameCreatedObserver observer(shell());
+  NavigateToURL(shell(), cross_site_url);
+
+  // The observer should've seen a RenderFrameCreated call for the new frame
+  // and not the old one.
+  EXPECT_NE(observer.last_rfh(), orig_rfh);
+  EXPECT_EQ(observer.last_rfh(), shell()->web_contents()->GetMainFrame());
+}
 
 }  // namespace content
