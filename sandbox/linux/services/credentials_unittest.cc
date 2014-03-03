@@ -112,11 +112,12 @@ SANDBOX_TEST(Credentials, GetCurrentCapString) {
 SANDBOX_TEST(Credentials, MoveToNewUserNS) {
   Credentials creds;
   creds.DropAllCapabilities();
-  bool userns_supported = creds.MoveToNewUserNS();
-  fprintf(stdout, "Unprivileged CLONE_NEWUSER supported: %s\n",
-          userns_supported ? "true." : "false.");
+  bool moved_to_new_ns = creds.MoveToNewUserNS();
+  fprintf(stdout,
+          "Unprivileged CLONE_NEWUSER supported: %s\n",
+          moved_to_new_ns ? "true." : "false.");
   fflush(stdout);
-  if (!userns_supported) {
+  if (!moved_to_new_ns) {
     fprintf(stdout, "This kernel does not support unprivileged namespaces. "
             "USERNS tests will succeed without running.\n");
     fflush(stdout);
@@ -125,6 +126,14 @@ SANDBOX_TEST(Credentials, MoveToNewUserNS) {
   CHECK(creds.HasAnyCapability());
   creds.DropAllCapabilities();
   CHECK(!creds.HasAnyCapability());
+}
+
+SANDBOX_TEST(Credentials, SupportsUserNS) {
+  Credentials creds;
+  creds.DropAllCapabilities();
+  bool user_ns_supported = Credentials::SupportsNewUserNS();
+  bool moved_to_new_ns = creds.MoveToNewUserNS();
+  CHECK_EQ(user_ns_supported, moved_to_new_ns);
 }
 
 SANDBOX_TEST(Credentials, UidIsPreserved) {
@@ -207,6 +216,7 @@ SANDBOX_TEST(Credentials, CannotRegainPrivileges) {
 
   // The kernel should now prevent us from regaining capabilities because we
   // are in a chroot.
+  CHECK(!Credentials::SupportsNewUserNS());
   CHECK(!creds.MoveToNewUserNS());
 }
 

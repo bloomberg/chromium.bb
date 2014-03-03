@@ -7,20 +7,27 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/capability.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/template_util.h"
+#include "base/third_party/valgrind/valgrind.h"
 #include "base/threading/thread.h"
 
 namespace {
+
+bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
 struct CapFreeDeleter {
   inline void operator()(cap_t cap) const {
@@ -146,6 +153,16 @@ bool ChrootToSafeEmptyDir() {
   return is_chrooted;
 }
 
+// CHECK() that an attempt to move to a new user namespace raised an expected
+// errno.
+void CheckCloneNewUserErrno(int error) {
+  // EPERM can happen if already in a chroot. EUSERS if too many nested
+  // namespaces are used. EINVAL for kernels that don't support the feature.
+  // Valgrind will ENOSYS unshare().
+  PCHECK(error == EPERM || error == EUSERS || error == EINVAL ||
+         error == ENOSYS);
+}
+
 }  // namespace.
 
 namespace sandbox {
@@ -231,6 +248,37 @@ scoped_ptr<std::string> Credentials::GetCurrentCapString() const {
   return scoped_ptr<std::string> (new std::string(cap_text.get()));
 }
 
+// static
+bool Credentials::SupportsNewUserNS() {
+  // Valgrind will let clone(2) pass-through, but doesn't support unshare(),
+  // so always consider UserNS unsupported there.
+  if (IsRunningOnValgrind()) {
+    return false;
+  }
+
+  // This is roughly a fork().
+  const pid_t pid = syscall(__NR_clone, CLONE_NEWUSER | SIGCHLD, 0, 0, 0);
+
+  if (pid == -1) {
+    CheckCloneNewUserErrno(errno);
+    return false;
+  }
+
+  // The parent process could have had threads. In the child, these threads
+  // have disappeared. Make sure to not do anything in the child, as this is a
+  // fragile execution environment.
+  if (pid == 0) {
+    _exit(0);
+  }
+
+  // Always reap the child.
+  siginfo_t infop;
+  PCHECK(0 == HANDLE_EINTR(waitid(P_PID, pid, &infop, WEXITED)));
+
+  // clone(2) succeeded, we can use CLONE_NEWUSER.
+  return true;
+}
+
 bool Credentials::MoveToNewUserNS() {
   uid_t uid;
   gid_t gid;
@@ -241,16 +289,14 @@ bool Credentials::MoveToNewUserNS() {
     return false;
   }
   int ret = unshare(CLONE_NEWUSER);
-  // EPERM can happen if already in a chroot. EUSERS if too many nested
-  // namespaces are used. EINVAL for kernels that don't support the feature.
-  // Valgrind will ENOSYS unshare().
-  PCHECK(!ret || errno == EPERM || errno == EUSERS || errno == EINVAL ||
-         errno == ENOSYS);
   if (ret) {
+    const int unshare_errno = errno;
     VLOG(1) << "Looks like unprivileged CLONE_NEWUSER may not be available "
             << "on this kernel.";
+    CheckCloneNewUserErrno(unshare_errno);
     return false;
   }
+
   // The current {r,e,s}{u,g}id is now an overflow id (c.f.
   // /proc/sys/kernel/overflowuid). Setup the uid and gid maps.
   DCHECK(GetRESIds(NULL, NULL));
