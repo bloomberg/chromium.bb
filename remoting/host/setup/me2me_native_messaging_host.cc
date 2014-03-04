@@ -71,11 +71,13 @@ namespace remoting {
 
 Me2MeNativeMessagingHost::Me2MeNativeMessagingHost(
     bool needs_elevation,
+    intptr_t parent_window_handle,
     scoped_ptr<NativeMessagingChannel> channel,
     scoped_refptr<DaemonController> daemon_controller,
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
     scoped_ptr<OAuthClient> oauth_client)
     : needs_elevation_(needs_elevation),
+      parent_window_handle_(parent_window_handle),
       channel_(channel.Pass()),
       daemon_controller_(daemon_controller),
       pairing_registry_(pairing_registry),
@@ -621,6 +623,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   SHELLEXECUTEINFO info;
   memset(&info, 0, sizeof(info));
   info.cbSize = sizeof(info);
+  info.hwnd = reinterpret_cast<HWND>(parent_window_handle_);
   info.lpVerb = L"runas";
   info.lpFile = binary.value().c_str();
   info.lpParameters = parameters.c_str();

@@ -40,6 +40,7 @@ class Me2MeNativeMessagingHost {
 
   Me2MeNativeMessagingHost(
       bool needs_elevation,
+      intptr_t parent_window_handle,
       scoped_ptr<NativeMessagingChannel> channel,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
@@ -150,6 +151,10 @@ class Me2MeNativeMessagingHost {
 #endif  // defined(OS_WIN)
 
   bool needs_elevation_;
+
+  // Handle of the parent window.
+  intptr_t parent_window_handle_;
+
   base::Closure quit_closure_;
 
   // Native messaging channel used to communicate with the native message

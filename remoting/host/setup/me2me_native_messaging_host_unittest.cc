@@ -321,6 +321,7 @@ void Me2MeNativeMessagingHostTest::StartHost() {
 
   host_.reset(new Me2MeNativeMessagingHost(
         false,
+        0,
         channel.Pass(),
         daemon_controller,
         pairing_registry,
