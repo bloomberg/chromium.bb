@@ -78,7 +78,7 @@ def ExtractTagFromLine(file_type, line):
     if m: return m.group(1)
     m = re.search('/\*i18n-content\*/["]([^\`"]*)["]', line)
     if m: return m.group(1)
-  elif file_type == 'json':
+  elif file_type == 'json.jinja2':
     # Manifest style
     m = re.search('__MSG_(.*)__', line)
     if m: return m.group(1)
@@ -97,17 +97,19 @@ def VerifyFile(filename, messages, used_tags):
   True.
   """
 
-  base_name, extension = os.path.splitext(filename)
-  extension = extension[1:]
-  if extension not in ['js', 'cc', 'html', 'json', 'jinja2', 'mm']:
-    raise Exception("Unknown file type: %s" % extension)
+  base_name, file_type = os.path.splitext(filename)
+  file_type = file_type[1:]
+  if file_type == 'jinja2' and base_name.endswith('.json'):
+    file_type = 'json.jinja2'
+  if file_type not in ['js', 'cc', 'html', 'json.jinja2', 'jinja2', 'mm']:
+    raise Exception("Unknown file type: %s" % file_type)
 
   result = True
   matches = False
   f = open(filename, 'r')
   lines = f.readlines()
   for i in xrange(0, len(lines)):
-    tag = ExtractTagFromLine(extension, lines[i])
+    tag = ExtractTagFromLine(file_type, lines[i])
     if tag:
       tag = tag.upper()
       used_tags.add(tag)
