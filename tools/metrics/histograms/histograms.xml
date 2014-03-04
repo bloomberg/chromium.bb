@@ -10263,15 +10263,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.QuicCryptoHandshakeState" enum="QuicHandshakeState">
+<histogram name="Net.QuicEphemeralPortsSuggested">
+  <summary>The number of ports suggested per server.</summary>
+</histogram>
+
+<histogram name="Net.QuicHandshakeState" enum="QuicHandshakeState">
   <summary>
     The state of a QUIC connection's crypto hanshake as it progresses from
     starting to confirmation or failure.
   </summary>
-</histogram>
-
-<histogram name="Net.QuicEphemeralPortsSuggested">
-  <summary>The number of ports suggested per server.</summary>
 </histogram>
 
 <histogram name="Net.QuicNumSentClientHellos">
