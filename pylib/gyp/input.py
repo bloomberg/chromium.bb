@@ -1443,6 +1443,20 @@ def RemoveSelfDependencies(targets):
               target_dict[dependency_key] = Filter(dependencies, target_name)
 
 
+def RemoveLinkDependenciesFromNoneTargets(targets):
+  """Remove dependencies having the 'link_dependency' attribute from the 'none'
+  targets."""
+  for target_name, target_dict in targets.iteritems():
+    for dependency_key in dependency_sections:
+      dependencies = target_dict.get(dependency_key, [])
+      if dependencies:
+        for t in dependencies:
+          if target_dict.get('type', None) == 'none':
+            if targets[t].get('variables', {}).get('link_dependency', 0):
+              target_dict[dependency_key] = \
+                  Filter(target_dict[dependency_key], t)
+
+
 class DependencyGraphNode(object):
   """
 
@@ -2706,6 +2720,10 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
 
   # Expand dependencies specified as build_file:*.
   ExpandWildcardDependencies(targets, data)
+
+  # Remove all dependencies marked as 'link_dependency' from the targets of
+  # type 'none'.
+  RemoveLinkDependenciesFromNoneTargets(targets)
 
   # Apply exclude (!) and regex (/) list filters only for dependency_sections.
   for target_name, target_dict in targets.iteritems():
