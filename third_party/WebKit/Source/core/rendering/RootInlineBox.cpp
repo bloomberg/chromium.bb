@@ -428,12 +428,12 @@ LayoutUnit RootInlineBox::selectionTopAdjustedForPrecedingBlock() const
 {
     LayoutUnit top = selectionTop();
 
-    RenderObject::SelectionState blockSelectionState = root()->block().selectionState();
+    RenderObject::SelectionState blockSelectionState = root().block().selectionState();
     if (blockSelectionState != RenderObject::SelectionInside && blockSelectionState != RenderObject::SelectionEnd)
         return top;
 
     LayoutSize offsetToBlockBefore;
-    if (RenderBlock* block = root()->block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
+    if (RenderBlock* block = root().block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
         if (RootInlineBox* lastLine = block->lastRootBox()) {
             RenderObject::SelectionState lastLineSelectionState = lastLine->selectionState();
             if (lastLineSelectionState != RenderObject::SelectionInside && lastLineSelectionState != RenderObject::SelectionStart)

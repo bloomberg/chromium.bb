@@ -33,6 +33,7 @@ class RootInlineBox;
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some RenderObject (i.e., it represents a portion of that RenderObject).
 class InlineBox {
+    WTF_MAKE_NONCOPYABLE(InlineBox);
 public:
     InlineBox(RenderObject& obj)
         : m_next(0)
@@ -182,8 +183,8 @@ public:
     }
     void setParent(InlineFlowBox* par) { m_parent = par; }
 
-    const RootInlineBox* root() const;
-    RootInlineBox* root();
+    const RootInlineBox& root() const;
+    RootInlineBox& root();
 
     // x() is the left side of the box in the containing block's coordinate system.
     void setX(float x) { m_topLeft.setX(x); }
@@ -425,6 +426,14 @@ inline void InlineBox::setHasBadParent()
 
 #define DEFINE_INLINE_BOX_TYPE_CASTS(typeName) \
     DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->is##typeName(), box.is##typeName())
+
+// Allow equality comparisons of InlineBox's by reference or pointer, interchangeably.
+inline bool operator==(const InlineBox& a, const InlineBox& b) { return &a == &b; }
+inline bool operator==(const InlineBox& a, const InlineBox* b) { return &a == b; }
+inline bool operator==(const InlineBox* a, const InlineBox& b) { return a == &b; }
+inline bool operator!=(const InlineBox& a, const InlineBox& b) { return !(a == b); }
+inline bool operator!=(const InlineBox& a, const InlineBox* b) { return !(a == b); }
+inline bool operator!=(const InlineBox* a, const InlineBox& b) { return !(a == b); }
 
 } // namespace WebCore
 

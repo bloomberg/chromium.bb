@@ -184,7 +184,7 @@ void InlineFlowBox::removeChild(InlineBox* child)
     if (!isDirty())
         dirtyLineBoxes();
 
-    root()->childRemoved(child);
+    root().childRemoved(child);
 
     if (child == m_firstChild)
         m_firstChild = child->nextOnLine();
@@ -401,7 +401,7 @@ float InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, Inlin
                     // Our offset that we cache needs to be from the edge of the right border box and
                     // not the left border box.  We have to subtract |x| from the width of the block
                     // (which can be obtained from the root line box).
-                    curr->setLogicalLeft(root()->block().logicalWidth() - logicalLeft);
+                    curr->setLogicalLeft(root().block().logicalWidth() - logicalLeft);
                 }
                 continue; // The positioned object has no effect on the width.
             }
@@ -1044,11 +1044,11 @@ bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     // Constrain our hit testing to the line top and bottom if necessary.
     bool noQuirksMode = renderer().document().inNoQuirksMode();
     if (!noQuirksMode && !hasTextChildren() && !(descendantsHaveSameLineHeightAndBaseline() && hasTextDescendants())) {
-        RootInlineBox* rootBox = root();
+        RootInlineBox& rootBox = root();
         LayoutUnit& top = isHorizontal() ? minY : minX;
         LayoutUnit& logicalHeight = isHorizontal() ? height : width;
-        LayoutUnit bottom = min(rootBox->lineBottom(), top + logicalHeight);
-        top = max(rootBox->lineTop(), top);
+        LayoutUnit bottom = min(rootBox.lineBottom(), top + logicalHeight);
+        top = max(rootBox.lineTop(), top);
         logicalHeight = bottom - top;
     }
 
@@ -1212,11 +1212,11 @@ void InlineFlowBox::constrainToLineTopAndBottomIfNeeded(LayoutRect& rect) const
 {
     bool noQuirksMode = renderer().document().inNoQuirksMode();
     if (!noQuirksMode && !hasTextChildren() && !(descendantsHaveSameLineHeightAndBaseline() && hasTextDescendants())) {
-        const RootInlineBox* rootBox = root();
+        const RootInlineBox& rootBox = root();
         LayoutUnit logicalTop = isHorizontal() ? rect.y() : rect.x();
         LayoutUnit logicalHeight = isHorizontal() ? rect.height() : rect.width();
-        LayoutUnit bottom = min(rootBox->lineBottom(), logicalTop + logicalHeight);
-        logicalTop = max(rootBox->lineTop(), logicalTop);
+        LayoutUnit bottom = min(rootBox.lineBottom(), logicalTop + logicalHeight);
+        logicalTop = max(rootBox.lineTop(), logicalTop);
         logicalHeight = bottom - logicalTop;
         if (isHorizontal()) {
             rect.setY(logicalTop);

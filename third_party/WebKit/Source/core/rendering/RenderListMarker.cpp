@@ -1116,11 +1116,11 @@ LayoutRect RenderListMarker::localSelectionRect()
     InlineBox* box = inlineBoxWrapper();
     if (!box)
         return LayoutRect(LayoutPoint(), size());
-    RootInlineBox* root = inlineBoxWrapper()->root();
-    LayoutUnit newLogicalTop = root->block().style()->isFlippedBlocksWritingMode() ? inlineBoxWrapper()->logicalBottom() - root->selectionBottom() : root->selectionTop() - inlineBoxWrapper()->logicalTop();
-    if (root->block().style()->isHorizontalWritingMode())
-        return LayoutRect(0, newLogicalTop, width(), root->selectionHeight());
-    return LayoutRect(newLogicalTop, 0, root->selectionHeight(), height());
+    RootInlineBox& root = inlineBoxWrapper()->root();
+    LayoutUnit newLogicalTop = root.block().style()->isFlippedBlocksWritingMode() ? inlineBoxWrapper()->logicalBottom() - root.selectionBottom() : root.selectionTop() - inlineBoxWrapper()->logicalTop();
+    if (root.block().style()->isHorizontalWritingMode())
+        return LayoutRect(0, newLogicalTop, width(), root.selectionHeight());
+    return LayoutRect(newLogicalTop, 0, root.selectionHeight(), height());
 }
 
 void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -1825,8 +1825,7 @@ void RenderListMarker::setSelectionState(SelectionState state)
     RenderBox::setSelectionState(state);
 
     if (inlineBoxWrapper() && canUpdateSelectionOnRootLineBoxes())
-        if (RootInlineBox* root = inlineBoxWrapper()->root())
-            root->setHasSelectedChildren(state != SelectionNone);
+        inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
 LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool clipToVisibleContent)
@@ -1836,8 +1835,8 @@ LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObjec
     if (selectionState() == SelectionNone || !inlineBoxWrapper())
         return LayoutRect();
 
-    RootInlineBox* root = inlineBoxWrapper()->root();
-    LayoutRect rect(0, root->selectionTop() - y(), width(), root->selectionHeight());
+    RootInlineBox& root = inlineBoxWrapper()->root();
+    LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
 
     if (clipToVisibleContent)
         computeRectForRepaint(repaintContainer, rect);

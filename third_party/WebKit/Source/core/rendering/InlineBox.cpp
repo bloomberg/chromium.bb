@@ -213,20 +213,20 @@ bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     return renderer().hitTest(request, result, locationInContainer, childPoint);
 }
 
-const RootInlineBox* InlineBox::root() const
+const RootInlineBox& InlineBox::root() const
 {
     if (m_parent)
         return m_parent->root();
     ASSERT(isRootInlineBox());
-    return static_cast<const RootInlineBox*>(this);
+    return static_cast<const RootInlineBox&>(*this);
 }
 
-RootInlineBox* InlineBox::root()
+RootInlineBox& InlineBox::root()
 {
     if (m_parent)
         return m_parent->root();
     ASSERT(isRootInlineBox());
-    return static_cast<RootInlineBox*>(this);
+    return static_cast<RootInlineBox&>(*this);
 }
 
 bool InlineBox::nextOnLineExists() const
@@ -314,7 +314,7 @@ FloatPoint InlineBox::locationIncludingFlipping()
 {
     if (!renderer().style()->isFlippedBlocksWritingMode())
         return FloatPoint(x(), y());
-    RenderBlockFlow& block = root()->block();
+    RenderBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
         return FloatPoint(x(), block.height() - height() - y());
 
@@ -325,28 +325,28 @@ void InlineBox::flipForWritingMode(FloatRect& rect)
 {
     if (!renderer().style()->isFlippedBlocksWritingMode())
         return;
-    root()->block().flipForWritingMode(rect);
+    root().block().flipForWritingMode(rect);
 }
 
 FloatPoint InlineBox::flipForWritingMode(const FloatPoint& point)
 {
     if (!renderer().style()->isFlippedBlocksWritingMode())
         return point;
-    return root()->block().flipForWritingMode(point);
+    return root().block().flipForWritingMode(point);
 }
 
 void InlineBox::flipForWritingMode(LayoutRect& rect)
 {
     if (!renderer().style()->isFlippedBlocksWritingMode())
         return;
-    root()->block().flipForWritingMode(rect);
+    root().block().flipForWritingMode(rect);
 }
 
 LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point)
 {
     if (!renderer().style()->isFlippedBlocksWritingMode())
         return point;
-    return root()->block().flipForWritingMode(point);
+    return root().block().flipForWritingMode(point);
 }
 
 } // namespace WebCore

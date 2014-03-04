@@ -349,12 +349,11 @@ void RenderListItem::positionListMarker()
 
         bool adjustOverflow = false;
         LayoutUnit markerLogicalLeft;
-        RootInlineBox* root = m_marker->inlineBoxWrapper()->root();
+        RootInlineBox& root = m_marker->inlineBoxWrapper()->root();
         bool hitSelfPaintingLayer = false;
 
-        RootInlineBox* rootBox = m_marker->inlineBoxWrapper()->root();
-        LayoutUnit lineTop = rootBox->lineTop();
-        LayoutUnit lineBottom = rootBox->lineBottom();
+        LayoutUnit lineTop = root.lineTop();
+        LayoutUnit lineBottom = root.lineBottom();
 
         // FIXME: Need to account for relative positioning in the layout overflow.
         if (style()->isLeftToRightDirection()) {

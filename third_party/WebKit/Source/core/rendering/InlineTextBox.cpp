@@ -124,17 +124,17 @@ LayoutUnit InlineTextBox::lineHeight() const
 
 LayoutUnit InlineTextBox::selectionTop()
 {
-    return root()->selectionTop();
+    return root().selectionTop();
 }
 
 LayoutUnit InlineTextBox::selectionBottom()
 {
-    return root()->selectionBottom();
+    return root().selectionBottom();
 }
 
 LayoutUnit InlineTextBox::selectionHeight()
 {
-    return root()->selectionHeight();
+    return root().selectionHeight();
 }
 
 bool InlineTextBox::isSelected(int startPos, int endPos) const
@@ -174,8 +174,8 @@ RenderObject::SelectionState InlineTextBox::selectionState()
     }
 
     // If there are ellipsis following, make sure their selection is updated.
-    if (m_truncation != cNoTruncation && root()->ellipsisBox()) {
-        EllipsisBox* ellipsis = root()->ellipsisBox();
+    if (m_truncation != cNoTruncation && root().ellipsisBox()) {
+        EllipsisBox* ellipsis = root().ellipsisBox();
         if (state != RenderObject::SelectionNone) {
             int start, end;
             selectionStartEnd(start, end);
@@ -845,8 +845,8 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
     if (respectHyphen)
         ePos = textRun.length();
 
-    LayoutUnit selectionBottom = root()->selectionBottom();
-    LayoutUnit selectionTop = root()->selectionTopAdjustedForPrecedingBlock();
+    LayoutUnit selectionBottom = root().selectionBottom();
+    LayoutUnit selectionTop = root().selectionTopAdjustedForPrecedingBlock();
 
     int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - selectionTop);
     int selHeight = max(0, roundToInt(selectionBottom - selectionTop));
@@ -917,7 +917,7 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
         return fontMetrics.ascent() + gap; // Position underline near the alphabetic baseline.
     case TextUnderlinePositionUnder: {
         // Position underline relative to the under edge of the lowest element's content box.
-        const float offset = inlineTextBox->root()->maxLogicalTop() - inlineTextBox->logicalTop();
+        const float offset = inlineTextBox->root().maxLogicalTop() - inlineTextBox->logicalTop();
         if (offset > 0)
             return inlineTextBox->logicalHeight() + gap + offset;
         return inlineTextBox->logicalHeight() + gap;
@@ -1402,7 +1402,7 @@ float InlineTextBox::textPos() const
     // from the containing block edge in its measurement. textPos() should be consistent so the text are rendered in the same width.
     if (logicalLeft() == 0)
         return 0;
-    return logicalLeft() - root()->logicalLeft();
+    return logicalLeft() - root().logicalLeft();
 }
 
 int InlineTextBox::offsetForPosition(float lineOffset, bool includePartialGlyphs) const

@@ -130,7 +130,7 @@ IntRect EllipsisBox::selectionRect()
 {
     RenderStyle* style = renderer().style(isFirstLineStyle());
     const Font& font = style->font();
-    return enclosingIntRect(font.selectionRectForText(RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root()->selectionTopAdjustedForPrecedingBlock()), root()->selectionHeightAdjustedForPrecedingBlock()));
+    return enclosingIntRect(font.selectionRectForText(RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
 
 void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font)
@@ -146,9 +146,9 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& box
         c = Color(0xff - c.red(), 0xff - c.green(), 0xff - c.blue());
 
     GraphicsContextStateSaver stateSaver(*context);
-    LayoutUnit selectionBottom = root()->selectionBottom();
-    LayoutUnit top = root()->selectionTop();
-    LayoutUnit h = root()->selectionHeight();
+    LayoutUnit selectionBottom = root().selectionBottom();
+    LayoutUnit top = root().selectionTop();
+    LayoutUnit h = root().selectionHeight();
     const int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - top);
     const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h));

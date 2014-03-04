@@ -213,7 +213,7 @@ void RenderText::removeAndDestroyTextBoxes()
     if (!documentBeingDestroyed()) {
         if (firstTextBox()) {
             if (isBR()) {
-                RootInlineBox* next = firstTextBox()->root()->nextRootBox();
+                RootInlineBox* next = firstTextBox()->root().nextRootBox();
                 if (next)
                     next->markDirty();
             }
@@ -392,7 +392,7 @@ static IntRect ellipsisRectForBox(InlineTextBox* box, unsigned startPos, unsigne
         return IntRect();
 
     IntRect rect;
-    if (EllipsisBox* ellipsis = box->root()->ellipsisBox()) {
+    if (EllipsisBox* ellipsis = box->root().ellipsisBox()) {
         int ellipsisStartPosition = max<int>(startPos - box->start(), 0);
         int ellipsisEndPosition = min<int>(endPos - box->start(), box->len());
 
@@ -627,12 +627,12 @@ PositionWithAffinity RenderText::positionForPoint(const LayoutPoint& point)
         if (box->isLineBreak() && !box->prevLeafChild() && box->nextLeafChild() && !box->nextLeafChild()->isLineBreak())
             box = box->nextTextBox();
 
-        RootInlineBox* rootBox = box->root();
-        LayoutUnit top = min(rootBox->selectionTop(), rootBox->lineTop());
+        RootInlineBox& rootBox = box->root();
+        LayoutUnit top = min(rootBox.selectionTop(), rootBox.lineTop());
         if (pointBlockDirection > top || (!blocksAreFlipped && pointBlockDirection == top)) {
-            LayoutUnit bottom = rootBox->selectionBottom();
-            if (rootBox->nextRootBox())
-                bottom = min(bottom, rootBox->nextRootBox()->lineTop());
+            LayoutUnit bottom = rootBox.selectionBottom();
+            if (rootBox.nextRootBox())
+                bottom = min(bottom, rootBox.nextRootBox()->lineTop());
 
             if (pointBlockDirection < bottom || (blocksAreFlipped && pointBlockDirection == bottom)) {
                 ShouldAffinityBeDownstream shouldAffinityBeDownstream;
@@ -662,8 +662,8 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
 
     InlineTextBox* box = toInlineTextBox(inlineBox);
 
-    int height = box->root()->selectionHeight();
-    int top = box->root()->selectionTop();
+    int height = box->root().selectionHeight();
+    int top = box->root().selectionTop();
 
     // Go ahead and round left to snap it to the nearest pixel.
     float left = box->positionForOffset(caretOffset);
@@ -675,13 +675,13 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
 
     left = roundf(left);
 
-    float rootLeft = box->root()->logicalLeft();
-    float rootRight = box->root()->logicalRight();
+    float rootLeft = box->root().logicalLeft();
+    float rootRight = box->root().logicalRight();
 
     // FIXME: should we use the width of the root inline box or the
     // width of the containing block for this?
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = (box->root()->logicalWidth() + rootLeft) - (left + 1);
+        *extraWidthToEndOfLine = (box->root().logicalWidth() + rootLeft) - (left + 1);
 
     RenderBlock* cb = containingBlock();
     RenderStyle* cbStyle = cb->style();
@@ -1195,16 +1195,12 @@ void RenderText::setSelectionState(SelectionState state)
 
             for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
                 if (box->isSelected(startPos, endPos)) {
-                    RootInlineBox* root = box->root();
-                    if (root)
-                        root->setHasSelectedChildren(true);
+                    box->root().setHasSelectedChildren(true);
                 }
             }
         } else {
             for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-                RootInlineBox* root = box->root();
-                if (root)
-                    root->setHasSelectedChildren(state == SelectionInside);
+                box->root().setHasSelectedChildren(state == SelectionInside);
             }
         }
     }
@@ -1240,7 +1236,7 @@ void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
         // Text run is entirely after the affected range.
         if (curr->start() > end) {
             curr->offsetRun(delta);
-            RootInlineBox* root = curr->root();
+            RootInlineBox* root = &curr->root();
             if (!firstRootBox) {
                 firstRootBox = root;
                 // The affected area was in between two runs. Go ahead and mark the root box of
@@ -1274,7 +1270,7 @@ void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
             firstRootBox = prev;
     } else if (lastTextBox()) {
         ASSERT(!lastRootBox);
-        firstRootBox = lastTextBox()->root();
+        firstRootBox = &lastTextBox()->root();
         firstRootBox->markDirty();
         dirtiedLines = true;
     }
