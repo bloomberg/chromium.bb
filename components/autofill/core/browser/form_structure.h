@@ -115,7 +115,7 @@ class FormStructure {
   // return false.
   bool ShouldBeCrowdsourced() const;
 
-  // Sets the field types and experiment id to be those set for |cached_form|.
+  // Sets the field types to be those set for |cached_form|.
   void UpdateFromCache(const FormStructure& cached_form);
 
   // Logs quality metrics for |this|, which should be a user-submitted form.
@@ -172,8 +172,6 @@ class FormStructure {
     upload_required_ = required;
   }
   UploadRequired upload_required() const { return upload_required_; }
-
-  virtual std::string server_experiment_id() const;
 
   // Returns a FormData containing the data this form structure knows about.
   // |user_submitted| is currently always false.
@@ -241,10 +239,6 @@ class FormStructure {
   // Whether the server expects us to always upload, never upload, or default
   // to the stored upload rates.
   UploadRequired upload_required_;
-
-  // The server experiment corresponding to the server types returned for this
-  // form.
-  std::string server_experiment_id_;
 
   // GET or POST.
   RequestMethod method_;

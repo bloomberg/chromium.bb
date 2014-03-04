@@ -170,29 +170,6 @@ class AutofillMetrics {
     NUM_FIELD_TYPE_QUALITY_METRICS,
   };
 
-  enum QualityMetric {
-    // Logged for each potentially fillable field in a submitted form.
-    FIELD_SUBMITTED = 0,
-
-    // A simple successs metric, logged for each field that returns true for
-    // |is_autofilled()|.
-    FIELD_AUTOFILLED,
-
-    // A simple failure metric, logged for each field that returns false for
-    // |is_autofilled()| but has a value that is present in the personal data
-    // manager.
-    FIELD_NOT_AUTOFILLED,
-
-    // The below are only logged when |FIELD_AUTOFILL_FAILED| is also logged.
-    NOT_AUTOFILLED_HEURISTIC_TYPE_UNKNOWN,
-    NOT_AUTOFILLED_HEURISTIC_TYPE_MATCH,
-    NOT_AUTOFILLED_HEURISTIC_TYPE_MISMATCH,
-    NOT_AUTOFILLED_SERVER_TYPE_UNKNOWN,
-    NOT_AUTOFILLED_SERVER_TYPE_MATCH,
-    NOT_AUTOFILLED_SERVER_TYPE_MISMATCH,
-    NUM_QUALITY_METRICS,
-  };
-
   // Each of these is logged at most once per query to the server, which in turn
   // occurs at most once per page load.
   enum ServerQueryMetric {
@@ -335,20 +312,12 @@ class AutofillMetrics {
   virtual void LogDeveloperEngagementMetric(
       DeveloperEngagementMetric metric) const;
 
-  virtual void LogHeuristicTypePrediction(
-      FieldTypeQualityMetric metric,
-      ServerFieldType field_type,
-      const std::string& experiment_id) const;
-  virtual void LogOverallTypePrediction(
-      FieldTypeQualityMetric metric,
-      ServerFieldType field_type,
-      const std::string& experiment_id) const;
+  virtual void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
+                                          ServerFieldType field_type) const;
+  virtual void LogOverallTypePrediction(FieldTypeQualityMetric metric,
+                                        ServerFieldType field_type) const;
   virtual void LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                       ServerFieldType field_type,
-                                       const std::string& experiment_id) const;
-
-  virtual void LogQualityMetric(QualityMetric metric,
-                                const std::string& experiment_id) const;
+                                       ServerFieldType field_type) const;
 
   virtual void LogServerQueryMetric(ServerQueryMetric metric) const;
 
@@ -438,14 +407,6 @@ class AutofillMetrics {
   // Log the number of Autofill suggestions presented to the user when filling a
   // form.
   virtual void LogAddressSuggestionsCount(size_t num_suggestions) const;
-
-  // Logs the experiment id corresponding to a server query response.
-  virtual void LogServerExperimentIdForQuery(
-      const std::string& experiment_id) const;
-
-  // Logs the experiment id corresponding to an upload to the server.
-  virtual void LogServerExperimentIdForUpload(
-      const std::string& experiment_id) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);

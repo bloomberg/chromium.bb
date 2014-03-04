@@ -34,13 +34,10 @@ void AutofillXmlParser::Error(buzz::XmlParseContext* context,
 
 AutofillQueryXmlParser::AutofillQueryXmlParser(
     std::vector<AutofillServerFieldInfo>* field_infos,
-    UploadRequired* upload_required,
-    std::string* experiment_id)
+    UploadRequired* upload_required)
     : field_infos_(field_infos),
-      upload_required_(upload_required),
-      experiment_id_(experiment_id) {
+      upload_required_(upload_required) {
   DCHECK(upload_required_);
-  DCHECK(experiment_id_);
 }
 
 AutofillQueryXmlParser::~AutofillQueryXmlParser() {}
@@ -52,10 +49,8 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
   const std::string& element = qname.LocalPart();
   if (element.compare("autofillqueryresponse") == 0) {
     // We check for the upload required attribute below, but if it's not
-    // present, we use the default upload rates. Likewise, by default we assume
-    // an empty experiment id.
+    // present, we use the default upload rates.
     *upload_required_ = USE_UPLOAD_RATES;
-    *experiment_id_ = std::string();
 
     // |attrs| is a NULL-terminated list of (attribute, value) pairs.
     while (*attrs) {
@@ -67,8 +62,6 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
           *upload_required_ = UPLOAD_REQUIRED;
         else if (strcmp(*attrs, "false") == 0)
           *upload_required_ = UPLOAD_NOT_REQUIRED;
-      } else if (attribute_name.compare("experimentid") == 0) {
-        *experiment_id_ = *attrs;
       }
       ++attrs;
     }

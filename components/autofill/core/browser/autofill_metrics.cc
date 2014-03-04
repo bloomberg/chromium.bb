@@ -16,29 +16,6 @@ namespace autofill {
 
 namespace {
 
-// Server experiments we support.
-enum ServerExperiment {
-  NO_EXPERIMENT = 0,
-  UNKNOWN_EXPERIMENT,
-  ACCEPTANCE_RATIO_06,
-  ACCEPTANCE_RATIO_1,
-  ACCEPTANCE_RATIO_2,
-  ACCEPTANCE_RATIO_4,
-  ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15,
-  ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_25,
-  ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5,
-  TOOLBAR_DATA_ONLY,
-  ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4,
-  NO_SERVER_RESPONSE,
-  PROBABILITY_PICKER_05,
-  PROBABILITY_PICKER_025,
-  PROBABILITY_PICKER_025_CC_THRESHOLD_03,
-  PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03,
-  PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03_WITH_FALLBACK,
-  PROBABILITY_PICKER_05_CC_NAME_THRESHOLD_03_EXPERIMENT_1,
-  NUM_SERVER_EXPERIMENTS
-};
-
 enum FieldTypeGroupForMetrics {
   AMBIGUOUS = 0,
   NAME,
@@ -245,24 +222,19 @@ void LogUMAHistogramLongTimes(const std::string& name,
 }
 
 // Logs a type quality metric.  The primary histogram name is constructed based
-// on |base_name| and |experiment_id|.  The field-specific histogram name also
-// factors in the |field_type|.  Logs a sample of |metric|, which should be in
-// the range [0, |num_possible_metrics|).
+// on |base_name|.  The field-specific histogram name also factors in the
+// |field_type|.  Logs a sample of |metric|, which should be in the range
+// [0, |num_possible_metrics|).
 void LogTypeQualityMetric(const std::string& base_name,
                           const int metric,
                           const int num_possible_metrics,
-                          const ServerFieldType field_type,
-                          const std::string& experiment_id) {
+                          const ServerFieldType field_type) {
   DCHECK_LT(metric, num_possible_metrics);
 
   std::string histogram_name = base_name;
-  if (!experiment_id.empty())
-    histogram_name += "_" + experiment_id;
   LogUMAHistogramEnumeration(histogram_name, metric, num_possible_metrics);
 
   std::string sub_histogram_name = base_name + ".ByFieldType";
-  if (!experiment_id.empty())
-    sub_histogram_name += "_" + experiment_id;
   const int field_type_group_metric =
       GetFieldTypeGroupMetric(field_type, metric, num_possible_metrics);
   const int num_field_type_group_metrics =
@@ -270,51 +242,6 @@ void LogTypeQualityMetric(const std::string& base_name,
   LogUMAHistogramEnumeration(sub_histogram_name,
                              field_type_group_metric,
                              num_field_type_group_metrics);
-}
-
-void LogServerExperimentId(const std::string& histogram_name,
-                           const std::string& experiment_id) {
-  ServerExperiment metric = UNKNOWN_EXPERIMENT;
-
-  const std::string default_experiment_name =
-      FormStructure(FormData()).server_experiment_id();
-  if (experiment_id.empty())
-    metric = NO_EXPERIMENT;
-  else if (experiment_id == "ar06")
-    metric = ACCEPTANCE_RATIO_06;
-  else if (experiment_id == "ar1")
-    metric = ACCEPTANCE_RATIO_1;
-  else if (experiment_id == "ar2")
-    metric = ACCEPTANCE_RATIO_2;
-  else if (experiment_id == "ar4")
-    metric = ACCEPTANCE_RATIO_4;
-  else if (experiment_id == "ar05wlr15")
-    metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15;
-  else if (experiment_id == "ar05wlr25")
-    metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_25;
-  else if (experiment_id == "ar05wr15fs5")
-    metric = ACCEPTANCE_RATIO_05_WINNER_LEAD_RATIO_15_MIN_FORM_SCORE_5;
-  else if (experiment_id == "tbar1")
-    metric = TOOLBAR_DATA_ONLY;
-  else if (experiment_id == "ar04wr3fs4")
-    metric = ACCEPTANCE_RATIO_04_WINNER_LEAD_RATIO_3_MIN_FORM_SCORE_4;
-  else if (experiment_id == default_experiment_name)
-    metric = NO_SERVER_RESPONSE;
-  else if (experiment_id == "fp05")
-    metric = PROBABILITY_PICKER_05;
-  else if (experiment_id == "fp025")
-    metric = PROBABILITY_PICKER_025;
-  else if (experiment_id == "fp05cc03")
-    metric = PROBABILITY_PICKER_025_CC_THRESHOLD_03;
-  else if (experiment_id == "fp05cco03")
-    metric = PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03;
-  else if (experiment_id == "fp05cco03cstd")
-    metric = PROBABILITY_PICKER_025_CONTEXTUAL_CC_THRESHOLD_03_WITH_FALLBACK;
-  else if (experiment_id == "fp05cc03e1")
-    metric = PROBABILITY_PICKER_05_CC_NAME_THRESHOLD_03_EXPERIMENT_1;
-
-  DCHECK_LT(metric, NUM_SERVER_EXPERIMENTS);
-  LogUMAHistogramEnumeration(histogram_name, metric, NUM_SERVER_EXPERIMENTS);
 }
 
 }  // namespace
@@ -422,40 +349,23 @@ void AutofillMetrics::LogDeveloperEngagementMetric(
 
 void AutofillMetrics::LogHeuristicTypePrediction(
     FieldTypeQualityMetric metric,
-    ServerFieldType field_type,
-    const std::string& experiment_id) const {
+    ServerFieldType field_type) const {
   LogTypeQualityMetric("Autofill.Quality.HeuristicType",
-                       metric, NUM_FIELD_TYPE_QUALITY_METRICS,
-                       field_type, experiment_id);
+                       metric, NUM_FIELD_TYPE_QUALITY_METRICS, field_type);
 }
 
 void AutofillMetrics::LogOverallTypePrediction(
     FieldTypeQualityMetric metric,
-    ServerFieldType field_type,
-    const std::string& experiment_id) const {
+    ServerFieldType field_type) const {
   LogTypeQualityMetric("Autofill.Quality.PredictedType",
-                       metric, NUM_FIELD_TYPE_QUALITY_METRICS,
-                       field_type, experiment_id);
+                       metric, NUM_FIELD_TYPE_QUALITY_METRICS, field_type);
 }
 
 void AutofillMetrics::LogServerTypePrediction(
     FieldTypeQualityMetric metric,
-    ServerFieldType field_type,
-    const std::string& experiment_id) const {
+    ServerFieldType field_type) const {
   LogTypeQualityMetric("Autofill.Quality.ServerType",
-                       metric, NUM_FIELD_TYPE_QUALITY_METRICS,
-                       field_type, experiment_id);
-}
-
-void AutofillMetrics::LogQualityMetric(QualityMetric metric,
-                                       const std::string& experiment_id) const {
-  DCHECK_LT(metric, NUM_QUALITY_METRICS);
-
-  std::string histogram_name = "Autofill.Quality";
-  if (!experiment_id.empty())
-    histogram_name += "_" + experiment_id;
-
-  LogUMAHistogramEnumeration(histogram_name, metric, NUM_QUALITY_METRICS);
+                       metric, NUM_FIELD_TYPE_QUALITY_METRICS, field_type);
 }
 
 void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) const {
@@ -524,16 +434,6 @@ void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) const {
 
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) const {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
-}
-
-void AutofillMetrics::LogServerExperimentIdForQuery(
-    const std::string& experiment_id) const {
-  LogServerExperimentId("Autofill.ServerExperimentId.Query", experiment_id);
-}
-
-void AutofillMetrics::LogServerExperimentIdForUpload(
-    const std::string& experiment_id) const {
-  LogServerExperimentId("Autofill.ServerExperimentId.Upload", experiment_id);
 }
 
 }  // namespace autofill

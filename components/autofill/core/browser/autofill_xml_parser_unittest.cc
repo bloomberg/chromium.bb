@@ -24,8 +24,7 @@ class AutofillQueryXmlParserTest : public testing::Test {
   void ParseQueryXML(const std::string& xml, bool should_succeed) {
     // Create a parser.
     AutofillQueryXmlParser parse_handler(&field_infos_,
-                                         &upload_required_,
-                                         &experiment_id_);
+                                         &upload_required_);
     buzz::XmlParser parser(&parse_handler);
     parser.Parse(xml.c_str(), xml.length(), true);
     EXPECT_EQ(should_succeed, parse_handler.succeeded());
@@ -33,7 +32,6 @@ class AutofillQueryXmlParserTest : public testing::Test {
 
   std::vector<AutofillServerFieldInfo> field_infos_;
   UploadRequired upload_required_;
-  std::string experiment_id_;
 };
 
 class AutofillUploadXmlParserTest : public testing::Test {
@@ -75,7 +73,6 @@ TEST_F(AutofillQueryXmlParserTest, BasicQuery) {
   EXPECT_TRUE(field_infos_[3].default_value.empty());
   EXPECT_EQ(FIELD_WITH_DEFAULT_VALUE, field_infos_[4].field_type);
   EXPECT_EQ("default", field_infos_[4].default_value);
-  EXPECT_TRUE(experiment_id_.empty());
 }
 
 // Test parsing the upload required attribute.
@@ -89,7 +86,6 @@ TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
   EXPECT_EQ(upload_required_, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
 
   field_infos_.clear();
   xml = "<autofillqueryresponse uploadrequired=\"false\">"
@@ -101,7 +97,6 @@ TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
   EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
 
   field_infos_.clear();
   xml = "<autofillqueryresponse uploadrequired=\"bad_value\">"
@@ -113,53 +108,6 @@ TEST_F(AutofillQueryXmlParserTest, TestUploadRequired) {
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
-}
-
-// Test parsing the experiment id attribute
-TEST_F(AutofillQueryXmlParserTest, ParseExperimentId) {
-  // When the attribute is missing, we should get back the default value -- the
-  // empty string.
-  std::string xml = "<autofillqueryresponse>"
-                    "<field autofilltype=\"0\" />"
-                    "</autofillqueryresponse>";
-
-  ParseQueryXML(xml, true);
-
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
-  ASSERT_EQ(1U, field_infos_.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
-
-  field_infos_.clear();
-
-  // When the attribute is present, make sure we parse it.
-  xml = "<autofillqueryresponse experimentid=\"FancyNewAlgorithm\">"
-        "<field autofilltype=\"0\" />"
-        "</autofillqueryresponse>";
-
-  ParseQueryXML(xml, true);
-
-  EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
-  ASSERT_EQ(1U, field_infos_.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_EQ(std::string("FancyNewAlgorithm"), experiment_id_);
-
-  field_infos_.clear();
-
-  // Make sure that we can handle parsing both the upload required and the
-  // experiment id attribute together.
-  xml = "<autofillqueryresponse uploadrequired=\"false\""
-        "                       experimentid=\"ServerSmartyPants\">"
-        "<field autofilltype=\"0\" />"
-        "</autofillqueryresponse>";
-
-  ParseQueryXML(xml, true);
-
-  EXPECT_EQ(UPLOAD_NOT_REQUIRED, upload_required_);
-  ASSERT_EQ(1U, field_infos_.size());
-  EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_EQ("ServerSmartyPants", experiment_id_);
 }
 
 // Test badly formed XML queries.
@@ -173,7 +121,6 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
 
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   EXPECT_EQ(0U, field_infos_.size());
-  EXPECT_TRUE(experiment_id_.empty());
 
   // Test an incorrect Autofill type.
   xml = "<autofillqueryresponse>"
@@ -186,7 +133,6 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   ASSERT_EQ(1U, field_infos_.size());
   // AutofillType was out of range and should be set to NO_SERVER_DATA.
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
 
   // Test upper bound for the field type, MAX_VALID_FIELD_TYPE.
   field_infos_.clear();
@@ -199,7 +145,6 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   ASSERT_EQ(1U, field_infos_.size());
   // AutofillType was out of range and should be set to NO_SERVER_DATA.
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
 
   // Test an incorrect Autofill type.
   field_infos_.clear();
@@ -213,7 +158,6 @@ TEST_F(AutofillQueryXmlParserTest, ParseErrors) {
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required_);
   ASSERT_EQ(1U, field_infos_.size());
   EXPECT_EQ(NO_SERVER_DATA, field_infos_[0].field_type);
-  EXPECT_TRUE(experiment_id_.empty());
 }
 
 // Test successfull upload response.

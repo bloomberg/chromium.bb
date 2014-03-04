@@ -1474,13 +1474,17 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
   std::string encoded_xml;
-  const char * const kSignature1 = "11337937696949187602";
-  const char * const kResponse1 =
-      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\"><form "
-      "signature=\"11337937696949187602\"><field signature=\"412125936\"/>"
-      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
-      "<field signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
+  const char kSignature1[] = "11337937696949187602";
+  const char kResponse1[] =
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"11337937696949187602\">"
+      "<field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/>"
+      "<field signature=\"2226358947\"/>"
+      "<field signature=\"747221617\"/>"
+      "<field signature=\"4108155786\"/>"
+      "</form>"
       "</autofillquery>";
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
                                                 &encoded_signatures,
@@ -1511,20 +1515,31 @@ TEST(FormStructureTest, EncodeQueryRequest) {
                                                 &encoded_xml));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
-  const char * const kSignature2 = "8308881815906226214";
+  const char kSignature2[] = "8308881815906226214";
   EXPECT_EQ(kSignature2, encoded_signatures[1]);
-  const char * const kResponse2 =
-      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\"><form "
-      "signature=\"11337937696949187602\"><field signature=\"412125936\"/>"
-      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
-      "<field signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
-      "<form signature=\"8308881815906226214\"><field signature=\"412125936\"/>"
-      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
-      "<field signature=\"747221617\"/><field signature=\"4108155786\"/><field "
-      "signature=\"509334676\"/><field signature=\"509334676\"/><field "
-      "signature=\"509334676\"/><field signature=\"509334676\"/><field "
-      "signature=\"509334676\"/></form></autofillquery>";
+  const char kResponse2[] =
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"11337937696949187602\">"
+      "<field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/>"
+      "<field signature=\"2226358947\"/>"
+      "<field signature=\"747221617\"/>"
+      "<field signature=\"4108155786\"/>"
+      "</form>"
+      "<form signature=\"8308881815906226214\">"
+      "<field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/>"
+      "<field signature=\"2226358947\"/>"
+      "<field signature=\"747221617\"/>"
+      "<field signature=\"4108155786\"/>"
+      "<field signature=\"509334676\"/>"
+      "<field signature=\"509334676\"/>"
+      "<field signature=\"509334676\"/>"
+      "<field signature=\"509334676\"/>"
+      "<field signature=\"509334676\"/>"
+      "</form>"
+      "</autofillquery>";
   EXPECT_EQ(kResponse2, encoded_xml);
 
   FormData malformed_form(form);
@@ -2330,12 +2345,15 @@ TEST(FormStructureTest, SkipFieldTest) {
   std::vector<std::string> encoded_signatures;
   std::string encoded_xml;
 
-  const char * const kSignature = "18006745212084723782";
-  const char * const kResponse =
-      "<\?xml version=\"1.0\" encoding=\"UTF-8\"?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\"><form "
-      "signature=\"18006745212084723782\"><field signature=\"239111655\"/>"
-      "<field signature=\"420638584\"/></form></autofillquery>";
+  const char kSignature[] = "18006745212084723782";
+  const char kResponse[] =
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"18006745212084723782\">"
+      "<field signature=\"239111655\"/>"
+      "<field signature=\"420638584\"/>"
+      "</form>"
+      "</autofillquery>";
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
                                                 &encoded_signatures,
                                                 &encoded_xml));

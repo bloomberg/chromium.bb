@@ -70,11 +70,11 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
 // autofilltype: The server's guess at what type of field this is.  0
 // is unknown, other types are documented in
 // components/autofill/core/browser/field_types.h.
+// Experiment ids are currently ignored.
 class AutofillQueryXmlParser : public AutofillXmlParser {
  public:
   AutofillQueryXmlParser(std::vector<AutofillServerFieldInfo>* field_infos,
-                         UploadRequired* upload_required,
-                         std::string* experiment_id);
+                         UploadRequired* upload_required);
   virtual ~AutofillQueryXmlParser();
 
  private:
@@ -106,10 +106,6 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
   // A flag indicating whether the client should upload Autofill data when this
   // form is submitted.
   UploadRequired* upload_required_;
-
-  // The server experiment to which this query response belongs.
-  // For the default server implementation, this is empty.
-  std::string* experiment_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillQueryXmlParser);
 };

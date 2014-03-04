@@ -1287,6 +1287,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autofill.Quality" enum="AutofillQuality">
+  <obsolete>
+    Deprecated as of 2/2014 (M35), replaced by Autofill.UserHappiness.
+  </obsolete>
   <summary>The quality of the Autofill implementation.</summary>
 </histogram>
 
@@ -1347,6 +1350,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Autofill.ServerExperimentId.Query" enum="AutofillExperimentId">
+  <obsolete>
+    Deprecated as of 2/2014 (M35).
+  </obsolete>
   <summary>
     The experiment ID received in response to an Autofill server query.
   </summary>
@@ -1354,6 +1360,9 @@ other types of suffix sets.
 
 <histogram name="Autofill.ServerExperimentId.Upload"
     enum="AutofillExperimentId">
+  <obsolete>
+    Deprecated as of 2/2014 (M35).
+  </obsolete>
   <summary>
     The experiment ID received at the time of an Autofill upload.
   </summary>

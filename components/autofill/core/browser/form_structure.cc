@@ -35,7 +35,6 @@ namespace {
 const char kFormMethodPost[] = "post";
 
 // XML elements and attributes.
-const char kAttributeAcceptedFeatures[] = "accepts";
 const char kAttributeAutofillUsed[] = "autofillused";
 const char kAttributeAutofillType[] = "autofilltype";
 const char kAttributeClientVersion[] = "clientversion";
@@ -45,7 +44,6 @@ const char kAttributeFieldType[] = "fieldtype";
 const char kAttributeFormSignature[] = "formsignature";
 const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
-const char kAcceptedFeaturesExperiment[] = "e"; // e=experiments
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
@@ -328,7 +326,6 @@ FormStructure::FormStructure(const FormData& form)
       autofill_count_(0),
       active_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
-      server_experiment_id_("no server response"),
       has_author_specified_types_(false) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
@@ -514,8 +511,9 @@ bool FormStructure::EncodeQueryRequest(
   if (!encoded_signatures->size())
     return false;
 
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
-                               kAcceptedFeaturesExperiment);
+  // Note: Chrome used to also set 'accepts="e"' (where 'e' is for experiments),
+  // but no longer sets this because support for experiments is deprecated.  If
+  // it ever resurfaces, re-add code here to set the attribute accordingly.
 
   // Obtain the XML structure as a string.
   *encoded_xml = kXMLDeclaration;
@@ -534,17 +532,14 @@ void FormStructure::ParseQueryResponse(
   // Parse the field types from the server response to the query.
   std::vector<AutofillServerFieldInfo> field_infos;
   UploadRequired upload_required;
-  std::string experiment_id;
   AutofillQueryXmlParser parse_handler(&field_infos,
-                                       &upload_required,
-                                       &experiment_id);
+                                       &upload_required);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
   if (!parse_handler.succeeded())
     return;
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
-  metric_logger.LogServerExperimentIdForQuery(experiment_id);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
@@ -556,7 +551,6 @@ void FormStructure::ParseQueryResponse(
        iter != forms.end(); ++iter) {
     FormStructure* form = *iter;
     form->upload_required_ = upload_required;
-    form->server_experiment_id_ = experiment_id;
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field) {
@@ -618,7 +612,6 @@ void FormStructure::GetFieldTypePredictions(
     form.data.origin = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
     form.signature = form_structure->FormSignature();
-    form.experiment_id = form_structure->server_experiment_id_;
 
     for (std::vector<AutofillField*>::const_iterator field =
              form_structure->fields_.begin();
@@ -732,8 +725,6 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 
   UpdateAutofillCount();
 
-  server_experiment_id_ = cached_form.server_experiment_id();
-
   // The form signature should match between query and upload requests to the
   // server. On many websites, form elements are dynamically added, removed, or
   // rearranged via JavaScript between page load and form submission, so we
@@ -750,16 +741,11 @@ void FormStructure::LogQualityMetrics(
     const base::TimeTicks& load_time,
     const base::TimeTicks& interaction_time,
     const base::TimeTicks& submission_time) const {
-  std::string experiment_id = server_experiment_id();
-  metric_logger.LogServerExperimentIdForUpload(experiment_id);
-
   size_t num_detected_field_types = 0;
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
   for (size_t i = 0; i < field_count(); ++i) {
     const AutofillField* field = this->field(i);
-    metric_logger.LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
-                                   experiment_id);
 
     // No further logging for empty fields nor for fields where the entered data
     // does not appear to already exist in the user's stored Autofill data.
@@ -811,76 +797,35 @@ void FormStructure::LogQualityMetrics(
     // whether the field was autofilled.
     if (heuristic_type == UNKNOWN_TYPE) {
       metric_logger.LogHeuristicTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
-                                               field_type, experiment_id);
+                                               field_type);
     } else if (field_types.count(heuristic_type)) {
       metric_logger.LogHeuristicTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                               field_type, experiment_id);
+                                               field_type);
     } else {
       metric_logger.LogHeuristicTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                               field_type, experiment_id);
+                                               field_type);
     }
 
     if (server_type == NO_SERVER_DATA) {
       metric_logger.LogServerTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
-                                            field_type, experiment_id);
+                                            field_type);
     } else if (field_types.count(server_type)) {
       metric_logger.LogServerTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                            field_type, experiment_id);
+                                            field_type);
     } else {
       metric_logger.LogServerTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                            field_type, experiment_id);
+                                            field_type);
     }
 
     if (predicted_type == UNKNOWN_TYPE) {
       metric_logger.LogOverallTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
-                                             field_type, experiment_id);
+                                             field_type);
     } else if (field_types.count(predicted_type)) {
       metric_logger.LogOverallTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                             field_type, experiment_id);
+                                             field_type);
     } else {
       metric_logger.LogOverallTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                             field_type, experiment_id);
-    }
-
-    // TODO(isherman): <select> fields don't support |is_autofilled()|, so we
-    // have to skip them for the remaining metrics.
-    if (field->form_control_type == "select-one")
-      continue;
-
-    if (field->is_autofilled) {
-      metric_logger.LogQualityMetric(AutofillMetrics::FIELD_AUTOFILLED,
-                                     experiment_id);
-    } else {
-      metric_logger.LogQualityMetric(AutofillMetrics::FIELD_NOT_AUTOFILLED,
-                                     experiment_id);
-
-      if (heuristic_type == UNKNOWN_TYPE) {
-        metric_logger.LogQualityMetric(
-            AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_UNKNOWN,
-            experiment_id);
-      } else if (field_types.count(heuristic_type)) {
-        metric_logger.LogQualityMetric(
-            AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_MATCH,
-            experiment_id);
-      } else {
-        metric_logger.LogQualityMetric(
-            AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_MISMATCH,
-            experiment_id);
-      }
-
-      if (server_type == NO_SERVER_DATA) {
-        metric_logger.LogQualityMetric(
-            AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_UNKNOWN,
-            experiment_id);
-      } else if (field_types.count(server_type)) {
-        metric_logger.LogQualityMetric(
-            AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_MATCH,
-            experiment_id);
-      } else {
-        metric_logger.LogQualityMetric(
-            AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_MISMATCH,
-            experiment_id);
-      }
+                                             field_type);
     }
   }
 
@@ -950,10 +895,6 @@ size_t FormStructure::field_count() const {
 
 size_t FormStructure::active_field_count() const {
   return active_field_count_;
-}
-
-std::string FormStructure::server_experiment_id() const {
-  return server_experiment_id_;
 }
 
 FormData FormStructure::ToFormData() const {
