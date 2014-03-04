@@ -6,32 +6,10 @@
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_H_
 
 #include "base/time/time.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 
 namespace ui {
-
-// TODO(jdduke): Consider adoption of ui::EventType.
-enum GestureEventType {
-  GESTURE_TYPE_INVALID = -1,
-  GESTURE_TYPE_FIRST = 0,
-  GESTURE_TAP_DOWN = GESTURE_TYPE_FIRST,
-  GESTURE_TAP_UNCONFIRMED,
-  GESTURE_TAP,
-  GESTURE_DOUBLE_TAP,
-  GESTURE_TAP_CANCEL,
-  GESTURE_SHOW_PRESS,
-  GESTURE_LONG_TAP,
-  GESTURE_LONG_PRESS,
-  GESTURE_SCROLL_BEGIN,
-  GESTURE_SCROLL_UPDATE,
-  GESTURE_SCROLL_END,
-  GESTURE_FLING_START,
-  GESTURE_FLING_CANCEL,
-  GESTURE_PINCH_BEGIN,
-  GESTURE_PINCH_UPDATE,
-  GESTURE_PINCH_END,
-  GESTURE_TYPE_LAST = GESTURE_PINCH_END,
-};
 
 class GestureEventDataPacket;
 
@@ -39,13 +17,13 @@ class GestureEventDataPacket;
 // TODO(jdduke): Merge this class with ui::GestureEventDetails.
 struct GESTURE_DETECTION_EXPORT GestureEventData {
   struct Details;
-  GestureEventData(GestureEventType type,
+  GestureEventData(EventType type,
                    base::TimeTicks time,
                    float x,
                    float y,
                    const Details& details);
 
-  GestureEventType type;
+  EventType type;
   base::TimeTicks time;
   float x;
   float y;

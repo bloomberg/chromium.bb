@@ -86,7 +86,7 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
     std::queue<GestureEventDataPacket> packets_;
     GestureHandlingState state_;
   };
-  bool IsGesturePrevented(GestureEventType type,
+  bool IsGesturePrevented(EventType type,
                           TouchEventAck current,
                           const GestureSequence::GestureHandlingState& state)
       const;

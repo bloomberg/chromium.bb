@@ -27,44 +27,44 @@ WebGestureEvent CreateGesture(const ui::GestureEventData& data,
   gesture.sourceDevice = WebGestureEvent::Touchscreen;
 
   switch (data.type) {
-    case ui::GESTURE_SHOW_PRESS:
+    case ui::ET_GESTURE_SHOW_PRESS:
       gesture.type = WebInputEvent::GestureShowPress;
       gesture.data.showPress.width = data.details.show_press.width * scale;
       gesture.data.showPress.width = data.details.show_press.width * scale;
       break;
-    case ui::GESTURE_DOUBLE_TAP:
+    case ui::ET_GESTURE_DOUBLE_TAP:
       gesture.type = WebInputEvent::GestureDoubleTap;
       break;
-    case ui::GESTURE_TAP:
+    case ui::ET_GESTURE_TAP:
       gesture.type = WebInputEvent::GestureTap;
       gesture.data.tap.tapCount = data.details.tap.tap_count;
       gesture.data.tap.width = data.details.tap.width * scale;
       gesture.data.tap.height = data.details.tap.height * scale;
       break;
-    case ui::GESTURE_TAP_UNCONFIRMED:
+    case ui::ET_GESTURE_TAP_UNCONFIRMED:
       gesture.type = WebInputEvent::GestureTapUnconfirmed;
       gesture.data.tap.tapCount = data.details.tap.tap_count;
       gesture.data.tap.width = data.details.tap.width * scale;
       gesture.data.tap.height = data.details.tap.height * scale;
       break;
-    case ui::GESTURE_LONG_PRESS:
+    case ui::ET_GESTURE_LONG_PRESS:
       gesture.type = WebInputEvent::GestureLongPress;
       gesture.data.longPress.width = data.details.long_press.width * scale;
       gesture.data.longPress.height = data.details.long_press.height * scale;
       break;
-    case ui::GESTURE_LONG_TAP:
+    case ui::ET_GESTURE_LONG_TAP:
       gesture.type = WebInputEvent::GestureLongTap;
       gesture.data.longPress.width = data.details.long_press.width * scale;
       gesture.data.longPress.height = data.details.long_press.height * scale;
       break;
-    case ui::GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
       gesture.type = WebInputEvent::GestureScrollBegin;
       gesture.data.scrollBegin.deltaXHint =
           data.details.scroll_begin.delta_x_hint * scale;
       gesture.data.scrollBegin.deltaYHint =
           data.details.scroll_begin.delta_y_hint * scale;
       break;
-    case ui::GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
       gesture.type = WebInputEvent::GestureScrollUpdate;
       gesture.data.scrollUpdate.deltaX =
           data.details.scroll_update.delta_x * scale;
@@ -75,39 +75,39 @@ WebGestureEvent CreateGesture(const ui::GestureEventData& data,
       gesture.data.scrollUpdate.velocityY =
           data.details.scroll_update.velocity_y * scale;
       break;
-    case ui::GESTURE_SCROLL_END:
+    case ui::ET_GESTURE_SCROLL_END:
       gesture.type = WebInputEvent::GestureScrollEnd;
       break;
-    case ui::GESTURE_FLING_START:
+    case ui::ET_SCROLL_FLING_START:
       gesture.type = WebInputEvent::GestureFlingStart;
       gesture.data.flingStart.velocityX =
           data.details.fling_start.velocity_x * scale;
       gesture.data.flingStart.velocityY =
           data.details.fling_start.velocity_y * scale;
       break;
-    case ui::GESTURE_FLING_CANCEL:
+    case ui::ET_SCROLL_FLING_CANCEL:
       gesture.type = WebInputEvent::GestureFlingCancel;
       break;
-    case ui::GESTURE_PINCH_BEGIN:
+    case ui::ET_GESTURE_PINCH_BEGIN:
       gesture.type = WebInputEvent::GesturePinchBegin;
       break;
-    case ui::GESTURE_PINCH_UPDATE:
+    case ui::ET_GESTURE_PINCH_UPDATE:
       gesture.type = WebInputEvent::GesturePinchUpdate;
       gesture.data.pinchUpdate.scale = data.details.pinch_update.scale;
       break;
-    case ui::GESTURE_PINCH_END:
+    case ui::ET_GESTURE_PINCH_END:
       gesture.type = WebInputEvent::GesturePinchEnd;
       break;
-    case ui::GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_TAP_CANCEL:
       gesture.type = WebInputEvent::GestureTapCancel;
       break;
-    case ui::GESTURE_TAP_DOWN:
+    case ui::ET_GESTURE_TAP_DOWN:
       gesture.type = WebInputEvent::GestureTapDown;
       gesture.data.tapDown.width = data.details.tap_down.width * scale;
       gesture.data.tapDown.height = data.details.tap_down.height * scale;
       break;
-    case ui::GESTURE_TYPE_INVALID:
-      NOTREACHED() << "Invalid ui::GestureEventType provided.";
+    default:
+      NOTREACHED() << "ui::EventType provided wasn't a gesture event.";
       break;
   }
 

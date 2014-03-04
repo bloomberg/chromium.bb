@@ -11,11 +11,10 @@ namespace ui {
 namespace {
 
 // A BitSet32 is used for tracking dropped gesture types.
-COMPILE_ASSERT(
-    GESTURE_TYPE_FIRST + (GESTURE_TYPE_LAST - GESTURE_TYPE_FIRST) < 32,
-    gesture_type_count_too_large);
+COMPILE_ASSERT(ET_GESTURE_TYPE_LAST - ET_GESTURE_TYPE_FIRST < 32,
+               gesture_type_count_too_large);
 
-GestureEventData CreateGesture(GestureEventType type) {
+GestureEventData CreateGesture(EventType type) {
   return GestureEventData(
       type, base::TimeTicks(), 0, 0, GestureEventData::Details());
 }
@@ -29,13 +28,13 @@ enum RequiredTouches {
 struct DispositionHandlingInfo {
   // A bitwise-OR of |RequiredTouches|.
   int required_touches;
-  GestureEventType antecedent_event_type;
+  EventType antecedent_event_type;
 
   DispositionHandlingInfo(int required_touches)
       : required_touches(required_touches) {}
 
   DispositionHandlingInfo(int required_touches,
-                          GestureEventType antecedent_event_type)
+                          EventType antecedent_event_type)
       : required_touches(required_touches),
         antecedent_event_type(antecedent_event_type) {}
 };
@@ -45,50 +44,54 @@ DispositionHandlingInfo Info(int required_touches) {
 }
 
 DispositionHandlingInfo Info(int required_touches,
-                             GestureEventType antecedent_event_type) {
+                             EventType antecedent_event_type) {
   return DispositionHandlingInfo(required_touches, antecedent_event_type);
 }
 
 // This approach to disposition handling is described at http://goo.gl/5G8PWJ.
-DispositionHandlingInfo GetDispositionHandlingInfo(GestureEventType type) {
+DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
   switch (type) {
-    case GESTURE_TAP_DOWN:
+    case ET_GESTURE_TAP_DOWN:
       return Info(RT_START);
-    case GESTURE_TAP_CANCEL:
+    case ET_GESTURE_TAP_CANCEL:
       return Info(RT_START);
-    case GESTURE_SHOW_PRESS:
+    case ET_GESTURE_SHOW_PRESS:
       return Info(RT_START);
-    case GESTURE_LONG_PRESS:
+    case ET_GESTURE_LONG_PRESS:
       return Info(RT_START);
-    case GESTURE_LONG_TAP:
+    case ET_GESTURE_LONG_TAP:
       return Info(RT_START | RT_CURRENT);
-    case GESTURE_TAP:
-      return Info(RT_START | RT_CURRENT, GESTURE_TAP_UNCONFIRMED);
-    case GESTURE_TAP_UNCONFIRMED:
+    case ET_GESTURE_TAP:
+      return Info(RT_START | RT_CURRENT, ET_GESTURE_TAP_UNCONFIRMED);
+    case ET_GESTURE_TAP_UNCONFIRMED:
       return Info(RT_START | RT_CURRENT);
-    case GESTURE_DOUBLE_TAP:
-      return Info(RT_START | RT_CURRENT, GESTURE_TAP_UNCONFIRMED);
-    case GESTURE_SCROLL_BEGIN:
+    case ET_GESTURE_DOUBLE_TAP:
+      return Info(RT_START | RT_CURRENT, ET_GESTURE_TAP_UNCONFIRMED);
+    case ET_GESTURE_SCROLL_BEGIN:
       return Info(RT_START | RT_CURRENT);
-    case GESTURE_SCROLL_UPDATE:
-      return Info(RT_CURRENT, GESTURE_SCROLL_BEGIN);
-    case GESTURE_SCROLL_END:
-      return Info(RT_NONE, GESTURE_SCROLL_BEGIN);
-    case GESTURE_FLING_START:
-      return Info(RT_NONE, GESTURE_SCROLL_BEGIN);
-    case GESTURE_FLING_CANCEL:
-      return Info(RT_NONE, GESTURE_FLING_START);
-    case GESTURE_PINCH_BEGIN:
-      return Info(RT_START, GESTURE_SCROLL_BEGIN);
-    case GESTURE_PINCH_UPDATE:
-      return Info(RT_CURRENT, GESTURE_PINCH_BEGIN);
-    case GESTURE_PINCH_END:
-      return Info(RT_NONE, GESTURE_PINCH_BEGIN);
-    case GESTURE_TYPE_INVALID:
+    case ET_GESTURE_SCROLL_UPDATE:
+      return Info(RT_CURRENT, ET_GESTURE_SCROLL_BEGIN);
+    case ET_GESTURE_SCROLL_END:
+      return Info(RT_NONE, ET_GESTURE_SCROLL_BEGIN);
+    case ET_SCROLL_FLING_START:
+      return Info(RT_NONE, ET_GESTURE_SCROLL_BEGIN);
+    case ET_SCROLL_FLING_CANCEL:
+      return Info(RT_NONE, ET_SCROLL_FLING_START);
+    case ET_GESTURE_PINCH_BEGIN:
+      return Info(RT_START, ET_GESTURE_SCROLL_BEGIN);
+    case ET_GESTURE_PINCH_UPDATE:
+      return Info(RT_CURRENT, ET_GESTURE_PINCH_BEGIN);
+    case ET_GESTURE_PINCH_END:
+      return Info(RT_NONE, ET_GESTURE_PINCH_BEGIN);
+    default:
       break;
   }
   NOTREACHED();
   return Info(RT_NONE);
+}
+
+int GetGestureTypeIndex(EventType type) {
+  return type - ET_GESTURE_TYPE_FIRST;
 }
 
 }  // namespace
@@ -177,13 +180,14 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
     TouchEventAck ack_result) {
   for (size_t i = 0; i < packet.gesture_count(); ++i) {
     const GestureEventData& gesture = packet.gesture(i);
-    DCHECK_NE(GESTURE_TYPE_INVALID, gesture.type);
+    DCHECK(ET_GESTURE_TYPE_FIRST <= gesture.type &&
+           gesture.type <= ET_GESTURE_TYPE_LAST);
     if (IsGesturePrevented(gesture.type, ack_result, sequence_state)) {
-      last_event_of_type_dropped_.mark_bit(gesture.type);
+      last_event_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture.type));
       CancelTapIfNecessary();
       continue;
     }
-    last_event_of_type_dropped_.clear_bit(gesture.type);
+    last_event_of_type_dropped_.clear_bit(GetGestureTypeIndex(gesture.type));
     SendGesture(gesture);
   }
 }
@@ -192,35 +196,35 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
   // TODO(jdduke): Factor out gesture stream reparation code into a standalone
   // utility class.
   switch (event.type) {
-    case GESTURE_LONG_TAP:
+    case ET_GESTURE_LONG_TAP:
       CancelTapIfNecessary();
       CancelFlingIfNecessary();
       break;
-    case GESTURE_TAP_DOWN:
+    case ET_GESTURE_TAP_DOWN:
       DCHECK(!needs_tap_ending_event_);
       needs_tap_ending_event_ = true;
       break;
-    case GESTURE_TAP:
-    case GESTURE_TAP_CANCEL:
-    case GESTURE_TAP_UNCONFIRMED:
-    case GESTURE_DOUBLE_TAP:
+    case ET_GESTURE_TAP:
+    case ET_GESTURE_TAP_CANCEL:
+    case ET_GESTURE_TAP_UNCONFIRMED:
+    case ET_GESTURE_DOUBLE_TAP:
       needs_tap_ending_event_ = false;
       break;
-    case GESTURE_SCROLL_BEGIN:
+    case ET_GESTURE_SCROLL_BEGIN:
       CancelTapIfNecessary();
       CancelFlingIfNecessary();
       EndScrollIfNecessary();
       needs_scroll_ending_event_ = true;
       break;
-    case GESTURE_SCROLL_END:
+    case ET_GESTURE_SCROLL_END:
       needs_scroll_ending_event_ = false;
       break;
-    case GESTURE_FLING_START:
+    case ET_SCROLL_FLING_START:
       CancelFlingIfNecessary();
       needs_fling_ending_event_ = true;
       needs_scroll_ending_event_ = false;
       break;
-    case GESTURE_FLING_CANCEL:
+    case ET_SCROLL_FLING_CANCEL:
       needs_fling_ending_event_ = false;
       break;
     default:
@@ -233,7 +237,7 @@ void TouchDispositionGestureFilter::CancelTapIfNecessary() {
   if (!needs_tap_ending_event_)
     return;
 
-  SendGesture(CreateGesture(GESTURE_TAP_CANCEL));
+  SendGesture(CreateGesture(ET_GESTURE_TAP_CANCEL));
   DCHECK(!needs_tap_ending_event_);
 }
 
@@ -241,7 +245,7 @@ void TouchDispositionGestureFilter::CancelFlingIfNecessary() {
   if (!needs_fling_ending_event_)
     return;
 
-  SendGesture(CreateGesture(GESTURE_FLING_CANCEL));
+  SendGesture(CreateGesture(ET_SCROLL_FLING_CANCEL));
   DCHECK(!needs_fling_ending_event_);
 }
 
@@ -249,7 +253,7 @@ void TouchDispositionGestureFilter::EndScrollIfNecessary() {
   if (!needs_scroll_ending_event_)
     return;
 
-  SendGesture(CreateGesture(GESTURE_SCROLL_END));
+  SendGesture(CreateGesture(ET_GESTURE_SCROLL_END));
   DCHECK(!needs_scroll_ending_event_);
 }
 
@@ -312,7 +316,7 @@ void TouchDispositionGestureFilter::GestureSequence::UpdateState(
 }
 
 bool TouchDispositionGestureFilter::IsGesturePrevented(
-    GestureEventType gesture_type,
+    EventType gesture_type,
     TouchEventAck current,
     const GestureSequence::GestureHandlingState& state) const {
 
@@ -326,8 +330,8 @@ bool TouchDispositionGestureFilter::IsGesturePrevented(
   bool current_consumed = current == CONSUMED;
   if ((required_touches & RT_START && state.start_consumed) ||
       (required_touches & RT_CURRENT && current_consumed) ||
-      (last_event_of_type_dropped_.has_bit(
-           disposition_handling_info.antecedent_event_type))) {
+      (last_event_of_type_dropped_.has_bit(GetGestureTypeIndex(
+          disposition_handling_info.antecedent_event_type)))) {
     return true;
   }
   return false;

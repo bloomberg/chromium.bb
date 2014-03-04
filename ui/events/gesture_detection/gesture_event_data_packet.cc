@@ -58,7 +58,7 @@ GestureEventDataPacket& GestureEventDataPacket::operator=(
 }
 
 void GestureEventDataPacket::Push(const GestureEventData& gesture) {
-  DCHECK_NE(GESTURE_TYPE_INVALID, gesture.type);
+  DCHECK_NE(ET_UNKNOWN, gesture.type);
   CHECK_LT(gesture_count_, static_cast<size_t>(kMaxGesturesPerTouch));
   gestures_[gesture_count_++] = gesture;
 }

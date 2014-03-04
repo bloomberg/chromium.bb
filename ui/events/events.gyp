@@ -32,6 +32,7 @@
       ],
       'sources': [
         'events_base_export.h',
+        'event_constants.h',
         'event_switches.cc',
         'event_switches.h',
         'keycodes/keyboard_code_conversion.cc',
@@ -83,7 +84,6 @@
         'cocoa/cocoa_event_utils.mm',
         'event.cc',
         'event.h',
-        'event_constants.h',
         'event_dispatcher.cc',
         'event_dispatcher.h',
         'event_handler.cc',

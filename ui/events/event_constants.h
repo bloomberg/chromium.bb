@@ -31,11 +31,14 @@ enum EventType {
 
   // GestureEvent types
   ET_GESTURE_SCROLL_BEGIN,
+  ET_GESTURE_TYPE_FIRST = ET_GESTURE_SCROLL_BEGIN,
   ET_GESTURE_SCROLL_END,
   ET_GESTURE_SCROLL_UPDATE,
   ET_GESTURE_TAP,
   ET_GESTURE_TAP_DOWN,
   ET_GESTURE_TAP_CANCEL,
+  ET_GESTURE_TAP_UNCONFIRMED, // User tapped, but the tap delay hasn't expired.
+  ET_GESTURE_DOUBLE_TAP,
   ET_GESTURE_BEGIN,  // Sent before any other gesture types.
   ET_GESTURE_END,    // Sent after any other gestures.
   ET_GESTURE_TWO_FINGER_TAP,
@@ -57,6 +60,7 @@ enum EventType {
   ET_SCROLL,
   ET_SCROLL_FLING_START,
   ET_SCROLL_FLING_CANCEL,
+  ET_GESTURE_TYPE_LAST = ET_SCROLL_FLING_CANCEL,
 
   // Sent by the system to indicate any modal type operations, such as drag and
   // drop or menus, should stop.

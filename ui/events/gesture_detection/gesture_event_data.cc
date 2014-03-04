@@ -9,15 +9,15 @@
 namespace ui {
 
 GestureEventData::GestureEventData()
-    : type(GESTURE_TYPE_INVALID), x(0), y(0) {}
+    : type(ET_UNKNOWN), x(0), y(0) {}
 
-GestureEventData::GestureEventData(GestureEventType type,
+GestureEventData::GestureEventData(EventType type,
                                    base::TimeTicks time,
                                    float x,
                                    float y,
                                    const Details& details)
     : type(type), time(time), x(x), y(y), details(details) {
-  DCHECK_NE(GESTURE_TYPE_INVALID, type);
+  DCHECK(ET_GESTURE_TYPE_FIRST <= type && type <= ET_GESTURE_TYPE_LAST);
 }
 
 GestureEventData::Details::Details() { memset(this, 0, sizeof(Details)); }
