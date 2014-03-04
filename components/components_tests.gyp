@@ -41,6 +41,8 @@
             'autofill/core/browser/phone_number_unittest.cc',
             'autofill/core/browser/phone_number_i18n_unittest.cc',
             'autofill/core/browser/validation_unittest.cc',
+            'autofill/core/browser/webdata/autofill_profile_syncable_service_unittest.cc',
+            'autofill/core/browser/webdata/autofill_table_unittest.cc',
             'autofill/core/browser/webdata/web_data_service_unittest.cc',
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
@@ -128,6 +130,7 @@
             # that iOS shares. crbug.com/325243
             '../content/content_shell_and_tests.gyp:test_support_content',
             '../sync/sync.gyp:sync',
+            '../sync/sync.gyp:test_support_sync_api',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
             '../ui/gfx/gfx.gyp:gfx',

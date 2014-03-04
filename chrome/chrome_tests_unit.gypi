@@ -1958,11 +1958,6 @@
         '../components/autofill/core/browser/password_autofill_manager_unittest.cc',
         '../components/autofill/core/browser/personal_data_manager_unittest.cc',
 
-        # TODO(caitkp): Move to //components/components_tests.gypi once
-        # remaining dependencies back to //chrome are eliminated.
-        '../components/autofill/core/browser/webdata/autofill_table_unittest.cc',
-        '../components/autofill/core/browser/webdata/autofill_profile_syncable_service_unittest.cc',
-
         # TODO(yael): Move to //components/components_tests.gypi once
         # nacl_defines is moved out of chrome.gyp into a common place.
         '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',

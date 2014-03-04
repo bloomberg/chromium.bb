@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -23,7 +22,6 @@ using ::testing::Eq;
 using ::testing::Return;
 using ::testing::Property;
 using base::ASCIIToUTF16;
-using content::BrowserThread;
 
 namespace {
 
@@ -212,9 +210,7 @@ syncer::SyncData ConstructCompleteSyncData() {
 
 class AutofillProfileSyncableServiceTest : public testing::Test {
  public:
-  AutofillProfileSyncableServiceTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      db_thread_(BrowserThread::DB, &message_loop_) {}
+  AutofillProfileSyncableServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
     sync_processor_.reset(new MockSyncChangeProcessor);
@@ -255,8 +251,6 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
   MockAutofillProfileSyncableService autofill_syncable_service_;
   scoped_ptr<MockSyncChangeProcessor> sync_processor_;
 };
