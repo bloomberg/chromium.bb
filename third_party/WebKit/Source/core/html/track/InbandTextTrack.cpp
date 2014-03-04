@@ -84,8 +84,12 @@ size_t InbandTextTrack::inbandTrackIndex()
     return m_webTrack->textTrackIndex();
 }
 
-void InbandTextTrack::trackRemoved()
+void InbandTextTrack::setTrackList(TextTrackList* trackList)
 {
+    TextTrack::setTrackList(trackList);
+    if (trackList)
+        return;
+
     ASSERT(m_webTrack);
     m_webTrack->setClient(0);
     m_webTrack = 0;

@@ -146,6 +146,17 @@ bool TextTrack::isValidKindKeyword(const AtomicString& value)
     return false;
 }
 
+void TextTrack::setTrackList(TextTrackList* trackList)
+{
+    // NOTE: We are using m_trackList->owner() instead of m_client here because
+    // when a HTMLTrackElement is reparented, HTMLTrackElement::textTrackRemoveCues()
+    // will forward the call to the new parent instead of the element the track is being
+    // removed from.
+    if (!trackList && m_trackList && m_trackList->owner() && m_cues)
+        m_trackList->owner()->textTrackRemoveCues(this, m_cues.get());
+    m_trackList = trackList;
+}
+
 void TextTrack::setKind(const AtomicString& newKind)
 {
     AtomicString oldKind = kind();
@@ -423,4 +434,3 @@ ExecutionContext* TextTrack::executionContext() const
 }
 
 } // namespace WebCore
-

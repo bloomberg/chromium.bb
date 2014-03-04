@@ -64,7 +64,7 @@ public:
     }
     virtual ~TextTrack();
 
-    void setTrackList(TextTrackList* trackList) { m_trackList = trackList; }
+    virtual void setTrackList(TextTrackList*);
     TextTrackList* trackList() { return m_trackList; }
 
     virtual void setKind(const AtomicString&) OVERRIDE;

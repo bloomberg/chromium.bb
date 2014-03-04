@@ -188,9 +188,11 @@ public:
 
     void addTextTrack(TextTrack*);
     void removeTextTrack(TextTrack*);
-    void removeAllInbandTracks();
     void closeCaptionTracksChanged();
     void notifyMediaPlayerOfTextTrackChanges();
+
+    // Implements the "forget the media element's media-resource-specific tracks" algorithm in the HTML5 spec.
+    void forgetResourceSpecificTracks();
 
     void didAddTrackElement(HTMLTrackElement*);
     void didRemoveTrackElement(HTMLTrackElement*);

@@ -657,14 +657,40 @@ void HTMLMediaElement::prepareForLoad()
 
     // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
     if (m_networkState != NETWORK_EMPTY) {
+        // 4.1 - Queue a task to fire a simple event named emptied at the media element.
+        scheduleEvent(EventTypeNames::emptied);
+
+        // 4.2 - If a fetching process is in progress for the media element, the user agent should stop it.
         m_networkState = NETWORK_EMPTY;
+
+        // 4.3 - Forget the media element's media-resource-specific tracks.
+        forgetResourceSpecificTracks();
+
+        // 4.4 - If readyState is not set to HAVE_NOTHING, then set it to that state.
         m_readyState = HAVE_NOTHING;
         m_readyStateMaximum = HAVE_NOTHING;
-        refreshCachedTime();
+
+        // 4.5 - If the paused attribute is false, then set it to true.
         m_paused = true;
+
+        // 4.6 - If seeking is true, set it to false.
         m_seeking = false;
+
+        // 4.7 - Set the current playback position to 0.
+        //       Set the official playback position to 0.
+        //       If this changed the official playback position, then queue a task to fire a simple event named timeupdate at the media element.
+        // FIXME: Add support for firing this event.
+
+        // 4.8 - Set the initial playback position to 0.
+        // FIXME: Make this less subtle. The position only becomes 0 because of the createMediaPlayer() call
+        // above.
+        refreshCachedTime();
         invalidateCachedTime();
-        scheduleEvent(EventTypeNames::emptied);
+
+        // 4.9 - Set the timeline offset to Not-a-Number (NaN).
+        // 4.10 - Update the duration attribute to Not-a-Number (NaN).
+
+
         updateMediaController();
         if (RuntimeEnabledFeatures::videoTrackEnabled())
             updateActiveTextTrackCues(0);
@@ -688,6 +714,9 @@ void HTMLMediaElement::prepareForLoad()
     // 2 - Asynchronously await a stable state.
 
     m_playedTimeRanges = TimeRanges::create();
+
+    // FIXME: Investigate whether these can be moved into m_networkState != NETWORK_EMPTY block above
+    // so they are closer to the relevant spec steps.
     m_lastSeekTime = 0;
     m_duration = numeric_limits<double>::quiet_NaN();
 
@@ -1358,6 +1387,7 @@ void HTMLMediaElement::noneSupported()
     m_error = MediaError::create(MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED);
 
     // 6.2 - Forget the media element's media-resource-specific text tracks.
+    forgetResourceSpecificTracks();
 
     // 6.3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE value.
     m_networkState = NETWORK_NO_SOURCE;
@@ -1432,10 +1462,17 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
     // <source> children, schedule the next one
     if (m_readyState < HAVE_METADATA && m_loadState == LoadingFromSourceElement) {
 
+        // resource selection algorithm
+        // Step 9.Otherwise.9 - Failed with elements: Queue a task, using the DOM manipulation task source, to fire a simple event named error at the candidate element.
         if (m_currentSourceNode)
             m_currentSourceNode->scheduleErrorEvent();
         else
             WTF_LOG(Media, "HTMLMediaElement::setNetworkState - error event not sent, <source> was removed");
+
+        // 9.Otherwise.10 - Asynchronously await a stable state. The synchronous section consists of all the remaining steps of this algorithm until the algorithm says the synchronous section has ended.
+
+        // 9.Otherwise.11 - Forget the media element's media-resource-specific tracks.
+        forgetResourceSpecificTracks();
 
         if (havePotentialSourceChild()) {
             WTF_LOG(Media, "HTMLMediaElement::setNetworkState - scheduling next <source>");
@@ -2514,25 +2551,17 @@ void HTMLMediaElement::addTextTrack(TextTrack* track)
 void HTMLMediaElement::removeTextTrack(TextTrack* track)
 {
     TrackDisplayUpdateScope scope(this);
-    TextTrackCueList* cues = track->cues();
-    if (cues)
-        textTrackRemoveCues(track, cues);
     m_textTracks->remove(track);
 
     closeCaptionTracksChanged();
 }
 
-void HTMLMediaElement::removeAllInbandTracks()
+void HTMLMediaElement::forgetResourceSpecificTracks()
 {
-    if (!m_textTracks)
-        return;
-
-    TrackDisplayUpdateScope scope(this);
-    for (int i = m_textTracks->length() - 1; i >= 0; --i) {
-        TextTrack* track = m_textTracks->item(i);
-
-        if (track->trackType() == TextTrack::InBand)
-            removeTextTrack(track);
+    if (m_textTracks) {
+        TrackDisplayUpdateScope scope(this);
+        m_textTracks->removeAllInbandTracks();
+        closeCaptionTracksChanged();
     }
 }
 
@@ -3388,7 +3417,7 @@ void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClient()
 
 void HTMLMediaElement::clearMediaPlayer(int flags)
 {
-    removeAllInbandTracks();
+    forgetResourceSpecificTracks();
 
     closeMediaSource();
 

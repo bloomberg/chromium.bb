@@ -47,7 +47,7 @@ public:
     virtual ~InbandTextTrack();
 
     size_t inbandTrackIndex();
-    void trackRemoved();
+    virtual void setTrackList(TextTrackList*) OVERRIDE FINAL;
 
 private:
     InbandTextTrack(Document&, TextTrackClient*, blink::WebInbandTextTrack*);
