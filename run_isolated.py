@@ -267,12 +267,12 @@ def rmtree(root):
   make_tree_deleteable(root)
   logging.info('rmtree(%s)', root)
   if sys.platform == 'win32':
-    for i in range(3):
+    for i in range(4):
       try:
         shutil.rmtree(root)
         break
       except WindowsError:  # pylint: disable=E0602
-        if i == 2:
+        if i == 3:
           raise
         delay = (i+1)*2
         print >> sys.stderr, (
