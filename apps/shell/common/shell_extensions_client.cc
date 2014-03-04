@@ -5,6 +5,7 @@
 #include "apps/shell/common/shell_extensions_client.h"
 
 #include "base/logging.h"
+#include "chrome/common/extensions/api/sockets/sockets_manifest_handler.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/common_manifest_handlers.h"
@@ -76,8 +77,13 @@ ShellExtensionsClient::~ShellExtensionsClient() {
 
 void ShellExtensionsClient::Initialize() {
   extensions::RegisterCommonManifestHandlers();
-  extensions::ManifestHandler::FinalizeRegistration();
 
+  // TODO(rockot): API manifest handlers which move out to src/extensions
+  // should either end up in RegisterCommonManifestHandlers or some new
+  // initialization step specifically for API manifest handlers.
+  (new extensions::SocketsManifestHandler)->Register();
+
+  extensions::ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 }
 

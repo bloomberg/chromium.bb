@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/resource_context.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -85,19 +85,25 @@ void SocketAsyncApiFunction::RemoveSocket(int api_resource_id) {
 }
 
 SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
-    : io_thread_(g_browser_process->io_thread()),
+    : resource_context_(NULL),
       request_handle_(new net::HostResolver::RequestHandle),
-      addresses_(new net::AddressList) {
-}
+      addresses_(new net::AddressList) {}
 
 SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
+}
+
+bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
+  if (!SocketAsyncApiFunction::PrePrepare())
+    return false;
+  resource_context_ = browser_context()->GetResourceContext();
+  return resource_context_ != NULL;
 }
 
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
     const std::string& hostname) {
   net::HostResolver* host_resolver =
-      HostResolverWrapper::GetInstance()->GetHostResolver(
-          io_thread_->globals()->host_resolver.get());
+      extensions::HostResolverWrapper::GetInstance()->GetHostResolver(
+          resource_context_->GetHostResolver());
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not

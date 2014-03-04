@@ -4,12 +4,10 @@
 
 #include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "net/base/net_errors.h"
 
 namespace {
@@ -41,10 +39,9 @@ TCPSocketEventDispatcher* TCPSocketEventDispatcher::Get(
 
 TCPSocketEventDispatcher::TCPSocketEventDispatcher(
     content::BrowserContext* context)
-    : thread_id_(Socket::kThreadId),
-      profile_(Profile::FromBrowserContext(context)) {
+    : thread_id_(Socket::kThreadId), browser_context_(context) {
   ApiResourceManager<ResumableTCPSocket>* manager =
-      ApiResourceManager<ResumableTCPSocket>::Get(profile_);
+      ApiResourceManager<ResumableTCPSocket>::Get(browser_context_);
   DCHECK(manager) << "There is no socket manager. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "
@@ -78,7 +75,7 @@ void TCPSocketEventDispatcher::StartSocketRead(const std::string& extension_id,
 
   ReadParams params;
   params.thread_id = thread_id_;
-  params.profile_id = profile_;
+  params.browser_context_id = browser_context_;
   params.extension_id = extension_id;
   params.sockets = sockets_;
   params.socket_id = socket_id;
@@ -172,25 +169,26 @@ void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
                                          scoped_ptr<Event> event) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DispatchEvent,
-                  params.profile_id,
-                  params.extension_id,
-                  base::Passed(event.Pass())));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&DispatchEvent,
+                                     params.browser_context_id,
+                                     params.extension_id,
+                                     base::Passed(event.Pass())));
 }
 
 // static
-void TCPSocketEventDispatcher::DispatchEvent(void* profile_id,
+void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
                                              const std::string& extension_id,
                                              scoped_ptr<Event> event) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+  content::BrowserContext* context =
+      reinterpret_cast<content::BrowserContext*>(browser_context_id);
+  if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
 
-  EventRouter* router = ExtensionSystem::Get(profile)->event_router();
+  EventRouter* router = ExtensionSystem::Get(context)->event_router();
   if (router)
     router->DispatchEventToExtension(extension_id, event.Pass());
 }

@@ -8,7 +8,9 @@
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 struct Event;
@@ -56,7 +58,7 @@ class TCPSocketEventDispatcher
     ~ReadParams();
 
     content::BrowserThread::ID thread_id;
-    void* profile_id;
+    void* browser_context_id;
     std::string extension_id;
     scoped_refptr<SocketData> sockets;
     int socket_id;
@@ -77,13 +79,13 @@ class TCPSocketEventDispatcher
   static void PostEvent(const ReadParams& params, scoped_ptr<Event> event);
 
   // Dispatch an extension event on to EventRouter instance on UI thread.
-  static void DispatchEvent(void* profile_id,
+  static void DispatchEvent(void* browser_context_id,
                             const std::string& extension_id,
                             scoped_ptr<Event> event);
 
   // Usually IO thread (except for unit testing).
   content::BrowserThread::ID thread_id_;
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   scoped_refptr<SocketData> sockets_;
 };
 

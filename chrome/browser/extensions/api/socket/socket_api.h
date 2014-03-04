@@ -17,10 +17,9 @@
 
 #include <string>
 
-class IOThread;
-
 namespace content {
 class BrowserContext;
+class ResourceContext;
 }
 
 namespace net {
@@ -119,6 +118,9 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
   SocketExtensionWithDnsLookupFunction();
   virtual ~SocketExtensionWithDnsLookupFunction();
 
+  // AsyncApiFunction:
+  virtual bool PrePrepare() OVERRIDE;
+
   void StartDnsLookup(const std::string& hostname);
   virtual void AfterDnsLookup(int lookup_result) = 0;
 
@@ -127,10 +129,8 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
  private:
   void OnDnsLookup(int resolve_result);
 
-  // This instance is widely available through BrowserProcess, but we need to
-  // acquire it on the UI thread and then use it on the IO thread, so we keep a
-  // plain pointer to it here as we move from thread to thread.
-  IOThread* io_thread_;
+  // Weak pointer to the resource context.
+  content::ResourceContext* resource_context_;
 
   scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
   scoped_ptr<net::AddressList> addresses_;
