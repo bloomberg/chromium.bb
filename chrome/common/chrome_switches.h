@@ -382,7 +382,7 @@ extern const char kSyncNotificationHostPort[];
 extern const char kSyncServiceURL[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
-extern const char kSyncDisableDeferredStartup[];
+extern const char kSyncEnableDeferredStartup[];
 extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncfsEnableDirectoryOperation[];
 extern const char kTabCapture[];

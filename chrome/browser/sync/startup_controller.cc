@@ -72,8 +72,8 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_up_time_ = base::Time::Now();
 
   if (deferred_option == STARTUP_BACKEND_DEFERRED &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDisableDeferredStartup) &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableDeferredStartup) &&
       sync_prefs_->GetPreferredDataTypes(registered_types_)
           .Has(syncer::SESSIONS)) {
     if (first_start) {
@@ -152,8 +152,8 @@ bool StartupController::TryStart() {
 }
 
 void StartupController::OnFallbackStartupTimerExpired() {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncDisableDeferredStartup));
+  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncEnableDeferredStartup));
 
   if (!start_backend_time_.is_null())
     return;
@@ -179,8 +179,8 @@ std::string StartupController::GetBackendInitializationStateString() const {
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDisableDeferredStartup)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableDeferredStartup)) {
     DVLOG(2) << "Ignoring data type request for sync startup: "
              << syncer::ModelTypeToString(type);
     return;

@@ -1418,7 +1418,7 @@ const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
 // Enables deferring sync backend initialization until user initiated changes
 // occur.
-const char kSyncDisableDeferredStartup[]     = "sync-disable-deferred-startup";
+const char kSyncEnableDeferredStartup[]     = "sync-enable-deferred-startup";
 
 // Enables feature to avoid unnecessary GetUpdate requests.
 const char kSyncEnableGetUpdateAvoidance[]   =
