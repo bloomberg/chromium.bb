@@ -113,6 +113,10 @@ TEST(AutofillFieldTest, IsFieldFillable) {
   field.set_heuristic_type(NAME_FIRST);
   field.set_server_type(NAME_LAST);
   EXPECT_TRUE(field.IsFieldFillable());
+
+  // Field has autocomplete="off" set.
+  field.should_autocomplete = false;
+  EXPECT_FALSE(field.IsFieldFillable());
 }
 
 TEST(AutofillFieldTest, FillPhoneNumber) {

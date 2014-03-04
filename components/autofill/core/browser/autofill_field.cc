@@ -385,7 +385,7 @@ std::string AutofillField::FieldSignature() const {
 }
 
 bool AutofillField::IsFieldFillable() const {
-  return !Type().IsUnknown();
+  return should_autocomplete && !Type().IsUnknown();
 }
 
 // static

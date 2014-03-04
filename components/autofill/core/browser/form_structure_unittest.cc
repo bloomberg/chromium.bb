@@ -125,7 +125,8 @@ TEST(FormStructureTest, AutofillCount) {
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_EQ(1U, form_structure->autofill_count());
 
-  // Add a field with should_autocomplete=false.
+  // Add a field with should_autocomplete=false. This should not be considered a
+  // fillable field.
   field.label = ASCIIToUTF16("address1");
   field.name = ASCIIToUTF16("address1");
   field.form_control_type = "text";
@@ -134,11 +135,7 @@ TEST(FormStructureTest, AutofillCount) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  // DetermineHeuristicTypes also assign field type for fields with
-  // autocomplete=off thus autofill_count includes them. This is a bug,
-  // and they should not be counted. See http://crbug.com/176432 for details.
-  // TODO(benquan): change it to EXPECT_EQ(1U, ... when the bug is fixed.
-  EXPECT_EQ(2U, form_structure->autofill_count());
+  EXPECT_EQ(1U, form_structure->autofill_count());
 }
 
 TEST(FormStructureTest, SourceURL) {
