@@ -14,7 +14,7 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
     : cache_(cache),
       record_(record),
       name_(record->getName()),
-      fields_need_tracing_(TracingStatus::Unneeded()),
+      fields_need_tracing_(TracingStatus::Unknown()),
       bases_(0),
       fields_(0),
       determined_trace_methods_(false),
@@ -26,19 +26,26 @@ RecordInfo::~RecordInfo() {
   delete bases_;
 }
 
-bool RecordInfo::IsTemplate(TemplateArgs* output_args) {
+// Get |count| number of template arguments. Returns false if there
+// are fewer than |count| arguments or any of the arguments are not
+// of a valid Type structure. If |count| is non-positive, all
+// arguments are collected.
+bool RecordInfo::GetTemplateArgs(size_t count, TemplateArgs* output_args) {
   ClassTemplateSpecializationDecl* tmpl =
       dyn_cast<ClassTemplateSpecializationDecl>(record_);
   if (!tmpl)
     return false;
-  if (!output_args)
-    return true;
   const TemplateArgumentList& args = tmpl->getTemplateArgs();
-  for (unsigned i = 0; i < args.size(); ++i) {
+  if (args.size() < count)
+    return false;
+  if (count <= 0)
+    count = args.size();
+  for (unsigned i = 0; i < count; ++i) {
     TemplateArgument arg = args[i];
-    if (arg.getKind() == TemplateArgument::Type) {
-      if (CXXRecordDecl* decl = arg.getAsType()->getAsCXXRecordDecl())
-        output_args->push_back(cache_->Lookup(decl));
+    if (arg.getKind() == TemplateArgument::Type && !arg.getAsType().isNull()) {
+      output_args->push_back(arg.getAsType().getTypePtr());
+    } else {
+      return false;
     }
   }
   return true;
@@ -50,10 +57,11 @@ bool RecordInfo::IsHeapAllocatedCollection() {
     return false;
 
   TemplateArgs args;
-  if (IsTemplate(&args)) {
+  if (GetTemplateArgs(0, &args)) {
     for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
-      if ((*it)->name() == kHeapAllocatorName)
-        return true;
+      if (CXXRecordDecl* decl = (*it)->getAsCXXRecordDecl())
+        if (decl->getName() == kHeapAllocatorName)
+          return true;
     }
   }
 
@@ -131,10 +139,9 @@ RecordInfo::Bases* RecordInfo::CollectBases() {
        it != record_->bases_end();
        ++it) {
     if (CXXRecordDecl* base = it->getType()->getAsCXXRecordDecl()) {
-      // Only collect bases that might need to be traced.
-      TracingStatus status = cache_->Lookup(base)->NeedsTracing();
-      if (!status.IsUnneeded())
-        bases->insert(std::make_pair(base, status));
+      TracingStatus status =
+          cache_->Lookup(base)->NeedsTracing(Edge::kRecursive);
+      bases->insert(std::make_pair(base, status));
     }
   }
   return bases;
@@ -149,19 +156,20 @@ RecordInfo::Fields& RecordInfo::GetFields() {
 RecordInfo::Fields* RecordInfo::CollectFields() {
   // Compute the collection locally to avoid inconsistent states.
   Fields* fields = new Fields;
+  TracingStatus fields_status = TracingStatus::Unneeded();
   for (RecordDecl::field_iterator it = record_->field_begin();
        it != record_->field_end();
        ++it) {
+    FieldDecl* field = *it;
     // Ignore fields annotated with the NO_TRACE_CHECKING macro.
-    if (IsAnnotated(*it, "blink_no_trace_checking"))
+    if (IsAnnotated(field, "blink_no_trace_checking"))
       continue;
-    // Only collect fields that might need to be traced.
-    TracingStatus status = NeedsTracing(*it);
-    if (!status.IsUnneeded()) {
-      fields->insert(std::make_pair(*it, FieldPoint(status)));
-      fields_need_tracing_ = fields_need_tracing_.LUB(status);
+    if (Edge* edge = CreateEdge(field->getType().getTypePtrOrNull())) {
+      fields->insert(std::make_pair(field, FieldPoint(edge)));
+      fields_status = fields_status.LUB(edge->NeedsTracing(Edge::kRecursive));
     }
   }
+  fields_need_tracing_ = fields_status;
   return fields;
 }
 
@@ -193,64 +201,95 @@ void RecordInfo::DetermineTracingMethods() {
   }
 }
 
-// A type needs tracing if it is either a subclass of
-// a garbage collected base or it contains fields that need tracing.
-// A collection type needs tracing if it is HeapAllocated or contains elements
-// that need tracing.
-// As a special-case, member handles always need tracing.
-TracingStatus RecordInfo::NeedsTracing(NeedsTracingOption option) {
-  if (Config::IsRefPtr(name_) || Config::IsPersistentHandle(name_)) {
-    return TracingStatus::Unneeded();
-  }
-
-  if (Config::IsMemberHandle(name_) ||
-      IsGCDerived() ||
-      IsHeapAllocatedCollection()) {
+TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
+  if (IsGCDerived() || GetTraceMethod())
     return TracingStatus::Needed();
-  }
 
-  if (option == kNonRecursive) {
-    return TracingStatus::Unknown();
-  }
+  if (option == Edge::kRecursive)
+    GetFields();
 
-  if (Config::IsOwnPtr(name_)) {
-    TemplateArgs args;
-    return (IsTemplate(&args) && args.size() > 0)
-               ? args[0]->NeedsTracing(kNonRecursive)
-               : TracingStatus::Unknown();
-  }
-
-  if (Config::IsWTFCollection(name_)) {
-    TemplateArgs args;
-    if (IsTemplate(&args)) {
-      for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
-        TracingStatus status = (*it)->NeedsTracing(kNonRecursive);
-        if (status.IsNeeded())
-          return status;
-      }
-    }
-    return TracingStatus::Unknown();
-  }
-
-  GetFields();
   return fields_need_tracing_;
 }
 
-TracingStatus RecordInfo::NeedsTracing(FieldDecl* field) {
-  const QualType type = field->getType();
-
-  if (type->isPointerType()) {
-    RecordInfo* info = cache_->Lookup(type->getPointeeCXXRecordDecl());
-    if (!info)
-      return TracingStatus::Unneeded();
-
-    // TODO: Once transitioning is over, reintroduce checks for pointers to
-    // GC-managed objects.
-
-    // Don't do a recursive check for pointer types.
-    return TracingStatus::Unknown();
+Edge* RecordInfo::CreateEdge(const Type* type) {
+  if (!type) {
+    return 0;
   }
 
-  RecordInfo* info = cache_->Lookup(type->getAsCXXRecordDecl());
-  return info ? info->NeedsTracing() : TracingStatus::Unneeded();
+  if (type->isPointerType()) {
+    if (Edge* ptr = CreateEdge(type->getPointeeType().getTypePtrOrNull()))
+      return new RawPtr(ptr);
+    return 0;
+  }
+
+  CXXRecordDecl* record = type->getAsCXXRecordDecl();
+
+  // If the type is neither a pointer or a C++ record we ignore it.
+  if (!record) {
+    return 0;
+  }
+
+  RecordInfo* info = cache_->Lookup(record);
+
+  TemplateArgs args;
+
+  if (Config::IsRefPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new RefPtr(ptr);
+    return 0;
+  }
+
+  if (Config::IsOwnPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new OwnPtr(ptr);
+    return 0;
+  }
+
+  if (Config::IsMember(info->name()) && info->GetTemplateArgs(1, &args)) {
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new Member(ptr);
+    return 0;
+  }
+
+  if (Config::IsWeakMember(info->name()) && info->GetTemplateArgs(1, &args)) {
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new WeakMember(ptr);
+    return 0;
+  }
+
+  if (Config::IsPersistent(info->name())) {
+    // Persistent might refer to v8::Persistent, so check the name space.
+    // TODO: Consider using a more canonical identification than names.
+    NamespaceDecl* ns =
+        dyn_cast<NamespaceDecl>(info->record()->getDeclContext());
+    if (!ns || ns->getName() != "WebCore")
+      return 0;
+    if (!info->GetTemplateArgs(1, &args))
+      return 0;
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new Persistent(ptr);
+    return 0;
+  }
+
+  if (Config::IsGCCollection(info->name()) ||
+      Config::IsWTFCollection(info->name())) {
+    bool is_root = Config::IsPersistentGCCollection(info->name());
+    bool on_heap = is_root || info->IsHeapAllocatedCollection();
+    size_t count = Config::CollectionDimension(info->name());
+    if (!info->GetTemplateArgs(count, &args))
+      return 0;
+    Collection* edge = new Collection(on_heap, is_root);
+    for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
+      if (Edge* member = CreateEdge(*it)) {
+        edge->members().push_back(member);
+      } else {
+        // We failed to create an edge so abort the entire edge construction.
+        delete edge;  // Will delete the already allocated members.
+        return 0;
+      }
+    }
+    return edge;
+  }
+
+  return new Value(info);
 }

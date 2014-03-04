@@ -12,7 +12,7 @@
 #include <map>
 #include <vector>
 
-#include "TracingStatus.h"
+#include "Edge.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/CXXInheritance.h"
@@ -42,10 +42,17 @@ class BasePoint : public GraphPoint {
 
 class FieldPoint : public GraphPoint {
  public:
-  explicit FieldPoint(const TracingStatus& status) : status_(status) {}
-  const TracingStatus NeedsTracing() { return status_; }
+  explicit FieldPoint(Edge* edge) : edge_(edge) {
+    assert(edge && "FieldPoint edge must be non-null");
+  }
+  const TracingStatus NeedsTracing() {
+    return edge_->NeedsTracing(Edge::kRecursive);
+  }
+  Edge* edge() { return edge_; }
  private:
-  const TracingStatus status_;
+  Edge* edge_;
+  friend class RecordCache;
+  void deleteEdge() { delete edge_; }
 };
 
 // Wrapper class to lazily collect information about a C++ record.
@@ -53,9 +60,7 @@ class RecordInfo {
  public:
   typedef std::map<clang::CXXRecordDecl*, BasePoint> Bases;
   typedef std::map<clang::FieldDecl*, FieldPoint> Fields;
-  typedef std::vector<RecordInfo*> TemplateArgs;
-
-  enum NeedsTracingOption { kRecursive, kNonRecursive };
+  typedef std::vector<const clang::Type*> TemplateArgs;
 
   ~RecordInfo();
 
@@ -66,14 +71,14 @@ class RecordInfo {
   clang::CXXMethodDecl* GetTraceMethod();
   clang::CXXMethodDecl* GetTraceDispatchMethod();
 
-  bool IsTemplate(TemplateArgs* args = 0);
+  bool GetTemplateArgs(size_t count, TemplateArgs* output_args);
 
   bool IsHeapAllocatedCollection();
   bool IsGCDerived(clang::CXXBasePaths* paths = 0);
 
   bool IsStackAllocated();
   bool RequiresTraceMethod();
-  TracingStatus NeedsTracing(NeedsTracingOption option = kRecursive);
+  TracingStatus NeedsTracing(Edge::NeedsTracingOption);
 
  private:
   RecordInfo(clang::CXXRecordDecl* record, RecordCache* cache);
@@ -82,7 +87,7 @@ class RecordInfo {
   Bases* CollectBases();
   void DetermineTracingMethods();
 
-  TracingStatus NeedsTracing(clang::FieldDecl* field);
+  Edge* CreateEdge(const clang::Type* type);
 
   RecordCache* cache_;
   clang::CXXRecordDecl* record_;
@@ -112,6 +117,18 @@ class RecordCache {
 
   RecordInfo* Lookup(const clang::CXXRecordDecl* record) {
     return Lookup(const_cast<clang::CXXRecordDecl*>(record));
+  }
+
+  ~RecordCache() {
+    for (Cache::iterator it = cache_.begin(); it != cache_.end(); ++it) {
+      if (!it->second.fields_)
+        continue;
+      for (RecordInfo::Fields::iterator fit = it->second.fields_->begin();
+        fit != it->second.fields_->end();
+        ++fit) {
+        fit->second.deleteEdge();
+      }
+    }
   }
 
  private:

@@ -69,6 +69,17 @@ class Config {
            IsPersistentGCCollection(name);
   }
 
+  static bool IsHashMap(const std::string& name) {
+    return name == "HashMap" ||
+           name == "HeapHashMap" ||
+           name == "PersistentHeapHashMap";
+  }
+
+  // Assumes name is a valid collection name.
+  static size_t CollectionDimension(const std::string& name) {
+    return (IsHashMap(name) || name == "pair") ? 2 : 1;
+  }
+
   static bool IsGCFinalizedBase(const std::string& name) {
     return name == "GarbageCollectedFinalized" ||
            name == "RefCountedGarbageCollected";

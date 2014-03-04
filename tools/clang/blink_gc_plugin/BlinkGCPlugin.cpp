@@ -61,6 +61,8 @@ static bool IsTemplateInstantiation(CXXRecordDecl* record) {
     // TODO: unsupported cases.
     case TSK_ExplicitInstantiationDeclaration:
       return false;
+    default:
+      assert(false && "Unknown template specialization kind");
   }
 }
 
@@ -176,7 +178,9 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
   bool IsWeakCallback() { return !trace_; }
 
   void MarkTraced(RecordInfo::Fields::iterator it) {
-    // TODO: In a weak callback we can't mark strong fields as traced.
+    // In a weak callback we can't mark strong fields as traced.
+    if (IsWeakCallback() && !it->second.edge()->IsWeakMember())
+      return;
     it->second.MarkTraced();
   }
 
