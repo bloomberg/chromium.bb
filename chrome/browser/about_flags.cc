@@ -879,7 +879,7 @@ const Experiment kExperiments[] = {
     "enable-gpu-rasterization",
     IDS_FLAGS_ENABLE_GPU_RASTERIZATION_NAME,
     IDS_FLAGS_ENABLE_GPU_RASTERIZATION_DESCRIPTION,
-    kOsAll,
+    kOsAndroid,
     SINGLE_VALUE_TYPE(cc::switches::kEnableGPURasterization)
   },
   {
