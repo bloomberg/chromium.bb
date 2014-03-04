@@ -83,7 +83,7 @@ static WorldMap& isolatedWorldMap()
     return map;
 }
 
-void DOMWrapperWorld::getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds)
+void DOMWrapperWorld::allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds)
 {
     ASSERT(isMainThread());
     worlds.append(mainWorld());

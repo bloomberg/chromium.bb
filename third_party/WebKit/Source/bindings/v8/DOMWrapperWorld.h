@@ -63,7 +63,7 @@ public:
     ~DOMWrapperWorld();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
-    static void getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
+    static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
     static DOMWrapperWorld* world(v8::Handle<v8::Context> context)
     {

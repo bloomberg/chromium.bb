@@ -41,13 +41,11 @@ DOMDataStore::DOMDataStore(bool isMainWorld)
     : m_isMainWorld(isMainWorld)
     , m_wrapperMap(v8::Isolate::GetCurrent()) // FIXME Don't call GetCurrent twice.
 {
-    V8PerIsolateData::current()->registerDOMDataStore(this);
 }
 
 DOMDataStore::~DOMDataStore()
 {
     ASSERT(!m_isMainWorld); // We never actually destruct the main world's DOMDataStore.
-    V8PerIsolateData::current()->unregisterDOMDataStore(this);
     m_wrapperMap.clear();
 }
 

@@ -82,20 +82,6 @@ public:
 
     v8::Persistent<v8::Value>& ensureLiveRoot();
 
-    DOMDataStoreList& allStores() { return m_domDataStoreList; }
-
-    void registerDOMDataStore(DOMDataStore* domDataStore)
-    {
-        ASSERT(m_domDataStoreList.find(domDataStore) == kNotFound);
-        m_domDataStoreList.append(domDataStore);
-    }
-
-    void unregisterDOMDataStore(DOMDataStore* domDataStore)
-    {
-        ASSERT(m_domDataStoreList.find(domDataStore) != kNotFound);
-        m_domDataStoreList.remove(m_domDataStoreList.find(domDataStore));
-    }
-
     int recursionLevel() const { return m_recursionLevel; }
     int incrementRecursionLevel() { return ++m_recursionLevel; }
     int decrementRecursionLevel() { return --m_recursionLevel; }
@@ -136,8 +122,6 @@ private:
     TemplateMap m_templatesForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     OwnPtr<StringCache> m_stringCache;
-
-    Vector<DOMDataStore*> m_domDataStoreList;
 
     ScopedPersistent<v8::Value> m_liveRoot;
     ScopedPersistent<v8::Context> m_regexContext;

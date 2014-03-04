@@ -42,6 +42,7 @@
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8DataViewCustom.h"
@@ -2322,12 +2323,21 @@ SerializedScriptValue::SerializedScriptValue()
 {
 }
 
-inline void neuterBinding(ArrayBuffer* object)
+static void neuterArrayBufferInAllWorlds(ArrayBuffer* object)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    Vector<DOMDataStore*>& allStores = V8PerIsolateData::from(isolate)->allStores();
-    for (size_t i = 0; i < allStores.size(); i++) {
-        v8::Handle<v8::Object> wrapper = allStores[i]->get<V8ArrayBuffer>(object, isolate);
+    if (isMainThread()) {
+        Vector<RefPtr<DOMWrapperWorld> > worlds;
+        DOMWrapperWorld::allWorldsInMainThread(worlds);
+        for (size_t i = 0; i < worlds.size(); i++) {
+            v8::Handle<v8::Object> wrapper = worlds[i]->domDataStore().get<V8ArrayBuffer>(object, isolate);
+            if (!wrapper.IsEmpty()) {
+                ASSERT(wrapper->IsArrayBuffer());
+                v8::Handle<v8::ArrayBuffer>::Cast(wrapper)->Neuter();
+            }
+        }
+    } else {
+        v8::Handle<v8::Object> wrapper = WorkerScriptController::controllerForContext(isolate)->world()->domDataStore().get<V8ArrayBuffer>(object, isolate);
         if (!wrapper.IsEmpty()) {
             ASSERT(wrapper->IsArrayBuffer());
             v8::Handle<v8::ArrayBuffer>::Cast(wrapper)->Neuter();
@@ -2360,7 +2370,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
             return nullptr;
         }
 
-        neuterBinding(arrayBuffers[i].get());
+        neuterArrayBufferInAllWorlds(arrayBuffers[i].get());
     }
     return contents.release();
 }
