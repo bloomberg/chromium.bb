@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "jni/JavaBrowserViewRendererHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/utils/SkCanvasStateUtils.h"
 
 using base::android::JavaRef;
@@ -155,12 +156,15 @@ bool JavaBrowserViewRendererHelper::RasterizeIntoBitmap(
 
   bool succeeded;
   {
-    SkImageInfo info =
-        SkImageInfo::MakeN32Premul(bitmap_info.width, bitmap_info.height);
     SkBitmap bitmap;
-    bitmap.installPixels(info, pixels, bitmap_info.stride);
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     bitmap_info.width,
+                     bitmap_info.height,
+                     bitmap_info.stride);
+    bitmap.setPixels(pixels);
 
-    SkCanvas canvas(bitmap);
+    SkBitmapDevice device(bitmap);
+    SkCanvas canvas(&device);
     canvas.translate(-scroll_x, -scroll_y);
     succeeded = renderer.Run(&canvas);
   }

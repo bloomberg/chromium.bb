@@ -26,6 +26,7 @@
 #include "media/filters/skcanvas_video_renderer.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/size_conversions.h"
@@ -581,12 +582,14 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     media::SkCanvasVideoRenderer video_renderer;
 
     SkBitmap bitmap;
-    bitmap.allocPixels(SkImageInfo::Make(video_frame->visible_rect().width(),
-                                         video_frame->visible_rect().height(),
-                                         kPMColor_SkColorType,
-                                         kOpaque_SkAlphaType));
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     video_frame->visible_rect().width(),
+                     video_frame->visible_rect().height(),
+                     0, kOpaque_SkAlphaType);
     bitmap.allocPixels();
-    SkCanvas canvas(bitmap);
+
+    SkBitmapDevice device(bitmap);
+    SkCanvas canvas(&device);
 
     video_renderer.Paint(video_frame.get(),
                          &canvas,
