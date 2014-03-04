@@ -497,7 +497,7 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
     WTF_LOG(Media, "HTMLMediaElement::removedFrom");
 
     m_active = false;
-    if (insertionPoint->inDocument()) {
+    if (insertionPoint->inDocument() && insertionPoint->document().isActive()) {
         configureMediaControls();
         if (m_networkState > NETWORK_EMPTY)
             pause();
