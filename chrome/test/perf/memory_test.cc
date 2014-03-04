@@ -523,9 +523,10 @@ TEST_F(GeneralMixReferenceMemoryTest, name) { \
 }
 #endif
 
-GENERAL_MIX_MEMORY_TESTS(SingleTabTest, 1);
-GENERAL_MIX_MEMORY_TESTS(FiveTabTest, 5);
-GENERAL_MIX_MEMORY_TESTS(TwelveTabTest, 12);
+// TODO(tonyg): Delete this whole file after buildbot no longer calls it.
+GENERAL_MIX_MEMORY_TESTS(DISABLED_SingleTabTest, 1);
+GENERAL_MIX_MEMORY_TESTS(DISABLED_FiveTabTest, 5);
+GENERAL_MIX_MEMORY_TESTS(DISABLED_TwelveTabTest, 12);
 
 // Commented out until the recorded cache data is added.
 //TEST_F(MembusterMemoryTest, Windows) {
