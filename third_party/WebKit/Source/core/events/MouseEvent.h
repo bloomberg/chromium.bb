@@ -91,6 +91,8 @@ public:
     virtual bool isDragEvent() const OVERRIDE FINAL;
     virtual int which() const OVERRIDE FINAL;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     MouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
@@ -101,8 +103,6 @@ protected:
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
     MouseEvent();
-
-    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     unsigned short m_button;

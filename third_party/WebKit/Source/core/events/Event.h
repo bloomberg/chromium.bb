@@ -44,7 +44,7 @@ struct EventInit {
     bool cancelable;
 };
 
-class Event : public RefCountedWillBeRefCountedGarbageCollected<Event>,  public ScriptWrappable {
+class Event : public RefCounted<Event>,  public ScriptWrappable {
 public:
     enum PhaseType {
         NONE                = 0,
