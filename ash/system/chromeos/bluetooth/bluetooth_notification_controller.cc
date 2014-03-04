@@ -36,6 +36,11 @@ namespace {
 const char kBluetoothDevicePairingNotificationId[] =
     "chrome://settings/bluetooth/pairing";
 
+// Identifier for the notification that a device has been paired with the
+// system.
+const char kBluetoothDevicePairedNotificationId[] =
+    "chrome://settings/bluetooth/paired";
+
 // The BluetoothPairingNotificationDelegate handles user interaction with the
 // pairing notification and sending the confirmation, rejection or cancellation
 // back to the underlying device.
@@ -154,17 +159,21 @@ BluetoothNotificationController::~BluetoothNotificationController() {
 
 void BluetoothNotificationController::DeviceAdded(BluetoothAdapter* adapter,
                                                   BluetoothDevice* device) {
-  if (device->IsPaired()) {
+  // Add the new device to the list of currently paired devices; it doesn't
+  // receive a notification since it's assumed it was previously notified.
+  if (device->IsPaired())
     paired_devices_.insert(device->GetAddress());
-    NotifyPairedDevice(device);
-  }
 }
 
 void BluetoothNotificationController::DeviceChanged(BluetoothAdapter* adapter,
                                                     BluetoothDevice* device) {
+  // If the device is already in the list of paired devices, then don't
+  // notify.
   if (paired_devices_.find(device->GetAddress()) != paired_devices_.end())
     return;
 
+  // Otherwise if it's marked as paired then it must be newly paired, so
+  // notify the user about that.
   if (device->IsPaired()) {
     paired_devices_.insert(device->GetAddress());
     NotifyPairedDevice(device);
@@ -295,6 +304,25 @@ void BluetoothNotificationController::NotifyPairedDevice(
   // that just became paired.
   message_center::MessageCenter::Get()->RemoveNotification(
       kBluetoothDevicePairingNotificationId, false /* by_user */);
+
+  message_center::RichNotificationData optional;
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kBluetoothDevicePairedNotificationId,
+      base::string16() /* title */,
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED, device->GetName()),
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH),
+      base::string16() /* display source */,
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          system_notifier::kNotifierBluetooth),
+      optional,
+      NULL));
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
 }  // namespace internal

@@ -142,7 +142,10 @@
   <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT" desc="Message on button to reject Bluetooth pairing request.">
     Reject
   </message>
-
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED" desc="Notification shown when a new device is paired with the computer.">
+    Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" has been paired and is now available to all users. You may remove this pairing using Settings.
+  </message>
+ 
   <!-- Other Network UI strings -->
   <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
     Network Connection Error
