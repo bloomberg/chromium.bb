@@ -10,10 +10,5 @@ bool NoInterfaceStub::Accept(Message* message) {
   return false;
 }
 
-bool NoInterfaceStub::AcceptWithResponder(Message* message,
-                                          MessageReceiver* responder) {
-  return false;
-}
-
 }  // namespace mojo
 

@@ -5,60 +5,52 @@
 #ifndef MOJO_PUBLIC_BINDINGS_MESSAGE_H_
 #define MOJO_PUBLIC_BINDINGS_MESSAGE_H_
 
-#include <assert.h>
-
 #include <vector>
 
-#include "mojo/public/bindings/lib/message_internal.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 
+#pragma pack(push, 1)
+
+struct MessageHeader {
+  //uint32_t deprecated_num_bytes;
+  uint32_t num_bytes;
+  uint32_t name;
+};
+MOJO_COMPILE_ASSERT(sizeof(MessageHeader) == 8, bad_sizeof_MessageHeader);
+
+struct MessageData {
+  MessageHeader header;
+  uint8_t payload[1];
+};
+MOJO_COMPILE_ASSERT(sizeof(MessageData) == 9, bad_sizeof_MessageData);
+
+#pragma pack(pop)
+
 // Message is a holder for the data and handles to be sent over a MessagePipe.
 // Message owns its data and handles, but a consumer of Message is free to
-// mutate the data and handles members. The message's data is comprised of a
-// header followed by payload.
+// manipulate the data and handles members.
 class Message {
  public:
   Message();
   ~Message();
 
-  // These may only be called on a newly created Message object.
-  void AllocUninitializedData(uint32_t num_bytes);
-  void AdoptData(uint32_t num_bytes, internal::MessageData* data);
+  // These may only be called on a newly initialized Message object.
+  void AllocData(uint32_t num_bytes);  // |data()| is uninitialized.
+  void AdoptData(MessageData* data);
 
   // Swaps data and handles between this Message and another.
   void Swap(Message* other);
 
-  uint32_t data_num_bytes() const { return data_num_bytes_; }
+  const MessageData* data() const { return data_; }
+  MessageData* mutable_data() { return data_; }
 
-  // Access the raw bytes of the message.
-  const uint8_t* data() const { return
-    reinterpret_cast<const uint8_t*>(data_);
-  }
-  uint8_t* mutable_data() { return reinterpret_cast<uint8_t*>(data_); }
-
-  // Access the header.
-  const internal::MessageHeader* header() const { return &data_->header; }
-
-  // Access the request_id field (if present).
-  bool has_request_id() const { return data_->header.num_fields == 3; }
-  uint64_t request_id() const {
-    assert(has_request_id());
-    return static_cast<internal::MessageHeaderWithRequestID*>(&data_->header)->
-        request_id;
-  }
-
-  // Access the payload.
-  const uint8_t* payload() const { return data_->payload; }
-  uint8_t* mutable_payload() { return data_->payload; }
-
-  // Access the handles.
   const std::vector<Handle>* handles() const { return &handles_; }
   std::vector<Handle>* mutable_handles() { return &handles_; }
 
  private:
-  uint32_t data_num_bytes_;
-  internal::MessageData* data_;  // Heap-allocated using malloc.
+  MessageData* data_;  // Heap-allocated using malloc.
   std::vector<Handle> handles_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Message);
@@ -66,17 +58,11 @@ class Message {
 
 class MessageReceiver {
  public:
-  // The receiver may mutate the given message.  Returns true if the message
+  // The receiver may mutate the given message or take ownership of its
+  // |message->data| member by setting it to NULL.  Returns true if the message
   // was accepted and false otherwise, indicating that the message was invalid
   // or malformed.
   virtual bool Accept(Message* message) = 0;
-
-  // A variant on Accept that registers a receiver to handle the response
-  // message generated from the given message. The responder's Accept method
-  // will be called some time after AcceptWithResponder returns. The responder
-  // will be unregistered once its Accept method has been called.
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) = 0;
 };
 
 }  // namespace mojo

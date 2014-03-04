@@ -22,8 +22,6 @@ class NoInterfaceStub : public MessageReceiver {
  public:
   NoInterfaceStub(NoInterface* unused) {}
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE;
 };
 
 class NoInterface {

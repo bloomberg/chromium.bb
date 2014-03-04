@@ -222,7 +222,6 @@
         'public/bindings/lib/message.cc',
         'public/bindings/lib/message_builder.cc',
         'public/bindings/lib/message_builder.h',
-        'public/bindings/lib/message_internal.h',
         'public/bindings/lib/message_queue.cc',
         'public/bindings/lib/message_queue.h',
         'public/bindings/lib/scratch_buffer.cc',

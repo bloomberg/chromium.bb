@@ -30,7 +30,7 @@ bool WaitForMessageAndDispatch(MessagePipeHandle handle,
   }
 
   Message message;
-  message.AllocUninitializedData(num_bytes);
+  message.AllocData(num_bytes);
   message.mutable_handles()->resize(num_handles);
 
   MojoResult rv = ReadMessageRaw(

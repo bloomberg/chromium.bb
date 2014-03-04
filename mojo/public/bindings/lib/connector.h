@@ -48,8 +48,6 @@ class Connector : public MessageReceiver {
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE;
 
  private:
   static void CallOnHandleReady(void* closure, MojoResult result);

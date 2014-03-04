@@ -271,7 +271,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
 
     if (g_dump_message_as_hex) {
       DumpHex(reinterpret_cast<const uint8_t*>(message->data()),
-              message->data_num_bytes());
+              message->data()->header.num_bytes);
     }
 
     // In the receiving process, an implementation of ServiceStub is known to
@@ -280,12 +280,6 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
 
     ServiceStub stub(&impl);
     return stub.Accept(message);
-  }
-
-  virtual bool AcceptWithResponder(mojo::Message* message,
-                                   mojo::MessageReceiver* responder)
-                                       MOJO_OVERRIDE {
-    return false;
   }
 };
 

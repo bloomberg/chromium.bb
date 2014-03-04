@@ -10,13 +10,14 @@
 #include "mojo/public/bindings/lib/fixed_buffer.h"
 
 namespace mojo {
-class Message;
+struct MessageData;
 
 namespace internal {
 
+// Used to construct a MessageData object.
 class MessageBuilder {
  public:
-  MessageBuilder(uint32_t name, size_t payload_size);
+  MessageBuilder(uint32_t message_name, size_t payload_size);
   ~MessageBuilder();
 
   Buffer* buffer() { return &buf_; }
@@ -24,19 +25,12 @@ class MessageBuilder {
   // Call Finish when done making allocations in |buffer()|. A heap-allocated
   // MessageData object will be returned. When no longer needed, use |free()|
   // to release the MessageData object's memory.
-  void Finish(Message* message);
+  MessageData* Finish();
 
- protected:
-  explicit MessageBuilder(size_t size);
+ private:
   FixedBuffer buf_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
-};
-
-class MessageWithRequestIDBuilder : public MessageBuilder {
- public:
-  MessageWithRequestIDBuilder(uint32_t name, size_t payload_size,
-                              uint32_t flags, uint64_t request_id);
 };
 
 }  // namespace internal
