@@ -18,6 +18,7 @@ TouchActionFilter::TouchActionFilter() :
   drop_scroll_gesture_events_(false),
   drop_pinch_gesture_events_(false),
   drop_current_tap_ending_event_(false),
+  allow_current_double_tap_event_(true),
   allowed_touch_action_(TOUCH_ACTION_AUTO) {
 }
 
@@ -82,21 +83,27 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       break;
 
     // The double tap gesture is a tap ending event. If a double tap gesture is
-    // filtered out, replace it with a tap cancel.
+    // filtered out, replace it with a tap event.
     case WebInputEvent::GestureDoubleTap:
-      if (allowed_touch_action_ != TOUCH_ACTION_AUTO)
-        gesture_event->type = WebInputEvent::GestureTapCancel;
+      if (!allow_current_double_tap_event_)
+        gesture_event->type = WebInputEvent::GestureTap;
+      allow_current_double_tap_event_ = true;
       break;
 
     // If double tap is disabled, there's no reason for the tap delay.
     case WebInputEvent::GestureTapUnconfirmed:
-      if (allowed_touch_action_ != TOUCH_ACTION_AUTO) {
+      allow_current_double_tap_event_ =
+          allowed_touch_action_ == TOUCH_ACTION_AUTO;
+      if (!allow_current_double_tap_event_) {
         gesture_event->type = WebInputEvent::GestureTap;
         drop_current_tap_ending_event_ = true;
       }
       break;
 
     case WebInputEvent::GestureTap:
+      allow_current_double_tap_event_ =
+          allowed_touch_action_ == TOUCH_ACTION_AUTO;
+      // Fall through.
     case WebInputEvent::GestureTapCancel:
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;

@@ -11,17 +11,26 @@ using blink::WebTouchEvent;
 
 namespace content {
 
-bool WebTouchEventTraits::IsTouchSequenceStart(const WebTouchEvent& event) {
-  if (event.type != WebInputEvent::TouchStart)
+namespace {
+
+bool AllTouchPointsHaveState(const WebTouchEvent& event,
+                             blink::WebTouchPoint::State state) {
+  if(!event.touchesLength)
     return false;
-  DCHECK(event.touchesLength);
-  if (!event.touchesLength)
-    return false;
-  for (size_t i = 0; i < event.touchesLength; i++) {
-    if (event.touches[i].state != blink::WebTouchPoint::StatePressed)
+  for (size_t i = 0; i < event.touchesLength; ++i) {
+    if (event.touches[i].state != state)
       return false;
   }
   return true;
+}
+
+}  // namespace
+
+bool WebTouchEventTraits::IsTouchSequenceStart(const WebTouchEvent& event) {
+  DCHECK(event.touchesLength);
+  if (event.type != WebInputEvent::TouchStart)
+    return false;
+  return AllTouchPointsHaveState(event, blink::WebTouchPoint::StatePressed);
 }
 
 }  // namespace content

@@ -31,10 +31,10 @@ public:
   // for a touch start event that is currently in flight.
   void OnSetTouchAction(content::TouchAction touch_action);
 
-  // Must be called before the first touch of the touch sequence is sent to the
-  // renderer. This will be before any gestures produced by the touch sequence
-  // are sent to the renderer, because to dispatch a gesture we must know the
-  // disposition of the touch events which contributed to it.
+  // Must be called at least once between when the last gesture events for the
+  // previous touch sequence have passed through the touch action filter and the
+  // time the touch start for the next touch sequence has reached the
+  // renderer. It may be called multiple times during this interval.
   void ResetTouchAction();
 
   // Return the intersection of two TouchAction values.
@@ -53,6 +53,12 @@ private:
   // Whether a tap ending event in this sequence should be discarded because a
   // previous GestureTapUnconfirmed event was turned into a GestureTap.
   bool drop_current_tap_ending_event_;
+
+  // True iff the touch action of the last TapUnconfirmed or Tap event was
+  // TOUCH_ACTION_AUTO. The double tap event depends on the touch action of the
+  // previous tap or tap unconfirmed. Only valid between a TapUnconfirmed or Tap
+  // and the next DoubleTap.
+  bool allow_current_double_tap_event_;
 
   // What touch actions are currently permitted.
   content::TouchAction allowed_touch_action_;

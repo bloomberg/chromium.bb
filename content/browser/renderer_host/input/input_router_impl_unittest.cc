@@ -1018,9 +1018,9 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 }
 
-// Test that TouchActionFilter::OnStartNewTouchSequence is called before the
+// Test that TouchActionFilter::ResetTouchAction is called before the
 // first touch event for a touch sequence reaches the renderer.
-TEST_F(InputRouterImplTest, OnStartNewTouchSequenceBeforeEventReachesRenderer) {
+TEST_F(InputRouterImplTest, ResetTouchActionBeforeEventReachesRenderer) {
   OnHasTouchEventHandlers(true);
 
   // Sequence 1.
@@ -1112,6 +1112,63 @@ TEST_F(InputRouterImplTest, OnStartNewTouchSequenceWhenTouchHandlerRemoved) {
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchpad);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+}
+
+// Test that the double tap gesture depends on the touch action of the first
+// tap.
+TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
+  OnHasTouchEventHandlers(true);
+
+  // Sequence 1.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  OnSetTouchAction(TOUCH_ACTION_NONE);
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+
+  // Sequence 2
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+
+  // First tap.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // The GestureTapUnconfirmed is converted into a tap, as the touch action is
+  // auto.
+  SimulateGestureEvent(WebInputEvent::GestureTapUnconfirmed,
+                       WebGestureEvent::Touchscreen);
+  SendInputEventACK(WebInputEvent::GestureTap,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // This tap gesture is dropped, since the GestureTapUnconfirmed was turned
+  // into a tap.
+  SimulateGestureEvent(WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+
+  // Second Tap.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Although the touch-action is now auto, the double tap still won't be
+  // dispatched, because the first tap occured when the touch-action was none.
+  SimulateGestureEvent(WebInputEvent::GestureDoubleTap,
+                       WebGestureEvent::Touchscreen);
+  // This test will become invalid if GestureDoubleTap stops requiring an ack.
+  DCHECK(!WebInputEventTraits::IgnoresAckDisposition(
+      WebInputEvent::GestureDoubleTap));
+  EXPECT_EQ(0, client_->in_flight_event_count());
 }
 
 }  // namespace content
