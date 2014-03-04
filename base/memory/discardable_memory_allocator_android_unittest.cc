@@ -269,5 +269,37 @@ TEST_F(DiscardableMemoryAllocatorTest, UseMultipleAshmemRegions) {
   EXPECT_EQ(memory3->Memory(), static_cast<char*>(memory1->Memory()) + size);
 }
 
+TEST_F(DiscardableMemoryAllocatorTest,
+       HighestAllocatedChunkPointerIsUpdatedWhenHighestChunkGetsSplit) {
+  DiscardableMemoryAllocator allocator_(kAllocatorName, 32 * kPageSize);
+
+  // Prevents the ashmem region from getting closed when |memory2| gets freed.
+  scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(kPageSize));
+  ASSERT_TRUE(memory1);
+
+  scoped_ptr<DiscardableMemory> memory2(allocator_.Allocate(4 * kPageSize));
+  ASSERT_TRUE(memory2);
+
+  memory2.reset();
+  memory2 = allocator_.Allocate(kPageSize);
+  // There should now be a free chunk of size 3 * |kPageSize| starting at offset
+  // 2 * |kPageSize| and the pointer to the highest allocated chunk should have
+  // also been updated to |base_| + 2 * |kPageSize|. This pointer is used to
+  // maintain the container mapping a chunk address to its previous chunk and
+  // this map is in turn used while merging previous contiguous chunks.
+
+  // Allocate more than 3 * |kPageSize| so that the free chunk of size 3 *
+  // |kPageSize| is not reused and |highest_allocated_chunk_| gets used instead.
+  scoped_ptr<DiscardableMemory> memory3(allocator_.Allocate(4 * kPageSize));
+  ASSERT_TRUE(memory3);
+
+  // Deleting |memory3| (whose size is 4 * |kPageSize|) should result in a merge
+  // with its previous chunk which is the free chunk of size |3 * kPageSize|.
+  memory3.reset();
+  memory3 = allocator_.Allocate((3 + 4) * kPageSize);
+  EXPECT_EQ(memory3->Memory(),
+            static_cast<const char*>(memory2->Memory()) + kPageSize);
+}
+
 }  // namespace internal
 }  // namespace base

@@ -171,10 +171,19 @@ class DiscardableMemoryAllocator::AshmemRegion {
 
  private:
   struct FreeChunk {
+    FreeChunk() : previous_chunk(NULL), start(NULL), size(0) {}
+
+    explicit FreeChunk(size_t size)
+        : previous_chunk(NULL),
+          start(NULL),
+          size(size) {
+    }
+
     FreeChunk(void* previous_chunk, void* start, size_t size)
         : previous_chunk(previous_chunk),
           start(start),
           size(size) {
+      DCHECK_NE(previous_chunk, start);
     }
 
     void* const previous_chunk;
@@ -211,7 +220,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
       size_t actual_size) {
     allocator_->lock_.AssertAcquired();
     const FreeChunk reused_chunk = RemoveFreeChunkFromIterator_Locked(
-        free_chunks_.lower_bound(FreeChunk(NULL, NULL, actual_size)));
+        free_chunks_.lower_bound(FreeChunk(actual_size)));
     if (reused_chunk.is_null())
       return scoped_ptr<DiscardableMemory>();
 
@@ -225,6 +234,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
     DCHECK_GE(reused_chunk.size, client_requested_size);
     const size_t fragmentation_bytes =
         reused_chunk.size - client_requested_size;
+
     if (fragmentation_bytes > kMaxChunkFragmentationBytes) {
       // Split the free chunk being recycled so that its unused tail doesn't get
       // reused (i.e. locked) which would prevent it from being evicted under
@@ -232,6 +242,11 @@ class DiscardableMemoryAllocator::AshmemRegion {
       reused_chunk_size = actual_size;
       void* const new_chunk_start =
           static_cast<char*>(reused_chunk.start) + actual_size;
+      if (reused_chunk.start == highest_allocated_chunk_) {
+        // We also need to update the pointer to the highest allocated chunk in
+        // case we are splitting the highest chunk.
+        highest_allocated_chunk_ = new_chunk_start;
+      }
       DCHECK_GT(reused_chunk.size, actual_size);
       const size_t new_chunk_size = reused_chunk.size - actual_size;
       // Note that merging is not needed here since there can't be contiguous
@@ -239,6 +254,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
       AddFreeChunk_Locked(
           FreeChunk(reused_chunk.start, new_chunk_start, new_chunk_size));
     }
+
     const size_t offset =
         static_cast<char*>(reused_chunk.start) - static_cast<char*>(base_);
     internal::LockAshmemRegion(
@@ -278,7 +294,8 @@ class DiscardableMemoryAllocator::AshmemRegion {
         new_free_chunk_size += free_chunk.size;
         first_free_chunk = previous_chunk;
         // There should not be more contiguous previous free chunks.
-        DCHECK(!address_to_free_chunk_map_.count(free_chunk.previous_chunk));
+        previous_chunk = free_chunk.previous_chunk;
+        DCHECK(!address_to_free_chunk_map_.count(previous_chunk));
       }
     }
     // Merge with the next chunk if free and present.
@@ -329,7 +346,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
         void*, std::multiset<FreeChunk>::iterator>::iterator it =
             address_to_free_chunk_map_.find(chunk_start);
     if (it == address_to_free_chunk_map_.end())
-      return FreeChunk(NULL, NULL, 0U);
+      return FreeChunk();
     return RemoveFreeChunkFromIterator_Locked(it->second);
   }
 
@@ -338,7 +355,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
       std::multiset<FreeChunk>::iterator free_chunk_it) {
     allocator_->lock_.AssertAcquired();
     if (free_chunk_it == free_chunks_.end())
-      return FreeChunk(NULL, NULL, 0U);
+      return FreeChunk();
     DCHECK(free_chunk_it != free_chunks_.end());
     const FreeChunk free_chunk(*free_chunk_it);
     address_to_free_chunk_map_.erase(free_chunk_it->start);
