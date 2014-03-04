@@ -4,11 +4,21 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/bundle_locations.h"
+
+// TODO(blundell): Eliminate this dependency by having this file avoid using
+// the //chrome constant to get the framework name on OS X. crbug.com/348563
+#include "chrome/common/chrome_constants.h"
+#endif
 
 #if !defined(OS_IOS)
 #include "ui/gl/gl_surface.h"
@@ -39,9 +49,27 @@ class ComponentsTestSuite : public base::TestSuite {
     ui::android::RegisterJni(env);
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    // Look in the framework bundle for resources.
+    base::FilePath path;
+    PathService::Get(base::DIR_EXE, &path);
+
+    // TODO(blundell): Eliminate this dependency by having this file avoid using
+    // the //chrome constant to get the framework name on OS X. crbug.com/348563
+    path = path.Append(chrome::kFrameworkName);
+    base::mac::SetOverrideFrameworkBundlePath(path);
+#endif
+
+    ui::RegisterPathProvider();
+
     // TODO(tfarina): This should be changed to InitSharedInstanceWithPakFile()
-    // so we can load our pak file instead of chrome.pak.
+    // so we can load our pak file instead of chrome.pak. crbug.com/348563
     ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+    base::FilePath resources_pack_path;
+    PathService::Get(base::DIR_MODULE, &resources_pack_path);
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        resources_pack_path.AppendASCII("resources.pak"),
+        ui::SCALE_FACTOR_NONE);
   }
 
   virtual void Shutdown() OVERRIDE {

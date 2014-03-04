@@ -8,6 +8,7 @@
     # platforms to include source files on (e.g. files ending in
     # _mac.h or _mac.cc are only compiled on MacOSX).
     'chromium_code': 1,
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components',
    },
   'conditions': [
     ['android_webview_build == 0', {
@@ -17,6 +18,29 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
+            'autofill/core/browser/address_field_unittest.cc',
+            'autofill/core/browser/address_unittest.cc',
+            'autofill/core/browser/android/auxiliary_profile_unittest_android.cc',
+            'autofill/core/browser/autofill_country_unittest.cc',
+            'autofill/core/browser/autofill_data_model_unittest.cc',
+            'autofill/core/browser/autofill_download_url_unittest.cc',
+            'autofill/core/browser/autofill_field_unittest.cc',
+            'autofill/core/browser/autofill_merge_unittest.cc',
+            'autofill/core/browser/autofill_profile_unittest.cc',
+            'autofill/core/browser/autofill_regexes_unittest.cc',
+            'autofill/core/browser/autofill_type_unittest.cc',
+            'autofill/core/browser/autofill_xml_parser_unittest.cc',
+            'autofill/core/browser/contact_info_unittest.cc',
+            'autofill/core/browser/credit_card_field_unittest.cc',
+            'autofill/core/browser/credit_card_unittest.cc',
+            'autofill/core/browser/form_field_unittest.cc',
+            'autofill/core/browser/form_structure_unittest.cc',
+            'autofill/core/browser/name_field_unittest.cc',
+            'autofill/core/browser/password_generator_unittest.cc',
+            'autofill/core/browser/phone_field_unittest.cc',
+            'autofill/core/browser/phone_number_unittest.cc',
+            'autofill/core/browser/phone_number_i18n_unittest.cc',
+            'autofill/core/browser/validation_unittest.cc',
             'autofill/core/browser/webdata/web_data_service_unittest.cc',
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
@@ -97,6 +121,9 @@
           'dependencies': [
             '../base/base.gyp:base_prefs_test_support',
             '../base/base.gyp:test_support_base',
+            # TODO(blundell): Eliminate this dependency by having
+            # components_unittests have its own pakfile. crbug.com/348563
+            '../chrome/chrome_resources.gyp:packed_extra_resources',
             # TODO(blundell): Eliminate the need for this dependency in code
             # that iOS shares. crbug.com/325243
             '../content/content_shell_and_tests.gyp:test_support_content',
@@ -113,6 +140,8 @@
             'components.gyp:autofill_core_browser',
             'components.gyp:autofill_core_common',
             'components.gyp:autofill_core_test_support',
+            'component_strings.gyp:component_strings',
+            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices',
@@ -162,6 +191,11 @@
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
               ],
               'dependencies': [
+                # Dependencies of autofill/core/browser/credit_card_unittest.cc.
+                # TODO(blundell): Eliminate the need for this conditional
+                # dependence. crbug.com/328150
+                '../webkit/webkit_resources.gyp:webkit_resources',
+                
                 # Dependencies of browser_context_keyed_service
                 'components.gyp:browser_context_keyed_service',
 
@@ -198,6 +232,7 @@
                 'components.gyp:web_modal_test_support',
               ],
             }, { # 'OS == "ios"'
+              'includes': ['../chrome/chrome_ios_bundle_resources.gypi'],
               'sources/': [
                 ['exclude', '\\.cc$'],
                 ['exclude', '\\.mm$'],
@@ -218,6 +253,18 @@
                 # TODO(blundell): Provide the iOS login DB implementation and
                 # then re-enable this test. http://crbug.com/341429
                 ['exclude', '^password_manager/core/browser/login_database_unittest.cc'],
+              ],
+              'actions': [
+                {
+                  'action_name': 'copy_test_data',
+                  'variables': {
+                    'test_data_files': [
+                      'test/data',
+                    ],
+                    'test_data_prefix': 'components',
+                  },
+                  'includes': [ '../build/copy_test_data_ios.gypi' ],
+                },
               ],
               'conditions': [
                 ['configuration_policy==1', {
@@ -242,6 +289,12 @@
               ],
             }],
             ['OS == "mac"', {
+              'dependencies': [
+                # TODO(blundell): Eliminate this dependency by having
+                # ./test/run_all_unittests.cc avoid using the //chrome
+                # constant to get the framework name on OS X. crbug.com/348563
+                '../chrome/chrome.gyp:common',
+              ],
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',

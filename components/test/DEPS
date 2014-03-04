@@ -2,6 +2,12 @@ include_rules = [
   "+content/public/test",
   "+ui/base/android/ui_base_jni_registrar.h",
   "+ui/base/resource/resource_bundle.h",
+  "+ui/base/ui_base_paths.h",
   "+ui/gfx/android/gfx_jni_registrar.h",
   "+ui/gl/gl_surface.h",  # To initialize GL for tests.
+  
+  # TODO(blundell): Eliminate this dependency by having
+  # ./test/run_all_unittests.cc avoid using the //chrome
+  # constant to get the framework name on OS X. crbug.com/348563
+  "!chrome/common/chrome_constants.h",
 ]
