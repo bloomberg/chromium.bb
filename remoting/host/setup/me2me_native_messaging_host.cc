@@ -38,6 +38,7 @@ namespace {
 const DWORD kBufferSize = 0;
 const int kTimeOutMilliseconds = 2000;
 const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome_remote_desktop.";
+const int kElevatedHostTimeoutSeconds = 300;
 #endif  // defined(OS_WIN)
 
 // redirect_uri to use when authenticating service accounts (service account
@@ -662,6 +663,10 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   elevated_channel_->Start(
       base::Bind(&Me2MeNativeMessagingHost::ProcessDelegateResponse, weak_ptr_),
       base::Bind(&Me2MeNativeMessagingHost::Stop, weak_ptr_));
+
+  elevated_host_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kElevatedHostTimeoutSeconds),
+      this, &Me2MeNativeMessagingHost::DisconnectElevatedHost);
 }
 
 void Me2MeNativeMessagingHost::ProcessDelegateResponse(
@@ -670,6 +675,13 @@ void Me2MeNativeMessagingHost::ProcessDelegateResponse(
 
   // Simply pass along the response from the elevated host to the client.
   channel_->SendMessage(message.Pass());
+}
+
+void Me2MeNativeMessagingHost::DisconnectElevatedHost() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // This will send an EOF to the elevated host, triggering its shutdown.
+  elevated_channel_.reset();
 }
 
 #else  // defined(OS_WIN)
