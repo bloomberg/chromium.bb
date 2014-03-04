@@ -12,6 +12,7 @@
 namespace net {
 
 using base::StringPiece;
+using std::string;
 
 HpackInputStream::HpackInputStream(uint32 max_string_literal_size,
                                    StringPiece buffer)
@@ -92,28 +93,38 @@ bool HpackInputStream::DecodeNextUint32(uint32* I) {
   return !has_more;
 }
 
-// TODO(akalin): Figure out how to handle the storage for
-// Huffman-encoded sequences.
-bool HpackInputStream::DecodeNextStringLiteral(StringPiece* str) {
-  if (MatchPrefixAndConsume(kStringLiteralIdentityEncoded)) {
-    uint32 size = 0;
-    if (!DecodeNextUint32(&size))
-      return false;
+bool HpackInputStream::DecodeNextIdentityString(StringPiece* str) {
+  uint32 size = 0;
+  if (!DecodeNextUint32(&size))
+    return false;
 
-    if (size > max_string_literal_size_)
-      return false;
+  if (size > max_string_literal_size_)
+    return false;
 
-    if (size > buffer_.size())
-      return false;
+  if (size > buffer_.size())
+    return false;
 
-    *str = StringPiece(buffer_.data(), size);
-    buffer_.remove_prefix(size);
-    return true;
-  }
+  *str = StringPiece(buffer_.data(), size);
+  buffer_.remove_prefix(size);
+  return true;
+}
 
-  // TODO(akalin): Handle Huffman-encoded sequences.
+bool HpackInputStream::DecodeNextHuffmanString(const HpackHuffmanTable& table,
+                                               string* str) {
+  uint32 encoded_size = 0;
+  if (!DecodeNextUint32(&encoded_size))
+    return false;
 
-  return false;
+  if (encoded_size > buffer_.size())
+    return false;
+
+  HpackInputStream bounded_reader(
+      max_string_literal_size_,
+      StringPiece(buffer_.data(), encoded_size));
+  buffer_.remove_prefix(encoded_size);
+
+  // HpackHuffmanTable will not decode beyond |max_string_literal_size_|.
+  return table.DecodeString(&bounded_reader, max_string_literal_size_, str);
 }
 
 bool HpackInputStream::PeekBits(size_t* peeked_count, uint32* out) {

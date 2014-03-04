@@ -268,14 +268,14 @@ TEST(HpackHuffmanTableTest, ValidateInternalsWithSmallCode) {
     bits8("01001100")};
   StringPiece expect(expect_storage, arraysize(expect_storage));
 
-  string buffer_in, buffer_out(input.size(), '\0');
+  string buffer_in, buffer_out;
   HpackOutputStream output_stream(kuint32max);
   table.EncodeString(input, &output_stream);
   output_stream.TakeString(&buffer_in);
   EXPECT_EQ(buffer_in, expect);
 
   HpackInputStream input_stream(kuint32max, buffer_in);
-  EXPECT_TRUE(table.DecodeString(&input_stream, &buffer_out));
+  EXPECT_TRUE(table.DecodeString(&input_stream, input.size(), &buffer_out));
   EXPECT_EQ(buffer_out, input);
 }
 
@@ -335,14 +335,15 @@ TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
   HpackHuffmanTable table;
   EXPECT_TRUE(table.Initialize(code, arraysize(code)));
 
-  string buffer(4, '\0');
+  string buffer;
+  const size_t capacity = 4;
   {
     // This example works: (2) 00 (3) 010 (2) 00 (6) 100110 (pad) 100.
     char input_storage[] = {bits8("00010001"), bits8("00110100")};
     StringPiece input(input_storage, arraysize(input_storage));
 
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer));
+    EXPECT_TRUE(table.DecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02\x06");
   }
   {
@@ -352,21 +353,20 @@ TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
     StringPiece input(input_storage, arraysize(input_storage));
 
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_FALSE(table.DecodeString(&input_stream, &buffer));
+    EXPECT_FALSE(table.DecodeString(&input_stream, capacity, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02");
   }
   {
     // Repeat the shortest 00 code to overflow |buffer|. Expect to fail.
-    size_t capacity = buffer.capacity();
     std::vector<char> input_storage(1 + capacity / 4, '\0');
     StringPiece input(&input_storage[0], input_storage.size());
 
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_FALSE(table.DecodeString(&input_stream, &buffer));
+    EXPECT_FALSE(table.DecodeString(&input_stream, capacity, &buffer));
 
     std::vector<char> expected(capacity, '\x02');
     EXPECT_THAT(buffer, ElementsAreArray(expected));
-    EXPECT_EQ(capacity, buffer.capacity());
+    EXPECT_EQ(capacity, buffer.size());
   }
   {
     // Expect to fail if more than a byte of unconsumed input remains.
@@ -375,7 +375,7 @@ TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
     StringPiece input(input_storage, arraysize(input_storage));
 
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_FALSE(table.DecodeString(&input_stream, &buffer));
+    EXPECT_FALSE(table.DecodeString(&input_stream, 4, &buffer));
     EXPECT_EQ(buffer, "\x06");
   }
 }
@@ -399,17 +399,17 @@ TEST(HpackHuffmanTableTest, SpecRequestExamples) {
   };
   // Round-trip each test example.
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
-    const string& encodedFixture(test_table[i]);
-    const string& decodedFixture(test_table[i+1]);
-    HpackInputStream input_stream(kuint32max, encodedFixture);
+    const string& encoded(test_table[i]);
+    const string& decoded(test_table[i+1]);
+    HpackInputStream input_stream(kuint32max, encoded);
     HpackOutputStream output_stream(kuint32max);
 
-    buffer.reserve(decodedFixture.size());
-    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer));
-    EXPECT_EQ(decodedFixture, buffer);
-    table.EncodeString(decodedFixture, &output_stream);
+    buffer.reserve(decoded.size());
+    EXPECT_TRUE(table.DecodeString(&input_stream, decoded.size(), &buffer));
+    EXPECT_EQ(decoded, buffer);
+    table.EncodeString(decoded, &output_stream);
     output_stream.TakeString(&buffer);
-    EXPECT_EQ(encodedFixture, buffer);
+    EXPECT_EQ(encoded, buffer);
   }
 }
 
@@ -440,17 +440,17 @@ TEST(HpackHuffmanTableTest, SpecResponseExamples) {
   };
   // Round-trip each test example.
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
-    const string& encodedFixture(test_table[i]);
-    const string& decodedFixture(test_table[i+1]);
-    HpackInputStream input_stream(kuint32max, encodedFixture);
+    const string& encoded(test_table[i]);
+    const string& decoded(test_table[i+1]);
+    HpackInputStream input_stream(kuint32max, encoded);
     HpackOutputStream output_stream(kuint32max);
 
-    buffer.reserve(decodedFixture.size());
-    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer));
-    EXPECT_EQ(decodedFixture, buffer);
-    table.EncodeString(decodedFixture, &output_stream);
+    buffer.reserve(decoded.size());
+    EXPECT_TRUE(table.DecodeString(&input_stream, decoded.size(), &buffer));
+    EXPECT_EQ(decoded, buffer);
+    table.EncodeString(decoded, &output_stream);
     output_stream.TakeString(&buffer);
-    EXPECT_EQ(encodedFixture, buffer);
+    EXPECT_EQ(encoded, buffer);
   }
 }
 
@@ -471,7 +471,7 @@ TEST(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
     output_stream.TakeString(&buffer_in);
 
     HpackInputStream input_stream(kuint32max, buffer_in);
-    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer_out));
+    EXPECT_TRUE(table.DecodeString(&input_stream, input.size(), &buffer_out));
     EXPECT_EQ(input, buffer_out);
   }
 }
@@ -495,7 +495,7 @@ TEST(HpackHuffmanTableTest, RoundTripSymbolSequence) {
   output_stream.TakeString(&buffer_in);
 
   HpackInputStream input_stream(kuint32max, buffer_in);
-  EXPECT_TRUE(table.DecodeString(&input_stream, &buffer_out));
+  EXPECT_TRUE(table.DecodeString(&input_stream, input.size(), &buffer_out));
   EXPECT_EQ(input, buffer_out);
 }
 

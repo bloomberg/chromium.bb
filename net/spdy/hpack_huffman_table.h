@@ -81,8 +81,10 @@ class NET_EXPORT_PRIVATE HpackHuffmanTable {
   // to ensure |out| has a reserved a sufficient buffer to hold decoded output.
   // DecodeString() halts when |in| runs out of input, in which case true is
   // returned. It also halts (returning false) if an invalid Huffman code
-  // prefix is read, or if |out.capacity()| would otherwise be overflowed.
-  bool DecodeString(HpackInputStream* in, std::string* out) const;
+  // prefix is read, or if |out_capacity| would otherwise be overflowed.
+  bool DecodeString(HpackInputStream* in,
+                    size_t out_capacity,
+                    std::string* out) const;
 
  private:
   // Expects symbols ordered on length & ID ascending.

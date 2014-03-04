@@ -13,23 +13,32 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/spdy/hpack_encoding_context.h"
-#include "net/spdy/hpack_input_stream.h"  // For HpackHeaderPairVector.
+#include "net/spdy/hpack_input_stream.h"
 
 namespace net {
 
 // An HpackDecoder decodes header sets as outlined in
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
-// .
+
+class HpackHuffmanTable;
+
 class NET_EXPORT_PRIVATE HpackDecoder {
  public:
-  explicit HpackDecoder(uint32 max_string_literal_size);
+  // |table| is an initialized HPACK request or response Huffman table,
+  // having an externally-managed lifetime which spans beyond HpackDecoder.
+  explicit HpackDecoder(const HpackHuffmanTable& table,
+                        uint32 max_string_literal_size);
   ~HpackDecoder();
+
+  // Set the maximum size of the headers table used by the decoder.
+  void SetMaxHeadersSize(uint32 max_size);
 
   // Decodes the given string into the given header set. Returns
   // whether or not the decoding was successful.
   //
-  // TODO(akalin): Emit the headers via a callback/delegate instead of
-  // putting them into a vector.
+  // TODO(jgraettinger): Parse headers using incrementally-receieved data,
+  // and emit headers via a delegate. (See SpdyHeadersBlockParser and
+  // SpdyHeadersHandlerInterface).
   bool DecodeHeaderSet(base::StringPiece input,
                        HpackHeaderPairVector* header_list);
 
@@ -44,6 +53,11 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   const uint32 max_string_literal_size_;
   HpackEncodingContext context_;
 
+  // Huffman table to be applied to decoded Huffman literals,
+  // and scratch space for storing those decoded literals.
+  const HpackHuffmanTable& huffman_table_;
+  std::string huffman_key_buffer_, huffman_value_buffer_;
+
   // Tries to process the next header representation and maybe emit
   // headers into |header_list| according to it. Returns true if
   // successful, or false if an error was encountered.
@@ -53,8 +67,9 @@ class NET_EXPORT_PRIVATE HpackDecoder {
 
   bool DecodeNextName(HpackInputStream* input_stream,
                       base::StringPiece* next_name);
-  bool DecodeNextValue(HpackInputStream* input_stream,
-                       base::StringPiece* next_name);
+  bool DecodeNextStringLiteral(HpackInputStream* input_stream,
+                               bool is_header_key,  // As distinct from a value.
+                               base::StringPiece* output);
 
   DISALLOW_COPY_AND_ASSIGN(HpackDecoder);
 };

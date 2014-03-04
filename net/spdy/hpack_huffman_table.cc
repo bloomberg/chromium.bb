@@ -251,7 +251,9 @@ void HpackHuffmanTable::EncodeString(StringPiece in,
   }
 }
 
-bool HpackHuffmanTable::DecodeString(HpackInputStream* in, string* out) const {
+bool HpackHuffmanTable::DecodeString(HpackInputStream* in,
+                                     size_t out_capacity,
+                                     string* out) const {
   out->clear();
 
   // Current input, stored in the high |bits_available| bits of |bits|.
@@ -284,8 +286,8 @@ bool HpackHuffmanTable::DecodeString(HpackInputStream* in, string* out) const {
       // The input is an invalid prefix, larger than any prefix in the table.
       return false;
     } else {
-      if (out->size() == out->capacity()) {
-        // This code would cause us to overflow |out|.
+      if (out->size() == out_capacity) {
+        // This code would cause us to overflow |out_capacity|.
         return false;
       }
       if (entry.symbol_id < 256) {

@@ -11,11 +11,18 @@
 namespace net {
 
 using base::StringPiece;
+using std::string;
 
-HpackDecoder::HpackDecoder(uint32 max_string_literal_size)
-    : max_string_literal_size_(max_string_literal_size) {}
+HpackDecoder::HpackDecoder(const HpackHuffmanTable& table,
+                           uint32 max_string_literal_size)
+    : max_string_literal_size_(max_string_literal_size),
+      huffman_table_(table) {}
 
 HpackDecoder::~HpackDecoder() {}
+
+void HpackDecoder::SetMaxHeadersSize(uint32 max_size) {
+  context_.SetMaxSize(max_size);
+}
 
 bool HpackDecoder::DecodeHeaderSet(StringPiece input,
                                    HpackHeaderPairVector* header_list) {
@@ -84,7 +91,7 @@ bool HpackDecoder::ProcessNextHeaderRepresentation(
       return false;
 
     StringPiece value;
-    if (!DecodeNextValue(input_stream, &value))
+    if (!DecodeNextStringLiteral(input_stream, false, &value))
       return false;
 
     header_list->push_back(
@@ -99,7 +106,7 @@ bool HpackDecoder::ProcessNextHeaderRepresentation(
       return false;
 
     StringPiece value;
-    if (!DecodeNextValue(input_stream, &value))
+    if (!DecodeNextStringLiteral(input_stream, false, &value))
       return false;
 
     header_list->push_back(
@@ -126,7 +133,7 @@ bool HpackDecoder::DecodeNextName(
     return false;
 
   if (index_or_zero == 0)
-    return input_stream->DecodeNextStringLiteral(next_name);
+    return DecodeNextStringLiteral(input_stream, true, next_name);
 
   uint32 index = index_or_zero;
   if (index > context_.GetEntryCount())
@@ -136,9 +143,20 @@ bool HpackDecoder::DecodeNextName(
   return true;
 }
 
-bool HpackDecoder::DecodeNextValue(
-    HpackInputStream* input_stream, StringPiece* next_name) {
-  return input_stream->DecodeNextStringLiteral(next_name);
+bool HpackDecoder::DecodeNextStringLiteral(HpackInputStream* input_stream,
+                                           bool is_key,
+                                           StringPiece* output) {
+  if (input_stream->MatchPrefixAndConsume(kStringLiteralHuffmanEncoded)) {
+    string* buffer = is_key ? &huffman_key_buffer_ : &huffman_value_buffer_;
+    bool result = input_stream->DecodeNextHuffmanString(huffman_table_, buffer);
+    *output = StringPiece(*buffer);
+    return result;
+  } else if (input_stream->MatchPrefixAndConsume(
+      kStringLiteralIdentityEncoded)) {
+    return input_stream->DecodeNextIdentityString(output);
+  } else {
+    return false;
+  }
 }
 
 }  // namespace net

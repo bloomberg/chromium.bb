@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/spdy/hpack_constants.h"  // For HpackPrefix.
+#include "net/spdy/hpack_constants.h"
+#include "net/spdy/hpack_huffman_table.h"
 
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
-// .
 
 namespace net {
 
@@ -46,7 +46,9 @@ class NET_EXPORT_PRIVATE HpackInputStream {
   // decoding was successful, or false if an error was encountered.
 
   bool DecodeNextUint32(uint32* I);
-  bool DecodeNextStringLiteral(base::StringPiece* str);
+  bool DecodeNextIdentityString(base::StringPiece* str);
+  bool DecodeNextHuffmanString(const HpackHuffmanTable& table,
+                               std::string* str);
 
   // Stores input bits into the most-significant, unfilled bits of |out|.
   // |peeked_count| is the number of filled bits in |out| which have been
@@ -70,10 +72,6 @@ class NET_EXPORT_PRIVATE HpackInputStream {
 
   bool DecodeNextUint32ForTest(uint32* I) {
     return DecodeNextUint32(I);
-  }
-
-  bool DecodeNextStringLiteralForTest(base::StringPiece *str) {
-    return DecodeNextStringLiteral(str);
   }
 
  private:
