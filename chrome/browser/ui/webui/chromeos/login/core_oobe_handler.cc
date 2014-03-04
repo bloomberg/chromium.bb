@@ -231,9 +231,14 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
     const std::string& requisition) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  std::string initial_requisition =
+      connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition();
   connector->GetDeviceCloudPolicyManager()->SetDeviceRequisition(requisition);
   // Exit Chrome to force the restart as soon as a new requisition is set.
-  chrome::AttemptRestart();
+  if (initial_requisition !=
+          connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition()) {
+    chrome::AttemptRestart();
+  }
 }
 
 void CoreOobeHandler::HandleScreenAssetsLoaded(

@@ -596,7 +596,7 @@ cr.define('cr.ui.login', function() {
      */
     onConfirmDeviceRequisitionPrompt_: function(value) {
       this.deviceRequisition_ = value;
-      chrome.send('setDeviceRequisition', [value]);
+      chrome.send('setDeviceRequisition', [value == '' ? 'none' : value]);
     },
 
     /**
@@ -633,8 +633,11 @@ cr.define('cr.ui.login', function() {
       }
       this.deviceRequisitionRemoraDialog_.show(
           loadTimeData.getString('deviceRequisitionRemoraPromptText'),
-          function() {
+          function() {  // onShow
             chrome.send('setDeviceRequisition', ['remora']);
+          },
+          function() {  // onCancel
+            chrome.send('setDeviceRequisition', ['none']);
           });
     },
 
