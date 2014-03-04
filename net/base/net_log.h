@@ -120,19 +120,32 @@ class NET_EXPORT NetLog {
     uint32 id;
   };
 
+  struct NET_EXPORT EntryData {
+    EntryData(EventType type,
+              Source source,
+              EventPhase phase,
+              base::TimeTicks time,
+              const ParametersCallback* parameters_callback);
+    ~EntryData();
+
+    const EventType type;
+    const Source source;
+    const EventPhase phase;
+    const base::TimeTicks time;
+    const ParametersCallback* const parameters_callback;
+  };
+
+  // An Entry pre-binds EntryData to a LogLevel, so observers will observe the
+  // output of ToValue() and ParametersToValue() at their log level rather than
+  // current maximum.
   class NET_EXPORT Entry {
    public:
-    Entry(EventType type,
-          Source source,
-          EventPhase phase,
-          base::TimeTicks time,
-          const ParametersCallback* parameters_callback,
-          LogLevel log_level);
+    Entry(const EntryData* data, LogLevel log_level);
     ~Entry();
 
-    EventType type() const { return type_; }
-    Source source() const { return source_; }
-    EventPhase phase() const { return phase_; }
+    EventType type() const { return data_->type; }
+    Source source() const { return data_->source; }
+    EventPhase phase() const { return data_->phase; }
 
     // Serializes the specified event to a Value.  The Value also includes the
     // current time.  Caller takes ownership of returned Value.  Takes in a time
@@ -144,11 +157,7 @@ class NET_EXPORT NetLog {
     base::Value* ParametersToValue() const;
 
    private:
-    const EventType type_;
-    const Source source_;
-    const EventPhase phase_;
-    const base::TimeTicks time_;
-    const ParametersCallback* parameters_callback_;
+    const EntryData* const data_;
 
     // Log level when the event occurred.
     const LogLevel log_level_;
@@ -195,6 +204,8 @@ class NET_EXPORT NetLog {
 
    private:
     friend class NetLog;
+
+    void OnAddEntryData(const EntryData& entry_data);
 
     // Both of these values are only modified by the NetLog.
     LogLevel log_level_;

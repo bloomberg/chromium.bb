@@ -1810,12 +1810,12 @@ void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
 
     // Create and add the entry directly, to avoid sending it to any other
     // NetLog observers.
-    net::NetLog::Entry entry(net::NetLog::TYPE_REQUEST_ALIVE,
-                             request->net_log().source(),
-                             net::NetLog::PHASE_BEGIN,
-                             request->creation_time(),
-                             &callback,
-                             request->net_log().GetLogLevel());
+    net::NetLog::EntryData entry_data(net::NetLog::TYPE_REQUEST_ALIVE,
+                                      request->net_log().source(),
+                                      net::NetLog::PHASE_BEGIN,
+                                      request->creation_time(),
+                                      &callback);
+    net::NetLog::Entry entry(&entry_data, request->net_log().GetLogLevel());
 
     // Have to add |entry| to the queue synchronously, as there may already
     // be posted tasks queued up to add other events for |request|, which we

@@ -57,12 +57,12 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
 
     const int kDummyId = 1;
     NetLog::Source source(NetLog::SOURCE_SPDY_SESSION, kDummyId);
-    NetLog::Entry entry(NetLog::TYPE_PROXY_SERVICE,
-                        source,
-                        NetLog::PHASE_BEGIN,
-                        base::TimeTicks::Now(),
-                        NULL,
-                        NetLog::LOG_BASIC);
+    NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE,
+                                 source,
+                                 NetLog::PHASE_BEGIN,
+                                 base::TimeTicks::Now(),
+                                 NULL);
+    NetLog::Entry entry(&entry_data, NetLog::LOG_BASIC);
     logger.OnAddEntry(entry);
   }
 
@@ -89,12 +89,12 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
 
     const int kDummyId = 1;
     NetLog::Source source(NetLog::SOURCE_SPDY_SESSION, kDummyId);
-    NetLog::Entry entry(NetLog::TYPE_PROXY_SERVICE,
-                        source,
-                        NetLog::PHASE_BEGIN,
-                        base::TimeTicks::Now(),
-                        NULL,
-                        NetLog::LOG_BASIC);
+    NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE,
+                                 source,
+                                 NetLog::PHASE_BEGIN,
+                                 base::TimeTicks::Now(),
+                                 NULL);
+    NetLog::Entry entry(&entry_data, NetLog::LOG_BASIC);
 
     // Add the entry multiple times.
     logger.OnAddEntry(entry);

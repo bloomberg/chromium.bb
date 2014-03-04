@@ -5,6 +5,7 @@
 #include "net/base/net_log_unittest.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/values.h"
@@ -94,8 +95,35 @@ class CountingObserver : public NetLog::ThreadSafeObserver {
   int count_;
 };
 
+class LoggingObserver : public NetLog::ThreadSafeObserver {
+ public:
+  LoggingObserver() {}
+
+  virtual ~LoggingObserver() {
+    if (net_log())
+      net_log()->RemoveThreadSafeObserver(this);
+  }
+
+  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE {
+    base::Value* value = entry.ToValue();
+    base::DictionaryValue* dict = NULL;
+    ASSERT_TRUE(value->GetAsDictionary(&dict));
+    values_.push_back(dict);
+  }
+
+  size_t GetNumValues() const { return values_.size(); }
+  base::DictionaryValue* GetValue(size_t index) const { return values_[index]; }
+
+ private:
+  ScopedVector<base::DictionaryValue> values_;
+};
+
+base::Value* LogLevelToValue(NetLog::LogLevel log_level) {
+  return new base::FundamentalValue(log_level);
+}
+
 void AddEvent(NetLog* net_log) {
-  net_log->AddGlobalEntry(NetLog::TYPE_CANCELLED);
+  net_log->AddGlobalEntry(NetLog::TYPE_CANCELLED, base::Bind(LogLevelToValue));
 }
 
 // A thread that waits until an event has been signalled before calling
@@ -272,10 +300,10 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   EXPECT_EQ(3, observer.count());
 }
 
-// Test adding and removing two observers.
+// Test adding and removing two observers at different log levels.
 TEST(NetLogTest, NetLogTwoObservers) {
   NetLog net_log;
-  CountingObserver observer[2];
+  LoggingObserver observer[2];
 
   // Add first observer.
   net_log.AddThreadSafeObserver(&observer[0], NetLog::LOG_ALL_BUT_BYTES);
@@ -292,10 +320,16 @@ TEST(NetLogTest, NetLogTwoObservers) {
   EXPECT_EQ(NetLog::LOG_ALL, observer[1].log_level());
   EXPECT_EQ(NetLog::LOG_ALL, net_log.GetLogLevel());
 
-  // Add event and make sure both observers receive it.
+  // Add event and make sure both observers receive it at their respective log
+  // levels.
+  int param;
   AddEvent(&net_log);
-  EXPECT_EQ(1, observer[0].count());
-  EXPECT_EQ(1, observer[1].count());
+  ASSERT_EQ(1U, observer[0].GetNumValues());
+  ASSERT_TRUE(observer[0].GetValue(0)->GetInteger("params", &param));
+  EXPECT_EQ(observer[0].log_level(), param);
+  ASSERT_EQ(1U, observer[1].GetNumValues());
+  ASSERT_TRUE(observer[1].GetValue(0)->GetInteger("params", &param));
+  EXPECT_EQ(observer[1].log_level(), param);
 
   // Remove second observer.
   net_log.RemoveThreadSafeObserver(&observer[1]);
@@ -306,8 +340,8 @@ TEST(NetLogTest, NetLogTwoObservers) {
 
   // Add event and make sure only second observer gets it.
   AddEvent(&net_log);
-  EXPECT_EQ(2, observer[0].count());
-  EXPECT_EQ(1, observer[1].count());
+  EXPECT_EQ(2U, observer[0].GetNumValues());
+  EXPECT_EQ(1U, observer[1].GetNumValues());
 
   // Remove first observer.
   net_log.RemoveThreadSafeObserver(&observer[0]);
@@ -317,8 +351,8 @@ TEST(NetLogTest, NetLogTwoObservers) {
 
   // Add event and make sure neither observer gets it.
   AddEvent(&net_log);
-  EXPECT_EQ(2, observer[0].count());
-  EXPECT_EQ(1, observer[1].count());
+  EXPECT_EQ(2U, observer[0].GetNumValues());
+  EXPECT_EQ(1U, observer[1].GetNumValues());
 }
 
 // Makes sure that adding and removing observers simultaneously on different
