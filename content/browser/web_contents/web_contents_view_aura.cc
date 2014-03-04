@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/web_contents/aura/gesture_nav_simple.h"
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
@@ -743,6 +744,26 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
       screen_loc.x(), screen_loc.y(), ops);
 }
 
+void WebContentsViewAura::InstallOverscrollControllerDelegate(
+    RenderWidgetHostImpl* host) {
+  const std::string value = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
+  if (value == "0") {
+    navigation_overlay_.reset();
+    return;
+  }
+  if (value == "2") {
+    navigation_overlay_.reset();
+    if (!gesture_nav_simple_)
+      gesture_nav_simple_.reset(new GestureNavSimple(web_contents_));
+    host->overscroll_controller()->set_delegate(gesture_nav_simple_.get());
+    return;
+  }
+  host->overscroll_controller()->set_delegate(this);
+  if (!navigation_overlay_)
+    navigation_overlay_.reset(new OverscrollNavigationOverlay(web_contents_));
+}
+
 void WebContentsViewAura::PrepareOverscrollWindow() {
   // If there is an existing |overscroll_window_| which is in the middle of an
   // animation, then destroying the window here causes the animation to be
@@ -1080,9 +1101,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
   if (host_impl->overscroll_controller() &&
       (!web_contents_->GetDelegate() ||
        web_contents_->GetDelegate()->CanOverscrollContent())) {
-    host_impl->overscroll_controller()->set_delegate(this);
-    if (!navigation_overlay_)
-      navigation_overlay_.reset(new OverscrollNavigationOverlay(web_contents_));
+    InstallOverscrollControllerDelegate(host_impl);
   }
 
   AttachTouchEditableToRenderView();
@@ -1113,7 +1132,7 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
   if (host) {
     host->SetOverscrollControllerEnabled(enabled);
     if (enabled)
-      host->overscroll_controller()->set_delegate(this);
+      InstallOverscrollControllerDelegate(host);
   }
 
   if (!enabled)

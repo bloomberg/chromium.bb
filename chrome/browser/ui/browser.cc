@@ -1116,8 +1116,9 @@ void Browser::TabStripEmpty() {
 
 bool Browser::CanOverscrollContent() const {
 #if defined(USE_AURA)
-  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
+  const std::string value = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
+  bool overscroll_enabled = value != "0";
   if (!overscroll_enabled)
     return false;
   if (is_app() || is_devtools() || !is_type_tabbed())
@@ -1126,8 +1127,8 @@ bool Browser::CanOverscrollContent() const {
   // The detached bookmark bar has appearance of floating above the
   // web-contents. This does not play nicely with overscroll navigation
   // gestures. So disable overscroll navigation when the bookmark bar is in the
-  // detached state.
-  if (bookmark_bar_state_ == BookmarkBar::DETACHED)
+  // detached state and the overscroll effect moves the layers.
+  if (value == "1" && bookmark_bar_state_ == BookmarkBar::DETACHED)
     return false;
   return true;
 #else

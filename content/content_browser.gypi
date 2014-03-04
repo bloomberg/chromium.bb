@@ -1236,6 +1236,8 @@
     'browser/vibration/vibration_message_filter.h',
     'browser/vibration/vibration_provider_android.cc',
     'browser/vibration/vibration_provider_android.h',
+    'browser/web_contents/aura/gesture_nav_simple.cc',
+    'browser/web_contents/aura/gesture_nav_simple.h',
     'browser/web_contents/aura/image_window_delegate.cc',
     'browser/web_contents/aura/image_window_delegate.h',
     'browser/web_contents/aura/overscroll_navigation_overlay.cc',

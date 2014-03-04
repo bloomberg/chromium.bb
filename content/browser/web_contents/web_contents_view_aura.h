@@ -26,7 +26,9 @@ class DropTargetEvent;
 }
 
 namespace content {
+class GestureNavSimple;
 class OverscrollNavigationOverlay;
+class RenderWidgetHostImpl;
 class ShadowLayerDelegate;
 class TouchEditableImplAura;
 class WebContentsViewDelegate;
@@ -56,6 +58,8 @@ class CONTENT_EXPORT WebContentsViewAura
   void SizeChangedCommon(const gfx::Size& size);
 
   void EndDrag(blink::WebDragOperationsMask ops);
+
+  void InstallOverscrollControllerDelegate(RenderWidgetHostImpl* host);
 
   // Creates and sets up the overlay window that will be displayed during the
   // overscroll gesture.
@@ -225,6 +229,7 @@ class CONTENT_EXPORT WebContentsViewAura
   scoped_ptr<ShadowLayerDelegate> overscroll_shadow_;
 
   scoped_ptr<TouchEditableImplAura> touch_editable_;
+  scoped_ptr<GestureNavSimple> gesture_nav_simple_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };
