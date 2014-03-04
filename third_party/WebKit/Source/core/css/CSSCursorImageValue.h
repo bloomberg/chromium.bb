@@ -67,7 +67,11 @@ private:
     String cachedImageURL();
     void clearImageResource();
 
-    RefPtrWillBeMember<CSSValue> m_imageValue;
+    // FIXME: oilpan: This should be a Member but we need to resolve
+    // finalization order issues first. The CSSCursorImageValue
+    // destructor uses m_imageValue. Leaving it as a RefPtr as a
+    // workaround for now.
+    RefPtr<CSSValue> m_imageValue;
 
     bool m_hasHotSpot;
     IntPoint m_hotSpot;
