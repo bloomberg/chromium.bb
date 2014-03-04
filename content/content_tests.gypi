@@ -434,6 +434,7 @@
         'browser/notification_service_impl_unittest.cc',
         'browser/plugin_loader_posix_unittest.cc',
         'browser/power_monitor_message_broadcaster_unittest.cc',
+        'browser/power_profiler/power_profiler_service_unittest.cc',
         'browser/renderer_host/compositing_iosurface_transformer_mac_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/input/gesture_event_queue_unittest.cc',
