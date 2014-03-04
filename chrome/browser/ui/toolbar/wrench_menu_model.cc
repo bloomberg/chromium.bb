@@ -424,9 +424,9 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 #endif
     case IDC_UPGRADE_DIALOG:
       return UpgradeDetector::GetInstance()->notify_upgrade();
-#if defined(OS_MACOSX)
+#if !defined(OS_LINUX) || defined(USE_AURA)
     case IDC_BOOKMARK_PAGE:
-      return chrome::ShouldShowBookmarkPageMenuItem(browser_->profile());
+      return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
 #endif
     default:
       return true;

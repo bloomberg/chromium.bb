@@ -112,6 +112,18 @@ using web_modal::WebContentsModalDialogManager;
 namespace chrome {
 namespace {
 
+bool CanBookmarkCurrentPageInternal(const Browser* browser,
+                                    bool check_remove_bookmark_ui) {
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  return browser_defaults::bookmarks_enabled &&
+      browser->profile()->GetPrefs()->GetBoolean(
+          prefs::kEditBookmarksEnabled) &&
+      model && model->loaded() && browser->is_type_tabbed() &&
+      (!check_remove_bookmark_ui ||
+           !chrome::ShouldRemoveBookmarkThisPageUI(browser->profile()));
+}
+
 bool GetBookmarkOverrideCommand(
     Profile* profile,
     const extensions::Extension** extension,
@@ -710,6 +722,8 @@ void Exit() {
 }
 
 void BookmarkCurrentPage(Browser* browser) {
+  DCHECK(!chrome::ShouldRemoveBookmarkThisPageUI(browser->profile()));
+
   const extensions::Extension* extension = NULL;
   extensions::Command command;
   extensions::CommandService::ExtensionCommandType command_type;
@@ -742,12 +756,7 @@ void BookmarkCurrentPageFromStar(Browser* browser) {
 }
 
 bool CanBookmarkCurrentPage(const Browser* browser) {
-  BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser->profile());
-  return browser_defaults::bookmarks_enabled &&
-      browser->profile()->GetPrefs()->GetBoolean(
-          prefs::kEditBookmarksEnabled) &&
-      model && model->loaded() && browser->is_type_tabbed();
+  return CanBookmarkCurrentPageInternal(browser, true);
 }
 
 void BookmarkAllTabs(Browser* browser) {
@@ -756,7 +765,7 @@ void BookmarkAllTabs(Browser* browser) {
 
 bool CanBookmarkAllTabs(const Browser* browser) {
   return browser->tab_strip_model()->count() > 1 &&
-             CanBookmarkCurrentPage(browser);
+             CanBookmarkCurrentPageInternal(browser, false);
 }
 
 void Translate(Browser* browser) {

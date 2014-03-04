@@ -1135,7 +1135,7 @@ enum {
           // The bookmark page menu item under the wrench menu has its
           // visibility controlled by WrenchMenuModel.
           bool shouldHide =
-              !chrome::ShouldShowBookmarkPageMenuItem(browser_->profile());
+              chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
           NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
           [menuItem setHidden:shouldHide];
           break;

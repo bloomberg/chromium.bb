@@ -31,13 +31,6 @@ class Extension;
 
 namespace chrome {
 
-// The ways in which extensions may customize the bookmark shortcut.
-enum BookmarkShortcutDisposition {
-  BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED,
-  BOOKMARK_SHORTCUT_DISPOSITION_REMOVED,
-  BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN
-};
-
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.
 //
@@ -113,12 +106,9 @@ bool ShouldShowAppsShortcutInBookmarkBar(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type);
 
-// Indicates how the bookmark shortcut has been changed by |extension|, if at
-// all.
-BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile);
-
-// Whether the menu item to bookmark a page should be shown.
-bool ShouldShowBookmarkPageMenuItem(Profile* profile);
+// Whether the menu item and shortcut to bookmark a page should be removed from
+// the user interface.
+bool ShouldRemoveBookmarkThisPageUI(Profile* profile);
 
 }  // namespace chrome
 

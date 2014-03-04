@@ -90,6 +90,7 @@
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
@@ -1826,6 +1827,11 @@ void Browser::Observe(int type,
                       const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      chrome::UpdateCommandEnabled(
+          this,
+          IDC_BOOKMARK_PAGE,
+          !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
+
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
 
@@ -1864,8 +1870,13 @@ void Browser::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
     case chrome::NOTIFICATION_EXTENSION_LOADED:
+      chrome::UpdateCommandEnabled(
+          this,
+          IDC_BOOKMARK_PAGE,
+          !chrome::ShouldRemoveBookmarkThisPageUI(profile_));
+    // fallthrough
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       // During window creation on Windows we may end up calling into
       // SHAppBarMessage, which internally spawns a nested message loop. This
       // makes it possible for us to end up here before window creation has
