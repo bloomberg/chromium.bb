@@ -1853,6 +1853,8 @@ WebView* RenderViewImpl::createView(
 WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
   RenderWidget* widget =
       RenderWidget::Create(routing_id_, popup_type, screen_info_);
+  if (!widget)
+    return NULL;
   if (screen_metrics_emulator_) {
     widget->SetPopupOriginAdjustmentsForEmulation(
         screen_metrics_emulator_.get());
