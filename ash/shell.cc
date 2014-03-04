@@ -647,6 +647,10 @@ Shell::~Shell() {
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
 
+  // Destroy maximize window manager early on since it has some observers which
+  // need to be removed.
+  maximize_mode_window_manager_.reset();
+
   // AppList needs to be released before shelf layout manager, which is
   // destroyed with shelf container in the loop below. However, app list
   // container is now on top of shelf container and released after it.
