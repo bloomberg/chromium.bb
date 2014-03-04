@@ -61,7 +61,6 @@ public:
 
     void recordDatabaseOpen(DatabaseBackend*);
     void recordDatabaseClosed(DatabaseBackend*);
-    bool isDatabaseOpen(DatabaseBackend*);
 
     bool isDatabaseThread() { return m_thread && m_thread->isCurrentThread(); }
 

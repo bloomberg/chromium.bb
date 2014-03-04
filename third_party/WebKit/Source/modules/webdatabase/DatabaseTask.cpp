@@ -82,7 +82,7 @@ void DatabaseTask::run()
     ASSERT(!m_complete);
 #endif
 
-    if (!m_synchronizer && !m_database->databaseContext()->databaseThread()->isDatabaseOpen(m_database.get())) {
+    if (!m_synchronizer && !m_database->opened()) {
         taskCancelled();
 #if !LOG_DISABLED
         m_complete = true;

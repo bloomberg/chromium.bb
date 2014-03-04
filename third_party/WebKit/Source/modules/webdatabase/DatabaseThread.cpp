@@ -48,6 +48,8 @@ DatabaseThread::DatabaseThread()
 
 DatabaseThread::~DatabaseThread()
 {
+    ASSERT(m_thread);
+    ASSERT(!isDatabaseThread());
     bool terminationRequested;
     {
         MutexLocker lock(m_terminationRequestedMutex);
@@ -96,11 +98,8 @@ void DatabaseThread::cleanupDatabaseThread()
     // Close the databases that we ran transactions on. This ensures that if any transactions are still open, they are rolled back and we don't leave the database in an
     // inconsistent or locked state.
     if (m_openDatabaseSet.size() > 0) {
-        // As the call to close will modify the original set, we must take a copy to iterate over.
-        DatabaseSet openSetCopy;
-        openSetCopy.swap(m_openDatabaseSet);
-        DatabaseSet::iterator end = openSetCopy.end();
-        for (DatabaseSet::iterator it = openSetCopy.begin(); it != end; ++it)
+        DatabaseSet::iterator end = m_openDatabaseSet.end();
+        for (DatabaseSet::iterator it = m_openDatabaseSet.begin(); it != end; ++it)
             (*it).get()->close();
     }
 
@@ -122,17 +121,9 @@ void DatabaseThread::recordDatabaseClosed(DatabaseBackend* database)
     MutexLocker lock(m_terminationRequestedMutex);
 #endif
     ASSERT(isDatabaseThread());
-    ASSERT(database);
+    ASSERT_UNUSED(database, database);
     ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));
-    m_openDatabaseSet.remove(database);
-}
-
-bool DatabaseThread::isDatabaseOpen(DatabaseBackend* database)
-{
-    ASSERT(isDatabaseThread());
-    ASSERT(database);
-    MutexLocker lock(m_terminationRequestedMutex);
-    return !m_terminationRequested && m_openDatabaseSet.contains(database);
+    // We'll clear m_openDatabaseSet in the destructor.
 }
 
 void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
