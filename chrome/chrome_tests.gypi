@@ -934,6 +934,7 @@
       ],
       'sources': [
         '../apps/app_restore_service_browsertest.cc',
+        '../apps/app_window_browsertest.cc',
         '../apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
         '../apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
         '../apps/app_shim/test/app_shim_host_manager_test_api_mac.h',

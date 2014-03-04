@@ -96,6 +96,13 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
       const gfx::Rect& current_screen_bounds,
       const gfx::Size& minimum_size,
       gfx::Rect* bounds);
+
+  // Load a simple test app and create a window. The window must be closed by
+  // the caller in order to terminate the test - use CloseAppWindow().
+  // |window_create_options| are the options that will be passed to
+  // chrome.app.window.create() in the test app.
+  apps::AppWindow* CreateTestAppWindow(
+      const std::string& window_create_options);
 };
 
 class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {

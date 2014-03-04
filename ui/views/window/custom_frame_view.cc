@@ -136,8 +136,8 @@ gfx::Rect CustomFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight();
   int border_thickness = NonClientBorderThickness();
-  return gfx::Rect(std::max(0, client_bounds.x() - border_thickness),
-                   std::max(0, client_bounds.y() - top_height),
+  return gfx::Rect(client_bounds.x() - border_thickness,
+                   client_bounds.y() - top_height,
                    client_bounds.width() + (2 * border_thickness),
                    client_bounds.height() + top_height + border_thickness);
 }
