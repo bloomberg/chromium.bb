@@ -103,11 +103,15 @@ void ChromotingJniInstance::Cleanup() {
 }
 
 void ChromotingJniInstance::ProvideSecret(const std::string& pin,
-                                          bool create_pairing) {
+                                          bool create_pairing,
+                                          const std::string& device_name) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(!pin_callback_.is_null());
 
   create_pairing_ = create_pairing;
+
+  if (create_pairing)
+    SetDeviceName(device_name);
 
   jni_runtime_->network_task_runner()->PostTask(FROM_HERE,
                                                 base::Bind(pin_callback_, pin));
@@ -201,7 +205,8 @@ void ChromotingJniInstance::OnConnectionState(
 
   if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
     protocol::PairingRequest request;
-    request.set_client_name("Android");
+    DCHECK(!device_name_.empty());
+    request.set_client_name(device_name_);
     connection_->host_stub()->RequestPairing(request);
   }
 
@@ -361,6 +366,17 @@ void ChromotingJniInstance::FetchSecret(
 
   pin_callback_ = callback;
   jni_runtime_->DisplayAuthenticationPrompt(pairable);
+}
+
+void ChromotingJniInstance::SetDeviceName(const std::string& device_name) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingJniInstance::SetDeviceName, this,
+                              device_name));
+    return;
+  }
+
+  device_name_ = device_name;
 }
 
 void ChromotingJniInstance::EnableStatsLogging(bool enabled) {

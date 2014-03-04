@@ -92,9 +92,11 @@ static void Disconnect(JNIEnv* env, jclass clazz) {
 static void AuthenticationResponse(JNIEnv* env,
                                    jclass clazz,
                                    jstring pin,
-                                   jboolean createPair) {
+                                   jboolean createPair,
+                                   jstring deviceName) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->ProvideSecret(
-      ConvertJavaStringToUTF8(env, pin).c_str(), createPair);
+      ConvertJavaStringToUTF8(env, pin).c_str(), createPair,
+      ConvertJavaStringToUTF8(env, deviceName));
 }
 
 static void ScheduleRedraw(JNIEnv* env, jclass clazz) {

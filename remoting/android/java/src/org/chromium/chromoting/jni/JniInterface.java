@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -228,7 +229,7 @@ public class JniInterface {
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User provided a PIN code");
                         nativeAuthenticationResponse(String.valueOf(pinTextView.getText()),
-                                                     pinCheckBox.isChecked());
+                                pinCheckBox.isChecked(), Build.MODEL);
                     }
                 });
 
@@ -269,8 +270,15 @@ public class JniInterface {
         pinDialog.show();
     }
 
-    /** Performs the native response to the user's PIN. */
-    private static native void nativeAuthenticationResponse(String pin, boolean createPair);
+    /**
+     * Performs the native response to the user's PIN.
+     * @param pin The entered PIN.
+     * @param createPair Whether to create a new pairing for this client.
+     * @param deviceName The device name to appear in the pairing registry. Only used if createPair
+     *                   is true.
+     */
+    private static native void nativeAuthenticationResponse(String pin, boolean createPair,
+                                                            String deviceName);
 
     /** Saves newly-received pairing credentials to permanent storage. Called on the UI thread. */
     @CalledByNative
