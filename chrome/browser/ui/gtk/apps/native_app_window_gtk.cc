@@ -151,7 +151,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(AppWindow* app_window,
       Profile::FromBrowserContext(app_window_->browser_context()),
       window_,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      app_window_));
+      NULL));
 
   ui::ActiveWindowWatcherX::AddObserver(this);
 }

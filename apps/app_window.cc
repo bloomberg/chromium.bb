@@ -831,12 +831,6 @@ bool AppWindow::IsWebContentsVisible(content::WebContents* web_contents) {
   return delegate_->IsWebContentsVisible(web_contents);
 }
 
-extensions::ActiveTabPermissionGranter*
-AppWindow::GetActiveTabPermissionGranter() {
-  // App windows don't support the activeTab permission.
-  return NULL;
-}
-
 WebContentsModalDialogHost* AppWindow::GetWebContentsModalDialogHost() {
   return native_app_window_.get();
 }

@@ -31,7 +31,6 @@ include_rules = [
   "+chrome/browser/extensions/extension_function_dispatcher.h",
   "+chrome/browser/extensions/extension_icon_image.h",
   "+chrome/browser/extensions/extension_host.h",
-  "+chrome/browser/extensions/extension_keybinding_registry.h",
   "+chrome/browser/extensions/extension_web_contents_observer.h",
   "+chrome/browser/extensions/suggest_permission_util.h",
   "+chrome/browser/extensions/unpacked_installer.h",

@@ -372,7 +372,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       Profile::FromBrowserContext(app_window_->browser_context()),
       window,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      app_window));
+      NULL));
 }
 
 NSUInteger NativeAppWindowCocoa::GetWindowStyleMask() const {

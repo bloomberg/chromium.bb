@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
-#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -82,7 +81,6 @@ class AppWindow : public content::NotificationObserver,
                   public content::WebContentsDelegate,
                   public content::WebContentsObserver,
                   public web_modal::WebContentsModalDialogManagerDelegate,
-                  public extensions::ExtensionKeybindingRegistry::Delegate,
                   public extensions::IconImage::Observer {
  public:
   enum WindowType {
@@ -423,10 +421,6 @@ class AppWindow : public content::NotificationObserver,
 
   // Update the always-on-top bit in the native app window.
   void UpdateNativeAlwaysOnTop();
-
-  // extensions::ExtensionKeybindingRegistry::Delegate implementation.
-  virtual extensions::ActiveTabPermissionGranter*
-      GetActiveTabPermissionGranter() OVERRIDE;
 
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
   virtual web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()

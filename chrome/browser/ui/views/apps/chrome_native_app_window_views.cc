@@ -670,7 +670,7 @@ void ChromeNativeAppWindowViews::InitializeWindow(
       Profile::FromBrowserContext(app_window->browser_context()),
       window()->GetFocusManager(),
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      app_window));
+      NULL));
 
 #if defined(OS_WIN)
   if (ShouldUseNativeFrame() &&
