@@ -117,7 +117,6 @@ v8.log
 /chrome/test/data/perf/third_party/
 /chrome/test/data/plugin/
 /chrome/test/data/pyauto_private
-/chrome/test/media/license_server/widevine/
 /chrome/tools/memory
 /chrome/tools/test/reference_build
 /chrome/unit_tests_run.xml
@@ -317,6 +316,7 @@ v8.log
 /third_party/widevine/cdm/linux
 /third_party/widevine/cdm/mac
 /third_party/widevine/cdm/win
+/third_party/widevine/test/license_server
 /third_party/win_toolchain/.timestamps
 /third_party/win_toolchain/files
 /third_party/wix
