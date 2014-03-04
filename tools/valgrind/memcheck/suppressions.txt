@@ -6343,3 +6343,10 @@
    fun:_Zna*
    fun:_ZN7content30WebKitPlatformSupportChildImpl18waitMultipleEventsERKN5blink9WebVectorIPNS1_16WebWaitableEventEEE
 }
+{
+   bug_349152
+   Memcheck:Uninitialized
+   fun:_ZN7content31MediaStreamAudioLevelCalculator9CalculateEPKsii
+   fun:_ZN7content21WebRtcLocalAudioTrack7CaptureEPKsN4base9TimeDeltaEibb
+   fun:_ZN7content54WebRtcLocalAudioTrackAdapterTest_AddAndRemoveSink_Test8TestBodyEv
+}
