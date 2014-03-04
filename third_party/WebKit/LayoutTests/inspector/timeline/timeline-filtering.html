@@ -75,10 +75,8 @@ function test()
     var collapseList = {"bar04":true, "foo13": true};
     for (var i = 0; i < records.length; ++i) {
         var record = records[i];
-        if (collapseList[record._record.data.message]) {
+        if (collapseList[record._record.data.message])
             record.setCollapsed(true);
-            record.clicked = true;
-        }
     }
     model.invalidateFilteredRecords();
     dumpRecords();

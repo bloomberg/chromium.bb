@@ -34,6 +34,11 @@ InspectorTest.timelinePresentationModel = function()
     return WebInspector.panels.timeline._currentViews[0]._presentationModel;
 }
 
+InspectorTest.timelineModel = function()
+{
+    return WebInspector.panels.timeline._model;
+}
+
 InspectorTest.startTimeline = function(callback)
 {
     InspectorTest._timelineRecords = [];
@@ -128,7 +133,7 @@ InspectorTest.printTimelineRecords = function(typeName, formatter)
 
 InspectorTest.printTimestampRecords = function(typeName, formatter)
 {
-    InspectorTest.innerPrintTimelineRecords(InspectorTest.timelinePresentationModel().eventDividerRecords(), typeName, formatter);
+    InspectorTest.innerPrintTimelineRecords(InspectorTest.timelineModel().eventDividerRecords(), typeName, formatter);
 };
 
 InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
