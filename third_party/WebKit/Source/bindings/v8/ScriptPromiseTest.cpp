@@ -47,17 +47,21 @@ class ScriptPromiseTest : public testing::Test {
 public:
     ScriptPromiseTest()
         : m_isolate(v8::Isolate::GetCurrent())
+        , m_handleScope(m_isolate)
+        , m_context(m_isolate, v8::Context::New(m_isolate))
+        , m_contextScope(m_context.newLocal(m_isolate))
     {
     }
 
     void SetUp()
     {
-        m_scope = V8BindingTestScope::create(m_isolate);
+        // FIXME: Create a new world and pass it to V8PerContextData.
+        m_perContextData = V8PerContextData::create(m_context.newLocal(m_isolate), 0);
     }
 
     void TearDown()
     {
-        m_scope.clear();
+        m_perContextData.clear();
     }
 
     V8PromiseCustom::PromiseState state(ScriptPromise promise)
@@ -67,9 +71,10 @@ public:
 
 protected:
     v8::Isolate* m_isolate;
-
-private:
-    OwnPtr<V8BindingTestScope> m_scope;
+    v8::HandleScope m_handleScope;
+    ScopedPersistent<v8::Context> m_context;
+    v8::Context::Scope m_contextScope;
+    OwnPtr<V8PerContextData> m_perContextData;
 };
 
 TEST_F(ScriptPromiseTest, castPromise)
