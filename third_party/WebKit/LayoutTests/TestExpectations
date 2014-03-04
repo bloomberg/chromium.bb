@@ -1031,7 +1031,6 @@ crbug.com/309197 [ Win ] fast/block/float/overhanging-tall-block.html [ NeedsMan
 crbug.com/309197 [ Win ] fast/dom/52776.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] fast/dynamic/selection-highlight-adjust.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] fast/events/autoscroll.html [ NeedsManualRebaseline ]
-crbug.com/309197 [ Win ] fast/events/constructors/progress-event-constructor.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] fast/events/context-no-deselect.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] fast/forms/form-added-to-table.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] fast/forms/input-appearance-focus.html [ NeedsManualRebaseline ]
