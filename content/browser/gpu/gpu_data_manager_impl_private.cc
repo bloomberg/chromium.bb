@@ -622,7 +622,9 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 
     UpdateBlacklistedFeatures(features);
   }
-  if (gpu_driver_bug_list_) {
+  gpu_driver_bugs_ =
+      gpu::WorkaroundsFromCommandLine(CommandLine::ForCurrentProcess());
+  if (gpu_driver_bugs_.empty() && gpu_driver_bug_list_) {
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
         gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
   }

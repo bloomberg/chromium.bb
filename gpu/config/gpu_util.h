@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 
@@ -33,6 +34,10 @@ GPU_EXPORT void ApplyGpuDriverBugWorkarounds(
 // |str| is in the format of "feature1,feature2,...,featureN".
 GPU_EXPORT void StringToFeatureSet(
     const std::string& str, std::set<int>* feature_set);
+
+// Get the set of workarounds from switches provided in |command_line|
+GPU_EXPORT std::set<int> WorkaroundsFromCommandLine(
+    CommandLine* command_line);
 
 }  // namespace gpu
 
