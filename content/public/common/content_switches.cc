@@ -1049,9 +1049,6 @@ const char kEnableCarbonInterposing[]       = "enable-carbon-interposing";
 // accelerated compositing is disabled. See http://crbug.com/122430 .
 const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
-
-// Disable use of core animation to draw the RenderWidgetHostView on Mac.
-const char kDisableCoreAnimation[]          = "disable-core-animation";
 #endif
 
 #if defined(OS_POSIX)

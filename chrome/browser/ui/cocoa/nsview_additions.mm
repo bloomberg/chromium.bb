@@ -6,7 +6,7 @@
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/common/content_switches.h"
+#include "ui/base/ui_base_switches.h"
 
 #include "base/logging.h"
 

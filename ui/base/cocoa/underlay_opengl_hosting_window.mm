@@ -6,10 +6,12 @@
 
 #import <objc/runtime.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "ui/base/ui_base_switches.h"
 
 @interface NSWindow (UndocumentedAPI)
 // Normally, punching a hole in a window by painting a subview with a
@@ -29,6 +31,12 @@
 @end
 
 namespace {
+
+bool CoreAnimationIsEnabled() {
+  static bool is_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCoreAnimation);
+  return is_enabled;
+}
 
 NSComparisonResult OpaqueViewsOnTop(id view1, id view2, void* context) {
   BOOL view_1_is_opaque_view = [view1 isKindOfClass:[OpaqueView class]];
@@ -103,6 +111,14 @@ NSComparisonResult OpaqueViewsOnTop(id view1, id view2, void* context) {
                                styleMask:windowStyle
                                  backing:bufferingType
                                    defer:deferCreation])) {
+    if (CoreAnimationIsEnabled()) {
+      // If CoreAnimation is used, then the hole punching technique won't be
+      // used. Bail now and don't play any special games with the shadow.
+      // TODO(avi): Rip all this shadow code out once CoreAnimation can't be
+      // turned off. http://crbug.com/336554
+      return self;
+    }
+
     // OpenGL-accelerated content works by punching holes in windows. Therefore
     // all windows hosting OpenGL content must not be opaque.
     [self setOpaque:NO];

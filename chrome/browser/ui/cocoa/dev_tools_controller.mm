@@ -17,9 +17,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_switches.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 #include "ui/gfx/size_conversions.h"
 

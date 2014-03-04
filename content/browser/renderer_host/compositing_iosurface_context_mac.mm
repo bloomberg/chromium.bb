@@ -12,7 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/compositing_iosurface_shader_programs_mac.h"
-#include "content/public/common/content_switches.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
