@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 
 namespace chromeos {
 
@@ -224,6 +225,9 @@ class SystemTrayDelegateChromeOS
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
                              device::BluetoothDevice* device) OVERRIDE;
 
+  void OnStartBluetoothDiscoverySession(
+      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+
   // Overridden from SystemKeyEventListener::CapsLockObserver.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE;
 
@@ -251,8 +255,10 @@ class SystemTrayDelegateChromeOS
   bool have_session_length_limit_;
   base::TimeDelta session_length_limit_;
   std::string enterprise_domain_;
+  bool should_run_bluetooth_discovery_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
+  scoped_ptr<device::BluetoothDiscoverySession> bluetooth_discovery_session_;
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;

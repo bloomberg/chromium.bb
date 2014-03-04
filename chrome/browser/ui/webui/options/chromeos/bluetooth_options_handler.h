@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 
 namespace base {
 class DictionaryValue;
@@ -154,12 +155,17 @@ class BluetoothOptionsHandler
   // change the power status of the adapter.
   void EnableChangeError();
 
+  // Called by device::BluetoothAdapter in response to a successful request
+  // to initiate a discovery session.
+  void OnStartDiscoverySession(
+      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+
   // Called by device::BluetoothAdapter in response to a failure to
-  // set the adapter into discovery mode.
+  // initiate a discovery session.
   void FindDevicesError();
 
   // Called by device::BluetoothAdapter in response to a failure to
-  // remove the adapter from discovery mode.
+  // terminate a discovery session.
   void StopDiscoveryError();
 
   // Called by device::BluetoothDevice on a successful pairing and connection
@@ -210,8 +216,15 @@ class BluetoothOptionsHandler
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  // True while performing device discovery.
-  bool discovering_;
+  // True, if the UI has requested device discovery. False, if either no device
+  // discovery was requested or the dialog responsible for device discovery was
+  // dismissed.
+  bool should_run_device_discovery_;
+
+  // The current device discovery session. Only one active discovery session is
+  // kept at a time and the instance that |discovery_session_| points to gets
+  // replaced by a new one when a new discovery session is initiated.
+  scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
   // Cached information about the current pairing device, if any.
   std::string pairing_device_address_;

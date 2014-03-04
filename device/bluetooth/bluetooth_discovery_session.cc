@@ -20,6 +20,10 @@ BluetoothDiscoverySession::~BluetoothDiscoverySession() {
   adapter_->DiscoverySessionDestroyed(this);
 }
 
+bool BluetoothDiscoverySession::IsActive() const {
+  return active_;
+}
+
 void BluetoothDiscoverySession::Stop(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

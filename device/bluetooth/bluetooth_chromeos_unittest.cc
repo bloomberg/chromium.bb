@@ -246,7 +246,7 @@ class BluetoothChromeOSTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (last_discovery_session_.get() && last_discovery_session_->active()) {
+    if (last_discovery_session_.get() && last_discovery_session_->IsActive()) {
       callback_count_ = 0;
       last_discovery_session_->Stop(
           base::Bind(&BluetoothChromeOSTest::Callback,
@@ -1323,7 +1323,7 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->active());
+  EXPECT_TRUE(last_discovery_session_->IsActive());
 
   // Start another session. A new one should be returned in the callback, which
   // in turn will destroy the previous session. Adapter should still be
@@ -1340,7 +1340,7 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->active());
+  EXPECT_TRUE(last_discovery_session_->IsActive());
 
   // Hold on to the current discovery session to prevent it from getting
   // destroyed during the next call to StartDiscoverySession.
@@ -1360,7 +1360,7 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->active());
+  EXPECT_TRUE(last_discovery_session_->IsActive());
   EXPECT_NE(last_discovery_session_.get(), discovery_session);
 
   // Stop the previous discovery session. The session should end but discovery
@@ -1377,8 +1377,8 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->active());
-  EXPECT_FALSE(discovery_session->active());
+  EXPECT_TRUE(last_discovery_session_->IsActive());
+  EXPECT_FALSE(discovery_session->IsActive());
 
   // Delete the current active session. Discovery should eventually stop.
   last_discovery_session_.reset();

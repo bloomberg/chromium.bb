@@ -55,20 +55,14 @@ const int kInvalidEntered = 0xFFFF;
 namespace chromeos {
 namespace options {
 
-BluetoothOptionsHandler::BluetoothOptionsHandler() :
-    discovering_(false),
-    pairing_device_passkey_(1000000),
-    pairing_device_entered_(kInvalidEntered),
-    weak_ptr_factory_(this) {
+BluetoothOptionsHandler::BluetoothOptionsHandler()
+    : should_run_device_discovery_(false),
+      pairing_device_passkey_(1000000),
+      pairing_device_entered_(kInvalidEntered),
+      weak_ptr_factory_(this) {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
-  if (discovering_) {
-    adapter_->StopDiscovering(
-        base::Bind(&base::DoNothing),
-        base::Bind(&base::DoNothing));
-    discovering_ = false;
-  }
   if (adapter_.get())
     adapter_->RemoveObserver(this);
 }
@@ -235,13 +229,26 @@ void BluetoothOptionsHandler::EnableChangeError() {
 
 void BluetoothOptionsHandler::FindDevicesCallback(
     const base::ListValue* args) {
-  if (!discovering_) {
-    discovering_ = true;
-    adapter_->StartDiscovering(
-        base::Bind(&base::DoNothing),
-        base::Bind(&BluetoothOptionsHandler::FindDevicesError,
-                   weak_ptr_factory_.GetWeakPtr()));
+  if (discovery_session_.get() && discovery_session_->IsActive()) {
+    VLOG(1) << "Already have an active discovery session.";
+    return;
   }
+  should_run_device_discovery_ = true;
+  adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothOptionsHandler::OnStartDiscoverySession,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothOptionsHandler::FindDevicesError,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothOptionsHandler::OnStartDiscoverySession(
+    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+  // If the discovery session was returned after a request to stop discovery
+  // (e.g. the "Add Device" dialog was dismissed), don't claim the discovery
+  // session and let it clean up.
+  if (!should_run_device_discovery_)
+    return;
+  discovery_session_ = discovery_session.Pass();
 }
 
 void BluetoothOptionsHandler::FindDevicesError() {
@@ -402,13 +409,15 @@ void BluetoothOptionsHandler::ForgetError(const std::string& address) {
 
 void BluetoothOptionsHandler::StopDiscoveryCallback(
     const base::ListValue* args) {
-  if (discovering_) {
-    adapter_->StopDiscovering(
-        base::Bind(&base::DoNothing),
-        base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
-                   weak_ptr_factory_.GetWeakPtr()));
-    discovering_ = false;
+  should_run_device_discovery_ = false;
+  if (!discovery_session_.get() || !discovery_session_->IsActive()) {
+    VLOG(1) << "No active discovery session.";
+    return;
   }
+  discovery_session_->Stop(
+      base::Bind(&base::DoNothing),
+      base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothOptionsHandler::StopDiscoveryError() {

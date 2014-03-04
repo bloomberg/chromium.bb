@@ -625,8 +625,10 @@ void BluetoothAdapterChromeOS::DiscoveringChanged(
     bool discovering) {
   // If the adapter stopped discovery due to a reason other than a request by
   // us, reset the count to 0.
+  VLOG(1) << "Discovering changed: " << discovering;
   if (!discovering && !discovery_request_pending_
       && num_discovery_sessions_ > 0) {
+    VLOG(1) << "Marking sessions as inactive.";
     num_discovery_sessions_ = 0;
     MarkDiscoverySessionsAsInactive();
   }
@@ -680,8 +682,8 @@ void BluetoothAdapterChromeOS::AddDiscoverySession(
     // The pending request is either to stop a previous session or to start a
     // new one. Either way, queue this one.
     DCHECK(num_discovery_sessions_ == 1 || num_discovery_sessions_ == 0);
-    VLOG(1) << "Pending request to initiate device discovery. Queueing request "
-            << "to start a new discovery session.";
+    VLOG(1) << "Pending request to start/stop device discovery. Queueing "
+            << "request to start a new discovery session.";
     discovery_request_queue_.push(std::make_pair(callback, error_callback));
     return;
   }
@@ -708,6 +710,7 @@ void BluetoothAdapterChromeOS::AddDiscoverySession(
                      callback),
           base::Bind(&BluetoothAdapterChromeOS::OnStartDiscoveryError,
                      weak_ptr_factory_.GetWeakPtr(),
+                     callback,
                      error_callback));
 }
 
@@ -726,8 +729,8 @@ void BluetoothAdapterChromeOS::RemoveDiscoverySession(
 
   // If there is a pending request to BlueZ, then queue this request.
   if (discovery_request_pending_) {
-    VLOG(1) << "Pending request to initiate device discovery. Queueing request "
-            << "to stop discovery session.";
+    VLOG(1) << "Pending request to start/stop device discovery. Queueing "
+            << "request to stop discovery session.";
     error_callback.Run();
     return;
   }
@@ -759,6 +762,7 @@ void BluetoothAdapterChromeOS::RemoveDiscoverySession(
 
 void BluetoothAdapterChromeOS::OnStartDiscovery(const base::Closure& callback) {
   // Report success on the original request and increment the count.
+  VLOG(1) << __func__;
   DCHECK(discovery_request_pending_);
   DCHECK(num_discovery_sessions_ == 0);
   discovery_request_pending_ = false;
@@ -770,6 +774,7 @@ void BluetoothAdapterChromeOS::OnStartDiscovery(const base::Closure& callback) {
 }
 
 void BluetoothAdapterChromeOS::OnStartDiscoveryError(
+    const base::Closure& callback,
     const ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -780,7 +785,17 @@ void BluetoothAdapterChromeOS::OnStartDiscoveryError(
   DCHECK(num_discovery_sessions_ == 0);
   DCHECK(discovery_request_pending_);
   discovery_request_pending_ = false;
-  error_callback.Run();
+
+  // Discovery request may fail if discovery was previously initiated by Chrome,
+  // but the session were invalidated due to the discovery state unexpectedly
+  // changing to false and then back to true. In this case, report success.
+  if (error_name == bluetooth_device::kErrorInProgress && IsDiscovering()) {
+    VLOG(1) << "Discovery previously initiated. Reporting success.";
+    num_discovery_sessions_++;
+    callback.Run();
+  } else {
+    error_callback.Run();
+  }
 
   // Try to add a new discovery session for each queued request.
   ProcessQueuedDiscoveryRequests();
@@ -788,6 +803,7 @@ void BluetoothAdapterChromeOS::OnStartDiscoveryError(
 
 void BluetoothAdapterChromeOS::OnStopDiscovery(const base::Closure& callback) {
   // Report success on the original request and decrement the count.
+  VLOG(1) << __func__;
   DCHECK(discovery_request_pending_);
   DCHECK(num_discovery_sessions_ == 1);
   discovery_request_pending_ = false;
@@ -817,6 +833,7 @@ void BluetoothAdapterChromeOS::OnStopDiscoveryError(
 
 void BluetoothAdapterChromeOS::ProcessQueuedDiscoveryRequests() {
   while (!discovery_request_queue_.empty()) {
+    VLOG(1) << "Process queued discovery request.";
     DiscoveryCallbackPair callbacks = discovery_request_queue_.front();
     discovery_request_queue_.pop();
     AddDiscoverySession(callbacks.first, callbacks.second);

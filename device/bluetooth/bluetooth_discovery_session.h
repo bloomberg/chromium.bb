@@ -36,7 +36,7 @@ class BluetoothDiscoverySession {
   // the call may not always succeed. To be notified of such failures,
   // users are highly encouraged to call BluetoothDiscoverySession::Stop,
   // instead of relying on the destructor.
-  ~BluetoothDiscoverySession();
+  virtual ~BluetoothDiscoverySession();
 
   // Returns true if the session is active, false otherwise. If false, the
   // adapter might still be discovering as there might still be other active
@@ -44,7 +44,7 @@ class BluetoothDiscoverySession {
   // whether or not discovery should continue. In this case, the application
   // should request a new BluetoothDiscoverySession to make sure that device
   // discovery continues.
-  bool active() const { return active_; }
+  virtual bool IsActive() const;
 
   // Requests this discovery session instance to stop. If this instance is
   // active, the session will stop. On success, |callback| is called and
@@ -54,13 +54,14 @@ class BluetoothDiscoverySession {
   // to call this method to end a discovery session, instead of relying on the
   // destructor, so that they can be notified of the result via the callback
   // arguments.
-  void Stop(const base::Closure& callback,
-            const ErrorCallback& error_callback);
+  virtual void Stop(const base::Closure& callback,
+                    const ErrorCallback& error_callback);
 
- private:
+ protected:
   friend class BluetoothAdapter;
   explicit BluetoothDiscoverySession(BluetoothAdapter* adapter);
 
+ private:
   // Internal callback invoked when a call to Stop has succeeded.
   void OnStop(const base::Closure& callback);
 

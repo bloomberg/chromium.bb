@@ -194,7 +194,8 @@ class BluetoothAdapterChromeOS
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
   void OnStartDiscovery(const base::Closure& callback);
-  void OnStartDiscoveryError(const ErrorCallback& error_callback,
+  void OnStartDiscoveryError(const base::Closure& callback,
+                             const ErrorCallback& error_callback,
                              const std::string& error_name,
                              const std::string& error_message);
 

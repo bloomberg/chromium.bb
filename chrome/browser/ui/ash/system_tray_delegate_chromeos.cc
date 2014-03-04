@@ -251,6 +251,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       screen_locked_(false),
       have_session_start_time_(false),
       have_session_length_limit_(false),
+      should_run_bluetooth_discovery_(false),
       volume_control_delegate_(new VolumeController()),
       device_settings_observer_(CrosSettings::Get()->AddSettingsObserver(
           kSystemUse24HourClock,
@@ -703,12 +704,28 @@ void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
 }
 
 void SystemTrayDelegateChromeOS::BluetoothStartDiscovering() {
-  bluetooth_adapter_->StartDiscovering(
-      base::Bind(&base::DoNothing), base::Bind(&BluetoothSetDiscoveringError));
+  if (bluetooth_discovery_session_.get() &&
+      bluetooth_discovery_session_->IsActive()) {
+    LOG(WARNING) << "Already have active Bluetooth device discovery session.";
+    return;
+  }
+  VLOG(1) << "Requesting new Bluetooth device discovery session.";
+  should_run_bluetooth_discovery_ = true;
+  bluetooth_adapter_->StartDiscoverySession(
+      base::Bind(&SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothSetDiscoveringError));
 }
 
 void SystemTrayDelegateChromeOS::BluetoothStopDiscovering() {
-  bluetooth_adapter_->StopDiscovering(
+  should_run_bluetooth_discovery_ = false;
+  if (!bluetooth_discovery_session_.get() ||
+      !bluetooth_discovery_session_->IsActive()) {
+    LOG(WARNING) << "No active Bluetooth device discovery session.";
+    return;
+  }
+  VLOG(1) << "Stopping Bluetooth device discovery session.";
+  bluetooth_discovery_session_->Stop(
       base::Bind(&base::DoNothing), base::Bind(&BluetoothSetDiscoveringError));
 }
 
@@ -1285,6 +1302,17 @@ void SystemTrayDelegateChromeOS::DeviceRemoved(
     device::BluetoothAdapter* adapter,
     device::BluetoothDevice* device) {
   GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+}
+
+void SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession(
+    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+  // If the discovery session was returned after a request to stop discovery
+  // (e.g. the user dismissed the Bluetooth detailed view before the call
+  // returned), don't claim the discovery session and let it clean up.
+  if (!should_run_bluetooth_discovery_)
+    return;
+  VLOG(1) << "Claiming new Bluetooth device discovery session.";
+  bluetooth_discovery_session_ = discovery_session.Pass();
 }
 
 // Overridden from SystemKeyEventListener::CapsLockObserver.
