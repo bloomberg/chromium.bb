@@ -55,6 +55,7 @@ class TestDirectoryBackingStore : public DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, GenerateCacheGUID);
   FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateToLatestAndDump);
   friend class MigrationTest;
 };
 

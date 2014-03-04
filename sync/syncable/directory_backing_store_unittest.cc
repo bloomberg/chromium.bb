@@ -3050,6 +3050,39 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   }
 }
 
+// The purpose of this test case is to make it easier to get a dump of the
+// database so you can implement a SetUpVersionYDatabase method.  Here's what
+// you should do:
+//
+//   1. Say you're going from version X to version Y.  Write the migration
+//      method MigrateVersionXToY.
+//   2. Update the test below to call SetUpVersionXDatabase and then
+//      MigrateVersionXToY. You now have a database at version Y. Let's dump it.
+//   3. Set a breakpoint to stop execution just after the connection is
+//      destroyed.  Examine temp_dir_ to find the version Y database that was
+//      created on disk. E.g. (gdb) p temp_dir_.path().value().c_str()
+//   4. Dump the database using the sqlite3 command line tool:
+//        > .output foo_dump.sql
+//        > .dump
+//   5. Replace the timestamp columns with META_PROTO_TIMES(x) (or
+//      LEGACY_META_PROTO_TIMES(x) if before Version 77). Use this dump to write
+//      a SetupVersionYDatabase method.
+TEST_F(DirectoryBackingStoreTest, MigrateToLatestAndDump) {
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    SetUpVersion85Database(&connection);  // Update this.
+
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
+    ASSERT_TRUE(dbs->MigrateVersion85To86());  // Update this.
+    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    EXPECT_EQ(86, dbs->GetVersion());  // Update this.
+    ASSERT_FALSE(dbs->needs_column_refresh_);
+  }
+  // Set breakpoint here.
+}
+
 TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
@@ -3144,19 +3177,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
       // If you see this error, it may mean that you've increased the
       // database version number but you haven't finished adding unit tests
       // for the database migration code.  You need to need to supply a
-      // SetUpVersionXXDatabase function with a dump of the test database
-      // at the old schema.  Here's one way to do that:
-      //   1. Start on a clean tree (with none of your pending schema changes).
-      //   2. Set a breakpoint in this function and run the unit test.
-      //   3. Allow this test to run to completion (step out of the call),
-      //      without allowing ~MigrationTest to execute.
-      //   4. Examine this->temp_dir_ to determine the location of the
-      //      test database (it is currently of the version you need).
-      //   5. Dump this using the sqlite3 command line tool:
-      //        > .output foo_dump.sql
-      //        > .dump
-      //   6. Replace the timestamp columns with META_PROTO_TIMES(x) (or
-      //      LEGACY_META_PROTO_TIMES(x) if before Version 77).
+      // SetUpVersionYDatabase function with a dump of the test database
+      // at the new schema.  See the MigrateToLatestAndDump test case.
       FAIL() << "Need to supply database dump for version " << GetParam();
   }
 
