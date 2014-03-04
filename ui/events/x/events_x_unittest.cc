@@ -82,23 +82,23 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_LT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
 
-  // Scroll left, typically.
+  // Scroll left.
   InitButtonEvent(&event, true, location, 6, 0);
   EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_EQ(0, offset.y());
-  EXPECT_EQ(0, offset.x());
+  EXPECT_LT(offset.x(), 0);
 
-  // Scroll right, typically.
+  // Scroll right.
   InitButtonEvent(&event, true, location, 7, 0);
   EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_EQ(0, offset.y());
-  EXPECT_EQ(0, offset.x());
+  EXPECT_GT(offset.x(), 0);
 
   // TODO(derat): Test XInput code.
 }

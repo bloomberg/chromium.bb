@@ -525,8 +525,11 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
       return gfx::Vector2d(0, kWheelScrollAmount);
     case 5:
       return gfx::Vector2d(0, -kWheelScrollAmount);
+    case 6:
+      return gfx::Vector2d(-kWheelScrollAmount, 0);
+    case 7:
+      return gfx::Vector2d(kWheelScrollAmount, 0);
     default:
-      // TODO(derat): Do something for horizontal scrolls (buttons 6 and 7)?
       return gfx::Vector2d();
   }
 }
