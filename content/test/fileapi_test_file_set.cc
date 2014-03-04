@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/test_file_set.h"
+#include "content/test/fileapi_test_file_set.h"
 
 #include <string>
 
@@ -12,11 +12,9 @@
 #include "base/rand_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace fileapi {
+namespace content {
 
-namespace test {
-
-const TestCaseRecord kRegularTestCases[] = {
+const FileSystemTestCaseRecord kRegularFileSystemTestCases[] = {
   {true, FILE_PATH_LITERAL("dir a"), 0},
   {true, FILE_PATH_LITERAL("dir a/dir A"), 0},
   {true, FILE_PATH_LITERAL("dir a/dir d"), 0},
@@ -37,10 +35,11 @@ const TestCaseRecord kRegularTestCases[] = {
   {false, FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 3"), 50},
 };
 
-const size_t kRegularTestCaseSize = arraysize(kRegularTestCases);
+const size_t kRegularFileSystemTestCaseSize =
+    arraysize(kRegularFileSystemTestCases);
 
-void SetUpOneTestCase(const base::FilePath& root_path,
-                      const TestCaseRecord& test_case) {
+void SetUpOneFileSystemTestCase(const base::FilePath& root_path,
+                                const FileSystemTestCaseRecord& test_case) {
   base::FilePath path = root_path.Append(test_case.path);
   if (test_case.is_directory) {
     ASSERT_TRUE(base::CreateDirectory(path));
@@ -58,13 +57,11 @@ void SetUpOneTestCase(const base::FilePath& root_path,
 }
 
 
-void SetUpRegularTestCases(const base::FilePath& root_path) {
-  for (size_t i = 0; i < arraysize(kRegularTestCases); ++i) {
+void SetUpRegularFileSystemTestCases(const base::FilePath& root_path) {
+  for (size_t i = 0; i < arraysize(kRegularFileSystemTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kRegularTestCases " << i);
-    SetUpOneTestCase(root_path, kRegularTestCases[i]);
+    SetUpOneFileSystemTestCase(root_path, kRegularFileSystemTestCases[i]);
   }
 }
 
-}  // namespace test
-
-}  // namespace fileapi
+}  // namespace content

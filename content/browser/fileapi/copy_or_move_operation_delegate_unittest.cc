@@ -15,6 +15,7 @@
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_context.h"
+#include "content/test/fileapi_test_file_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
@@ -24,7 +25,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/test_file_set.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/mock_quota_manager_proxy.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -36,7 +36,6 @@ using fileapi::FileStreamWriter;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
-using fileapi::test::TestCaseRecord;
 
 namespace content {
 
@@ -282,11 +281,11 @@ class CopyOrMoveOperationTestHelper {
 
   base::File::Error SetUpTestCaseFiles(
       const FileSystemURL& root,
-      const TestCaseRecord* const test_cases,
+      const FileSystemTestCaseRecord* const test_cases,
       size_t test_case_size) {
     base::File::Error result = base::File::FILE_ERROR_FAILED;
     for (size_t i = 0; i < test_case_size; ++i) {
-      const TestCaseRecord& test_case = test_cases[i];
+      const FileSystemTestCaseRecord& test_case = test_cases[i];
       FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
           root.origin(),
           root.mount_type(),
@@ -304,9 +303,9 @@ class CopyOrMoveOperationTestHelper {
 
   void VerifyTestCaseFiles(
       const FileSystemURL& root,
-      const TestCaseRecord* const test_cases,
+      const FileSystemTestCaseRecord* const test_cases,
       size_t test_case_size) {
-    std::map<base::FilePath, const TestCaseRecord*> test_case_map;
+    std::map<base::FilePath, const FileSystemTestCaseRecord*> test_case_map;
     for (size_t i = 0; i < test_case_size; ++i) {
       test_case_map[
           base::FilePath(test_cases[i].path).NormalizePathSeparators()] =
@@ -340,7 +339,8 @@ class CopyOrMoveOperationTestHelper {
       }
     }
     EXPECT_TRUE(test_case_map.empty());
-    std::map<base::FilePath, const TestCaseRecord*>::const_iterator it;
+    std::map<base::FilePath,
+        const FileSystemTestCaseRecord*>::const_iterator it;
     for (it = test_case_map.begin(); it != test_case_map.end(); ++it) {
       LOG(ERROR) << "Extra entry: " << it->first.LossyDisplayName();
     }
@@ -529,8 +529,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      fileapi::test::kRegularTestCases,
-                                      fileapi::test::kRegularTestCaseSize));
+                                      kRegularFileSystemTestCases,
+                                      kRegularFileSystemTestCaseSize));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
@@ -544,8 +544,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
   helper.VerifyTestCaseFiles(dest,
-                             fileapi::test::kRegularTestCases,
-                             fileapi::test::kRegularTestCaseSize);
+                             kRegularFileSystemTestCases,
+                             kRegularFileSystemTestCaseSize);
 
   int64 src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage + src_increase, src_new_usage);
@@ -569,8 +569,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      fileapi::test::kRegularTestCases,
-                                      fileapi::test::kRegularTestCaseSize));
+                                      kRegularFileSystemTestCases,
+                                      kRegularFileSystemTestCaseSize));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
@@ -581,8 +581,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
   helper.VerifyTestCaseFiles(dest,
-                             fileapi::test::kRegularTestCases,
-                             fileapi::test::kRegularTestCaseSize);
+                             kRegularFileSystemTestCases,
+                             kRegularFileSystemTestCaseSize);
 
   int64 src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage, src_new_usage);
@@ -605,8 +605,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      fileapi::test::kRegularTestCases,
-                                      fileapi::test::kRegularTestCaseSize));
+                                      kRegularFileSystemTestCases,
+                                      kRegularFileSystemTestCaseSize));
 
   // Move it.
   helper.Move(src, dest);
@@ -615,7 +615,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   ASSERT_TRUE(helper.DirectoryExists(src));
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
-  TestCaseRecord kMoveDirResultCases[] = {
+  FileSystemTestCaseRecord kMoveDirResultCases[] = {
     {false, FILE_PATH_LITERAL("file 0"), 38},
     {false, FILE_PATH_LITERAL("file 3"), 0},
   };
@@ -656,8 +656,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      fileapi::test::kRegularTestCases,
-                                      fileapi::test::kRegularTestCaseSize));
+                                      kRegularFileSystemTestCases,
+                                      kRegularFileSystemTestCaseSize));
 
   std::vector<ProgressRecord> records;
   ASSERT_EQ(base::File::FILE_OK,
@@ -666,8 +666,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
                                                base::Unretained(&records))));
 
   // Verify progress callback.
-  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
-    const TestCaseRecord& test_case = fileapi::test::kRegularTestCases[i];
+  for (size_t i = 0; i < kRegularFileSystemTestCaseSize; ++i) {
+    const FileSystemTestCaseRecord& test_case = kRegularFileSystemTestCases[i];
 
     FileSystemURL src_url = helper.SourceURL(
         std::string("a/") + base::FilePath(test_case.path).AsUTF8Unsafe());
