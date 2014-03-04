@@ -174,7 +174,7 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
   bool FilterEvent(const WebTouchEvent& event) {
     if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
       touch_sequence_start_position_ =
-          gfx::Point(event.touches[0].position);
+          gfx::PointF(event.touches[0].position.x, event.touches[0].position.y);
       suppressing_touch_moves_ = slop_suppression_length_dips_squared_ != 0;
     }
 

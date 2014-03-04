@@ -7,7 +7,6 @@
 #include "base/logging.h"
 
 using blink::WebInputEvent;
-using blink::WebPoint;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 
