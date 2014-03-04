@@ -318,11 +318,14 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     return;
 
   // Otherwise, start a timer in case the front-end gets wedged and
-  // never requests further activity.
-  timeout_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kInactivityTimeoutPeriodSeconds),
-      base::Bind(&IndexedDBTransaction::Timeout, this));
+  // never requests further activity. Read-only transactions don't
+  // block other transactions, so don't time those out.
+  if (mode_ != indexed_db::TRANSACTION_READ_ONLY) {
+    timeout_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kInactivityTimeoutPeriodSeconds),
+        base::Bind(&IndexedDBTransaction::Timeout, this));
+  }
 }
 
 void IndexedDBTransaction::Timeout() {
