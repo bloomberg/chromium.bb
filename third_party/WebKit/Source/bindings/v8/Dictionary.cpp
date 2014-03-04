@@ -42,7 +42,6 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "modules/indexeddb/IDBKeyRange.h"

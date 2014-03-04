@@ -32,7 +32,6 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameHost.h"

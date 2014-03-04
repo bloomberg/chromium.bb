@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "heap/Handle.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

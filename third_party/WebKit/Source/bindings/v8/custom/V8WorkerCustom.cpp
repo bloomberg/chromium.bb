@@ -35,7 +35,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/ArrayBuffer.h"
@@ -50,7 +49,7 @@ void V8Worker::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     ArrayBufferArray arrayBuffers;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
-        if (!extractTransferables(info[transferablesArgIndex], transferablesArgIndex, ports, arrayBuffers, exceptionState, info.GetIsolate())) {
+        if (!SerializedScriptValue::extractTransferables(info[transferablesArgIndex], transferablesArgIndex, ports, arrayBuffers, exceptionState, info.GetIsolate())) {
             exceptionState.throwIfNeeded();
             return;
         }

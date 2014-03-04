@@ -27,7 +27,6 @@
 #include "bindings/v8/V8ValueCache.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

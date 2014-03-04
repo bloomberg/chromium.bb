@@ -30,7 +30,6 @@
 #include "V8PositionErrorCallback.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
-#include "bindings/v8/V8Utilities.h"
 #include "modules/geolocation/Geolocation.h"
 
 using namespace std;

@@ -44,7 +44,6 @@
 #include "bindings/v8/V8EventListener.h"
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8GCForContextDispose.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/html/HTMLCollection.h"
@@ -273,7 +272,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
-        if (!extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
+        if (!SerializedScriptValue::extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
             exceptionState.throwIfNeeded();
             return;
         }

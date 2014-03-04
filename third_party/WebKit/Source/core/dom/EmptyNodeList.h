@@ -33,6 +33,7 @@
 #define EmptyNodeList_h
 
 #include "core/dom/NodeList.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -38,7 +38,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "bindings/v8/V8Utilities.h"
 
 #include <v8.h>
 

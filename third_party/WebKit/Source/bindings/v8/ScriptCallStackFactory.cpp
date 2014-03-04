@@ -34,7 +34,6 @@
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"

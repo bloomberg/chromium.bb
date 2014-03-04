@@ -31,6 +31,7 @@
 #ifndef SVGMatrixTearOff_h
 #define SVGMatrixTearOff_h
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/RefCounted.h"

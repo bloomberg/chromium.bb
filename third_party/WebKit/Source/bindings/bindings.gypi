@@ -134,8 +134,6 @@
             'v8/V8StringResource.h',
             'v8/V8ThrowException.cpp',
             'v8/V8ThrowException.h',
-            'v8/V8Utilities.cpp',
-            'v8/V8Utilities.h',
             'v8/V8ValueCache.cpp',
             'v8/V8ValueCache.h',
             'v8/V8WindowShell.cpp',

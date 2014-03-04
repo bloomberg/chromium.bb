@@ -91,6 +91,12 @@ public:
     v8::Handle<v8::Value> deserialize(MessagePortArray* = 0);
     v8::Handle<v8::Value> deserialize(v8::Isolate*, MessagePortArray* = 0);
 
+    // Helper function which pulls the values out of a JS sequence and into a MessagePortArray.
+    // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
+    // of the HTML5 spec and generates exceptions as appropriate.
+    // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
+    static bool extractTransferables(v8::Local<v8::Value>, int, MessagePortArray&, ArrayBufferArray&, ExceptionState&, v8::Isolate*);
+
     // Only reflects the truth if the SSV was created by walking a v8 value, not reliable
     // if the SSV was created createdFromWire(data).
     bool containsBlobs() const { return !m_blobDataHandles.isEmpty(); }

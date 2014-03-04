@@ -32,7 +32,6 @@
 #define DOMWrapperMap_h
 
 #include "bindings/v8/UnsafePersistent.h"
-#include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include <v8.h>
 #include "wtf/HashMap.h"

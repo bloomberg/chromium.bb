@@ -46,7 +46,6 @@
 #include "bindings/v8/PageScriptDebugServer.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"

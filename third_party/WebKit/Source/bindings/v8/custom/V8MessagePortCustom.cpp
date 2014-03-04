@@ -35,7 +35,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/dom/MessagePort.h"
 #include "wtf/ArrayBuffer.h"
 
@@ -49,7 +48,7 @@ void V8MessagePort::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::V
     ArrayBufferArray arrayBufferArray;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
-        if (!extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
+        if (!SerializedScriptValue::extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
             exceptionState.throwIfNeeded();
             return;
         }

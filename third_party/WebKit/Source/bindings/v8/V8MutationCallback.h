@@ -29,7 +29,6 @@
 #include "bindings/v8/ActiveDOMCallback.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/V8Utilities.h"
 #include "core/dom/MutationCallback.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"

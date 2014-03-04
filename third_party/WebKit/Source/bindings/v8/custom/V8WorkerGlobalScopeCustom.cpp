@@ -34,7 +34,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/inspector/ScriptCallStack.h"
