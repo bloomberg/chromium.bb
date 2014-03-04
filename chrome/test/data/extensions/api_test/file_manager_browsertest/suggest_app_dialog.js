@@ -31,8 +31,7 @@ testcase.suggestAppDialog = function() {
     function(inAppId, inFileListBefore) {
       appId = inAppId;
 
-      callRemoteTestUtil(
-          'selectFile', appId, ['unsupported.foo'], this.next);
+      callRemoteTestUtil('selectFile', appId, ['unsupported.foo'], this.next);
     },
     // Double-click the file.
     function(result) {
@@ -46,20 +45,13 @@ testcase.suggestAppDialog = function() {
     // Wait for the widget is loaded.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForElement',
-          appId,
-          ['#suggest-app-dialog webview[src]'],
-          this.next);
+      waitForElement(appId, '#suggest-app-dialog webview[src]').then(this.next);
     },
     // Wait for the widget is initialized.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil(
-          'waitForElement',
-          appId,
-          ['#suggest-app-dialog:not(.show-spinner)'],
-          this.next);
+      waitForElement(appId, '#suggest-app-dialog:not(.show-spinner)').
+          then(this.next);
     },
     // Override task APIs for test.
     function(result) {
@@ -103,21 +95,13 @@ testcase.suggestAppDialog = function() {
     // Wait until the installation is finished and the dialog is closed.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['#suggest-app-dialog',
-                          null,   // iframeQuery
-                          true],  // inverse
-                         this.next);
+      waitForElementLost(appId, '#suggest-app-dialog').then(this.next);
     },
     // Wait until the task is executed.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil(
-          'waitUntilTaskExecutes',
-          appId,
-          ['dummytaskid|drive|open-with'],
-          this.next);
+      waitUntilTaskExecutes(appId, 'dummytaskid|drive|open-with').
+          then(this.next);
     },
     // Check error
     function() {

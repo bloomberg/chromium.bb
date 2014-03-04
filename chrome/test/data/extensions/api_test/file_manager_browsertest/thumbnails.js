@@ -25,10 +25,8 @@ testcase.thumbnailsDownloads = function() {
     // Wait until the thumbnail shows up.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.preview-thumbnails .img-container img'],
-                         this.next);
+      waitForElement(appId, '.preview-thumbnails .img-container img').
+          then(this.next);
     },
     // Verify the thumbnail.
     function(element) {

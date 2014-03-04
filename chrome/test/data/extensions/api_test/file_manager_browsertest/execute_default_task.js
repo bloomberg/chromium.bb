@@ -53,11 +53,7 @@ function executeDefaultTask(drive) {
     // Wait until the task is executed.
     function(result) {
       chrome.test.assertTrue(!!result);
-      callRemoteTestUtil(
-          'waitUntilTaskExecutes',
-          appId,
-          [taskId],
-          this.next);
+      waitUntilTaskExecutes(appId, taskId).then(this.next);
     },
     // Check the error.
     function() {

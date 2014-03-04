@@ -17,8 +17,7 @@ testcase.searchBoxFocus = function() {
     // Check that the file list has the focus on launch.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
-          'waitForElement', appId, ['#file-list:focus'], this.next);
+      waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
     // Press the Ctrl-F key.
     function(element) {
@@ -30,8 +29,7 @@ testcase.searchBoxFocus = function() {
     // Check that the search box has the focus.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForElement', appId, ['#search-box input:focus'], this.next);
+      waitForElement(appId, ['#search-box input:focus']).then(this.next);
     },
     // Press the Tab key.
     function(element) {
@@ -43,8 +41,7 @@ testcase.searchBoxFocus = function() {
     // Check that the file list has the focus.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForElement', appId, ['#file-list:focus'], this.next);
+      waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
     // Check for errors.
     function(element) {

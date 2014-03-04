@@ -18,16 +18,269 @@ var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
  * @param {?string} appId Target window's App ID or null for functions
  *     not requiring a window.
  * @param {Array.<*>} args Array of arguments.
- * @param {function(*)} callback Callback handling the function's result.
+ * @param {function(*)=} opt_callback Callback handling the function's result.
+ * @return {Promise} Promise to be fulfilled with the result of the remote
+ *     utility.
  */
-function callRemoteTestUtil(func, appId, args, callback) {
-  chrome.runtime.sendMessage(
-      FILE_MANAGER_EXTENSIONS_ID, {
-        func: func,
-        appId: appId,
-        args: args
-      },
-      callback);
+function callRemoteTestUtil(func, appId, args, opt_callback) {
+  return new Promise(function(onFulfilled) {
+    chrome.runtime.sendMessage(
+        FILE_MANAGER_EXTENSIONS_ID, {
+          func: func,
+          appId: appId,
+          args: args
+        },
+        function() {
+          if (opt_callback)
+            opt_callback.apply(null, arguments);
+          onFulfilled(arguments[0]);
+        });
+  });
+}
+
+/**
+ * Returns promise to be fulfilled after the given milliseconds.
+ * @param {number} time Time in milliseconds.
+ */
+function wait(time) {
+  return new Promise(function(callback) {
+    setTimeout(callback, time);
+  });
+}
+
+/**
+ * Interval milliseconds between checks of repeatUntil.
+ * @type {number}
+ * @const
+ */
+var REPEAT_UNTIL_INTERVAL = 200;
+
+/**
+ * Interval milliseconds between log output of repeatUntil.
+ * @type {number}
+ * @const
+ */
+var LOG_INTERVAL = 3000;
+
+/**
+ * Returns a pending marker. See also the repeatUntil function.
+ * @param {string} message Pending reason including %s, %d, or %j markers. %j
+ *     format an object as JSON.
+ * @param {Array.<*>} var_args Values to be assigined to %x markers.
+ * @return {Object} Object which returns true for the expression: obj instanceof
+ *     pending.
+ */
+function pending(message, var_args) {
+  var index = 1;
+  var args = arguments;
+  var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
+    var arg = args[index++];
+    switch(pattern) {
+      case '%s': return String(arg);
+      case '%d': return Number(arg);
+      case '%j': return JSON.stringify(arg);
+      default: return pattern;
+    }
+  });
+  var pendingMarker = Object.create(pending.prototype);
+  pendingMarker.message = formattedMessage;
+  return pendingMarker;
+};
+
+/**
+ * Waits until the checkFunction returns a value but a pending marker.
+ * @param {function():*} checkFunction Function to check a condition. It can
+ *     return a pending marker created by a pending function.
+ * @return {Promise} Promise to be fulfilled with the return value of
+ *     checkFunction when the checkFunction reutrns a value but a pending
+ *     marker.
+ */
+function repeatUntil(checkFunction) {
+  var logTime = Date.now() + LOG_INTERVAL;
+  var step = function() {
+    return checkFunction().then(function(result) {
+      if (result instanceof pending) {
+        if (Date.now() > logTime) {
+          console.log(result.message);
+          logTime += LOG_INTERVAL;
+        }
+        return wait(REPEAT_UNTIL_INTERVAL).then(step);
+      } else {
+        return result;
+      }
+    });
+  };
+  return step();
+};
+
+/**
+ * Waits until a window having the given ID prefix appears.
+ * @param {string} appIdPrefix ID prefix of the requested window.
+ * @param {Promise} promise Promise to be fulfilled with a found window's ID.
+ */
+function waitForWindow(windowIdPrefix) {
+  return repeatUntil(function() {
+    return callRemoteTestUtil('getWindows', null, []).then(function(windows) {
+      for (var id in windows) {
+        if (id.indexOf(windowIdPrefix) === 0)
+          return id;
+      }
+      return pending('Window with the prefix %s is not found.', windowIdPrefix);
+    });
+  });
+}
+
+/**
+ * Waits until the window turns to the given size.
+ * @param {string} windowId Target window ID.
+ * @param {number} width Requested width in pixels.
+ * @param {number} height Requested height in pixels.
+ */
+function waitForWindowGeometry(windowId, width, height) {
+  return repeatUntil(function() {
+    return callRemoteTestUtil('getWindows', null, []).then(function(windows) {
+      if (!windows[windowId])
+        return pending('Window %s is not found.', windowId);
+      if (windows[windowId].innerWidth !== width ||
+          windows[windowId].innerHeight !== height) {
+        return pending('Expected window size is %j, but it is %j',
+                       {width: width, height: height},
+                       windows[windowId]);
+      }
+    });
+  });
+}
+
+/**
+ * Waits for the specified element appearing in the DOM.
+ * @param {string} windowId Target window ID.
+ * @param {string} query Query string for the element.
+ * @param {string=} opt_iframeQuery Query string for the iframe containing the
+ *     element.
+ * @return {Promise} Promise to be fulfilled when the element appears.
+ */
+function waitForElement(windowId, query, opt_iframeQuery) {
+  return repeatUntil(function() {
+    return callRemoteTestUtil(
+        'queryAllElements',
+        windowId,
+        [query, opt_iframeQuery]
+    ).then(function(elements) {
+      if (elements.length > 0)
+        return elements[0];
+      else
+        return pending(
+            'Element %s (maybe in iframe %s) is not found.',
+            query,
+            opt_iframeQuery);
+    });
+  });
+}
+
+/**
+ * Waits for the specified element leaving from the DOM.
+ * @param {string} windowId Target window ID.
+ * @param {string} query Query string for the element.
+ * @param {string=} opt_iframeQuery Query string for the iframe containing the
+ *     element.
+ * @return {Promise} Promise to be fulfilled when the element is lost.
+ */
+function waitForElementLost(windowId, query, opt_iframeQuery) {
+  return repeatUntil(function() {
+    return callRemoteTestUtil(
+        'queryAllElements',
+        windowId,
+        [query, opt_iframeQuery]
+    ).then(function(elements) {
+      if (elements.length > 0)
+        return pending('Elements %j is still exists.', elements);
+      return true;
+    });
+  });
+}
+
+/**
+ * Waits for the file list turns to the given contents.
+ * @param {string} windowId Target window ID.
+ * @param {Array.<Array.<string>>} expected Expected contents of file list.
+ * @param {{orderCheck:boolean=, ignoreLastModifiedTime:boolean=}=} opt_options
+ *     Options of the comparison. If orderCheck is true, it also compares the
+ *     order of files. If ignoreLastModifiedTime is true, it compares the file
+ *     without its last modified time.
+ * @return {Promise} Promise to be fulfilled when the file list turns to the
+ *     given contents.
+ */
+function waitForFiles(windowId, expected, opt_options) {
+  var options = opt_options || {};
+  return repeatUntil(function() {
+    return callRemoteTestUtil(
+        'getFileList', windowId, []).then(function(files) {
+      if (!options.orderCheck) {
+        files.sort();
+        expected.sort();
+      }
+      for (var i = 0; i < Math.min(files.length, expected.length); i++) {
+        if (options.ignoreFileSize) {
+          files[i][1] = '';
+          expected[i][1] = '';
+        }
+        if (options.ignoreLastModifiedTime) {
+          files[i][3] = '';
+          expected[i][3] = '';
+        }
+      }
+      if (!chrome.test.checkDeepEq(expected, files)) {
+        return pending('waitForFiles: expected: %j actual %j.',
+                       expected,
+                       files);
+      }
+    });
+  });
+}
+
+/**
+ * Waits until the number of files in the file list is changed from the given
+ * number.
+ * TODO(hirono): Remove the function.
+ *
+ * @param {string} windowId Target window ID.
+ * @param {number} lengthBefore Number of items visible before.
+ * @return {Promise} Promise to be fulfilled with the contents of files.
+ */
+function waitForFileListChange(windowId, lengthBefore) {
+  return repeatUntil(function() {
+    return callRemoteTestUtil(
+        'getFileList', windowId, []).then(function(files) {
+      files.sort();
+      var notReadyRows = files.filter(function(row) {
+        return row.filter(function(cell) { return cell == '...'; }).length;
+      });
+      if (notReadyRows.length === 0 &&
+          files.length !== lengthBefore &&
+          files.length !== 0) {
+        return files;
+      } else {
+        return pending('The number of file is %d. Not changed.', lengthBefore);
+      }
+    });
+  });
+};
+
+/**
+ * Waits until the given taskId appears in the executed task list.
+ * @param {string} windowId Target window ID.
+ * @param {string} taskId Task ID to watch.
+ * @return {Promise} Promise to be fulfilled when the task appears in the
+ *     executed task list.
+ */
+function waitUntilTaskExecutes(windowId, taskId) {
+  return repeatUntil(function() {
+    return callRemoteTestUtil('getExecutedTasks', windowId, []).
+        then(function(executedTasks) {
+          if (executedTasks.indexOf(taskId) === -1)
+            return pending('Executed task is %j', executedTasks);
+        });
+  });
 }
 
 /**
@@ -342,6 +595,7 @@ var SHARED_WITH_ME_ENTRY_SET = [
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
  * @param {function(string)} Callback with the app id.
+ * @return {Promise} Promise to be fulfilled after window creating.
  */
 function openNewWindow(appState, initialRoot, callback) {
   var appId;
@@ -356,7 +610,10 @@ function openNewWindow(appState, initialRoot, callback) {
         '/external' + initialRoot;
   }
 
-  callRemoteTestUtil('openMainWindow', null, [processedAppState], callback);
+  return callRemoteTestUtil('openMainWindow',
+                            null,
+                            [processedAppState],
+                            callback);
 }
 
 /**
@@ -390,7 +647,10 @@ function setupAndWaitUntilReady(appState, initialRoot, callback) {
     },
     function(success) {
       chrome.test.assertTrue(success);
-      callRemoteTestUtil('waitForFileListChange', appId, [0], this.next);
+      waitForElement(appId, '#detail-table').then(this.next);
+    },
+    function(success) {
+      waitForFileListChange(appId, 0).then(this.next);
     },
     function(fileList) {
       callback(appId, fileList);

@@ -25,11 +25,8 @@ testcase.openSidebarRecent = function() {
     // Wait until the file list is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      callRemoteTestUtil(
-          'waitForFileListChange',
-          appId,
-          [BASIC_DRIVE_ENTRY_SET.length],
-          this.next);
+      waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+          then(this.next);
     },
     // Verify the file list.
     function(actualFilesAfter) {
@@ -62,11 +59,8 @@ testcase.openSidebarOffline = function() {
     // Wait until the file list is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      callRemoteTestUtil(
-          'waitForFileListChange',
-          appId,
-          [BASIC_DRIVE_ENTRY_SET.length],
-          this.next);
+      waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+          then(this.next);
     },
     // Verify the file list.
     function(actualFilesAfter) {
@@ -100,11 +94,8 @@ testcase.openSidebarSharedWithMe = function() {
     // Wait until the file list is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      callRemoteTestUtil(
-          'waitForFileListChange',
-          appId,
-          [BASIC_DRIVE_ENTRY_SET.length],
-          this.next);
+      waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
+          then(this.next);
     },
     // Verify the file list.
     function(actualFilesAfter) {
@@ -122,25 +113,56 @@ testcase.openSidebarSharedWithMe = function() {
  */
 testcase.autocomplete = function() {
   var EXPECTED_AUTOCOMPLETE_LIST = [
-    '\'hello\' - search Drive\n',
-    'hello.txt\n',
+    '\'hello\' - search Drive',
+    'hello.txt',
   ];
+  var appId;
 
   StepsRunner.run([
     function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
-    // Perform an auto complete test and wait until the list changes.
-    // TODO(mtomasz): Move the operation from test_util.js to tests_cases.js.
-    function(appId, list) {
-      callRemoteTestUtil('performAutocompleteAndWait',
+    // Focus the search box.
+    function(inAppId, list) {
+      appId = inAppId;
+      callRemoteTestUtil('fakeEvent',
                          appId,
-                         ['hello', EXPECTED_AUTOCOMPLETE_LIST.length],
+                         ['#search-box input', 'focus'],
                          this.next);
     },
-    // Verify the list contents.
-    function(autocompleteList) {
-      chrome.test.assertEq(EXPECTED_AUTOCOMPLETE_LIST, autocompleteList);
+    // Input a text.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('inputText',
+                         appId,
+                         ['#search-box input', 'hello'],
+                         this.next);
+    },
+    // Notify the element of the input.
+    function() {
+      callRemoteTestUtil('fakeEvent',
+                         appId,
+                         ['#search-box input', 'input'],
+                         this.next);
+    },
+    // Wait for the auto complete list getting the expected contents.
+    function(result) {
+      chrome.test.assertTrue(result);
+      repeatUntil(function() {
+        return callRemoteTestUtil('queryAllElements',
+                                  appId,
+                                  ['#autocomplete-list li']).
+            then(function(elements) {
+              var list = elements.map(
+                  function(element) { return element.text; });
+              return chrome.test.checkDeepEq(EXPECTED_AUTOCOMPLETE_LIST, list) ?
+                  undefined :
+                  pending('Current auto complete list: %j.', list);
+            });
+      }).
+      then(this.next);
+    },
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);

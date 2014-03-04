@@ -12,29 +12,31 @@ testcase.copyBetweenWindows = function() {
     function() {
       addEntries(['local'], [ENTRIES.hello], this.next);
     },
-    // Open a new window.
+    // Open windows.
     function(result) {
       chrome.test.assertTrue(result);
-      openNewWindow(null, RootPath.DOWNLOADS, this.next);
+      Promise.all([
+        openNewWindow(null, RootPath.DOWNLOADS),
+        openNewWindow(null, RootPath.DRIVE)
+      ]).
+      then(this.next);
     },
-    // Open one more window.
-    function(appId) {
-      chrome.test.assertTrue(!!appId);
-      windowId1 = appId;
-      openNewWindow(null, RootPath.DRIVE, this.next);
+    // Wait loading documents in the windows.
+    function(appIds) {
+      windowId1 = appIds[0];
+      windowId2 = appIds[1];
+      Promise.all([
+        waitForElement(windowId1, '#detail-table'),
+        waitForElement(windowId2, '#detail-table'),
+      ]).
+      then(this.next);
     },
     // Wait for the file.
     function(appId) {
-      chrome.test.assertTrue(!!appId);
-      windowId2 = appId;
-      callRemoteTestUtil('waitForFiles',
-                         windowId1,
-                         [[ENTRIES.hello.getExpectedRow()]],
-                         this.next);
+      waitForFiles(windowId1, [ENTRIES.hello.getExpectedRow()]).then(this.next);
     },
     // Select the file.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       callRemoteTestUtil('selectFile',
                          windowId1,
                          [ENTRIES.hello.nameText],
@@ -47,21 +49,20 @@ testcase.copyBetweenWindows = function() {
     },
     // Check the content of window 2 is empty.
     function(result) {
-      callRemoteTestUtil('waitForFiles', windowId2, [[]], this.next);
+      chrome.test.assertTrue(result);
+      waitForFiles(windowId2, []).then(this.next);
     },
     // Paste it.
-    function(result) {
+    function() {
       // Paste it.
-      chrome.test.assertTrue(result);
       callRemoteTestUtil('execCommand', windowId2, ['paste'], this.next);
     },
     // Wait until the paste operation completes.
     function(result) {
-      callRemoteTestUtil('waitForFiles',
-                          windowId2,
-                          [[ENTRIES.hello.getExpectedRow()],
-                           {ignoreLastModifiedTime: true}],
-                          this.next);
+      waitForFiles(windowId2,
+                   [ENTRIES.hello.getExpectedRow()],
+                   {ignoreLastModifiedTime: true}).
+          then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);

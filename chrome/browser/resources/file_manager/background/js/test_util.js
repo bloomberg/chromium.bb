@@ -37,28 +37,6 @@ test.util.async = {};
 test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
 
 /**
- * Interval of checking a condition in milliseconds.
- * @type {number}
- * @const
- * @private
- */
-test.util.WAITTING_INTERVAL_ = 50;
-
-/**
- * Repeats the function until it returns true.
- * @param {function()} closure Function expected to return true.
- * @private
- */
-test.util.repeatUntilTrue_ = function(closure) {
-  var step = function() {
-    if (closure())
-      return;
-    setTimeout(step, test.util.WAITTING_INTERVAL_);
-  };
-  step();
-};
-
-/**
  * Opens the main Files.app's window and waits until it is ready.
  *
  * @param {Object} appState App state.
@@ -66,48 +44,31 @@ test.util.repeatUntilTrue_ = function(closure) {
  *     App ID.
  */
 test.util.async.openMainWindow = function(appState, callback) {
-  var steps = [
-    function() {
-      launchFileManager(appState,
-                        undefined,  // opt_type
-                        undefined,  // opt_id
-                        steps.shift());
-    },
-    function(appId) {
-      test.util.repeatUntilTrue_(function() {
-        if (!background.appWindows[appId])
-          return false;
-        var contentWindow = background.appWindows[appId].contentWindow;
-        var table = contentWindow.document.querySelector('#detail-table');
-        if (!table)
-          return false;
-        callback(appId);
-        return true;
-      });
-    }
-  ];
-  steps.shift()();
+  launchFileManager(appState,
+                    undefined,  // opt_type
+                    undefined,  // opt_id
+                    callback);
 };
 
 /**
- * Waits for a window with the specified App ID prefix. Eg. `files` will match
- * windows such as files#0, files#1, etc.
+ * Obtains window information.
  *
  * @param {string} appIdPrefix ID prefix of the requested window.
- * @param {function(string)} callback Completion callback with the new window's
- *     App ID.
+ * @param {function(Array.<{innerWidth:number, innerHeight:number}>)} callback
+ *     Completion callback with the window information.
+ * @return {Object.<string, {innerWidth:number, innerHeight:number}>} Map window
+ *     ID and window information.
  */
-test.util.async.waitForWindow = function(appIdPrefix, callback) {
-  test.util.repeatUntilTrue_(function() {
-    for (var appId in background.appWindows) {
-      if (appId.indexOf(appIdPrefix) == 0 &&
-          background.appWindows[appId].contentWindow) {
-        callback(appId);
-        return true;
-      }
-    }
-    return false;
-  });
+test.util.sync.getWindows = function() {
+  var windows = {};
+  for (var id in background.appWindows) {
+    var windowWrapper = background.appWindows[id];
+    windows[id] = {
+      innerWidth: windowWrapper.contentWindow.innerWidth,
+      innerHeight: windowWrapper.contentWindow.innerHeight
+    };
+  }
+  return windows;
 };
 
 /**
@@ -156,6 +117,7 @@ test.util.sync.resizeWindow = function(contentWindow, width, height) {
 
 /**
  * Returns an array with the files currently selected in the file manager.
+ * TODO(hirono): Integrate the method into getFileList method.
  *
  * @param {Window} contentWindow Window to be tested.
  * @return {Array.<string>} Array of selected files.
@@ -196,174 +158,52 @@ test.util.sync.getFileList = function(contentWindow) {
 };
 
 /**
- * Waits until the window is set to the specified dimensions.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {number} width Requested width.
- * @param {number} height Requested height.
- * @param {function(Object)} callback Success callback with the dimensions.
- */
-test.util.async.waitForWindowGeometry = function(
-    contentWindow, width, height, callback) {
-  test.util.repeatUntilTrue_(function() {
-    if (contentWindow.innerWidth == width &&
-        contentWindow.innerHeight == height) {
-      callback({width: width, height: height});
-      return true;
-    }
-    return false;
-  });
-};
-
-/**
- * Waits for an element and returns it as an array of it's attributes.
+ * Queries all elements.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
- * @param {boolean=} opt_inverse True if the function should return if the
- *    element disappears, instead of appearing.
- * @param {function(Object)} callback Callback with a hash array of attributes
- *     and contents as text.
+ * @param {Array.<string>=} opt_styleNames List of CSS property name to be
+ *     obtained.
+ * @return {Array.<{attributes:Object.<string, string>, text:string,
+ *                  style:Object.<string, string>}>} Element information that
+ *     contains contentText, attribute names and values, and style names and
+ *     values.
  */
-test.util.async.waitForElement = function(
-    contentWindow, targetQuery, iframeQuery, opt_inverse, callback) {
-  test.util.repeatUntilTrue_(function() {
-    var doc = test.util.sync.getDocument_(contentWindow, iframeQuery);
-    if (!doc)
-      return false;
-
-    var element = doc.querySelector(targetQuery);
-
-    if (opt_inverse) {
-      // Inversed condition: Success when the element dose NOT exist.
-      if (!element) {
-        callback({});
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    // Non-inversed condition: Success when the element DOSE exist.
-    if (element) {
-      var attributes = {};
-      for (var i = 0; i < element.attributes.length; i++) {
-        attributes[element.attributes[i].nodeName] =
-            element.attributes[i].nodeValue;
-      }
-      var text = element.textContent;
-      callback({attributes: attributes, text: text});
-      return true;
-    } else {
-      return false;
-    }
-  });
+test.util.sync.queryAllElements = function(
+    contentWindow, targetQuery, iframeQuery, opt_styleNames) {
+  var doc = test.util.sync.getDocument_(contentWindow, iframeQuery);
+  if (!doc)
+    return [];
+  // The return value of querySelectorAll is not an array.
+  return Array.prototype.map.call(
+      doc.querySelectorAll(targetQuery),
+      function(element) {
+        var attributes = {};
+        for (var i = 0; i < element.attributes.length; i++) {
+          attributes[element.attributes[i].nodeName] =
+              element.attributes[i].nodeValue;
+        }
+        var styles = {};
+        var styleNames = opt_styleNames || [];
+        var computedStyles = contentWindow.getComputedStyle(element);
+        for (var i = 0; i < styleNames.length; i++) {
+          styles[styleNames[i]] = computedStyles[styleNames[i]];
+        }
+        var text = element.textContent;
+        return {attributes: attributes, text: text, styles: styles};
+      });
 };
 
 /**
- * Calls getFileList until the number of displayed files is different from
- * lengthBefore.
- *
+ * Assigns the text to the input element.
  * @param {Window} contentWindow Window to be tested.
- * @param {number} lengthBefore Number of items visible before.
- * @param {function(Array.<Array.<string>>)} callback Change callback.
+ * @param {string} query Query for the input element.
+ * @param {string} text Text to be assigned.
  */
-test.util.async.waitForFileListChange = function(
-    contentWindow, lengthBefore, callback) {
-  test.util.repeatUntilTrue_(function() {
-    var files = test.util.sync.getFileList(contentWindow);
-    files.sort();
-    var notReadyRows = files.filter(function(row) {
-      return row.filter(function(cell) { return cell == '...'; }).length;
-    });
-    if (notReadyRows.length === 0 &&
-        files.length !== lengthBefore &&
-        files.length !== 0) {
-      callback(files);
-      return true;
-    } else {
-      return false;
-    }
-  });
-};
-
-/**
- * Returns an array of items on the file manager's autocomplete list.
- *
- * @param {Window} contentWindow Window to be tested.
- * @return {Array.<string>} Array of items.
- */
-test.util.sync.getAutocompleteList = function(contentWindow) {
-  var list = contentWindow.document.querySelector('#autocomplete-list');
-  var lines = list.querySelectorAll('li');
-  var items = [];
-  for (var j = 0; j < lines.length; ++j) {
-    var line = lines[j];
-    items.push(line.innerText);
-  }
-  return items;
-};
-
-/**
- * Performs autocomplete with the given query and waits until at least
- * |numExpectedItems| items are shown, including the first item which
- * always looks like "'<query>' - search Drive".
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} query Query used for autocomplete.
- * @param {number} numExpectedItems number of items to be shown.
- * @param {function(Array.<string>)} callback Change callback.
- */
-test.util.async.performAutocompleteAndWait = function(
-    contentWindow, query, numExpectedItems, callback) {
-  // Dispatch a 'focus' event to the search box so that the autocomplete list
-  // is attached to the search box. Note that calling searchBox.focus() won't
-  // dispatch a 'focus' event.
-  var searchBox = contentWindow.document.querySelector('#search-box input');
-  var focusEvent = contentWindow.document.createEvent('Event');
-  focusEvent.initEvent('focus', true /* bubbles */, true /* cancelable */);
-  searchBox.dispatchEvent(focusEvent);
-
-  // Change the value of the search box and dispatch an 'input' event so that
-  // the autocomplete query is processed.
-  searchBox.value = query;
-  var inputEvent = contentWindow.document.createEvent('Event');
-  inputEvent.initEvent('input', true /* bubbles */, true /* cancelable */);
-  searchBox.dispatchEvent(inputEvent);
-
-  test.util.repeatUntilTrue_(function() {
-    var items = test.util.sync.getAutocompleteList(contentWindow);
-    if (items.length >= numExpectedItems) {
-      callback(items);
-      return true;
-    } else {
-      return false;
-    }
-  });
-};
-
-/**
- * Waits until a dialog with an OK button is shown and accepts it.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {function()} callback Success callback.
- */
-test.util.async.waitAndAcceptDialog = function(contentWindow, callback) {
-  test.util.repeatUntilTrue_(function() {
-    var button = contentWindow.document.querySelector('.cr-dialog-ok');
-    if (!button)
-      return false;
-    button.click();
-    // Wait until the dialog is removed from the DOM.
-    test.util.repeatUntilTrue_(function() {
-      if (contentWindow.document.querySelector('.cr-dialog-container'))
-        return false;
-      callback();
-      return true;
-    });
-    return true;
-  });
+test.util.sync.inputText = function(contentWindow, query, text) {
+  var input = contentWindow.document.querySelector(query);
+  input.value = text;
 };
 
 /**
@@ -448,46 +288,6 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
 };
 
 /**
- * Waits the contents of file list becomes to equal to expected contents.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {Array.<Array.<string>>} expected Expected contents of file list.
- * @param {{orderCheck:boolean=, ignoreFileSize:boolean=,
- *     ignoreLastModifiedTime:boolean=}=} opt_options Options of the
- *     comparison. If orderCheck is true, it also compares the order of
- *     files. If ignoreFileSize is true, it does not compare file size, If
- *     ignoreLastModifiedTime is true, it does not compare last modified time.
- * @param {function()} callback Callback function to notify the caller that
- *     expected files turned up.
- */
-test.util.async.waitForFiles = function(
-    contentWindow, expected, opt_options, callback) {
-  var options = opt_options || {};
-  test.util.repeatUntilTrue_(function() {
-    var files = test.util.sync.getFileList(contentWindow);
-    if (!options.orderCheck) {
-      files.sort();
-      expected.sort();
-    }
-    for (var i = 0; i < Math.min(files.length, expected.length); i++) {
-      if (options.ignoreFileSize) {
-        files[i][1] = '';
-        expected[i][1] = '';
-      }
-      if (options.ignoreLastModifiedTime) {
-        files[i][3] = '';
-        expected[i][3] = '';
-      }
-    }
-    if (chrome.test.checkDeepEq(expected, files)) {
-      callback(true);
-      return true;
-    }
-    return false;
-  });
-};
-
-/**
  * Executes Javascript code on a webview and returns the result.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -560,8 +360,9 @@ test.util.sync.fakeKeyDown = function(
 
 /**
  * Simulates a fake mouse click (left button, single click) on the element
- * specified by |targetQuery|. This sends 'mouseover', 'mousedown', 'mouseup'
- * and 'click' events in turns.
+ * specified by |targetQuery|. If the element has the click method, just calls
+ * it. Otherwise, this sends 'mouseover', 'mousedown', 'mouseup' and 'click'
+ * events in turns.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
@@ -685,34 +486,6 @@ test.util.sync.deleteFile = function(contentWindow, filename) {
 };
 
 /**
- * Wait for the elements' style to be changed as the expected values.  The
- * queries argument is a list of object that have the query property and the
- * styles property. The query property is a string query to specify the
- * element. The styles property is a string map of the style name and its
- * expected value.
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {Array.<object>} queries Queries that specifies the elements and
- *     expected styles.
- * @param {function()} callback Callback function to be notified the change of
- *     the styles.
- */
-test.util.async.waitForStyles = function(contentWindow, queries, callback) {
-  test.util.repeatUntilTrue_(function() {
-    for (var i = 0; i < queries.length; i++) {
-      var element = contentWindow.document.querySelector(queries[i].query);
-      var styles = queries[i].styles;
-      for (var name in styles) {
-        if (contentWindow.getComputedStyle(element)[name] != styles[name])
-          return false;
-      }
-    }
-    callback();
-    return true;
-  });
-};
-
-/**
  * Execute a command on the document in the specified window.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -785,27 +558,16 @@ test.util.sync.overrideTasks = function(contentWindow, taskList) {
 };
 
 /**
- * Check if Files.app has ordered to execute the given task or not yet. This
- * method must be used with test.util.sync.overrideTasks().
- *
+ * Obtains the list of executed tasks.
  * @param {Window} contentWindow Window to be tested.
- * @param {string} taskId Taskid of the task which should be executed.
- * @param {function()} callback Callback function to be notified the order of
- *     the execution.
+ * @return {Array.<string>} List of executed task ID.
  */
-test.util.async.waitUntilTaskExecutes =
-    function(contentWindow, taskId, callback) {
+test.util.sync.getExecutedTasks = function(contentWindow) {
   if (!test.util.executedTasks_) {
     console.error('Please call overrideTasks() first.');
-    return;
+    return null;
   }
-
-  test.util.repeatUntilTrue_(function() {
-    if (test.util.executedTasks_.indexOf(taskId) === -1)
-      return false;
-    callback();
-    return true;
-  });
+  return test.util.executedTasks_;
 };
 
 /**
@@ -819,32 +581,6 @@ test.util.async.waitUntilTaskExecutes =
 test.util.sync.visitDesktop = function(contentWindow, profileId) {
   contentWindow.chrome.fileBrowserPrivate.visitDesktop(profileId);
   return true;
-};
-
-/**
- * Waits for the 'move to profileId' menu to appear (if waitAppear = true) or
- * to disappear (if waitAppear = false).
- *
- * @param {Window} contentWindow Window to be tested.
- * @param {string} profileId Destination profile's ID.
- * @param {boolean} waitAppear Flag for specifying the mode to wait.
- * @param {function()} callback Callback for notifying the event.
- */
-test.util.async.waitForVisitDesktopMenu = function(
-    contentWindow, profileId, waitAppear, callback) {
-  test.util.repeatUntilTrue_(function() {
-    var list = contentWindow.document.querySelectorAll('.visit-desktop');
-    for (var i = 0; i < list.length; ++i) {
-      if (list[i].label.indexOf(profileId) != -1) {  // found
-        if (waitAppear)
-          callback();
-        return waitAppear;
-      }
-    }
-    if (!waitAppear)
-      callback();
-    return !waitAppear;
-  });
 };
 
 /**
@@ -892,7 +628,7 @@ test.util.registerRemoteTestUtils = function() {
     var args = request.args.slice();  // shallow copy
     if (request.appId) {
       if (!background.appWindows[request.appId]) {
-        console.error('Specified window not found.');
+        console.error('Specified window not found: ' + request.appId);
         return false;
       }
       args.unshift(background.appWindows[request.appId].contentWindow);

@@ -22,13 +22,18 @@ testcase.hideSearchBox = function() {
     // Wait for the style change.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForStyles',
-                         appId,
-                         [{
-                            query: '#search-box',
-                            styles: {visibility: 'hidden'}
-                          }],
-                         this.next);
+      repeatUntil(function() {
+        return callRemoteTestUtil(
+            'queryAllElements',
+            appId,
+            ['#search-box', null, ['visibility']]).
+            then(function(elements) {
+              if (elements[0].styles.visibility !== 'hidden')
+                return pending('The search box to be hidden, but it is: %j.',
+                               elements[0]);
+            });
+      }).
+      then(this.next);
     },
     // Check the styles
     function() {

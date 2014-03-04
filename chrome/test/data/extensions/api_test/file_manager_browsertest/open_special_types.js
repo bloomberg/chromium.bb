@@ -35,22 +35,18 @@ function galleryOpen(path) {
     // Wait for the image in the gallery's screen image.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.gallery .content canvas.image',
-                          'iframe.overlay-pane'],
-                         this.next);
+      waitForElement(appId,
+                     '.gallery .content canvas.image',
+                     'iframe.overlay-pane').then(this.next);
     },
     // Verify the gallery's screen image.
     function(element) {
       chrome.test.assertEq('320', element.attributes.width);
       chrome.test.assertEq('240', element.attributes.height);
       // Get the full-resolution image.
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.gallery .content canvas.fullres',
-                          'iframe.overlay-pane'],
-                         this.next);
+      waitForElement(appId,
+                         '.gallery .content canvas.fullres',
+                         'iframe.overlay-pane').then(this.next);
     },
     // Verify the gallery's full resolution image.
     function(element) {
@@ -83,18 +79,12 @@ function audioOpen(path) {
     // Wait for the audio player.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForWindow',
-                         null,
-                         ['audio_player.html'],
-                         this.next);
+      waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the audio tag and verify the source.
     function(inAppId) {
       audioAppId = inAppId;
-      callRemoteTestUtil('waitForElement',
-                         audioAppId,
-                         ['audio-player[playing]'],
-                         this.next);
+      waitForElement(audioAppId, 'audio-player[playing]').then(this.next);
     },
     // Get the title tag.
     function(element) {
@@ -129,18 +119,12 @@ function videoOpen(path) {
     function(result) {
       chrome.test.assertTrue(result);
       // Wait for the video player.
-      callRemoteTestUtil('waitForWindow',
-                         null,
-                         ['video_player.html'],
-                         this.next);
+      waitForWindow('video_player.html').then(this.next);
     },
     function(inAppId) {
       videoAppId = inAppId;
       // Wait for the video tag and verify the source.
-      callRemoteTestUtil('waitForElement',
-                         videoAppId,
-                         ['video[src]'],
-                         this.next);
+      waitForElement(videoAppId, 'video[src]').then(this.next);
     },
     function(element) {
       chrome.test.assertEq(
@@ -149,10 +133,7 @@ function videoOpen(path) {
           element.attributes.src);
       // Wait for the window's inner dimensions. Should be changed to the video
       // size once the metadata is loaded.
-      callRemoteTestUtil('waitForWindowGeometry',
-                         videoAppId,
-                         [320, 192],
-                         this.next);
+      waitForWindowGeometry(videoAppId, 320, 192).then(this.next);
     },
     function(element) {
       checkIfNoErrorsOccured(this.next);
@@ -166,64 +147,48 @@ function videoOpen(path) {
  */
 function zipOpen(path) {
   var appId;
-
   StepsRunner.run([
     // Add a ZIP file.
     function() {
       addEntries(['local', 'drive'], [ENTRIES.zipArchive], this.next);
     },
-
     // Open a window.
     function(result) {
       chrome.test.assertTrue(result);
       openNewWindow(null, path, this.next);
     },
-
     // Wait for going back.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [[ENTRIES.zipArchive.getExpectedRow()]],
-                         this.next);
+      waitForElement(appId, '#detail-table').then(this.next);
     },
-
+    function() {
+      waitForFiles(appId, [ENTRIES.zipArchive.getExpectedRow()]).
+          then(this.next);
+    },
     // Open a file.
     function(result) {
-      chrome.test.assertTrue(result);
       callRemoteTestUtil('openFile',
                          appId,
                          [ENTRIES.zipArchive.nameText],
                          this.next);
     },
-
     // Wait for ZIP contents.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [
-                           // We are providing fake contents for desktop build.
-                           [[
-                             'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt',
-                             '21 bytes',
-                             'Plain text',
-                             ''
-                           ]],
-                           {ignoreLastModifiedTime: true}
-                         ],
-                         this.next);
+      waitForFiles(appId,
+                   [[
+                     'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt',
+                     '21 bytes',
+                     'Plain text',
+                     ''
+                   ]],
+                   {ignoreLastModifiedTime: true}).then(this.next);
     },
-
     // Unmount the zip.
     function(result) {
-      chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.root-eject', null],
-                         this.next);
+      waitForElement(appId, '.root-eject', this.next).then(this.next);
     },
-
     // Unmount the zip.
     function(element) {
       callRemoteTestUtil('fakeMouseClick',
@@ -231,16 +196,12 @@ function zipOpen(path) {
                          ['.root-eject'],
                          this.next);
     },
-
     // Wait for going back.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [[ENTRIES.zipArchive.getExpectedRow()]],
-                         this.next);
+      waitForFiles(appId, [ENTRIES.zipArchive.getExpectedRow()]).
+          then(this.next);
     },
-
     function() {
       checkIfNoErrorsOccured(this.next);
     }

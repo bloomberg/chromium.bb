@@ -31,10 +31,7 @@ testcase.restoreSortColumn = function() {
     },
     // Check the sorted style of the header.
     function() {
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.table-header-sort-image-asc'],
-                         this.next);
+      waitForElement(appId, '.table-header-sort-image-asc').then(this.next);
     },
     // Sort by name.
     function() {
@@ -45,17 +42,12 @@ testcase.restoreSortColumn = function() {
     },
     // Check the sorted style of the header.
     function() {
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.table-header-sort-image-desc'],
-                         this.next);
+      waitForElement(appId, '.table-header-sort-image-desc').
+          then(this.next);
     },
     // Check the sorted files.
     function() {
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [EXPECTED_FILES, {orderCheck: true}],
-                         this.next);
+      waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).then(this.next);
     },
     // Open another window, where the sorted column should be restored.
     function() {
@@ -64,17 +56,12 @@ testcase.restoreSortColumn = function() {
     // Check the sorted style of the header.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.table-header-sort-image-desc'],
-                         this.next);
+      waitForElement(appId, '.table-header-sort-image-desc').
+          then(this.next);
     },
     // Check the sorted files.
     function() {
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [EXPECTED_FILES, {orderCheck: true}],
-                         this.next);
+      waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).then(this.next);
     },
     // Check the error.
     function() {
@@ -96,10 +83,7 @@ testcase.restoreCurrentView = function() {
     // Check the initial view.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.thumbnail-grid[hidden]'],
-                         this.next);
+      waitForElement(appId, '.thumbnail-grid[hidden]').then(this.next);
     },
     // Opens the gear menu.
     function() {
@@ -118,10 +102,7 @@ testcase.restoreCurrentView = function() {
     // Check the new current view.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.detail-table[hidden]'],
-                         this.next);
+      waitForElement(appId, '.detail-table[hidden]').then(this.next);
     },
     // Open another window, where the current view is restored.
     function() {
@@ -130,10 +111,7 @@ testcase.restoreCurrentView = function() {
     // Check the current view.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil('waitForElement',
-                         appId,
-                         ['.detail-table[hidden]'],
-                         this.next);
+      waitForElement(appId, '.detail-table[hidden]').then(this.next);
     },
     // Check the error.
     function() {

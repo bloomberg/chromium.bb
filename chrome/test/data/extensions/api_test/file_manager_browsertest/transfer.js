@@ -38,8 +38,7 @@ function copyBetweenVolumes(targetFile,
     // Wait for the expected files to appear in the file list.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForFiles', appId, [srcContents], this.next);
+      waitForFiles(appId, srcContents).then(this.next);
     },
     // Select the source file.
     function() {
@@ -60,13 +59,11 @@ function copyBetweenVolumes(targetFile,
     // Wait for the expected files to appear in the file list.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForFiles', appId, [dstContents], this.next);
+      waitForFiles(appId, dstContents).then(this.next);
     },
     // Paste the file.
     function() {
-      callRemoteTestUtil(
-          'execCommand', appId, ['paste'], this.next);
+      callRemoteTestUtil('execCommand', appId, ['paste'], this.next);
     },
     // Wait for the file list to change.
     function(result) {
@@ -87,16 +84,10 @@ function copyBetweenVolumes(targetFile,
         }
       }
       dstContentsAfterPaste.push(pasteFile);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [
-                           dstContentsAfterPaste,
-                           {
-                             ignoreFileSize: ignoreFileSize,
-                             ignoreLastModifiedTime: true
-                           }
-                         ],
-                         this.next);
+      waitForFiles(appId, dstContentsAfterPaste, {
+        ignoreFileSize: ignoreFileSize,
+        ignoreLastModifiedTime: true
+      }).then(this.next);
     },
     // Check the last contents of file list.
     function() {

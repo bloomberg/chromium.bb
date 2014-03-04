@@ -18,14 +18,15 @@ function traverseDirectories(path) {
     // Check the initial view.
     function(inAppId) {
       appId = inAppId;
+      waitForElement(appId, '#detail-table').then(this.next);
+    },
+    function() {
       addEntries(['local', 'drive'], NESTED_ENTRY_SET, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [[ENTRIES.directoryA.getExpectedRow()]],
-                         this.next);
+      waitForFiles(appId, [ENTRIES.directoryA.getExpectedRow()]).
+          then(this.next);
     },
     // Open the directory
     function() {
@@ -34,10 +35,8 @@ function traverseDirectories(path) {
     // Check the contents of current directory.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [[ENTRIES.directoryB.getExpectedRow()]],
-                         this.next);
+      waitForFiles(appId, [ENTRIES.directoryB.getExpectedRow()]).
+          then(this.next);
     },
     // Open the directory
     function() {
@@ -46,10 +45,8 @@ function traverseDirectories(path) {
     // Check the contents of current directory.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [[ENTRIES.directoryC.getExpectedRow()]],
-                         this.next);
+      waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]).
+          then(this.next);
     },
     // Check the error.
     function() {

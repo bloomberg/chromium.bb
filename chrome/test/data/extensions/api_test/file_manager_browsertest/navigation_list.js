@@ -17,20 +17,16 @@ testcase.traverseNavigationList = function() {
     // Wait until Google Drive is selected.
     function(inAppId) {
       appId = inAppId;
-      callRemoteTestUtil(
-          'waitForElement',
+      waitForElement(
           appId,
-          ['#navigation-list > .root-item > ' +
-               '.volume-icon[volume-type-icon="drive"]'],
-          this.next);
+          '#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="drive"]').then(this.next);
     },
     // Ensure that the current directory is changed to Google Drive.
     function() {
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET),
-                          {ignoreLastModifiedTime: true}],
-                         this.next);
+      waitForFiles(appId,
+                   TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET),
+                   {ignoreLastModifiedTime: true}).then(this.next);
     },
     // Press the UP key.
     function() {
@@ -42,12 +38,10 @@ testcase.traverseNavigationList = function() {
     // Ensure that Gogole Drive is selected since it is the first item.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForElement',
+      waitForElement(
           appId,
-          ['#navigation-list > .root-item > ' +
-               '.volume-icon[volume-type-icon="drive"]'],
-          this.next);
+          '#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="drive"]').then(this.next);
     },
     // Press the DOWN key.
     function() {
@@ -59,20 +53,17 @@ testcase.traverseNavigationList = function() {
     // Ensure that Downloads is selected.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForElement',
+      waitForElement(
           appId,
-          ['#navigation-list > .root-item > ' +
-               '.volume-icon[volume-type-icon="downloads"]'],
-          this.next);
+          '#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="downloads"]').then(this.next);
     },
     // Ensure that the current directory is changed to Downloads.
     function() {
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET),
-                          {ignoreLastModifiedTime: true}],
-                         this.next);
+      waitForFiles(
+          appId,
+          TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET),
+          {ignoreLastModifiedTime: true}).then(this.next);
     },
     // Press the DOWN key again.
     function() {
@@ -84,12 +75,10 @@ testcase.traverseNavigationList = function() {
     // Ensure that Downloads is still selected since it is the last item.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForElement',
+      waitForElement(
           appId,
-          ['#navigation-list > .root-item > ' +
-               '.volume-icon[volume-type-icon="downloads"]'],
-          this.next);
+          '#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="downloads"]').then(this.next);
     },
     // Check for errors.
     function() {

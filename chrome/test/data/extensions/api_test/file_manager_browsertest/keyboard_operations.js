@@ -5,6 +5,26 @@
 'use strict';
 
 /**
+ * Waits until a dialog with an OK button is shown and accepts it.
+ *
+ * @param {string} windowId Target window ID.
+ * @return {Promise} Promise to be fulfilled after clicking the OK button in the
+ *     dialog.
+ */
+function waitAndAcceptDialog(windowId) {
+  return waitForElement(windowId, '.cr-dialog-ok').
+      then(callRemoteTestUtil.bind(null,
+                                   'fakeMouseClick',
+                                   windowId,
+                                   ['.cr-dialog-ok'],
+                                   null)).
+      then(function(result) {
+        chrome.test.assertTrue(result);
+        return waitForElementLost(windowId, '.cr-dialog-container');
+      });
+}
+
+/**
  * Tests copying a file to the same directory and waits until the file lists
  * changes.
  *
@@ -34,11 +54,8 @@ function keyboardCopy(path, callback) {
     // Wait for a file list change.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFiles',
-                         appId,
-                         [expectedFilesAfter,
-                          {ignoreLastModifiedTime: true}],
-                         this.next);
+      waitForFiles(appId, expectedFilesAfter, {ignoreLastModifiedTime: true}).
+          then(this.next);
     },
     // Verify the result.
     function(fileList) {
@@ -80,15 +97,11 @@ function keyboardDelete(path) {
     // Reply to a dialog.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitAndAcceptDialog', appId, [], this.next);
+      waitAndAcceptDialog(appId).then(this.next);
     },
     // Wait for a file list change.
     function() {
-      callRemoteTestUtil('waitForFileListChange',
-                         appId,
-                         [fileListBefore.length],
-                         this.next);
+      waitForFileListChange(appId, fileListBefore.length).then(this.next);
     },
     // Delete the directory.
     function(fileList) {
@@ -100,12 +113,11 @@ function keyboardDelete(path) {
     // Reply to a dialog.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitAndAcceptDialog', appId, [], this.next);
+      waitAndAcceptDialog(appId).then(this.next);
     },
     // Wait for a file list change.
     function() {
-      callRemoteTestUtil('waitForFileListChange', appId,
-                         [fileListBefore.length], this.next);
+      waitForFileListChange(appId, fileListBefore.length).then(this.next);
     },
     // Verify the result.
     function(fileList) {

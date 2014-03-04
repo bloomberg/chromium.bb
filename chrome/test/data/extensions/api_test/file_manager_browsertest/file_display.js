@@ -33,11 +33,7 @@ function fileDisplay(path) {
     },
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'waitForFileListChange',
-          appId,
-          [expectedFilesBefore.length],
-          this.next);
+      waitForFileListChange(appId, expectedFilesBefore.length).then(this.next);
     },
     // Confirm the file list.
     function(actualFilesAfter) {

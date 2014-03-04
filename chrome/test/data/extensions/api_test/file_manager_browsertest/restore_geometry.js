@@ -23,10 +23,7 @@ testcase.restoreGeometry = function() {
     },
     // Check the current window's size.
     function(inAppId) {
-      callRemoteTestUtil('waitForWindowGeometry',
-                         appId,
-                         [640, 480],
-                         this.next);
+      waitForWindowGeometry(appId, 640, 480).then(this.next);
     },
     // Enlarge the window by 10 pixels.
     function(result) {
@@ -35,10 +32,7 @@ testcase.restoreGeometry = function() {
     },
     // Check the current window's size.
     function() {
-      callRemoteTestUtil('waitForWindowGeometry',
-                         appId,
-                         [650, 490],
-                         this.next);
+      waitForWindowGeometry(appId, 650, 490).then(this.next);
     },
     // Open another window, where the current view is restored.
     function() {
@@ -47,10 +41,7 @@ testcase.restoreGeometry = function() {
     // Check the next window's size.
     function(inAppId) {
       appId2 = inAppId;
-      callRemoteTestUtil('waitForWindowGeometry',
-                         appId2,
-                         [650, 490],
-                         this.next);
+      waitForWindowGeometry(appId2, 650, 490).then(this.next);
     },
     // Check for errors.
     function() {
