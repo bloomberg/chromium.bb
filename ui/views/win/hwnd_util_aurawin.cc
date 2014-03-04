@@ -20,21 +20,20 @@ HWND HWNDForWidget(const Widget* widget) {
 
 HWND HWNDForNativeView(const gfx::NativeView view) {
   return view && view->GetRootWindow() ?
-      view->GetDispatcher()->host()->GetAcceleratedWidget() : NULL;
+      view->GetHost()->GetAcceleratedWidget() : NULL;
 }
 
 HWND HWNDForNativeWindow(const gfx::NativeWindow window) {
   return window && window->GetRootWindow() ?
-      window->GetDispatcher()->host()->GetAcceleratedWidget() : NULL;
+      window->GetHost()->GetAcceleratedWidget() : NULL;
 }
 
 gfx::Rect GetWindowBoundsForClientBounds(View* view,
                                          const gfx::Rect& client_bounds) {
   DCHECK(view);
-  aura::WindowEventDispatcher* dispatcher =
-      view->GetWidget()->GetNativeWindow()->GetDispatcher();
-  if (dispatcher) {
-    HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
+  aura::WindowTreeHost* host = view->GetWidget()->GetNativeWindow()->GetHost();
+  if (host) {
+    HWND hwnd = host->GetAcceleratedWidget();
     RECT rect = client_bounds.ToRECT();
     DWORD style = ::GetWindowLong(hwnd, GWL_STYLE);
     DWORD ex_style = ::GetWindowLong(hwnd, GWL_EXSTYLE);

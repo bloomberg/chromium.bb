@@ -2334,7 +2334,7 @@ void BrowserView::InitHangMonitor() {
   int hung_plugin_detect_freq =
       pref_service->GetInteger(prefs::kHungPluginDetectFrequency);
 #if defined(USE_AURA)
-  HWND window = GetWidget()->GetNativeView()->GetDispatcher()->host()->
+  HWND window = GetWidget()->GetNativeView()->GetHost()->
       GetAcceleratedWidget();
 #else
   HWND window = GetWidget()->GetNativeView();

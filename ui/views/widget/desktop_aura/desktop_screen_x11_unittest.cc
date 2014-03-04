@@ -39,7 +39,7 @@ class ActivationWaiter : public base::MessagePumpDispatcher {
         NULL
     };
     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomToCache));
-    widget_xid_ = widget->GetNativeWindow()->GetDispatcher()->host()->
+    widget_xid_ = widget->GetNativeWindow()->GetHost()->
          GetAcceleratedWidget();
     base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
   }

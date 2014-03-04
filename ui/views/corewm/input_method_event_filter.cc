@@ -47,7 +47,7 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     // If the focused window is changed, all requests to IME will be
     // discarded so it's safe to update the target_dispatcher_ here.
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    target_dispatcher_ = target->GetRootWindow()->GetDispatcher();
+    target_dispatcher_ = target->GetRootWindow()->GetHost()->dispatcher();
     DCHECK(target_dispatcher_);
     if (input_method_->DispatchKeyEvent(*event))
       event->StopPropagation();

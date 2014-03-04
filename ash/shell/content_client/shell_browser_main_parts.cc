@@ -137,7 +137,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::GetInstance()->desktop_background_controller()->SetDefaultWallpaper(
       false /* is_guest */);
 
-  ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->Show();
+  ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {

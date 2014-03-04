@@ -14,10 +14,9 @@
 namespace ash {
 namespace test {
 
-const aura::WindowEventDispatcher* MirrorWindowTestApi::GetDispatcher() const {
-  aura::WindowTreeHost* host = Shell::GetInstance()->display_controller()->
+const aura::WindowTreeHost* MirrorWindowTestApi::GetHost() const {
+  return Shell::GetInstance()->display_controller()->
       mirror_window_controller()->host_.get();
-  return host ? host->dispatcher() : NULL;
 }
 
 int MirrorWindowTestApi::GetCurrentCursorType() const {

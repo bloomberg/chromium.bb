@@ -96,7 +96,7 @@ void DesktopDropTargetWin::Translate(
     DragDropDelegate** delegate) {
   gfx::Point location(position.x, position.y);
   gfx::Point root_location = location;
-  root_window_->GetDispatcher()->host()->ConvertPointFromNativeScreen(
+  root_window_->GetHost()->ConvertPointFromNativeScreen(
       &root_location);
   aura::Window* target_window =
       root_window_->GetEventHandlerForPoint(root_location);

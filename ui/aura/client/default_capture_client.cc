@@ -31,7 +31,7 @@ void DefaultCaptureClient::SetCapture(Window* window) {
   Window* old_capture_window = capture_window_;
   capture_window_ = window;
 
-  CaptureDelegate* capture_delegate = root_window_->GetDispatcher();
+  CaptureDelegate* capture_delegate = root_window_->GetHost()->dispatcher();
   if (capture_window_)
     capture_delegate->SetNativeCapture();
   else

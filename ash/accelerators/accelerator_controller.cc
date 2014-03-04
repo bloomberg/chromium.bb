@@ -560,7 +560,7 @@ bool HandleToggleFullscreen(ui::KeyboardCode key_code) {
 }
 
 bool HandleToggleRootWindowFullScreen() {
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->ToggleFullScreen();
+  Shell::GetPrimaryRootWindow()->GetHost()->ToggleFullScreen();
   return true;
 }
 
@@ -703,7 +703,7 @@ bool HandlePrintLayerHierarchy() {
   for (size_t i = 0; i < root_windows.size(); ++i) {
     ui::PrintLayerHierarchy(
         root_windows[i]->layer(),
-        root_windows[i]->GetDispatcher()->GetLastMouseLocationInRoot());
+        root_windows[i]->GetHost()->dispatcher()->GetLastMouseLocationInRoot());
   }
   return true;
 }

@@ -46,7 +46,7 @@ class NativeWidgetAuraTest : public ViewsTestBase {
  protected:
   aura::Window* root_window() { return GetContext(); }
   aura::WindowEventDispatcher* dispatcher() {
-    return root_window()->GetDispatcher();
+    return root_window()->GetHost()->dispatcher();
   }
 
  private:

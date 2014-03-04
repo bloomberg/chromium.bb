@@ -269,7 +269,7 @@ TEST_F(WindowSelectorTest, Basic) {
 
   // The cursor should be visible and locked as a pointer
   EXPECT_EQ(ui::kCursorPointer,
-            root_window->GetDispatcher()->host()->last_cursor().native_type());
+            root_window->GetHost()->last_cursor().native_type());
   EXPECT_TRUE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
   EXPECT_TRUE(aura::client::GetCursorClient(root_window)->IsCursorVisible());
 

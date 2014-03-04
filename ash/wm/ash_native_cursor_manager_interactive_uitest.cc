@@ -39,7 +39,7 @@ void MoveMouseSync(aura::Window* window, int x, int y) {
 #if defined(USE_X11)
   XWarpPointer(base::MessagePumpX11::GetDefaultXDisplay(),
                None,
-               window->GetDispatcher()->host()->GetAcceleratedWidget(),
+               window->GetHost()->GetAcceleratedWidget(),
                0, 0, 0, 0,
                x, y);
 #endif

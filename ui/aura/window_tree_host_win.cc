@@ -170,8 +170,7 @@ void WindowTreeHostWin::ReleaseCapture() {
 }
 
 bool WindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
-  client::CursorClient* cursor_client =
-      client::GetCursorClient(GetDispatcher()->window());
+  client::CursorClient* cursor_client = client::GetCursorClient(window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;

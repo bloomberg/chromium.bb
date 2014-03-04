@@ -383,7 +383,8 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     drag_location = gfx::ToFlooredPoint(drag_location_f);
     DCHECK(has_point);
   } else {
-    drag_location = root_window->GetDispatcher()->GetLastMouseLocationInRoot();
+    drag_location =
+        root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(
         root_window, source->parent(), &drag_location);
   }

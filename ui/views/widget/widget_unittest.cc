@@ -1295,7 +1295,7 @@ void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
                             screen_bounds.CenterPoint(), 0, 0);
   aura::WindowEventDispatcher* dispatcher =
-      widget->GetNativeWindow()->GetDispatcher();
+      widget->GetNativeWindow()->GetHost()->dispatcher();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move_event);
   if (last_event_type == ui::ET_MOUSE_ENTERED || details.dispatcher_destroyed)
     return;
@@ -2065,7 +2065,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                            ui::EF_NONE,
                            ui::EF_NONE);
   ui::EventDispatchDetails details = top_level_widget.GetNativeView()->
-      GetDispatcher()->OnEventFromSource(&move_main);
+      GetHost()->dispatcher()->OnEventFromSource(&move_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(1, widget_view->GetEventCount(ui::ET_MOUSE_ENTERED));
@@ -2092,7 +2092,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                    cursor_location_dialog,
                                    ui::EF_NONE,
                                    ui::EF_NONE);
-  details = top_level_widget.GetNativeView()->GetDispatcher()->
+  details = top_level_widget.GetNativeView()->GetHost()->dispatcher()->
       OnEventFromSource(&mouse_down_dialog);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::ET_MOUSE_PRESSED));
@@ -2105,7 +2105,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                  cursor_location_main2,
                                  ui::EF_NONE,
                                  ui::EF_NONE);
-  details = top_level_widget.GetNativeView()->GetDispatcher()->
+  details = top_level_widget.GetNativeView()->GetHost()->dispatcher()->
       OnEventFromSource(&mouse_down_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(0, widget_view->GetEventCount(ui::ET_MOUSE_MOVED));

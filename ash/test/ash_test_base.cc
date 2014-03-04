@@ -63,7 +63,7 @@ class AshEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
     gfx::Screen* screen = Shell::GetScreen();
     gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetInstance()->display_controller()->
-        GetRootWindowForDisplayId(display.id())->GetDispatcher();
+        GetRootWindowForDisplayId(display.id())->GetHost()->dispatcher();
   }
 
   virtual aura::client::ScreenPositionClient* GetScreenPositionClient(
@@ -123,7 +123,7 @@ void AshTestBase::SetUp() {
   ash_test_helper_->SetUp(start_session_);
 
   Shell::GetPrimaryRootWindow()->Show();
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->Show();
+  Shell::GetPrimaryRootWindow()->GetHost()->Show();
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));

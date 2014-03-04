@@ -131,7 +131,7 @@ void ViewEventTestBase::SetUp() {
   shell_delegate->test_session_state_delegate()
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
-  context->GetDispatcher()->host()->Show();
+  context->GetHost()->Show();
 #endif  // !OS_WIN
   aura::Env::CreateInstance();
 #elif defined(USE_AURA)

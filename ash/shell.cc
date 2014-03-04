@@ -864,7 +864,7 @@ void Shell::Init() {
   AddShellObserver(overlay_filter_.get());
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-      root_window->GetDispatcher()->host()->GetAcceleratedWidget()));
+      root_window->GetHost()->GetAcceleratedWidget()));
   AddPreTargetHandler(input_method_filter_.get());
 
   accelerator_filter_.reset(new internal::AcceleratorFilter);
@@ -964,7 +964,7 @@ void Shell::Init() {
   // initialize controller/delegates above when initializing the
   // primary root window controller.
   internal::RootWindowController::CreateForPrimaryDisplay(
-      root_window->GetDispatcher()->host());
+      root_window->GetHost());
 
   display_controller_->InitSecondaryDisplays();
 

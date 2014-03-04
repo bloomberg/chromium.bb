@@ -137,7 +137,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     NavigateToURL(shell(), test_url);
     aura::Window* content =
         shell()->web_contents()->GetView()->GetContentNativeView();
-    content->GetDispatcher()->host()->SetBounds(gfx::Rect(800, 600));
+    content->GetHost()->SetBounds(gfx::Rect(800, 600));
   }
 
   void TestTouchSelectionOriginatingFromWebpage() {

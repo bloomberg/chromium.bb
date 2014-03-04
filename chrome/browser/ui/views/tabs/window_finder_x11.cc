@@ -7,7 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
@@ -29,7 +29,7 @@ class BaseWindowFinder : public ui::EnumerateWindowsDelegate {
   explicit BaseWindowFinder(const std::set<aura::Window*>& ignore) {
     std::set<aura::Window*>::iterator iter;
     for (iter = ignore.begin(); iter != ignore.end(); iter++) {
-      XID xid = (*iter)->GetDispatcher()->host()->GetAcceleratedWidget();
+      XID xid = (*iter)->GetHost()->GetAcceleratedWidget();
       ignore_.insert(xid);
     }
   }
@@ -142,7 +142,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
       return false;
 
     // Check if this window is in our process.
-    if (!aura::WindowEventDispatcher::GetForAcceleratedWidget(window))
+    if (!aura::WindowTreeHost::GetForAcceleratedWidget(window))
       return false;
 
     if (!ui::IsWindowVisible(window))

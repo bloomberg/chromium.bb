@@ -517,13 +517,13 @@ void DisplayController::EnsurePointerInDisplays() {
       aura::client::ScreenPositionClient* client =
           aura::client::GetScreenPositionClient(root_window);
       client->ConvertPointFromScreen(root_window, &center);
-      root_window->GetDispatcher()->host()->ConvertPointToNativeScreen(&center);
+      root_window->GetHost()->ConvertPointToNativeScreen(&center);
       dst_root_window = root_window;
       target_location_in_native = center;
       closest_distance_squared = distance_squared;
     }
   }
-  dst_root_window->GetDispatcher()->host()->ConvertPointFromNativeScreen(
+  dst_root_window->GetHost()->ConvertPointFromNativeScreen(
       &target_location_in_native);
   dst_root_window->MoveCursorTo(target_location_in_native);
 }
@@ -542,10 +542,9 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   const internal::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   DCHECK(!display_info.bounds_in_native().IsEmpty());
-  aura::WindowEventDispatcher* dispatcher =
-      root_windows_[display.id()]->GetDispatcher();
-  dispatcher->host()->SetBounds(display_info.bounds_in_native());
-  SetDisplayPropertiesOnHost(dispatcher->host(), display);
+  aura::WindowTreeHost* host = root_windows_[display.id()]->GetHost();
+  host->SetBounds(display_info.bounds_in_native());
+  SetDisplayPropertiesOnHost(host, display);
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
@@ -558,10 +557,9 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     primary_root_window_for_replace_ = NULL;
     const internal::DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
-    aura::WindowEventDispatcher* dispatcher =
-        root_windows_[display.id()]->GetDispatcher();
-    dispatcher->host()->SetBounds(display_info.bounds_in_native());
-    SetDisplayPropertiesOnHost(dispatcher->host(), display);
+    aura::WindowTreeHost* host = root_windows_[display.id()]->GetHost();
+    host->SetBounds(display_info.bounds_in_native());
+    SetDisplayPropertiesOnHost(host, display);
   } else {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)
       primary_display_id = display.id();
@@ -664,8 +662,7 @@ void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {
   aura::client::ScreenPositionClient* client =
       aura::client::GetScreenPositionClient(root_window);
   client->ConvertPointFromScreen(root_window, &point_in_screen);
-  root_window->GetDispatcher()->host()->ConvertPointToNativeScreen(
-      &point_in_screen);
+  root_window->GetHost()->ConvertPointToNativeScreen(&point_in_screen);
   cursor_location_in_native_coords_for_restore_ = point_in_screen;
 }
 
@@ -748,7 +745,7 @@ void DisplayController::UpdateHostWindowNames() {
     std::string name =
         root_windows[i] == primary ? "aura_root_0" : "aura_root_x";
     gfx::AcceleratedWidget xwindow =
-        root_windows[i]->GetDispatcher()->host()->GetAcceleratedWidget();
+        root_windows[i]->GetHost()->GetAcceleratedWidget();
     XStoreName(gfx::GetXDisplay(), xwindow, name.c_str());
   }
 #endif

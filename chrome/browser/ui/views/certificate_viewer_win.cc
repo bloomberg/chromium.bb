@@ -63,7 +63,7 @@ void ShowCertificateViewer(content::WebContents* web_contents,
       chrome::HOST_DESKTOP_TYPE_ASH) {
     ShowCertificateViewerImpl(
         web_contents,
-        parent->GetDispatcher()->host()->GetAcceleratedWidget(), cert);
+        parent->GetHost()->GetAcceleratedWidget(), cert);
   } else {
     NOTIMPLEMENTED();
   }

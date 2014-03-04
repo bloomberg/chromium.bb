@@ -181,7 +181,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   void RunOnCompositingDidCommit() {
-    OnCompositingDidCommit(window()->GetDispatcher()->host()->compositor());
+    OnCompositingDidCommit(window()->GetHost()->compositor());
   }
 
   // A lock that doesn't actually do anything to the compositor, and does not
@@ -925,7 +925,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
                                              gfx::Rect(params.a.new_size),
                                              owned_mailbox.get()));
     ui::DrawWaiterForTest::WaitForCommit(
-        root_window->GetDispatcher()->host()->compositor());
+        root_window->GetHost()->compositor());
   }
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
@@ -949,7 +949,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
                                              gfx::Rect(params.a.new_size),
                                              owned_mailbox.get()));
     ui::DrawWaiterForTest::WaitForCommit(
-        root_window->GetDispatcher()->host()->compositor());
+        root_window->GetHost()->compositor());
   }
 }
 

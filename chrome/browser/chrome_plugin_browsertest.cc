@@ -327,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, WindowedNPAPIPluginHidden) {
   EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
 
   HWND child = NULL;
-  HWND hwnd = tab->GetView()->GetNativeView()->GetDispatcher()->host()->
-      GetAcceleratedWidget();
+  HWND hwnd =
+      tab->GetView()->GetNativeView()->GetHost()->GetAcceleratedWidget();
   EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
 
   RECT region;

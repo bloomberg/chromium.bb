@@ -41,7 +41,7 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegate {
   // EventGeneratorDelegate overrides:
   virtual WindowEventDispatcher* GetDispatcherAt(
       const gfx::Point& point) const OVERRIDE {
-    return root_window_->GetDispatcher();
+    return root_window_->GetHost()->dispatcher();
   }
 
   virtual client::ScreenPositionClient* GetScreenPositionClient(

@@ -9,7 +9,9 @@
 #include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host_delegate.h"
+#include "ui/base/view_prop.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
@@ -21,6 +23,9 @@
 #include "ui/gfx/size_conversions.h"
 
 namespace aura {
+
+const char kWindowTreeHostForAcceleratedWidget[] =
+    "__AURA_WINDOW_TREE_HOST_ACCELERATED_WIDGET__";
 
 float GetDeviceScaleFactorFromDisplay(Window* window) {
   gfx::Display display = gfx::Screen::GetScreenFor(window)->
@@ -77,6 +82,13 @@ WindowTreeHost::~WindowTreeHost() {
   DCHECK(!compositor_) << "compositor must be destroyed before root window";
 }
 
+// static
+WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
+    gfx::AcceleratedWidget widget) {
+  return reinterpret_cast<WindowTreeHost*>(
+      ui::ViewProp::GetValue(widget, kWindowTreeHostForAcceleratedWidget));
+}
+
 void WindowTreeHost::InitHost() {
   InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
@@ -90,14 +102,6 @@ void WindowTreeHost::InitCompositor() {
   compositor_->SetRootLayer(window()->layer());
   transformer_.reset(
       new SimpleRootWindowTransformer(window(), gfx::Transform()));
-}
-
-aura::Window* WindowTreeHost::window() {
-  return const_cast<Window*>(const_cast<const WindowTreeHost*>(this)->window());
-}
-
-const aura::Window* WindowTreeHost::window() const {
-  return delegate_->AsDispatcher()->window();
 }
 
 void WindowTreeHost::SetRootWindowTransformer(
@@ -201,6 +205,7 @@ WindowEventDispatcher* WindowTreeHost::GetDispatcher() {
 
 WindowTreeHost::WindowTreeHost()
     : delegate_(NULL),
+      window_(new Window(NULL)),
       last_cursor_(ui::kCursorNull) {
 }
 
@@ -210,7 +215,22 @@ void WindowTreeHost::DestroyCompositor() {
 }
 
 void WindowTreeHost::DestroyDispatcher() {
+  // An observer may have been added by an animation on the
+  // WindowEventDispatcher.
+  window()->layer()->GetAnimator()->RemoveObserver(dispatcher());
+
+  delete window_;
+  window_ = NULL;
   dispatcher_.reset();
+
+  // TODO(beng): this comment is no longer quite valid since this function
+  // isn't called from WED, and WED isn't a subclass of Window. So it seems
+  // like we could just rely on ~Window now.
+  // Destroy child windows while we're still valid. This is also done by
+  // ~Window, but by that time any calls to virtual methods overriden here (such
+  // as GetRootWindow()) result in Window's implementation. By destroying here
+  // we ensure GetRootWindow() still returns this.
+  //window()->RemoveOrDestroyChildren();
 }
 
 void WindowTreeHost::CreateCompositor(
@@ -219,8 +239,17 @@ void WindowTreeHost::CreateCompositor(
   DCHECK(compositor_.get());
   // TODO(beng): I think this setup should probably all move to a "accelerated
   // widget available" function.
-  if (!dispatcher())
+  if (!dispatcher()) {
+    window()->Init(WINDOW_LAYER_NOT_DRAWN);
+    window()->set_host(this);
+    window()->SetName("RootWindow");
+    window()->SetEventTargeter(
+        scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
+    prop_.reset(new ui::ViewProp(GetAcceleratedWidget(),
+                                 kWindowTreeHostForAcceleratedWidget,
+                                 this));
     dispatcher_.reset(new WindowEventDispatcher(this));
+  }
   delegate_ = dispatcher();
 }
 

@@ -154,18 +154,16 @@ DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
 
 // static
 aura::Window* DesktopWindowTreeHostX11::GetContentWindowForXID(XID xid) {
-  aura::WindowEventDispatcher* dispatcher =
-      aura::WindowEventDispatcher::GetForAcceleratedWidget(xid);
-  return dispatcher ?
-      dispatcher->window()->GetProperty(kViewsWindowForRootWindow) : NULL;
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(xid);
+  return host ? host->window()->GetProperty(kViewsWindowForRootWindow) : NULL;
 }
 
 // static
 DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::GetHostForXID(XID xid) {
-  aura::WindowEventDispatcher* dispatcher =
-      aura::WindowEventDispatcher::GetForAcceleratedWidget(xid);
-  return dispatcher ?
-      dispatcher->window()->GetProperty(kHostForRootWindow) : NULL;
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(xid);
+  return host ? host->window()->GetProperty(kHostForRootWindow) : NULL;
 }
 
 // static
@@ -839,7 +837,7 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
 bool DesktopWindowTreeHostX11::QueryMouseLocation(
     gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(GetDispatcher()->window());
+      aura::client::GetCursorClient(window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;
@@ -1078,9 +1076,9 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // If we have a parent, record the parent/child relationship. We use this
   // data during destruction to make sure that when we try to close a parent
   // window, we also destroy all child windows.
-  if (params.parent && params.parent->GetDispatcher()) {
+  if (params.parent && params.parent->GetHost()) {
     XID parent_xid =
-        params.parent->GetDispatcher()->host()->GetAcceleratedWidget();
+        params.parent->GetHost()->GetAcceleratedWidget();
     window_parent_ = GetHostForXID(parent_xid);
     DCHECK(window_parent_);
     window_parent_->window_children_.insert(this);

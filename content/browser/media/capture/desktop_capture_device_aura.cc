@@ -356,7 +356,7 @@ gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
     const gfx::Rect& region_in_frame) {
   const gfx::Rect desktop_bounds = desktop_layer_->bounds();
   gfx::NativeCursor cursor =
-      desktop_window_->GetDispatcher()->host()->last_cursor();
+      desktop_window_->GetHost()->last_cursor();
   if (last_cursor_ != cursor) {
     SkBitmap cursor_bitmap;
     if (ui::GetCursorBitmap(cursor, &cursor_bitmap, &cursor_hot_point_)) {

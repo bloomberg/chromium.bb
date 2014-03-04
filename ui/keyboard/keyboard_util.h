@@ -14,6 +14,10 @@
 
 struct GritResourceMap;
 
+namespace aura {
+class WindowEventDispatcher;
+}
+
 namespace keyboard {
 
 // Enumeration of swipe directions.

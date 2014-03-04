@@ -186,7 +186,7 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   cui.cbSize = sizeof(CREDUI_INFO);
   cui.hwndParent = NULL;
 #if defined(USE_AURA)
-  cui.hwndParent = window->GetDispatcher()->host()->GetAcceleratedWidget();
+  cui.hwndParent = window->GetHost()->GetAcceleratedWidget();
 #else
   cui.hwndParent = window;
 #endif

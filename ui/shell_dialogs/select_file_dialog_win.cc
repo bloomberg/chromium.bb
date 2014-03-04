@@ -601,7 +601,7 @@ void SelectFileDialogImpl::SelectFileImpl(
     }
   }
   HWND owner = owning_window && owning_window->GetRootWindow()
-      ? owning_window->GetDispatcher()->host()->GetAcceleratedWidget() : NULL;
+      ? owning_window->GetHost()->GetAcceleratedWidget() : NULL;
 #else
   HWND owner = owning_window;
 #endif
@@ -623,7 +623,7 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow owning_window) const {
 #if defined(USE_AURA)
   if (!owning_window->GetRootWindow())
     return false;
-  HWND owner = owning_window->GetDispatcher()->host()->GetAcceleratedWidget();
+  HWND owner = owning_window->GetHost()->GetAcceleratedWidget();
 #else
   HWND owner = owning_window;
 #endif

@@ -78,7 +78,7 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
     aura::WindowEventDispatcher* dispatcher =
-        browser()->window()->GetNativeWindow()->GetDispatcher();
+        browser()->window()->GetNativeWindow()->GetHost()->dispatcher();
 
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, press_location,
                          5, base::TimeDelta::FromMilliseconds(0));

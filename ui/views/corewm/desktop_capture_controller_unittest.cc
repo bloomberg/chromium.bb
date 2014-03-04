@@ -73,7 +73,7 @@ TEST_F(DesktopCaptureControllerTest, ResetMouseHandlers) {
   generator1.PressLeftButton();
   EXPECT_FALSE(w1->HasCapture());
   aura::WindowEventDispatcher* w1_dispatcher =
-      w1->GetNativeView()->GetDispatcher();
+      w1->GetNativeView()->GetHost()->dispatcher();
   EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() != NULL);
   EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() != NULL);
   w2->SetCapture(w2->GetRootView());
@@ -105,7 +105,8 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   internal::RootView* root1 =
       static_cast<internal::RootView*>(widget1->GetRootView());
 
-  desktop_position_client1.reset(new DesktopScreenPositionClient());
+  desktop_position_client1.reset(
+      new DesktopScreenPositionClient(params.context->GetRootWindow()));
   aura::client::SetScreenPositionClient(
       widget1->GetNativeView()->GetRootWindow(),
       desktop_position_client1.get());
@@ -124,7 +125,8 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
 
   internal::RootView* root2 =
       static_cast<internal::RootView*>(widget2->GetRootView());
-  desktop_position_client2.reset(new DesktopScreenPositionClient());
+  desktop_position_client2.reset(
+      new DesktopScreenPositionClient(params.context->GetRootWindow()));
   aura::client::SetScreenPositionClient(
       widget2->GetNativeView()->GetRootWindow(),
       desktop_position_client2.get());

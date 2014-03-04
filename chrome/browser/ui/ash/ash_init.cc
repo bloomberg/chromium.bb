@@ -79,7 +79,7 @@ void OpenAsh() {
     chrome::IncrementKeepAliveCount();
   }
 #endif
-  ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->Show();
+  ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
 
 void CloseAsh() {

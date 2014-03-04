@@ -45,8 +45,8 @@ namespace aura {
 
 class LayoutManager;
 class WindowDelegate;
-class WindowEventDispatcher;
 class WindowObserver;
+class WindowTreeHost;
 
 // Defined in window_property.h (which we do not include)
 template<typename T>
@@ -123,12 +123,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   virtual Window* GetRootWindow();
   virtual const Window* GetRootWindow() const;
 
-  WindowEventDispatcher* GetDispatcher();
-  const WindowEventDispatcher* GetDispatcher() const;
-  void set_dispatcher(WindowEventDispatcher* dispatcher) {
-    dispatcher_ = dispatcher;
-  }
-  bool HasDispatcher() const { return !!dispatcher_; }
+  WindowTreeHost* GetHost();
+  const WindowTreeHost* GetHost() const;
+  void set_host(WindowTreeHost* host) { host_ = host; }
+  bool IsRootWindow() const { return !!host_; }
 
   // The Window does not own this object.
   void set_user_data(void* user_data) { user_data_ = user_data; }
@@ -337,7 +335,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
  private:
   friend class test::WindowTestApi;
   friend class LayoutManager;
-  friend class WindowEventDispatcher;
   friend class WindowTargeter;
 
   // Called by the public {Set,Get,Clear}Property functions.
@@ -492,7 +489,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // is relative to the parent Window.
   gfx::Rect bounds_;
 
-  WindowEventDispatcher* dispatcher_;
+  WindowTreeHost* host_;
 
   ui::wm::WindowType type_;
 

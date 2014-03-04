@@ -76,7 +76,7 @@ aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     aura::client::WindowMoveSource move_source) {
   window_offset_ = drag_offset;
-  dispatcher_ = source->GetDispatcher();
+  dispatcher_ = source->GetHost()->dispatcher();
 
   bool success = move_loop_.RunMoveLoop(source,
                                         dispatcher_->host()->last_cursor());

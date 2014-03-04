@@ -794,8 +794,8 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
   // Test the actual key event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowEventDispatcher* dispatcher = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
@@ -834,8 +834,8 @@ TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
   // Test the actual sticky mouse event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowEventDispatcher* dispatcher = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
@@ -871,8 +871,8 @@ TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
   // Test the actual mouse wheel event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowEventDispatcher* dispatcher = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 

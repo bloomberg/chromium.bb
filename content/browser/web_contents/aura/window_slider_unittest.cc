@@ -265,7 +265,7 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
         base::TimeDelta::FromMilliseconds(10),
         1,
         base::Bind(&DispatchEventDuringScrollCallback,
-                   root_window()->GetDispatcher(),
+                   root_window()->GetHost()->dispatcher(),
                    base::Owned(events[i])));
     EXPECT_TRUE(slider_delegate.created_back_layer());
     EXPECT_TRUE(slider_delegate.slide_aborted());

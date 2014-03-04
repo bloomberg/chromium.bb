@@ -58,7 +58,7 @@ bool VirtualKeyboardPrivateMoveCursorFunction::RunImpl() {
   return keyboard::MoveCursor(
       swipe_direction,
       modifier_flags,
-      ash::Shell::GetPrimaryRootWindow()->GetDispatcher());
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher());
 #endif
   error_ = kNotYetImplementedError;
   return false;
@@ -89,7 +89,7 @@ bool VirtualKeyboardPrivateSendKeyEventFunction::RunImpl() {
       key_code,
       key_name,
       modifiers,
-      ash::Shell::GetPrimaryRootWindow()->GetDispatcher());
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher());
 #endif
   error_ = kNotYetImplementedError;
   return false;

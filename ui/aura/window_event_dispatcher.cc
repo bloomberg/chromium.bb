@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,6 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/view_prop.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -40,9 +39,6 @@ typedef ui::EventDispatchDetails DispatchDetails;
 namespace aura {
 
 namespace {
-
-const char kRootWindowForAcceleratedWidget[] =
-    "__AURA_ROOT_WINDOW_ACCELERATED_WIDGET__";
 
 // Returns true if |target| has a non-client (frame) component at |location|,
 // in window coordinates.
@@ -86,8 +82,7 @@ bool IsEventCandidateForHold(const ui::Event& event) {
 // WindowEventDispatcher, public:
 
 WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
-    : window_(new Window(NULL)),
-      host_(host),
+    : host_(host),
       touch_ids_down_(0),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
@@ -98,40 +93,12 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       dispatching_held_event_(false),
       repost_event_factory_(this),
       held_event_factory_(this) {
-  window()->Init(WINDOW_LAYER_NOT_DRAWN);
-  window()->set_dispatcher(this);
-  window()->SetName("RootWindow");
-  window()->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
-
-  prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),
-                               kRootWindowForAcceleratedWidget,
-                               this));
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
 }
 
 WindowEventDispatcher::~WindowEventDispatcher() {
   TRACE_EVENT0("shutdown", "WindowEventDispatcher::Destructor");
-
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
-
-  // An observer may have been added by an animation on the
-  // WindowEventDispatcher.
-  window()->layer()->GetAnimator()->RemoveObserver(this);
-
-  // Destroy child windows while we're still valid. This is also done by
-  // ~Window, but by that time any calls to virtual methods overriden here (such
-  // as GetRootWindow()) result in Window's implementation. By destroying here
-  // we ensure GetRootWindow() still returns this.
-  window()->RemoveOrDestroyChildren();
-  window()->set_dispatcher(NULL);
-}
-
-// static
-WindowEventDispatcher* WindowEventDispatcher::GetForAcceleratedWidget(
-    gfx::AcceleratedWidget widget) {
-  return reinterpret_cast<WindowEventDispatcher*>(
-      ui::ViewProp::GetValue(widget, kRootWindowForAcceleratedWidget));
 }
 
 void WindowEventDispatcher::PrepareForShutdown() {

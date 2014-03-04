@@ -222,7 +222,7 @@ bool InputMethodEngine::SendKeyEvents(
   }
 
   aura::WindowEventDispatcher* dispatcher =
-      ash::Shell::GetPrimaryRootWindow()->GetDispatcher();
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
 
   for (size_t i = 0; i < events.size(); ++i) {
     const KeyboardEvent& event = events[i];

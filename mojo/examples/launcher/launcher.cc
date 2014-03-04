@@ -98,7 +98,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
   virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
     ui::TranslatedKeyEvent aura_event(event);
     ui::EventDispatchDetails details =
-        root_->GetDispatcher()->OnEventFromSource(&aura_event);
+        root_->GetHost()->dispatcher()->OnEventFromSource(&aura_event);
     return aura_event.handled() || details.dispatcher_destroyed;
   }
 

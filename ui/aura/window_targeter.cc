@@ -56,7 +56,7 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
       // from here. Instead, dispatch the event through the
       // WindowEventDispatcher that owns |target|.
       ui::EventDispatchDetails details ALLOW_UNUSED =
-          target->GetDispatcher()->OnEventFromSource(event);
+          target->GetHost()->dispatcher()->OnEventFromSource(event);
       target = NULL;
     }
   }
@@ -113,7 +113,7 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
   // Mouse events should be dispatched to the window that processed the
   // mouse-press events (if any).
   if (event.IsScrollEvent() || event.IsMouseEvent()) {
-    WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+    WindowEventDispatcher* dispatcher = root_window->GetHost()->dispatcher();
     if (dispatcher->mouse_pressed_handler())
       return dispatcher->mouse_pressed_handler();
   }

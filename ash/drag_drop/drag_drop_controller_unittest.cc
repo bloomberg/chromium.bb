@@ -283,7 +283,7 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
       ui::EventTimeForNow(),
       ui::GestureEventDetails(gesture_type, 0, 0),
       1);
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->DispatchGestureEvent(
+  Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->DispatchGestureEvent(
       &gesture_event);
 }
 
@@ -738,7 +738,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
                               mouse_move_location, 0, 0);
     ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
-        GetDispatcher()->OnEventFromSource(&mouse_move);
+        GetHost()->dispatcher()->OnEventFromSource(&mouse_move);
     ASSERT_FALSE(details.dispatcher_destroyed);
   }
 

@@ -284,7 +284,7 @@ TEST_F(MirrorOnBootTest, MAYBE_MirrorOnBoot) {
   EXPECT_TRUE(display_manager->IsMirrored());
   RunAllPendingInMessageLoop();
   test::MirrorWindowTestApi test_api;
-  EXPECT_TRUE(test_api.GetDispatcher());
+  EXPECT_TRUE(test_api.GetHost());
 }
 
 }  // namsspace internal

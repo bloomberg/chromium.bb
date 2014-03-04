@@ -98,20 +98,18 @@ DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
 
 // static
 aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
-  aura::WindowEventDispatcher* dispatcher =
-      aura::WindowEventDispatcher::GetForAcceleratedWidget(hwnd);
-  return dispatcher ?
-      dispatcher->window()->GetProperty(kContentWindowForRootWindow) : NULL;
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(hwnd);
+  return host ? host->window()->GetProperty(kContentWindowForRootWindow) : NULL;
 }
 
 // static
 ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
   // Use NativeThemeWin for windows shown on the desktop, those not on the
   // desktop come from Ash and get NativeThemeAura.
-  aura::WindowEventDispatcher* dispatcher =
-      window ? window->GetDispatcher() : NULL;
-  if (dispatcher) {
-    HWND host_hwnd = dispatcher->host()->GetAcceleratedWidget();
+  aura::WindowTreeHost* host = window ? window->GetHost() : NULL;
+  if (host) {
+    HWND host_hwnd = host->GetAcceleratedWidget();
     if (host_hwnd &&
         DesktopWindowTreeHostWin::GetContentWindowForHWND(host_hwnd)) {
       return ui::NativeThemeWin::instance();
@@ -135,10 +133,8 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
                         native_widget_delegate_);
 
   HWND parent_hwnd = NULL;
-  if (params.parent && params.parent->GetDispatcher()) {
-    parent_hwnd =
-        params.parent->GetDispatcher()->host()->GetAcceleratedWidget();
-  }
+  if (params.parent && params.parent->GetHost())
+    parent_hwnd = params.parent->GetHost()->GetAcceleratedWidget();
 
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
 
@@ -880,11 +876,11 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(
     return;
 
   // Currently we assume the window that has capture gets touch events too.
-  aura::WindowEventDispatcher* dispatcher =
-      aura::WindowEventDispatcher::GetForAcceleratedWidget(GetCapture());
-  if (dispatcher) {
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(GetCapture());
+  if (host) {
     DesktopWindowTreeHostWin* target =
-        dispatcher->window()->GetProperty(kDesktopWindowTreeHostKey);
+        host->window()->GetProperty(kDesktopWindowTreeHostKey);
     if (target && target->HasCapture() && target != this) {
       POINT target_location(event.location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);

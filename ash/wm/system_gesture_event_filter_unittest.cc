@@ -192,7 +192,7 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
                        kTouchId,
                        ui::EventTimeForNow());
   ui::EventDispatchDetails details =
-      root_window->GetDispatcher()->OnEventFromSource(&press);
+      root_window->GetHost()->dispatcher()->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(window1->HasCapture());
 

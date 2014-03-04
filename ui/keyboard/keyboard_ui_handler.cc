@@ -115,8 +115,8 @@ void KeyboardUIHandler::HandleSendKeyEventMessage(
     return;
   }
 
-  aura::WindowEventDispatcher* dispatcher =
-      web_ui()->GetWebContents()->GetView()->GetNativeView()->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher = web_ui()->GetWebContents()->
+      GetView()->GetNativeView()->GetHost()->dispatcher();
   if (!dispatcher) {
     LOG(ERROR) << "sendKeyEvent failed: no dispatcher";
     return;

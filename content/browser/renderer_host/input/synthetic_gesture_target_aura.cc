@@ -31,11 +31,12 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
   DCHECK(conversion_success);
 
   aura::Window* window = GetWindow();
-  aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
+  aura::WindowTreeHost* host = window->GetHost();
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
-    (*iter)->ConvertLocationToTarget(window, dispatcher->window());
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(*iter);
+    (*iter)->ConvertLocationToTarget(window, host->window());
+    ui::EventDispatchDetails details =
+        host->dispatcher()->OnEventFromSource(*iter);
     if (details.dispatcher_destroyed)
       break;
   }
@@ -53,7 +54,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());
   ui::EventDispatchDetails details =
-      window->GetDispatcher()->OnEventFromSource(&wheel_event);
+      window->GetHost()->dispatcher()->OnEventFromSource(&wheel_event);
   if (details.dispatcher_destroyed)
     return;
 }
@@ -120,7 +121,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());
   ui::EventDispatchDetails details =
-      window->GetDispatcher()->OnEventFromSource(&mouse_event);
+      window->GetHost()->dispatcher()->OnEventFromSource(&mouse_event);
   if (details.dispatcher_destroyed)
     return;
 }

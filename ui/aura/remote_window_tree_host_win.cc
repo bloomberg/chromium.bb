@@ -369,7 +369,7 @@ bool RemoteWindowTreeHostWin::IsForegroundWindow() {
 }
 
 Window* RemoteWindowTreeHostWin::GetAshWindow() {
-  return GetDispatcher()->window();
+  return window();
 }
 
 gfx::AcceleratedWidget RemoteWindowTreeHostWin::GetAcceleratedWidget() {
@@ -421,7 +421,7 @@ void RemoteWindowTreeHostWin::ReleaseCapture() {
 
 bool RemoteWindowTreeHostWin::QueryMouseLocation(gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(GetDispatcher()->window());
+      aura::client::GetCursorClient(window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;

@@ -15,7 +15,7 @@ namespace views {
 class VIEWS_EXPORT DesktopScreenPositionClient
     : public aura::client::ScreenPositionClient {
  public:
-  DesktopScreenPositionClient();
+  explicit DesktopScreenPositionClient(aura::Window* root_window);
   virtual ~DesktopScreenPositionClient();
 
   // aura::client::ScreenPositionClient overrides:
@@ -28,6 +28,11 @@ class VIEWS_EXPORT DesktopScreenPositionClient
   virtual void SetBounds(aura::Window* window,
                          const gfx::Rect& bounds,
                          const gfx::Display& display) OVERRIDE;
+
+ private:
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopScreenPositionClient);
 };
 
 }  // namespace views

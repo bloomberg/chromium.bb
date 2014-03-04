@@ -42,14 +42,11 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
         new corewm::ScopedCaptureClient(second_host_->window()));
 
 #if !defined(OS_CHROMEOS)
-    desktop_position_client_.reset(new DesktopScreenPositionClient());
-    aura::client::SetScreenPositionClient(root_window(),
-                                          desktop_position_client_.get());
+    desktop_position_client_.reset(
+        new DesktopScreenPositionClient(root_window()));
 
-    second_desktop_position_client_.reset(new DesktopScreenPositionClient());
-    aura::client::SetScreenPositionClient(
-        second_host_->window(),
-        second_desktop_position_client_.get());
+    second_desktop_position_client_.reset(
+        new DesktopScreenPositionClient(second_host_->window()));
 #endif
   }
 

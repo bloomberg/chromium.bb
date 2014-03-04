@@ -31,7 +31,7 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
   } else {
     if (ViewsDelegate::views_delegate &&
         !ViewsDelegate::views_delegate->IsWindowInMetro(window))
-      target_window = window->GetDispatcher()->host()->GetAcceleratedWidget();
+      target_window = window->GetHost()->GetAcceleratedWidget();
   }
   return RepostLocatedEventWin(target_window, event);
 #endif
@@ -63,7 +63,7 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
   relocated->set_location(root_loc);
   relocated->set_root_location(root_loc);
 
-  root_window->GetDispatcher()->RepostEvent(*relocated);
+  root_window->GetHost()->dispatcher()->RepostEvent(*relocated);
   return true;
 }
 

@@ -222,7 +222,7 @@ class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
   // EventGeneratorDelegate overrides:
   virtual aura::WindowEventDispatcher* GetDispatcherAt(
       const gfx::Point& point) const OVERRIDE {
-    return root_window_->GetDispatcher();
+    return root_window_->GetHost()->dispatcher();
   }
 
   virtual aura::client::ScreenPositionClient* GetScreenPositionClient(

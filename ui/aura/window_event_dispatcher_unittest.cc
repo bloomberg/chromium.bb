@@ -1133,7 +1133,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
       if (!reposted_) {
         EXPECT_NE(repost_target_, event->target());
         reposted_ = true;
-        repost_target_->GetDispatcher()->RepostEvent(*event);
+        repost_target_->GetHost()->dispatcher()->RepostEvent(*event);
         // Ensure that the reposted gesture event above goes to the
         // repost_target_;
         repost_source_->GetRootWindow()->RemoveChild(repost_source_);
@@ -1351,7 +1351,7 @@ class DontResetHeldEventWindowDelegate : public test::TestWindowDelegate {
       ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED,
                                  gfx::Point(10, 10), gfx::Point(10, 10),
                                  ui::EF_SHIFT_DOWN, 0);
-      root_->GetDispatcher()->RepostEvent(mouse_event);
+      root_->GetHost()->dispatcher()->RepostEvent(mouse_event);
     }
   }
 
@@ -1376,7 +1376,7 @@ TEST_F(WindowEventDispatcherTest, DontResetHeldEvent) {
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                          gfx::Point(10, 10), gfx::Point(10, 10),
                          ui::EF_SHIFT_DOWN, 0);
-  root_window()->GetDispatcher()->RepostEvent(pressed);
+  root_window()->GetHost()->dispatcher()->RepostEvent(pressed);
   ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED,
                           gfx::Point(10, 10), gfx::Point(10, 10), 0, 0);
   // Dispatch an event to flush event scheduled by way of RepostEvent().
@@ -1853,7 +1853,7 @@ class DispatchEventHandler : public ui::EventHandler {
       ui::MouseEvent move(ui::ET_MOUSE_MOVED, target_->bounds().CenterPoint(),
           target_->bounds().CenterPoint(), ui::EF_NONE, ui::EF_NONE);
       ui::EventDispatchDetails details =
-          target_->GetDispatcher()->OnEventFromSource(&move);
+          target_->GetHost()->dispatcher()->OnEventFromSource(&move);
       ASSERT_FALSE(details.dispatcher_destroyed);
       EXPECT_FALSE(details.target_destroyed);
       EXPECT_EQ(target_, move.target());

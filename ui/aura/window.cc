@@ -162,7 +162,7 @@ class ScopedCursorHider {
   explicit ScopedCursorHider(Window* window)
       : window_(window),
         hid_cursor_(false) {
-    if (!window_->HasDispatcher())
+    if (!window_->IsRootWindow())
       return;
     const bool cursor_is_in_bounds = window_->GetBoundsInScreen().Contains(
         Env::GetInstance()->last_mouse_location());
@@ -174,7 +174,7 @@ class ScopedCursorHider {
     }
   }
   ~ScopedCursorHider() {
-    if (!window_->HasDispatcher())
+    if (!window_->IsRootWindow())
       return;
 
     // Update the device scale factor of the cursor client only when the last
@@ -199,7 +199,7 @@ class ScopedCursorHider {
 };
 
 Window::Window(WindowDelegate* delegate)
-    : dispatcher_(NULL),
+    : host_(NULL),
       type_(ui::wm::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
       delegate_(delegate),
@@ -227,9 +227,9 @@ Window::~Window() {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
   // Let the root know so that it can remove any references to us.
-  WindowEventDispatcher* dispatcher = GetDispatcher();
-  if (dispatcher)
-    dispatcher->OnWindowDestroying(this);
+  WindowTreeHost* host = GetHost();
+  if (host)
+    host->dispatcher()->OnWindowDestroying(this);
 
   // Then destroy the children.
   RemoveOrDestroyChildren();
@@ -343,17 +343,17 @@ Window* Window::GetRootWindow() {
 }
 
 const Window* Window::GetRootWindow() const {
-  return dispatcher_ ? this : parent_ ? parent_->GetRootWindow() : NULL;
+  return IsRootWindow() ? this : parent_ ? parent_->GetRootWindow() : NULL;
 }
 
-WindowEventDispatcher* Window::GetDispatcher() {
-  return const_cast<WindowEventDispatcher*>(const_cast<const Window*>(this)->
-      GetDispatcher());
+WindowTreeHost* Window::GetHost() {
+  return const_cast<WindowTreeHost*>(const_cast<const Window*>(this)->
+      GetHost());
 }
 
-const WindowEventDispatcher* Window::GetDispatcher() const {
+const WindowTreeHost* Window::GetHost() const {
   const Window* root_window = GetRootWindow();
-  return root_window ? root_window->dispatcher_ : NULL;
+  return root_window ? root_window->host_ : NULL;
 }
 
 void Window::Show() {
@@ -411,7 +411,7 @@ void Window::SetTransform(const gfx::Transform& transform) {
     NOTREACHED();
     return;
   }
-  WindowEventDispatcher* dispatcher = GetDispatcher();
+  WindowEventDispatcher* dispatcher = GetHost()->dispatcher();
   bool contained_mouse = IsVisible() && dispatcher &&
       ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
   layer_->SetTransform(transform);
@@ -548,7 +548,7 @@ void Window::AddChild(Window* child) {
 
   Window* root_window = GetRootWindow();
   if (root_window && old_root != root_window) {
-    root_window->GetDispatcher()->OnWindowAddedToRootWindow(child);
+    root_window->GetHost()->dispatcher()->OnWindowAddedToRootWindow(child);
     child->NotifyAddedToRootWindow();
   }
 
@@ -630,7 +630,7 @@ void Window::MoveCursorTo(const gfx::Point& point_in_window) {
   DCHECK(root_window);
   gfx::Point point_in_root(point_in_window);
   ConvertPointToTarget(this, root_window, &point_in_root);
-  root_window->GetDispatcher()->host()->MoveCursorTo(point_in_root);
+  root_window->GetHost()->MoveCursorTo(point_in_root);
 }
 
 gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
@@ -705,7 +705,7 @@ bool Window::HasFocus() const {
 }
 
 bool Window::CanFocus() const {
-  if (dispatcher_)
+  if (IsRootWindow())
     return IsVisible();
 
   // NOTE: as part of focusing the window the ActivationClient may make the
@@ -724,7 +724,7 @@ bool Window::CanFocus() const {
 }
 
 bool Window::CanReceiveEvents() const {
-  if (dispatcher_)
+  if (IsRootWindow())
     return IsVisible();
 
   // The client may forbid certain windows from receiving events at a given
@@ -779,8 +779,8 @@ void* Window::GetNativeWindowProperty(const char* key) const {
 
 void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
   ScopedCursorHider hider(this);
-  if (dispatcher_)
-    dispatcher_->host()->OnDeviceScaleFactorChanged(device_scale_factor);
+  if (IsRootWindow())
+    host_->OnDeviceScaleFactorChanged(device_scale_factor);
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
@@ -920,9 +920,9 @@ void Window::SetVisible(bool visible) {
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanging(this, visible));
 
-  WindowEventDispatcher* dispatcher = GetDispatcher();
-  if (dispatcher)
-    dispatcher->DispatchMouseExitToHidingWindow(this);
+  WindowTreeHost* host = GetHost();
+  if (host)
+    host->dispatcher()->DispatchMouseExitToHidingWindow(this);
 
   client::VisibilityClient* visibility_client =
       client::GetVisibilityClient(this);
@@ -940,8 +940,8 @@ void Window::SetVisible(bool visible) {
 
   NotifyWindowVisibilityChanged(this, visible);
 
-  if (dispatcher)
-    dispatcher->OnWindowVisibilityChanged(this, visible);
+  if (host)
+    host->dispatcher()->OnWindowVisibilityChanged(this, visible);
 }
 
 void Window::SchedulePaint() {
@@ -1030,7 +1030,7 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   Window* root_window = child->GetRootWindow();
   Window* new_root_window = new_parent ? new_parent->GetRootWindow() : NULL;
   if (root_window && root_window != new_root_window) {
-    root_window->GetDispatcher()->OnWindowRemovedFromRootWindow(
+    root_window->GetHost()->dispatcher()->OnWindowRemovedFromRootWindow(
         child, new_root_window);
     child->NotifyRemovingFromRootWindow();
   }
@@ -1344,9 +1344,9 @@ void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds,
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,
                     OnWindowBoundsChanged(this, old_bounds, bounds()));
-  WindowEventDispatcher* dispatcher = GetDispatcher();
-  if (dispatcher)
-    dispatcher->OnWindowBoundsChanged(this, contained_mouse);
+  WindowTreeHost* host = GetHost();
+  if (host)
+    host->dispatcher()->OnWindowBoundsChanged(this, contained_mouse);
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
@@ -1385,7 +1385,7 @@ bool Window::CanAcceptEvent(const ui::Event& event) {
 }
 
 ui::EventTarget* Window::GetParentTarget() {
-  if (dispatcher_) {
+  if (IsRootWindow()) {
     return client::GetEventClient(this) ?
         client::GetEventClient(this)->GetToplevelEventTarget() :
             Env::GetInstance();
@@ -1426,9 +1426,9 @@ void Window::UpdateLayerName(const std::string& name) {
 bool Window::ContainsMouse() {
   bool contains_mouse = false;
   if (IsVisible()) {
-    WindowEventDispatcher* dispatcher = GetDispatcher();
-    contains_mouse = dispatcher &&
-        ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
+    WindowTreeHost* host = GetHost();
+    contains_mouse = host &&
+        ContainsPointInRoot(host->dispatcher()->GetLastMouseLocationInRoot());
   }
   return contains_mouse;
 }

@@ -16,7 +16,7 @@ namespace {
 
 gfx::Point GetOrigin(const aura::Window* root_window) {
   gfx::Point origin_in_pixels =
-      root_window->GetDispatcher()->host()->GetBounds().origin();
+      root_window->GetHost()->GetBounds().origin();
   aura::Window* window = const_cast<aura::Window*>(root_window);
   float scale = gfx::Screen::GetScreenFor(window)->
        GetDisplayNearestWindow(window).device_scale_factor();
@@ -37,10 +37,13 @@ bool PositionWindowInScreenCoordinates(aura::Window* window) {
 
 }  // namespace
 
-DesktopScreenPositionClient::DesktopScreenPositionClient() {
+DesktopScreenPositionClient::DesktopScreenPositionClient(
+    aura::Window* root_window) : root_window_(root_window) {
+  aura::client::SetScreenPositionClient(root_window_, this);
 }
 
 DesktopScreenPositionClient::~DesktopScreenPositionClient() {
+  aura::client::SetScreenPositionClient(root_window_, NULL);
 }
 
 void DesktopScreenPositionClient::ConvertPointToScreen(
@@ -92,7 +95,7 @@ void DesktopScreenPositionClient::SetBounds(
       desktop_native_widget->GetNativeView() == window) {
     // |window| is the content_window.
     // Setting bounds of root resizes |window|.
-    root->GetDispatcher()->host()->SetBounds(bounds);
+    root->GetHost()->SetBounds(bounds);
   } else {
     window->SetBounds(bounds);
   }

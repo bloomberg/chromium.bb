@@ -363,7 +363,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
 
   switch (xev->type) {
     case EnterNotify: {
-      aura::Window* root_window = GetDispatcher()->window();
+      aura::Window* root_window = window();
       client::CursorClient* cursor_client =
           client::GetCursorClient(root_window);
       if (cursor_client) {
@@ -635,7 +635,7 @@ void WindowTreeHostX11::ReleaseCapture() {
 
 bool WindowTreeHostX11::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
-      client::GetCursorClient(GetDispatcher()->window());
+      client::GetCursorClient(window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;
@@ -767,7 +767,7 @@ void WindowTreeHostX11::OnWindowInitialized(Window* window) {
 }
 
 void WindowTreeHostX11::OnRootWindowInitialized(
-    WindowEventDispatcher* dispatcher) {
+    WindowEventDispatcher* d) {
   // UpdateIsInternalDisplay relies on:
   // 1. delegate_ pointing to WindowEventDispatcher - available after
   //    SetDelegate.
@@ -775,7 +775,7 @@ void WindowTreeHostX11::OnRootWindowInitialized(
   //    WED::Init is called.
   //    (set in DisplayManager::CreateRootWindowForDisplay)
   // Ready when NotifyRootWindowInitialized is called from WED::Init.
-  if (!delegate_ || dispatcher != GetDispatcher())
+  if (!delegate_ || d != dispatcher())
     return;
   UpdateIsInternalDisplay();
 
@@ -930,7 +930,7 @@ void WindowTreeHostX11::SetCursorInternal(gfx::NativeCursor cursor) {
 
 void WindowTreeHostX11::TranslateAndDispatchMouseEvent(
     ui::MouseEvent* event) {
-  Window* root_window = GetDispatcher()->window();
+  Window* root_window = window();
   client::ScreenPositionClient* screen_position_client =
       client::GetScreenPositionClient(root_window);
   gfx::Rect local(bounds_.size());
@@ -951,7 +951,7 @@ void WindowTreeHostX11::TranslateAndDispatchMouseEvent(
 }
 
 void WindowTreeHostX11::UpdateIsInternalDisplay() {
-  Window* root_window = GetDispatcher()->window();
+  Window* root_window = window();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
   gfx::Display display = screen->GetDisplayNearestWindow(root_window);
   is_internal_display_ = display.IsInternal();

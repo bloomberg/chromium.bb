@@ -110,7 +110,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   // get released while we still need the pointer grab, which is why we restrict
   // the scope here.
   {
-    ScopedCapturer capturer(source->GetDispatcher()->host());
+    ScopedCapturer capturer(source->GetHost());
 
     DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
     in_move_loop_ = true;

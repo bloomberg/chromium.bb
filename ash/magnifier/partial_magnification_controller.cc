@@ -137,7 +137,8 @@ void PartialMagnificationController::CreateMagnifierWindow() {
 
   root_window->AddObserver(this);
 
-  gfx::Point mouse(root_window->GetDispatcher()->GetLastMouseLocationInRoot());
+  gfx::Point mouse(
+      root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot());
 
   zoom_widget_ = new views::Widget;
   views::Widget::InitParams params(
@@ -202,7 +203,7 @@ aura::Window* PartialMagnificationController::GetCurrentRootWindow() {
        iter != root_windows.end(); ++iter) {
     aura::Window* root_window = *iter;
     if (root_window->ContainsPointInRoot(
-            root_window->GetDispatcher()->GetLastMouseLocationInRoot()))
+            root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot()))
       return root_window;
   }
   return NULL;

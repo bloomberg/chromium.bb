@@ -183,7 +183,8 @@ TEST_F(WindowManagerTest, Focus) {
       aura::client::GetFocusClient(w121.get());
   EXPECT_EQ(w121.get(), focus_client->GetFocusedWindow());
 
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window->GetHost()->dispatcher();
 
   // The key press should be sent to the focused sub-window.
   ui::KeyEvent keyev(ui::ET_KEY_PRESSED, ui::VKEY_E, 0, false);
@@ -446,7 +447,8 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   aura::Window::ConvertPointToTarget(w2->parent(), root_window, &press_point);
   ui::TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, 0, getTime());
 
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window->GetHost()->dispatcher();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&touchev1);
   ASSERT_FALSE(details.dispatcher_destroyed);
 
@@ -508,7 +510,8 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   gfx::Point point2(kWindowLeft + 1, kWindowTop + 1);
   aura::Window::ConvertPointToTarget(window->parent(), root_window, &point2);
 
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window->GetHost()->dispatcher();
 
   // Cursor starts as a pointer (set during Shell::Init()).
   EXPECT_EQ(ui::kCursorPointer,
@@ -613,7 +616,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   gfx::Transform transform;
   transform.Translate(size.width(), 0);
   transform.Rotate(90.0f);
-  root_window->GetDispatcher()->host()->SetTransform(transform);
+  root_window->GetHost()->SetTransform(transform);
 
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
@@ -629,7 +632,8 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
                           miss_point,
                           ui::EF_LEFT_MOUSE_BUTTON,
                           ui::EF_LEFT_MOUSE_BUTTON);
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window->GetHost()->dispatcher();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&mouseev1);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(NULL, aura::client::GetFocusClient(w1.get())->GetFocusedWindow());
@@ -681,7 +685,8 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 
   // Dispatches mouse and keyboard events.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window->GetHost()->dispatcher();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&key_event);
   ASSERT_FALSE(details.dispatcher_destroyed);
   ui::MouseEvent mouse_pressed(

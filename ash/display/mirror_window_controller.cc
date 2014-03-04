@@ -110,7 +110,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     mirror_window->SetBounds(host_->window()->bounds());
     mirror_window->Show();
     reflector_ = ui::ContextFactory::GetInstance()->CreateReflector(
-        Shell::GetPrimaryRootWindow()->GetDispatcher()->host()->compositor(),
+        Shell::GetPrimaryRootWindow()->GetHost()->compositor(),
         mirror_window->layer());
   } else {
     GetRootWindowSettings(host_->window())->display_id = display_info.id();

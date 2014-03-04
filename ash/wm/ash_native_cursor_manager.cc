@@ -21,7 +21,7 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
       Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->GetDispatcher()->host()->SetCursor(cursor);
+    (*iter)->GetHost()->SetCursor(cursor);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->
       cursor_window_controller()->SetCursor(cursor);
@@ -33,7 +33,7 @@ void NotifyCursorVisibilityChange(bool visible) {
       Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->GetDispatcher()->host()->OnCursorVisibilityChanged(visible);
+    (*iter)->GetHost()->OnCursorVisibilityChanged(visible);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->cursor_window_controller()->
       SetVisibility(visible);
@@ -45,7 +45,7 @@ void NotifyMouseEventsEnableStateChange(bool enabled) {
       Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->GetDispatcher()->OnMouseEventsEnableStateChanged(enabled);
+    (*iter)->GetHost()->dispatcher()->OnMouseEventsEnableStateChanged(enabled);
   // Mirror window never process events.
 }
 

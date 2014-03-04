@@ -13,6 +13,10 @@
 #include "ui/events/event_handler.h"
 #include "ui/views/views_export.h"
 
+namespace aura {
+class WindowEventDispatcher;
+}
+
 namespace ui {
 class InputMethod;
 }

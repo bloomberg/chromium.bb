@@ -49,7 +49,7 @@ void TooltipManagerAura::UpdateTooltipManagerForCapture(Widget* source) {
     return;
 
   gfx::Point screen_loc(
-      root_window->GetDispatcher()->GetLastMouseLocationInRoot());
+      root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot());
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (!screen_position_client)
@@ -91,7 +91,7 @@ void TooltipManagerAura::UpdateTooltip() {
   aura::Window* root_window = GetWindow()->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
     gfx::Point view_point =
-        root_window->GetDispatcher()->GetLastMouseLocationInRoot();
+        root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(root_window, GetWindow(), &view_point);
     View* view = GetViewUnderPoint(view_point);
     UpdateTooltipForTarget(view, view_point, root_window);
@@ -102,7 +102,7 @@ void TooltipManagerAura::TooltipTextChanged(View* view)  {
   aura::Window* root_window = GetWindow()->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
     gfx::Point view_point =
-        root_window->GetDispatcher()->GetLastMouseLocationInRoot();
+        root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(root_window, GetWindow(), &view_point);
     View* target = GetViewUnderPoint(view_point);
     if (target != view)

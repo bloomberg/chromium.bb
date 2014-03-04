@@ -125,33 +125,31 @@ class UIControlsDesktopX11 : public UIControlsAura {
       const base::Closure& closure) OVERRIDE {
     DCHECK(!command);  // No command key on Aura
 
-    aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
+    aura::WindowTreeHost* host = window->GetHost();
 
     XEvent xevent = {0};
     xevent.xkey.type = KeyPress;
     if (control) {
-      SetKeycodeAndSendThenMask(dispatcher, &xevent, XK_Control_L,
-                                ControlMask);
+      SetKeycodeAndSendThenMask(host, &xevent, XK_Control_L, ControlMask);
     }
     if (shift)
-      SetKeycodeAndSendThenMask(dispatcher, &xevent, XK_Shift_L, ShiftMask);
+      SetKeycodeAndSendThenMask(host, &xevent, XK_Shift_L, ShiftMask);
     if (alt)
-      SetKeycodeAndSendThenMask(dispatcher, &xevent, XK_Alt_L, Mod1Mask);
+      SetKeycodeAndSendThenMask(host, &xevent, XK_Alt_L, Mod1Mask);
     xevent.xkey.keycode =
         XKeysymToKeycode(x_display_,
                          ui::XKeysymForWindowsKeyCode(key, shift));
-    dispatcher->host()->PostNativeEvent(&xevent);
+    host->PostNativeEvent(&xevent);
 
     // Send key release events.
     xevent.xkey.type = KeyRelease;
-    dispatcher->host()->PostNativeEvent(&xevent);
+    host->PostNativeEvent(&xevent);
     if (alt)
-      UnmaskAndSetKeycodeThenSend(dispatcher, &xevent, Mod1Mask, XK_Alt_L);
+      UnmaskAndSetKeycodeThenSend(host, &xevent, Mod1Mask, XK_Alt_L);
     if (shift)
-      UnmaskAndSetKeycodeThenSend(dispatcher, &xevent, ShiftMask, XK_Shift_L);
+      UnmaskAndSetKeycodeThenSend(host, &xevent, ShiftMask, XK_Shift_L);
     if (control) {
-      UnmaskAndSetKeycodeThenSend(dispatcher, &xevent, ControlMask,
-                                  XK_Control_L);
+      UnmaskAndSetKeycodeThenSend(host, &xevent, ControlMask, XK_Control_L);
     }
     DCHECK(!xevent.xkey.state);
     RunClosureAfterAllPendingUIEvents(closure);
@@ -176,10 +174,10 @@ class UIControlsDesktopX11 : public UIControlsAura {
                                                      &root_location);
     }
 
-    aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+    aura::WindowTreeHost* host = root_window->GetHost();
     gfx::Point root_current_location;
-    dispatcher->host()->QueryMouseLocation(&root_current_location);
-    dispatcher->host()->ConvertPointFromHost(&root_current_location);
+    host->QueryMouseLocation(&root_current_location);
+    host->ConvertPointFromHost(&root_current_location);
 
     if (root_location != root_current_location && button_down_mask == 0) {
       // Move the cursor because EnterNotify/LeaveNotify are generated with the
@@ -194,7 +192,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
       xmotion->state = button_down_mask;
       xmotion->same_screen = True;
       // RootWindow will take care of other necessary fields.
-      dispatcher->host()->PostNativeEvent(&xevent);
+      host->PostNativeEvent(&xevent);
     }
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
@@ -234,12 +232,12 @@ class UIControlsDesktopX11 : public UIControlsAura {
     // RootWindow will take care of other necessary fields.
     if (state & DOWN) {
       xevent.xbutton.type = ButtonPress;
-      root_window->GetDispatcher()->host()->PostNativeEvent(&xevent);
+      root_window->GetHost()->PostNativeEvent(&xevent);
       button_down_mask |= xbutton->state;
     }
     if (state & UP) {
       xevent.xbutton.type = ButtonRelease;
-      root_window->GetDispatcher()->host()->PostNativeEvent(&xevent);
+      root_window->GetHost()->PostNativeEvent(&xevent);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }
     RunClosureAfterAllPendingUIEvents(closure);
@@ -285,22 +283,22 @@ class UIControlsDesktopX11 : public UIControlsAura {
     return NULL;
   }
 
-  void SetKeycodeAndSendThenMask(aura::WindowEventDispatcher* dispatcher,
+  void SetKeycodeAndSendThenMask(aura::WindowTreeHost* host,
                                  XEvent* xevent,
                                  KeySym keysym,
                                  unsigned int mask) {
     xevent->xkey.keycode = XKeysymToKeycode(x_display_, keysym);
-    dispatcher->host()->PostNativeEvent(xevent);
+    host->PostNativeEvent(xevent);
     xevent->xkey.state |= mask;
   }
 
-  void UnmaskAndSetKeycodeThenSend(aura::WindowEventDispatcher* dispatcher,
+  void UnmaskAndSetKeycodeThenSend(aura::WindowTreeHost* host,
                                    XEvent* xevent,
                                    unsigned int mask,
                                    KeySym keysym) {
     xevent->xkey.state ^= mask;
     xevent->xkey.keycode = XKeysymToKeycode(x_display_, keysym);
-    dispatcher->host()->PostNativeEvent(xevent);
+    host->PostNativeEvent(xevent);
   }
 
   // Our X11 state.

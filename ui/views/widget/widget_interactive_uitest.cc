@@ -192,7 +192,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   aura::Window* root_window2 = widget2.GetNativeView()->GetRootWindow();
   contents_view2->RequestFocus();
   ::SetActiveWindow(
-      root_window2->GetDispatcher()->host()->GetAcceleratedWidget());
+      root_window2->GetHost()->GetAcceleratedWidget());
 
   aura::client::ActivationClient* activation_client2 =
       aura::client::GetActivationClient(root_window2);
@@ -205,7 +205,7 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // window.
   contents_view1->RequestFocus();
   ::SetActiveWindow(
-      root_window1->GetDispatcher()->host()->GetAcceleratedWidget());
+      root_window1->GetHost()->GetAcceleratedWidget());
   EXPECT_EQ(activation_client2->GetActiveWindow(),
             reinterpret_cast<aura::Window*>(NULL));
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1.GetNativeView());
@@ -778,7 +778,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseEventDispatchedToRightWindow) {
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
                              ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details = widget1.GetNativeWindow()->
-      GetDispatcher()->OnEventFromSource(&mouse_event);
+      GetHost()->dispatcher()->OnEventFromSource(&mouse_event);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());
   EXPECT_FALSE(widget2.GetAndClearGotMouseEvent());

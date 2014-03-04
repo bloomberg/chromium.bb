@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@ class LayerAnimationSequence;
 class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
-class ViewProp;
 }
 
 namespace aura {
@@ -49,7 +48,10 @@ class RootWindowObserver;
 class TestScreen;
 class WindowTargeter;
 
-// RootWindow is responsible for hosting a set of windows.
+// WindowEventDispatcher orchestrates event dispatch within a window tree
+// owned by WindowTreeHost. WTH also owns the WED.
+// TODO(beng): In progress, remove functionality not directly related to
+//             event dispatch.
 class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                           public ui::GestureEventHelper,
                                           public ui::LayerAnimationObserver,
@@ -59,16 +61,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   explicit WindowEventDispatcher(WindowTreeHost* host);
   virtual ~WindowEventDispatcher();
 
-  // Returns the WindowTreeHost for the specified accelerated widget, or NULL
-  // if there is none associated.
-  static WindowEventDispatcher* GetForAcceleratedWidget(
-      gfx::AcceleratedWidget widget);
-
-  Window* window() {
-    return const_cast<Window*>(
-        const_cast<const WindowEventDispatcher*>(this)->window());
-  }
-  const Window* window() const { return window_.get(); }
+  Window* window() { return host()->window(); }
+  const Window* window() const { return host()->window(); }
   WindowTreeHost* host() {
     return const_cast<WindowTreeHost*>(
         const_cast<const WindowEventDispatcher*>(this)->host());
@@ -105,7 +99,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // the bounds before change contained the |last_moust_location()|.
   void OnWindowBoundsChanged(Window* window, bool contained_mouse);
 
-  // Dispatches OnMouseExited to the |window| which is hiding if nessessary.
+  // Dispatches OnMouseExited to the |window| which is hiding if necessary.
   void DispatchMouseExitToHidingWindow(Window* window);
 
   // Dispatches a ui::ET_MOUSE_EXITED event at |point|.
@@ -114,13 +108,13 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // Invoked when |window|'s visibility has changed.
   void OnWindowVisibilityChanged(Window* window, bool is_visible);
 
-  // Invoked when |window|'s tranfrom has changed. |contained_mouse|
+  // Invoked when |window|'s transform has changed. |contained_mouse|
   // indicates if the bounds before change contained the
   // |last_moust_location()|.
   void OnWindowTransformed(Window* window, bool contained_mouse);
 
   // Invoked when the keyboard mapping (in X11 terms: the mapping between
-  // keycodes and keysyms) has changed.
+  // key-codes and key-syms) has changed.
   void OnKeyboardMappingChanged();
 
   // The system windowing system has sent a request that we close our window.
@@ -271,9 +265,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void PreDispatchMouseEvent(Window* target, ui::MouseEvent* event);
   void PreDispatchTouchEvent(Window* target, ui::TouchEvent* event);
 
-  // TODO(beng): should be owned by WindowTreeHost.
-  scoped_ptr<Window> window_;
-
   WindowTreeHost* host_;
 
   // Touch ids that are currently down.
@@ -299,8 +290,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Set when dispatching a held event.
   bool dispatching_held_event_;
-
-  scoped_ptr<ui::ViewProp> prop_;
 
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;

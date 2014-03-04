@@ -150,7 +150,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     // Resizing a widget on chromeos doesn't automatically resize the root, need
     // to explicitly do that.
 #if defined(OS_CHROMEOS)
-    GetWidget()->GetNativeWindow()->GetDispatcher()->host()->SetBounds(bounds);
+    GetWidget()->GetNativeWindow()->GetHost()->SetBounds(bounds);
 #endif
   }
 
@@ -504,7 +504,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   window_ = window_widget_->GetNativeWindow();
   // Call ShowRootWindow on RootWindow created by WMTestHelper without
   // which XWindow owned by RootWindow doesn't get mapped.
-  window_->GetDispatcher()->host()->Show();
+  window_->GetHost()->Show();
   window_widget_->Show();
 }
 

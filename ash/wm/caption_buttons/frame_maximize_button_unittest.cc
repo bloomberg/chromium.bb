@@ -485,7 +485,8 @@ TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
       ui::GestureConfiguration::default_radius();
   ui::GestureConfiguration::set_default_radius(0);
 
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher =
+      root_window->GetHost()->dispatcher();
   const int kTouchId = 2;
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        button_pos,

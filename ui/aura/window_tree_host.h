@@ -23,6 +23,7 @@ class Transform;
 
 namespace ui {
 class Compositor;
+class ViewProp;
 }
 
 namespace aura {
@@ -40,13 +41,16 @@ class AURA_EXPORT WindowTreeHost {
   // Creates a new WindowTreeHost. The caller owns the returned value.
   static WindowTreeHost* Create(const gfx::Rect& bounds);
 
+  // Returns the WindowTreeHost for the specified accelerated widget, or NULL
+  // if there is none associated.
+  static WindowTreeHost* GetForAcceleratedWidget(gfx::AcceleratedWidget widget);
+
   void InitHost();
 
   void InitCompositor();
 
-  // TODO(beng): these will become trivial accessors in a future CL.
-  Window* window();
-  const Window* window() const;
+  Window* window() { return window_; }
+  const Window* window() const { return window_; }
 
   WindowEventDispatcher* dispatcher() {
     return const_cast<WindowEventDispatcher*>(
@@ -193,6 +197,12 @@ class AURA_EXPORT WindowTreeHost {
   void MoveCursorToInternal(const gfx::Point& root_location,
                             const gfx::Point& host_location);
 
+  // We don't use a scoped_ptr for |window_| since we need this ptr to be valid
+  // during its deletion. (Window's dtor notifies observers that may attempt to
+  // reach back up to access this object which will be valid until the end of
+  // the dtor).
+  Window* window_;  // Owning.
+
   scoped_ptr<WindowEventDispatcher> dispatcher_;
 
   scoped_ptr<ui::Compositor> compositor_;
@@ -201,6 +211,8 @@ class AURA_EXPORT WindowTreeHost {
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
+
+  scoped_ptr<ui::ViewProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

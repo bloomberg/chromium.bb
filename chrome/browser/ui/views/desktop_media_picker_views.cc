@@ -522,7 +522,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 #endif
   {
     dialog_window_id = AcceleratedWidgetToDesktopMediaId(
-        GetWidget()->GetNativeWindow()->GetDispatcher()->host()->
+        GetWidget()->GetNativeWindow()->GetHost()->
             GetAcceleratedWidget());
   }
 

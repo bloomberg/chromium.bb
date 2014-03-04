@@ -143,7 +143,7 @@ EventRewriter::EventRewriter()
       pref_service_for_testing_(NULL) {
   // The ash shell isn't instantiated for our unit tests.
   if (ash::Shell::HasInstance()) {
-    ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
+    ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->
         AddRootWindowObserver(this);
   }
   base::MessageLoopForUI::current()->AddObserver(this);
@@ -156,7 +156,7 @@ EventRewriter::EventRewriter()
 EventRewriter::~EventRewriter() {
   base::MessageLoopForUI::current()->RemoveObserver(this);
   if (ash::Shell::HasInstance()) {
-    ash::Shell::GetPrimaryRootWindow()->GetDispatcher()->
+    ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->
         RemoveRootWindowObserver(this);
   }
   if (base::SysInfo::IsRunningOnChromeOS()) {

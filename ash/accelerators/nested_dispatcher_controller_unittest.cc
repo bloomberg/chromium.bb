@@ -84,11 +84,10 @@ void DispatchKeyReleaseA() {
 #elif defined(USE_X11)
   ui::ScopedXI2Event native_event;
   native_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
-  aura::WindowEventDispatcher* dispatcher =
-      ash::Shell::GetPrimaryRootWindow()->GetDispatcher();
-  dispatcher->host()->PostNativeEvent(native_event);
+  aura::WindowTreeHost* host = ash::Shell::GetPrimaryRootWindow()->GetHost();
+  host->PostNativeEvent(native_event);
   native_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
-  dispatcher->host()->PostNativeEvent(native_event);
+  host->PostNativeEvent(native_event);
 #endif
   // Make sure the inner message-loop terminates after dispatching the events.
   base::MessageLoop::current()->PostTask(FROM_HERE,

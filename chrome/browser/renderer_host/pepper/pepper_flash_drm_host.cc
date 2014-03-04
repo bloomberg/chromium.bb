@@ -77,10 +77,10 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
       return;
     gfx::NativeView native_view = rfh->GetNativeView();
 #if defined(USE_AURA)
-    aura::WindowEventDispatcher* dispatcher = native_view->GetDispatcher();
-    if (!dispatcher)
+    aura::WindowTreeHost* host = native_view->GetHost();
+    if (!host)
       return;
-    HWND window = dispatcher->host()->GetAcceleratedWidget();
+    HWND window = host->GetAcceleratedWidget();
 #else
     HWND window = native_view;
 #endif

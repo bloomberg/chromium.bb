@@ -226,8 +226,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
-  HWND window = browser()->window()->GetNativeWindow()->
-      GetDispatcher()->host()->GetAcceleratedWidget();
+  HWND window =
+      browser()->window()->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
   ::SendMessage(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
   ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
   ASSERT_TRUE(::IsZoomed(window));

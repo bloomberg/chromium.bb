@@ -470,9 +470,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   aura::client::SetDispatcherClient(host_->window(),
                                     dispatcher_client_.get());
 
-  position_client_.reset(new DesktopScreenPositionClient());
-  aura::client::SetScreenPositionClient(host_->window(),
-                                        position_client_.get());
+  position_client_.reset(new DesktopScreenPositionClient(host_->window()));
 
   InstallInputMethodEventFilter();
 

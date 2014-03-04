@@ -42,7 +42,7 @@ class StickyKeysOverlayTest : public test::AshTestBase {
     dispatcher.set_target(Shell::GetInstance()->GetPrimaryRootWindow());
 
     ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
-        GetDispatcher()->OnEventFromSource(&event);
+        GetHost()->dispatcher()->OnEventFromSource(&event);
     CHECK(!details.dispatcher_destroyed);
   }
 

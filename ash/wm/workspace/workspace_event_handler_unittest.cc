@@ -376,7 +376,7 @@ TEST_F(WorkspaceEventHandlerTest,
                        generator.current_location(),
                        ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
                        ui::EF_MIDDLE_MOUSE_BUTTON);
-  aura::WindowEventDispatcher* dispatcher = root->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher = root->GetHost()->dispatcher();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, generator.current_location(),

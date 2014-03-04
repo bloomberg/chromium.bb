@@ -35,7 +35,7 @@ UIControlsAura* GetUIControlsForRootWindow(aura::Window* root_window) {
       root_window->GetProperty(kUIControlsKey);
   if (!native_ui_control) {
     native_ui_control =
-        aura::test::CreateUIControlsAura(root_window->GetDispatcher());
+        aura::test::CreateUIControlsAura(root_window->GetHost()->dispatcher());
     // Pass the ownership to the |root_window|.
     root_window->SetProperty(kUIControlsKey, native_ui_control);
   }

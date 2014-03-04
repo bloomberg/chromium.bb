@@ -11,7 +11,7 @@
 namespace aura {
 class RootWindowTransformer;
 class Window;
-class WindowEventDispatcher;
+class WindowTreeHost;
 }
 
 namespace gfx {
@@ -26,7 +26,7 @@ class MirrorWindowTestApi {
   MirrorWindowTestApi() {}
   ~MirrorWindowTestApi() {}
 
-  const aura::WindowEventDispatcher* GetDispatcher() const;
+  const aura::WindowTreeHost* GetHost() const;
 
   int GetCurrentCursorType() const;
   const gfx::Point& GetCursorHotPoint() const;

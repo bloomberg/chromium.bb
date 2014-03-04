@@ -636,7 +636,7 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
 
   // The accelerator is processed only once.
   aura::WindowEventDispatcher* dispatcher =
-      Shell::GetPrimaryRootWindow()->GetDispatcher();
+      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
   ui::TranslatedKeyEvent key_event1(msg1, false);

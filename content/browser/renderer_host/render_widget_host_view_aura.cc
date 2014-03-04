@@ -148,9 +148,8 @@ BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
       reinterpret_cast<RenderWidgetHostViewAura*>(param);
 
   if (GetProp(window, kWidgetOwnerProperty) == widget &&
-      widget->GetNativeView()->GetDispatcher()) {
-    HWND parent = widget->GetNativeView()->GetDispatcher()->host()->
-        GetAcceleratedWidget();
+      widget->GetNativeView()->GetHost()) {
+    HWND parent = widget->GetNativeView()->GetHost()->GetAcceleratedWidget();
     SetParent(window, parent);
   }
   return TRUE;
@@ -172,8 +171,8 @@ BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
   if (GetProp(window, kWidgetOwnerProperty) == params->widget) {
     // First calculate the offset of this plugin from the root window, since
     // the cutouts are relative to the root window.
-    HWND parent = params->widget->GetNativeView()->GetDispatcher()->
-        host()->GetAcceleratedWidget();
+    HWND parent =
+        params->widget->GetNativeView()->GetHost()->GetAcceleratedWidget();
     POINT offset;
     offset.x = offset.y = 0;
     MapWindowPoints(window, parent, &offset, 1);
@@ -622,7 +621,7 @@ void RenderWidgetHostViewAura::WasShown() {
     // windows stay on top of the child Zorder in the parent and receive
     // mouse events, etc.
     legacy_render_widget_host_HWND_->UpdateParent(
-        GetNativeView()->GetDispatcher()->host()->GetAcceleratedWidget());
+        GetNativeView()->GetHost()->GetAcceleratedWidget());
     legacy_render_widget_host_HWND_->SetBounds(
         window_->GetBoundsInRootWindow());
   }
@@ -641,9 +640,9 @@ void RenderWidgetHostViewAura::WasHidden() {
 
 #if defined(OS_WIN)
   constrained_rects_.clear();
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (dispatcher) {
-    HWND parent = dispatcher->host()->GetAcceleratedWidget();
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (host) {
+    HWND parent = host->GetAcceleratedWidget();
     LPARAM lparam = reinterpret_cast<LPARAM>(this);
     EnumChildWindows(parent, HideWindowsCallback, lparam);
     // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
@@ -682,11 +681,11 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
 void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
   if (!ShouldCreateResizeLock())
     return;
-  DCHECK(window_->GetDispatcher());
-  DCHECK(window_->GetDispatcher()->host()->compositor());
+  DCHECK(window_->GetHost());
+  DCHECK(window_->GetHost()->compositor());
 
   // Listen to changes in the compositor lock state.
-  ui::Compositor* compositor = window_->GetDispatcher()->host()->compositor();
+  ui::Compositor* compositor = window_->GetHost()->compositor();
   if (!compositor->HasObserver(this))
     compositor->AddObserver(this);
 
@@ -724,11 +723,11 @@ bool RenderWidgetHostViewAura::ShouldCreateResizeLock() {
   if (desired_size == current_frame_size_)
     return false;
 
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!dispatcher)
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (!host)
     return false;
 
-  ui::Compositor* compositor = dispatcher->host()->compositor();
+  ui::Compositor* compositor = host->compositor();
   if (!compositor)
     return false;
 
@@ -739,7 +738,7 @@ scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
     bool defer_compositor_lock) {
   gfx::Size desired_size = window_->bounds().size();
   return scoped_ptr<ResizeLock>(new CompositorResizeLock(
-      window_->GetDispatcher(),
+      window_->GetHost()->dispatcher(),
       desired_size,
       defer_compositor_lock,
       base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
@@ -756,20 +755,19 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
 #if defined(OS_WIN)
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (dispatcher)
-    return reinterpret_cast<gfx::NativeViewId>(
-        dispatcher->host()->GetAcceleratedWidget());
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (host)
+    return reinterpret_cast<gfx::NativeViewId>(host->GetAcceleratedWidget());
 #endif
   return static_cast<gfx::NativeViewId>(NULL);
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 #if defined(OS_WIN)
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!dispatcher)
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (!host)
     return static_cast<gfx::NativeViewAccessible>(NULL);
-  HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
+  HWND hwnd = host->GetAcceleratedWidget();
 
   CreateBrowserAccessibilityManagerIfNeeded();
   BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
@@ -784,9 +782,9 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 void RenderWidgetHostViewAura::SetKeyboardFocus() {
 #if defined(OS_WIN)
   if (CanFocus()) {
-    aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-    if (dispatcher)
-      ::SetFocus(dispatcher->host()->GetAcceleratedWidget());
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host)
+      ::SetFocus(host->GetAcceleratedWidget());
   }
 #endif
 }
@@ -801,7 +799,7 @@ void RenderWidgetHostViewAura::MovePluginWindows(
     DCHECK(plugin_window_moves.empty());
     return;
   }
-  HWND parent = window_->GetDispatcher()->host()->GetAcceleratedWidget();
+  HWND parent = window_->GetHost()->GetAcceleratedWidget();
   gfx::Rect view_bounds = window_->GetBoundsInRootWindow();
   std::vector<WebPluginGeometry> moves = plugin_window_moves;
 
@@ -986,7 +984,7 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
     SchedulePaintIfNotInClip(scroll_rect, clip_rect);
 
 #if defined(OS_WIN)
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
+  aura::WindowTreeHost* host = window_->GetHost();
 #endif
   for (size_t i = 0; i < copy_rects.size(); ++i) {
     gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
@@ -996,12 +994,12 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
     SchedulePaintIfNotInClip(rect, clip_rect);
 
 #if defined(OS_WIN)
-    if (dispatcher) {
+    if (host) {
       // Send the invalid rect in screen coordinates.
       gfx::Rect screen_rect = GetViewBounds();
       gfx::Rect invalid_screen_rect(rect);
       invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
-      HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
+      HWND hwnd = host->GetAcceleratedWidget();
       PaintPluginWindowsHelper(hwnd, invalid_screen_rect);
     }
 #endif  // defined(OS_WIN)
@@ -1367,7 +1365,7 @@ void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
     const std::vector<gfx::Rect>& rects) {
   // Check this before setting constrained_rects_, so that next time they're set
   // and we have a root window we don't early return.
-  if (!window_->GetDispatcher())
+  if (!window_->GetHost())
     return;
 
   if (rects == constrained_rects_)
@@ -1375,7 +1373,7 @@ void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
 
   constrained_rects_ = rects;
 
-  HWND parent = window_->GetDispatcher()->host()->GetAcceleratedWidget();
+  HWND parent = window_->GetHost()->GetAcceleratedWidget();
   CutoutRectsParams params;
   params.widget = this;
   params.cutout_rects = constrained_rects_;
@@ -2142,10 +2140,10 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   RECT window_rect = {0};
 
   aura::Window* top_level = window_->GetToplevelWindow();
-  aura::WindowEventDispatcher* dispatcher = top_level->GetDispatcher();
-  if (!dispatcher)
+  aura::WindowTreeHost* host = top_level->GetHost();
+  if (!host)
     return top_level->GetBoundsInScreen();
-  HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
+  HWND hwnd = host->GetAcceleratedWidget();
   ::GetWindowRect(hwnd, &window_rect);
   gfx::Rect rect(window_rect);
 
@@ -2178,16 +2176,16 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
                                            SCREEN_COORDINATES))
     return;
 
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
+  aura::WindowTreeHost* host = window_->GetHost();
   // |dispatcher| is NULL during tests.
-  if (!dispatcher)
+  if (!host)
     return;
 
   ui::EventResult result = (ack_result ==
       INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
-    dispatcher->ProcessedTouchEvent((*iter), window_, result);
+    host->dispatcher()->ProcessedTouchEvent((*iter), window_, result);
   }
 }
 
@@ -2213,10 +2211,10 @@ void RenderWidgetHostViewAura::CreateBrowserAccessibilityManagerIfNeeded() {
 
   BrowserAccessibilityManager* manager = NULL;
 #if defined(OS_WIN)
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!dispatcher)
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (!host)
     return;
-  HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
+  HWND hwnd = host->GetAcceleratedWidget();
 
   // The accessible_parent may be NULL at this point. The WebContents will pass
   // it down to this instance (by way of the RenderViewHost and
@@ -2266,7 +2264,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
   }
   tooltip_disabler_.reset(new aura::client::ScopedTooltipDisabler(root_window));
 
-  root_window->GetDispatcher()->host()->ConfineCursorToRootWindow();
+  root_window->GetHost()->ConfineCursorToRootWindow();
   return true;
 }
 
@@ -2291,7 +2289,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   }
 
   host_->LostMouseLock();
-  root_window->GetDispatcher()->host()->UnConfineCursor();
+  root_window->GetHost()->UnConfineCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2662,7 +2660,7 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
   if (!window_->GetRootWindow() || host_->is_hidden()) {
     parent = ui::GetHiddenWindow();
   } else {
-    parent = window_->GetDispatcher()->host()->GetAcceleratedWidget();
+    parent = window_->GetHost()->GetAcceleratedWidget();
   }
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(parent, WindowDestroyingCallback, lparam);
@@ -2889,9 +2887,9 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     // We get mouse wheel/scroll messages even if we are not in the foreground.
     // So here we check if we have any owned popup windows in the foreground and
     // dismiss them.
-    aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-    if (dispatcher) {
-      HWND parent = dispatcher->host()->GetAcceleratedWidget();
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      HWND parent = host->GetAcceleratedWidget();
       HWND toplevel_hwnd = ::GetAncestor(parent, GA_ROOT);
       EnumThreadWindows(GetCurrentThreadId(),
                         DismissOwnedPopups,
@@ -3056,10 +3054,10 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
 // RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
 bool RenderWidgetHostViewAura::ShouldActivate() const {
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!dispatcher)
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (!host)
     return true;
-  const ui::Event* event = dispatcher->current_event();
+  const ui::Event* event = host->dispatcher()->current_event();
   if (!event)
     return true;
   return is_fullscreen_;
@@ -3073,7 +3071,7 @@ void RenderWidgetHostViewAura::OnWindowActivated(aura::Window* gained_active,
                                                  aura::Window* lost_active) {
   DCHECK(window_ == gained_active || window_ == lost_active);
   if (window_ == gained_active) {
-    const ui::Event* event = window_->GetDispatcher()->current_event();
+    const ui::Event* event = window_->GetHost()->dispatcher()->current_event();
     if (event && PointerEventActivates(*event))
       host_->OnPointerEventActivate();
   }
@@ -3310,8 +3308,8 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   ImageTransportFactory::GetInstance()->RemoveObserver(this);
 
   window_observer_.reset();
-  if (window_->GetDispatcher())
-    window_->GetDispatcher()->RemoveRootWindowObserver(this);
+  if (window_->GetHost())
+    window_->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
   UnlockMouse();
   if (popup_parent_host_view_) {
     DCHECK(popup_parent_host_view_->popup_child_host_view_ == NULL ||
@@ -3494,7 +3492,7 @@ void RenderWidgetHostViewAura::AddOnCommitCallbackAndDisableLocks(
 }
 
 void RenderWidgetHostViewAura::AddedToRootWindow() {
-  window_->GetDispatcher()->AddRootWindowObserver(this);
+  window_->GetHost()->dispatcher()->AddRootWindowObserver(this);
   UpdateScreenInfo(window_);
 
   aura::client::CursorClient* cursor_client =
@@ -3535,7 +3533,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
   DetachFromInputMethod();
 
-  window_->GetDispatcher()->RemoveRootWindowObserver(this);
+  window_->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
   ui::Compositor* compositor = GetCompositor();
   if (current_surface_.get()) {
     // We can't get notification for commits after this point, which would
@@ -3566,8 +3564,8 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 }
 
 ui::Compositor* RenderWidgetHostViewAura::GetCompositor() const {
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  return dispatcher ? dispatcher->host()->compositor() : NULL;
+  aura::WindowTreeHost* host = window_->GetHost();
+  return host ? host->compositor() : NULL;
 }
 
 void RenderWidgetHostViewAura::DetachFromInputMethod() {

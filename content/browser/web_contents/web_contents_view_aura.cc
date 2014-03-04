@@ -460,8 +460,8 @@ class WebContentsViewAura::WindowObserver
 
   virtual ~WindowObserver() {
     view_->window_->RemoveObserver(this);
-    if (view_->window_->GetDispatcher())
-      view_->window_->GetDispatcher()->RemoveRootWindowObserver(this);
+    if (view_->window_->GetHost())
+      view_->window_->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
     if (parent_)
       parent_->RemoveObserver(this);
 
@@ -592,7 +592,7 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
     if (window == view_->window_) {
-      window->GetDispatcher()->AddRootWindowObserver(this);
+      window->GetHost()->dispatcher()->AddRootWindowObserver(this);
 #if defined(OS_WIN)
       if (!window->GetRootWindow()->HasObserver(this))
         window->GetRootWindow()->AddObserver(this);
@@ -602,7 +602,7 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
     if (window == view_->window_) {
-      window->GetDispatcher()->RemoveRootWindowObserver(this);
+      window->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
 #if defined(OS_WIN)
       window->GetRootWindow()->RemoveObserver(this);
 

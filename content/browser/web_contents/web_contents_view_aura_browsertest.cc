@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetView()->GetContentNativeView();
-  aura::WindowEventDispatcher* dispatcher = content->GetDispatcher();
+  aura::WindowEventDispatcher* dispatcher = content->GetHost()->dispatcher();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
   base::TimeDelta timestamp;

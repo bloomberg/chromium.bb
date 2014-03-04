@@ -96,7 +96,7 @@ bool IsProcessingUserEvent() {
   for (aura::Window::Windows::iterator it = root_window_list.begin();
        it != root_window_list.end();
        ++it) {
-    if (IsUserEvent((*it)->GetDispatcher()->current_event()))
+    if (IsUserEvent((*it)->GetHost()->dispatcher()->current_event()))
       return true;
   }
   return false;

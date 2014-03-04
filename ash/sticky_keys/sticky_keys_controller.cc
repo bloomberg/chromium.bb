@@ -86,7 +86,7 @@ void StickyKeysHandlerDelegateImpl::DispatchEvent(ui::Event* event,
                                                   aura::Window* target) {
   DCHECK(target);
   ui::EventDispatchDetails details =
-      target->GetDispatcher()->OnEventFromSource(event);
+      target->GetHost()->dispatcher()->OnEventFromSource(event);
   if (details.dispatcher_destroyed)
     return;
 }

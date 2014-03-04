@@ -49,6 +49,7 @@
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -357,6 +358,7 @@ void RootWindowController::Shutdown() {
   dispatcher()->PrepareForShutdown();
 
   system_background_.reset();
+  aura::client::SetScreenPositionClient(root_window(), NULL);
 }
 
 SystemModalContainerLayoutManager*

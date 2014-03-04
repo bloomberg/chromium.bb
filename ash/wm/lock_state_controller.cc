@@ -167,12 +167,13 @@ LockStateController::LockStateController()
       shutdown_after_lock_(false),
       animating_lock_(false),
       can_cancel_lock_animation_(false) {
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->AddRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->AddRootWindowObserver(
+      this);
 }
 
 LockStateController::~LockStateController() {
-  Shell::GetPrimaryRootWindow()->GetDispatcher()->RemoveRootWindowObserver(
-      this);
+  Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->
+      RemoveRootWindowObserver(this);
 }
 
 void LockStateController::SetDelegate(LockStateControllerDelegate* delegate) {
