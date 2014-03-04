@@ -99,6 +99,22 @@ class AudioManagerAndroid {
         private String name() { return mName; }
     }
 
+    // List if device models which have been vetted for good quality platform
+    // echo cancellation.
+    // NOTE: only add new devices to this list if manual tests have been
+    // performed where the AEC performance is evaluated using e.g. a WebRTC
+    // audio client such as https://apprtc.appspot.com/?r=<ROOM NAME>.
+    private static final String[] SUPPORTED_AEC_MODELS = new String[] {
+         "GT-I9300",  // Galaxy S3
+         "GT-I9500",  // Galaxy S4
+         "GT-N7105",  // Galaxy Note 2
+         "Nexus 4",   // Nexus 4
+         "Nexus 5",   // Nexus 5
+         "Nexus 7",   // Nexus 7
+         "SM-N9005",  // Galaxy Note 3
+         "SM-T310",   // Galaxy Tab 3 8.0 (WiFi)
+    };
+
     // Supported audio device types.
     private static final int DEVICE_DEFAULT = -2;
     private static final int DEVICE_INVALID = -1;
@@ -217,6 +233,7 @@ class AudioManagerAndroid {
     private void init() {
         checkIfCalledOnValidThread();
         if (DEBUG) logd("init");
+        if (DEBUG) logDeviceInfo();
         if (mIsInitialized)
             return;
 
@@ -464,17 +481,13 @@ class AudioManagerAndroid {
             return false;
         }
 
-        // Next is a list of device models which have been vetted for good
-        // quality platform echo cancellation.
-        if (!Build.MODEL.equals("GT-I9300") &&  // Galaxy S3
-            !Build.MODEL.equals("GT-I9500") &&  // Galaxy S4
-            !Build.MODEL.equals("GT-N7105") &&  // Galaxy Note 2
-            !Build.MODEL.equals("Nexus 4") &&
-            !Build.MODEL.equals("Nexus 5") &&
-            !Build.MODEL.equals("Nexus 7") &&
-            !Build.MODEL.equals("SM-N9005") &&  // Galaxy Note 3
-            !Build.MODEL.equals("SM-T310R")) {  // Galaxy Tab 3 7.0
+        // Verify that this device is among the supported/tested models.
+        List<String> supportedModels = Arrays.asList(SUPPORTED_AEC_MODELS);
+        if (!supportedModels.contains(Build.MODEL)) {
             return false;
+        }
+        if (DEBUG && AcousticEchoCanceler.isAvailable()) {
+            logd("Approved for use of hardware acoustic echo canceler.");
         }
 
         // As a final check, verify that the device supports acoustic echo
@@ -990,10 +1003,18 @@ class AudioManagerAndroid {
         }
     }
 
+    /** Information about the current build, taken from system properties. */
     private void logDeviceInfo() {
-        Log.i(TAG, "Manufacturer:" + Build.MANUFACTURER +
-                " Board: " + Build.BOARD + " Device: " + Build.DEVICE +
-                " Model: " + Build.MODEL + " PRODUCT: " + Build.PRODUCT);
+        logd("Android SDK: " + Build.VERSION.SDK_INT + ", " +
+            "Release: " + Build.VERSION.RELEASE + ", " +
+            "Brand: " + Build.BRAND + ", " +
+            "CPU_ABI: " + Build.CPU_ABI + ", " +
+            "Device: " + Build.DEVICE + ", " +
+            "Id: " + Build.ID + ", " +
+            "Hardware: " + Build.HARDWARE + ", " +
+            "Manufacturer: " + Build.MANUFACTURER + ", " +
+            "Model: " + Build.MODEL + ", " +
+            "Product: " + Build.PRODUCT);
     }
 
     /** Trivial helper method for debug logging */
