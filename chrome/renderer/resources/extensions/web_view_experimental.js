@@ -8,10 +8,14 @@
 // <webview> Experimental API is only available on canary and dev channels of
 // Chrome.
 
+var ContextMenusSchema =
+    requireNative('schema_registry').GetSchema('contextMenus');
 var CreateEvent = require('webView').CreateEvent;
+var EventBindings = require('event_bindings');
 var MessagingNatives = requireNative('messaging_natives');
 var WebViewInternal = require('webView').WebViewInternal;
 var WebView = require('webView').WebView;
+var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
 
 // WEB_VIEW_EXPERIMENTAL_EVENTS is a map of experimental <webview> DOM event
@@ -52,6 +56,43 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
     evt: CreateEvent('webview.onZoomChange'),
     fields: ['oldZoomFactor', 'newZoomFactor']
   }
+};
+
+function GetUniqueSubEventName(eventName) {
+  return eventName + "/" + idGeneratorNatives.GetNextId();
+}
+
+// This is the only "webview.contextMenus" named event for this renderer.
+//
+// Since we need an event per <webview>, we define events with suffix
+// (subEventName) in each of the <webview>. Behind the scenes, this event is
+// registered as a ContextMenusEvent, with filter set to the webview's
+// |viewInstanceId|. Any time a ContextMenusEvent is dispatched, we re-dispatch
+// it to the subEvent's listeners. This way <webview>.contextMenus behave as a
+// regular chrome Event type.
+var ContextMenusEvent = CreateEvent('webview.contextMenus');
+
+/**
+ * @constructor
+ */
+function ContextMenusOnClickedEvent(opt_eventName,
+                                    opt_argSchemas,
+                                    opt_eventOptions,
+                                    opt_webViewInstanceId) {
+  var subEventName = GetUniqueSubEventName(opt_eventName);
+  EventBindings.Event.call(this, subEventName, opt_argSchemas, opt_eventOptions,
+      opt_webViewInstanceId);
+
+  var self = this;
+  // TODO(lazyboy): When do we dispose this listener?
+  ContextMenusEvent.addListener(function() {
+    // Re-dispatch to subEvent's listeners.
+    $Function.apply(self.dispatch, self, $Array.slice(arguments));
+  }, {instanceId: opt_webViewInstanceId || 0});
+}
+
+ContextMenusOnClickedEvent.prototype = {
+  __proto__: EventBindings.Event.prototype
 };
 
 /**
@@ -286,8 +327,28 @@ WebViewInternal.prototype.setupExperimentalContextMenus_ = function() {
       }
 
       self.contextMenus_ = new WebViewContextMenus(self.viewInstanceId);
-      // TODO(lazyboy): define 'onClicked' property/event on
-      // |self.contextMenus_|.
+
+      // Define 'onClicked' event property on |self.contextMenus_|.
+      var getOnClickedEvent = function() {
+        return function() {
+          if (!self.contextMenusOnClickedEvent_) {
+            var eventName = 'contextMenus.onClicked';
+            // TODO(lazyboy): Find event by name instead of events[0].
+            var eventSchema = ContextMenusSchema.events[0];
+            var eventOptions = {supportsListeners: true};
+            var onClickedEvent = new ContextMenusOnClickedEvent(
+                eventName, eventSchema, eventOptions, self.viewInstanceId);
+            self.contextMenusOnClickedEvent_ = onClickedEvent;
+            return onClickedEvent;
+          }
+          return self.contextMenusOnClickedEvent_;
+        }
+      };
+      Object.defineProperty(
+          self.contextMenus_,
+          'onClicked',
+          {get: getOnClickedEvent(), enumerable: true});
+
       return self.contextMenus_;
     };
   };
