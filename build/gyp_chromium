@@ -346,6 +346,64 @@ def GetDesiredVsToolchainHashes():
     return f.read().strip().splitlines()
 
 
+def DownloadVsToolChain():
+  """Download the Visual Studio toolchain on Windows.
+
+  If on Windows, request that depot_tools install/update the automatic
+  toolchain, and then use it (unless opted-out) and return a tuple containing
+  the x64 and x86 paths. Otherwise return None.
+  """
+  vs2013_runtime_dll_dirs = None
+  depot_tools_win_toolchain = \
+      bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
+  if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
+    import find_depot_tools
+    depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+    temp_handle, data_file = tempfile.mkstemp(suffix='.json')
+    os.close(temp_handle)
+    get_toolchain_args = [
+        sys.executable,
+        os.path.join(depot_tools_path,
+                    'win_toolchain',
+                    'get_toolchain_if_necessary.py'),
+        '--output-json', data_file,
+      ] + GetDesiredVsToolchainHashes()
+    subprocess.check_call(get_toolchain_args)
+
+    with open(data_file, 'r') as tempf:
+      toolchain_data = json.load(tempf)
+    os.unlink(data_file)
+
+    toolchain = toolchain_data['path']
+    version = toolchain_data['version']
+    version_is_pro = version[-1] != 'e'
+    win8sdk = toolchain_data['win8sdk']
+    wdk = toolchain_data['wdk']
+    # TODO(scottmg): The order unfortunately matters in these. They should be
+    # split into separate keys for x86 and x64. (See CopyVsRuntimeDlls call
+    # below). http://crbug.com/345992
+    vs2013_runtime_dll_dirs = toolchain_data['runtime_dirs']
+
+    os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
+    os.environ['GYP_MSVS_VERSION'] = version
+    # We need to make sure windows_sdk_path is set to the automated
+    # toolchain values in GYP_DEFINES, but don't want to override any
+    # otheroptions.express
+    # values there.
+    gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
+    gyp_defines_dict['windows_sdk_path'] = win8sdk
+    os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
+        for k, v in gyp_defines_dict.iteritems())
+    os.environ['WINDOWSSDKDIR'] = win8sdk
+    os.environ['WDK_DIR'] = wdk
+    # Include the VS runtime in the PATH in case it's not machine-installed.
+    runtime_path = ';'.join(vs2013_runtime_dll_dirs)
+    os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
+    print('Using automatic toolchain in %s (%s edition).' % (
+              toolchain, 'Pro' if version_is_pro else 'Express'))
+  return vs2013_runtime_dll_dirs
+
+
 def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   """Copies the VS runtime DLLs from the given |runtime_dirs| to the output
   directory so that even if not system-installed, built binaries are likely to
@@ -468,56 +526,7 @@ if __name__ == '__main__':
       not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
-  # If on Windows, request that depot_tools install/update the automatic
-  # toolchain, and then use it (unless opted-out).
-  vs2013_runtime_dll_dirs = None
-  depot_tools_win_toolchain = \
-      bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
-  if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
-    import find_depot_tools
-    depot_tools_path = find_depot_tools.add_depot_tools_to_path()
-    temp_handle, data_file = tempfile.mkstemp(suffix='.json')
-    os.close(temp_handle)
-    get_toolchain_args = [
-        sys.executable,
-        os.path.join(depot_tools_path,
-                    'win_toolchain',
-                    'get_toolchain_if_necessary.py'),
-        '--output-json', data_file,
-      ] + GetDesiredVsToolchainHashes()
-    subprocess.check_call(get_toolchain_args)
-
-    with open(data_file, 'r') as tempf:
-      toolchain_data = json.load(tempf)
-    os.unlink(data_file)
-
-    toolchain = toolchain_data['path']
-    version = toolchain_data['version']
-    version_is_pro = version[-1] != 'e'
-    win8sdk = toolchain_data['win8sdk']
-    wdk = toolchain_data['wdk']
-    # TODO(scottmg): The order unfortunately matters in these. They should be
-    # split into separate keys for x86 and x64. (See CopyVsRuntimeDlls call
-    # below). http://crbug.com/345992
-    vs2013_runtime_dll_dirs = toolchain_data['runtime_dirs']
-
-    os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
-    os.environ['GYP_MSVS_VERSION'] = version
-    # We need to make sure windows_sdk_path is set to the automated
-    # toolchain values in GYP_DEFINES, but don't want to override any
-    # otheroptions.express
-    # values there.
-    gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
-    gyp_defines_dict['windows_sdk_path'] = win8sdk
-    os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
-        for k, v in gyp_defines_dict.iteritems())
-    os.environ['WINDOWSSDKDIR'] = win8sdk
-    os.environ['WDK_DIR'] = wdk
-    # Include the VS runtime in the PATH in case it's not machine-installed.
-    runtime_path = ';'.join(vs2013_runtime_dll_dirs)
-    os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
-    print('Using automatic toolchain in %s (%s edition).' % (
-              toolchain, 'Pro' if version_is_pro else 'Express'))
+  vs2013_runtime_dll_dirs = DownloadVsToolChain()
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
