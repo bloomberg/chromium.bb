@@ -1231,3 +1231,6 @@ crbug.com/114658 compositing/iframes/iframe-size-from-zero.html [ NeedsRebaselin
 crbug.com/114658 compositing/iframes/overlapped-iframe.html [ NeedsRebaseline ]
 crbug.com/114658 compositing/iframes/resizer.html [ NeedsRebaseline ]
 crbug.com/114658 virtual/softwarecompositing/layout-width-change.html [ NeedsRebaseline ]
+
+# Failing on Mac since r168339
+crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ Failure ]
