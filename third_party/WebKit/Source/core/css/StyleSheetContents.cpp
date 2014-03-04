@@ -98,7 +98,9 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
 StyleSheetContents::~StyleSheetContents()
 {
     StyleEngine::removeSheet(this);
+#if !ENABLE(OILPAN)
     clearRules();
+#endif
 }
 
 void StyleSheetContents::setHasSyntacticallyValidCSSHeader(bool isValidCss)
