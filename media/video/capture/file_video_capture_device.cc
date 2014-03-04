@@ -25,7 +25,7 @@ static const int kY4MSimpleFrameDelimiterSize = 6;
 
 int ParseY4MInt(const base::StringPiece& token) {
   int temp_int;
-  CHECK(base::StringToInt(token, &temp_int));
+  CHECK(base::StringToInt(token, &temp_int)) << token;
   return temp_int;
 }
 
@@ -91,7 +91,8 @@ void ParseY4MTags(const std::string& file_header,
         // Pixel aspect ratio ignored.
         break;
       case 'C':
-        CHECK_EQ(ParseY4MInt(token), 420); // Only I420 supported.
+        CHECK(token == "420" || token == "420jpeg" || token == "420paldv")
+            << token;  // Only I420 is supported, and we fudge the variants.
         break;
       default:
         break;
@@ -224,7 +225,7 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
   client_ = client.Pass();
 
   // Open the file and parse the header. Get frame size and format.
-  DCHECK(file_.IsValid());
+  DCHECK(!file_.IsValid());
   file_ = OpenFileForRead(file_path_);
   first_frame_byte_index_ =
       ParseFileAndExtractVideoFormat(&file_, &capture_format_);
