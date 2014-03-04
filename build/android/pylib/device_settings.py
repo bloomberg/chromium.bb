@@ -22,9 +22,8 @@ def ConfigureContentSettingsDict(adb, desired_settings):
     desired_settings: A dict of {table: {key: value}} for all
         settings to configure.
   """
-  if adb.GetBuildId()[0] < 'J':
-    logging.error('Skipping content settings configuration due to '
-                  'pre-JellyBean Android version')
+  if adb.system_properties['ro.build.version.sdk'] < 16:
+    logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
   for table, key_value in sorted(desired_settings.iteritems()):
