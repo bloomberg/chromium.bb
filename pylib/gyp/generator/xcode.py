@@ -705,9 +705,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     support_xct = None
     if type != 'none' and (spec_actions or spec_rules):
       support_xccl = CreateXCConfigurationList(configuration_names);
+      support_target_suffix = generator_flags.get(
+          'support_target_suffix', ' Support')
       support_target_properties = {
         'buildConfigurationList': support_xccl,
-        'name':                   target_name + ' Support',
+        'name':                   target_name + support_target_suffix,
       }
       if target_product_name:
         support_target_properties['productName'] = \
