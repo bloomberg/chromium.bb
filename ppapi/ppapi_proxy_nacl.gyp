@@ -40,7 +40,7 @@
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',
             '../ppapi/ppapi_ipc_nacl.gyp:ppapi_ipc_nacl',
             '../third_party/khronos/khronos.gyp:khronos_headers',
-            '../components/tracing_untrusted.gyp:tracing_untrusted',
+            '../components/tracing_nacl.gyp:tracing_nacl',
           ],
         },
       ],

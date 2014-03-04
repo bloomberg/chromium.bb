@@ -34,7 +34,7 @@
             '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
             '../ipc/ipc_nacl.gyp:ipc_nacl',
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',
-            '../components/tracing_untrusted.gyp:tracing_untrusted',
+            '../components/tracing_nacl.gyp:tracing_nacl',
           ],
         },
       ],
