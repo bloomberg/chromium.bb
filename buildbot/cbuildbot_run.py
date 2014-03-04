@@ -33,6 +33,7 @@ except ImportError:
 import types
 
 from chromite.buildbot import cbuildbot_archive
+from chromite.buildbot import cbuildbot_metadata
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.buildbot import portage_utilities
@@ -146,6 +147,7 @@ class RunAttributes(object):
       'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
+      'metadata',         # Used by various build stages to record metadata.
   ))
 
   # TODO(mtennant): It might be useful to have additional info for each board
@@ -596,6 +598,7 @@ class _BuilderRunBase(object):
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
     attrs.chrome_version = None
+    attrs.metadata = cbuildbot_metadata.CBuildbotMetadata()
 
   @property
   def bot_id(self):

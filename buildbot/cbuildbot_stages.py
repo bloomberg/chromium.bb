@@ -362,7 +362,9 @@ class ArchivingStageMixin(object):
         metadata_for = '%s:%s' % (metadata_for, stage)
 
     cros_build_lib.Info('Creating metadata for %s run now.', metadata_for)
-    metadata = self.GetMetadata(config=config, stage=stage, **kwargs)
+    metadata_dict = self.GetMetadata(config=config, stage=stage, **kwargs)
+    self._run.attrs.metadata.UpdateWithDict(metadata_dict)
+
     filename = constants.METADATA_JSON
     if stage is not None:
       filename = constants.METADATA_STAGE_JSON % { 'stage': stage }
@@ -371,7 +373,8 @@ class ArchivingStageMixin(object):
     # Stages may run in parallel, so we have to do atomic updates on this.
     cros_build_lib.Info('Writing metadata for %s to %s.', metadata_for,
                         metadata_json)
-    osutils.WriteFile(metadata_json, json.dumps(metadata), atomic=True)
+    osutils.WriteFile(metadata_json, self._run.attrs.metadata.GetJSON(),
+                      atomic=True)
 
     if upload_queue is not None:
       cros_build_lib.Info('Adding metadata for %s to upload queue.',

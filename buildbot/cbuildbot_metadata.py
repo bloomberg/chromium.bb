@@ -18,6 +18,25 @@ from chromite.lib import toolchain
 
 class CBuildbotMetadata(object):
   """Class for recording metadata about a run."""
+
+  def __init__(self, metadata_dict=None):
+    """Constructor for CBuildbotMetadata.
+
+    Args:
+      metadata_dict: Optional initial metadata dictionary.
+    """
+    super(CBuildbotMetadata, self).__init__()
+    self._metadata_dict = metadata_dict or {}
+
+  def UpdateWithDict(self, metadata_dict):
+    """Update metadata dictionary with values supplied in |metadata_dict|"""
+    self._metadata_dict.update(metadata_dict)
+
+  def GetJSON(self):
+    """Return a JSON string representation of metadata."""
+    return json.dumps(self._metadata_dict)
+
+
   @staticmethod
   def GetMetadataDict(builder_run, build_root, get_changes_from_pool,
                       get_statuses_from_slaves, config=None, stage=None,
