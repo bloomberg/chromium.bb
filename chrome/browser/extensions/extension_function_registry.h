@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/extensions/extension_function_histogram_value.h"
+#include "extensions/browser/extension_function_histogram_value.h"
 
 class ExtensionFunction;
 

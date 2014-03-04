@@ -21,7 +21,7 @@ HISTOGRAMS_PATH = 'histograms.xml'
 ENUM_NAME = 'ExtensionFunctions'
 
 EXTENSION_FUNCTIONS_HISTOGRAM_VALUE_PATH = \
-  '../../../chrome/browser/extensions/extension_function_histogram_value.h'
+  '../../../extensions/browser/extension_function_histogram_value.h'
 ENUM_START_MARKER = "^enum HistogramValue {"
 ENUM_END_MARKER = "^ENUM_BOUNDARY"
 
@@ -45,7 +45,7 @@ def ExtractRegexGroup(line, regex):
 def ReadHistogramValues(filename):
   """Returns a list of pairs (label, value) corresponding to HistogramValue.
 
-  Reads the extension_functions_histogram_value.h file, locates the
+  Reads the extension_function_histogram_value.h file, locates the
   HistogramValue enum definition and returns a pair for each entry.
   """
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,17 @@
 namespace extensions {
 namespace functions {
 
+//
+// This is some comment.
+// This is another comment.
+// This is yet another comment.
+//
 enum HistogramValue {
   UNKNOWN = 0,
   WEBNAVIGATION_GETALLFRAMES,
   BROWSINGDATA_REMOVEWEBSQL,
   WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT,
   DOWNLOADSINTERNAL_DETERMINEFILENAME,
-  SYNCFILESYSTEM_GETFILESYNCSTATUSES,
   MEDIAGALLERIESPRIVATE_GETHANDLERS,
   WALLPAPERPRIVATE_RESETWALLPAPER,
   // Last entry: Add new entries above and ensure to update

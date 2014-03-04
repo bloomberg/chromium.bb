@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "extensions/browser/extension_function.h"
 

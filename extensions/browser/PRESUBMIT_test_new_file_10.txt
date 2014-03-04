@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,6 @@
 namespace extensions {
 namespace functions {
 
-//
-// This is some comment.
-// This is another comment.
-// This is yet another comment.
-//
 enum HistogramValue {
   UNKNOWN = 0,
   WEBNAVIGATION_GETALLFRAMES,
@@ -23,10 +18,6 @@ enum HistogramValue {
   SYNCFILESYSTEM_GETFILESYNCSTATUSES,
   MEDIAGALLERIESPRIVATE_GETHANDLERS,
   WALLPAPERPRIVATE_RESETWALLPAPER,
-  BLAH1,
-  BLAH2,
-  BLAH3,
-  BLAH4,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,9 @@ enum HistogramValue {
   UNKNOWN = 0,
   WEBNAVIGATION_GETALLFRAMES,
   BROWSINGDATA_REMOVEWEBSQL,
-  BROWSINGDATA_REMOVEWEBSQL2,
   WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT,
   DOWNLOADSINTERNAL_DETERMINEFILENAME,
-  SYNCFILESYSTEM_GETFILESYNCSTATUSES,
+  SYNCFILESYSTEM_GETFILESYNCSTATUSES2, // Rename here!!!
   MEDIAGALLERIESPRIVATE_GETHANDLERS,
   WALLPAPERPRIVATE_RESETWALLPAPER,
   // Last entry: Add new entries above and ensure to update
