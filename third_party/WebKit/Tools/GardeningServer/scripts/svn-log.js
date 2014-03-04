@@ -42,7 +42,7 @@ function findReviewer(message)
     var reviewers = findUsingRegExp(message, regexp);
     if (!reviewers)
         return null;
-    return reviewers.replace(/\s*,\s*/, ', ');
+    return reviewers.replace(/\s*,\s*/g, ', ');
 }
 
 function findBugID(message)

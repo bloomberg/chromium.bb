@@ -114,7 +114,7 @@ var kExampleCommitDataXML =
    "<content type='text'>\n" +
    "These were all failures noticed when running check-blink-deps\n" +
    "\n" +
-   "R=abarth@chromium.org, abarth\n" +
+   "R=abarth@chromium.org,abarth,abarth\n" +
    "BUG=301947\n" +
    "\n" +
    "Review URL: https://codereview.chromium.org/25275005\n" +
@@ -126,7 +126,7 @@ var kExampleCommitDataXML =
    "<pre>\n" +
    "These were all failures noticed when running check-blink-deps\n" +
    "\n" +
-   "R=abarth@chromium.org,abarth\n" +
+   "R=abarth@chromium.org,abarth,abarth\n" +
    "BUG=301947\n" +
    "\n" +
    "Review URL: https://codereview.chromium.org/25275005\n" +
@@ -230,7 +230,7 @@ var kExampleCommitDataList = [{
     "time": "2013-09-30T19:28:49Z",
     "summary": "These were all failures noticed when running check-blink-deps",
     "author": "eseidel@chromium.org",
-    "reviewer": "abarth@chromium.org, abarth",
+    "reviewer": "abarth@chromium.org, abarth, abarth",
     "bugID": [301947],
     "revertedRevision": undefined
   },
