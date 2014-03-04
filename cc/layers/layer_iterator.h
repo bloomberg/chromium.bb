@@ -98,13 +98,6 @@ template <typename LayerType> struct LayerIteratorPosition {
   LayerType* current_layer;
 };
 
-struct LayerIteratorPadding {
-  // This struct has nothing in it! It exists to make the LayerIterator a bit
-  // larger for debugging some weird behaviour when this CL previously landed.
-  // See crbug.com/345757 for more details.
-  void Foo() {}
-};
-
 // An iterator class for walking over layers in the
 // RenderSurface-Layer tree.
 template <typename LayerType>
@@ -273,7 +266,6 @@ class LayerIterator {
     return target_render_surface()->layer_list();
   }
 
-  LayerIteratorPadding padding_;
   const LayerList* render_surface_layer_list_;
 
   // The iterator's current position.
