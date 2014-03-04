@@ -198,19 +198,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setWebGLErrorsToConsoleEnabled(
       prefs.webgl_errors_to_console_enabled);
 
-  // Enables accelerated compositing for overflow scroll.
-  settings->setAcceleratedCompositingForOverflowScrollEnabled(
-      prefs.accelerated_compositing_for_overflow_scroll_enabled);
-
-  // Enables accelerated compositing for scrollable frames if requested on
-  // command line.
-  settings->setAcceleratedCompositingForScrollableFramesEnabled(
-      prefs.accelerated_compositing_for_scrollable_frames_enabled);
-
-  // Enables composited scrolling for frames if requested on command line.
-  settings->setCompositedScrollingForFramesEnabled(
-      prefs.composited_scrolling_for_frames_enabled);
-
   // Uses the mock theme engine for scrollbars.
   settings->setMockScrollbarsEnabled(prefs.mock_scrollbars_enabled);
 

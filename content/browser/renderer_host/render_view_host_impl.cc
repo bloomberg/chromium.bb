@@ -401,37 +401,11 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
 
-  prefs.accelerated_compositing_for_overflow_scroll_enabled = false;
-  if (command_line.HasSwitch(switches::kEnableAcceleratedOverflowScroll))
-    prefs.accelerated_compositing_for_overflow_scroll_enabled = true;
-  if (command_line.HasSwitch(switches::kDisableAcceleratedOverflowScroll))
-    prefs.accelerated_compositing_for_overflow_scroll_enabled = false;
-
   prefs.layer_squashing_enabled = false;
   if (command_line.HasSwitch(switches::kEnableLayerSquashing))
       prefs.layer_squashing_enabled = true;
   if (command_line.HasSwitch(switches::kDisableLayerSquashing))
       prefs.layer_squashing_enabled = false;
-
-  prefs.accelerated_compositing_for_scrollable_frames_enabled = false;
-  if (command_line.HasSwitch(switches::kEnableAcceleratedScrollableFrames))
-    prefs.accelerated_compositing_for_scrollable_frames_enabled = true;
-  if (command_line.HasSwitch(switches::kDisableAcceleratedScrollableFrames))
-    prefs.accelerated_compositing_for_scrollable_frames_enabled = false;
-
-  prefs.composited_scrolling_for_frames_enabled = false;
-  if (command_line.HasSwitch(switches::kEnableCompositedScrollingForFrames))
-    prefs.composited_scrolling_for_frames_enabled = true;
-  if (command_line.HasSwitch(switches::kDisableCompositedScrollingForFrames))
-    prefs.composited_scrolling_for_frames_enabled = false;
-
-  prefs.universal_accelerated_compositing_for_overflow_scroll_enabled = false;
-  if (command_line.HasSwitch(
-          switches::kEnableUniversalAcceleratedOverflowScroll))
-    prefs.universal_accelerated_compositing_for_overflow_scroll_enabled = true;
-  if (command_line.HasSwitch(
-          switches::kDisableUniversalAcceleratedOverflowScroll))
-    prefs.universal_accelerated_compositing_for_overflow_scroll_enabled = false;
 
   prefs.show_paint_rects =
       command_line.HasSwitch(switches::kShowPaintRects);
