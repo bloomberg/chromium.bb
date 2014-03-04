@@ -1418,6 +1418,9 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
         oldChild->stackingNode()->dirtyStackingContainerZOrderLists();
     }
 
+    if (renderer()->style()->visibility() != VISIBLE)
+        dirtyVisibleContentStatus();
+
     oldChild->setPreviousSibling(0);
     oldChild->setNextSibling(0);
     oldChild->setParent(0);
