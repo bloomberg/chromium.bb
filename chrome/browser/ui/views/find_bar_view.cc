@@ -22,7 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -30,39 +30,43 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
 // The amount of whitespace to have before the find button.
-static const int kWhiteSpaceAfterMatchCountLabel = 1;
+const int kWhiteSpaceAfterMatchCountLabel = 1;
 
 // The margins around the search field and the close button.
-static const int kMarginLeftOfCloseButton = 3;
-static const int kMarginRightOfCloseButton = 7;
-static const int kMarginLeftOfFindTextfield = 12;
+const int kMarginLeftOfCloseButton = 3;
+const int kMarginRightOfCloseButton = 7;
+const int kMarginLeftOfFindTextfield = 12;
 
 // The margins around the match count label (We add extra space so that the
 // background highlight extends beyond just the text).
-static const int kMatchCountExtraWidth = 9;
+const int kMatchCountExtraWidth = 9;
 
 // Minimum width for the match count label.
-static const int kMatchCountMinWidth = 30;
+const int kMatchCountMinWidth = 30;
 
 // The text color for the match count label.
-static const SkColor kTextColorMatchCount = SkColorSetRGB(178, 178, 178);
+const SkColor kTextColorMatchCount = SkColorSetRGB(178, 178, 178);
 
 // The text color for the match count label when no matches are found.
-static const SkColor kTextColorNoMatch = SK_ColorBLACK;
+const SkColor kTextColorNoMatch = SK_ColorBLACK;
 
 // The background color of the match count label when results are found.
-static const SkColor kBackgroundColorMatch = SkColorSetARGB(0, 255, 255, 255);
+const SkColor kBackgroundColorMatch = SkColorSetARGB(0, 255, 255, 255);
 
 // The background color of the match count label when no results are found.
-static const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
+const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 
 // The default number of average characters that the text box will be. This
 // number brings the width on a "regular fonts" system to about 300px.
-static const int kDefaultCharWidth = 43;
+const int kDefaultCharWidth = 43;
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
@@ -74,9 +78,7 @@ FindBarView::FindBarView(FindBarHost* host)
       focus_forwarder_view_(NULL),
       find_previous_button_(NULL),
       find_next_button_(NULL),
-      close_button_(NULL),
-      text_box_background_(NULL),
-      text_box_background_left_(NULL) {
+      close_button_(NULL) {
   set_id(VIEW_ID_FIND_IN_PAGE);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -154,10 +156,9 @@ FindBarView::FindBarView(FindBarHost* host)
 
   preferred_height_ = rb.GetImageSkiaNamed(IDR_FIND_DIALOG_MIDDLE)->height();
 
-  // Background images for the Find edit box.
-  text_box_background_ = rb.GetImageSkiaNamed(IDR_FIND_BOX_BACKGROUND);
-  text_box_background_left_ =
-      rb.GetImageSkiaNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
+  // Use the Omnibox border images for the textfield border.
+  static const int kImages[] = IMAGE_GRID(IDR_OMNIBOX_BORDER_AND_SHADOW);
+  find_text_border_.reset(views::Painter::CreateImageGridPainter(kImages));
 
   EnableCanvasFlippingForRTLUI(true);
 }
@@ -242,23 +243,19 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
   // Paint drop down bar border and background.
   DropdownBarView::OnPaint(canvas);
 
-  // Then we draw the background image for the Find Textfield. We start by
-  // calculating the position of background images for the Find text box.
-  int find_text_x = find_text_->x();
-  gfx::Point back_button_origin = find_previous_button_->bounds().origin();
-
-  // Draw the image to the left that creates a curved left edge for the box.
-  canvas->TileImageInt(*text_box_background_left_,
-      find_text_x - text_box_background_left_->width(),
-      back_button_origin.y(), text_box_background_left_->width(),
-      text_box_background_left_->height());
-
-  // Draw the top and bottom border for whole text box (encompasses both the
-  // find_text_ edit box and the match_count_text_ label).
-  canvas->TileImageInt(*text_box_background_, find_text_x,
-                       back_button_origin.y(),
-                       back_button_origin.x() - find_text_x,
-                       text_box_background_->height());
+  // Paint the background and border for the textfield.
+  const int find_text_x = kMarginLeftOfFindTextfield / 2;
+  const gfx::Rect text_bounds(find_text_x, find_next_button_->y(),
+                              find_next_button_->bounds().right() - find_text_x,
+                              find_next_button_->height());
+  const int kBorderCornerRadius = 2;
+  gfx::Rect background_bounds = text_bounds;
+  background_bounds.Inset(kBorderCornerRadius, kBorderCornerRadius);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(find_text_->GetBackgroundColor());
+  canvas->DrawRoundRect(background_bounds, kBorderCornerRadius, paint);
+  views::Painter::PaintPainterAt(canvas, find_text_border_.get(), text_bounds);
 
   // Draw the background of the match text. We want to make sure the red
   // "no-match" background almost completely fills up the amount of vertical
