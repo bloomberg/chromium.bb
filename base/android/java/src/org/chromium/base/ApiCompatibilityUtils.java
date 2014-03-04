@@ -4,17 +4,15 @@
 
 package org.chromium.base;
 
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-
-import java.util.Locale;
 
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
@@ -39,11 +37,11 @@ public class ApiCompatibilityUtils {
     }
 
     /**
-     * @see TextUtils#getLayoutDirectionFromLocale(Locale)
+     * @see Configuration#getLayoutDirection()
      */
-    public static int getLayoutDirectionFromLocale(Locale locale) {
+    public static int getLayoutDirection(Configuration configuration) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return TextUtils.getLayoutDirectionFromLocale(locale);
+            return configuration.getLayoutDirection();
         } else {
             // All layouts are LTR before JB MR1.
             return View.LAYOUT_DIRECTION_LTR;
