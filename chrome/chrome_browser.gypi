@@ -3399,6 +3399,14 @@
         ['OS=="win" and chromium_win_pch==0', {
           'msvs_shard': 4,
         }],
+        ['OS=="win" and target_arch=="ia32"', {
+          'sources': [
+            # TODO(scottmg): This is a workaround for
+            # http://crbug.com/348525 that affects VS2013 before Update 2.
+            # This should be removed once Update 2 is released.
+            '../build/win/ftol3.obj',
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
