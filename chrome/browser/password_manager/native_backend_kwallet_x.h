@@ -121,12 +121,12 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // when reading old pickles that fail to deserialize using the native size.
   static bool DeserializeValueSize(const std::string& signon_realm,
                                    const PickleIterator& iter,
-                                   bool size_32, bool warn_only,
+                                   int version, bool size_32, bool warn_only,
                                    PasswordFormList* forms);
 
   // In case the fields in the pickle ever change, version them so we can try to
   // read old pickles. (Note: do not eat old pickles past the expiration date.)
-  static const int kPickleVersion = 1;
+  static const int kPickleVersion = 2;
 
   // Generates a profile-specific folder name based on profile_id_.
   std::string GetProfileSpecificFolderName() const;

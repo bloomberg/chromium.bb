@@ -86,6 +86,20 @@ bool ReadGURL(PickleIterator* iter, bool warn_only, GURL* url) {
   return true;
 }
 
+void LogDeserializationWarning(int version,
+                               std::string signon_realm,
+                               bool warn_only) {
+  if (warn_only) {
+    LOG(WARNING) << "Failed to deserialize version " << version
+                 << " KWallet entry (realm: " << signon_realm
+                 << ") with native architecture size; will try alternate "
+                 << "size.";
+  } else {
+    LOG(ERROR) << "Failed to deserialize version " << version
+               << " KWallet entry (realm: " << signon_realm << ")";
+  }
+}
+
 }  // namespace
 
 NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id,
@@ -708,13 +722,18 @@ void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
     pickle->WriteBool(form->preferred);
     pickle->WriteBool(form->blacklisted_by_user);
     pickle->WriteInt64(form->date_created.ToTimeT());
+    pickle->WriteInt(form->type);
+    pickle->WriteInt(form->times_used);
+    autofill::SerializeFormData(form->form_data, pickle);
   }
 }
 
 // static
 bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
                                                 const PickleIterator& init_iter,
-                                                bool size_32, bool warn_only,
+                                                int version,
+                                                bool size_32,
+                                                bool warn_only,
                                                 PasswordFormList* forms) {
   PickleIterator iter = init_iter;
 
@@ -756,6 +775,7 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
 
     int scheme = 0;
     int64 date_created = 0;
+    int type = 0;
     // Note that these will be read back in the order listed due to
     // short-circuit evaluation. This is important.
     if (!iter.ReadInt(&scheme) ||
@@ -770,18 +790,22 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
         !iter.ReadBool(&form->preferred) ||
         !iter.ReadBool(&form->blacklisted_by_user) ||
         !iter.ReadInt64(&date_created)) {
-      if (warn_only) {
-        LOG(WARNING) << "Failed to deserialize version 0 KWallet entry "
-                     << "(realm: " << signon_realm << ") with native "
-                     << "architecture size; will try alternate size.";
-      } else {
-        LOG(ERROR) << "Failed to deserialize KWallet entry "
-                   << "(realm: " << signon_realm << ")";
-      }
+      LogDeserializationWarning(version, signon_realm, warn_only);
       return false;
     }
     form->scheme = static_cast<PasswordForm::Scheme>(scheme);
     form->date_created = base::Time::FromTimeT(date_created);
+
+    if (version > 1) {
+      if (!iter.ReadInt(&type) ||
+          !iter.ReadInt(&form->times_used) ||
+          !autofill::DeserializeFormData(&iter, &form->form_data)) {
+        LogDeserializationWarning(version, signon_realm, false);
+        return false;
+      }
+      form->type = static_cast<PasswordForm::Type>(type);
+    }
+
     forms->push_back(form.release());
   }
 
@@ -802,21 +826,22 @@ void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
     return;
   }
 
-  if (version == kPickleVersion) {
+  if (version > 0) {
     // In current pickles, we expect 64-bit sizes. Failure is an error.
-    DeserializeValueSize(signon_realm, iter, false, false, forms);
+    DeserializeValueSize(signon_realm, iter, version, false, false, forms);
     return;
   }
 
   const size_t saved_forms_size = forms->size();
   const bool size_32 = sizeof(size_t) == sizeof(uint32_t);
-  if (!DeserializeValueSize(signon_realm, iter, size_32, true, forms)) {
+  if (!DeserializeValueSize(
+          signon_realm, iter, version, size_32, true, forms)) {
     // We failed to read the pickle using the native architecture of the system.
     // Try again with the opposite architecture. Note that we do this even on
     // 32-bit machines, in case we're reading a 64-bit pickle. (Probably rare,
     // since mostly we expect upgrades, not downgrades, but both are possible.)
     forms->resize(saved_forms_size);
-    DeserializeValueSize(signon_realm, iter, !size_32, false, forms);
+    DeserializeValueSize(signon_realm, iter, version, !size_32, false, forms);
   }
 }
 

@@ -138,14 +138,20 @@ class NativeBackendKWalletStub : public NativeBackendKWallet {
 class NativeBackendKWalletTestBase : public testing::Test {
  protected:
   NativeBackendKWalletTestBase() {
-    form_google_.origin = GURL("http://www.google.com/");
-    form_google_.action = GURL("http://www.google.com/login");
-    form_google_.username_element = UTF8ToUTF16("user");
-    form_google_.username_value = UTF8ToUTF16("joeschmoe");
-    form_google_.password_element = UTF8ToUTF16("pass");
-    form_google_.password_value = UTF8ToUTF16("seekrit");
-    form_google_.submit_element = UTF8ToUTF16("submit");
-    form_google_.signon_realm = "Google";
+    old_form_google_.origin = GURL("http://www.google.com/");
+    old_form_google_.action = GURL("http://www.google.com/login");
+    old_form_google_.username_element = UTF8ToUTF16("user");
+    old_form_google_.username_value = UTF8ToUTF16("joeschmoe");
+    old_form_google_.password_element = UTF8ToUTF16("pass");
+    old_form_google_.password_value = UTF8ToUTF16("seekrit");
+    old_form_google_.submit_element = UTF8ToUTF16("submit");
+    old_form_google_.signon_realm = "Google";
+
+    form_google_ = old_form_google_;
+    form_google_.times_used = 3;
+    form_google_.type = PasswordForm::TYPE_GENERATED;
+    form_google_.form_data.name = UTF8ToUTF16("form_name");
+    form_google_.form_data.user_submitted = true;
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -160,6 +166,7 @@ class NativeBackendKWalletTestBase : public testing::Test {
   void CheckPasswordForm(const PasswordForm& expected,
                          const PasswordForm& actual);
 
+  PasswordForm old_form_google_;
   PasswordForm form_google_;
   PasswordForm form_isc_;
 };
@@ -178,6 +185,8 @@ void NativeBackendKWalletTestBase::CheckPasswordForm(
   EXPECT_EQ(expected.preferred, actual.preferred);
   // We don't check the date created. It varies.
   EXPECT_EQ(expected.blacklisted_by_user, actual.blacklisted_by_user);
+  EXPECT_EQ(expected.type, actual.type);
+  EXPECT_EQ(expected.times_used, actual.times_used);
   EXPECT_EQ(expected.scheme, actual.scheme);
 }
 
@@ -1021,16 +1030,31 @@ TEST_F(NativeBackendKWalletTest, DISABLED_DeleteMigratedPasswordIsIsolated) {
 
 class NativeBackendKWalletPickleTest : public NativeBackendKWalletTestBase {
  protected:
+  void CreateVersion1Pickle(const PasswordForm& form, Pickle* pickle);
   void CreateVersion0Pickle(bool size_32,
                             const PasswordForm& form,
                             Pickle* pickle);
+  void CheckVersion1Pickle();
   void CheckVersion0Pickle(bool size_32, PasswordForm::Scheme scheme);
+
+ private:
+  void CreatePickle(bool size_32, const PasswordForm& form, Pickle* pickle);
 };
+
+void NativeBackendKWalletPickleTest::CreateVersion1Pickle(
+    const PasswordForm& form, Pickle* pickle) {
+  pickle->WriteInt(1);
+  CreatePickle(false, form, pickle);
+}
 
 void NativeBackendKWalletPickleTest::CreateVersion0Pickle(
     bool size_32, const PasswordForm& form, Pickle* pickle) {
-  const int kPickleVersion0 = 0;
-  pickle->WriteInt(kPickleVersion0);
+  pickle->WriteInt(0);
+  CreatePickle(size_32, form, pickle);
+}
+
+void NativeBackendKWalletPickleTest::CreatePickle(
+    bool size_32, const PasswordForm& form, Pickle* pickle) {
   if (size_32)
     pickle->WriteUInt32(1);  // Size of form list. 32 bits.
   else
@@ -1052,7 +1076,7 @@ void NativeBackendKWalletPickleTest::CreateVersion0Pickle(
 void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
     bool size_32, PasswordForm::Scheme scheme) {
   Pickle pickle;
-  PasswordForm form = form_google_;
+  PasswordForm form = old_form_google_;
   form.scheme = scheme;
   CreateVersion0Pickle(size_32, form, &pickle);
   std::vector<PasswordForm*> form_list;
@@ -1061,6 +1085,24 @@ void NativeBackendKWalletPickleTest::CheckVersion0Pickle(
   EXPECT_EQ(1u, form_list.size());
   if (form_list.size() > 0)
     CheckPasswordForm(form, *form_list[0]);
+  STLDeleteElements(&form_list);
+}
+
+// Make sure that we can still read version 1 pickles.
+void NativeBackendKWalletPickleTest::CheckVersion1Pickle() {
+  Pickle pickle;
+  PasswordForm form = form_google_;
+  CreateVersion1Pickle(form, &pickle);
+
+  std::vector<PasswordForm*> form_list;
+  NativeBackendKWalletStub::DeserializeValue(form.signon_realm,
+                                             pickle, &form_list);
+
+  // This will match |old_form_google_| because not all the fields present in
+  // |form_google_| will be deserialized.
+  EXPECT_EQ(1u, form_list.size());
+  if (form_list.size() > 0)
+    CheckPasswordForm(old_form_google_, *form_list[0]);
   STLDeleteElements(&form_list);
 }
 
@@ -1086,4 +1128,8 @@ TEST_F(NativeBackendKWalletPickleTest, ReadsOld64BitHTMLPickles) {
 
 TEST_F(NativeBackendKWalletPickleTest, ReadsOld64BitHTTPPickles) {
   CheckVersion0Pickle(false, PasswordForm::SCHEME_BASIC);
+}
+
+TEST_F(NativeBackendKWalletPickleTest, CheckVersion1Pickle) {
+  CheckVersion1Pickle();
 }
