@@ -47,9 +47,6 @@
 #include "public/platform/WebURLRequest.h"
 #include <v8.h>
 
-// FIXME(jam): remove after roll
-#define SHOW_CONTEXT_MENU_ON_WEB_FRAME_CLIENT
-
 namespace blink {
 
 class WebApplicationCacheHost;
