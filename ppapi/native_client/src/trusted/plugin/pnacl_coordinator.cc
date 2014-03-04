@@ -253,6 +253,12 @@ PnaclCoordinator::~PnaclCoordinator() {
         plugin_->pp_instance(),
         PP_FALSE);
   }
+  // Force deleting the translate_thread now. It must be deleted
+  // before any scoped_* fields hanging off of PnaclCoordinator
+  // since the thread may be accessing those fields.
+  // It will also be accessing obj_files_.
+  translate_thread_.reset(NULL);
+  // TODO(jvoung): use base/memory/scoped_vector.h to hold obj_files_.
   for (int i = 0; i < num_object_files_opened_; i++) {
     delete obj_files_[i];
   }

@@ -234,8 +234,8 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   int64_t expected_pexe_size_;   // Expected download total (-1 if unknown).
 
   // The helper thread used to do translations via SRPC.
-  // Keep this last in declaration order to ensure the other variables
-  // haven't been destroyed yet when its destructor runs.
+  // It accesses fields of PnaclCoordinator so it must have a
+  // shorter lifetime.
   nacl::scoped_ptr<PnaclTranslateThread> translate_thread_;
 };
 
