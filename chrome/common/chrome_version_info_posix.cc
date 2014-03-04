@@ -4,6 +4,7 @@
 
 #include "chrome/common/chrome_version_info.h"
 
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 
 namespace chrome {
@@ -44,13 +45,15 @@ std::string VersionInfo::GetVersionStringModifier() {
 VersionInfo::Channel VersionInfo::GetChannel() {
 #if defined(GOOGLE_CHROME_BUILD)
   std::string channel = GetVersionStringModifier();
+  // There might be suffixes after channel name (e.g. "aura"), so match just
+  // the beginning of version string modifier.
   if (channel.empty()) {
     return CHANNEL_STABLE;
-  } else if (channel == "beta") {
+  } else if (StartsWithASCII(channel, "beta ", true)) {
     return CHANNEL_BETA;
-  } else if (channel == "dev") {
+  } else if (StartsWithASCII(channel, "dev ", true)) {
     return CHANNEL_DEV;
-  } else if (channel == "canary") {
+  } else if (StartsWithASCII(channel, "canary ", true)) {
     return CHANNEL_CANARY;
   }
 #endif

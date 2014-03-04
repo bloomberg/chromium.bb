@@ -65,11 +65,7 @@ stage_install_debian() {
     # Avoid file collisions between channels.
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
 
-    # TODO(phajdan.jr): Do that for all packages for SxS,
-    # http://crbug.com/38598 .
-    if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
-      local PACKAGE="${PACKAGE}-${CHANNEL}"
-    fi
+    local PACKAGE="${PACKAGE}-${CHANNEL}"
 
     # Make it possible to distinguish between menu entries
     # for different channels.
@@ -104,13 +100,9 @@ do_package() {
   echo "Packaging ${ARCHITECTURE}..."
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
-  # Trunk is a special package, mostly for development testing, so don't make
-  # it replace any installed release packages.
-  if [ "$CHANNEL" != "trunk" ] && [ "$CHANNEL" != "asan" ]; then
-    REPLACES="${PACKAGE}"
-    CONFLICTS="${PACKAGE}"
-    PROVIDES="${PACKAGE}, www-browser"
-  fi
+  REPLACES=""
+  CONFLICTS=""
+  PROVIDES="google-chrome, www-browser"
   gen_changelog
   process_template "${SCRIPTDIR}/control.template" "${DEB_CONTROL}"
   export DEB_HOST_ARCH="${ARCHITECTURE}"
