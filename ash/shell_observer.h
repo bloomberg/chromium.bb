@@ -39,6 +39,14 @@ class ASH_EXPORT ShellObserver {
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
                                         aura::Window* root_window) {}
 
+  // Called when the overview mode is about to be started (before the windows
+  // get re-arranged).
+  virtual void OnOverviewModeStarting() {}
+
+  // Called before the overview mode is ending (before the windows get arranged
+  // to their final position).
+  virtual void OnOverviewModeEnding() {}
+
  protected:
   virtual ~ShellObserver() {}
 };

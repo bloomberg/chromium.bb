@@ -291,6 +291,14 @@ class ASH_EXPORT Shell
   // Called when a casting session is started or stopped.
   void OnCastingSessionStartedOrStopped(bool started);
 
+  // Called when the overview mode is about to be started (before the windows
+  // get re-arranged).
+  void OnOverviewModeStarting();
+
+  // Called before the overview mode is ending (before the windows get arranged
+  // to their final position).
+  void OnOverviewModeEnding();
+
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 

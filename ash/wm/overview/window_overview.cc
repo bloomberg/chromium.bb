@@ -125,6 +125,8 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
       single_root_window_(single_root_window),
       overview_start_time_(base::Time::Now()),
       cursor_client_(NULL) {
+  Shell* shell = Shell::GetInstance();
+  shell->OnOverviewModeStarting();
   for (WindowSelectorItemList::iterator iter = windows_->begin();
        iter != windows_->end(); ++iter) {
     (*iter)->PrepareForOverview();
@@ -142,8 +144,7 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
     // as suggested there.
     cursor_client_->LockCursor();
   }
-  ash::Shell::GetInstance()->PrependPreTargetHandler(this);
-  Shell* shell = Shell::GetInstance();
+  shell->PrependPreTargetHandler(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   HideAndTrackNonOverviewWindows();
 }
@@ -163,10 +164,12 @@ WindowOverview::~WindowOverview() {
   }
   if (cursor_client_)
     cursor_client_->UnlockCursor();
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->RemovePreTargetHandler(this);
   UMA_HISTOGRAM_MEDIUM_TIMES(
       "Ash.WindowSelector.TimeInOverview",
       base::Time::Now() - overview_start_time_);
+  shell->OnOverviewModeEnding();
 }
 
 void WindowOverview::SetSelection(size_t index) {

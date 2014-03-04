@@ -382,6 +382,14 @@ void Shell::OnCastingSessionStartedOrStopped(bool started) {
 #endif
 }
 
+void Shell::OnOverviewModeStarting() {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeStarting());
+}
+
+void Shell::OnOverviewModeEnding() {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeEnding());
+}
+
 void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
