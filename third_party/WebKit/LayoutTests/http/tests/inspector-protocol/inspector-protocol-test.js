@@ -217,7 +217,7 @@ InspectorTest.assertEquals = function(expected, actual, message)
 {
     if (expected === actual)
         return;
-    InspectorTest,assert(false, "expected: `" + expected + "', actual: `" + actual + "'" + (message ? ", " + message : ""));
+    InspectorTest.assert(false, "expected: `" + expected + "', actual: `" + actual + "'" + (message ? ", " + message : ""));
 }
 
 /**
