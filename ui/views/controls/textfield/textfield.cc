@@ -10,6 +10,7 @@
 #include "grit/ui_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -32,11 +33,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
-
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -321,7 +318,7 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
 
 bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   // Skip any accelerator handling of backspace; textfields handle this key.
-  // Also skip processing of [Alt]+<num-pad digit> Unicode alt key codes.
+  // Also skip processing Windows [Alt]+<num-pad digit> Unicode alt-codes.
   return e.key_code() == ui::VKEY_BACK || e.IsUnicodeKeyCode();
 }
 
@@ -633,13 +630,7 @@ gfx::NativeCursor Textfield::GetCursor(const ui::MouseEvent& event) {
   bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
   bool text_cursor = !initiating_drag_ && (drag_event || !in_selection);
-#if defined(USE_AURA)
   return text_cursor ? ui::kCursorIBeam : ui::kCursorNull;
-#elif defined(OS_WIN)
-  static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
-  static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
-  return text_cursor ? ibeam : arrow;
-#endif
 }
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {

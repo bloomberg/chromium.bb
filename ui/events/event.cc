@@ -582,6 +582,7 @@ uint16 KeyEvent::GetCharacter() const {
 }
 
 bool KeyEvent::IsUnicodeKeyCode() const {
+#if defined(OS_WIN)
   if (!IsAltDown())
     return false;
   const int key = key_code();
@@ -595,6 +596,9 @@ bool KeyEvent::IsUnicodeKeyCode() const {
            key == VKEY_NEXT   || key == VKEY_LEFT || key == VKEY_CLEAR ||
            key == VKEY_RIGHT  || key == VKEY_HOME || key == VKEY_UP ||
            key == VKEY_PRIOR));
+#else
+  return false;
+#endif
 }
 
 void KeyEvent::NormalizeFlags() {
