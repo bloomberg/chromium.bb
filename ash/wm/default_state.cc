@@ -78,37 +78,37 @@ void DefaultState::OnWMEvent(WindowState* window_state,
 
   WindowStateType next_state_type = WINDOW_STATE_TYPE_NORMAL;
   switch (event) {
-    case NORMAL:
+    case WM_EVENT_NORMAL:
       next_state_type = WINDOW_STATE_TYPE_NORMAL;
       break;
-    case MAXIMIZE:
+    case WM_EVENT_MAXIMIZE:
       next_state_type = WINDOW_STATE_TYPE_MAXIMIZED;
       break;
-    case MINIMIZE:
+    case WM_EVENT_MINIMIZE:
       next_state_type = WINDOW_STATE_TYPE_MINIMIZED;
       break;
-    case FULLSCREEN:
+    case WM_EVENT_FULLSCREEN:
       next_state_type = WINDOW_STATE_TYPE_FULLSCREEN;
       break;
-    case SNAP_LEFT:
+    case WM_EVENT_SNAP_LEFT:
       next_state_type = WINDOW_STATE_TYPE_LEFT_SNAPPED;
       break;
-    case SNAP_RIGHT:
+    case WM_EVENT_SNAP_RIGHT:
       next_state_type = WINDOW_STATE_TYPE_RIGHT_SNAPPED;
       break;
-    case SHOW_INACTIVE:
+    case WM_EVENT_SHOW_INACTIVE:
       next_state_type = WINDOW_STATE_TYPE_INACTIVE;
       break;
-    case TOGGLE_MAXIMIZE_CAPTION:
-    case TOGGLE_MAXIMIZE:
-    case TOGGLE_VERTICAL_MAXIMIZE:
-    case TOGGLE_HORIZONTAL_MAXIMIZE:
-    case TOGGLE_FULLSCREEN:
+    case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
+    case WM_EVENT_TOGGLE_MAXIMIZE:
+    case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
+    case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
+    case WM_EVENT_TOGGLE_FULLSCREEN:
       NOTREACHED() << "Compound event should not reach here:" << event;
       return;
-    case ADDED_TO_WORKSPACE:
-    case WORKAREA_BOUNDS_CHANGED:
-    case DISPLAY_BOUNDS_CHANGED:
+    case WM_EVENT_ADDED_TO_WORKSPACE:
+    case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
+    case WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       NOTREACHED() << "Workspace event should not reach here:" << event;
       return;
   }
@@ -151,7 +151,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
   aura::Window* window = window_state->window();
 
   switch (event) {
-    case TOGGLE_MAXIMIZE_CAPTION:
+    case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
       if (window_state->IsFullscreen()) {
         window_state->ToggleFullscreen();
       } else if (window_state->IsMaximized()) {
@@ -161,7 +161,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
           window_state->Maximize();
       }
       return true;
-    case TOGGLE_MAXIMIZE:
+    case WM_EVENT_TOGGLE_MAXIMIZE:
       if (window_state->IsFullscreen())
         window_state->ToggleFullscreen();
       else if (window_state->IsMaximized())
@@ -169,7 +169,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       else if (window_state->CanMaximize())
         window_state->Maximize();
       return true;
-    case TOGGLE_VERTICAL_MAXIMIZE: {
+    case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE: {
       gfx::Rect work_area =
           ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
 
@@ -195,7 +195,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       }
       return true;
     }
-    case TOGGLE_HORIZONTAL_MAXIMIZE: {
+    case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE: {
       // Maximize horizontally if:
       // - The window does not have a max width defined.
       // - The window is snapped or has the normal state type.
@@ -231,7 +231,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       }
       return true;
     }
-    case TOGGLE_FULLSCREEN: {
+    case WM_EVENT_TOGGLE_FULLSCREEN: {
       // Window which cannot be maximized should not be fullscreened.
       // It can, however, be restored if it was fullscreened.
       bool is_fullscreen = window_state->IsFullscreen();
@@ -250,17 +250,17 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       }
       return true;
     }
-    case NORMAL:
-    case MAXIMIZE:
-    case MINIMIZE:
-    case FULLSCREEN:
-    case SNAP_LEFT:
-    case SNAP_RIGHT:
-    case SHOW_INACTIVE:
+    case WM_EVENT_NORMAL:
+    case WM_EVENT_MAXIMIZE:
+    case WM_EVENT_MINIMIZE:
+    case WM_EVENT_FULLSCREEN:
+    case WM_EVENT_SNAP_LEFT:
+    case WM_EVENT_SNAP_RIGHT:
+    case WM_EVENT_SHOW_INACTIVE:
       break;
-    case ADDED_TO_WORKSPACE:
-    case WORKAREA_BOUNDS_CHANGED:
-    case DISPLAY_BOUNDS_CHANGED:
+    case WM_EVENT_ADDED_TO_WORKSPACE:
+    case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
+    case WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       NOTREACHED() << "Workspace event should not reach here:" << event;
       break;
   }
@@ -270,7 +270,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
 bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
                                           WMEvent event) {
   switch (event) {
-    case ADDED_TO_WORKSPACE: {
+    case WM_EVENT_ADDED_TO_WORKSPACE: {
       // When a window is dragged and dropped onto a different
       // root window, the bounds will be updated after they are added
       // to the root window.
@@ -303,7 +303,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         window_state->SetBoundsConstrained(bounds);
       return true;
     }
-    case DISPLAY_BOUNDS_CHANGED: {
+    case WM_EVENT_DISPLAY_BOUNDS_CHANGED: {
       if (window_state->is_dragged() ||
           SetMaximizedOrFullscreenBounds(window_state)) {
         return true;
@@ -319,7 +319,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         window_state->SetBoundsDirectAnimated(bounds);
       return true;
     }
-    case WORKAREA_BOUNDS_CHANGED: {
+    case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
       if (window_state->is_dragged() ||
           SetMaximizedOrFullscreenBounds(window_state)) {
         return true;
@@ -333,18 +333,18 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
         window_state->SetBoundsDirectAnimated(bounds);
       return true;
     }
-    case TOGGLE_MAXIMIZE_CAPTION:
-    case TOGGLE_MAXIMIZE:
-    case TOGGLE_VERTICAL_MAXIMIZE:
-    case TOGGLE_HORIZONTAL_MAXIMIZE:
-    case TOGGLE_FULLSCREEN:
-    case NORMAL:
-    case MAXIMIZE:
-    case MINIMIZE:
-    case FULLSCREEN:
-    case SNAP_LEFT:
-    case SNAP_RIGHT:
-    case SHOW_INACTIVE:
+    case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
+    case WM_EVENT_TOGGLE_MAXIMIZE:
+    case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
+    case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
+    case WM_EVENT_TOGGLE_FULLSCREEN:
+    case WM_EVENT_NORMAL:
+    case WM_EVENT_MAXIMIZE:
+    case WM_EVENT_MINIMIZE:
+    case WM_EVENT_FULLSCREEN:
+    case WM_EVENT_SNAP_LEFT:
+    case WM_EVENT_SNAP_RIGHT:
+    case WM_EVENT_SHOW_INACTIVE:
       break;
   }
   return false;

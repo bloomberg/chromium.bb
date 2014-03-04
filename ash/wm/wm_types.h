@@ -48,52 +48,52 @@ enum WMEvent {
   // state and the request may not be fullfilled.
 
   // NORMAL is used as a restore operation with a few exceptions.
-  NORMAL,
-  MAXIMIZE,
-  MINIMIZE,
-  FULLSCREEN,
+  WM_EVENT_NORMAL,
+  WM_EVENT_MAXIMIZE,
+  WM_EVENT_MINIMIZE,
+  WM_EVENT_FULLSCREEN,
   // TODO(oshima): Consolidate these two events.
-  SNAP_LEFT,
-  SNAP_RIGHT,
+  WM_EVENT_SNAP_LEFT,
+  WM_EVENT_SNAP_RIGHT,
 
   // Following events are compond events which may lead to different
   // states depending on the current state.
 
   // A user requested to toggle maximized state by double clicking window
   // header.
-  TOGGLE_MAXIMIZE_CAPTION,
+  WM_EVENT_TOGGLE_MAXIMIZE_CAPTION,
 
   // A user requested to toggle maximized state using shortcut.
-  TOGGLE_MAXIMIZE,
+  WM_EVENT_TOGGLE_MAXIMIZE,
 
   // A user requested to toggle vertical maximize by double clicking
   // top/bottom edge.
-  TOGGLE_VERTICAL_MAXIMIZE,
+  WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE,
 
   // A user requested to toggle horizontal maximize by double clicking
   // left/right edge.
-  TOGGLE_HORIZONTAL_MAXIMIZE,
+  WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE,
 
   // A user requested to toggle fullscreen state.
-  TOGGLE_FULLSCREEN,
+  WM_EVENT_TOGGLE_FULLSCREEN,
 
   // TODO(oshima): Investigate if this can be removed from ash.
   // Widget requested to show in inactive state.
-  SHOW_INACTIVE,
+  WM_EVENT_SHOW_INACTIVE,
 
   // Following events are generated when the workspace envrionment has changed.
   // The window's state type will not be changed by these events.
 
   // The window is added to the workspace, either as a new window, due to
   // display disconnection or dragging.
-  ADDED_TO_WORKSPACE,
+  WM_EVENT_ADDED_TO_WORKSPACE,
 
   // Bounds of the display has changed.
-  DISPLAY_BOUNDS_CHANGED,
+  WM_EVENT_DISPLAY_BOUNDS_CHANGED,
 
   // Bounds of the work area has changed. This will not occur when the work
   // area has changed as a result of DISPLAY_BOUNDS_CHANGED.
-  WORKAREA_BOUNDS_CHANGED,
+  WM_EVENT_WORKAREA_BOUNDS_CHANGED,
 };
 
 // Utility functions to convert WindowStateType <-> ui::WindowShowState.

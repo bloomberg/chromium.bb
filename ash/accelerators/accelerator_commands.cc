@@ -35,7 +35,7 @@ void ToggleMaximized() {
   if (!window_state)
     return;
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Maximized"));
-  window_state->OnWMEvent(wm::TOGGLE_MAXIMIZE);
+  window_state->OnWMEvent(wm::WM_EVENT_TOGGLE_MAXIMIZE);
 }
 
 void ToggleFullscreen() {

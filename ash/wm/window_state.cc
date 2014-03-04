@@ -60,21 +60,21 @@ WMEvent WMEventFromShowState(ui::WindowShowState requested_show_state) {
   switch (requested_show_state) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL:
-      return NORMAL;
+      return WM_EVENT_NORMAL;
     case ui::SHOW_STATE_MINIMIZED:
-      return MINIMIZE;
+      return WM_EVENT_MINIMIZE;
     case ui::SHOW_STATE_MAXIMIZED:
-      return MAXIMIZE;
+      return WM_EVENT_MAXIMIZE;
     case ui::SHOW_STATE_FULLSCREEN:
-      return FULLSCREEN;
+      return WM_EVENT_FULLSCREEN;
     case ui::SHOW_STATE_INACTIVE:
-      return SHOW_INACTIVE;
+      return WM_EVENT_SHOW_INACTIVE;
     case ui::SHOW_STATE_DETACHED:
     case ui::SHOW_STATE_END:
       NOTREACHED() << "No WMEvent defined for the show state:"
                    << requested_show_state;
   }
-  return NORMAL;
+  return WM_EVENT_NORMAL;
 }
 
 }  // namespace
@@ -235,11 +235,11 @@ void WindowState::Deactivate() {
 
 void WindowState::Restore() {
   if (!IsNormalStateType())
-    OnWMEvent(NORMAL);
+    OnWMEvent(WM_EVENT_NORMAL);
 }
 
 void WindowState::ToggleFullscreen() {
-  OnWMEvent(TOGGLE_FULLSCREEN);
+  OnWMEvent(WM_EVENT_TOGGLE_FULLSCREEN);
 }
 
 void WindowState::OnWMEvent(WMEvent event) {
@@ -361,7 +361,7 @@ void WindowState::SnapWindowWithDefaultWidth(WindowStateType left_or_right) {
   SetRestoreBoundsInParent(bounds_in_parent);
 
   OnWMEvent(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ?
-            SNAP_LEFT : SNAP_RIGHT);
+            WM_EVENT_SNAP_LEFT : WM_EVENT_SNAP_RIGHT);
 
   // TODO(varkha): Ideally the bounds should be changed in a LayoutManager upon
   // observing the WindowStateType change.
