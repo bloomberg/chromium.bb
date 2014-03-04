@@ -68,33 +68,29 @@ class ShapeInfo {
 public:
     virtual ~ShapeInfo() { }
 
-    void setShapeSize(LayoutUnit logicalWidth, LayoutUnit logicalHeight)
+    void setReferenceBoxLogicalSize(LayoutSize newReferenceBoxLogicalSize)
     {
-        switch (resolvedLayoutBox()) {
+        switch (referenceBox()) {
         case MarginBox:
-            logicalHeight += m_renderer->marginLogicalHeight();
-            logicalWidth += m_renderer->marginLogicalWidth();
+            newReferenceBoxLogicalSize.expand(m_renderer->marginLogicalWidth(), m_renderer->marginLogicalHeight());
             break;
         case BorderBox:
             break;
         case PaddingBox:
-            logicalHeight -= m_renderer->borderLogicalHeight();
-            logicalWidth -= m_renderer->borderLogicalWidth();
+            newReferenceBoxLogicalSize.shrink(m_renderer->borderLogicalWidth(), m_renderer->borderLogicalHeight());
             break;
         case ContentBox:
-            logicalHeight -= m_renderer->borderAndPaddingLogicalHeight();
-            logicalWidth -= m_renderer->borderAndPaddingLogicalWidth();
+            newReferenceBoxLogicalSize.shrink(m_renderer->borderAndPaddingLogicalWidth(), m_renderer->borderAndPaddingLogicalHeight());
             break;
         case BoxMissing:
             // A non-missing box value must be supplied.
             ASSERT_NOT_REACHED();
         }
 
-        LayoutSize newLogicalSize(logicalWidth, logicalHeight);
-        if (m_shapeLogicalSize == newLogicalSize)
+        if (m_referenceBoxLogicalSize == newReferenceBoxLogicalSize)
             return;
-        dirtyShapeSize();
-        m_shapeLogicalSize = newLogicalSize;
+        markShapeAsDirty();
+        m_referenceBoxLogicalSize = newReferenceBoxLogicalSize;
     }
 
     SegmentList computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) const;
@@ -106,31 +102,31 @@ public:
     LayoutUnit shapeLogicalWidth() const { return computedShapeLogicalBoundingBox().width(); }
     LayoutUnit shapeLogicalHeight() const { return computedShapeLogicalBoundingBox().height(); }
 
-    LayoutUnit logicalLineTop() const { return m_shapeLineTop + logicalTopOffset(); }
-    LayoutUnit logicalLineBottom() const { return m_shapeLineTop + m_lineHeight + logicalTopOffset(); }
+    LayoutUnit logicalLineTop() const { return m_referenceBoxLineTop + logicalTopOffset(); }
+    LayoutUnit logicalLineBottom() const { return m_referenceBoxLineTop + m_lineHeight + logicalTopOffset(); }
 
-    LayoutUnit shapeContainingBlockHeight() const { return (m_renderer->style()->boxSizing() == CONTENT_BOX) ? (m_shapeLogicalSize.height() + m_renderer->borderAndPaddingLogicalHeight()) : m_shapeLogicalSize.height(); }
+    LayoutUnit shapeContainingBlockHeight() const { return (m_renderer->style()->boxSizing() == CONTENT_BOX) ? (m_referenceBoxLogicalSize.height() + m_renderer->borderAndPaddingLogicalHeight()) : m_referenceBoxLogicalSize.height(); }
 
     virtual bool lineOverlapsShapeBounds() const = 0;
 
-    void dirtyShapeSize() { m_shape.clear(); }
-    bool shapeSizeDirty() { return !m_shape.get(); }
+    void markShapeAsDirty() { m_shape.clear(); }
+    bool isShapeDirty() { return !m_shape.get(); }
     const RenderType* owner() const { return m_renderer; }
-    LayoutSize shapeSize() const { return m_shapeLogicalSize; }
+    LayoutSize shapeSize() const { return m_referenceBoxLogicalSize; }
 
 protected:
     ShapeInfo(const RenderType* renderer): m_renderer(renderer) { }
 
     const Shape* computedShape() const;
 
-    virtual LayoutBox resolvedLayoutBox() const = 0;
+    virtual LayoutBox referenceBox() const = 0;
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
     virtual ShapeValue* shapeValue() const = 0;
     virtual void getIntervals(LayoutUnit, LayoutUnit, SegmentList&) const = 0;
 
     LayoutUnit logicalTopOffset() const
     {
-        switch (resolvedLayoutBox()) {
+        switch (referenceBox()) {
         case MarginBox:
             return -m_renderer->marginBefore();
         case BorderBox:
@@ -148,7 +144,7 @@ protected:
 
     LayoutUnit logicalLeftOffset() const
     {
-        switch (resolvedLayoutBox()) {
+        switch (referenceBox()) {
         case MarginBox:
             return -m_renderer->marginStart();
         case BorderBox:
@@ -164,14 +160,14 @@ protected:
         return LayoutUnit();
     }
 
-    LayoutUnit m_shapeLineTop;
+    LayoutUnit m_referenceBoxLineTop;
     LayoutUnit m_lineHeight;
 
     const RenderType* m_renderer;
 
 private:
     mutable OwnPtr<Shape> m_shape;
-    LayoutSize m_shapeLogicalSize;
+    LayoutSize m_referenceBoxLogicalSize;
 };
 
 bool checkShapeImageOrigin(Document&, ImageResource&);

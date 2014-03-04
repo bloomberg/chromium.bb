@@ -1401,7 +1401,7 @@ void RenderBlock::imageChanged(WrappedImagePtr image, const IntRect*)
     ShapeValue* shapeValue = style()->shapeInside();
     if (shapeValue && shapeValue->image() && shapeValue->image()->data() == image) {
         ShapeInsideInfo* shapeInsideInfo = ensureShapeInsideInfo();
-        shapeInsideInfo->dirtyShapeSize();
+        shapeInsideInfo->markShapeAsDirty();
         markShapeInsideDescendantsForLayout();
     }
 }
@@ -1414,7 +1414,7 @@ void RenderBlock::updateShapeInsideInfoAfterStyleChange(const ShapeValue* shapeI
 
     if (shapeInside) {
         ShapeInsideInfo* shapeInsideInfo = ensureShapeInsideInfo();
-        shapeInsideInfo->dirtyShapeSize();
+        shapeInsideInfo->markShapeAsDirty();
     } else {
         setShapeInsideInfo(nullptr);
         markShapeInsideDescendantsForLayout();
@@ -1425,7 +1425,7 @@ static inline bool shapeInfoRequiresRelayout(const RenderBlock* block)
 {
     ShapeInsideInfo* info = block->shapeInsideInfo();
     if (info)
-        info->setNeedsLayout(info->shapeSizeDirty());
+        info->setNeedsLayout(info->isShapeDirty());
     else
         info = block->layoutShapeInsideInfo();
     return info && info->needsLayout();
@@ -1463,7 +1463,7 @@ void RenderBlock::computeShapeSize()
         return;
 
     bool percentageLogicalHeightResolvable = percentageLogicalHeightIsResolvableFromBlock(this, false);
-    shapeInsideInfo->setShapeSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit());
+    shapeInsideInfo->setReferenceBoxLogicalSize(LayoutSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit()));
 }
 
 void RenderBlock::updateRegionsAndShapesAfterChildLayout(RenderFlowThread* flowThread, bool heightChanged)
@@ -1471,7 +1471,7 @@ void RenderBlock::updateRegionsAndShapesAfterChildLayout(RenderFlowThread* flowT
     // A previous sibling has changed dimension, so we need to relayout the shape with the content
     ShapeInsideInfo* shapeInsideInfo = layoutShapeInsideInfo();
     if (heightChanged && shapeInsideInfo)
-        shapeInsideInfo->dirtyShapeSize();
+        shapeInsideInfo->markShapeAsDirty();
 
     computeRegionRangeForBlock(flowThread);
 }

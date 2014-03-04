@@ -74,7 +74,7 @@ bool ShapeInsideInfo::updateSegmentsForLine(LayoutSize lineOffset, LayoutUnit li
 bool ShapeInsideInfo::updateSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
 {
     ASSERT(lineHeight >= 0);
-    m_shapeLineTop = lineTop - logicalTopOffset();
+    m_referenceBoxLineTop = lineTop - logicalTopOffset();
     m_lineHeight = lineHeight;
     m_segments.clear();
     m_segmentRanges.clear();
@@ -92,9 +92,9 @@ bool ShapeInsideInfo::adjustLogicalLineTop(float minSegmentWidth)
         return false;
 
     LayoutUnit newLineTop;
-    if (shape->firstIncludedIntervalLogicalTop(m_shapeLineTop, FloatSize(minSegmentWidth, m_lineHeight), newLineTop)) {
-        if (newLineTop > m_shapeLineTop) {
-            m_shapeLineTop = newLineTop;
+    if (shape->firstIncludedIntervalLogicalTop(m_referenceBoxLineTop, FloatSize(minSegmentWidth, m_lineHeight), newLineTop)) {
+        if (newLineTop > m_referenceBoxLineTop) {
+            m_referenceBoxLineTop = newLineTop;
             return true;
         }
     }
@@ -113,7 +113,7 @@ LayoutUnit ShapeInsideInfo::computeFirstFitPositionForFloat(const FloatSize& flo
         return 0;
 
     LayoutUnit firstFitPosition = 0;
-    if (computedShape()->firstIncludedIntervalLogicalTop(m_shapeLineTop, floatSize, firstFitPosition) && (m_shapeLineTop <= firstFitPosition))
+    if (computedShape()->firstIncludedIntervalLogicalTop(m_referenceBoxLineTop, floatSize, firstFitPosition) && (m_referenceBoxLineTop <= firstFitPosition))
         return firstFitPosition;
 
     return 0;
