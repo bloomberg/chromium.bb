@@ -184,8 +184,6 @@
         'controls/scrollbar/base_scroll_bar_button.h',
         'controls/scrollbar/base_scroll_bar_thumb.cc',
         'controls/scrollbar/base_scroll_bar_thumb.h',
-        'controls/scrollbar/bitmap_scroll_bar.cc',
-        'controls/scrollbar/bitmap_scroll_bar.h',
         'controls/scrollbar/kennedy_scroll_bar.cc',
         'controls/scrollbar/kennedy_scroll_bar.h',
         'controls/scrollbar/native_scroll_bar_views.cc',
@@ -365,10 +363,6 @@
         'views_switches.h',
         'views_delegate.cc',
         'views_delegate.h',
-        'widget/aero_tooltip_manager.cc',
-        'widget/aero_tooltip_manager.h',
-        'widget/child_window_message_processor.cc',
-        'widget/child_window_message_processor.h',
         'widget/desktop_aura/desktop_capture_client.cc',
         'widget/desktop_aura/desktop_capture_client.h',
         'widget/desktop_aura/desktop_cursor_loader_updater.h',
@@ -433,8 +427,6 @@
         'widget/native_widget_private.h',
         'widget/tooltip_manager_aura.cc',
         'widget/tooltip_manager_aura.h',
-        'widget/tooltip_manager_win.cc',
-        'widget/tooltip_manager_win.h',
         'widget/tooltip_manager.cc',
         'widget/tooltip_manager.h',
         'widget/widget.cc',
@@ -486,19 +478,6 @@
       ],
       'conditions': [
         ['use_aura==1', {
-          'sources!': [
-            'controls/native_control.cc',
-            'controls/native_control.h',
-            'controls/scrollbar/bitmap_scroll_bar.cc',
-            'controls/scrollbar/bitmap_scroll_bar.h',
-            'controls/table/table_view_observer.h',
-            'widget/aero_tooltip_manager.cc',
-            'widget/aero_tooltip_manager.h',
-            'widget/child_window_message_processor.cc',
-            'widget/child_window_message_processor.h',
-            'widget/tooltip_manager_win.cc',
-            'widget/tooltip_manager_win.h',
-          ],
           'conditions': [
             ['OS=="win"', {
               'sources/': [
