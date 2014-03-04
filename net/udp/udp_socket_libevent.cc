@@ -47,10 +47,10 @@ int GetIPv4AddressFromIndex(int socket, uint32 index, uint32* address){
   ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
   if (!if_indextoname(index, ifr.ifr_name))
-    return ERR_FAILED;
+    return MapSystemError(errno);
   int rv = ioctl(socket, SIOCGIFADDR, &ifr);
-  if (!rv)
-    return MapSystemError(rv);
+  if (rv == -1)
+    return MapSystemError(errno);
   *address = reinterpret_cast<sockaddr_in*>(&ifr.ifr_addr)->sin_addr.s_addr;
   return OK;
 }
