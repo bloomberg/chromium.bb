@@ -41,6 +41,10 @@ TEST(AlignedMemoryTest, StackAlignment) {
 
   EXPECT_ALIGNED(raw8.void_data(), 8);
   EXPECT_ALIGNED(raw16.void_data(), 16);
+
+  // TODO(ios): __attribute__((aligned(X))) with X >= 128 does not works on
+  // the stack when building for arm64 on iOS, http://crbug.com/349003
+#if !(defined(OS_IOS) && defined(ARCH_CPU_ARM64))
   EXPECT_ALIGNED(raw128.void_data(), 128);
 
   // NaCl x86-64 compiler emits non-validating instructions for >128
@@ -60,7 +64,8 @@ TEST(AlignedMemoryTest, StackAlignment) {
   EXPECT_EQ(4096u, ALIGNOF(raw4096));
   EXPECT_ALIGNED(raw4096.void_data(), 4096);
 #endif  // !(defined(OS_IOS) && defined(ARCH_CPU_ARM_FAMILY))
-#endif
+#endif  // !(defined(OS_NACL) && defined(ARCH_CPU_X86_64))
+#endif  // !(defined(OS_IOS) && defined(ARCH_CPU_ARM64))
 }
 
 TEST(AlignedMemoryTest, DynamicAllocation) {
