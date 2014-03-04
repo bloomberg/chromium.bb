@@ -86,7 +86,7 @@ DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
 
 DevToolsAgent::~DevToolsAgent() {
   g_agent_for_routing_id.Get().erase(routing_id());
-  setTraceEventCallback(NULL);
+  resetTraceEventCallback();
 }
 
 // Called on the Renderer thread.
@@ -158,12 +158,6 @@ void DevToolsAgent::setTraceEventCallback(const WebString& category_filter,
   } else {
     trace_log->SetEventCallbackDisabled();
   }
-}
-
-void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
-  WebString category_filter = WebString::fromUTF8(
-      base::debug::CategoryFilter::kDefaultCategoryFilterString);
-  setTraceEventCallback(category_filter, cb);
 }
 
 // static
