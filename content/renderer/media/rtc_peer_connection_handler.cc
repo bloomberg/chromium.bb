@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
@@ -317,13 +318,17 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     : PeerConnectionHandlerBase(dependency_factory),
       client_(client),
       frame_(NULL),
-      peer_connection_tracker_(NULL) {
+      peer_connection_tracker_(NULL),
+      num_data_channels_created_(0) {
 }
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
   STLDeleteValues(&remote_streams_);
+
+  UMA_HISTOGRAM_COUNTS_10000(
+      "WebRTC.NumDataChannelsPerPeerConnection", num_data_channels_created_);
 }
 
 void RTCPeerConnectionHandler::associateWithFrame(blink::WebFrame* frame) {
@@ -656,6 +661,8 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackCreateDataChannel(
         this, webrtc_channel.get(), PeerConnectionTracker::SOURCE_LOCAL);
+
+  ++num_data_channels_created_;
 
   return new RtcDataChannelHandler(webrtc_channel);
 }

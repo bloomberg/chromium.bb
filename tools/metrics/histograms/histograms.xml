@@ -24343,6 +24343,35 @@ other types of suffix sets.
   <summary>Duration in milliseconds of WebRTC audio render session.</summary>
 </histogram>
 
+<histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
+  <summary>
+    Counters on creation, opening, and a few main attributes of data channels.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.NumDataChannelsPerPeerConnection">
+  <summary>
+    Number of data channels created per PeerConnection. Sample added to the
+    histogram when the PeerConnection is destroyed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.ReliableDataChannelMessageSize" units="bytes">
+  <summary>
+    Sizes of messages sent over reliable data channels. The size of an
+    individual message is added to the histogram as a sample immediately when a
+    message is sent.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.UnreliableDataChannelMessageSize" units="bytes">
+  <summary>
+    Sizes of messages sent over unreliable data channels. The size of an
+    individual message is added to the histogram as a sample immediately when a
+    message is sent.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.webkitApiCount" enum="JavaScriptAPIName">
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
@@ -25477,6 +25506,14 @@ other types of suffix sets.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DataChannelCounters" type="int">
+  <int value="0" label="Channel created."/>
+  <int value="1" label="Channel reached Open state."/>
+  <int value="2" label="Channel is reliable."/>
+  <int value="3" label="Channel is ordered."/>
+  <int value="4" label="Channel is negotiated."/>
 </enum>
 
 <enum name="DataReductionProxyBypassEventType" type="int">

@@ -49,6 +49,8 @@ class CONTENT_EXPORT RtcDataChannelHandler
   virtual void OnMessage(const webrtc::DataBuffer& buffer) OVERRIDE;
 
  private:
+  void RecordMessageSent(size_t num_bytes);
+
   scoped_refptr<webrtc::DataChannelInterface> channel_;
   blink::WebRTCDataChannelHandlerClient* webkit_client_;
 };

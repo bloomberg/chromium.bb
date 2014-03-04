@@ -179,6 +179,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   PeerConnectionTracker* peer_connection_tracker_;
 
+  // Counter for a UMA stat reported at destruction time.
+  int num_data_channels_created_;
+
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };
 
