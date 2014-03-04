@@ -125,7 +125,9 @@ void DecoratedTextfield::Layout() {
         bounds.right() - icon_size.width() - kTextfieldIconPadding;
     // Vertically centered.
     int y = bounds.y() + (bounds.height() - icon_size.height()) / 2;
-    icon_view_->SetBounds(x, y, icon_size.width(), icon_size.height());
+    gfx::Rect icon_bounds(x, y, icon_size.width(), icon_size.height());
+    icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
+    icon_view_->SetBoundsRect(icon_bounds);
   }
 }
 

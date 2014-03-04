@@ -952,7 +952,7 @@ AutofillDialogViews::SuggestedButton::SuggestedButton(
     : views::MenuButton(NULL, base::string16(), listener, false) {
   const int kFocusBorderWidth = 1;
   SetBorder(views::Border::CreateEmptyBorder(kMenuButtonTopInset,
-                                             kDialogEdgePadding,
+                                             kFocusBorderWidth,
                                              kMenuButtonBottomInset,
                                              kFocusBorderWidth));
   gfx::Insets insets = GetInsets();
