@@ -6,18 +6,27 @@
 
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/console.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
 
-ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame)
+ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
+                                           Dispatcher* extension_dispatcher)
     : content::RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<ExtensionFrameHelper>(render_frame) {
-}
+      content::RenderFrameObserverTracker<ExtensionFrameHelper>(render_frame),
+      extension_dispatcher_(extension_dispatcher) {}
 
 ExtensionFrameHelper::~ExtensionFrameHelper() {
+}
+
+void ExtensionFrameHelper::WillReleaseScriptContext(
+    v8::Handle<v8::Context> context,
+    int world_id) {
+  extension_dispatcher_->WillReleaseScriptContext(
+      render_frame()->GetWebFrame(), context, world_id);
 }
 
 bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {

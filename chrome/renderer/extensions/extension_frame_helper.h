@@ -11,21 +11,28 @@
 
 namespace extensions {
 
+class Dispatcher;
+
 // RenderFrame-level plumbing for extension features.
 class ExtensionFrameHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<ExtensionFrameHelper> {
  public:
-  explicit ExtensionFrameHelper(content::RenderFrame* render_frame);
+  ExtensionFrameHelper(content::RenderFrame* render_frame,
+                       Dispatcher* extension_dispatcher);
   virtual ~ExtensionFrameHelper();
 
  private:
   // RenderFrameObserver implementation.
+  virtual void WillReleaseScriptContext(v8::Handle<v8::Context>,
+                                        int world_id) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC handlers.
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
+
+  Dispatcher* extension_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFrameHelper);
 };

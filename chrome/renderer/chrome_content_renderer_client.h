@@ -107,9 +107,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
                                       int world_id) OVERRIDE;
-  virtual void WillReleaseScriptContext(blink::WebFrame* frame,
-                                        v8::Handle<v8::Context> context,
-                                        int world_id) OVERRIDE;
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;

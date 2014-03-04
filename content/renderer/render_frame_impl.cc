@@ -1920,8 +1920,10 @@ void RenderFrameImpl::willReleaseScriptContext(blink::WebFrame* frame,
                                                v8::Handle<v8::Context> context,
                                                int world_id) {
   DCHECK(!frame_ || frame_ == frame);
-  GetContentClient()->renderer()->WillReleaseScriptContext(
-      frame, context, world_id);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver,
+                    observers_,
+                    WillReleaseScriptContext(context, world_id));
 }
 
 void RenderFrameImpl::didFirstVisuallyNonEmptyLayout(blink::WebFrame* frame) {

@@ -7,6 +7,9 @@
 #include "apps/shell/common/shell_extensions_client.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extensions_client.h"
 
@@ -15,6 +18,43 @@ using blink::WebString;
 using content::RenderThread;
 
 namespace apps {
+
+namespace {
+
+// TODO: promote ExtensionFrameHelper to a common place and share with this.
+class ShellFrameHelper
+    : public content::RenderFrameObserver,
+      public content::RenderFrameObserverTracker<ShellFrameHelper> {
+ public:
+  ShellFrameHelper(content::RenderFrame* render_frame,
+                   extensions::Dispatcher* extension_dispatcher);
+  virtual ~ShellFrameHelper();
+
+  // RenderFrameObserver implementation.
+  virtual void WillReleaseScriptContext(v8::Handle<v8::Context>,
+                                        int world_id) OVERRIDE;
+
+ private:
+  extensions::Dispatcher* extension_dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellFrameHelper);
+};
+
+ShellFrameHelper::ShellFrameHelper(content::RenderFrame* render_frame,
+                                   extensions::Dispatcher* extension_dispatcher)
+    : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<ShellFrameHelper>(render_frame),
+      extension_dispatcher_(extension_dispatcher) {}
+
+ShellFrameHelper::~ShellFrameHelper() {}
+
+void ShellFrameHelper::WillReleaseScriptContext(v8::Handle<v8::Context> context,
+                                                int world_id) {
+  extension_dispatcher_->WillReleaseScriptContext(
+      render_frame()->GetWebFrame(), context, world_id);
+}
+
+}  // namespace
 
 ShellContentRendererClient::ShellContentRendererClient() {}
 
@@ -35,8 +75,8 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
 void ShellContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
-  // TODO(jamescook): Create ExtensionFrameHelper? This might be needed for
-  // Pepper plugins like Flash.
+  // ShellFrameHelper destroyes itself when the RenderFrame is destroyed.
+  new ShellFrameHelper(render_frame, extension_dispatcher_.get());
 }
 
 void ShellContentRendererClient::RenderViewCreated(
@@ -59,11 +99,6 @@ void ShellContentRendererClient::DidCreateScriptContext(
     int world_id) {
   extension_dispatcher_->DidCreateScriptContext(
       frame, context, extension_group, world_id);
-}
-
-void ShellContentRendererClient::WillReleaseScriptContext(
-    WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  extension_dispatcher_->WillReleaseScriptContext(frame, context, world_id);
 }
 
 bool ShellContentRendererClient::ShouldEnableSiteIsolationPolicy() const {

@@ -216,9 +216,6 @@ class CONTENT_EXPORT ContentRendererClient {
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
                                       int world_id) {}
-  virtual void WillReleaseScriptContext(blink::WebFrame* frame,
-                                        v8::Handle<v8::Context>,
-                                        int world_id) {}
 
   // See blink::Platform.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,

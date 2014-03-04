@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 class WebFrame;
@@ -42,6 +43,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidStartProvisionalLoad() {}
   virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
   virtual void DidFinishLoad() {}
+  virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
+                                        int world_id) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

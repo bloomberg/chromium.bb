@@ -381,7 +381,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
         chrome_observer_->content_setting_rules());
   }
 
-  new extensions::ExtensionFrameHelper(render_frame);
+  new extensions::ExtensionFrameHelper(render_frame,
+                                       extension_dispatcher_.get());
 
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_frame);
@@ -1205,11 +1206,6 @@ void ChromeContentRendererClient::DidCreateScriptContext(
     int world_id) {
   extension_dispatcher_->DidCreateScriptContext(
       frame, context, extension_group, world_id);
-}
-
-void ChromeContentRendererClient::WillReleaseScriptContext(
-    WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  extension_dispatcher_->WillReleaseScriptContext(frame, context, world_id);
 }
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(
