@@ -26,9 +26,12 @@ function test()
 
     function addNewRuleAndSelectNode(nodeId, next)
     {
-        document.getElementById("add-style-button-test-id").click();
-        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
-        InspectorTest.selectNodeAndWaitForStyles(nodeId, next);
+        InspectorTest.addNewRule(null, ruleAdded);
+
+        function ruleAdded()
+        {
+            InspectorTest.selectNodeAndWaitForStyles(nodeId, next);
+        }
     }
 }
 

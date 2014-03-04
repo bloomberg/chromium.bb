@@ -241,7 +241,7 @@ function test()
                 InspectorTest.completeTest();
             }
 
-            function didPatchStyleSheet(styleSheedId)
+            function didPatchStyleSheet(styleSheetId)
             {
                 CSSAgent.getMatchedStylesForNode(bodyId, false, false, onMatchedStylesForNode);
             }
@@ -296,7 +296,18 @@ function test()
                 CSSAgent.setPropertyText(rule.style.styleId, 0, "font-family: serif;", false, didSetStyleText);
             }
 
-            CSSAgent.addRule(bodyId, "body", ruleAdded);
+            function viaInspectorStyleSheetCreated(error, styleSheetId)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
+                    return;
+                }
+                CSSAgent.addRule(styleSheetId, "body", ruleAdded);
+            }
+
+            var frameId = WebInspector.resourceTreeModel.mainFrame.id;
+            CSSAgent.createStyleSheet(frameId, viaInspectorStyleSheetCreated.bind(this));
         },
 
         function test_disableProperty(next)

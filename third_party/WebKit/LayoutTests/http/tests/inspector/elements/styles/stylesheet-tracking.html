@@ -144,17 +144,12 @@ function test()
     {
         InspectorTest.addResult("=== Adding rule... ===");
         waitStyleSheetAdded(1);
-        WebInspector.cssModel.addRule(inspectedNode.id, "#inspected", successCallback, failureCallback);
+        InspectorTest.addNewRule("#inspected", successCallback);
 
         function successCallback()
         {
             InspectorTest.addResult("Rule added");
             step5();
-        }
-        function failureCallback()
-        {
-            InspectorTest.addResult("Failed to add rule.");
-            InspectorTest.completeTest();
         }
     }
 

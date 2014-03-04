@@ -130,7 +130,8 @@ public:
     virtual void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text) OVERRIDE;
     virtual void setPropertyText(ErrorString*, const RefPtr<JSONObject>& styleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result) OVERRIDE;
     virtual void setRuleSelector(ErrorString*, const RefPtr<JSONObject>& ruleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) OVERRIDE;
-    virtual void addRule(ErrorString*, int contextNodeId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) OVERRIDE;
+    virtual void createStyleSheet(ErrorString*, const String& frameId, TypeBuilder::CSS::StyleSheetId* outStyleSheetId) OVERRIDE;
+    virtual void addRule(ErrorString*, const String& styleSheetId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) OVERRIDE;
     virtual void forcePseudoState(ErrorString*, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses) OVERRIDE;
 
     PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);

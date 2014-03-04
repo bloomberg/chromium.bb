@@ -24,22 +24,16 @@ function test()
             function nodeCallback(node)
             {
                 nodeId = node.id;
-                WebInspector.cssModel.addRule(nodeId, "#inspected", successCallback, failureCallback);
+                InspectorTest.addNewRule("#inspected", successCallback);
             }
 
-            function successCallback(newRule, doesAffectSelectedNode)
+            function successCallback(styleRule)
             {
-                rule = newRule;
+                rule = styleRule.rule;
                 InspectorTest.addResult("=== Rule added ===");
                 InspectorTest.addResult(rule.selectorText + " {" + rule.style.cssText + "}");
                 InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
                 next();
-            }
-
-            function failureCallback()
-            {
-                InspectorTest.addResult("[!] Failed to add rule.");
-                InspectorTest.completeTest();
             }
         },
 

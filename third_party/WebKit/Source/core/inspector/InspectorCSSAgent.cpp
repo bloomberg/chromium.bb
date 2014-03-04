@@ -872,17 +872,34 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const RefPtr<J
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 
-void InspectorCSSAgent::addRule(ErrorString* errorString, const int contextNodeId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
+void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String& frameId, TypeBuilder::CSS::StyleSheetId* outStyleSheetId)
 {
-    Node* node = m_domAgent->assertNode(errorString, contextNodeId);
-    if (!node)
+    LocalFrame* frame = m_pageAgent->frameForId(frameId);
+    if (!frame) {
+        *errorString = "Frame not found";
         return;
+    }
 
-    InspectorStyleSheet* inspectorStyleSheet = viaInspectorStyleSheet(&node->document(), true);
+    Document* document = frame->document();
+    if (!document) {
+        *errorString = "Frame does not have a document";
+        return;
+    }
+
+    InspectorStyleSheet* inspectorStyleSheet = viaInspectorStyleSheet(document, true);
     if (!inspectorStyleSheet) {
         *errorString = "No target stylesheet found";
         return;
     }
+
+    *outStyleSheetId = inspectorStyleSheet->id();
+}
+
+void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleSheetId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
+{
+    InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
+    if (!inspectorStyleSheet)
+        return;
 
     TrackExceptionState exceptionState;
     OwnPtr<AddRuleAction> action = adoptPtr(new AddRuleAction(inspectorStyleSheet, selector));

@@ -669,6 +669,17 @@ InspectorTest.matchingSelectors = function(rule)
     return "[" + selectors.join(", ") + "]";
 }
 
+InspectorTest.addNewRule = function(selector, callback)
+{
+    // Click "Add new rule".
+    document.getElementById("add-style-button-test-id").click();
+    var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
+    if (typeof selector === "string")
+        section._selectorElement.textContent = selector;
+    section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+    InspectorTest.addSniffer(WebInspector.BlankStylePropertiesSection.prototype, "makeNormal", callback);
+}
+
 };
 
 function dumpInspectorHighlightRects()

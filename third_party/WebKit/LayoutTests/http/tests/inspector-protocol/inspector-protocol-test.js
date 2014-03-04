@@ -51,6 +51,21 @@ InspectorTest.sendCommand = function(method, params, handler)
     return this._requestId;
 }
 
+InspectorTest.sendCommandOrDie = function(command, properties, callback)
+{
+    InspectorTest.sendCommand(command, properties || {}, commandCallback);
+    function commandCallback(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log("ERROR: " + msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        if (callback)
+            callback(msg.result);
+    }
+}
+
 /**
  * @param {function(object)=} callback
  */
