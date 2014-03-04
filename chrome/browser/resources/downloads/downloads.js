@@ -472,8 +472,11 @@ Download.prototype.update = function(download) {
     } else if (this.nodeFileName_.textContent != this.fileName_) {
       this.nodeFileName_.textContent = this.fileName_;
     }
-    if (this.state_ == Download.States.INTERRUPTED)
+    if (this.state_ == Download.States.INTERRUPTED) {
       this.nodeFileName_.classList.add('interrupted');
+    } else if (this.nodeFileName_.classList.contains('interrupted')) {
+      this.nodeFileName_.classList.remove('interrupted');
+    }
 
     showInline(this.nodeFileLink_,
                this.state_ == Download.States.COMPLETE &&
