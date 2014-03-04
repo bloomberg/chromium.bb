@@ -88,9 +88,21 @@ int MTPFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
     return net::ERR_FAILED;
 
   if (!media_header_validated_) {
-    scoped_refptr<net::IOBuffer> header_buf(
-        new net::IOBuffer(net::kMaxBytesToSniff));
-    ReadBytes(url_, header_buf, 0, net::kMaxBytesToSniff,
+    scoped_refptr<net::IOBuffer> header_buf;
+    int header_buf_len = 0;
+
+    if (current_offset_ == 0 && buf_len >= net::kMaxBytesToSniff) {
+      // If requested read includes all the header bytes, we read directly to
+      // the original buffer, and validate the header bytes within that.
+      header_buf = buf;
+      header_buf_len = buf_len;
+    } else {
+      // Otherwise, make a special request for the header.
+      header_buf = new net::IOBuffer(net::kMaxBytesToSniff);
+      header_buf_len = net::kMaxBytesToSniff;
+    }
+
+    ReadBytes(url_, header_buf, 0, header_buf_len,
               base::Bind(&MTPFileStreamReader::FinishValidateMediaHeader,
                          weak_factory_.GetWeakPtr(), header_buf,
                          make_scoped_refptr(buf), buf_len, callback),
@@ -141,7 +153,13 @@ void MTPFileStreamReader::FinishValidateMediaHeader(
 
   media_header_validated_ = true;
 
-  // Complete originally requested read.
+  // Finish the read immediately if we've already finished reading into the
+  // originally requested buffer.
+  if (header_buf == buf)
+    return FinishRead(callback, file_info, header_bytes_read);
+
+  // Header buffer isn't the same as the original read buffer. Make a separate
+  // request for that.
   ReadBytes(url_, buf, current_offset_, buf_len,
             base::Bind(&MTPFileStreamReader::FinishRead,
                        weak_factory_.GetWeakPtr(), callback),
