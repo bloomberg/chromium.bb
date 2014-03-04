@@ -51,6 +51,24 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       RenderFrameHostImpl* render_frame_host,
       NavigationController::ReloadType reload_type) OVERRIDE;
   virtual base::TimeTicks GetCurrentLoadStart() OVERRIDE;
+  virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                              const GURL& url,
+                              const Referrer& referrer,
+                              WindowOpenDisposition disposition,
+                              int64 source_frame_id,
+                              bool should_replace_current_entry,
+                              bool user_gesture) OVERRIDE;
+  virtual void RequestTransferURL(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      const std::vector<GURL>& redirect_chain,
+      const Referrer& referrer,
+      PageTransition page_transition,
+      WindowOpenDisposition disposition,
+      int64 source_frame_id,
+      const GlobalRequestID& transferred_global_request_id,
+      bool should_replace_current_entry,
+      bool user_gesture) OVERRIDE;
 
  private:
   virtual ~NavigatorImpl() {}

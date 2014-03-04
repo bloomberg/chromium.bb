@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/cross_site_transferring_request.h"
@@ -297,10 +298,14 @@ void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
     GURL transfer_url = pending_nav_params_->transfer_url_chain.back();
     pending_nav_params_->transfer_url_chain.pop_back();
 
+    RenderFrameHostImpl* render_frame_host =
+        static_cast<RenderFrameHostImpl*>(render_view_host->GetMainFrame());
+
     // We don't know whether the original request had |user_action| set to true.
     // However, since we force the navigation to be in the current tab, it
     // doesn't matter.
-    render_view_host->GetDelegate()->RequestTransferURL(
+    render_frame_host->frame_tree_node()->navigator()->RequestTransferURL(
+        render_frame_host,
         transfer_url,
         pending_nav_params_->transfer_url_chain,
         pending_nav_params_->referrer,
@@ -352,8 +357,8 @@ void RenderFrameHostManager::SwappedOutFrame(
     // We don't know whether the original request had |user_action| set to true.
     // However, since we force the navigation to be in the current tab, it
     // doesn't matter.
-    // TODO(creis): Move RequestTransferURL to RenderFrameHost's navigator.
-    render_frame_host->render_view_host()->GetDelegate()->RequestTransferURL(
+    render_frame_host->frame_tree_node()->navigator()->RequestTransferURL(
+        render_frame_host,
         transfer_url,
         pending_nav_params_->transfer_url_chain,
         pending_nav_params_->referrer,

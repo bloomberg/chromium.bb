@@ -1188,7 +1188,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnDocumentOnLoadCompletedInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen, OnToggleFullscreen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollOffset,
@@ -1423,16 +1422,6 @@ void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   // We need to notify the contents that its fullscreen state has changed. This
   // is done as part of the resize message.
   WasResized();
-}
-
-void RenderViewHostImpl::OnOpenURL(
-    const ViewHostMsg_OpenURL_Params& params) {
-  GURL validated_url(params.url);
-  GetProcess()->FilterURL(false, &validated_url);
-
-  delegate_->RequestOpenURL(
-      this, validated_url, params.referrer, params.disposition, params.frame_id,
-      params.should_replace_current_entry, params.user_gesture);
 }
 
 void RenderViewHostImpl::OnDidContentsPreferredSizeChange(

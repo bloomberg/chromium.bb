@@ -337,15 +337,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
   IPC_STRUCT_MEMBER(std::vector<content::DateTimeSuggestion>, suggestions)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewHostMsg_OpenURL_Params)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
-  IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
-  IPC_STRUCT_MEMBER(int64, frame_id)
-  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
-  IPC_STRUCT_MEMBER(bool, user_gesture)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, anchor_rect)
   IPC_STRUCT_MEMBER(blink::WebTextDirection, anchor_dir)
@@ -1482,9 +1473,6 @@ IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            content::JavaScriptMessageType /* in - type */,
                            bool         /* out - success */,
                            base::string16     /* out - user_input field */)
-
-// Requests that the given URL be opened in the specified manner.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenURL, ViewHostMsg_OpenURL_Params)
 
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
