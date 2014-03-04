@@ -15,11 +15,11 @@ the bitcode on a *semantic* level; the physical encoding level will be described
 elsewhere. For the purpose of this document, the textual form of LLVM IR is
 used to describe instructions and other bitcode constructs.
 
-Since the PNaCl bitcode is based to a large extent on LLVM IR, many sections
-in this document point to a relevant section of the LLVM language reference
-manual. Only the changes, restrictions and variations specific to PNaCl are
-described---full semantic descriptions are not duplicated from the LLVM
-reference manual.
+Since the PNaCl bitcode is based to a large extent on LLVM IR as of
+version 3.3, many sections in this document point to a relevant section
+of the LLVM language reference manual. Only the changes, restrictions
+and variations specific to PNaCl are described---full semantic
+descriptions are not duplicated from the LLVM reference manual.
 
 High Level Structure
 ====================

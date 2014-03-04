@@ -6,28 +6,29 @@
 <ul class="small-gap">
 <li><p class="first"><a class="reference internal" href="#source-language-support" id="id2">Source language support</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#preprocessor-definitions" id="id3">Preprocessor definitions</a></li>
+<li><a class="reference internal" href="#versions" id="id3">Versions</a></li>
+<li><a class="reference internal" href="#preprocessor-definitions" id="id4">Preprocessor definitions</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#memory-model-and-atomics" id="id4">Memory Model and Atomics</a></p>
+<li><p class="first"><a class="reference internal" href="#memory-model-and-atomics" id="id5">Memory Model and Atomics</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#memory-model-for-concurrent-operations" id="id5">Memory Model for Concurrent Operations</a></li>
-<li><a class="reference internal" href="#atomic-memory-ordering-constraints" id="id6">Atomic Memory Ordering Constraints</a></li>
-<li><a class="reference internal" href="#volatile-memory-accesses" id="id7">Volatile Memory Accesses</a></li>
+<li><a class="reference internal" href="#memory-model-for-concurrent-operations" id="id6">Memory Model for Concurrent Operations</a></li>
+<li><a class="reference internal" href="#atomic-memory-ordering-constraints" id="id7">Atomic Memory Ordering Constraints</a></li>
+<li><a class="reference internal" href="#volatile-memory-accesses" id="id8">Volatile Memory Accesses</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#threading" id="id8">Threading</a></li>
-<li><a class="reference internal" href="#setjmp-and-longjmp" id="id9"><code>setjmp</code> and <code>longjmp</code></a></li>
-<li><a class="reference internal" href="#c-exception-handling" id="id10">C++ Exception Handling</a></li>
-<li><a class="reference internal" href="#inline-assembly" id="id11">Inline Assembly</a></li>
-<li><a class="reference internal" href="#undefined-behavior" id="id12">Undefined Behavior</a></li>
-<li><a class="reference internal" href="#floating-point" id="id13">Floating-Point</a></li>
-<li><a class="reference internal" href="#computed-goto" id="id14">Computed <code>goto</code></a></li>
-<li><p class="first"><a class="reference internal" href="#future-directions" id="id15">Future Directions</a></p>
+<li><a class="reference internal" href="#threading" id="id9">Threading</a></li>
+<li><a class="reference internal" href="#setjmp-and-longjmp" id="id10"><code>setjmp</code> and <code>longjmp</code></a></li>
+<li><a class="reference internal" href="#c-exception-handling" id="id11">C++ Exception Handling</a></li>
+<li><a class="reference internal" href="#inline-assembly" id="id12">Inline Assembly</a></li>
+<li><a class="reference internal" href="#undefined-behavior" id="id13">Undefined Behavior</a></li>
+<li><a class="reference internal" href="#floating-point" id="id14">Floating-Point</a></li>
+<li><a class="reference internal" href="#computed-goto" id="id15">Computed <code>goto</code></a></li>
+<li><p class="first"><a class="reference internal" href="#future-directions" id="id16">Future Directions</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#simd" id="id16">SIMD</a></li>
-<li><a class="reference internal" href="#inter-process-communication" id="id17">Inter-Process Communication</a></li>
-<li><a class="reference internal" href="#posix-style-signal-handling" id="id18">POSIX-style Signal Handling</a></li>
+<li><a class="reference internal" href="#simd" id="id17">SIMD</a></li>
+<li><a class="reference internal" href="#inter-process-communication" id="id18">Inter-Process Communication</a></li>
+<li><a class="reference internal" href="#posix-style-signal-handling" id="id19">POSIX-style Signal Handling</a></li>
 </ul>
 </li>
 </ul>
@@ -35,16 +36,24 @@
 </div><section id="source-language-support">
 <h2 id="source-language-support">Source language support</h2>
 <p>The currently supported languages are C and C++. The PNaCl toolchain is
-based on Clang 3.3, which fully supports C++11 and most of C11. A
+based on recent Clang, which fully supports C++11 and most of C11. A
 detailed status of the language support is available <a class="reference external" href="http://clang.llvm.org/cxx_status.html">here</a>.</p>
 <p>For information on using languages other than C/C++, see the <a class="reference internal" href="/native-client/faq.html#other-languages"><em>FAQ
 section on other languages</em></a>.</p>
 <p>As for the standard libraries, the PNaCl toolchain is currently based on
-<code>libc++</code>, and the <code>newlib</code> standard C library (version is available
-through the macro <code>NEWLIB_VERSION</code>). <code>libstdc++</code> is also supported
-but its use is discouraged; see <a class="reference internal" href="/native-client/devguide/devcycle/building.html#building-cpp-libraries"><em>C++ standard libraries</em></a> for more
-details.</p>
-<section id="preprocessor-definitions">
+<code>libc++</code>, and the <code>newlib</code> standard C library. <code>libstdc++</code> is also
+supported but its use is discouraged; see <a class="reference internal" href="/native-client/devguide/devcycle/building.html#building-cpp-libraries"><em>C++ standard libraries</em></a>
+for more details.</p>
+<section id="versions">
+<h3 id="versions">Versions</h3>
+<p>Version information can be obtained:</p>
+<ul class="small-gap">
+<li>Clang/LLVM: run <code>pnacl-clang -v</code>.</li>
+<li><code>newlib</code>: use the <code>_NEWLIB_VERSION</code> macro.</li>
+<li><code>libc++</code>: use the <code>_LIBCPP_VERSION</code> macro.</li>
+<li><code>libstdc++</code>: use the <code>_GLIBCXX_VERSION</code> macro.</li>
+</ul>
+</section><section id="preprocessor-definitions">
 <h3 id="preprocessor-definitions">Preprocessor definitions</h3>
 <p>When compiling C/C++ code, the PNaCl toolchain defines the <code>__pnacl__</code>
 macro. In addition, <code>__native_client__</code> is defined for compatibility

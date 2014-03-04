@@ -11,7 +11,7 @@ Source language support
 =======================
 
 The currently supported languages are C and C++. The PNaCl toolchain is
-based on Clang 3.3, which fully supports C++11 and most of C11. A
+based on recent Clang, which fully supports C++11 and most of C11. A
 detailed status of the language support is available `here
 <http://clang.llvm.org/cxx_status.html>`_.
 
@@ -19,10 +19,19 @@ For information on using languages other than C/C++, see the :ref:`FAQ
 section on other languages <other_languages>`.
 
 As for the standard libraries, the PNaCl toolchain is currently based on
-``libc++``, and the ``newlib`` standard C library (version is available
-through the macro ``NEWLIB_VERSION``). ``libstdc++`` is also supported
-but its use is discouraged; see :ref:`building_cpp_libraries` for more
-details.
+``libc++``, and the ``newlib`` standard C library. ``libstdc++`` is also
+supported but its use is discouraged; see :ref:`building_cpp_libraries`
+for more details.
+
+Versions
+--------
+
+Version information can be obtained:
+
+* Clang/LLVM: run ``pnacl-clang -v``.
+* ``newlib``: use the ``_NEWLIB_VERSION`` macro.
+* ``libc++``: use the ``_LIBCPP_VERSION`` macro.
+* ``libstdc++``: use the ``_GLIBCXX_VERSION`` macro.
 
 Preprocessor definitions
 ------------------------
