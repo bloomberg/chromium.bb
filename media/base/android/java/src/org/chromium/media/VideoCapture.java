@@ -154,7 +154,10 @@ public class VideoCapture implements PreviewCallback {
             Log.e(TAG, "Camera.open: " + ex);
             return null;
         }
-        Camera.Parameters parameters = camera.getParameters();
+        Camera.Parameters parameters = getCameraParameters(camera);
+        if (parameters == null) {
+            return null;
+        }
 
         ArrayList<CaptureFormat> formatList = new ArrayList<CaptureFormat>();
         // getSupportedPreview{Formats,FpsRange,PreviewSizes}() returns Lists
@@ -222,15 +225,24 @@ public class VideoCapture implements PreviewCallback {
             return false;
         }
 
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(mId, cameraInfo);
+        Camera.CameraInfo cameraInfo = getCameraInfo(mId);
+        if (cameraInfo == null) {
+            mCamera.release();
+            mCamera = null;
+            return false;
+        }
+
         mCameraOrientation = cameraInfo.orientation;
         mCameraFacing = cameraInfo.facing;
         mDeviceOrientation = getDeviceOrientation();
         Log.d(TAG, "allocate: orientation dev=" + mDeviceOrientation +
                   ", cam=" + mCameraOrientation + ", facing=" + mCameraFacing);
 
-        Camera.Parameters parameters = mCamera.getParameters();
+        Camera.Parameters parameters = getCameraParameters(mCamera);
+        if (parameters == null) {
+            mCamera = null;
+            return false;
+        }
 
         // getSupportedPreviewFpsRange() returns a List with at least one
         // element, but when camera is in bad state, it can return null pointer.
@@ -386,7 +398,13 @@ public class VideoCapture implements PreviewCallback {
             mPreviewBufferLock.unlock();
         }
         mCamera.setPreviewCallbackWithBuffer(this);
-        mCamera.startPreview();
+        try {
+            mCamera.startPreview();
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "startCapture: Camera.startPreview: " + ex);
+            return -1;
+        }
+
         return 0;
     }
 
@@ -471,8 +489,7 @@ public class VideoCapture implements PreviewCallback {
 
         private ChromiumCameraInfo(int index) {
             mId = index;
-            mCameraInfo = new Camera.CameraInfo();
-            Camera.getCameraInfo(index, mCameraInfo);
+            mCameraInfo = getCameraInfo(mId);
         }
 
         @CalledByNative("ChromiumCameraInfo")
@@ -492,6 +509,9 @@ public class VideoCapture implements PreviewCallback {
 
         @CalledByNative("ChromiumCameraInfo")
         private String getDeviceName() {
+            if (mCameraInfo == null) {
+                return "";
+            }
             return  "camera " + mId + ", facing " +
                     (mCameraInfo.facing ==
                      Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
@@ -499,7 +519,7 @@ public class VideoCapture implements PreviewCallback {
 
         @CalledByNative("ChromiumCameraInfo")
         private int getOrientation() {
-            return mCameraInfo.orientation;
+            return (mCameraInfo == null ? 0 : mCameraInfo.orientation);
         }
     }
 
@@ -531,5 +551,28 @@ public class VideoCapture implements PreviewCallback {
             }
         }
         return orientation;
+    }
+
+    private static Camera.Parameters getCameraParameters(Camera camera) {
+        Camera.Parameters parameters;
+        try {
+            parameters = camera.getParameters();
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "getCameraParameters: Camera.getParameters: " + ex);
+            camera.release();
+            return null;
+        }
+        return parameters;
+    }
+
+    private static Camera.CameraInfo getCameraInfo(int id) {
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        try {
+            Camera.getCameraInfo(id, cameraInfo);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "getCameraInfo: Camera.getCameraInfo: " + ex);
+            return null;
+        }
+        return cameraInfo;
     }
 }
