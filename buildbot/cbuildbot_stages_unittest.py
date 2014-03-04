@@ -1332,7 +1332,7 @@ class SignerResultsStageTest(AbstractStageTest):
       })
 
 
-class PaygenStageTest(AbstractStageTest):
+class PaygenStageTest(StageTest):
   """Test the PaygenStageStage."""
 
   BOT_ID = 'x86-mario-release'
@@ -1342,10 +1342,10 @@ class PaygenStageTest(AbstractStageTest):
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
-  def ConstructStage(self):
+  def ConstructStage(self, channels=None):
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.PaygenStage(
-        self.run, self._current_board, archive_stage)
+        self.run, self._current_board, archive_stage, channels=channels)
 
   def testPerformStageSuccess(self):
     """Test that SignerResultsStage works when signing works."""
@@ -1390,6 +1390,19 @@ class PaygenStageTest(AbstractStageTest):
 
       # Ensure no work was queued up.
       self.assertFalse(queue.put.called)
+
+  def testPerformTrybot(self):
+    """Test the PerformStage alternate behavior for trybot runs."""
+    with patch(stages.parallel, 'BackgroundTaskRunner') as background:
+      queue = background().__enter__()
+
+      stage = self.ConstructStage(channels=['foo', 'bar'])
+      stage.PerformStage()
+
+      # Notice that we didn't put anything in _wait_for_channel_signing, but
+      # still got results right away.
+      queue.put.assert_any_call(('foo', 'x86-mario', '0.0.1', False))
+      queue.put.assert_any_call(('bar', 'x86-mario', '0.0.1', False))
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')

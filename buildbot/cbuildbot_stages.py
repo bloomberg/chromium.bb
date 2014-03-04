@@ -3151,10 +3151,31 @@ class PaygenSigningRequirementsError(Exception):
 
 
 class PaygenStage(ArchivingStage):
-  """Stage that generates release payloads."""
+  """Stage that generates release payloads.
 
+  If this stage is created with a 'channels' argument, it can run
+  independantly. Otherwise, it's dependent on values queued up by
+  the SignerResultsStage.
+  """
   option_name = 'paygen'
   config_name = 'paygen'
+
+  def __init__(self, builder_run, board, archive_stage, channels=None,
+               **kwargs):
+    """Init that accepts the channels argument, if present.
+
+    Args:
+      builder_run: See builder_run on ArchivingStage.
+      board: See board on ArchivingStage.
+      archive_stage: See archive_stage on ArchivingStage.
+      channels: Explicit list of channels to generate payloads for.
+                If empty, will instead wait on values from SignerResultsStage.
+                Channels is normally None in release builds, and normally set
+                for trybot 'payloads' builds.
+    """
+    super(PaygenStage, self).__init__(builder_run, board, archive_stage,
+                                      **kwargs)
+    self.channels = channels
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
@@ -3172,19 +3193,30 @@ class PaygenStage(ArchivingStage):
     board = self._current_board
     version = self._run.attrs.release_tag
 
+    assert version, "We can't generate payloads without a release_tag."
+    logging.info("Generating payloads for: %s, %s", board, version)
+
     with parallel.BackgroundTaskRunner(_RunPaygenInProcess) as per_channel:
-      while True:
-        channel = self.archive_stage.WaitForChannelSigning()
+      if self.channels:
+        logging.info("Using explicit channels: %s", self.channels)
+        # If we have an explicit list of channels, use it.
+        for channel in self.channels:
+          per_channel.put((channel, board, version, self._run.debug))
+      else:
+        # Otherwise, wait for SignerResults to tell us which channels are ready.
+        while True:
+          channel = self.archive_stage.WaitForChannelSigning()
 
-        if channel is None:
-          # This signals a signer error, or that signing never ran.
-          raise PaygenSigningRequirementsError()
+          if channel is None:
+            # This signals a signer error, or that signing never ran.
+            raise PaygenSigningRequirementsError()
 
-        if channel == SignerResultsStage.FINISHED:
-          break
+          if channel == SignerResultsStage.FINISHED:
+            break
 
-        per_channel.put((channel, board, version, self._run.debug,
-                         self._run.config.perform_paygen_testing))
+          logging.info("Notified of channel: %s", channel)
+          per_channel.put((channel, board, version, self._run.debug,
+                           self._run.config.perform_paygen_testing))
 
 
 def _RunPaygenInProcess(channel, board, version, debug, test_payloads):

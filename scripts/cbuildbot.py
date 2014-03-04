@@ -526,6 +526,16 @@ class SimpleBuilder(Builder):
     self._RunStage(stages.SyncChromeStage)
     self._RunStage(stages.MasterUploadPrebuiltsStage)
 
+  def _RunPayloadsBuild(self):
+    """Run the PaygenStage once for each board."""
+    def _RunStageWrapper(board):
+      self._RunStage(stages.PaygenStage, board=board,
+                     channels=self._run.options.channels, archive_stage=None)
+
+    with parallel.BackgroundTaskRunner(_RunStageWrapper) as queue:
+      for board in self._run.config.boards:
+        queue.put([board])
+
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
     self._RunStage(stages.InitSDKStage)
@@ -591,6 +601,8 @@ class SimpleBuilder(Builder):
     elif (self._run.config.build_type == constants.PALADIN_TYPE and
           self._run.config.master):
       self._RunMasterPaladinBuild()
+    elif self._run.config.build_type == constants.PAYLOADS_TYPE:
+      self._RunPayloadsBuild()
     else:
       self._RunDefaultTypeBuild()
 
@@ -1076,6 +1088,11 @@ def _CreateParser():
   group.add_option('--slaves', action='extend', default=[],
                    help='Specify specific remote tryslaves to run on (e.g. '
                         'build149-m2); if the bot is busy, it will be queued')
+  group.add_remote_option('--channel', dest='channels', action='extend',
+                          default=[],
+                          help='Specify a channel for a payloads trybot. Can be'
+                               'specified multiple times. No valid for '
+                               'non-payloads configs.')
   group.add_option('--test-tryjob', action='store_true',
                    default=False,
                    help='Submit a tryjob to the test repository.  Will not '
@@ -1482,19 +1499,25 @@ def _PostParseCheck(parser, options, args):
   invalid_target = False
   for arg in args:
     build_config = _GetConfig(arg)
+
     if not build_config:
       cros_build_lib.Error('No such configuraton target: "%s".', arg)
       invalid_target = True
+      continue
+
+    if options.channels and build_config.build_type != constants.PAYLOADS_TYPE:
+      cros_build_lib.Die('--channel must only be used with a payload config,'
+                         ' not target (%s).' % arg)
 
     # The --version option is not compatible with an external target unless the
     # --buildbot option is specified.  More correctly, only "paladin versions"
     # will work with external targets, and those are only used with --buildbot.
     # If --buildbot is specified, then user should know what they are doing and
     # only specify a version that will work.  See crbug.com/311648.
-    elif options.force_version and not options.buildbot:
-      if not build_config.internal:
-        cros_build_lib.Die('Cannot specify --version without --buildbot for an'
-                           ' external target (%s).' % arg)
+    if (options.force_version and
+        not (options.buildbot or build_config.internal)):
+      cros_build_lib.Die('Cannot specify --version without --buildbot for an'
+                         ' external target (%s).' % arg)
 
   if invalid_target:
     print 'Please specify one of:'
@@ -1687,8 +1710,7 @@ def main(argv):
 
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(
-          build_config,
-          options)
+          build_config, options)
 
     if options.buildbot or options.remote_trybot:
       _DisableYamaHardLinkChecks()

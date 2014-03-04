@@ -435,9 +435,11 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         self.assertTrue(config['push_image'],
                         '%s has signer_results without push_image' % build_name)
 
-      # paygen can't complete without signer_results.
+      # paygen can't complete without signer_results, except for payloads
+      # where --channel arguments meet the requirements.
       if config['paygen']:
-        self.assertTrue(config['signer_results'],
+        self.assertTrue(config['signer_results'] or
+                        config['build_type'] == constants.PAYLOADS_TYPE,
                         '%s has paygen without signer_results' % build_name)
 
 

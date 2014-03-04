@@ -51,6 +51,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'test-ap',
     'test-ap-group',
     constants.BRANCH_UTIL_CONFIG,
+    constants.PAYLOADS_TYPE,
 )
 
 
@@ -87,7 +88,10 @@ def OverrideConfigForTrybot(build_config, options):
 
     my_config['push_image'] = False
     my_config['signer_results'] = False
-    my_config['paygen'] = False
+
+    if my_config['build_type'] != constants.PAYLOADS_TYPE:
+      my_config['paygen'] = False
+
     if options.hwtest:
       my_config['upload_hw_test_artifacts'] = True
       if not my_config['hw_tests']:
@@ -805,7 +809,6 @@ class _config(dict):
     return configs[0].add_config(name, **group_overrides)
 
 _default = _config(**_settings)
-
 
 # It is only safe to inherit prebuilts from generic boards, or from the
 # same board without the variant. This rule helps keep inheritance trees
@@ -2297,6 +2300,49 @@ _factory_release.add_config('daisy-factory',
   arm,
   boards=['daisy'],
 )
+
+_payloads = internal.derive(
+  build_type=constants.PAYLOADS_TYPE,
+  description='Regenerate release payloads.',
+  trybot_list=True,
+  vm_tests=[],
+
+  # Sync to the code used to do the build the first time.
+  manifest_version=True,
+
+  # This is the actual work we want to do.
+  paygen=True,
+)
+
+def _AddPayloadConfigs():
+  """Create <board>-payloads configs for all payload generating boards.
+
+  We create a config named 'board-payloads' for every board which has a
+  config with 'paygen' True. The idea is that we have a build that generates
+  payloads, we need to have a tryjob to re-attempt them on failure.
+  """
+  payload_boards = set()
+
+  def _search_config_and_children(search_config):
+    # If paygen is enabled, add it's boards to our list of payload boards.
+    if search_config['paygen']:
+      for board in search_config['boards']:
+        payload_boards.add(board)
+
+    # Recurse on any child configs.
+    for child in search_config['child_configs']:
+      _search_config_and_children(child)
+
+  # Search all configs for boards that generate payloads.
+  for _, search_config in config.iteritems():
+    _search_config_and_children(search_config)
+
+  # Generate a payloads trybot config for every board that generates payloads.
+  for board in payload_boards:
+    name = '%s-payloads' % board
+    _payloads.add_config(name, boards=[board])
+
+_AddPayloadConfigs()
 
 
 def GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):

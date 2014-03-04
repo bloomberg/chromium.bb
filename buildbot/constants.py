@@ -213,6 +213,9 @@ BUILD_FROM_SOURCE_TYPE = 'full'
 # Full but with versioned logic.
 CANARY_TYPE = 'canary'
 
+# Generate payloads for an already built build/version.
+PAYLOADS_TYPE = 'payloads'
+
 BRANCH_UTIL_CONFIG = 'branch-util'
 
 # Special build type for Chroot builders.  These builds focus on building
@@ -235,6 +238,7 @@ VALID_BUILD_TYPES = (
     PRE_CQ_LAUNCHER_TYPE,
     REFRESH_PACKAGES_TYPE,
     CREATE_BRANCH_TYPE,
+    PAYLOADS_TYPE,
 )
 
 # The name of the builder used to launch the pre-CQ.
