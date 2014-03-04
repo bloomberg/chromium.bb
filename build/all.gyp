@@ -313,7 +313,6 @@
             '../sandbox/sandbox.gyp:sbox_unittests',
             '../sandbox/sandbox.gyp:sbox_validation_tests',
             '../ui/app_list/app_list.gyp:app_list_unittests',
-            '../ui/views/views.gyp:views_unittests',
           ],
           'conditions': [
             # remoting_host_installation uses lots of non-trivial GYP that tend
@@ -383,6 +382,7 @@
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
             '../ui/keyboard/keyboard.gyp:keyboard_unittests',
+            '../ui/views/views.gyp:views_unittests',
           ],
         }],
         ['use_aura==1 or toolkit_views==1', {
