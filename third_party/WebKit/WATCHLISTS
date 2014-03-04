@@ -34,6 +34,15 @@
     'canvas': {
       'filepath': 'Source/core/html/canvas/'
     },
+    'clipboard': {
+      'filepath': 'Source/core/clipboard',
+      'filepath': 'Source/core/page/*Drag',
+      'filepath': 'Source/platform/*Drag',
+      'filepath': 'Source/platform/clipboard',
+      'filepath': 'Source/web/*Drag',
+      'filepath': 'public/platform/*Drag',
+      'filepath': 'public/web/*Drag',
+    },
     'css': {
       'filepath': 'Source/core/css',
     },
@@ -282,6 +291,7 @@
                   'nbarth@chromium.org',
                   'sigbjornf@opera.com' ],
     'canvas': [ 'cabanier@adobe.com', 'aandrey+blink@chromium.org' ],
+    'clipboard': [ 'dcheng@chromium.org', ],
     'custom_elements': [ 'dominicc+watchlist@chromium.org', 'dglazkov+blink@chromium.org' ],
     'fetch': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'layers': [ 'blink-layers+watch@chromium.org' ],
