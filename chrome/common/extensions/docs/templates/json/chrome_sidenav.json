@@ -661,8 +661,12 @@
         "items": [
           {
             "title": "Learn Basics",
-            "href": "/native-client/overview",
+            "href": "/native-client/index",
             "items": [
+              {
+                "title": "Welcome to Native Client",
+                "href": "/native-client/index"
+              },
               {
                 "title": "What Is Native Client?",
                 "href": "/native-client/overview"
@@ -670,6 +674,10 @@
               {
                 "title": "NaCl and PNaCl",
                 "href": "/native-client/nacl-and-pnacl"
+              },
+              {
+                "title": "Demos",
+                "href": "https://gonativeclient.appspot.com/demo"
               }
             ]
           },
@@ -816,9 +824,13 @@
             ]
           },
           {
-            "title": "Additional Reference & Versions",
-            "href": "/native-client/glossary",
+            "title": "Additional Reference",
+            "href": "/native-client/reference/index",
             "items": [
+              {
+                "title": "Index",
+                "href": "/native-client/reference/index"
+              },
               {
                 "title": "Glossary",
                 "href": "/native-client/glossary"
