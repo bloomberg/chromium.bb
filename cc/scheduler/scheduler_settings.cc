@@ -11,8 +11,7 @@ SchedulerSettings::SchedulerSettings()
       timeout_and_draw_when_animation_checkerboards(true),
       maximum_number_of_failed_draws_before_draw_is_forced_(3),
       using_synchronous_renderer_compositor(false),
-      throttle_frame_production(true),
-      switch_to_low_latency_if_possible(false) {}
+      throttle_frame_production(true) {}
 
 SchedulerSettings::~SchedulerSettings() {}
 

@@ -1123,9 +1123,8 @@ void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
       base::TimeDelta::FromMilliseconds(
           begin_main_frame_to_commit_estimate_in_ms),
       base::TimeDelta::FromMilliseconds(commit_to_activate_estimate_in_ms));
-  SchedulerSettings scheduler_settings;
-  scheduler_settings.switch_to_low_latency_if_possible = true;
-  Scheduler* scheduler = client.CreateScheduler(scheduler_settings);
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);

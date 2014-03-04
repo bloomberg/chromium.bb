@@ -43,6 +43,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       draw_if_possible_failed_(false),
       did_create_and_initialize_first_output_surface_(false),
       smoothness_takes_priority_(false),
+      skip_next_begin_main_frame_to_reduce_latency_(false),
       skip_begin_main_frame_to_reduce_latency_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
@@ -266,6 +267,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
                           MainThreadIsInHighLatencyMode());
   minor_state->SetBoolean("skip_begin_main_frame_to_reduce_latency",
                           skip_begin_main_frame_to_reduce_latency_);
+  minor_state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
+                          skip_next_begin_main_frame_to_reduce_latency_);
   state->Set("minor_state", minor_state.release());
 
   return state.PassAs<base::Value>();
@@ -277,6 +280,10 @@ void SchedulerStateMachine::AdvanceCurrentFrameNumber() {
   // "Drain" the ManageTiles funnel.
   if (manage_tiles_funnel_ > 0)
     manage_tiles_funnel_--;
+
+  skip_begin_main_frame_to_reduce_latency_ =
+      skip_next_begin_main_frame_to_reduce_latency_;
+  skip_next_begin_main_frame_to_reduce_latency_ = false;
 }
 
 bool SchedulerStateMachine::HasSentBeginMainFrameThisFrame() const {
@@ -779,8 +786,8 @@ void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
   main_thread_needs_layer_textures_ = true;
 }
 
-void SchedulerStateMachine::SetSkipBeginMainFrameToReduceLatency(bool skip) {
-  skip_begin_main_frame_to_reduce_latency_ = skip;
+void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
+  skip_next_begin_main_frame_to_reduce_latency_ = true;
 }
 
 bool SchedulerStateMachine::BeginImplFrameNeeded() const {

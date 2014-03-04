@@ -214,7 +214,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Set that we can create the first OutputSurface and start the scheduler.
   void SetCanStart() { can_start_ = true; }
 
-  void SetSkipBeginMainFrameToReduceLatency(bool skip);
+  void SetSkipNextBeginMainFrameToReduceLatency();
 
   // Indicates whether drawing would, at this time, make sense.
   // CanDraw can be used to suppress flashes or checkerboarding
@@ -304,6 +304,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool draw_if_possible_failed_;
   bool did_create_and_initialize_first_output_surface_;
   bool smoothness_takes_priority_;
+  bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
 
  private:
