@@ -63,7 +63,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameLiteral) {
 
 TEST_F(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
   {
-    std::vector<HpackHuffmanSymbol> code = HpackRequestHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
   }
   char input[] = "\x00\x88\x4e\xb0\x8b\x74\x97\x90\xfa\x7f";
@@ -209,7 +209,7 @@ TEST_F(HpackDecoderTest, BasicE21) {
 
 TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   {
-    std::vector<HpackHuffmanSymbol> code = HpackRequestHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
   }
   std::map<string, string> header_set;
@@ -305,7 +305,7 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
 
 TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   {
-    std::vector<HpackHuffmanSymbol> code = HpackResponseHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
   }
   std::map<string, string> header_set;
@@ -316,26 +316,26 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         |     :status
   // 82                                      |   Literal value (len = 3)
   //                                         |     Huffman encoded:
-  // 409f                                    | @.
+  // 98a7                                    | ..
   //                                         |     Decoded:
   //                                         | 302
   //                                         | -> :status: 302
   // 18                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 24)
   //                                         |     cache-control
-  // 86                                      |   Literal value (len = 7)
+  // 85                                      |   Literal value (len = 7)
   //                                         |     Huffman encoded:
-  // c31b 39bf 387f                          | ..9.8.
+  // 73d5 cd11 1f                            | s....
   //                                         |     Decoded:
   //                                         | private
   //                                         | -> cache-control: private
   // 22                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 34)
   //                                         |     date
-  // 92                                      |   Literal value (len = 29)
+  // 98                                      |   Literal value (len = 29)
   //                                         |     Huffman encoded:
-  // a2fb a203 20f2 ab30 3124 018b 490d 3209 | .... ..01$..I.2.
-  // e877                                    | .w
+  // ef6b 3a7a 0e6e 8fa2 63d0 729a 6e83 97d8 | .k:z.n..c.r.n...
+  // 69bd 8737 47bb bfc7                     | i..7G...
   //                                         |     Decoded:
   //                                         | Mon, 21 Oct 2013 20:13:21
   //                                         | GMT
@@ -344,19 +344,18 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 30                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 48)
   //                                         |     location
-  // 93                                      |   Literal value (len = 23)
+  // 90                                      |   Literal value (len = 23)
   //                                         |     Huffman encoded:
-  // e39e 7864 dd7a fd3d 3d24 8747 db87 2849 | ..xd.z.==$.G..(I
-  // 55f6 ff                                 | U..
+  // ce31 743d 801b 6db1 07cd 1a39 6244 b74f | .1t=..m....9bD.O
   //                                         |     Decoded:
   //                                         | https://www.example.com
   //                                         | -> location: https://www.e
   //                                         |    xample.com
   char first[] =
-      "\x08\x82\x40\x9f\x18\x86\xc3\x1b\x39\xbf\x38\x7f\x22\x92\xa2\xfb"
-      "\xa2\x03\x20\xf2\xab\x30\x31\x24\x01\x8b\x49\x0d\x32\x09\xe8\x77"
-      "\x30\x93\xe3\x9e\x78\x64\xdd\x7a\xfd\x3d\x3d\x24\x87\x47\xdb\x87"
-      "\x28\x49\x55\xf6\xff";
+      "\x08\x82\x98\xa7\x18\x85\x73\xd5\xcd\x11\x1f\x22\x98\xef\x6b"
+      "\x3a\x7a\x0e\x6e\x8f\xa2\x63\xd0\x72\x9a\x6e\x83\x97\xd8\x69\xbd\x87"
+      "\x37\x47\xbb\xbf\xc7\x30\x90\xce\x31\x74\x3d\x80\x1b\x6d\xb1\x07\xcd"
+      "\x1a\x39\x62\x44\xb7\x4f";
   header_set = DecodeUniqueHeaderSet(StringPiece(first, arraysize(first)-1));
 
   EXPECT_THAT(header_set, ElementsAre(
@@ -365,14 +364,11 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
       Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
       Pair("location", "https://www.example.com")));
 
-  // 84                                      | == Indexed - Remove ==
-  //                                         |   idx = 4
-  //                                         | -> :status: 302
   // 8c                                      | == Indexed - Add ==
   //                                         |   idx = 12
   //                                         | - evict: :status: 302
   //                                         | -> :status: 200
-  char second[] = "\x84\x8c";
+  char second[] = "\x8c";
   header_set = DecodeUniqueHeaderSet(StringPiece(second, arraysize(second)-1));
 
   EXPECT_THAT(header_set, ElementsAre(
@@ -381,10 +377,6 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
       Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
       Pair("location", "https://www.example.com")));
 
-  // 83                                      | == Indexed - Remove ==
-  //                                         |   idx = 3
-  //                                         | -> date: Mon, 21 Oct 2013
-  //                                         |   20:13:21 GMT
   // 84                                      | == Indexed - Remove ==
   //                                         |   idx = 4
   //                                         | -> cache-control: private
@@ -394,21 +386,23 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 03                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 3)
   //                                         |     date
-  // 92                                      |   Literal value (len = 29)
+  // 98                                      |   Literal value (len = 29)
   //                                         |     Huffman encoded:
-  // a2fb a203 20f2 ab30 3124 018b 490d 3309 | .... ..01$..I.3.
-  // e877                                    | .w
+  // ef6b 3a7a 0e6e 8fa2 63d0 729a 6e83 97d8 | .k:z.n..c.r.n...
+  // 69bd 873f 47bb bfc7                     | i..?G...
   //                                         |     Decoded:
-  //                                         | Mon, 21 Oct 2013 20:13:22 GMT
-  //                                         | - evict: cache-control: private
+  //                                         | Mon, 21 Oct 2013 20:13:22
+  //                                         | GMT
+  //                                         | - evict: cache-control: pr
+  //                                         |   ivate
   //                                         | -> date: Mon, 21 Oct 2013
   //                                         |   20:13:22 GMT
   // 1d                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 29)
   //                                         |     content-encoding
-  // 84                                      |   Literal value (len = 4)
+  // 83                                      |   Literal value (len = 4)
   //                                         |     Huffman encoded:
-  // e1fb b30f                               | ....
+  // cbd5 4e                                 | ..N
   //                                         |     Decoded:
   //                                         | gzip
   //                                         | - evict: date: Mon, 21 Oct
@@ -417,11 +411,11 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 84                                      | == Indexed - Remove ==
   //                                         |   idx = 4
   //                                         | -> location: https://www.e
-  //                                         |    xample.com
+  //                                         |   xample.com
   // 84                                      | == Indexed - Add ==
   //                                         |   idx = 4
   //                                         | -> location: https://www.e
-  //                                         |    xample.com
+  //                                         |   xample.com
   // 83                                      | == Indexed - Remove ==
   //                                         |   idx = 3
   //                                         | -> :status: 200
@@ -433,27 +427,27 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         |     set-cookie
   // b3                                      |   Literal value (len = 56)
   //                                         |     Huffman encoded:
-  // df7d fb36 d3d9 e1fc fc3f afe7 abfc fefc | .}.6.....?......
-  // bfaf 3edf 2f97 7fd3 6ff7 fd79 f6f9 77fd | ..../...o..y..w.
-  // 3de1 6bfa 46fe 10d8 8944 7de1 ce18 e565 | =.k.F....D}....e
-  // f76c 2f                                 | .l/
+  // c5ad b77f 876f c7fb f7fd bfbe bff3 f7f4 | .....o..........
+  // fb7e bbbe 9f5f 87e3 7fef edfa eefa 7c3f | ....._........|?
+  // 1d5d 1a23 ce54 6436 cd49 4bd5 d1cc 5f05 | .].#.Td6.IK..._.
+  // 3596 9b                                 | 5..
   //                                         |     Decoded:
   //                                         | foo=ASDJKHQKBZXOQWEOPIUAXQ
   //                                         | WEOIU; max-age=3600; versi
   //                                         | on=1
   //                                         | - evict: location: https:/
-  //                                         |    /www.example.com
+  //                                         |   /www.example.com
   //                                         | - evict: :status: 200
   //                                         | -> set-cookie: foo=ASDJKHQ
   //                                         |   KBZXOQWEOPIUAXQWEOIU; ma
   //                                         |   x-age=3600; version=1
   char third[] =
-      "\x83\x84\x84\x03\x92\xa2\xfb\xa2\x03\x20\xf2\xab\x30\x31\x24\x01"
-      "\x8b\x49\x0d\x33\x09\xe8\x77\x1d\x84\xe1\xfb\xb3\x0f\x84\x84\x83"
-      "\x83\x3a\xb3\xdf\x7d\xfb\x36\xd3\xd9\xe1\xfc\xfc\x3f\xaf\xe7\xab"
-      "\xfc\xfe\xfc\xbf\xaf\x3e\xdf\x2f\x97\x7f\xd3\x6f\xf7\xfd\x79\xf6"
-      "\xf9\x77\xfd\x3d\xe1\x6b\xfa\x46\xfe\x10\xd8\x89\x44\x7d\xe1\xce"
-      "\x18\xe5\x65\xf7\x6c\x2f";
+      "\x84\x84\x03\x98\xef\x6b\x3a\x7a\x0e\x6e\x8f\xa2\x63\xd0\x72"
+      "\x9a\x6e\x83\x97\xd8\x69\xbd\x87\x3f\x47\xbb\xbf\xc7\x1d\x83\xcb\xd5"
+      "\x4e\x84\x84\x83\x83\x3a\xb3\xc5\xad\xb7\x7f\x87\x6f\xc7\xfb\xf7\xfd"
+      "\xbf\xbe\xbf\xf3\xf7\xf4\xfb\x7e\xbb\xbe\x9f\x5f\x87\xe3\x7f\xef\xed"
+      "\xfa\xee\xfa\x7c\x3f\x1d\x5d\x1a\x23\xce\x54\x64\x36\xcd\x49\x4b\xd5"
+      "\xd1\xcc\x5f\x05\x35\x96\x9b";
   header_set = DecodeUniqueHeaderSet(StringPiece(third, arraysize(third)-1));
 
   EXPECT_THAT(header_set, ElementsAre(

@@ -101,18 +101,9 @@ char bits8(const string& bitstring) {
   return static_cast<char>(std::bitset<8>(bitstring).to_ulong());
 }
 
-TEST(HpackHuffmanTableTest, InitializeRequestCode) {
+TEST(HpackHuffmanTableTest, InitializeHpackCode) {
   HpackHuffmanTable table;
-  std::vector<HpackHuffmanSymbol> code = HpackRequestHuffmanCode();
-  EXPECT_TRUE(table.Initialize(&code[0], code.size()));
-  EXPECT_TRUE(table.IsInitialized());
-  EXPECT_EQ(HpackHuffmanTablePeer(table).pad_bits(),
-            bits8("11111111"));  // First 8 bits of EOS.
-}
-
-TEST(HpackHuffmanTableTest, InitializeResponseCode) {
-  HpackHuffmanTable table;
-  std::vector<HpackHuffmanSymbol> code = HpackResponseHuffmanCode();
+  std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
   EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   EXPECT_TRUE(table.IsInitialized());
   EXPECT_EQ(HpackHuffmanTablePeer(table).pad_bits(),
@@ -383,7 +374,7 @@ TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
 TEST(HpackHuffmanTableTest, SpecRequestExamples) {
   HpackHuffmanTable table;
   {
-    std::vector<HpackHuffmanSymbol> code = HpackRequestHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   }
   string buffer;
@@ -416,26 +407,24 @@ TEST(HpackHuffmanTableTest, SpecRequestExamples) {
 TEST(HpackHuffmanTableTest, SpecResponseExamples) {
   HpackHuffmanTable table;
   {
-    std::vector<HpackHuffmanSymbol> code = HpackResponseHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   }
   string buffer;
   string test_table[] = {
-    "\x40\x9f",
+    "\x98\xa7",
     "302",
-    "\xc3\x1b\x39\xbf\x38\x7f",
+    "\x73\xd5\xcd\x11\x1f",
     "private",
-    "\xa2\xfb\xa2\x03\x20\xf2\xab\x30\x31\x24\x01"
-        "\x8b\x49\x0d\x32\x09\xe8\x77",
+    "\xef\x6b\x3a\x7a\x0e\x6e\x8f\xa2\x63\xd0\x72\x9a\x6e\x83\x97\xd8"
+        "\x69\xbd\x87\x37\x47\xbb\xbf\xc7",
     "Mon, 21 Oct 2013 20:13:21 GMT",
-    "\xe3\x9e\x78\x64\xdd\x7a\xfd\x3d\x3d\x24\x87"
-        "\x47\xdb\x87\x28\x49\x55\xf6\xff",
+    "\xce\x31\x74\x3d\x80\x1b\x6d\xb1\x07\xcd\x1a\x39\x62\x44\xb7\x4f",
     "https://www.example.com",
-    "\xdf\x7d\xfb\x36\xd3\xd9\xe1\xfc\xfc\x3f\xaf"
-        "\xe7\xab\xfc\xfe\xfc\xbf\xaf\x3e\xdf\x2f"
-        "\x97\x7f\xd3\x6f\xf7\xfd\x79\xf6\xf9\x77"
-        "\xfd\x3d\xe1\x6b\xfa\x46\xfe\x10\xd8\x89"
-        "\x44\x7d\xe1\xce\x18\xe5\x65\xf7\x6c\x2f",
+    "\xc5\xad\xb7\x7f\x87\x6f\xc7\xfb\xf7\xfd\xbf\xbe\xbf\xf3\xf7\xf4"
+        "\xfb\x7e\xbb\xbe\x9f\x5f\x87\xe3\x7f\xef\xed\xfa\xee\xfa\x7c\x3f"
+        "\x1d\x5d\x1a\x23\xce\x54\x64\x36\xcd\x49\x4b\xd5\xd1\xcc\x5f\x05"
+        "\x35\x96\x9b",
     "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1",
   };
   // Round-trip each test example.
@@ -457,7 +446,7 @@ TEST(HpackHuffmanTableTest, SpecResponseExamples) {
 TEST(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
   HpackHuffmanTable table;
   {
-    std::vector<HpackHuffmanSymbol> code = HpackRequestHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   }
   for (size_t i = 0; i != 256; i++) {
@@ -479,7 +468,7 @@ TEST(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
 TEST(HpackHuffmanTableTest, RoundTripSymbolSequence) {
   HpackHuffmanTable table;
   {
-    std::vector<HpackHuffmanSymbol> code = HpackResponseHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   }
   char storage[512];

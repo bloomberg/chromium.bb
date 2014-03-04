@@ -24,7 +24,7 @@ const size_t kLiteralBound = 1024;
 
 class HpackInputStreamTest : public ::testing::Test {
   virtual void SetUp() {
-    std::vector<HpackHuffmanSymbol> code = HpackResponseHuffmanCode();
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(huffman_table.Initialize(&code[0], code.size()));
   }
 
@@ -33,11 +33,10 @@ class HpackInputStreamTest : public ::testing::Test {
 };
 
 const char kEncodedFixture[] = "\x33"  // Length prefix.
-  "\xdf\x7d\xfb\x36\xd3\xd9\xe1\xfc\xfc\x3f\xaf"
-  "\xe7\xab\xfc\xfe\xfc\xbf\xaf\x3e\xdf\x2f"
-  "\x97\x7f\xd3\x6f\xf7\xfd\x79\xf6\xf9\x77"
-  "\xfd\x3d\xe1\x6b\xfa\x46\xfe\x10\xd8\x89"
-  "\x44\x7d\xe1\xce\x18\xe5\x65\xf7\x6c\x2f";
+  "\xc5\xad\xb7\x7f\x87\x6f\xc7\xfb\xf7\xfd\xbf\xbe\xbf\xf3\xf7\xf4"
+  "\xfb\x7e\xbb\xbe\x9f\x5f\x87\xe3\x7f\xef\xed\xfa\xee\xfa\x7c\x3f"
+  "\x1d\x5d\x1a\x23\xce\x54\x64\x36\xcd\x49\x4b\xd5\xd1\xcc\x5f\x05"
+  "\x35\x96\x9b";
 
 const char kDecodedFixture[] =
   "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";

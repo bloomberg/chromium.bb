@@ -11,7 +11,7 @@
 #include "net/base/net_export.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
 namespace net {
 
@@ -48,11 +48,8 @@ const HpackPrefix kLiteralNoIndexOpcode = { 0x01, 2 };
 // (from 4.3.2).
 const HpackPrefix kLiteralIncrementalIndexOpcode = { 0x00, 2 };
 
-// Returns symbol code table from "Appendix C. Huffman Codes For Requests".
-NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackRequestHuffmanCode();
-
-// Returns symbol code table from "Appendix D. Huffman Codes For Responses".
-NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackResponseHuffmanCode();
+// Returns symbol code table from "Appendix C. Huffman Codes".
+NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();
 
 }  // namespace net
 
