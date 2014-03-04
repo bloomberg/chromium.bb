@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H__
-#define NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H__
+#ifndef NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H_
+#define NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H_
 
 #include <errno.h>
 #include <fcntl.h>
@@ -14,6 +14,8 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#include "base/strings/string_split.h"
 
 // Class to handle loadtime measure related urls, which all start with testing
 // The in memory server has a singleton object of this class. It includes a
@@ -27,7 +29,7 @@ class LoadtimeMeasurement {
       : num_urls_(0), pageload_html_file_(pageload_html_file) {
     std::string urls_string;
     read_file_to_string(urls_file.c_str(), &urls_string);
-    split_string(urls_string, '\n', &urls_);
+    base::SplitString(urls_string, '\n', &urls_);
     num_urls_ = urls_.size();
   }
 
@@ -70,13 +72,13 @@ class LoadtimeMeasurement {
     }
     if (action.find("record_page_load") == 0) {
       std::vector<std::string> query;
-      split_string(action, '?', &query);
+      base::SplitString(action, '?', &query);
       std::vector<std::string> params;
-      split_string(query[1], '&', &params);
+      base::SplitString(query[1], '&', &params);
       std::vector<std::string> url;
       std::vector<std::string> loadtime;
-      split_string(params[1], '=', &url);
-      split_string(params[2], '=', &loadtime);
+      base::SplitString(params[1], '=', &url);
+      base::SplitString(params[2], '=', &loadtime);
       loadtimes_[url[1]] = atoi(loadtime[1].c_str());
       output.append("OK");
       return;
@@ -100,25 +102,10 @@ class LoadtimeMeasurement {
     close(fd);
   }
 
-  void split_string(const std::string& str,
-                    char sepa,
-                    std::vector<std::string>* sub_strs) {
-    size_t b = 0;
-    size_t e = str.find_first_of(sepa, b);
-    while (e != std::string::npos && e > b) {
-      sub_strs->push_back(str.substr(b, e - b));
-      b = e + 1;
-      e = str.find_first_of(sepa, b);
-    }
-    if (b < str.size()) {
-      sub_strs->push_back(str.substr(b));
-    }
-  }
-
   int num_urls_;
   std::vector<std::string> urls_;
   std::map<std::string, int> loadtimes_;
   const std::string pageload_html_file_;
 };
 
-#endif  // NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H__
+#endif  // NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H_
