@@ -353,7 +353,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
 
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(document(), this);
+    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
 
     if (childrenInline())
         layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom, afterEdge);

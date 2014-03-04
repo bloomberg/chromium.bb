@@ -1645,7 +1645,7 @@ bool RenderBlock::simplifiedLayout()
     if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
         return false;
 
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(document(), this);
+    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
 
     // Lay out positioned descendants or objects that just need to recompute overflow.
     if (needsSimplifiedNormalFlowLayout())

@@ -67,25 +67,8 @@ public:
 
     class LayoutScope {
     public:
-        explicit LayoutScope(Document& document, RenderBlock* block)
-            : m_block(0)
-        {
-            m_textAutosizer = document.fastTextAutosizer();
-            if (m_textAutosizer) {
-                if (!m_textAutosizer->enabled()) {
-                    m_textAutosizer = 0;
-                    return;
-                }
-                m_block = block;
-                m_textAutosizer->beginLayout(m_block);
-            }
-        }
-
-        ~LayoutScope()
-        {
-            if (m_textAutosizer)
-                m_textAutosizer->endLayout(m_block);
-        }
+        explicit LayoutScope(RenderBlock*);
+        ~LayoutScope();
     private:
         FastTextAutosizer* m_textAutosizer;
         RenderBlock* m_block;
@@ -95,9 +78,15 @@ private:
     typedef HashSet<const RenderBlock*> BlockSet;
 
     enum HasEnoughTextToAutosize {
-        Unknown,
-        Yes,
-        No
+        UnknownAmountOfText,
+        HasEnoughText,
+        NotEnoughText
+    };
+
+    enum PageAutosizingStatus {
+        PageAutosizingStatusUnknown,
+        PageNeedsAutosizing,
+        PageDoesNotNeedAutosizing
     };
 
     // A supercluster represents autosizing information about a set of two or
@@ -122,7 +111,7 @@ private:
             , m_parent(parent)
             , m_autosize(autosize)
             , m_multiplier(0)
-            , m_hasEnoughTextToAutosize(Unknown)
+            , m_hasEnoughTextToAutosize(UnknownAmountOfText)
             , m_supercluster(supercluster)
             , m_hasTableAncestor(root->isTableCell() || (m_parent && m_parent->m_hasTableAncestor))
         {
@@ -197,7 +186,7 @@ private:
     void inflateTable(RenderTable*);
     void inflate(RenderBlock*);
     bool enabled();
-    void prepareRenderViewInfo();
+    void updateRenderViewInfo();
     void prepareClusterStack(const RenderObject*);
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
@@ -237,6 +226,7 @@ private:
     int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
+    PageAutosizingStatus m_pageAutosizingStatus;
     const RenderBlock* m_firstBlock; // First block to receive beginLayout.
 #ifndef NDEBUG
     bool m_renderViewInfoPrepared;

@@ -416,7 +416,7 @@ void RenderTable::layout()
 {
     // Note: RenderTable is handled differently than other RenderBlocks and the LayoutScope
     //       must be created before the table begins laying out.
-    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(document(), this);
+    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(this);
     ASSERT(needsLayout());
 
     LayoutRectRecorder recorder(*this);

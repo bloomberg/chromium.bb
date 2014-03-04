@@ -63,6 +63,7 @@ FastTextAutosizer::FastTextAutosizer(const Document* document)
     , m_frameWidth(0)
     , m_layoutWidth(0)
     , m_baseMultiplier(0)
+    , m_pageAutosizingStatus(PageAutosizingStatusUnknown)
     , m_firstBlock(0)
 #ifndef NDEBUG
     , m_renderViewInfoPrepared(false)
@@ -115,15 +116,14 @@ void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 
 void FastTextAutosizer::beginLayout(RenderBlock* block)
 {
-    ASSERT(enabled());
+    ASSERT(enabled() && m_pageAutosizingStatus == PageNeedsAutosizing);
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
 
     if (!m_firstBlock)  {
-        prepareRenderViewInfo();
-        prepareClusterStack(block->parent());
         m_firstBlock = block;
+        prepareClusterStack(block->parent());
     } else if (block == currentCluster()->m_root) {
         // Ignore beginLayout on the same block twice.
         // This can happen with paginated overflow.
@@ -142,7 +142,7 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 
 void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* listItemMarker)
 {
-    if (!enabled())
+    if (!enabled() || m_pageAutosizingStatus != PageNeedsAutosizing)
         return;
     ASSERT(listItem && listItemMarker);
 #ifndef NDEBUG
@@ -196,10 +196,11 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
 
 void FastTextAutosizer::endLayout(RenderBlock* block)
 {
-    ASSERT(enabled());
+    ASSERT(enabled() && m_pageAutosizingStatus == PageNeedsAutosizing);
 
     if (block == m_firstBlock) {
         m_firstBlock = 0;
+        m_pageAutosizingStatus = PageAutosizingStatusUnknown;
         m_clusterStack.clear();
         m_superclusters.clear();
 #ifndef NDEBUG
@@ -234,7 +235,7 @@ bool FastTextAutosizer::enabled()
     return m_document->settings()->textAutosizingEnabled();
 }
 
-void FastTextAutosizer::prepareRenderViewInfo()
+void FastTextAutosizer::updateRenderViewInfo()
 {
     RenderView* renderView = toRenderView(m_document->renderer());
     bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
@@ -256,6 +257,10 @@ void FastTextAutosizer::prepareRenderViewInfo()
         float deviceScaleAdjustment = m_document->settings()->deviceScaleAdjustment();
         m_baseMultiplier *= deviceScaleAdjustment;
     }
+
+    m_pageAutosizingStatus = m_frameWidth && (m_baseMultiplier * (static_cast<float>(m_layoutWidth) / m_frameWidth) > 1.0f)
+        ? PageNeedsAutosizing : PageDoesNotNeedAutosizing;
+
 #ifndef NDEBUG
     m_renderViewInfoPrepared = true;
 #endif
@@ -278,8 +283,8 @@ bool FastTextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* 
 
 bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const RenderBlock* widthProvider)
 {
-    if (cluster->m_hasEnoughTextToAutosize != Unknown)
-        return cluster->m_hasEnoughTextToAutosize == Yes;
+    if (cluster->m_hasEnoughTextToAutosize != UnknownAmountOfText)
+        return cluster->m_hasEnoughTextToAutosize == HasEnoughText;
 
     const RenderBlock* root = cluster->m_root;
     if (!widthProvider)
@@ -287,12 +292,12 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
 
     // TextAreas and user-modifiable areas get a free pass to autosize regardless of text content.
     if (root->isTextArea() || (root->style() && root->style()->userModify() != READ_ONLY)) {
-        cluster->m_hasEnoughTextToAutosize = Yes;
+        cluster->m_hasEnoughTextToAutosize = HasEnoughText;
         return true;
     }
 
     if (!TextAutosizer::containerShouldBeAutosized(root)) {
-        cluster->m_hasEnoughTextToAutosize = No;
+        cluster->m_hasEnoughTextToAutosize = NotEnoughText;
         return false;
     }
 
@@ -320,14 +325,14 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
             length += toRenderText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
 
             if (length >= minimumTextLengthToAutosize) {
-                cluster->m_hasEnoughTextToAutosize = Yes;
+                cluster->m_hasEnoughTextToAutosize = HasEnoughText;
                 return true;
             }
         }
         descendant = descendant->nextInPreOrder(root);
     }
 
-    cluster->m_hasEnoughTextToAutosize = No;
+    cluster->m_hasEnoughTextToAutosize = NotEnoughText;
     return false;
 }
 
@@ -517,7 +522,7 @@ float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
 
     // Block width, in CSS pixels.
     float blockWidth = widthFromBlock(block);
-    float multiplier = min(blockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth;
+    float multiplier = m_frameWidth ? min(blockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth : 1.0f;
 
     return max(m_baseMultiplier * multiplier, 1.0f);
 }
@@ -700,6 +705,33 @@ RenderObject* FastTextAutosizer::nextChildSkippingChildrenOfBlocks(const RenderO
     if (current == stayWithin || !current->isRenderBlock())
         return current->nextInPreOrder(stayWithin);
     return current->nextInPreOrderAfterChildren(stayWithin);
+}
+
+FastTextAutosizer::LayoutScope::LayoutScope(RenderBlock* block)
+    : m_textAutosizer(block->document().fastTextAutosizer())
+    , m_block(block)
+{
+    if (!m_textAutosizer)
+        return;
+
+    if (!m_textAutosizer->enabled()) {
+        m_textAutosizer = 0;
+        return;
+    }
+
+    if (m_textAutosizer->m_pageAutosizingStatus == PageAutosizingStatusUnknown)
+        m_textAutosizer->updateRenderViewInfo();
+
+    if (m_textAutosizer->m_pageAutosizingStatus == PageNeedsAutosizing)
+        m_textAutosizer->beginLayout(m_block);
+    else
+        m_textAutosizer = 0;
+}
+
+FastTextAutosizer::LayoutScope::~LayoutScope()
+{
+    if (m_textAutosizer)
+        m_textAutosizer->endLayout(m_block);
 }
 
 } // namespace WebCore
