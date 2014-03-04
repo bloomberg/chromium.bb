@@ -35,6 +35,9 @@ class LapTimer {
   // Returns true if the stored time has exceeded the time limit specified.
   // May cause a call to Store().
   bool HasTimeLimitExpired();
+  // Returns true if all lap times have been timed. Only true every n'th
+  // lap, where n = check_interval.
+  bool HasTimedAllLaps();
   // The average milliseconds per lap.
   float MsPerLap();
   // The number of laps per second.
@@ -48,9 +51,9 @@ class LapTimer {
   int num_laps_;
   int warmup_laps_;
   int remaining_warmups_;
+  int remaining_no_check_laps_;
   base::TimeDelta time_limit_;
   int check_interval_;
-  bool accumulated_;
 
   DISALLOW_COPY_AND_ASSIGN(LapTimer);
 };
