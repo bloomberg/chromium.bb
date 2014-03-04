@@ -119,9 +119,12 @@ static base::LazyInstance<AVFoundationInternal> g_avfoundation_handle =
     LAZY_INSTANCE_INITIALIZER;
 
 bool AVFoundationGlue::IsAVFoundationSupported() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  return (!cmd_line->HasSwitch(switches::kDisableAVFoundation) &&
-      base::mac::IsOSLionOrLater() && [AVFoundationBundle() load]);
+  // DeviceMonitorMac will initialize this static bool from the main UI thread
+  // once, during Chrome startup so this construction is thread safe.
+  static bool is_av_foundation_supported = base::mac::IsOSLionOrLater() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAVFoundation) && [AVFoundationBundle() load];
+  return is_av_foundation_supported;
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {
