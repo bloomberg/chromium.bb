@@ -37,6 +37,9 @@
                   '|testing/android/' \
                   '|tools/android/'
     },
+    'android_tab': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/Tab'
+    },
     'android_webview': {
       'filepath': 'android_webview/',
     },
@@ -665,6 +668,7 @@
                       'klundberg+watch@chromium.org',
                       'craigdh+watch@chromium.org',
                       'frankf+watch@chromium.org'],
+    'android_tab': ['dtrainor@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'app_list': ['tfarina@chromium.org', 'chrome-apps-syd-reviews@chromium.org'],
     'app_shortcuts': ['chrome-apps-syd-reviews@chromium.org'],
