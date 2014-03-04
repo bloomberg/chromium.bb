@@ -109,6 +109,7 @@ void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   }
 
   surface_ =  surface.Pass();
+  is_surface_in_use_ = true;
 
   // If there is a pending surface change event, just wait for it to be
   // processed.
@@ -249,7 +250,7 @@ void MediaSourcePlayer::Release() {
 
   // Clear all the pending events except seeks and config changes.
   pending_event_ &= (SEEK_EVENT_PENDING | CONFIG_CHANGE_EVENT_PENDING);
-
+  is_surface_in_use_ = false;
   audio_decoder_job_.reset();
   ResetVideoDecoderJob();
 
@@ -281,6 +282,10 @@ void MediaSourcePlayer::OnKeyAdded() {
   is_waiting_for_key_ = false;
   if (playing_)
     StartInternal();
+}
+
+bool MediaSourcePlayer::IsSurfaceInUse() const {
+  return is_surface_in_use_;
 }
 
 bool MediaSourcePlayer::CanPause() {

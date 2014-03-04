@@ -73,6 +73,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual bool IsPlayerReady() OVERRIDE;
   virtual GURL GetUrl() OVERRIDE;
   virtual GURL GetFirstPartyForCookies() OVERRIDE;
+  virtual bool IsSurfaceInUse() const OVERRIDE;
 
   // MediaPlayerListener callbacks.
   void OnVideoSizeChanged(int width, int height);
@@ -172,6 +173,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // Listener object that listens to all the media player events.
   MediaPlayerListener listener_;
+
+  // Whether player is currently using a surface.
+  bool is_surface_in_use_;
 
   friend class MediaPlayerListener;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerBridge);

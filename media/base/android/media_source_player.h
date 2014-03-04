@@ -69,6 +69,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual bool IsPlayerReady() OVERRIDE;
   virtual void SetDrmBridge(MediaDrmBridge* drm_bridge) OVERRIDE;
   virtual void OnKeyAdded() OVERRIDE;
+  virtual bool IsSurfaceInUse() const OVERRIDE;
 
   // DemuxerAndroidClient implementation.
   virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) OVERRIDE;
@@ -282,6 +283,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   // Test-only callback for hooking the completion of the next decode cycle.
   base::Closure decode_callback_for_testing_;
+
+  // Whether |surface_| is currently used by the player.
+  bool is_surface_in_use_;
 
   friend class MediaSourcePlayerTest;
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);

@@ -81,6 +81,9 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // may want to start/resume playback if it is waiting for a key.
   virtual void OnKeyAdded();
 
+  // Check whether the player still uses the current surface.
+  virtual bool IsSurfaceInUse() const = 0;
+
   int player_id() { return player_id_; }
 
  protected:

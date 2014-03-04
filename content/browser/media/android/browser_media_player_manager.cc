@@ -875,6 +875,9 @@ void BrowserMediaPlayerManager::OnMediaResourcesRequested(int player_id) {
 
 void BrowserMediaPlayerManager::OnMediaResourcesReleased(int player_id) {
 #if defined(VIDEO_HOLE)
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (player && player->IsSurfaceInUse())
+    return;
   ExternalVideoSurfaceContainer* surface_container =
       ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
   if (surface_container)
