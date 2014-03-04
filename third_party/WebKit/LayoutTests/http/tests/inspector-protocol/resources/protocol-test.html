@@ -24,6 +24,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <html>
 <head>
-    <script type="text/javascript" src="InspectorTest.js"></script>
+<script>
+window.addEventListener("message", function(event) {
+    try {
+        eval(event.data);
+    } catch (e) {
+        alert(e.stack);
+        InspectorTest.completeTest();
+        throw e;
+    }
+});
+</script>
 </head>
 </html>
