@@ -141,10 +141,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateStringEvent(
 scoped_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
     MediaLogEvent::Type type, const char* property, base::TimeDelta value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(type));
-  if (value.is_max())
-    event->params.SetString(property, "unknown");
-  else
-    event->params.SetDouble(property, value.InSecondsF());
+  event->params.SetDouble(property, value.InSecondsF());
   return event.Pass();
 }
 

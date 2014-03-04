@@ -481,46 +481,6 @@ TEST_F(TimeTest, ExplodeBeforeUnixEpoch) {
   EXPECT_EQ(1, exploded.millisecond);
 }
 
-TEST_F(TimeTest, TimeDeltaMax) {
-  TimeDelta max = TimeDelta::Max();
-  EXPECT_TRUE(max.is_max());
-  EXPECT_EQ(max, TimeDelta::Max());
-  EXPECT_GT(max, TimeDelta::FromDays(100 * 365));
-  EXPECT_GT(max, TimeDelta());
-}
-
-TEST_F(TimeTest, TimeDeltaMaxConversions) {
-  TimeDelta t = TimeDelta::Max();
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.ToInternalValue());
-
-  EXPECT_EQ(std::numeric_limits<int>::max(), t.InDays());
-  EXPECT_EQ(std::numeric_limits<int>::max(), t.InHours());
-  EXPECT_EQ(std::numeric_limits<int>::max(), t.InMinutes());
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), t.InSecondsF());
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.InSeconds());
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), t.InMillisecondsF());
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.InMilliseconds());
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.InMillisecondsRoundedUp());
-
-  t = TimeDelta::FromDays(std::numeric_limits<int>::max());
-  EXPECT_TRUE(t.is_max());
-
-  t = TimeDelta::FromHours(std::numeric_limits<int>::max());
-  EXPECT_TRUE(t.is_max());
-
-  t = TimeDelta::FromMinutes(std::numeric_limits<int>::max());
-  EXPECT_TRUE(t.is_max());
-
-  t = TimeDelta::FromSeconds(std::numeric_limits<int64>::max());
-  EXPECT_TRUE(t.is_max());
-
-  t = TimeDelta::FromMilliseconds(std::numeric_limits<int64>::max());
-  EXPECT_TRUE(t.is_max());
-
-  t = TimeDelta::FromMicroseconds(std::numeric_limits<int64>::max());
-  EXPECT_TRUE(t.is_max());
-}
-
 TEST_F(TimeTest, Max) {
   Time max = Time::Max();
   EXPECT_TRUE(max.is_max());

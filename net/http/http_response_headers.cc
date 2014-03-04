@@ -1009,7 +1009,7 @@ TimeDelta HttpResponseHeaders::GetFreshnessLifetime(
 
   // These responses are implicitly fresh (unless otherwise overruled):
   if (response_code_ == 300 || response_code_ == 301 || response_code_ == 410)
-    return TimeDelta::Max();
+    return TimeDelta::FromMicroseconds(kint64max);
 
   return TimeDelta();  // not fresh
 }

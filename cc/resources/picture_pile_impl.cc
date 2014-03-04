@@ -247,7 +247,8 @@ void PicturePileImpl::RasterCommon(
     total_clip.Union(positive_clip);
 #endif  // NDEBUG
 
-    base::TimeDelta best_duration = base::TimeDelta::Max();
+    base::TimeDelta best_duration =
+        base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
     int rasterized_pixel_count = 0;
 
