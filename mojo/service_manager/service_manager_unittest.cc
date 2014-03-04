@@ -8,12 +8,12 @@
 #include "mojo/public/shell/application.h"
 #include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/utility/run_loop.h"
+#include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/service_manager/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
 namespace {
 
 const char kTestURLString[] = "test:testService";
@@ -73,8 +73,7 @@ class TestClientImpl : public TestClient {
 };
 }  // namespace
 
-class ServiceManagerTest : public testing::Test,
-                             public ServiceManager::Loader {
+class ServiceManagerTest : public testing::Test, public ServiceLoader {
  public:
   ServiceManagerTest() {}
 
@@ -96,8 +95,9 @@ class ServiceManagerTest : public testing::Test,
     service_manager_.reset(NULL);
   }
 
-  virtual void Load(const GURL& url,
-                    ScopedShellHandle shell_handle) OVERRIDE {
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedShellHandle shell_handle) OVERRIDE {
     test_app_.reset(new Application(shell_handle.Pass()));
     test_app_->AddServiceFactory(
         new ServiceFactory<TestServiceImpl, TestContext>(&context_));
@@ -134,5 +134,4 @@ TEST_F(ServiceManagerTest, ClientError) {
   EXPECT_EQ(0, context_.num_impls);
   EXPECT_FALSE(HasFactoryForTestURL());
 }
-}  // namespace shell
 }  // namespace mojo

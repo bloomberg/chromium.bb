@@ -4,13 +4,14 @@
 
 #include "mojo/service_manager/service_manager.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
-namespace shell {
 
 class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
  public:
@@ -19,7 +20,9 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
         url_(url) {
     InterfacePipe<Shell> pipe;
     shell_client_.reset(pipe.handle_to_peer.Pass(), this, this);
-    manager_->GetLoaderForURL(url)->Load(url, pipe.handle_to_self.Pass());
+    manager_->GetLoaderForURL(url)->LoadService(manager_,
+                                                url,
+                                                pipe.handle_to_self.Pass());
   }
   virtual ~ServiceFactory() {}
 
@@ -48,9 +51,6 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
 
-ServiceManager::Loader::Loader() {}
-ServiceManager::Loader::~Loader() {}
-
 bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
   return manager_->url_to_service_factory_.find(url) !=
       manager_->url_to_service_factory_.end();
@@ -67,12 +67,19 @@ ServiceManager::~ServiceManager() {
   url_to_service_factory_.clear();
 }
 
-void ServiceManager::SetLoaderForURL(Loader* loader, const GURL& gurl) {
+// static
+ServiceManager* GetInstance() {
+  static base::LazyInstance<ServiceManager> instance =
+      LAZY_INSTANCE_INITIALIZER;
+  return &instance.Get();
+}
+
+void ServiceManager::SetLoaderForURL(ServiceLoader* loader, const GURL& gurl) {
   DCHECK(url_to_loader_.find(gurl) == url_to_loader_.end());
   url_to_loader_[gurl] = loader;
 }
 
-ServiceManager::Loader* ServiceManager::GetLoaderForURL(const GURL& gurl) {
+ServiceLoader* ServiceManager::GetLoaderForURL(const GURL& gurl) {
   LoaderMap::const_iterator it = url_to_loader_.find(gurl);
   if (it != url_to_loader_.end())
     return it->second;
@@ -102,5 +109,4 @@ void ServiceManager::RemoveServiceFactory(ServiceFactory* service_factory) {
   url_to_service_factory_.erase(it);
 }
 
-}  // namespace shell
 }  // namespace mojo

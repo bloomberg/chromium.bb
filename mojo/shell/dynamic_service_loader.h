@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/system/core_cpp.h"
-#include "mojo/service_manager/service_manager.h"
+#include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/keep_alive.h"
 #include "url/gurl.h"
 
@@ -21,7 +21,7 @@ class Context;
 
 // A subclass of ServiceManager::Loader that loads a dynamic library containing
 // the implementation of the service.
-class DynamicServiceLoader : public ServiceManager::Loader {
+class DynamicServiceLoader : public ServiceLoader {
  public:
   explicit DynamicServiceLoader(Context* context);
   virtual ~DynamicServiceLoader();
@@ -30,8 +30,9 @@ class DynamicServiceLoader : public ServiceManager::Loader {
   // specified will be modified to the platform's naming scheme. Also the
   // value specified to the --origin command line argument will be used as the
   // host / port.
-  virtual void Load(const GURL& url,
-                    ScopedShellHandle service_handle) MOJO_OVERRIDE;
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedShellHandle service_handle) MOJO_OVERRIDE;
 
  private:
   class LoadContext;

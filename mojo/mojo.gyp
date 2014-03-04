@@ -336,13 +336,18 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_shell_bindings',
       ],
       'sources': [
+        'service_manager/service_loader.h',
         'service_manager/service_manager.cc',
         'service_manager/service_manager.h',
+      ],
+      'export_dependent_settings': [
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
     },
     {
