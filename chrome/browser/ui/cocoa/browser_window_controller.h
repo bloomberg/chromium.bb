@@ -38,6 +38,7 @@ class ExtensionKeybindingRegistryCocoa;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class OverlayableContentsController;
+class PermissionBubbleCocoa;
 @class PresentationModeController;
 class StatusBubbleMac;
 @class TabStripController;
@@ -124,6 +125,9 @@ class Command;
   // The borderless window used in fullscreen mode.  Lion reuses the original
   // window in fullscreen mode, so this is always nil on Lion.
   base::scoped_nsobject<NSWindow> fullscreenWindow_;
+
+  // The Cocoa implementation of the PermissionBubbleView.
+  scoped_ptr<PermissionBubbleCocoa> permissionBubbleCocoa_;
 
   // Tracks whether presentation mode was entered from fullscreen mode or
   // directly from normal windowed mode.  Used to determine what to do when
