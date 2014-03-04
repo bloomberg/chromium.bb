@@ -58,6 +58,8 @@ const char kOAuthClientSecret[] = "client_secret";
 const base::FilePath::CharType kOAuthFileName[] =
     FILE_PATH_LITERAL("kiosk_auth");
 
+const int kMaxInstallAttempt = 5;
+
 }  // namespace
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
@@ -68,7 +70,8 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
       app_id_(app_id),
       diagnostic_mode_(diagnostic_mode),
       delegate_(delegate),
-      install_attempted_(false),
+      network_ready_handled_(false),
+      install_attempt_(0),
       ready_to_launch_(false) {
   DCHECK(profile_);
   DCHECK(Extension::IdIsValid(app_id_));
@@ -87,8 +90,8 @@ void StartupAppLauncher::Initialize() {
 
 void StartupAppLauncher::ContinueWithNetworkReady() {
   // Starts install if it is not started.
-  if (!install_attempted_) {
-    install_attempted_ = true;
+  if (!network_ready_handled_) {
+    network_ready_handled_ = true;
     MaybeInstall();
   }
 }
@@ -146,6 +149,8 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
 }
 
 void StartupAppLauncher::MaybeInitializeNetwork() {
+  network_ready_handled_ = false;
+
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetInstalledExtension(app_id_);
   const bool requires_network = !extension ||
@@ -301,7 +306,19 @@ void StartupAppLauncher::InstallCallback(bool success,
     return;
   }
 
-  LOG(ERROR) << "App install failed: " << error;
+  LOG(ERROR) << "App install failed: " << error
+             << ", for attempt " << install_attempt_;
+
+  ++install_attempt_;
+  if (install_attempt_ < kMaxInstallAttempt) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&StartupAppLauncher::MaybeInitializeNetwork,
+                   AsWeakPtr()));
+    return;
+  }
+
   OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 

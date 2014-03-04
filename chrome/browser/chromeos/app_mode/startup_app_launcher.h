@@ -107,7 +107,8 @@ class StartupAppLauncher
   const std::string app_id_;
   const bool diagnostic_mode_;
   Delegate* delegate_;
-  bool install_attempted_;
+  bool network_ready_handled_;
+  int install_attempt_;
   bool ready_to_launch_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
