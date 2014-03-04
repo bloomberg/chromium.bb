@@ -288,6 +288,8 @@
         'system/chromeos/audio/tray_audio_delegate_chromeos.cc',
         'system/chromeos/audio/tray_audio_delegate_chromeos.h',
         'system/chromeos/enterprise/enterprise_domain_observer.h',
+        'system/chromeos/bluetooth/bluetooth_notification_controller.cc',
+        'system/chromeos/bluetooth/bluetooth_notification_controller.h',
         'system/chromeos/brightness/brightness_controller_chromeos.cc',
         'system/chromeos/brightness/brightness_controller_chromeos.h',
         'system/chromeos/brightness/tray_brightness.cc',
@@ -668,6 +670,7 @@
             '../chromeos/chromeos.gyp:chromeos',
             # Ash #includes power_supply_properties.pb.h directly.
             '../chromeos/chromeos.gyp:power_manager_proto',
+	    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
           ],
         }, { # else: chromeos!=1
           'sources/': [
@@ -1010,6 +1013,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:power_manager_proto',
+	    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
           ],
           'sources': [
             'first_run/first_run_helper_unittest.cc',
@@ -1107,6 +1111,11 @@
           },
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
+        ['chromeos==1', {
+          'dependencies': [
+	    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
           ],
         }],
       ],

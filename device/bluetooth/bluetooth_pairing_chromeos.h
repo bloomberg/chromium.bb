@@ -108,6 +108,10 @@ class BluetoothPairingChromeOS {
   device::BluetoothDevice::PairingDelegate* GetPairingDelegate() const;
 
  private:
+  // Internal method to reset the current set of callbacks because a new
+  // request has arrived that supercedes them.
+  void ResetCallbacks();
+
   // Internal method to respond to the relevant callback for a RejectPairing
   // or CancelPairing call.
   bool RunPairingCallbacks(

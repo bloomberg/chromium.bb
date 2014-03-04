@@ -62,6 +62,11 @@ void SimulatedProfileSocket(int fd) {
   close(fd);
 }
 
+void SimpleErrorCallback(const std::string& error_name,
+                         const std::string& error_message) {
+  VLOG(1) << "Bluetooth Error: " << error_name << ": " << error_message;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -199,6 +204,7 @@ void FakeBluetoothDeviceClient::Properties::Set(
 FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
     : simulation_interval_ms_(kSimulationIntervalMs),
       discovery_simulation_step_(0),
+      incoming_pairing_simulation_step_(0),
       pairing_cancelled_(false) {
   Properties* properties = new Properties(base::Bind(
       &FakeBluetoothDeviceClient::OnPropertyChanged,
@@ -440,6 +446,25 @@ void FakeBluetoothDeviceClient::EndDiscoverySimulation(
   discovery_simulation_step_ = 0;
 }
 
+void FakeBluetoothDeviceClient::BeginIncomingPairingSimulation(
+    const dbus::ObjectPath& adapter_path) {
+  VLOG(1) << "starting incoming pairing simulation";
+
+  incoming_pairing_simulation_step_ = 1;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeBluetoothDeviceClient::IncomingPairingSimulationTimer,
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(30 * simulation_interval_ms_));
+}
+
+void FakeBluetoothDeviceClient::EndIncomingPairingSimulation(
+    const dbus::ObjectPath& adapter_path) {
+  VLOG(1) << "stopping incoming pairing simulation";
+  incoming_pairing_simulation_step_ = 0;
+}
+
 void FakeBluetoothDeviceClient::SetSimulationIntervalMs(int interval_ms) {
   simulation_interval_ms_ = interval_ms;
 }
@@ -642,6 +667,66 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
       base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 }
 
+void FakeBluetoothDeviceClient::IncomingPairingSimulationTimer() {
+  if (!incoming_pairing_simulation_step_)
+    return;
+
+  VLOG(1) << "incoming pairing simulation, step "
+          << incoming_pairing_simulation_step_;
+  switch (incoming_pairing_simulation_step_) {
+    case 1:
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kPhonePath));
+      SimulatePairing(dbus::ObjectPath(kPhonePath), true,
+                      base::Bind(&base::DoNothing),
+                      base::Bind(&SimpleErrorCallback));
+      break;
+    case 2:
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kBoseSpeakersPath));
+      SimulatePairing(dbus::ObjectPath(kBoseSpeakersPath), true,
+                      base::Bind(&base::DoNothing),
+                      base::Bind(&SimpleErrorCallback));
+      break;
+    case 3:
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kAppleKeyboardPath));
+      SimulatePairing(dbus::ObjectPath(kAppleKeyboardPath), true,
+                      base::Bind(&base::DoNothing),
+                      base::Bind(&SimpleErrorCallback));
+      break;
+    case 4:
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kMotorolaKeyboardPath));
+      SimulatePairing(dbus::ObjectPath(kMotorolaKeyboardPath), true,
+                      base::Bind(&base::DoNothing),
+                      base::Bind(&SimpleErrorCallback));
+      break;
+    case 5:
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kSonyHeadphonesPath));
+      SimulatePairing(dbus::ObjectPath(kSonyHeadphonesPath), true,
+                      base::Bind(&base::DoNothing),
+                      base::Bind(&SimpleErrorCallback));
+      break;
+    case 6:
+      CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                   dbus::ObjectPath(kWeirdDevicePath));
+      SimulatePairing(dbus::ObjectPath(kWeirdDevicePath), true,
+                      base::Bind(&base::DoNothing),
+                      base::Bind(&SimpleErrorCallback));
+      break;
+    default:
+      return;
+  }
+
+  ++incoming_pairing_simulation_step_;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeBluetoothDeviceClient::IncomingPairingSimulationTimer,
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(45 * simulation_interval_ms_));
+}
 
 void FakeBluetoothDeviceClient::SimulatePairing(
     const dbus::ObjectPath& object_path,

@@ -124,6 +124,24 @@
   <message name="IDS_ASH_STATUS_TRAY_CELLULAR_SCANNING" desc="Message when scanning for cellular networks">
     Searching for cellular networks...
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically shown on a request from a 2.0 device that has a keyboard.">
+    Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE">$2<ex>123456</ex></ph>
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PASSKEY" desc="Bluetooth pairing message typically shown on a request from a device that has a keyboard.">
+    Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY">$2<ex>123456</ex></ph>
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown on a request from a device that has a display.">
+    Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY">$2<ex>123456</ex></ph>
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_AUTHORIZE_PAIRING" desc="Bluetooth pairing message typically shown on a request from a device without input or display.">
+    Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair.
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ACCEPT" desc="Message on button to accept Bluetooth pairing request.">
+    Accept
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT" desc="Message on button to reject Bluetooth pairing request.">
+    Reject
+  </message>
 
   <!-- Other Network UI strings -->
   <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">

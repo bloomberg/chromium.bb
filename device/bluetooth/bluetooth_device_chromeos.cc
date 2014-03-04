@@ -395,7 +395,6 @@ void BluetoothDeviceChromeOS::ClearOutOfBandPairingData(
 
 BluetoothPairingChromeOS* BluetoothDeviceChromeOS::BeginPairing(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
-  DCHECK(!pairing_);
   pairing_.reset(new BluetoothPairingChromeOS(this, pairing_delegate));
   return pairing_.get();
 }

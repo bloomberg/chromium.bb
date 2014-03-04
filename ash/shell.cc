@@ -129,6 +129,7 @@
 #endif  // defined(USE_X11)
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/system/chromeos/bluetooth/bluetooth_notification_controller.h"
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/power_status.h"
@@ -998,6 +999,8 @@ void Shell::Init() {
       new internal::UserActivityNotifier(user_activity_detector_.get()));
   video_activity_notifier_.reset(
       new internal::VideoActivityNotifier(video_detector_.get()));
+  bluetooth_notification_controller_.reset(
+      new internal::BluetoothNotificationController);
 #endif
 
   weak_display_manager_factory_.reset(

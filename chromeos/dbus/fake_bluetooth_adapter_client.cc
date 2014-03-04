@@ -178,6 +178,11 @@ void FakeBluetoothAdapterClient::StopDiscovery(
             DBusThreadManager::Get()->GetBluetoothDeviceClient());
     device_client->EndDiscoverySimulation(dbus::ObjectPath(kAdapterPath));
 
+    if (simulation_interval_ms_ > 100) {
+      device_client->BeginIncomingPairingSimulation(
+          dbus::ObjectPath(kAdapterPath));
+    }
+
     properties_->discovering.ReplaceValue(false);
   }
 }

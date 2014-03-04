@@ -118,6 +118,7 @@ class WindowSelectorController;
 namespace internal {
 class AcceleratorFilter;
 class AppListController;
+class BluetoothNotificationController;
 class CaptureController;
 class DisplayChangeObserver;
 class DisplayErrorObserver;
@@ -706,6 +707,8 @@ class ASH_EXPORT Shell
   scoped_ptr<StickyKeysController> sticky_keys_controller_;
   scoped_ptr<internal::ResolutionNotificationController>
       resolution_notification_controller_;
+  scoped_ptr<internal::BluetoothNotificationController>
+      bluetooth_notification_controller_;
 #if defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;

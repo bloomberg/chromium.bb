@@ -26,6 +26,10 @@ enum UMAPairingMethod {
   UMA_PAIRING_METHOD_COUNT
 };
 
+// Number of keys that will be entered for a passkey, six digits plus the
+// final enter.
+const uint16 kPasskeyMaxKeysEntered = 7;
+
 }  // namespace
 
 namespace chromeos {
@@ -74,10 +78,10 @@ void BluetoothPairingChromeOS::RequestPinCode(
                             UMA_PAIRING_METHOD_REQUEST_PINCODE,
                             UMA_PAIRING_METHOD_COUNT);
 
-  DCHECK(pincode_callback_.is_null());
+  ResetCallbacks();
   pincode_callback_ = callback;
-  pairing_delegate_->RequestPinCode(device_);
   pairing_delegate_used_ = true;
+  pairing_delegate_->RequestPinCode(device_);
 }
 
 bool BluetoothPairingChromeOS::ExpectingPinCode() const {
@@ -104,8 +108,9 @@ void BluetoothPairingChromeOS::DisplayPinCode(const std::string& pincode) {
                             UMA_PAIRING_METHOD_DISPLAY_PINCODE,
                             UMA_PAIRING_METHOD_COUNT);
 
-  pairing_delegate_->DisplayPinCode(device_, pincode);
+  ResetCallbacks();
   pairing_delegate_used_ = true;
+  pairing_delegate_->DisplayPinCode(device_, pincode);
 
   // If this is not an outgoing connection to the device, the pairing context
   // needs to be cleaned up again as there's no reliable indication of
@@ -120,10 +125,10 @@ void BluetoothPairingChromeOS::RequestPasskey(
                             UMA_PAIRING_METHOD_REQUEST_PASSKEY,
                             UMA_PAIRING_METHOD_COUNT);
 
-  DCHECK(passkey_callback_.is_null());
+  ResetCallbacks();
   passkey_callback_ = callback;
-  pairing_delegate_->RequestPasskey(device_);
   pairing_delegate_used_ = true;
+  pairing_delegate_->RequestPasskey(device_);
 }
 
 bool BluetoothPairingChromeOS::ExpectingPasskey() const {
@@ -150,20 +155,21 @@ void BluetoothPairingChromeOS::DisplayPasskey(uint32 passkey) {
                             UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
                             UMA_PAIRING_METHOD_COUNT);
 
-
-  pairing_delegate_->DisplayPasskey(device_, passkey);
+  ResetCallbacks();
   pairing_delegate_used_ = true;
+  pairing_delegate_->DisplayPasskey(device_, passkey);
+
+}
+
+void BluetoothPairingChromeOS::KeysEntered(uint16 entered) {
+  pairing_delegate_used_ = true;
+  pairing_delegate_->KeysEntered(device_, entered);
 
   // If this is not an outgoing connection to the device, the pairing context
   // needs to be cleaned up again as there's no reliable indication of
   // completion of incoming pairing.
-  if (!device_->IsConnecting())
+  if (entered >= kPasskeyMaxKeysEntered && !device_->IsConnecting())
     device_->EndPairing();
-}
-
-void BluetoothPairingChromeOS::KeysEntered(uint16 entered) {
-  pairing_delegate_->KeysEntered(device_, entered);
-  pairing_delegate_used_ = true;
 }
 
 void BluetoothPairingChromeOS::RequestConfirmation(
@@ -174,10 +180,10 @@ void BluetoothPairingChromeOS::RequestConfirmation(
                             UMA_PAIRING_METHOD_CONFIRM_PASSKEY,
                             UMA_PAIRING_METHOD_COUNT);
 
-  DCHECK(confirmation_callback_.is_null());
+  ResetCallbacks();
   confirmation_callback_ = callback;
-  pairing_delegate_->ConfirmPasskey(device_, passkey);
   pairing_delegate_used_ = true;
+  pairing_delegate_->ConfirmPasskey(device_, passkey);
 }
 
 void BluetoothPairingChromeOS::RequestAuthorization(
@@ -187,10 +193,10 @@ void BluetoothPairingChromeOS::RequestAuthorization(
                             UMA_PAIRING_METHOD_NONE,
                             UMA_PAIRING_METHOD_COUNT);
 
-  DCHECK(confirmation_callback_.is_null());
+  ResetCallbacks();
   confirmation_callback_ = callback;
-  pairing_delegate_->AuthorizePairing(device_);
   pairing_delegate_used_ = true;
+  pairing_delegate_->AuthorizePairing(device_);
 }
 
 bool BluetoothPairingChromeOS::ExpectingConfirmation() const {
@@ -224,6 +230,12 @@ bool BluetoothPairingChromeOS::CancelPairing() {
 BluetoothDevice::PairingDelegate*
 BluetoothPairingChromeOS::GetPairingDelegate() const {
   return pairing_delegate_;
+}
+
+void BluetoothPairingChromeOS::ResetCallbacks() {
+  pincode_callback_.Reset();
+  passkey_callback_.Reset();
+  confirmation_callback_.Reset();
 }
 
 bool BluetoothPairingChromeOS::RunPairingCallbacks(

@@ -76,6 +76,10 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   void BeginDiscoverySimulation(const dbus::ObjectPath& adapter_path);
   void EndDiscoverySimulation(const dbus::ObjectPath& adapter_path);
 
+  // Simulates incoming pairing of devices for the given adapter.
+  void BeginIncomingPairingSimulation(const dbus::ObjectPath& adapter_path);
+  void EndIncomingPairingSimulation(const dbus::ObjectPath& adapter_path);
+
   // Creates a device from the set we return for the given adapter.
   void CreateDevice(const dbus::ObjectPath& adapter_path,
                     const dbus::ObjectPath& device_path);
@@ -161,6 +165,7 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
                          const std::string& property_name);
 
   void DiscoverySimulationTimer();
+  void IncomingPairingSimulationTimer();
 
   void CompleteSimulatedPairing(
       const dbus::ObjectPath& object_path,
@@ -226,6 +231,7 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
 
   int simulation_interval_ms_;
   uint32_t discovery_simulation_step_;
+  uint32_t incoming_pairing_simulation_step_;
   bool pairing_cancelled_;
 };
 
