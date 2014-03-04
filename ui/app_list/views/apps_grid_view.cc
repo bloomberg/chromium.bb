@@ -1388,11 +1388,11 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   if (!events_forwarded_to_drag_drop_host) {
     CalculateDropTarget(last_drag_point_, true);
     if (IsValidIndex(drop_target_)) {
-      if (drop_attempt_ == DROP_FOR_REORDER)
+      if (drop_attempt_ == DROP_FOR_REORDER) {
         ReparentItemForReorder(drag_view_, drop_target_);
-      else if (drop_attempt_ == DROP_FOR_FOLDER)
+      } else if (drop_attempt_ == DROP_FOR_FOLDER) {
         ReparentItemToAnotherFolder(drag_view_, drop_target_);
-      else {      // DROP_FOR_NONE_
+      } else {  // DROP_FOR_NONE_
         cancel_reparent = true;
         // Note(jennyz): cached_drag_view makes sure drag_view_ will be deleted
         // after AnimateToIdealBounds() is called.
@@ -1406,9 +1406,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     }
 
     if (!cancel_reparent) {
-      SetViewHidden(drag_view_,
-          false /* show */,
-          true  /* no animate */);
+      SetViewHidden(drag_view_, false /* show */, true /* no animate */);
     }
   }
 
@@ -1716,7 +1714,7 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
 // accordingly.
 void AppsGridView::RemoveLastItemFromReparentItemFolder(
     AppListFolderItem* source_folder) {
-  DCHECK(source_folder->ChildItemCount() == 1);
+  DCHECK_EQ(1u, source_folder->ChildItemCount());
 
   // Delete view associated with the folder item to be removed.
   AppListItemView* folder_item_view = activated_item_view();

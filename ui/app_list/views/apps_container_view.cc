@@ -5,6 +5,7 @@
 #include "ui/app_list/views/apps_container_view.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"

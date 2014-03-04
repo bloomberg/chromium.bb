@@ -27,7 +27,7 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
 
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
- }
+}
 
 TopIconAnimationView::~TopIconAnimationView() {
 }

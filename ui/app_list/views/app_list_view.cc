@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/app_list_view.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"

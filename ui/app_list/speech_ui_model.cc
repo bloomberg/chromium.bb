@@ -4,6 +4,8 @@
 
 #include "ui/app_list/speech_ui_model.h"
 
+#include <algorithm>
+
 namespace app_list {
 
 namespace {
