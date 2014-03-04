@@ -138,6 +138,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
   void FinishReconcile();
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
+  void ScheduleStartReconcileIfChromeAccountsChanged();
   void HandleSuccessfulAccountIdCheck(const std::string& account_id);
   void HandleFailedAccountIdCheck(const std::string& account_id);
   void HandleRefreshTokenFetched(const std::string& account_id,

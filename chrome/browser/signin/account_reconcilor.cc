@@ -4,8 +4,12 @@
 
 #include "chrome/browser/signin/account_reconcilor.h"
 
+#include <algorithm>
+
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -643,6 +647,7 @@ void AccountReconcilor::FinishReconcile() {
   }
 
   CalculateIfReconcileIsDone();
+  ScheduleStartReconcileIfChromeAccountsChanged();
 }
 
 void AccountReconcilor::AbortReconcile() {
@@ -657,6 +662,24 @@ void AccountReconcilor::CalculateIfReconcileIsDone() {
   is_reconcile_started_ = !add_to_cookie_.empty() || !add_to_chrome_.empty();
   if (!is_reconcile_started_)
     VLOG(1) << "AccountReconcilor::CalculateIfReconcileIsDone: done";
+}
+
+void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
+  if (is_reconcile_started_)
+    return;
+
+  // Start a reconcile as the token accounts have changed.
+  VLOG(1) << "AccountReconcilor::StartReconcileIfChromeAccountsChanged";
+  std::vector<std::string> reconciled_accounts(chrome_accounts_);
+  std::vector<std::string> new_chrome_accounts(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->GetAccounts());
+  std::sort(reconciled_accounts.begin(), reconciled_accounts.end());
+  std::sort(new_chrome_accounts.begin(), new_chrome_accounts.end());
+  if (reconciled_accounts != new_chrome_accounts) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AccountReconcilor::StartReconcile,base::Unretained(this)));
+  }
 }
 
 void AccountReconcilor::MergeSessionCompleted(
@@ -675,6 +698,7 @@ void AccountReconcilor::MergeSessionCompleted(
   }
 
   CalculateIfReconcileIsDone();
+  ScheduleStartReconcileIfChromeAccountsChanged();
 }
 
 void AccountReconcilor::HandleSuccessfulAccountIdCheck(
