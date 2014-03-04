@@ -16,6 +16,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 
 
 
@@ -105,7 +106,36 @@ class SubprocessCpuTimer:
 def PopenBufSize():
   return 1000 * 1000
 
-def RunTestWithInput(cmd, input_data):
+
+def CommunicateWithTimeout(proc, input_data=None, timeout=None):
+  if timeout == 0:
+    timeout = None
+
+  result = []
+  def Target():
+    result.append(list(proc.communicate(input_data)))
+
+  thread = threading.Thread(target=Target)
+  thread.start()
+  thread.join(timeout)
+  if thread.is_alive():
+    sys.stderr.write('\nAttempting to kill test due to timeout!\n')
+    # This will kill the process which should force communicate to return with
+    # any partial output.
+    proc.kill()
+    # Thus result should ALWAYS contain something after this join.
+    thread.join()
+    sys.stderr.write('\n\nKilled test due to timeout!\n')
+    # Also append to stderr.
+    result[0][1] += '\n\nKilled test due to timeout!\n'
+    returncode = -9
+  else:
+    returncode = proc.returncode
+  assert len(result) == 1
+  return tuple(result[0]) + (returncode,)
+
+
+def RunTestWithInput(cmd, input_data, timeout=None):
   """Run a test where we only care about the return code."""
   assert type(cmd) == list
   failed = 0
@@ -117,13 +147,12 @@ def RunTestWithInput(cmd, input_data):
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),
                            stdin=subprocess.PIPE)
-      p.communicate(input_data)
+      _, _, retcode = CommunicateWithTimeout(p, input_data, timeout=timeout)
     else:
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),
                            stdin=input_data)
-      p.communicate()
-    retcode = p.wait()
+      _, _, retcode = CommunicateWithTimeout(p, timeout=timeout)
   except OSError:
     print 'exception: ' + str(sys.exc_info()[1])
     retcode = 0
@@ -134,7 +163,7 @@ def RunTestWithInput(cmd, input_data):
   return (timer.ElapsedCpuTime(p), retcode, failed)
 
 
-def RunTestWithInputOutput(cmd, input_data, capture_stderr=True):
+def RunTestWithInputOutput(cmd, input_data, capture_stderr=True, timeout=None):
   """Run a test where we also care about stdin/stdout/stderr.
 
   NOTE: this function may have problems with arbitrarily
@@ -165,26 +194,26 @@ def RunTestWithInputOutput(cmd, input_data, capture_stderr=True):
       no_pipe = None
 
     # Only capture stderr if capture_stderr is true
-    stderr = subprocess.PIPE if capture_stderr else None
+    p_stderr = subprocess.PIPE if capture_stderr else None
 
     if type(input_data) == str:
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),
                            stdin=subprocess.PIPE,
-                           stderr=stderr,
+                           stderr=p_stderr,
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
-      stdout, stderr = p.communicate(input_data)
+      stdout, stderr, retcode = CommunicateWithTimeout(
+          p, input_data, timeout=timeout)
     else:
       # input_data is a file like object
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),
                            stdin=input_data,
-                           stderr=stderr,
+                           stderr=p_stderr,
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
-      stdout, stderr = p.communicate()
-    retcode = p.wait()
+      stdout, stderr, retcode = CommunicateWithTimeout(p, timeout=timeout)
   except OSError, x:
     if x.errno == 10:
       print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'

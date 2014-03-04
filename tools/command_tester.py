@@ -516,7 +516,9 @@ def ProcessLogOutputSingle(stdout, stderr):
     # Assume the log processor does not care about the order of the lines.
     all_output = log_output + stdout + stderr
     _, retcode, failed, new_stdout, new_stderr = \
-        test_lib.RunTestWithInputOutput(output_processor_cmd, all_output)
+        test_lib.RunTestWithInputOutput(
+            output_processor_cmd, all_output,
+            timeout=GlobalSettings['time_error'])
     # Print the result, since we have done some processing and we need
     # to have the processed data. However, if we intend to process it some
     # more later via process_output_combined, do not duplicate the data here.
@@ -536,7 +538,9 @@ def ProcessLogOutputCombined(stdout, stderr):
     output_processor_cmd = DestringifyList(output_processor)
     all_output = stdout + stderr
     _, retcode, failed, new_stdout, new_stderr = \
-        test_lib.RunTestWithInputOutput(output_processor_cmd, all_output)
+        test_lib.RunTestWithInputOutput(
+            output_processor_cmd, all_output,
+            timeout=GlobalSettings['time_error'])
     # Print the result, since we have done some processing.
     PrintStdStreams(new_stdout, new_stderr)
     if retcode != 0 or failed:
@@ -568,8 +572,9 @@ def DoRun(command, stdin_data):
             )
     # If python ever changes popen.stdout.read() to not risk deadlock,
     # we could stream and capture, and use RunTestWithInputOutput instead.
-    (total_time, exit_status, failed) = test_lib.RunTestWithInput(command,
-                                                                  stdin_data)
+    (total_time, exit_status, failed) = test_lib.RunTestWithInput(
+        command, stdin_data,
+        timeout=GlobalSettings['time_error'])
     PrintTotalTime(total_time)
     if not CheckExitStatus(failed,
                            GlobalSettings['exit_status'],
@@ -580,7 +585,8 @@ def DoRun(command, stdin_data):
   else:
     (total_time, exit_status,
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
-         command, stdin_data, int(GlobalSettings['capture_stderr']))
+         command, stdin_data, int(GlobalSettings['capture_stderr']),
+         timeout=GlobalSettings['time_error'])
     PrintTotalTime(total_time)
     # CheckExitStatus may spew stdout/stderr when there is an error.
     # Otherwise, we do not spew stdout/stderr in this case (capture_output).
