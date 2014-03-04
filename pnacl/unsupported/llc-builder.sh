@@ -108,7 +108,6 @@ llc-run-x8632() {
       -filetype=obj \
       -streaming-bitcode \
       -tail-merge-threshold=50 \
-      -reduce-memory-footprint \
       ${pexe} \
       -o ${pexe}.o \
       -metadata-text ${pexe}.meta
