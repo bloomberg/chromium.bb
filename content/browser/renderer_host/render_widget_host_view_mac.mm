@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -62,6 +63,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/io_surface_support_mac.h"
 
 using content::BackingStoreMac;
@@ -95,14 +97,6 @@ using blink::WebMouseWheelEvent;
 
 static NSString* const NSWindowDidChangeBackingPropertiesNotification =
     @"NSWindowDidChangeBackingPropertiesNotification";
-static NSString* const NSBackingPropertyOldScaleFactorKey =
-    @"NSBackingPropertyOldScaleFactorKey";
-// Note: Apple's example code (linked from the comment above
-// -windowDidChangeBackingProperties:) uses
-// @"NSWindowBackingPropertiesChangeOldBackingScaleFactorKey", but that always
-// returns an old scale of 0. @"NSBackingPropertyOldScaleFactorKey" seems to
-// work in practice, and it's what's used in Apple's WebKit port
-// (WebKit/mac/WebView/WebView.mm).
 
 #endif  // 10.7
 
@@ -150,7 +144,7 @@ static float ScaleFactorForView(NSView* view) {
                dirtyRect:(CGRect)dirtyRect
                inContext:(CGContextRef)context;
 - (void)checkForPluginImeCancellation;
-- (void)updateTabBackingStoreScaleFactor;
+- (void)updateScreenProperties;
 - (void)setResponderDelegate:
         (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 @end
@@ -742,6 +736,35 @@ int RenderWidgetHostViewMac::window_number() const {
 
 float RenderWidgetHostViewMac::ViewScaleFactor() const {
   return ScaleFactorForView(cocoa_view_);
+}
+
+void RenderWidgetHostViewMac::UpdateDisplayLink() {
+  static bool is_vsync_disabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
+  if (is_vsync_disabled)
+    return;
+
+  NSScreen* screen = [[cocoa_view_ window] screen];
+  NSDictionary* screen_description = [screen deviceDescription];
+  NSNumber* screen_number = [screen_description objectForKey:@"NSScreenNumber"];
+  CGDirectDisplayID display_id = [screen_number unsignedIntValue];
+
+  display_link_ = DisplayLinkMac::GetForDisplay(display_id);
+  if (!display_link_) {
+    // Note that on some headless systems, the display link will fail to be
+    // created, so this should not be a fatal error.
+    LOG(ERROR) << "Failed to create display link.";
+  }
+}
+
+void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
+  base::TimeTicks timebase;
+  base::TimeDelta interval;
+  if (display_link_ &&
+      display_link_->GetVSyncParameters(
+          &timebase, &interval)) {
+    render_widget_host_->UpdateVSyncParameters(timebase, interval);
+  }
 }
 
 void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
@@ -1943,16 +1966,7 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
-  // Update the host with VSync parametrs.
-  base::TimeTicks timebase;
-  base::TimeDelta interval;
-  if (compositing_iosurface_context_ &&
-      compositing_iosurface_context_->display_link() &&
-      compositing_iosurface_context_->display_link()->GetVSyncParameters(
-          &timebase, &interval)) {
-    render_widget_host_->UpdateVSyncParameters(timebase, interval);
-  }
-
+  SendVSyncParametersToRenderer();
   if (!last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = true;
 
@@ -1971,6 +1985,7 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
   CreateSoftwareLayerAndDestroyCompositedLayer();
   [software_layer_ setNeedsDisplay];
+  SendVSyncParametersToRenderer();
 
   if (last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = false;
@@ -2867,30 +2882,23 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   }
 }
 
-- (void)updateTabBackingStoreScaleFactor {
+- (void)updateScreenProperties{
   renderWidgetHostView_->UpdateBackingStoreScaleFactor();
+  renderWidgetHostView_->UpdateDisplayLink();
 }
 
 // http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification {
-  NSWindow* window = (NSWindow*)[notification object];
+  // Background tabs check if their scale factor or vsync properties changed
+  // when they are added to a window.
 
-  CGFloat newBackingScaleFactor = [window backingScaleFactor];
-  CGFloat oldBackingScaleFactor = [base::mac::ObjCCast<NSNumber>(
-      [[notification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey])
-      doubleValue];
-  if (newBackingScaleFactor != oldBackingScaleFactor) {
-    // Background tabs check if their scale factor changed when they are added
-    // to a window.
-
-    // Allocating a CGLayerRef with the current scale factor immediately from
-    // this handler doesn't work. Schedule the backing store update on the
-    // next runloop cycle, then things are read for CGLayerRef allocations to
-    // work.
-    [self performSelector:@selector(updateTabBackingStoreScaleFactor)
-               withObject:nil
-               afterDelay:0];
-  }
+  // Allocating a CGLayerRef with the current scale factor immediately from
+  // this handler doesn't work. Schedule the backing store update on the
+  // next runloop cycle, then things are read for CGLayerRef allocations to
+  // work.
+  [self performSelector:@selector(updateScreenProperties)
+             withObject:nil
+             afterDelay:0];
 }
 
 - (void)globalFrameDidChange:(NSNotification*)notification {
@@ -3901,7 +3909,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (void)viewDidMoveToWindow {
   if ([self window])
-    [self updateTabBackingStoreScaleFactor];
+    [self updateScreenProperties];
 
   if (canBeKeyView_) {
     NSWindow* newWindow = [self window];

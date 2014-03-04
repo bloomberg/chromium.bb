@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/browser_accessibility_delegate_mac.h"
+#include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/software_frame_manager.h"
 #include "content/common/edit_command.h"
@@ -502,6 +503,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Update the scale factor for the backing store and for any CALayers.
   void UpdateBackingStoreScaleFactor();
 
+  // Ensure that the display link is associated with the correct display.
+  void UpdateDisplayLink();
+
   // The scale factor of the backing store and all CALayers. Note that this is
   // updated based on ViewScaleFactor with some delay.
   float backing_store_scale_factor_;
@@ -573,6 +577,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // the OpenGL coordinate (lower-left origin) and scale for HiDPI displays.
   gfx::Rect GetScaledOpenGLPixelRect(const gfx::Rect& rect);
 
+  // Send updated vsync parameters to the renderer.
+  void SendVSyncParametersToRenderer();
+
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the
   // destructor.
@@ -619,6 +626,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Factory used to safely reference overlay view set in SetOverlayView.
   base::WeakPtrFactory<RenderWidgetHostViewMac>
       overlay_view_weak_factory_;
+
+  // Display link for getting vsync info.
+  scoped_refptr<DisplayLinkMac> display_link_;
 
   // The current composition character range and its bounds.
   gfx::Range composition_range_;

@@ -38,7 +38,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
     return found->second;
   }
 
-  bool is_vsync_disabled =
+  static bool is_vsync_disabled =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
 
   base::scoped_nsobject<NSOpenGLContext> nsgl_context;
@@ -145,23 +145,12 @@ CompositingIOSurfaceContext::Get(int window_number) {
     return NULL;
   }
 
-  scoped_refptr<DisplayLinkMac> display_link;
-  if (!is_vsync_disabled) {
-    display_link = DisplayLinkMac::Create();
-    if (!display_link) {
-      // On some headless systems, the display link will fail to be created,
-      // so this should not be a fatal error.
-      LOG(ERROR) << "Failed to create display link for GL context.";
-    }
-  }
-
   return new CompositingIOSurfaceContext(
       window_number,
       nsgl_context.release(),
       cgl_context_strong,
       cgl_context,
       is_vsync_disabled,
-      display_link,
       shader_program_cache.Pass());
 }
 
@@ -181,7 +170,6 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     base::ScopedTypeRef<CGLContextObj> cgl_context_strong,
     CGLContextObj cgl_context,
     bool is_vsync_disabled,
-    scoped_refptr<DisplayLinkMac> display_link,
     scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache)
     : window_number_(window_number),
       nsgl_context_(nsgl_context),
@@ -192,8 +180,7 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
       can_be_shared_(true),
       initialized_is_intel_(false),
       is_intel_(false),
-      screen_(0),
-      display_link_(display_link) {
+      screen_(0) {
   DCHECK(window_map()->find(window_number_) == window_map()->end());
   window_map()->insert(std::make_pair(window_number_, this));
 }

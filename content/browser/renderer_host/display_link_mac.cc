@@ -24,18 +24,27 @@ struct ScopedTypeRefTraits<CVDisplayLinkRef> {
 namespace content {
 
 // static
-scoped_refptr<DisplayLinkMac> DisplayLinkMac::Create() {
+scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
+    CGDirectDisplayID display_id) {
+  // Return the existing display link for this display, if it exists.
+  DisplayMap::iterator found = display_map_.Get().find(display_id);
+  if (found != display_map_.Get().end()) {
+    return found->second;
+  }
+
   CVReturn ret = kCVReturnSuccess;
 
   base::ScopedTypeRef<CVDisplayLinkRef> display_link;
-  ret = CVDisplayLinkCreateWithActiveCGDisplays(display_link.InitializeInto());
+  ret = CVDisplayLinkCreateWithCGDisplay(
+      display_id,
+      display_link.InitializeInto());
   if (ret != kCVReturnSuccess) {
     LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
     return NULL;
   }
 
   scoped_refptr<DisplayLinkMac> display_link_mac;
-  display_link_mac = new DisplayLinkMac(display_link);
+  display_link_mac = new DisplayLinkMac(display_id, display_link);
 
   ret = CVDisplayLinkSetOutputCallback(
       display_link_mac->display_link_,
@@ -50,17 +59,26 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::Create() {
 }
 
 DisplayLinkMac::DisplayLinkMac(
+    CGDirectDisplayID display_id,
     base::ScopedTypeRef<CVDisplayLinkRef> display_link)
-      : display_link_(display_link),
+      : display_id_(display_id),
+        display_link_(display_link),
         stop_timer_(
             FROM_HERE, base::TimeDelta::FromSeconds(1),
             this, &DisplayLinkMac::StopDisplayLink),
         timebase_and_interval_valid_(false) {
+  DCHECK(display_map_.Get().find(display_id) == display_map_.Get().end());
+  display_map_.Get().insert(std::make_pair(display_id_, this));
 }
 
 DisplayLinkMac::~DisplayLinkMac() {
   if (CVDisplayLinkIsRunning(display_link_))
     CVDisplayLinkStop(display_link_);
+
+  DisplayMap::iterator found = display_map_.Get().find(display_id_);
+  DCHECK(found != display_map_.Get().end());
+  DCHECK(found->second == this);
+  display_map_.Get().erase(found);
 }
 
 bool DisplayLinkMac::GetVSyncParameters(
@@ -133,6 +151,10 @@ CVReturn DisplayLinkMac::DisplayLinkCallback(
   display_link_mac->Tick(output_time);
   return kCVReturnSuccess;
 }
+
+// static
+base::LazyInstance<DisplayLinkMac::DisplayMap>
+    DisplayLinkMac::display_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // content
 

@@ -6,7 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_DISPLAY_LINK_MAC_H_
 
 #include <QuartzCore/CVDisplayLink.h>
+#include <map>
 
+#include "base/lazy_instance.h"
 #include "base/mac/scoped_typeref.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -17,7 +19,8 @@ namespace content {
 
 class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
  public:
-  static scoped_refptr<DisplayLinkMac> Create();
+  static scoped_refptr<DisplayLinkMac> GetForDisplay(
+      CGDirectDisplayID display_id);
 
   // Get vsync scheduling parameters.
   bool GetVSyncParameters(
@@ -27,7 +30,9 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
  private:
   friend class base::RefCounted<DisplayLinkMac>;
 
-  DisplayLinkMac(base::ScopedTypeRef<CVDisplayLinkRef> display_link);
+  DisplayLinkMac(
+      CGDirectDisplayID display_id,
+      base::ScopedTypeRef<CVDisplayLinkRef> display_link);
   virtual ~DisplayLinkMac();
 
   void StartOrContinueDisplayLink();
@@ -41,6 +46,9 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
       CVOptionFlags flags_in,
       CVOptionFlags* flags_out,
       void* context);
+
+  // The display that this display link is attached to.
+  CGDirectDisplayID display_id_;
 
   // CVDisplayLink for querying VSync timing info.
   base::ScopedTypeRef<CVDisplayLinkRef> display_link_;
@@ -56,6 +64,11 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
 
   // Lock for sharing data between UI thread and display-link thread.
   base::Lock lock_;
+
+  // Each display link instance consumes a non-negligible number of cycles, so
+  // make all display links on the same screen share the same object.
+  typedef std::map<CGDirectDisplayID, DisplayLinkMac*> DisplayMap;
+  static base::LazyInstance<DisplayMap> display_map_;
 };
 
 }  // content

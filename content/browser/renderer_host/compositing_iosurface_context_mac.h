@@ -14,7 +14,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/display_link_mac.h"
 #include "ui/gl/scoped_cgl.h"
 
 namespace content {
@@ -59,8 +58,6 @@ class CompositingIOSurfaceContext
 
   bool IsVendorIntel();
 
-  DisplayLinkMac* display_link() { return display_link_; }
-
  private:
   friend class base::RefCounted<CompositingIOSurfaceContext>;
 
@@ -70,7 +67,6 @@ class CompositingIOSurfaceContext
       base::ScopedTypeRef<CGLContextObj> clg_context_strong,
       CGLContextObj clg_context,
       bool is_vsync_disabled_,
-      scoped_refptr<DisplayLinkMac> display_link,
       scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache);
   ~CompositingIOSurfaceContext();
 
@@ -87,9 +83,6 @@ class CompositingIOSurfaceContext
   bool initialized_is_intel_;
   bool is_intel_;
   GLint screen_;
-
-  // Display link for getting vsync info.
-  scoped_refptr<DisplayLinkMac> display_link_;
 
   // The global map from window number and window ordering to
   // context data.
