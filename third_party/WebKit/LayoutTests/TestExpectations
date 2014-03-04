@@ -319,8 +319,6 @@ crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.h
 
 crbug.com/341682 editing/selection/4960116.html [ ImageOnlyFailure Pass ]
 
-crbug.com/346132 fast/url/segments-from-data-url.html [ NeedsRebaseline ]
-
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 
