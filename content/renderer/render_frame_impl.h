@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
-#include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
@@ -361,19 +360,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
                                  unsigned action);
-  // Virtual since overridden by WebTestProxy for layout tests.
-  virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
-      RenderFrame* render_frame,
-      blink::WebFrame* frame,
-      blink::WebDataSource::ExtraData* extraData,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect);
-  void OpenURL(blink::WebFrame* frame,
-               const GURL& url,
-               const Referrer& referrer,
-               blink::WebNavigationPolicy policy);
 
   // Returns whether |params.selection_text| should be synchronized to the
   // browser before bringing up the context menu. Static for testing.

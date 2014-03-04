@@ -204,6 +204,29 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       RenderViewHost* render_view_host,
       int32 page_id) {}
 
+  // The page wants to open a URL with the specified disposition.
+  virtual void RequestOpenURL(RenderViewHost* rvh,
+                              const GURL& url,
+                              const Referrer& referrer,
+                              WindowOpenDisposition disposition,
+                              int64 source_frame_id,
+                              bool is_redirect,
+                              bool user_gesture) {}
+
+  // The page wants to transfer the request to a new renderer.
+  // |redirect_chain| contains any redirect URLs (excluding |url|) that happened
+  // before the transfer.
+  virtual void RequestTransferURL(
+      const GURL& url,
+      const std::vector<GURL>& redirect_chain,
+      const Referrer& referrer,
+      PageTransition page_transition,
+      WindowOpenDisposition disposition,
+      int64 source_frame_id,
+      const GlobalRequestID& old_request_id,
+      bool is_redirect,
+      bool user_gesture) {}
+
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
 

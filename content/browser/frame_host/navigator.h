@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
-#include "ui/base/window_open_disposition.h"
 
 class GURL;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -88,31 +87,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       NavigationController::ReloadType reload_type);
 
   virtual base::TimeTicks GetCurrentLoadStart();
-
-  // The RenderFrameHostImpl has received a request to open a URL with the
-  // specified |disposition|.
-  virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                              const GURL& url,
-                              const Referrer& referrer,
-                              WindowOpenDisposition disposition,
-                              int64 source_frame_id,
-                              bool should_replace_current_entry,
-                              bool user_gesture) {}
-
-  // The RenderFrameHostImpl wants to transfer the request to a new renderer.
-  // |redirect_chain| contains any redirect URLs (excluding |url|) that happened
-  // before the transfer.
-  virtual void RequestTransferURL(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const std::vector<GURL>& redirect_chain,
-      const Referrer& referrer,
-      PageTransition page_transition,
-      WindowOpenDisposition disposition,
-      int64 source_frame_id,
-      const GlobalRequestID& transferred_global_request_id,
-      bool should_replace_current_entry,
-      bool user_gesture) {}
 
  protected:
   friend class base::RefCounted<Navigator>;

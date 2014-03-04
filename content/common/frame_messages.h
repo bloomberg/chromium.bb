@@ -243,15 +243,6 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   IPC_STRUCT_MEMBER(base::TimeTicks, browser_navigation_start)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
-  IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
-  IPC_STRUCT_MEMBER(int64, frame_id)
-  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
-  IPC_STRUCT_MEMBER(bool, user_gesture)
-IPC_STRUCT_END()
-
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
@@ -352,9 +343,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStartLoading)
 // Sent when the renderer is done loading a page. This corresponds to Blink's
 // notion of the throbber stopping.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
-
-// Requests that the given URL be opened in the specified manner.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.

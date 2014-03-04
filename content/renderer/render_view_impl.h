@@ -57,7 +57,6 @@
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
-#include "ui/base/window_open_disposition.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/common/webpreferences.h"
 
@@ -333,6 +332,17 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
+  // Temporary call until this code moves to RenderFrame.
+  // virtual since overriden by WebTestProxy for layout tests.
+  virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
+      RenderFrame* render_frame,
+      blink::WebFrame* frame,
+      blink::WebDataSource::ExtraData* extraData,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationType type,
+      blink::WebNavigationPolicy default_policy,
+      bool is_redirect);
+
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
   // RenderView is the currently active RenderView of a WebContents.
@@ -800,9 +810,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   static void NotifyTimezoneChange(blink::WebFrame* frame);
 
-  static WindowOpenDisposition NavigationPolicyToDisposition(
-      blink::WebNavigationPolicy policy);
-
   void UpdateTitle(blink::WebFrame* frame, const base::string16& title,
                    blink::WebTextDirection title_direction);
   void UpdateSessionHistory(blink::WebFrame* frame);
@@ -823,6 +830,11 @@ class CONTENT_EXPORT RenderViewImpl
   // finally get right encoding of page.
   void UpdateEncoding(blink::WebFrame* frame,
                       const std::string& encoding_name);
+
+  void OpenURL(blink::WebFrame* frame,
+               const GURL& url,
+               const Referrer& referrer,
+               blink::WebNavigationPolicy policy);
 
   bool RunJavaScriptMessage(JavaScriptMessageType type,
                             const base::string16& message,
