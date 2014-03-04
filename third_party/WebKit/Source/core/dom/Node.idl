@@ -40,13 +40,13 @@
 
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, CustomElementCallbacks] attribute DOMString nodeValue;
 
-    [PerWorldBindings] readonly attribute unsigned short   nodeType;
-    [PerWorldBindings] readonly attribute Node             parentNode;
-    [PerWorldBindings] readonly attribute NodeList         childNodes;
-    [PerWorldBindings] readonly attribute Node             firstChild;
-    [PerWorldBindings] readonly attribute Node             lastChild;
-    [PerWorldBindings] readonly attribute Node             previousSibling;
-    [PerWorldBindings] readonly attribute Node             nextSibling;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute unsigned short   nodeType;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             parentNode;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute NodeList         childNodes;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             firstChild;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             lastChild;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             previousSibling;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             nextSibling;
     [PerWorldBindings] readonly attribute Document         ownerDocument;
 
     [Custom, CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Node insertBefore(Node newChild, Node refChild);
