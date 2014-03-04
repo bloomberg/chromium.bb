@@ -70,6 +70,25 @@
         'logging/log_serializer.h',
       ], # source
     },
+    {
+      'target_name': 'cast_log_analysis',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'dependencies': [
+        'cast_config',
+        'cast_logging_proto_lib',
+        '<(DEPTH)/base/base.gyp:base',
+      ],
+      'export_dependent_settings': [
+        'cast_logging_proto_lib',
+      ],
+      'sources': [
+        'logging/log_deserializer.cc',
+        'logging/log_deserializer.h',
+      ], # source
+    },
   ],  # targets,
   'conditions': [
     ['include_tests==1', {
@@ -79,6 +98,7 @@
           'type': '<(gtest_target_type)',
           'dependencies': [
             'cast_config',
+            'cast_log_analysis',
             'cast_logging_proto_lib',
             'cast_receiver.gyp:cast_receiver',
             'cast_sender.gyp:cast_sender',
@@ -106,6 +126,7 @@
             'framer/frame_buffer_unittest.cc',
             'framer/framer_unittest.cc',
             'logging/encoding_event_subscriber_unittest.cc',
+            'logging/serialize_deserialize_test.cc',
             'logging/logging_impl_unittest.cc',
             'logging/logging_raw_unittest.cc',
             'logging/simple_event_subscriber_unittest.cc',

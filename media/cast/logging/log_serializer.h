@@ -32,7 +32,7 @@ class LogSerializer {
  public:
   // Constructs a LogSerializer that caps size of serialized message to
   // |max_serialized_bytes|.
-  LogSerializer(const int max_serialized_bytes);
+  explicit LogSerializer(const int max_serialized_bytes);
   ~LogSerializer();
 
   // Serialize |frame_events|, |packet_events|, |first_rtp_timestamp|
