@@ -440,6 +440,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
+  // The background CoreAnimation layer used before compositing nor software
+  // compositing has been enabled, and when the compositing or software
+  // compositing surface has been evicted.
+  base::scoped_nsobject<CALayer> background_layer_;
+
   // The CoreAnimation layer for software compositing. Note that at most one of
   // |software_layer_| and |compositing_iosurface_layer_| may be non-NULL.
   base::scoped_nsobject<SoftwareLayer> software_layer_;

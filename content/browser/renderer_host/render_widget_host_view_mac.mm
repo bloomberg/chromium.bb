@@ -431,6 +431,12 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 
   if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED) {
     use_core_animation_ = true;
+    ScopedCAActionDisabler disabler;
+    background_layer_.reset([[CALayer alloc] init]);
+    [background_layer_
+        setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+    [cocoa_view_ setLayer:background_layer_];
+    [cocoa_view_ setWantsLayer:YES];
   }
 
   render_widget_host_->SetView(this);
@@ -538,7 +544,6 @@ void RenderWidgetHostViewMac::CreateSoftwareLayerAndDestroyCompositedLayer() {
 
   // Make the layer current and get rid of the old layer, if there is one.
   [cocoa_view_ setLayer:software_layer_];
-  [cocoa_view_ setWantsLayer:YES];
   DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
 }
 
@@ -549,7 +554,7 @@ void RenderWidgetHostViewMac::DestroySoftwareLayer() {
   ScopedCAActionDisabler disabler;
 
   if ([cocoa_view_ layer] == software_layer_.get())
-    [cocoa_view_ setWantsLayer:NO];
+    [cocoa_view_ setLayer:background_layer_];
   [software_layer_ removeFromSuperlayer];
   [software_layer_ disableRendering];
   software_layer_.reset();
@@ -575,7 +580,6 @@ bool RenderWidgetHostViewMac::CreateCompositedLayerAndDestroySoftwareLayer() {
 
   // Make the layer current and get rid of the old layer, if there is one.
   [cocoa_view_ setLayer:compositing_iosurface_layer_];
-  [cocoa_view_ setWantsLayer:YES];
   DestroySoftwareLayer();
 
   // Creating the CompositingIOSurfaceLayer may attempt to draw in setLayer,
@@ -594,7 +598,7 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
   compositing_iosurface_.reset();
   if (compositing_iosurface_layer_) {
     if ([cocoa_view_ layer] == compositing_iosurface_layer_.get())
-      [cocoa_view_ setWantsLayer:NO];
+      [cocoa_view_ setLayer:background_layer_];
     [compositing_iosurface_layer_ removeFromSuperlayer];
     [compositing_iosurface_layer_ disableCompositing];
     compositing_iosurface_layer_.reset();
@@ -1929,6 +1933,7 @@ void RenderWidgetHostViewMac::SoftwareFrameWasFreed(
 }
 
 void RenderWidgetHostViewMac::ReleaseReferencesToSoftwareFrame() {
+  DestroySoftwareLayer();
 }
 
 void RenderWidgetHostViewMac::ShutdownHost() {
@@ -2990,9 +2995,9 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
 
 - (void)drawRect:(NSRect)dirtyRect {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::drawRect");
+  DCHECK(!renderWidgetHostView_->use_core_animation_);
 
-  if (!renderWidgetHostView_->render_widget_host_ ||
-      renderWidgetHostView_->use_core_animation_) {
+  if (!renderWidgetHostView_->render_widget_host_) {
     // When using CoreAnimation, this path is used to paint the contents area
     // white before any frames come in. When layers to draw frames exist, this
     // is not hit.
