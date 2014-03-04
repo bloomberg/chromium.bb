@@ -150,6 +150,7 @@ void SafeGetImageInfo(const base::win::PEImage& pe,
       }
     }
   } __except((GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ||
+              GetExceptionCode() == EXCEPTION_GUARD_PAGE ||
               GetExceptionCode() == EXCEPTION_IN_PAGE_ERROR) ?
              EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
     out_name->clear();
