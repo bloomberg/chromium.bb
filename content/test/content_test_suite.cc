@@ -74,7 +74,7 @@ void ContentTestSuite::Initialize() {
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestChildProcess))
-    gfx::GLSurface::InitializeOneOffForTests(true);
+    gfx::GLSurface::InitializeOneOffForTests();
 #endif
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();

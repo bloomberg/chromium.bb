@@ -30,7 +30,7 @@ AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
 
 void AuraShellTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests(true);
+  gfx::GLSurface::InitializeOneOffForTests();
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&

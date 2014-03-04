@@ -24,7 +24,7 @@ class MessageCenterTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() OVERRIDE {
 #if !defined(OS_MACOSX)
-    gfx::GLSurface::InitializeOneOffForTests(true);
+    gfx::GLSurface::InitializeOneOffForTests();
 #endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();

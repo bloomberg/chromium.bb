@@ -192,7 +192,7 @@ void ChromeTestSuite::Initialize() {
   // For browser tests, a full chrome instance is initialized which will set up
   // GLSurface itself. For unit tests, we need to set this up for them.
   if (!IsBrowserTestSuite())
-    gfx::GLSurface::InitializeOneOffForTests(true);
+    gfx::GLSurface::InitializeOneOffForTests();
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-  gfx::GLSurface::InitializeOneOffForTests(true);
+  gfx::GLSurface::InitializeOneOffForTests();
 
   return base::LaunchUnitTests(
       argc,

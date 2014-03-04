@@ -40,7 +40,7 @@ class ComponentsTestSuite : public base::TestSuite {
   virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
 #if !defined(OS_IOS)
-    gfx::GLSurface::InitializeOneOffForTests(true);
+    gfx::GLSurface::InitializeOneOffForTests();
 #endif
 #if defined(OS_ANDROID)
     // Register JNI bindings for android.

@@ -95,7 +95,7 @@ bool GLSurface::InitializeOneOffImplementation(GLImplementation impl,
 }
 
 // static
-void GLSurface::InitializeOneOffForTests(bool disable_drawing) {
+void GLSurface::InitializeOneOffForTests() {
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
 #if defined(USE_X11)
@@ -127,9 +127,7 @@ void GLSurface::InitializeOneOffForTests(bool disable_drawing) {
 
   bool fallback_to_osmesa = false;
   bool gpu_service_logging = false;
-  bool disable_gl_drawing = disable_drawing;
-  // TODO(danakj): Unit tests do not produce pixel output by default.
-  // bool disable_gl_drawing = true;
+  bool disable_gl_drawing = true;
 
   CHECK(InitializeOneOffImplementation(
       impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing));

@@ -21,7 +21,7 @@ class KeyboardTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
-    gfx::GLSurface::InitializeOneOffForTests(true);
+    gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
 
     base::FilePath pak_dir;
