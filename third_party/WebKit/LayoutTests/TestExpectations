@@ -1233,7 +1233,7 @@ crbug.com/114658 compositing/iframes/resizer.html [ NeedsRebaseline ]
 crbug.com/114658 virtual/softwarecompositing/layout-width-change.html [ NeedsRebaseline ]
 
 # Failing on Mac since r168339
-crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ Failure ]
+crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 
 # Temporary until the oilpan test bots understand the special oilpan test expectations
 crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure Pass ]
