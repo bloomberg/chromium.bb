@@ -50,6 +50,7 @@ LazyInstance<base::ThreadLocalPointer<MessageLoop> >::Leaky lazy_tls_ptr =
 // Logical events for Histogram profiling. Run with -message-loop-histogrammer
 // to get an accounting of messages and actions taken on each thread.
 const int kTaskRunEvent = 0x1;
+#if !defined(OS_NACL)
 const int kTimerEvent = 0x2;
 
 // Provide range of message IDs for use in histogramming and debug display.
@@ -83,6 +84,7 @@ const LinearHistogram::DescriptionPair event_descriptions_[] = {
 
   {-1, NULL}  // The list must be null terminated, per API to histogram.
 };
+#endif  // !defined(OS_NACL)
 
 bool enable_histogrammer_ = false;
 
