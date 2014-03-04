@@ -36,8 +36,8 @@ namespace chromeos {
 namespace {
 
 bool IsPortalNotificationEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNetworkPortalNotification);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNetworkPortalNotification);
 }
 
 

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/captive_portal/testing_utils.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -125,6 +127,9 @@ class NetworkPortalDetectorImplTest
       public captive_portal::CaptivePortalDetectorTestBase {
  protected:
   virtual void SetUp() {
+    CommandLine* cl = CommandLine::ForCurrentProcess();
+    cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
+
     DBusThreadManager::InitializeWithStub();
     base::StatisticsRecorder::Initialize();
     SetupNetworkHandler();
