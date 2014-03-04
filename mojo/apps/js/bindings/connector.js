@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define([
+define("mojo/apps/js/bindings/connector", [
   "mojo/apps/js/bindings/codec",
   "mojo/apps/js/bindings/core",
   "mojo/apps/js/bindings/support",
