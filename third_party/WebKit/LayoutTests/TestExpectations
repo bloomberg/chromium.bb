@@ -1234,3 +1234,7 @@ crbug.com/114658 virtual/softwarecompositing/layout-width-change.html [ NeedsReb
 
 # Failing on Mac since r168339
 crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ Failure ]
+
+# Temporary until the oilpan test bots understand the special oilpan test expectations
+crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure Pass ]
+crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure Pass ]

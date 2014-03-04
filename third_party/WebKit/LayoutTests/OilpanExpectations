@@ -1,8 +1,3 @@
 # This file is used by the Oilpan bots (and anyone building in that config)
 # to track Oilpan-specific failures.
 
-# With Oilpan, the parent pointer in the CSSRule hierarchy is
-# strong. This is the intended behavior.
-crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure ]
-crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure ]
-
