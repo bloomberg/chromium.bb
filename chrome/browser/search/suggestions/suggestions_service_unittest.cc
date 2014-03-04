@@ -62,11 +62,18 @@ class SuggestionsServiceTest : public testing::Test {
     ++suggestions_data_check_count_;
   }
 
+  void ExpectEmptySuggestionsProfile(const SuggestionsProfile& profile) {
+    EXPECT_EQ(0, profile.suggestions_size());
+    ++suggestions_empty_data_count_;
+  }
+
   int suggestions_data_check_count_;
+  int suggestions_empty_data_count_;
 
  protected:
   SuggestionsServiceTest()
     : suggestions_data_check_count_(0),
+      suggestions_empty_data_count_(0),
       factory_(NULL, base::Bind(&CreateURLFetcher)) {
     profile_ = profile_builder_.Build();
   }
@@ -149,6 +156,54 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
 
   // Ensure that CheckSuggestionsData() ran twice.
   EXPECT_EQ(2, suggestions_data_check_count_);
+}
+
+TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
+  // Field trial enabled with a specific suggestions URL.
+  EnableFieldTrial(kFakeSuggestionsURL);
+  SuggestionsService* suggestions_service = CreateSuggestionsService();
+  EXPECT_TRUE(suggestions_service != NULL);
+
+  // Fake a request error.
+  factory_.SetFakeResponse(GURL(kFakeSuggestionsURL),
+                           "irrelevant",
+                           net::HTTP_OK,
+                           net::URLRequestStatus::FAILED);
+
+  // Send the request. Empty data will be returned to the callback.
+  suggestions_service->FetchSuggestionsData(
+      base::Bind(&SuggestionsServiceTest::ExpectEmptySuggestionsProfile,
+                 base::Unretained(this)));
+
+  // (Testing only) wait until suggestion fetch is complete.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Ensure that ExpectEmptySuggestionsProfile ran once.
+  EXPECT_EQ(1, suggestions_empty_data_count_);
+}
+
+TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
+  // Field trial enabled with a specific suggestions URL.
+  EnableFieldTrial(kFakeSuggestionsURL);
+  SuggestionsService* suggestions_service = CreateSuggestionsService();
+  EXPECT_TRUE(suggestions_service != NULL);
+
+  // Response code != 200.
+  factory_.SetFakeResponse(GURL(kFakeSuggestionsURL),
+                           "irrelevant",
+                           net::HTTP_BAD_REQUEST,
+                           net::URLRequestStatus::SUCCESS);
+
+  // Send the request. Empty data will be returned to the callback.
+  suggestions_service->FetchSuggestionsData(
+      base::Bind(&SuggestionsServiceTest::ExpectEmptySuggestionsProfile,
+                 base::Unretained(this)));
+
+  // (Testing only) wait until suggestion fetch is complete.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Ensure that ExpectEmptySuggestionsProfile ran once.
+  EXPECT_EQ(1, suggestions_empty_data_count_);
 }
 
 }  // namespace suggestions

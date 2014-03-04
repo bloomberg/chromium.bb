@@ -9,9 +9,14 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+namespace suggestions {
+class SuggestionsProfile;
+}
 
 // Provides the list of most visited sites and their thumbnails to Java.
 class MostVisitedSites : public content::NotificationObserver {
@@ -40,6 +45,15 @@ class MostVisitedSites : public content::NotificationObserver {
   virtual ~MostVisitedSites();
   void QueryMostVisitedURLs();
 
+  // Initialize the query to Top Sites. Called if the SuggestionsService is not
+  // enabled, or if it returns no data.
+  void InitiateTopSitesQuery();
+
+  // Callback for when data is available from the SuggestionsService.
+  void OnSuggestionsProfileAvailable(
+      base::android::ScopedJavaGlobalRef<jobject>* j_observer,
+      const suggestions::SuggestionsProfile& suggestions_profile);
+
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
@@ -48,6 +62,9 @@ class MostVisitedSites : public content::NotificationObserver {
 
   // The maximum number of most visited sites to return.
   int num_sites_;
+
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;
 
   content::NotificationRegistrar registrar_;
 

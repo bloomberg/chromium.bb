@@ -8,11 +8,15 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
+#include "chrome/browser/search/suggestions/suggestions_service.h"
+#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "jni/MostVisitedSites_jni.h"
@@ -28,6 +32,10 @@ using base::android::ToJavaArrayOfStrings;
 using base::android::CheckException;
 using content::BrowserThread;
 using history::TopSites;
+using suggestions::ChromeSuggestion;
+using suggestions::SuggestionsProfile;
+using suggestions::SuggestionsService;
+using suggestions::SuggestionsServiceFactory;
 
 namespace {
 
@@ -115,7 +123,7 @@ void GetUrlThumbnailTask(
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
-    : profile_(profile), num_sites_(0) {
+    : profile_(profile), num_sites_(0), weak_ptr_factory_(this) {
 }
 
 MostVisitedSites::~MostVisitedSites() {
@@ -191,6 +199,23 @@ bool MostVisitedSites::Register(JNIEnv* env) {
 }
 
 void MostVisitedSites::QueryMostVisitedURLs() {
+  SuggestionsServiceFactory* suggestions_service_factory =
+      SuggestionsServiceFactory::GetInstance();
+  SuggestionsService* suggestions_service =
+      suggestions_service_factory->GetForProfile(profile_);
+  if (suggestions_service) {
+    // Suggestions service is enabled, initiate a query.
+    suggestions_service->FetchSuggestionsData(
+        base::Bind(
+          &MostVisitedSites::OnSuggestionsProfileAvailable,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::Owned(new ScopedJavaGlobalRef<jobject>(observer_))));
+  } else {
+    InitiateTopSitesQuery();
+  }
+}
+
+void MostVisitedSites::InitiateTopSitesQuery() {
   TopSites* top_sites = profile_->GetTopSites();
   if (!top_sites)
     return;
@@ -201,6 +226,32 @@ void MostVisitedSites::QueryMostVisitedURLs() {
           base::Owned(new ScopedJavaGlobalRef<jobject>(observer_)),
           num_sites_),
       false);
+}
+
+void MostVisitedSites::OnSuggestionsProfileAvailable(
+    ScopedJavaGlobalRef<jobject>* j_observer,
+    const SuggestionsProfile& suggestions_profile) {
+  size_t size = suggestions_profile.suggestions_size();
+  if (size == 0) {
+    // No suggestions data available, initiate Top Sites query.
+    InitiateTopSitesQuery();
+    return;
+  }
+
+  std::vector<base::string16> titles;
+  std::vector<std::string> urls;
+  for (size_t i = 0; i < size; ++i) {
+    const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
+    titles.push_back(base::UTF8ToUTF16(suggestion.title()));
+    urls.push_back(suggestion.url());
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
+      env,
+      j_observer->obj(),
+      ToJavaArrayOfStrings(env, titles).obj(),
+      ToJavaArrayOfStrings(env, urls).obj());
 }
 
 static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {

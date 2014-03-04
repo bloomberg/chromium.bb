@@ -124,6 +124,8 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Suggestions server request failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
+    // Dispatch an empty profile on error.
+    DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
     return;
   }
 
@@ -131,6 +133,11 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   const int response_code = request->GetResponseCode();
   UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FetchResponseCode",
                               response_code);
+  if (response_code != net::HTTP_OK) {
+    // Dispatch an empty profile on error.
+    DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
+    return;
+  }
 
   const base::TimeDelta latency =
       base::TimeTicks::Now() - last_request_started_time_;
