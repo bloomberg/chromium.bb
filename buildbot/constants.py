@@ -343,6 +343,17 @@ GERRIT_ON_BORG_LABELS = {
     'Trybot-Verified': 'TBVF',
 }
 
+# Actions that a CQ run can take on a CL
+CL_ACTION_PICKED_UP = 'picked_up'         # CL picked up in CommitQueueSync
+CL_ACTION_SUBMITTED = 'submitted'         # CL submitted successfully
+CL_ACTION_KICKED_OUT = 'kicked_out'       # CL CQ-Ready value set to zero
+CL_ACTION_SUBMIT_FAILED = 'submit_failed' # CL submitted but submit failed
+
+CL_ACTIONS = [CL_ACTION_PICKED_UP,
+              CL_ACTION_SUBMITTED,
+              CL_ACTION_KICKED_OUT,
+              CL_ACTION_SUBMIT_FAILED]
+
 # Environment variables that should be exposed to all children processes
 # invoked via cros_build_lib.RunCommand.
 ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)

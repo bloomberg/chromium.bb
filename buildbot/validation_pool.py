@@ -1219,7 +1219,7 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, pre_cq=False):
+               conflicting_changes=None, pre_cq=False, metadata=None):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -1240,6 +1240,8 @@ class ValidationPool(object):
         because they conflict with other changes in flight.
       pre_cq: If set to True, this builder is verifying CLs before they go to
         the commit queue.
+      metadata: Optional CBuildbotMetadata instance where CL actions will
+                be recorded.
     """
 
     self.build_root = build_root
@@ -1280,6 +1282,7 @@ class ValidationPool(object):
 
     self.is_master = bool(is_master)
     self.pre_cq = pre_cq
+    self._metadata = metadata
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
     self.queue = 'A trybot' if pre_cq else 'The Commit Queue'
     self.bot = PRE_CQ if pre_cq else CQ
@@ -1292,6 +1295,10 @@ class ValidationPool(object):
     # w/ the conflict.  If the CLs we're testing fail, then there is no
     # reason we can't try these again in the next run.
     self.changes_that_failed_to_apply_earlier = conflicting_changes or []
+
+    # Integer timestamp (i.e. int(time.time())) at which the changes in this
+    # pool were acquired. Set by AcquirePool or AcquirePoolFromManifest.
+    self.acquired_at_time = 0
 
     # Private vars only used for pickling.
     self._overlays = overlays
@@ -1343,6 +1350,11 @@ class ValidationPool(object):
 
   def __reduce__(self):
     """Used for pickling to re-create validation pool."""
+    # NOTE: self._metadata is specifically excluded from the validation pool
+    # pickle. We do not want the un-pickled validation pool to have a reference
+    # to its own un-pickled metadata instance. Instead, we want to to refer
+    # to the builder run's metadata instance. This is accomplished by setting
+    # metadata at un-pickle time, in ValidationPool.Load(...).
     return (
         self.__class__,
         (
@@ -1429,7 +1441,7 @@ class ValidationPool(object):
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name,
                   dryrun=False, changes_query=None, check_tree_open=True,
-                  change_filter=None, throttled_ok=False):
+                  change_filter=None, throttled_ok=False, metadata=None):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which changes are ready to be committed.
@@ -1449,6 +1461,8 @@ class ValidationPool(object):
         non_manifest_changes) to filter out unwanted patches.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open.
                     Default: True.
+      metadata: Optional CBuildbotMetadata instance where CL actions will
+                be recorded.
 
     Returns:
       ValidationPool object.
@@ -1496,7 +1510,7 @@ class ValidationPool(object):
 
       # Only master configurations should call this method.
       pool = ValidationPool(overlays, repo.directory, build_number,
-                            builder_name, True, dryrun)
+                            builder_name, True, dryrun, metadata=metadata)
 
       draft_changes = []
       # Iterate through changes from all gerrit instances we care about.
@@ -1540,11 +1554,12 @@ class ValidationPool(object):
                    time_left / 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
+    pool.acquired_at_time = int(time.time())
     return pool
 
   @classmethod
   def AcquirePoolFromManifest(cls, manifest, overlays, repo, build_number,
-                              builder_name, is_master, dryrun):
+                              builder_name, is_master, dryrun, metadata=None):
     """Acquires the current pool from a given manifest.
 
     This function assumes that you have already synced to the given manifest.
@@ -1558,12 +1573,14 @@ class ValidationPool(object):
       is_master: Boolean that indicates whether this is a pool for a master.
         config or not.
       dryrun: Don't submit anything to gerrit.
+      metadata: Optional CBuildbotMetadata instance where CL actions will
+                be recorded.
 
     Returns:
       ValidationPool object.
     """
     pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
-                          is_master, dryrun)
+                          is_master, dryrun, metadata=metadata)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
@@ -1583,6 +1600,7 @@ class ValidationPool(object):
         raise NoMatchingChangeFoundException(
             'Could not find change defined by %s' % pending_commit)
 
+    pool.acquired_at_time = int(time.time())
     return pool
 
   @classmethod
@@ -1769,10 +1787,19 @@ class ValidationPool(object):
     return bool(self.changes)
 
   @staticmethod
-  def Load(filename):
-    """Loads the validation pool from the file."""
+  def Load(filename, metadata=None):
+    """Loads the validation pool from the file.
+
+    Args:
+      filename: path of file to load from.
+      metadata: Optional CBuildbotInstance to use as metadata object
+                for loaded pool (as metadata instances do not survive
+                pickle/unpickle)
+    """
     with open(filename, 'rb') as p_file:
-      return cPickle.load(p_file)
+      pool = cPickle.load(p_file)
+      pool._metadata = metadata
+      return pool
 
   def Save(self, filename):
     """Serializes the validation pool."""
@@ -1983,12 +2010,21 @@ class ValidationPool(object):
         logging.error('Most likely gerrit was unable to merge change %s.',
                       change.gerrit_number_str)
 
+    if self._metadata:
+      if was_change_submitted:
+        action = constants.CL_ACTION_SUBMITTED
+      else:
+        action = constants.CL_ACTION_SUBMIT_FAILED
+      self._metadata.RecordCLAction(change, action)
+
     return was_change_submitted
 
   def RemoveCommitReady(self, change):
     """Remove the commit ready bit for the specified |change|."""
     self._helper_pool.ForChange(change).RemoveCommitReady(change,
         dryrun=self.dryrun)
+    if self._metadata:
+      self._metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT)
 
   def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.

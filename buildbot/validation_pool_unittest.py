@@ -21,6 +21,7 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_metadata
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
@@ -576,7 +577,7 @@ class MockPatchSeries(partial_mock.PartialMock):
   _LookupHelper = mock.MagicMock()
 
 
-class TestSubmitChange(cros_test_lib.MoxTestCase):
+class TestSubmitChange(MoxBase):
   """Test suite related to submitting changes."""
 
   def setUp(self):
@@ -589,10 +590,10 @@ class TestSubmitChange(cros_test_lib.MoxTestCase):
   def _TestSubmitChange(self, results):
     """Test submitting a change with the given results."""
     results = [cros_test_lib.EasyAttr(status=r) for r in results]
-    change = cros_test_lib.EasyAttr(gerrit_number=12345,
-                                    gerrit_number_str='12345')
+    change = self.MockPatch(change_id=12345, patch_number=1)
     pool = self.mox.CreateMock(validation_pool.ValidationPool)
     pool.dryrun = False
+    pool._metadata = cbuildbot_metadata.CBuildbotMetadata()
     pool._helper_pool = self.mox.CreateMock(validation_pool.HelperPool)
     helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
 

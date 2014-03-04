@@ -9,10 +9,10 @@ import json
 import logging
 import math
 import os
+import time
 
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
-from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import toolchain
 
@@ -36,6 +36,42 @@ class CBuildbotMetadata(object):
     """Return a JSON string representation of metadata."""
     return json.dumps(self._metadata_dict)
 
+  def RecordCLAction(self, change, action, timestamp=None, reason=None):
+    """Record an action that was taken on a CL, to the metadata.
+
+    Args:
+      change: A GerritPatch object for the change acted on.
+      action: The action taken, should be one of constants.CL_ACTIONS
+      timestamp: An integer timestamp such as int(time.time()) at which
+                 the action was taken. Default: Now.
+      reason: Description of the reason the action was taken. Default: ''
+    """
+    cl_action = (self._ChangeAsSmallDictionary(change),
+                 action,
+                 timestamp or int(time.time()),
+                 reason or '')
+
+    if not self._metadata_dict.has_key('cl_actions'):
+      self._metadata_dict['cl_actions'] = []
+
+    self._metadata_dict['cl_actions'].append(cl_action)
+
+
+  @staticmethod
+  def _ChangeAsSmallDictionary(change):
+    """Returns a small dictionary representation of a gerrit change.
+
+    Args:
+      change: A GerritPatch object.
+
+    Returns:
+      A dictionary of the form {'gerrit_number': change.gerrit_number,
+                                'patch_number': change.patch_number,
+                                 'internal': change.internal}
+    """
+    return  {'gerrit_number': change.gerrit_number,
+             'patch_number': change.patch_number,
+             'internal': change.internal}
 
   @staticmethod
   def GetMetadataDict(builder_run, build_root, get_changes_from_pool,

@@ -16,6 +16,7 @@ import platform
 import re
 import shutil
 import sys
+import time
 from xml.etree import ElementTree
 
 from chromite.buildbot import builderstage as bs
@@ -340,8 +341,6 @@ class ArchivingStageMixin(object):
         builder_run, build_root, get_changes_from_pool,
         get_statuses_from_slaves, config, stage, final_status, sync_instance,
         completion_instance)
-
-
 
   def UploadMetadata(self, config=None, stage=None, upload_queue=None,
                      **kwargs):
@@ -1085,9 +1084,18 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     super(CommitQueueSyncStage, self).HandleSkip()
     filename = self._run.options.validation_pool
     if filename:
-      self.pool = validation_pool.ValidationPool.Load(filename)
+      self.pool = validation_pool.ValidationPool.Load(filename,
+          metadata=self._run.attrs.metadata)
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
+
+    # Because metadata is currently not surviving cbuildbot re-execution,
+    # re-record that patches were picked up in the non-skipped run of
+    # CommitQueueSync.
+    # TODO(akeshet): Remove this code once metadata is being pickled and passed
+    # across re-executions.
+    if self._run.config.master:
+      self._RecordPatchesInMetadata(self.pool)
 
   def _ChangeFilter(self, pool, changes, non_manifest_changes):
     # First, look for changes that were tested by the Pre-CQ.
@@ -1113,7 +1121,8 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
         manifest, self._run.config.overlays, self.repo,
         self._run.buildnumber, self.builder_name,
-        self._run.config.master, self._run.options.debug)
+        self._run.config.master, self._run.options.debug,
+        metadata=self._run.attrs.metadata)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -1134,7 +1143,10 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
             check_tree_open=not self._run.options.debug or
                             self._run.options.mock_tree_status,
             changes_query=self._run.options.cq_gerrit_override,
-            change_filter=self._ChangeFilter, throttled_ok=True)
+            change_filter=self._ChangeFilter, throttled_ok=True,
+            metadata=self._run.attrs.metadata)
+
+        self._RecordPatchesInMetadata(self.pool)
 
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
@@ -1159,6 +1171,17 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
         self.pool.ApplyPoolIntoRepo()
 
       return manifest
+
+  # TODO(akeshet): Once builder run attributes such as metadata are being
+  # pickled and passed across cbuildbot re-executions, move this functionality
+  # out of cbuildbot_stages and into validation_pool.ValidationPool
+  def _RecordPatchesInMetadata(self, pool):
+    # If possible, use the timestamp at which the pool was acquired.
+    timestamp = pool.acquired_at_time or int(time.time())
+    for change in pool.changes:
+      self._run.attrs.metadata.RecordCLAction(change,
+                                              constants.CL_ACTION_PICKED_UP,
+                                              timestamp)
 
   def _RunPrePatchBuild(self):
     """Run through a pre-patch build to prepare for incremental build.
@@ -1531,14 +1554,16 @@ class PreCQSyncStage(SyncStage):
     super(PreCQSyncStage, self).HandleSkip()
     filename = self._run.options.validation_pool
     if filename:
-      self.pool = validation_pool.ValidationPool.Load(filename)
+      self.pool = validation_pool.ValidationPool.Load(filename,
+          metadata=self._run.attrs.metadata)
 
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
         self._run.config.overlays, self._build_root,
         self._run.buildnumber, self._run.config.name,
-        dryrun=self._run.options.debug_forced, changes=self.patches)
+        dryrun=self._run.options.debug_forced, changes=self.patches,
+        metadata=self._run.attrs.metadata)
     self.pool.ApplyPoolIntoRepo()
 
 
@@ -1744,7 +1769,8 @@ class PreCQLauncherStage(SyncStage):
         constants.PRE_CQ_LAUNCHER_NAME,
         dryrun=self._run.options.debug,
         changes_query=self._run.options.cq_gerrit_override,
-        check_tree_open=False, change_filter=self.ProcessChanges)
+        check_tree_open=False, change_filter=self.ProcessChanges,
+        metadata=self._run.attrs.metadata)
 
 
 class BranchError(Exception):
