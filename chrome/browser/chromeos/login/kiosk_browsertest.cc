@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -472,8 +473,9 @@ class KioskTest : public OobeBaseTest {
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     test_data_dir = test_data_dir.AppendASCII(relative_app_profile_dir);
-    ASSERT_TRUE(base::CopyFile(test_data_dir.AppendASCII("Preferences"),
-                               app_profile_dir.AppendASCII("Preferences")));
+    ASSERT_TRUE(
+        base::CopyFile(test_data_dir.Append(chrome::kPreferencesFilename),
+                       app_profile_dir.Append(chrome::kPreferencesFilename)));
     ASSERT_TRUE(
         base::CopyDirectory(test_data_dir.AppendASCII("Extensions"),
                             app_profile_dir,
