@@ -470,6 +470,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
 
   size_t bytes_pending_upload = bytes_pending_upload_;
   bool did_throttle_raster_tasks = false;
+  bool did_throttle_raster_tasks_required_for_activation = false;
 
   for (RasterTaskQueue::Item::Vector::const_iterator it =
            raster_tasks_.items.begin();
@@ -499,7 +500,9 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     new_bytes_pending_upload += task->resource()->bytes();
     if (new_bytes_pending_upload > max_bytes_pending_upload_) {
       did_throttle_raster_tasks = true;
-      break;
+      if (item.required_for_activation)
+        did_throttle_raster_tasks_required_for_activation = true;
+      continue;
     }
 
     // If raster has finished, just update |bytes_pending_upload|.
@@ -512,7 +515,9 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     // Throttle raster tasks based on kMaxScheduledRasterTasks.
     if (tasks.container().size() >= kMaxScheduledRasterTasks) {
       did_throttle_raster_tasks = true;
-      break;
+      if (item.required_for_activation)
+        did_throttle_raster_tasks_required_for_activation = true;
+      continue;
     }
 
     // Update |bytes_pending_upload| now that task has cleared all
@@ -540,12 +545,11 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   // Schedule OnRasterTasksRequiredForActivationFinished call only when
   // notification is pending and throttling is not preventing all pending
   // tasks required for activation from being scheduled.
-  if (scheduled_raster_task_required_for_activation_count ==
-          raster_tasks_required_for_activation_.size() &&
+  if (!did_throttle_raster_tasks_required_for_activation &&
       should_notify_client_if_no_tasks_required_for_activation_are_pending_) {
     new_raster_required_for_activation_finished_task =
         CreateRasterRequiredForActivationFinishedTask(
-            raster_tasks_required_for_activation_.size());
+            raster_tasks_.required_for_activation_count);
     raster_required_for_activation_finished_task_pending_ = true;
     InsertNodeForTask(&graph_,
                       new_raster_required_for_activation_finished_task.get(),
