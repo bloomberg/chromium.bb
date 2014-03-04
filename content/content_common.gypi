@@ -385,7 +385,6 @@
     'common/set_process_title_linux.cc',
     'common/set_process_title_linux.h',
     'common/socket_stream.h',
-    'common/socket_stream_handle_data.cc',
     'common/socket_stream_handle_data.h',
     'common/socket_stream_messages.h',
     'common/speech_recognition_messages.h',
