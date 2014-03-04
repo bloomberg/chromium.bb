@@ -121,7 +121,6 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
       autofill_query_id_(0),
-      autofill_action_(AUTOFILL_NONE),
       web_view_(render_view->GetWebView()),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
@@ -143,14 +142,11 @@ AutofillAgent::~AutofillAgent() {}
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
-    IPC_MESSAGE_HANDLER(AutofillMsg_FormDataFilled, OnFormDataFilled)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FillForm, OnFillForm)
+    IPC_MESSAGE_HANDLER(AutofillMsg_PreviewForm, OnPreviewForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_FieldTypePredictionsAvailable,
                         OnFieldTypePredictionsAvailable)
-    IPC_MESSAGE_HANDLER(AutofillMsg_SetAutofillActionFill,
-                        OnSetAutofillActionFill)
     IPC_MESSAGE_HANDLER(AutofillMsg_ClearForm, OnClearForm)
-    IPC_MESSAGE_HANDLER(AutofillMsg_SetAutofillActionPreview,
-                        OnSetAutofillActionPreview)
     IPC_MESSAGE_HANDLER(AutofillMsg_ClearPreviewedForm, OnClearPreviewedForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText, OnSetNodeText)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptDataListSuggestion,
@@ -159,7 +155,6 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnAcceptPasswordAutofillSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
                         OnRequestAutocompleteResult)
-    IPC_MESSAGE_HANDLER(AutofillMsg_PageShown, OnPageShown)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -397,29 +392,6 @@ void AutofillAgent::AcceptDataListSuggestion(
   SetNodeText(new_value, &element_);
 }
 
-void AutofillAgent::OnFormDataFilled(int query_id,
-                                     const FormData& form) {
-  if (!render_view()->GetWebView() || query_id != autofill_query_id_)
-    return;
-
-  was_query_node_autofilled_ = element_.isAutofilled();
-
-  switch (autofill_action_) {
-    case AUTOFILL_FILL:
-      FillForm(form, element_);
-      Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
-                                                       base::TimeTicks::Now()));
-      break;
-    case AUTOFILL_PREVIEW:
-      PreviewForm(form, element_);
-      Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
-      break;
-    default:
-      NOTREACHED();
-  }
-  autofill_action_ = AUTOFILL_NONE;
-}
-
 void AutofillAgent::OnFieldTypePredictionsAvailable(
     const std::vector<FormDataPredictions>& forms) {
   for (size_t i = 0; i < forms.size(); ++i) {
@@ -427,16 +399,27 @@ void AutofillAgent::OnFieldTypePredictionsAvailable(
   }
 }
 
-void AutofillAgent::OnSetAutofillActionFill() {
-  autofill_action_ = AUTOFILL_FILL;
+void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
+  if (!render_view()->GetWebView() || query_id != autofill_query_id_)
+    return;
+
+  was_query_node_autofilled_ = element_.isAutofilled();
+  FillForm(form, element_);
+  Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
+                                                   base::TimeTicks::Now()));
+}
+
+void AutofillAgent::OnPreviewForm(int query_id, const FormData& form) {
+  if (!render_view()->GetWebView() || query_id != autofill_query_id_)
+    return;
+
+  was_query_node_autofilled_ = element_.isAutofilled();
+  PreviewForm(form, element_);
+  Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
 }
 
 void AutofillAgent::OnClearForm() {
   form_cache_.ClearFormWithElement(element_);
-}
-
-void AutofillAgent::OnSetAutofillActionPreview() {
-  autofill_action_ = AUTOFILL_PREVIEW;
 }
 
 void AutofillAgent::OnClearPreviewedForm() {
@@ -487,9 +470,6 @@ void AutofillAgent::OnRequestAutocompleteResult(
 
   in_flight_request_form_.finishRequestAutocomplete(result);
   in_flight_request_form_.reset();
-}
-
-void AutofillAgent::OnPageShown() {
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,
@@ -590,26 +570,6 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                                   field,
                                                   bounding_box_scaled,
                                                   display_warning_if_disabled));
-}
-
-void AutofillAgent::FillAutofillFormData(const WebNode& node,
-                                         int unique_id,
-                                         AutofillAction action) {
-  DCHECK_GT(unique_id, 0);
-
-  static int query_counter = 0;
-  autofill_query_id_ = query_counter++;
-
-  FormData form;
-  FormFieldData field;
-  if (!FindFormAndFieldForInputElement(node.toConst<WebInputElement>(), &form,
-                                       &field, REQUIRE_AUTOCOMPLETE)) {
-    return;
-  }
-
-  autofill_action_ = action;
-  Send(new AutofillHostMsg_FillAutofillFormData(
-      routing_id(), autofill_query_id_, form, field, unique_id));
 }
 
 void AutofillAgent::SetNodeText(const base::string16& value,

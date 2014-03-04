@@ -167,13 +167,6 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
     dialog_controller_->Hide();
 }
 
-void TabAutofillManagerDelegate::WasShown() {
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  if (!host)
-    return;
-  host->Send(new AutofillMsg_PageShown(host->GetRoutingID()));
-}
-
 void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {

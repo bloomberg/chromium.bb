@@ -29,9 +29,8 @@ class TestAutofillDriver : public AutofillDriver {
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
   virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;
-  virtual void SetRendererActionOnFormDataReception(
-      RendererFormDataAction action) OVERRIDE;
   virtual void SendFormDataToRenderer(int query_id,
+                                      RendererFormDataAction action,
                                       const FormData& data) OVERRIDE;
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) OVERRIDE;

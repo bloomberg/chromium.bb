@@ -82,54 +82,6 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[3]);
-
-  // Verify that |didAcceptAutofillSuggestion()| sends the expected number of
-  // fields.
-  WebFrame* web_frame = GetMainFrame();
-  WebDocument document = web_frame->document();
-  WebInputElement firstname =
-      document.getElementById("firstname").to<WebInputElement>();
-
-  // Make sure to query for Autofill suggestions before selecting one.
-  autofill_agent_->element_ = firstname;
-  autofill_agent_->QueryAutofillSuggestions(firstname, false, false);
-
-  // Fill the form with a suggestion that contained a label.  Labeled items
-  // indicate Autofill as opposed to Autocomplete.  We're testing this
-  // distinction below with the |AutofillHostMsg_FillAutofillFormData::ID|
-  // message.
-  autofill_agent_->FillAutofillFormData(
-      firstname,
-      1,
-      AutofillAgent::AUTOFILL_PREVIEW);
-
-  ProcessPendingMessages();
-  const IPC::Message* message2 =
-      render_thread_->sink().GetUniqueMessageMatching(
-          AutofillHostMsg_FillAutofillFormData::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
-  AutofillHostMsg_FillAutofillFormData::Param params2;
-  AutofillHostMsg_FillAutofillFormData::Read(message2, &params2);
-  const FormData& form2 = params2.b;
-  ASSERT_EQ(3UL, form2.fields.size());
-
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = base::string16();
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[0]);
-
-  expected.name = ASCIIToUTF16("middlename");
-  expected.value = base::string16();
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[1]);
-
-  expected.name = ASCIIToUTF16("state");
-  expected.value = ASCIIToUTF16("?");
-  expected.form_control_type = "select-one";
-  expected.max_length = 0;
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[2]);
 }
 
 TEST_F(ChromeRenderViewTest, EnsureNoFormSeenIfTooFewFields) {

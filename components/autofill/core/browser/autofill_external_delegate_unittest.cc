@@ -38,8 +38,6 @@ class MockAutofillDriver : public TestAutofillDriver {
  public:
   MockAutofillDriver() {}
   // Mock methods to enable testability.
-  MOCK_METHOD1(SetRendererActionOnFormDataReception,
-               void(RendererFormDataAction action));
   MOCK_METHOD1(RendererShouldAcceptDataListSuggestion,
                void(const base::string16&));
   MOCK_METHOD0(RendererShouldClearFilledForm, void());
@@ -84,8 +82,9 @@ class MockAutofillManager : public AutofillManager {
   }
   virtual ~MockAutofillManager() {}
 
-  MOCK_METHOD4(OnFillAutofillFormData,
-               void(int query_id,
+  MOCK_METHOD5(FillOrPreviewForm,
+               void(AutofillDriver::RendererFormDataAction action,
+                    int query_id,
                     const FormData& form,
                     const FormFieldData& field,
                     int unique_id));
@@ -164,12 +163,9 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
                                             autofill_item,
                                             autofill_ids);
 
-  // Called by DidAutofillSuggestions, add expectation to remove warning.
-  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
-
-  EXPECT_CALL(*autofill_driver_, SetRendererActionOnFormDataReception(
-      AutofillDriver::FORM_DATA_ACTION_FILL));
-
+  EXPECT_CALL(*autofill_manager_,
+              FillOrPreviewForm(
+                  AutofillDriver::FORM_DATA_ACTION_FILL, _, _, _, _));
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
 
   // This should trigger a call to hide the popup since we've selected an
@@ -357,33 +353,27 @@ TEST_F(AutofillExternalDelegateUnitTest, NoAutofillWarningsWithoutSuggestions) {
 // negative unique id.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
-  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
-  EXPECT_CALL(*autofill_driver_,
-              SetRendererActionOnFormDataReception(_)).Times(0);
+  EXPECT_CALL(*autofill_manager_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   external_delegate_->DidSelectSuggestion(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
-  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
-  EXPECT_CALL(*autofill_driver_,
-              SetRendererActionOnFormDataReception(_)).Times(0);
+  EXPECT_CALL(*autofill_manager_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
   external_delegate_->DidAcceptSuggestion(base::string16(), -1);
 }
 
 // Test that the ClearPreview call is only sent if the form was being previewed
 // (i.e. it isn't autofilling a password).
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
-  // Called by DidSelectSuggestion, add expectation to remove warning.
-  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
-
   // Ensure selecting a new password entries or Autofill entries will
   // cause any previews to get cleared.
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   external_delegate_->DidSelectSuggestion(POPUP_ITEM_ID_PASSWORD_ENTRY);
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
-  EXPECT_CALL(*autofill_driver_, SetRendererActionOnFormDataReception(
-      AutofillDriver::FORM_DATA_ACTION_PREVIEW));
+  EXPECT_CALL(*autofill_manager_,
+              FillOrPreviewForm(
+                  AutofillDriver::FORM_DATA_ACTION_PREVIEW, _, _, _, _));
   external_delegate_->DidSelectSuggestion(1);
 }
 

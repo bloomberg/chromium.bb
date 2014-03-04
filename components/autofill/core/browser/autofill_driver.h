@@ -50,15 +50,13 @@ class AutofillDriver {
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;
 
-  // Informs the renderer what action to take with the next form data that it
-  // receives. Must be called before each call to |SendFormDataToRenderer|.
-  virtual void SetRendererActionOnFormDataReception(
-      RendererFormDataAction action) = 0;
-
   // Forwards |data| to the renderer. |query_id| is the id of the renderer's
-  // original request for the data. This method is a no-op if the renderer is
-  // not currently available.
-  virtual void SendFormDataToRenderer(int query_id, const FormData& data) = 0;
+  // original request for the data. |action| is the action the renderer should
+  // perform with the |data|. This method is a no-op if the renderer is not
+  // currently available.
+  virtual void SendFormDataToRenderer(int query_id,
+                                      RendererFormDataAction action,
+                                      const FormData& data) = 0;
 
   // Sends the field type predictions specified in |forms| to the renderer. This
   // method is a no-op if the renderer is not available or the appropriate

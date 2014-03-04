@@ -36,8 +36,8 @@ class AutofillExternalDelegate
  public:
   // Creates an AutofillExternalDelegate for the specified AutofillManager and
   // AutofillDriver.
-  AutofillExternalDelegate(AutofillManager* autofill_manager,
-                           AutofillDriver* autofill_driver);
+  AutofillExternalDelegate(AutofillManager* manager,
+                           AutofillDriver* driver);
   virtual ~AutofillExternalDelegate();
 
   // AutofillPopupDelegate implementation.
@@ -68,10 +68,10 @@ class AutofillExternalDelegate
   // to be displayed.  Called when an Autofill query result is available.
   virtual void OnSuggestionsReturned(
       int query_id,
-      const std::vector<base::string16>& autofill_values,
-      const std::vector<base::string16>& autofill_labels,
-      const std::vector<base::string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids);
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels,
+      const std::vector<base::string16>& icons,
+      const std::vector<int>& unique_ids);
 
   // Show password suggestions in the popup.
   void OnShowPasswordSuggestions(const std::vector<base::string16>& suggestions,
@@ -107,42 +107,42 @@ class AutofillExternalDelegate
   void FillAutofillFormData(int unique_id, bool is_preview);
 
   // Handle applying any Autofill warnings to the Autofill popup.
-  void ApplyAutofillWarnings(std::vector<base::string16>* autofill_values,
-                             std::vector<base::string16>* autofill_labels,
-                             std::vector<base::string16>* autofill_icons,
-                             std::vector<int>* autofill_unique_ids);
+  void ApplyAutofillWarnings(std::vector<base::string16>* values,
+                             std::vector<base::string16>* labels,
+                             std::vector<base::string16>* icons,
+                             std::vector<int>* unique_ids);
 
   // Handle applying any Autofill option listings to the Autofill popup.
   // This function should only get called when there is at least one
   // multi-field suggestion in the list of suggestions.
-  void ApplyAutofillOptions(std::vector<base::string16>* autofill_values,
-                            std::vector<base::string16>* autofill_labels,
-                            std::vector<base::string16>* autofill_icons,
-                            std::vector<int>* autofill_unique_ids);
+  void ApplyAutofillOptions(std::vector<base::string16>* values,
+                            std::vector<base::string16>* labels,
+                            std::vector<base::string16>* icons,
+                            std::vector<int>* unique_ids);
 
   // Insert the data list values at the start of the given list, including
   // any required separators.
-  void InsertDataListValues(std::vector<base::string16>* autofill_values,
-                            std::vector<base::string16>* autofill_labels,
-                            std::vector<base::string16>* autofill_icons,
-                            std::vector<int>* autofill_unique_ids);
+  void InsertDataListValues(std::vector<base::string16>* values,
+                            std::vector<base::string16>* labels,
+                            std::vector<base::string16>* icons,
+                            std::vector<int>* unique_ids);
 
-  AutofillManager* autofill_manager_;  // weak.
+  AutofillManager* manager_;  // weak.
 
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
-  AutofillDriver* autofill_driver_;  // weak
+  AutofillDriver* driver_;  // weak
 
   // Password Autofill manager, handles all password-related Autofilling.
-  PasswordAutofillManager password_autofill_manager_;
+  PasswordAutofillManager password_manager_;
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
-  int autofill_query_id_;
+  int query_id_;
 
   // The current form and field selected by Autofill.
-  FormData autofill_query_form_;
-  FormFieldData autofill_query_field_;
+  FormData query_form_;
+  FormFieldData query_field_;
 
   // The bounds of the form field that user is interacting with.
   gfx::RectF element_bounds_;
@@ -151,11 +151,11 @@ class AutofillExternalDelegate
   bool display_warning_if_disabled_;
 
   // Does the popup include any Autofill profile or credit card suggestions?
-  bool has_autofill_suggestion_;
+  bool has_suggestion_;
 
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.
-  bool has_shown_autofill_popup_for_current_edit_;
+  bool has_shown_popup_for_current_edit_;
 
   // The current data list values.
   std::vector<base::string16> data_list_values_;

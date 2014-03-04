@@ -392,7 +392,8 @@ class MockAutofillDriver : public TestAutofillDriver {
   MockAutofillDriver() {}
 
   // Mock methods to enable testability.
-  MOCK_METHOD2(SendFormDataToRenderer, void(int query_id,
+  MOCK_METHOD3(SendFormDataToRenderer, void(int query_id,
+                                            RendererFormDataAction action,
                                             const FormData& data));
 
  private:
@@ -692,7 +693,9 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
                             const FormData& form,
                             const FormFieldData& field,
                             int unique_id) {
-    autofill_manager_->OnFillAutofillFormData(query_id, form, field, unique_id);
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, query_id, form, field,
+        unique_id);
   }
 
   // Calls |autofill_manager_->OnFillAutofillFormData()| with the specified
@@ -706,9 +709,9 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
                                           int unique_id,
                                           int* response_query_id,
                                           FormData* response_data) {
-    EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _)).
+    EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _)).
         WillOnce((DoAll(testing::SaveArg<0>(response_query_id),
-                        testing::SaveArg<1>(response_data))));
+                        testing::SaveArg<2>(response_data))));
     FillAutofillFormData(input_query_id, input_form, input_field, unique_id);
   }
 

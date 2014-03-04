@@ -83,19 +83,40 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  // Searches for an |AutofillMsg_FormDataFilled| message in the queue of sent
-  // IPC messages. If none is present, returns false. Otherwise, extracts the
-  // first |AutofillMsg_FormDataFilled| message, fills the output parameters
-  // with the values of the message's parameters, and clears the queue of sent
-  // messages.
-  bool GetAutofillFormDataFilledMessage(int* page_id, FormData* results) {
-    const uint32 kMsgID = AutofillMsg_FormDataFilled::ID;
+  // Searches for an |AutofillMsg_FillForm| message in the queue of sent IPC
+  // messages. If none is present, returns false. Otherwise, extracts the first
+  // |AutofillMsg_FillForm| message, fills the output parameters with the values
+  // of the message's parameters, and clears the queue of sent messages.
+  bool GetAutofillFillFormMessage(int* page_id, FormData* results) {
+    const uint32 kMsgID = AutofillMsg_FillForm::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
     Tuple2<int, FormData> autofill_param;
-    AutofillMsg_FormDataFilled::Read(message, &autofill_param);
+    if (!AutofillMsg_FillForm::Read(message, &autofill_param))
+      return false;
+    if (page_id)
+      *page_id = autofill_param.a;
+    if (results)
+      *results = autofill_param.b;
+    process()->sink().ClearMessages();
+    return true;
+  }
+
+  // Searches for an |AutofillMsg_PreviewForm| message in the queue of sent IPC
+  // messages. If none is present, returns false. Otherwise, extracts the first
+  // |AutofillMsg_PreviewForm| message, fills the output parameters with the
+  // values of the message's parameters, and clears the queue of sent messages.
+  bool GetAutofillPreviewFormMessage(int* page_id, FormData* results) {
+    const uint32 kMsgID = AutofillMsg_PreviewForm::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    if (!message)
+      return false;
+    Tuple2<int, FormData> autofill_param;
+    if (!AutofillMsg_PreviewForm::Read(message, &autofill_param))
+      return false;
     if (page_id)
       *page_id = autofill_param.a;
     if (results)
@@ -117,7 +138,9 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
     if (!message)
       return false;
     Tuple1<std::vector<FormDataPredictions> > autofill_param;
-    AutofillMsg_FieldTypePredictionsAvailable::Read(message, &autofill_param);
+    if (!AutofillMsg_FieldTypePredictionsAvailable::Read(message,
+                                                         &autofill_param))
+      return false;
     if (predictions)
       *predictions = autofill_param.a;
 
@@ -137,15 +160,19 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
     Tuple1<base::string16> autofill_param;
     switch (messageID) {
       case AutofillMsg_SetNodeText::ID:
-        AutofillMsg_SetNodeText::Read(message, &autofill_param);
+        if (!AutofillMsg_SetNodeText::Read(message, &autofill_param))
+          return false;
         break;
       case AutofillMsg_AcceptDataListSuggestion::ID:
-        AutofillMsg_AcceptDataListSuggestion::Read(message, &autofill_param);
+        if (!AutofillMsg_AcceptDataListSuggestion::Read(message,
+                                                        &autofill_param))
+          return false;
         break;
     case AutofillMsg_AcceptPasswordAutofillSuggestion::ID:
-        AutofillMsg_AcceptPasswordAutofillSuggestion::Read(
-            message,
-            &autofill_param);
+        if (!AutofillMsg_AcceptPasswordAutofillSuggestion::Read(
+                message,
+                &autofill_param))
+          return false;
         break;
       default:
         NOTREACHED();
@@ -199,16 +226,38 @@ TEST_F(AutofillDriverImplTest, NavigatedWithinSamePage) {
   driver_->DidNavigateMainFrame(details, params);
 }
 
-TEST_F(AutofillDriverImplTest, FormDataSentToRenderer) {
+TEST_F(AutofillDriverImplTest, FormDataSentToRenderer_FillForm) {
   int input_page_id = 42;
   FormData input_form_data;
   test::CreateTestAddressFormData(&input_form_data);
-  driver_->SendFormDataToRenderer(input_page_id, input_form_data);
+  driver_->SendFormDataToRenderer(input_page_id,
+                                  AutofillDriver::FORM_DATA_ACTION_FILL,
+                                  input_form_data);
 
   int output_page_id = 0;
   FormData output_form_data;
-  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&output_page_id,
-                                               &output_form_data));
+  EXPECT_FALSE(GetAutofillPreviewFormMessage(&output_page_id,
+                                             &output_form_data));
+  EXPECT_TRUE(GetAutofillFillFormMessage(&output_page_id,
+                                         &output_form_data));
+  EXPECT_EQ(input_page_id, output_page_id);
+  EXPECT_EQ(input_form_data, output_form_data);
+}
+
+TEST_F(AutofillDriverImplTest, FormDataSentToRenderer_PreviewForm) {
+  int input_page_id = 42;
+  FormData input_form_data;
+  test::CreateTestAddressFormData(&input_form_data);
+  driver_->SendFormDataToRenderer(input_page_id,
+                                  AutofillDriver::FORM_DATA_ACTION_PREVIEW,
+                                  input_form_data);
+
+  int output_page_id = 0;
+  FormData output_form_data;
+  EXPECT_FALSE(GetAutofillFillFormMessage(&output_page_id,
+                                          &output_form_data));
+  EXPECT_TRUE(GetAutofillPreviewFormMessage(&output_page_id,
+                                            &output_form_data));
   EXPECT_EQ(input_page_id, output_page_id);
   EXPECT_EQ(input_form_data, output_form_data);
 }
@@ -237,18 +286,6 @@ TEST_F(AutofillDriverImplTest, TypePredictionsSentToRendererWhenEnabled) {
   std::vector<FormDataPredictions> output_type_predictions;
   EXPECT_TRUE(GetFieldTypePredictionsAvailable(&output_type_predictions));
   EXPECT_EQ(expected_type_predictions, output_type_predictions);
-}
-
-TEST_F(AutofillDriverImplTest, PreviewActionSentToRenderer) {
-  driver_->SetRendererActionOnFormDataReception(
-      AutofillDriver::FORM_DATA_ACTION_PREVIEW);
-  EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_SetAutofillActionPreview::ID));
-}
-
-TEST_F(AutofillDriverImplTest, FillActionSentToRenderer) {
-  driver_->SetRendererActionOnFormDataReception(
-      AutofillDriver::FORM_DATA_ACTION_FILL);
-  EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_SetAutofillActionFill::ID));
 }
 
 TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {

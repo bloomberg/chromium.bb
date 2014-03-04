@@ -1381,8 +1381,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogUserHappinessMetric(
                     AutofillMetrics::SUGGESTIONS_SHOWN_ONCE)).Times(1);
-    autofill_manager_->OnDidShowAutofillSuggestions(true);
-    autofill_manager_->OnDidShowAutofillSuggestions(false);
+    autofill_manager_->DidShowSuggestions(true);
+    autofill_manager_->DidShowSuggestions(false);
   }
 
   // Simulate suggestions shown for a different field.
@@ -1392,7 +1392,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogUserHappinessMetric(
                     AutofillMetrics::SUGGESTIONS_SHOWN_ONCE)).Times(0);
-    autofill_manager_->OnDidShowAutofillSuggestions(true);
+    autofill_manager_->DidShowSuggestions(true);
   }
 
   // Simulate invoking autofill.
@@ -1416,7 +1416,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     PersonalDataManager::GUIDPair guid(
         "00000000-0000-0000-0000-000000000001", 0);
     PersonalDataManager::GUIDPair empty(std::string(), 0);
-    autofill_manager_->OnFillAutofillFormData(
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL,
         0, form, form.fields.front(),
         autofill_manager_->PackGUIDs(empty, guid));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),

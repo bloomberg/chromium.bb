@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -45,7 +46,6 @@ class PrefRegistrySyncable;
 
 namespace autofill {
 
-class AutofillDriver;
 class AutofillDataModel;
 class AutofillDownloadManager;
 class AutofillExternalDelegate;
@@ -86,11 +86,12 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void ShowAutofillSettings();
 
   // Called from our external delegate so they cannot be private.
-  virtual void OnFillAutofillFormData(int query_id,
-                                      const FormData& form,
-                                      const FormFieldData& field,
-                                      int unique_id);
-  void OnDidShowAutofillSuggestions(bool is_new_popup);
+  virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
+                                 int query_id,
+                                 const FormData& form,
+                                 const FormFieldData& field,
+                                 int unique_id);
+  void DidShowSuggestions(bool is_new_popup);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnDidPreviewAutofillFormData();
 

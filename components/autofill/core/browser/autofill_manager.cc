@@ -22,7 +22,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
-#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
@@ -454,10 +453,12 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 
-void AutofillManager::OnFillAutofillFormData(int query_id,
-                                             const FormData& form,
-                                             const FormFieldData& field,
-                                             int unique_id) {
+void AutofillManager::FillOrPreviewForm(
+    AutofillDriver::RendererFormDataAction action,
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    int unique_id) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
@@ -507,7 +508,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       }
     }
 
-    driver_->SendFormDataToRenderer(query_id, result);
+    driver_->SendFormDataToRenderer(query_id, action, result);
     return;
   }
 
@@ -563,7 +564,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
     autofilled_form_signatures_.pop_back();
 
-  driver_->SendFormDataToRenderer(query_id, result);
+  driver_->SendFormDataToRenderer(query_id, action, result);
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
@@ -585,7 +586,7 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   UpdateInitialInteractionTimestamp(timestamp);
 }
 
-void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
+void AutofillManager::DidShowSuggestions(bool is_new_popup) {
   if (test_delegate_)
     test_delegate_->DidShowSuggestions();
 

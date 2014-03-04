@@ -15,17 +15,17 @@
 namespace autofill {
 
 AutofillExternalDelegate::AutofillExternalDelegate(
-    AutofillManager* autofill_manager,
-    AutofillDriver* autofill_driver)
-    : autofill_manager_(autofill_manager),
-      autofill_driver_(autofill_driver),
-      password_autofill_manager_(autofill_driver),
-      autofill_query_id_(0),
+    AutofillManager* manager,
+    AutofillDriver* driver)
+    : manager_(manager),
+      driver_(driver),
+      password_manager_(driver),
+      query_id_(0),
       display_warning_if_disabled_(false),
-      has_autofill_suggestion_(false),
-      has_shown_autofill_popup_for_current_edit_(false),
+      has_suggestion_(false),
+      has_shown_popup_for_current_edit_(false),
       weak_ptr_factory_(this) {
-  DCHECK(autofill_manager);
+  DCHECK(manager);
 }
 
 AutofillExternalDelegate::~AutofillExternalDelegate() {}
@@ -35,26 +35,26 @@ void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormFieldData& field,
                                        const gfx::RectF& element_bounds,
                                        bool display_warning_if_disabled) {
-  autofill_query_form_ = form;
-  autofill_query_field_ = field;
+  query_form_ = form;
+  query_field_ = field;
   display_warning_if_disabled_ = display_warning_if_disabled;
-  autofill_query_id_ = query_id;
+  query_id_ = query_id;
   element_bounds_ = element_bounds;
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
     int query_id,
-    const std::vector<base::string16>& autofill_values,
-    const std::vector<base::string16>& autofill_labels,
-    const std::vector<base::string16>& autofill_icons,
-    const std::vector<int>& autofill_unique_ids) {
-  if (query_id != autofill_query_id_)
+    const std::vector<base::string16>& suggested_values,
+    const std::vector<base::string16>& suggested_labels,
+    const std::vector<base::string16>& suggested_icons,
+    const std::vector<int>& suggested_unique_ids) {
+  if (query_id != query_id_)
     return;
 
-  std::vector<base::string16> values(autofill_values);
-  std::vector<base::string16> labels(autofill_labels);
-  std::vector<base::string16> icons(autofill_icons);
-  std::vector<int> ids(autofill_unique_ids);
+  std::vector<base::string16> values(suggested_values);
+  std::vector<base::string16> labels(suggested_labels);
+  std::vector<base::string16> icons(suggested_icons);
+  std::vector<int> ids(suggested_unique_ids);
 
   // Add or hide warnings as appropriate.
   ApplyAutofillWarnings(&values, &labels, &icons, &ids);
@@ -67,15 +67,15 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
-  has_autofill_suggestion_ = false;
+  has_suggestion_ = false;
   for (size_t i = 0; i < ids.size(); ++i) {
     if (ids[i] > 0) {
-      has_autofill_suggestion_ = true;
+      has_suggestion_ = true;
       break;
     }
   }
 
-  if (has_autofill_suggestion_)
+  if (has_suggestion_)
     ApplyAutofillOptions(&values, &labels, &icons, &ids);
 
   // Remove the separator if it is the last element.
@@ -94,15 +94,15 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   if (values.empty()) {
     // No suggestions, any popup currently showing is obsolete.
-    autofill_manager_->delegate()->HideAutofillPopup();
+    manager_->delegate()->HideAutofillPopup();
     return;
   }
 
   // Send to display.
-  if (autofill_query_field_.is_focusable) {
-    autofill_manager_->delegate()->ShowAutofillPopup(
+  if (query_field_.is_focusable) {
+    manager_->delegate()->ShowAutofillPopup(
         element_bounds_,
-        autofill_query_field_.text_direction,
+        query_field_.text_direction,
         values,
         labels,
         icons,
@@ -116,20 +116,20 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const std::vector<base::string16>& realms,
     const FormFieldData& field,
     const gfx::RectF& element_bounds) {
-  autofill_query_field_ = field;
+  query_field_ = field;
   element_bounds_ = element_bounds;
 
   if (suggestions.empty()) {
-    autofill_manager_->delegate()->HideAutofillPopup();
+    manager_->delegate()->HideAutofillPopup();
     return;
   }
 
   std::vector<base::string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 POPUP_ITEM_ID_PASSWORD_ENTRY);
-  autofill_manager_->delegate()->ShowAutofillPopup(
+  manager_->delegate()->ShowAutofillPopup(
       element_bounds_,
-      autofill_query_field_.text_direction,
+      query_field_.text_direction,
       suggestions,
       realms,
       empty,
@@ -143,15 +143,15 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
   data_list_values_ = data_list_values;
   data_list_labels_ = data_list_labels;
 
-  autofill_manager_->delegate()->UpdateAutofillPopupDataListValues(
+  manager_->delegate()->UpdateAutofillPopupDataListValues(
       data_list_values,
       data_list_labels);
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
-  autofill_manager_->OnDidShowAutofillSuggestions(
-      has_autofill_suggestion_ && !has_shown_autofill_popup_for_current_edit_);
-  has_shown_autofill_popup_for_current_edit_ |= has_autofill_suggestion_;
+  manager_->DidShowSuggestions(
+      has_suggestion_ && !has_shown_popup_for_current_edit_);
+  has_shown_popup_for_current_edit_ |= has_suggestion_;
 }
 
 void AutofillExternalDelegate::OnPopupHidden() {
@@ -174,56 +174,54 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
                                                    int identifier) {
   if (identifier == POPUP_ITEM_ID_AUTOFILL_OPTIONS) {
     // User selected 'Autofill Options'.
-    autofill_manager_->ShowAutofillSettings();
+    manager_->ShowAutofillSettings();
   } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
-    autofill_driver_->RendererShouldClearFilledForm();
+    driver_->RendererShouldClearFilledForm();
   } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY) {
-    bool success = password_autofill_manager_.DidAcceptAutofillSuggestion(
-        autofill_query_field_, value);
+    bool success = password_manager_.DidAcceptAutofillSuggestion(
+        query_field_, value);
     DCHECK(success);
   } else if (identifier == POPUP_ITEM_ID_DATALIST_ENTRY) {
-    autofill_driver_->RendererShouldAcceptDataListSuggestion(value);
+    driver_->RendererShouldAcceptDataListSuggestion(value);
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
-    autofill_driver_->RendererShouldSetNodeText(value);
+    driver_->RendererShouldSetNodeText(value);
   } else {
     FillAutofillFormData(identifier, false);
   }
 
-  autofill_manager_->delegate()->HideAutofillPopup();
+  manager_->delegate()->HideAutofillPopup();
 }
 
 void AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
                                                 int identifier) {
-  if (identifier > 0) {
-    autofill_manager_->RemoveAutofillProfileOrCreditCard(identifier);
-  } else {
-    autofill_manager_->RemoveAutocompleteEntry(autofill_query_field_.name,
-                                               value);
-  }
+  if (identifier > 0)
+    manager_->RemoveAutofillProfileOrCreditCard(identifier);
+  else
+    manager_->RemoveAutocompleteEntry(query_field_.name, value);
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
-  autofill_manager_->delegate()->HideAutofillPopup();
+  manager_->delegate()->HideAutofillPopup();
 
-  has_shown_autofill_popup_for_current_edit_ = false;
+  has_shown_popup_for_current_edit_ = false;
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  autofill_driver_->RendererShouldClearPreviewedForm();
+  driver_->RendererShouldClearPreviewedForm();
 }
 
 void AutofillExternalDelegate::Reset() {
-  autofill_manager_->delegate()->HideAutofillPopup();
+  manager_->delegate()->HideAutofillPopup();
 
-  password_autofill_manager_.Reset();
+  password_manager_.Reset();
 }
 
 void AutofillExternalDelegate::AddPasswordFormMapping(
       const FormFieldData& username_field,
       const PasswordFormFillData& fill_data) {
-  password_autofill_manager_.AddPasswordFormMapping(username_field, fill_data);
+  password_manager_.AddPasswordFormMapping(username_field, fill_data);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
@@ -240,114 +238,112 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
       AutofillDriver::FORM_DATA_ACTION_PREVIEW :
       AutofillDriver::FORM_DATA_ACTION_FILL;
 
-  DCHECK(autofill_driver_->RendererIsAvailable());
-  autofill_driver_->SetRendererActionOnFormDataReception(renderer_action);
+  DCHECK(driver_->RendererIsAvailable());
   // Fill the values for the whole form.
-  autofill_manager_->OnFillAutofillFormData(autofill_query_id_,
-                                            autofill_query_form_,
-                                            autofill_query_field_,
-                                            unique_id);
+  manager_->FillOrPreviewForm(renderer_action,
+                              query_id_,
+                              query_form_,
+                              query_field_,
+                              unique_id);
 }
 
 void AutofillExternalDelegate::ApplyAutofillWarnings(
-    std::vector<base::string16>* autofill_values,
-    std::vector<base::string16>* autofill_labels,
-    std::vector<base::string16>* autofill_icons,
-    std::vector<int>* autofill_unique_ids) {
-  if (!autofill_query_field_.should_autocomplete) {
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
+    std::vector<int>* unique_ids) {
+  if (!query_field_.should_autocomplete) {
     // Autofill is disabled.  If there were some profile or credit card
     // suggestions to show, show a warning instead.  Otherwise, clear out the
     // list of suggestions.
-    if (!autofill_unique_ids->empty() && (*autofill_unique_ids)[0] > 0) {
+    if (!unique_ids->empty() && (*unique_ids)[0] > 0) {
       // If autofill is disabled and we had suggestions, show a warning instead.
-      autofill_values->assign(
+      values->assign(
           1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-      autofill_labels->assign(1, base::string16());
-      autofill_icons->assign(1, base::string16());
-      autofill_unique_ids->assign(1, POPUP_ITEM_ID_WARNING_MESSAGE);
+      labels->assign(1, base::string16());
+      icons->assign(1, base::string16());
+      unique_ids->assign(1, POPUP_ITEM_ID_WARNING_MESSAGE);
     } else {
-      autofill_values->clear();
-      autofill_labels->clear();
-      autofill_icons->clear();
-      autofill_unique_ids->clear();
+      values->clear();
+      labels->clear();
+      icons->clear();
+      unique_ids->clear();
     }
-  } else if (autofill_unique_ids->size() > 1 &&
-             (*autofill_unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE) {
+  } else if (unique_ids->size() > 1 &&
+             (*unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE) {
     // If we received a warning instead of suggestions from autofill but regular
     // suggestions from autocomplete, don't show the autofill warning.
-    autofill_values->erase(autofill_values->begin());
-    autofill_labels->erase(autofill_labels->begin());
-    autofill_icons->erase(autofill_icons->begin());
-    autofill_unique_ids->erase(autofill_unique_ids->begin());
+    values->erase(values->begin());
+    labels->erase(labels->begin());
+    icons->erase(icons->begin());
+    unique_ids->erase(unique_ids->begin());
   }
 
   // If we were about to show a warning and we shouldn't, don't.
-  if (!autofill_unique_ids->empty() &&
-      (*autofill_unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE &&
+  if (!unique_ids->empty() &&
+      (*unique_ids)[0] == POPUP_ITEM_ID_WARNING_MESSAGE &&
       !display_warning_if_disabled_) {
-    autofill_values->clear();
-    autofill_labels->clear();
-    autofill_icons->clear();
-    autofill_unique_ids->clear();
+    values->clear();
+    labels->clear();
+    icons->clear();
+    unique_ids->clear();
   }
 }
 
 void AutofillExternalDelegate::ApplyAutofillOptions(
-    std::vector<base::string16>* autofill_values,
-    std::vector<base::string16>* autofill_labels,
-    std::vector<base::string16>* autofill_icons,
-    std::vector<int>* autofill_unique_ids) {
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
+    std::vector<int>* unique_ids) {
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
-  if (autofill_query_field_.is_autofilled) {
-    autofill_values->push_back(
+  if (query_field_.is_autofilled) {
+    values->push_back(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
-    autofill_labels->push_back(base::string16());
-    autofill_icons->push_back(base::string16());
-    autofill_unique_ids->push_back(POPUP_ITEM_ID_CLEAR_FORM);
+    labels->push_back(base::string16());
+    icons->push_back(base::string16());
+    unique_ids->push_back(POPUP_ITEM_ID_CLEAR_FORM);
   }
 
   // Append the 'Chrome Autofill options' menu item;
-  autofill_values->push_back(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
-  autofill_labels->push_back(base::string16());
-  autofill_icons->push_back(base::string16());
-  autofill_unique_ids->push_back(POPUP_ITEM_ID_AUTOFILL_OPTIONS);
+  values->push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
+  labels->push_back(base::string16());
+  icons->push_back(base::string16());
+  unique_ids->push_back(POPUP_ITEM_ID_AUTOFILL_OPTIONS);
 }
 
 void AutofillExternalDelegate::InsertDataListValues(
-    std::vector<base::string16>* autofill_values,
-    std::vector<base::string16>* autofill_labels,
-    std::vector<base::string16>* autofill_icons,
-    std::vector<int>* autofill_unique_ids) {
+    std::vector<base::string16>* values,
+    std::vector<base::string16>* labels,
+    std::vector<base::string16>* icons,
+    std::vector<int>* unique_ids) {
   if (data_list_values_.empty())
     return;
 
   // Insert the separator between the datalist and Autofill values (if there
   // are any).
-  if (!autofill_values->empty()) {
-    autofill_values->insert(autofill_values->begin(), base::string16());
-    autofill_labels->insert(autofill_labels->begin(), base::string16());
-    autofill_icons->insert(autofill_icons->begin(), base::string16());
-    autofill_unique_ids->insert(autofill_unique_ids->begin(),
-                                POPUP_ITEM_ID_SEPARATOR);
+  if (!values->empty()) {
+    values->insert(values->begin(), base::string16());
+    labels->insert(labels->begin(), base::string16());
+    icons->insert(icons->begin(), base::string16());
+    unique_ids->insert(unique_ids->begin(), POPUP_ITEM_ID_SEPARATOR);
   }
 
   // Insert the datalist elements.
-  autofill_values->insert(autofill_values->begin(),
-                          data_list_values_.begin(),
-                          data_list_values_.end());
-  autofill_labels->insert(autofill_labels->begin(),
-                          data_list_labels_.begin(),
-                          data_list_labels_.end());
+  values->insert(values->begin(),
+                 data_list_values_.begin(),
+                 data_list_values_.end());
+  labels->insert(labels->begin(),
+                 data_list_labels_.begin(),
+                 data_list_labels_.end());
 
   // Set the values that all datalist elements share.
-  autofill_icons->insert(autofill_icons->begin(),
-                         data_list_values_.size(),
-                         base::string16());
-  autofill_unique_ids->insert(autofill_unique_ids->begin(),
-                              data_list_values_.size(),
-                              POPUP_ITEM_ID_DATALIST_ENTRY);
+  icons->insert(icons->begin(),
+                data_list_values_.size(),
+                base::string16());
+  unique_ids->insert(unique_ids->begin(),
+                     data_list_values_.size(),
+                     POPUP_ITEM_ID_DATALIST_ENTRY);
 }
 
 }  // namespace autofill

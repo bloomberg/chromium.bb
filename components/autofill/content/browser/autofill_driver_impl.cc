@@ -88,30 +88,22 @@ bool AutofillDriverImpl::RendererIsAvailable() {
   return (web_contents()->GetRenderViewHost() != NULL);
 }
 
-void AutofillDriverImpl::SetRendererActionOnFormDataReception(
-    RendererFormDataAction action) {
-  if (!RendererIsAvailable())
-    return;
-
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  switch(action) {
-    case FORM_DATA_ACTION_PREVIEW:
-      host->Send(new AutofillMsg_SetAutofillActionPreview(
-          host->GetRoutingID()));
-      return;
-    case FORM_DATA_ACTION_FILL:
-      host->Send(new AutofillMsg_SetAutofillActionFill(host->GetRoutingID()));
-      return;
-  }
-}
-
 void AutofillDriverImpl::SendFormDataToRenderer(int query_id,
+                                                RendererFormDataAction action,
                                                 const FormData& data) {
   if (!RendererIsAvailable())
     return;
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(
-      new AutofillMsg_FormDataFilled(host->GetRoutingID(), query_id, data));
+  switch (action) {
+    case FORM_DATA_ACTION_FILL:
+      host->Send(
+          new AutofillMsg_FillForm(host->GetRoutingID(), query_id, data));
+      break;
+    case FORM_DATA_ACTION_PREVIEW:
+      host->Send(
+          new AutofillMsg_PreviewForm(host->GetRoutingID(), query_id, data));
+      break;
+  }
 }
 
 void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
@@ -185,9 +177,6 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_QueryFormFieldAutofill,
                         autofill_manager_.get(),
                         AutofillManager::OnQueryFormFieldAutofill)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_FillAutofillFormData,
-                        autofill_manager_.get(),
-                        AutofillManager::OnFillAutofillFormData)
     IPC_MESSAGE_FORWARD(AutofillHostMsg_DidPreviewAutofillFormData,
                         autofill_manager_.get(),
                         AutofillManager::OnDidPreviewAutofillFormData)

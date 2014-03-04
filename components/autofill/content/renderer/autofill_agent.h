@@ -55,11 +55,6 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual ~AutofillAgent();
 
  private:
-  enum AutofillAction {
-    AUTOFILL_NONE,     // No state set.
-    AUTOFILL_FILL,     // Fill the Autofill form data.
-    AUTOFILL_PREVIEW,  // Preview the Autofill form data.
-  };
 
   // RenderView::Observer:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -96,14 +91,13 @@ class AutofillAgent : public content::RenderViewObserver,
       const blink::WebVector<blink::WebNode>& nodes) OVERRIDE;
   virtual void openTextDataListChooser(const blink::WebInputElement& element);
 
-  void OnFormDataFilled(int query_id, const FormData& form);
   void OnFieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms);
+  void OnFillForm(int query_id, const FormData& form);
+  void OnPreviewForm(int query_id, const FormData& form);
 
   // For external Autofill selection.
-  void OnSetAutofillActionFill();
   void OnClearForm();
-  void OnSetAutofillActionPreview();
   void OnClearPreviewedForm();
   void OnSetNodeText(const base::string16& value);
   void OnAcceptDataListSuggestion(const base::string16& value);
@@ -117,10 +111,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // Called when an autocomplete request succeeds or fails with the |result|.
   void FinishAutocompleteRequest(
       blink::WebFormElement::AutocompleteResult result);
-
-  // Called when the page is actually shown in the browser, as opposed to simply
-  // being preloaded.
-  void OnPageShown();
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
@@ -155,14 +145,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // Sets the element value to reflect the selected |suggested_value|.
   void AcceptDataListSuggestion(const base::string16& suggested_value);
 
-  // Queries the AutofillManager for form data for the form containing |node|.
-  // |value| is the current text in the field, and |unique_id| is the selected
-  // profile's unique ID.  |action| specifies whether to Fill or Preview the
-  // values returned from the AutofillManager.
-  void FillAutofillFormData(const blink::WebNode& node,
-                            int unique_id,
-                            AutofillAction action);
-
   // Fills |form| and |field| with the FormData and FormField corresponding to
   // |node|. Returns true if the data was found; and false otherwise.
   bool FindFormAndFieldForNode(
@@ -193,9 +175,6 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // All the form elements seen in the top frame.
   std::vector<blink::WebFormElement> form_elements_;
-
-  // The action to take when receiving Autofill data from the AutofillManager.
-  AutofillAction autofill_action_;
 
   // Pointer to the WebView. Used to access page scale factor.
   blink::WebView* web_view_;
@@ -234,7 +213,6 @@ class AutofillAgent : public content::RenderViewObserver,
 
   friend class PasswordAutofillAgentTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, FillFormElement);
-  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendForms);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendDynamicForms);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, ShowAutofillWarning);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, WaitUsername);
