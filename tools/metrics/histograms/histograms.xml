@@ -267,6 +267,14 @@ other types of suffix sets.
   <summary>The amount of time taken to run a background task.</summary>
 </histogram>
 
+<histogram name="appcache.UpdateJobResult" enum="AppCacheUpdateJobResult">
+  <summary>AppCache update job result code.</summary>
+</histogram>
+
+<histogram name="appcache.UpdateJobResult.Docs" enum="AppCacheUpdateJobResult">
+  <summary>AppCache update job result code, only for docs.google.com.</summary>
+</histogram>
+
 <histogram name="Apps.AppLaunch" enum="AppLaunch">
   <summary>
     The number of times v2 packaged apps are launched grouped by
@@ -24475,6 +24483,17 @@ other types of suffix sets.
   <int value="0" label="OK"/>
   <int value="1" label="SQL Database Error"/>
   <int value="2" label="Disk Cache Error"/>
+</enum>
+
+<enum name="AppCacheUpdateJobResult" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="SQL Database Error"/>
+  <int value="2" label="Disk Cache Error"/>
+  <int value="3" label="Quota Error"/>
+  <int value="4" label="Redirect Error"/>
+  <int value="5" label="Manifest Error"/>
+  <int value="6" label="Network Error"/>
+  <int value="7" label="Server Error"/>
 </enum>
 
 <enum name="AppLaunch" type="int">
