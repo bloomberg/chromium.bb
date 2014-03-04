@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -165,6 +166,10 @@ void UserScriptScheduler::ExecuteCodeImpl(
     GetAllChildFrames(frame_, &frame_vector);
 
   std::string error;
+
+  scoped_ptr<blink::WebScopedUserGesture> gesture;
+  if (params.user_gesture)
+    gesture.reset(new blink::WebScopedUserGesture);
 
   for (std::vector<WebFrame*>::iterator frame_it = frame_vector.begin();
        frame_it != frame_vector.end(); ++frame_it) {

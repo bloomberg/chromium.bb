@@ -131,6 +131,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
 
   // The URL of the file that was injected, if any.
   IPC_STRUCT_MEMBER(GURL, file_url)
+
+  // Whether the code to be executed should be associated with a user gesture.
+  IPC_STRUCT_MEMBER(bool, user_gesture)
 IPC_STRUCT_END()
 
 // Struct containing the data for external connections to extensions. Used to

@@ -98,3 +98,9 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptCallback) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/callback")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, UserGesture) {
+  SetupDelayedHostResolver();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("executescript/user_gesture")) << message_;
+}

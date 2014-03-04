@@ -87,6 +87,7 @@ class ScriptExecutor {
                      WorldType world_type,
                      ProcessType process_type,
                      const GURL& file_url,
+                     bool user_gesture,
                      ResultType result_type,
                      const ExecuteScriptCallback& callback);
 

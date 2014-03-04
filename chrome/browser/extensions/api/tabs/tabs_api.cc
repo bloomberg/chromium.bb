@@ -1376,6 +1376,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
             ScriptExecutor::MAIN_WORLD,
             ScriptExecutor::DEFAULT_PROCESS,
             GURL(),
+            user_gesture_,
             ScriptExecutor::NO_RESULT,
             base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 
