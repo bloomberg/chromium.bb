@@ -115,3 +115,6 @@ message UpdateKeyRequest {
   optional Key changes = 1;
   optional bytes authorization_signature = 2;
 }
+
+message CheckKeyRequest {
+}
