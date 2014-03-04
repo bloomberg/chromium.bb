@@ -30,10 +30,10 @@ class CpuMetric(Metric):
     assert self._results, 'Must call Stop() first'
     # Add a result for each process type.
     for process_type in self._results:
-      trace_name = '%s_%s' % (trace_name, process_type.lower())
+      trace_name_for_process = '%s_%s' % (trace_name, process_type.lower())
       cpu_percent = 100 * self._results[process_type]
-      results.Add(trace_name, '%', cpu_percent, chart_name='cpu_utilization',
-                  data_type='unimportant')
+      results.Add(trace_name_for_process, '%', cpu_percent,
+                  chart_name='cpu_utilization', data_type='unimportant')
 
 
 def _SubtractCpuStats(cpu_stats, start_cpu_stats):
