@@ -51,12 +51,23 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
  private:
   struct RasterTaskState {
-    RasterTaskState() : type(UNSCHEDULED), resource(NULL) {}
+    RasterTaskState()
+        : type(UNSCHEDULED), resource(NULL), required_for_activation(false) {}
+
+    RasterTaskState& set_completed() {
+      type = COMPLETED;
+      return *this;
+    }
+    RasterTaskState& set_required_for_activation(bool is_required) {
+      required_for_activation = is_required;
+      return *this;
+    }
+
     enum { UNSCHEDULED, SCHEDULED, UPLOADING, COMPLETED } type;
     const Resource* resource;
+    bool required_for_activation;
   };
   typedef internal::WorkerPoolTask* RasterTaskMapKey;
-  typedef base::hash_set<RasterTaskMapKey> RasterTaskSet;
   typedef base::hash_map<RasterTaskMapKey, RasterTaskState> RasterTaskStateMap;
 
   // Overridden from RasterWorkerPool:
@@ -73,7 +84,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool HasPendingTasks() const;
   bool HasPendingTasksRequiredForActivation() const;
   void CheckForCompletedWorkerPoolTasks();
-  bool IsRasterTaskRequiredForActivation(internal::WorkerPoolTask* task) const;
 
   const char* StateName() const;
   scoped_ptr<base::Value> StateAsValue() const;
@@ -82,13 +92,13 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool shutdown_;
 
   RasterTaskQueue raster_tasks_;
-  RasterTaskSet raster_tasks_required_for_activation_;
   RasterTaskStateMap raster_task_states_;
   TaskDeque raster_tasks_with_pending_upload_;
   TaskDeque completed_raster_tasks_;
   TaskDeque completed_image_decode_tasks_;
 
   size_t scheduled_raster_task_count_;
+  size_t raster_tasks_required_for_activation_count_;
   size_t bytes_pending_upload_;
   size_t max_bytes_pending_upload_;
   bool has_performed_uploads_since_last_flush_;
