@@ -31,7 +31,11 @@ class PlatformContext3D {
   bool Init(const int32* attrib_list, PlatformContext3D* share_context);
 
   // Retrieves the mailbox name for the front buffer backing the context.
-  void GetBackingMailbox(gpu::Mailbox* mailbox);
+  void GetBackingMailbox(gpu::Mailbox* mailbox, uint32* sync_point);
+
+  // Inserts a new sync point to associate with the backing mailbox, that should
+  // be waited on before using the mailbox.
+  void InsertSyncPointForBackingMailbox();
 
   // Returns true if the backing texture is always opaque.
   bool IsOpaque();
@@ -68,6 +72,7 @@ class PlatformContext3D {
 
   scoped_refptr<GpuChannelHost> channel_;
   gpu::Mailbox mailbox_;
+  uint32 sync_point_;
   bool has_alpha_;
   CommandBufferProxyImpl* command_buffer_;
   base::Closure context_lost_callback_;

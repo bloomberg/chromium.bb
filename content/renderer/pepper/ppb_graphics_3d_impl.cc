@@ -185,6 +185,10 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   if (gles2_impl())
     gles2_impl()->SwapBuffers();
 
+  // Since the backing texture has been updated, a new sync point should be
+  // inserted.
+  platform_context_->InsertSyncPointForBackingMailbox();
+
   if (bound_to_instance_) {
     // If we are bound to the instance, we need to ask the compositor
     // to commit our backing texture so that the graphics appears on the page.
