@@ -1962,14 +1962,16 @@ _arm_release.add_config('nyan_big-release',
   hw_tests=[],
 )
 
-# Brillo devices do not have Chrome or currently need for test or dev images.
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
-  images=['base', 'test']
+  images=['base', 'test'],
 )
 
 _brillo_release.add_config('duck-release',
    boards=['duck'],
+   # TODO: Temporarily disable building test image
+   # (crbug.com/348889). Remove this line after the bug is fixed.
+   images=['base'],
 )
 
 _arm_brillo_release = _brillo_release.derive(arm)
