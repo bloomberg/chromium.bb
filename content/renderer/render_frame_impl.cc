@@ -46,6 +46,7 @@
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
+#include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -54,6 +55,7 @@
 #include "content/renderer/websharedworker_proxy.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -94,6 +96,7 @@ using blink::WebFrame;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
 using blink::WebNavigationPolicy;
+using blink::WebNavigationType;
 using blink::WebPluginParams;
 using blink::WebReferrerPolicy;
 using blink::WebSearchableFormData;
@@ -209,6 +212,44 @@ static void MaybeHandleDebugURL(const GURL& url) {
 #if defined(ADDRESS_SANITIZER)
   MaybeTriggerAsanError(url);
 #endif  // ADDRESS_SANITIZER
+}
+
+// Returns false unless this is a top-level navigation.
+static bool IsTopLevelNavigation(WebFrame* frame) {
+  return frame->parent() == NULL;
+}
+
+// Returns false unless this is a top-level navigation that crosses origins.
+static bool IsNonLocalTopLevelNavigation(const GURL& url,
+                                         WebFrame* frame,
+                                         WebNavigationType type,
+                                         bool is_form_post) {
+  if (!IsTopLevelNavigation(frame))
+    return false;
+
+  // Navigations initiated within Webkit are not sent out to the external host
+  // in the following cases.
+  // 1. The url scheme is not http/https
+  // 2. The origin of the url and the opener is the same in which case the
+  //    opener relationship is maintained.
+  // 3. Reloads/form submits/back forward navigations
+  if (!url.SchemeIs(kHttpScheme) && !url.SchemeIs(kHttpsScheme))
+    return false;
+
+  if (type != blink::WebNavigationTypeReload &&
+      type != blink::WebNavigationTypeBackForward && !is_form_post) {
+    // The opener relationship between the new window and the parent allows the
+    // new window to script the parent and vice versa. This is not allowed if
+    // the origins of the two domains are different. This can be treated as a
+    // top level navigation and routed back to the host.
+    blink::WebFrame* opener = frame->opener();
+    if (!opener)
+      return true;
+
+    if (url.GetOrigin() != GURL(opener->document().url()).GetOrigin())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -1107,7 +1148,7 @@ void RenderFrameImpl::loadURLExternally(
                                                    request.url(), referrer,
                                                    suggested_name));
   } else {
-    render_view_->OpenURL(frame, request.url(), referrer, policy);
+    OpenURL(frame, request.url(), referrer, policy);
   }
 }
 
@@ -1119,7 +1160,7 @@ blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     blink::WebNavigationPolicy default_policy,
     bool is_redirect) {
   DCHECK(!frame_ || frame_ == frame);
-  return render_view_->DecidePolicyForNavigation(
+  return DecidePolicyForNavigation(
       this, frame, extra_data, request, type, default_policy, is_redirect);
 }
 
@@ -2280,6 +2321,265 @@ void RenderFrameImpl::didStartLoading() {
 
 void RenderFrameImpl::didStopLoading() {
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
+}
+
+WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
+    RenderFrame* render_frame,
+    WebFrame* frame,
+    WebDataSource::ExtraData* extraData,
+    const WebURLRequest& request,
+    WebNavigationType type,
+    WebNavigationPolicy default_policy,
+    bool is_redirect) {
+#ifdef OS_ANDROID
+  // The handlenavigation API is deprecated and will be removed once
+  // crbug.com/325351 is resolved.
+  if (request.url() != GURL(kSwappedOutURL) &&
+      GetContentClient()->renderer()->HandleNavigation(
+          render_frame,
+          static_cast<DocumentState*>(extraData),
+          render_view_->opener_id_,
+          frame,
+          request,
+          type,
+          default_policy,
+          is_redirect)) {
+    return blink::WebNavigationPolicyIgnore;
+  }
+#endif
+
+  Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame, request));
+
+  if (is_swapped_out_ || render_view_->is_swapped_out()) {
+    if (request.url() != GURL(kSwappedOutURL)) {
+      // Targeted links may try to navigate a swapped out frame.  Allow the
+      // browser process to navigate the tab instead.  Note that it is also
+      // possible for non-targeted navigations (from this view) to arrive
+      // here just after we are swapped out.  It's ok to send them to the
+      // browser, as long as they're for the top level frame.
+      // TODO(creis): Ensure this supports targeted form submissions when
+      // fixing http://crbug.com/101395.
+      if (frame->parent() == NULL) {
+        OpenURL(frame, request.url(), referrer, default_policy);
+        return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
+      }
+
+      // We should otherwise ignore in-process iframe navigations, if they
+      // arrive just after we are swapped out.
+      return blink::WebNavigationPolicyIgnore;
+    }
+
+    // Allow kSwappedOutURL to complete.
+    return default_policy;
+  }
+
+  // Webkit is asking whether to navigate to a new URL.
+  // This is fine normally, except if we're showing UI from one security
+  // context and they're trying to navigate to a different context.
+  const GURL& url = request.url();
+
+  // A content initiated navigation may have originated from a link-click,
+  // script, drag-n-drop operation, etc.
+  bool is_content_initiated = static_cast<DocumentState*>(extraData)->
+          navigation_state()->is_content_initiated();
+
+  // Experimental:
+  // If --enable-strict-site-isolation or --site-per-process is enabled, send
+  // all top-level navigations to the browser to let it swap processes when
+  // crossing site boundaries.  This is currently expected to break some script
+  // calls and navigations, such as form submissions.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool force_swap_due_to_flag =
+      command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
+      command_line.HasSwitch(switches::kSitePerProcess);
+  if (force_swap_due_to_flag &&
+      !frame->parent() && (is_content_initiated || is_redirect)) {
+    WebString origin_str = frame->document().securityOrigin().toString();
+    GURL frame_url(origin_str.utf8().data());
+    // TODO(cevans): revisit whether this site check is still necessary once
+    // crbug.com/101395 is fixed.
+    bool same_domain_or_host =
+        net::registry_controlled_domains::SameDomainOrHost(
+            frame_url,
+            url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (!same_domain_or_host || frame_url.scheme() != url.scheme()) {
+      OpenURL(frame, url, referrer, default_policy);
+      return blink::WebNavigationPolicyIgnore;
+    }
+  }
+
+  // If the browser is interested, then give it a chance to look at the request.
+  if (is_content_initiated) {
+    bool is_form_post = ((type == blink::WebNavigationTypeFormSubmitted) ||
+                         (type == blink::WebNavigationTypeFormResubmitted)) &&
+                        EqualsASCII(request.httpMethod(), "POST");
+    bool browser_handles_request =
+        render_view_->renderer_preferences_
+            .browser_handles_non_local_top_level_requests
+        && IsNonLocalTopLevelNavigation(url, frame, type, is_form_post);
+    if (!browser_handles_request) {
+      browser_handles_request = IsTopLevelNavigation(frame) &&
+          render_view_->renderer_preferences_
+              .browser_handles_all_top_level_requests;
+    }
+
+    if (browser_handles_request) {
+      // Reset these counters as the RenderView could be reused for the next
+      // navigation.
+      render_view_->page_id_ = -1;
+      render_view_->last_page_id_sent_to_browser_ = -1;
+      OpenURL(frame, url, referrer, default_policy);
+      return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+  }
+
+  // Use the frame's original request's URL rather than the document's URL for
+  // subsequent checks.  For a popup, the document's URL may become the opener
+  // window's URL if the opener has called document.write().
+  // See http://crbug.com/93517.
+  GURL old_url(frame->dataSource()->request().url());
+
+  // Detect when we're crossing a permission-based boundary (e.g. into or out of
+  // an extension or app origin, leaving a WebUI page, etc). We only care about
+  // top-level navigations (not iframes). But we sometimes navigate to
+  // about:blank to clear a tab, and we want to still allow that.
+  //
+  // Note: this is known to break POST submissions when crossing process
+  // boundaries until http://crbug.com/101395 is fixed.  This is better for
+  // security than loading a WebUI, extension or app page in the wrong process.
+  // POST requests don't work because this mechanism does not preserve form
+  // POST data. We will need to send the request's httpBody data up to the
+  // browser process, and issue a special POST navigation in WebKit (via
+  // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
+  // for examples of how to send the httpBody data.
+  if (!frame->parent() && is_content_initiated &&
+      !url.SchemeIs(chrome::kAboutScheme)) {
+    bool send_referrer = false;
+
+    // All navigations to or from WebUI URLs or within WebUI-enabled
+    // RenderProcesses must be handled by the browser process so that the
+    // correct bindings and data sources can be registered.
+    // Similarly, navigations to view-source URLs or within ViewSource mode
+    // must be handled by the browser process (except for reloads - those are
+    // safe to leave within the renderer).
+    // Lastly, access to file:// URLs from non-file:// URL pages must be
+    // handled by the browser so that ordinary renderer processes don't get
+    // blessed with file permissions.
+    int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
+    bool is_initial_navigation = render_view_->page_id_ == -1;
+    bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
+        (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
+        url.SchemeIs(kViewSourceScheme) ||
+        (frame->isViewSourceModeEnabled() &&
+            type != blink::WebNavigationTypeReload);
+
+    if (!should_fork && url.SchemeIs(kFileScheme)) {
+      // Fork non-file to file opens.  Check the opener URL if this is the
+      // initial navigation in a newly opened window.
+      GURL source_url(old_url);
+      if (is_initial_navigation && source_url.is_empty() && frame->opener())
+        source_url = frame->opener()->top()->document().url();
+      DCHECK(!source_url.is_empty());
+      should_fork = !source_url.SchemeIs(kFileScheme);
+    }
+
+    if (!should_fork) {
+      // Give the embedder a chance.
+      should_fork = GetContentClient()->renderer()->ShouldFork(
+          frame, url, request.httpMethod().utf8(), is_initial_navigation,
+          is_redirect, &send_referrer);
+    }
+
+    if (should_fork) {
+      OpenURL(
+          frame, url, send_referrer ? referrer : Referrer(), default_policy);
+      return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+  }
+
+  // Detect when a page is "forking" a new tab that can be safely rendered in
+  // its own process.  This is done by sites like Gmail that try to open links
+  // in new windows without script connections back to the original page.  We
+  // treat such cases as browser navigations (in which we will create a new
+  // renderer for a cross-site navigation), rather than WebKit navigations.
+  //
+  // We use the following heuristic to decide whether to fork a new page in its
+  // own process:
+  // The parent page must open a new tab to about:blank, set the new tab's
+  // window.opener to null, and then redirect the tab to a cross-site URL using
+  // JavaScript.
+  //
+  // TODO(creis): Deprecate this logic once we can rely on rel=noreferrer
+  // (see below).
+  bool is_fork =
+      // Must start from a tab showing about:blank, which is later redirected.
+      old_url == GURL(kAboutBlankURL) &&
+      // Must be the first real navigation of the tab.
+      render_view_->historyBackListCount() < 1 &&
+      render_view_->historyForwardListCount() < 1 &&
+      // The parent page must have set the child's window.opener to null before
+      // redirecting to the desired URL.
+      frame->opener() == NULL &&
+      // Must be a top-level frame.
+      frame->parent() == NULL &&
+      // Must not have issued the request from this page.
+      is_content_initiated &&
+      // Must be targeted at the current tab.
+      default_policy == blink::WebNavigationPolicyCurrentTab &&
+      // Must be a JavaScript navigation, which appears as "other".
+      type == blink::WebNavigationTypeOther;
+
+  if (is_fork) {
+    // Open the URL via the browser, not via WebKit.
+    OpenURL(frame, url, Referrer(), default_policy);
+    return blink::WebNavigationPolicyIgnore;
+  }
+
+  return default_policy;
+}
+
+void RenderFrameImpl::OpenURL(WebFrame* frame,
+                              const GURL& url,
+                              const Referrer& referrer,
+                              WebNavigationPolicy policy) {
+  DCHECK_EQ(frame_, frame);
+
+  FrameHostMsg_OpenURL_Params params;
+  params.url = url;
+  params.referrer = referrer;
+  params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
+  params.frame_id = RenderFrameImpl::FromWebFrame(frame)->GetRoutingID();
+  WebDataSource* ds = frame->provisionalDataSource();
+  if (ds) {
+    DocumentState* document_state = DocumentState::FromDataSource(ds);
+    NavigationState* navigation_state = document_state->navigation_state();
+    if (navigation_state->is_content_initiated()) {
+      params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
+    } else {
+      // This is necessary to preserve the should_replace_current_entry value on
+      // cross-process redirects, in the event it was set by a previous process.
+      //
+      // TODO(davidben): Avoid this awkward duplication of state. See comment on
+      // NavigationState::should_replace_current_entry().
+      params.should_replace_current_entry =
+          navigation_state->should_replace_current_entry();
+    }
+  } else {
+    params.should_replace_current_entry = false;
+  }
+  params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  if (GetContentClient()->renderer()->AllowPopup())
+    params.user_gesture = true;
+
+  if (policy == blink::WebNavigationPolicyNewBackgroundTab ||
+      policy == blink::WebNavigationPolicyNewForegroundTab ||
+      policy == blink::WebNavigationPolicyNewWindow ||
+      policy == blink::WebNavigationPolicyNewPopup) {
+    WebUserGestureIndicator::consumeUserGesture();
+  }
+
+  Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 
 }  // namespace content

@@ -352,23 +352,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DocumentOnLoadCompletedInMainFrame(
       RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;
-  virtual void RequestOpenURL(RenderViewHost* rvh,
-                              const GURL& url,
-                              const Referrer& referrer,
-                              WindowOpenDisposition disposition,
-                              int64 source_frame_id,
-                              bool should_replace_current_entry,
-                              bool user_gesture) OVERRIDE;
-  virtual void RequestTransferURL(
-      const GURL& url,
-      const std::vector<GURL>& redirect_chain,
-      const Referrer& referrer,
-      PageTransition page_transition,
-      WindowOpenDisposition disposition,
-      int64 source_frame_id,
-      const GlobalRequestID& transferred_global_request_id,
-      bool should_replace_current_entry,
-      bool user_gesture) OVERRIDE;
   virtual void RouteCloseEvent(RenderViewHost* rvh) OVERRIDE;
   virtual void RouteMessageEvent(
       RenderViewHost* rvh,
@@ -489,6 +472,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual void RequestOpenURL(const OpenURLParams& params) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

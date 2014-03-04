@@ -15,6 +15,7 @@
 
 class GURL;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
+struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_Navigate_Params;
 
 namespace base {
@@ -131,6 +132,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // IPC Message handlers.
   void OnDetach();
+  void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
                                          bool main_frame,
                                          const GURL& url);

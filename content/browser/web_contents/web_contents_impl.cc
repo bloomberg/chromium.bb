@@ -2090,6 +2090,21 @@ void WebContentsImpl::DidStartNavigationToPendingEntry(
       DidStartNavigationToPendingEntry(url, reload_type));
 }
 
+void WebContentsImpl::RequestOpenURL(const OpenURLParams& params) {
+  WebContents* new_contents = OpenURL(params);
+
+  if (new_contents) {
+    // Notify observers.
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      DidOpenRequestedURL(new_contents,
+                                          params.url,
+                                          params.referrer,
+                                          params.disposition,
+                                          params.transition,
+                                          params.source_frame_id));
+  }
+}
+
 void WebContentsImpl::DidRedirectProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& validated_target_url) {
@@ -3031,96 +3046,6 @@ void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(
       NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<WebContents>(this),
       Details<int>(&page_id));
-}
-
-void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
-                                     const GURL& url,
-                                     const Referrer& referrer,
-                                     WindowOpenDisposition disposition,
-                                     int64 source_frame_id,
-                                     bool should_replace_current_entry,
-                                     bool user_gesture) {
-  // If this came from a swapped out RenderViewHost, we only allow the request
-  // if we are still in the same BrowsingInstance.
-  if (static_cast<RenderViewHostImpl*>(rvh)->IsSwappedOut() &&
-      !rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance())) {
-    return;
-  }
-
-  // Delegate to RequestTransferURL because this is just the generic
-  // case where |old_request_id| is empty.
-  // TODO(creis): Pass the redirect_chain into this method to support client
-  // redirects.  http://crbug.com/311721.
-  std::vector<GURL> redirect_chain;
-  RequestTransferURL(url, redirect_chain, referrer, PAGE_TRANSITION_LINK,
-                     disposition, source_frame_id, GlobalRequestID(),
-                     should_replace_current_entry, user_gesture);
-}
-
-void WebContentsImpl::RequestTransferURL(
-    const GURL& url,
-    const std::vector<GURL>& redirect_chain,
-    const Referrer& referrer,
-    PageTransition page_transition,
-    WindowOpenDisposition disposition,
-    int64 source_frame_id,
-    const GlobalRequestID& old_request_id,
-    bool should_replace_current_entry,
-    bool user_gesture) {
-  WebContents* new_contents = NULL;
-  GURL dest_url(url);
-  if (!GetContentClient()->browser()->ShouldAllowOpenURL(
-          GetSiteInstance(), url))
-    dest_url = GURL(kAboutBlankURL);
-
-  // Look up the FrameTreeNode ID corresponding to source_frame_id.
-  int64 frame_tree_node_id = -1;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
-      source_frame_id != -1) {
-    FrameTreeNode* source_node = frame_tree_.FindByRoutingID(
-        source_frame_id, old_request_id.child_id);
-    if (source_node)
-      frame_tree_node_id = source_node->frame_tree_node_id();
-  }
-  OpenURLParams params(dest_url, referrer, source_frame_id,
-      frame_tree_node_id, disposition,
-      page_transition, true /* is_renderer_initiated */);
-  if (redirect_chain.size() > 0)
-    params.redirect_chain = redirect_chain;
-  params.transferred_global_request_id = old_request_id;
-  params.should_replace_current_entry = should_replace_current_entry;
-  params.user_gesture = user_gesture;
-
-  if (GetRenderManager()->web_ui()) {
-    // Web UI pages sometimes want to override the page transition type for
-    // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
-    // automatically generated suggestions).  We don't override other types
-    // like TYPED because they have different implications (e.g., autocomplete).
-    if (PageTransitionCoreTypeIs(params.transition, PAGE_TRANSITION_LINK))
-      params.transition = GetRenderManager()->web_ui()->GetLinkTransitionType();
-
-    // Note also that we hide the referrer for Web UI pages. We don't really
-    // want web sites to see a referrer of "chrome://blah" (and some
-    // chrome: URLs might have search terms or other stuff we don't want to
-    // send to the site), so we send no referrer.
-    params.referrer = Referrer();
-
-    // Navigations in Web UI pages count as browser-initiated navigations.
-    params.is_renderer_initiated = false;
-  }
-
-  new_contents = OpenURL(params);
-
-  if (new_contents) {
-    // Notify observers.
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      DidOpenRequestedURL(new_contents,
-                                          dest_url,
-                                          referrer,
-                                          disposition,
-                                          params.transition,
-                                          source_frame_id));
-  }
 }
 
 void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {

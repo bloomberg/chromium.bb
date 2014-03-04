@@ -9,6 +9,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 
 class GURL;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -18,6 +19,7 @@ namespace content {
 
 class RenderFrameHostImpl;
 struct LoadCommittedDetails;
+struct OpenURLParams;
 
 // A delegate API used by Navigator to notify its embedder of navigation
 // related events.
@@ -89,6 +91,10 @@ class CONTENT_EXPORT NavigatorDelegate {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       NavigationController::ReloadType reload_type) {}
+
+  // Opens a URL with the given parameters. See PageNavigator::OpenURL, which
+  // this forwards to.
+  virtual void RequestOpenURL(const OpenURLParams& params) {}
 };
 
 }  // namspace content

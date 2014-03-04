@@ -37,7 +37,6 @@ struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_OpenURL_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct FrameMsg_Navigate_Params;
@@ -566,7 +565,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDocumentAvailableInMainFrame();
   void OnDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnToggleFullscreen(bool enter_fullscreen);
-  void OnOpenURL(const ViewHostMsg_OpenURL_Params& params);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnDidChangeScrollOffset();
   void OnDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
