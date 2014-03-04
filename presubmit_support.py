@@ -1020,10 +1020,14 @@ class GetTrySlavesExecuter(object):
       A list of try slaves.
     """
     context = {}
+    main_path = os.getcwd()
     try:
+      os.chdir(os.path.dirname(presubmit_path))
       exec script_text in context
     except Exception, e:
       raise PresubmitFailure('"%s" had an exception.\n%s' % (presubmit_path, e))
+    finally:
+      os.chdir(main_path)
 
     function_name = 'GetPreferredTrySlaves'
     if function_name in context:
