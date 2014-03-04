@@ -16,6 +16,7 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -31,8 +32,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
@@ -91,10 +90,26 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
                                          AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(profile),
-      model_(NULL) {
+      model_(NULL),
+      scoped_observer_(this) {
   CHECK(controller_);
-  RegisterForNotifications();
-  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  SigninManagerFactory::GetInstance()->AddObserver(this);
+
+  // Start observing all already-created SigninManagers.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+  for (std::vector<Profile*>::iterator i = profiles.begin();
+       i != profiles.end();
+       ++i) {
+    SigninManagerBase* manager =
+        SigninManagerFactory::GetForProfileIfExists(*i);
+    if (manager) {
+      DCHECK(!scoped_observer_.IsObserving(manager));
+      scoped_observer_.Add(manager);
+    }
+  }
+
+  profile_manager->GetProfileInfoCache().AddObserver(this);
 
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
@@ -119,20 +134,36 @@ AppListViewDelegate::~AppListViewDelegate() {
     service->RemoveObserver(this);
   g_browser_process->
       profile_manager()->GetProfileInfoCache().RemoveObserver(this);
+
+  SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
+  if (factory)
+    factory->RemoveObserver(this);
+
   // Ensure search controller is released prior to speech_ui_.
   search_controller_.reset();
 }
 
-void AppListViewDelegate::RegisterForNotifications() {
-  registrar_.RemoveAll();
-  DCHECK(profile_);
+void AppListViewDelegate::SigninManagerCreated(SigninManagerBase* manager) {
+  scoped_observer_.Add(manager);
+}
 
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::NotificationService::AllSources());
+void AppListViewDelegate::SigninManagerShutdown(SigninManagerBase* manager) {
+  if (scoped_observer_.IsObserving(manager))
+    scoped_observer_.Remove(manager);
+}
+
+void AppListViewDelegate::GoogleSigninFailed(
+    const GoogleServiceAuthError& error) {
+  OnProfileChanged();
+}
+
+void AppListViewDelegate::GoogleSigninSucceeded(const std::string& username,
+                                                const std::string& password) {
+  OnProfileChanged();
+}
+
+void AppListViewDelegate::GoogleSignedOut(const std::string& username) {
+  OnProfileChanged();
 }
 
 void AppListViewDelegate::OnProfileChanged() {
@@ -175,8 +206,6 @@ void AppListViewDelegate::SetProfileByPath(const base::FilePath& profile_path) {
   profile_ =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
   DCHECK(profile_);
-
-  RegisterForNotifications();
 
   OnProfileChanged();
 
@@ -345,13 +374,6 @@ void AppListViewDelegate::OnSpeechSoundLevelChanged(int16 level) {
 void AppListViewDelegate::OnSpeechRecognitionStateChanged(
     app_list::SpeechRecognitionState new_state) {
   speech_ui_->SetSpeechRecognitionState(new_state);
-}
-
-void AppListViewDelegate::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  OnProfileChanged();
 }
 
 void AppListViewDelegate::OnProfileAdded(const base::FilePath& profile_path) {
