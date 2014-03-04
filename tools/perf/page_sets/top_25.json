@@ -70,7 +70,8 @@
         { "action": "navigate" },
         { "action": "wait", "seconds":  2 },
         { "action": "wait", "condition": "element", "selector":  "div[class~=\"navForward\"]" },
-        { "action": "javascript", "expression": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();" }
+        { "action": "javascript", "expression": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();" },
+        { "action": "wait", "seconds":  1 }
       ],
       "smoothness": {
         "action": "scroll",
