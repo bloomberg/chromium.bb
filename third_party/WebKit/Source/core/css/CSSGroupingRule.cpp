@@ -50,8 +50,8 @@ CSSGroupingRule::CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* paren
 
 CSSGroupingRule::~CSSGroupingRule()
 {
-    ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 #if !ENABLE(OILPAN)
+    ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
     for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
         if (m_childRuleCSSOMWrappers[i])
             m_childRuleCSSOMWrappers[i]->setParentRule(0);
