@@ -285,6 +285,10 @@ void BrowserProcessImpl::StartTearDown() {
 
   platform_part()->StartTearDown();
 
+#if defined(ENABLE_WEBRTC)
+  webrtc_log_uploader_.reset();
+#endif
+
   if (local_state())
     local_state()->CommitPendingWrite();
 }
@@ -292,11 +296,6 @@ void BrowserProcessImpl::StartTearDown() {
 void BrowserProcessImpl::PostDestroyThreads() {
   // With the file_thread_ flushed, we can release any icon resources.
   icon_manager_.reset();
-
-#if defined(ENABLE_WEBRTC)
-  // Must outlive the file thread.
-  webrtc_log_uploader_.reset();
-#endif
 
   // Reset associated state right after actual thread is stopped,
   // as io_thread_.global_ cleanup happens in CleanUp on the IO
