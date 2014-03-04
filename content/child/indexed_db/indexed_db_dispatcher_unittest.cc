@@ -91,6 +91,33 @@ TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
   EXPECT_TRUE(callbacks.error_seen());
 }
 
+TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
+  const size_t kKeySize = 1024 * 1024;
+
+  const std::vector<char> data(kMaxIDBValueSizeInBytes - kKeySize);
+  const WebData value(&data.front(), data.size());
+  const IndexedDBKey key(
+      base::string16(kKeySize / sizeof(base::string16::value_type), 'x'));
+
+  const int32 ipc_dummy_id = -1;
+  const int64 transaction_id = 1;
+  const int64 object_store_id = 2;
+
+  MockCallbacks callbacks;
+  IndexedDBDispatcher dispatcher(thread_safe_sender_.get());
+  dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
+                                   transaction_id,
+                                   object_store_id,
+                                   value,
+                                   key,
+                                   WebIDBDatabase::AddOrUpdate,
+                                   &callbacks,
+                                   WebVector<long long>(),
+                                   WebVector<WebVector<WebIDBKey> >());
+
+  EXPECT_TRUE(callbacks.error_seen());
+}
+
 namespace {
 
 class CursorCallbacks : public WebIDBCallbacks {

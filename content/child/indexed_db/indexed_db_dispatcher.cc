@@ -44,7 +44,9 @@ IndexedDBDispatcher* const kHasBeenDeleted =
 
 }  // unnamed namespace
 
-const size_t kMaxIDBValueSizeInBytes = 64 * 1024 * 1024;
+const size_t kMaxIDBMessageOverhead = 1024 * 1024;  // 1MB; arbitrarily chosen.
+const size_t kMaxIDBValueSizeInBytes =
+    IPC::Channel::kMaximumMessageSize - kMaxIDBMessageOverhead;
 
 IndexedDBDispatcher::IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender)
     : thread_safe_sender_(thread_safe_sender) {
@@ -328,7 +330,7 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     const WebVector<long long>& index_ids,
     const WebVector<WebVector<WebIDBKey> >& index_keys) {
 
-  if (value.size() > kMaxIDBValueSizeInBytes) {
+  if (value.size() + key.size_estimate() > kMaxIDBValueSizeInBytes) {
     callbacks->onError(WebIDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError,
         WebString::fromUTF8(base::StringPrintf(
