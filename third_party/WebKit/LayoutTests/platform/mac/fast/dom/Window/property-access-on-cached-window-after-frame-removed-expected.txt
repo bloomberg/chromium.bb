@@ -1,0 +1,58 @@
+CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS childWindow.devicePixelRatio is 0
+PASS childWindow.history.length is 0
+PASS childWindow.innerHeight is 0
+PASS childWindow.innerWidth is 0
+PASS childWindow.length is 0
+PASS childWindow.location.href is 'about:blank'
+PASS childWindow.location.origin is 'null'
+PASS childWindow.location.pathname is 'blank'
+PASS childWindow.location.protocol is 'about:'
+PASS childWindow.locationbar.visible is false
+PASS childWindow.menubar.visible is false
+PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
+PASS childWindow.navigator.appName is window.navigator.appName
+PASS childWindow.navigator.appVersion is ''
+PASS childWindow.navigator.cookieEnabled is false
+PASS childWindow.navigator.language is window.navigator.language
+PASS childWindow.navigator.onLine is window.navigator.onLine
+PASS childWindow.navigator.platform is window.navigator.platform
+PASS childWindow.navigator.product is window.navigator.product
+PASS childWindow.navigator.productSub is window.navigator.productSub
+PASS childWindow.navigator.userAgent is ''
+PASS childWindow.navigator.vendor is window.navigator.vendor
+FAIL childWindow.offscreenBuffering should be false. Was true.
+PASS childWindow.outerHeight is 0
+PASS childWindow.outerWidth is 0
+PASS childWindow.performance.timing.connectEnd is 0
+PASS childWindow.performance.timing.connectStart is 0
+PASS childWindow.performance.timing.domLoading is 0
+PASS childWindow.performance.timing.domainLookupEnd is 0
+PASS childWindow.performance.timing.domainLookupStart is 0
+PASS childWindow.performance.timing.fetchStart is 0
+PASS childWindow.performance.timing.navigationStart is 0
+PASS childWindow.performance.timing.requestStart is 0
+PASS childWindow.performance.timing.responseEnd is 0
+PASS childWindow.performance.timing.responseStart is 0
+PASS childWindow.personalbar.visible is false
+PASS childWindow.screen.availHeight is 0
+PASS childWindow.screen.availTop is 0
+PASS childWindow.screen.availWidth is 0
+PASS childWindow.screen.colorDepth is 0
+PASS childWindow.screen.height is 0
+PASS childWindow.screen.orientation is ''
+PASS childWindow.screen.pixelDepth is 0
+PASS childWindow.screen.width is 0
+PASS childWindow.scrollbars.visible is false
+PASS childWindow.statusbar.visible is false
+PASS childWindow.styleMedia.type is ''
+PASS childWindow.toolbar.visible is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

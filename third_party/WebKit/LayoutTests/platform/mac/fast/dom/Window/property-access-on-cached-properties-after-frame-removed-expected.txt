@@ -1,0 +1,51 @@
+CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+Tests access of cached DOMWindow properties after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.cached_history.length is 0
+PASS window.cached_location.href is 'about:blank'
+PASS window.cached_location.origin is 'null'
+PASS window.cached_location.pathname is 'blank'
+PASS window.cached_location.protocol is 'about:'
+PASS window.cached_locationbar.visible is false
+PASS window.cached_menubar.visible is false
+PASS window.cached_navigator.appCodeName is window.navigator.appCodeName
+PASS window.cached_navigator.appName is window.navigator.appName
+PASS window.cached_navigator.appVersion is ''
+PASS window.cached_navigator.cookieEnabled is false
+PASS window.cached_navigator.language is window.navigator.language
+PASS window.cached_navigator.onLine is window.navigator.onLine
+PASS window.cached_navigator.platform is window.navigator.platform
+PASS window.cached_navigator.product is window.navigator.product
+PASS window.cached_navigator.productSub is window.navigator.productSub
+PASS window.cached_navigator.userAgent is ''
+PASS window.cached_navigator.vendor is window.navigator.vendor
+PASS window.cached_performance_timing.connectEnd is 0
+PASS window.cached_performance_timing.connectStart is 0
+PASS window.cached_performance_timing.domLoading is 0
+PASS window.cached_performance_timing.domainLookupEnd is 0
+PASS window.cached_performance_timing.domainLookupStart is 0
+PASS window.cached_performance_timing.fetchStart is 0
+PASS window.cached_performance_timing.navigationStart is 0
+PASS window.cached_performance_timing.requestStart is 0
+PASS window.cached_performance_timing.responseEnd is 0
+PASS window.cached_performance_timing.responseStart is 0
+PASS window.cached_personalbar.visible is false
+PASS window.cached_screen.availHeight is 0
+PASS window.cached_screen.availTop is 0
+PASS window.cached_screen.availWidth is 0
+PASS window.cached_screen.colorDepth is 0
+PASS window.cached_screen.height is 0
+PASS window.cached_screen.orientation is ''
+PASS window.cached_screen.pixelDepth is 0
+PASS window.cached_screen.width is 0
+PASS window.cached_scrollbars.visible is false
+PASS window.cached_statusbar.visible is false
+PASS window.cached_styleMedia.type is ''
+PASS window.cached_toolbar.visible is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
