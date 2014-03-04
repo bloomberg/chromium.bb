@@ -66,3 +66,7 @@ obj:*NLAapi.dll
 
 # Presumably atomic-based optimization in the system allocator.
 fun_r:_heap_alloc_dbg_impl
+
+# http://crbug.com/348908 - looks like TSan doesn't
+# intercept memset() from VS2013 CRT.
+fun_r:memset
