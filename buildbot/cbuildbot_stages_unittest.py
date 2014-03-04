@@ -1140,6 +1140,22 @@ class SignerResultsStageTest(AbstractStageTest):
 
       self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan1')
       self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan2')
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(),
+                       stages.SignerResultsStage.FINISHED)
+
+  def testPerformStageSuccessNothingSigned(self):
+    """Test that SignerResultsStage passes when there are no signed images."""
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = self.signer_result
+
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({})
+
+      stage.PerformStage()
+      self.assertFalse(mock_gs_ctx.Cat.called)
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(),
+                       stages.SignerResultsStage.FINISHED)
 
   def testPerformStageFailure(self):
     """Test that SignerResultsStage errors when the signers report an error."""
@@ -1188,6 +1204,19 @@ class SignerResultsStageTest(AbstractStageTest):
       self.assertTrue(
           stage._CheckForResults(mock_gs_ctx,
           self.insns_urls_per_channel))
+
+  def testCheckForResultsSuccessNoChannels(self):
+    """Test that SignerResultsStage works when there is nothing to check for."""
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+
+      stage = self.ConstructStage()
+
+      # Ensure we find that we are ready if there are no channels to look for.
+      self.assertTrue(stage._CheckForResults(mock_gs_ctx, {}))
+
+      # Ensure we didn't contact GS while checking for no channels.
+      self.assertFalse(mock_gs_ctx.Cat.called)
 
   def testCheckForResultsPartialComplete(self):
     """Verify _CheckForResults handles partial signing results."""
@@ -1273,7 +1302,8 @@ class PaygenStageTest(AbstractStageTest):
       stage = self.ConstructStage()
       stage.archive_stage._wait_for_channel_signing.put('stable')
       stage.archive_stage._wait_for_channel_signing.put('beta')
-      stage.archive_stage._wait_for_channel_signing.put(None)
+      stage.archive_stage._wait_for_channel_signing.put(
+          stages.SignerResultsStage.FINISHED)
       stage.PerformStage()
 
       # Verify that we queue up work
@@ -1286,8 +1316,23 @@ class PaygenStageTest(AbstractStageTest):
       queue = background().__enter__()
 
       stage = self.ConstructStage()
-      stage.archive_stage._wait_for_channel_signing.put(None)
+      stage.archive_stage._wait_for_channel_signing.put(
+          stages.SignerResultsStage.FINISHED)
       stage.PerformStage()
+
+      # Ensure no work was queued up.
+      self.assertFalse(queue.put.called)
+
+  def testPerformSigningFailed(self):
+    """Test that SignerResultsStage works when signing works."""
+    with patch(stages.parallel, 'BackgroundTaskRunner') as background:
+      queue = background().__enter__()
+
+      stage = self.ConstructStage()
+      stage.archive_stage._wait_for_channel_signing.put(None)
+
+      self.assertRaises(stages.PaygenSigningRequirementsError,
+                        stage.PerformStage)
 
       # Ensure no work was queued up.
       self.assertFalse(queue.put.called)

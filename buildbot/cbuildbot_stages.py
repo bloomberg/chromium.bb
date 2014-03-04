@@ -2917,6 +2917,8 @@ class SignerResultsStage(ArchivingStage):
   #   2 hours * 60 minutes * 60 seconds
   SIGNING_TIMEOUT = 7200
 
+  FINISHED = 'finished'
+
   def __init__(self, *args, **kwargs):
     super(SignerResultsStage, self).__init__(*args, **kwargs)
     self.signing_results = {}
@@ -3024,8 +3026,8 @@ class SignerResultsStage(ArchivingStage):
     # These results are expected to contain:
     # { 'channel': ['gs://instruction_uri1', 'gs://signer_instruction_uri2'] }
     instruction_urls_per_channel = self.archive_stage.WaitForPushImage()
-    if not instruction_urls_per_channel:
-      raise MissingInstructionException('No signer requests to validate.')
+    if instruction_urls_per_channel is None:
+      raise MissingInstructionException('PushImage results not available.')
 
     gs_ctx = gs.GSContext(dry_run=self._run.debug)
 
@@ -3040,9 +3042,6 @@ class SignerResultsStage(ArchivingStage):
       cros_build_lib.Error(msg)
       cros_build_lib.PrintBuildbotStepText(msg)
       raise SignerResultsTimeout(msg)
-
-    # If we completed successfully, announce all channels compeleted.
-    self.archive_stage.AnnounceChannelSigned(None)
 
     # Log all signer results, then handle any signing failures.
     failures = []
@@ -3063,6 +3062,13 @@ class SignerResultsStage(ArchivingStage):
       for failure in failures:
         cros_build_lib.Error('  %s', failure)
       raise SignerFailure(failures)
+
+    # If we completed successfully, announce all channels compeleted.
+    self.archive_stage.AnnounceChannelSigned(self.FINISHED)
+
+
+class PaygenSigningRequirementsError(Exception):
+  """Paygen stage can't run if signing failed."""
 
 
 class PaygenStage(ArchivingStage):
@@ -3088,10 +3094,15 @@ class PaygenStage(ArchivingStage):
     with parallel.BackgroundTaskRunner(_RunPaygenInProcess) as per_channel:
       while True:
         channel = self.archive_stage.WaitForChannelSigning()
-        if channel:
-          per_channel.put((channel, board, version, self._run.debug))
-        else:
+
+        if channel is None:
+          # This signals a signer error, or that signing never ran.
+          raise PaygenSigningRequirementsError()
+
+        if channel == SignerResultsStage.FINISHED:
           break
+
+        per_channel.put((channel, board, version, self._run.debug))
 
 
 def _RunPaygenInProcess(channel, board, version, debug):
@@ -3323,7 +3334,7 @@ class ArchiveStage(ArchivingStage):
 
     Returns:
       On success: The pushimage results.
-      None otherwise.
+      None on error, or if pushimage didn't run.
     """
     cros_build_lib.Info('Waiting for PushImage...')
     urls = self._push_image_status_queue.get()
@@ -3335,10 +3346,9 @@ class ArchiveStage(ArchivingStage):
     """Announce that image signing has compeleted for a given channel.
 
     Args:
-      channel: Either a channel name ('stable', 'dev', etc), for which all
-               images are signed, or None when no more channels will be coming.
-               The lack of further channels could be because of an error, or
-               because all of them have been signed.
+      channel: Either a channel name ('stable', 'dev', etc).
+               SignerResultsStage.FINISHED if all channels are finished.
+               None if there was an error, and no channels will be announced.
     """
     self._wait_for_channel_signing.put(channel)
 
