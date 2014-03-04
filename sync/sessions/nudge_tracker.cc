@@ -16,8 +16,7 @@ namespace sessions {
 size_t NudgeTracker::kDefaultMaxPayloadsPerType = 10;
 
 NudgeTracker::NudgeTracker()
-    : updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
-      invalidations_enabled_(false),
+    : invalidations_enabled_(false),
       invalidations_out_of_sync_(true) {
   ModelTypeSet protocol_types = ProtocolTypes();
   // Default initialize all the type trackers.
@@ -35,12 +34,16 @@ NudgeTracker::NudgeTracker()
 NudgeTracker::~NudgeTracker() { }
 
 bool NudgeTracker::IsSyncRequired() const {
+  if (IsRetryRequired())
+    return true;
+
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     if (it->second.IsSyncRequired()) {
       return true;
     }
   }
+
   return false;
 }
 
@@ -71,8 +74,6 @@ bool NudgeTracker::IsRetryRequired() const {
 }
 
 void NudgeTracker::RecordSuccessfulSyncCycle() {
-  updates_source_ = sync_pb::GetUpdatesCallerInfo::UNKNOWN;
-
   // If a retry was required, we've just serviced it.  Unset the flag.
   if (IsRetryRequired())
     current_retry_time_ = base::TimeTicks();
@@ -87,15 +88,6 @@ void NudgeTracker::RecordSuccessfulSyncCycle() {
 }
 
 void NudgeTracker::RecordLocalChange(ModelTypeSet types) {
-  // Don't overwrite an NOTIFICATION or DATATYPE_REFRESH source.  The server
-  // makes some assumptions about the source; overriding these sources with
-  // LOCAL could lead to incorrect behaviour.  This is part of the reason why
-  // we're deprecating 'source' in favor of 'origin'.
-  if (updates_source_ != sync_pb::GetUpdatesCallerInfo::NOTIFICATION
-      && updates_source_ != sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH) {
-    updates_source_ = sync_pb::GetUpdatesCallerInfo::LOCAL;
-  }
-
   for (ModelTypeSet::Iterator type_it = types.First(); type_it.Good();
        type_it.Inc()) {
     TypeTrackerMap::iterator tracker_it = type_trackers_.find(type_it.Get());
@@ -105,14 +97,6 @@ void NudgeTracker::RecordLocalChange(ModelTypeSet types) {
 }
 
 void NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
-  // Don't overwrite an NOTIFICATION source.  The server makes some assumptions
-  // about the source.  Overriding this source with LOCAL could lead to
-  // incorrect behaviour.  This is part of the reason why we're deprecating
-  // 'source' in favor of 'origin'.
-  if (updates_source_ != sync_pb::GetUpdatesCallerInfo::NOTIFICATION) {
-    updates_source_ = sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH;
-  }
-
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     TypeTrackerMap::iterator tracker_it = type_trackers_.find(it.Get());
     DCHECK(tracker_it != type_trackers_.end());
@@ -122,8 +106,6 @@ void NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
 
 void NudgeTracker::RecordRemoteInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
-  updates_source_ = sync_pb::GetUpdatesCallerInfo::NOTIFICATION;
-
   // Be very careful here.  The invalidations acknowledgement system requires a
   // sort of manual memory management.  We'll leak a small amount of memory if
   // we fail to acknowledge or drop any of these incoming invalidations.
@@ -228,9 +210,45 @@ void NudgeTracker::SetLegacyNotificationHint(
   type_trackers_.find(type)->second.SetLegacyNotificationHint(progress);
 }
 
-sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::updates_source()
+sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
     const {
-  return updates_source_;
+  // There's an order to these sources: NOTIFICATION, DATATYPE_REFRESH, LOCAL,
+  // RETRY.  The server makes optimization decisions based on this field, so
+  // it's important to get this right.  Setting it wrong could lead to missed
+  // updates.
+  //
+  // This complexity is part of the reason why we're deprecating 'source' in
+  // favor of 'origin'.
+  bool has_invalidation_pending = false;
+  bool has_refresh_request_pending = false;
+  bool has_commit_pending = false;
+  bool has_retry = IsRetryRequired();
+
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    const DataTypeTracker& tracker = it->second;
+    if (!tracker.IsThrottled() && tracker.HasPendingInvalidation()) {
+      has_invalidation_pending = true;
+    }
+    if (!tracker.IsThrottled() && tracker.HasRefreshRequestPending()) {
+      has_refresh_request_pending = true;
+    }
+    if (!tracker.IsThrottled() && tracker.HasLocalChangePending()) {
+      has_commit_pending = true;
+    }
+  }
+
+  if (has_invalidation_pending) {
+    return sync_pb::GetUpdatesCallerInfo::NOTIFICATION;
+  } else if (has_refresh_request_pending) {
+    return sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH;
+  } else if (has_commit_pending) {
+    return sync_pb::GetUpdatesCallerInfo::LOCAL;
+  } else if (has_retry) {
+    return sync_pb::GetUpdatesCallerInfo::RETRY;
+  } else {
+    return sync_pb::GetUpdatesCallerInfo::UNKNOWN;
+  }
 }
 
 void NudgeTracker::FillProtoMessage(

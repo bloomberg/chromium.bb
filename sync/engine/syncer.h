@@ -67,8 +67,6 @@ class SYNC_EXPORT_PRIVATE Syncer {
   // in sync despite bugs or transient failures.
   virtual bool PollSyncShare(ModelTypeSet request_types,
                              sessions::SyncSession* session);
-  virtual bool RetrySyncShare(ModelTypeSet request_types,
-                              sessions::SyncSession* session);
 
  private:
   bool DownloadAndApplyUpdates(

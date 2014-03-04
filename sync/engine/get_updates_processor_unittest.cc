@@ -215,9 +215,9 @@ TEST_F(GetUpdatesProcessorTest, RetryTest) {
   nudge_tracker.SetSyncCycleStartTime(t1 + base::TimeDelta::FromSeconds(1));
 
   sync_pb::ClientToServerMessage message;
-  RetryGetUpdatesDelegate retry_delegate;
+  NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
-      BuildGetUpdatesProcessor(retry_delegate));
+      BuildGetUpdatesProcessor(normal_delegate));
   processor->PrepareGetUpdates(request_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();

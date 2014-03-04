@@ -83,47 +83,55 @@ TEST_F(NudgeTrackerTest, EmptyNudgeTracker) {
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 
   sync_pb::GetUpdateTriggers gu_trigger;
   nudge_tracker_.FillProtoMessage(BOOKMARKS, &gu_trigger);
 
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 }
 
 // Verify that nudges override each other based on a priority order.
-// LOCAL < DATATYPE_REFRESH < NOTIFICATION
+// RETRY < LOCAL < DATATYPE_REFRESH < NOTIFICATION
 TEST_F(NudgeTrackerTest, SourcePriorities) {
+  // Start with a retry request.
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
+  const base::TimeTicks t1 = t0 + base::TimeDelta::FromSeconds(10);
+  nudge_tracker_.SetNextRetryTime(t0);
+  nudge_tracker_.SetSyncCycleStartTime(t1);
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RETRY,
+            nudge_tracker_.GetLegacySource());
+
   // Track a local nudge.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::LOCAL,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 
   // A refresh request will override it.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(TYPED_URLS));
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 
   // Another local nudge will not be enough to change it.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 
   // An invalidation will override the refresh request source.
   ObjectIdInvalidationMap invalidation_map =
       BuildInvalidationMap(PREFERENCES, 1, "hint");
   nudge_tracker_.RecordRemoteInvalidation(invalidation_map);
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 
   // Neither local nudges nor refresh requests will override it.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(TYPED_URLS));
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
-            nudge_tracker_.updates_source());
+            nudge_tracker_.GetLegacySource());
 }
 
 // Verifies the management of invalidation hints and GU trigger fields.

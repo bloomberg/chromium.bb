@@ -46,11 +46,16 @@ void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(
-      nudge_tracker_.updates_source());
+      nudge_tracker_.GetLegacySource());
 
   // Set the new and improved version of source, too.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::GU_TRIGGER);
   get_updates->set_is_retry(nudge_tracker_.IsRetryRequired());
+
+  // Special case: A GU performed for no other reason than retry will have its
+  // origin set to RETRY.
+  if (nudge_tracker_.GetLegacySource() == sync_pb::GetUpdatesCallerInfo::RETRY)
+    get_updates->set_get_updates_origin(sync_pb::SyncEnums::RETRY);
 
   // Fill in the notification hints.
   for (int i = 0; i < get_updates->from_progress_marker_size(); ++i) {
@@ -70,27 +75,6 @@ void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void NormalGetUpdatesDelegate::ApplyUpdates(
-    sessions::StatusController* status_controller,
-    UpdateHandlerMap* update_handler_map) const {
-  NonPassiveApplyUpdates(status_controller, update_handler_map);
-}
-
-RetryGetUpdatesDelegate::RetryGetUpdatesDelegate() {}
-
-RetryGetUpdatesDelegate::~RetryGetUpdatesDelegate() {}
-
-void RetryGetUpdatesDelegate::HelpPopulateGuMessage(
-    sync_pb::GetUpdatesMessage* get_updates) const {
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(
-      sync_pb::GetUpdatesCallerInfo::RETRY);
-
-  // Set the new and improved version of source, too.
-  get_updates->set_get_updates_origin(sync_pb::SyncEnums::RETRY);
-  get_updates->set_is_retry(true);
-}
-
-void RetryGetUpdatesDelegate::ApplyUpdates(
     sessions::StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   NonPassiveApplyUpdates(status_controller, update_handler_map);

@@ -54,23 +54,6 @@ class SYNC_EXPORT_PRIVATE NormalGetUpdatesDelegate : public GetUpdatesDelegate {
   const sessions::NudgeTracker& nudge_tracker_;
 };
 
-// Functionality specific to the retry GetUpdate request.
-class SYNC_EXPORT_PRIVATE RetryGetUpdatesDelegate : public GetUpdatesDelegate {
- public:
-  RetryGetUpdatesDelegate();
-  virtual ~RetryGetUpdatesDelegate();
-
-  virtual void HelpPopulateGuMessage(
-      sync_pb::GetUpdatesMessage* get_updates) const OVERRIDE;
-
-  virtual void ApplyUpdates(
-      sessions::StatusController* status,
-      UpdateHandlerMap* update_handler_map) const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RetryGetUpdatesDelegate);
-};
-
 // Functionality specific to the configure GetUpdate request.
 class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
     : public GetUpdatesDelegate {

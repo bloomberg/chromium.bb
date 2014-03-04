@@ -238,8 +238,7 @@ void SyncSchedulerImpl::Start(Mode mode) {
 
     // Update our current time before checking IsRetryRequired().
     nudge_tracker_.SetSyncCycleStartTime(base::TimeTicks::Now());
-    if ((nudge_tracker_.IsSyncRequired() || nudge_tracker_.IsRetryRequired()) &&
-        CanRunNudgeJobNow(NORMAL_PRIORITY)) {
+    if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY)) {
       TrySyncSessionJob();
     }
   }
@@ -572,25 +571,6 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
   }
 }
 
-void SyncSchedulerImpl::DoRetrySyncSessionJob() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(mode_, NORMAL_MODE);
-
-  base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
-
-  SDVLOG(2) << "Retrying with types "
-            << ModelTypeSetToString(GetEnabledAndUnthrottledTypes());
-  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
-  if (syncer_->RetrySyncShare(GetEnabledAndUnthrottledTypes(),
-                              session.get()) &&
-      !sessions::HasSyncerError(
-          session->status_controller().model_neutral_state())) {
-    nudge_tracker_.RecordSuccessfulSyncCycle();
-  } else {
-    HandleFailure(session->status_controller().model_neutral_state());
-  }
-}
-
 void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
   DCHECK(CalledOnValidThread());
   base::TimeTicks now = TimeTicks::Now();
@@ -704,8 +684,6 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
     if (nudge_tracker_.IsSyncRequired()) {
       SDVLOG(2) << "Found pending nudge job";
       DoNudgeSyncSessionJob(priority);
-    } else if (nudge_tracker_.IsRetryRequired()) {
-      DoRetrySyncSessionJob();
     } else if (do_poll_after_credentials_updated_ ||
         ((base::TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
       DoPollSyncSessionJob();

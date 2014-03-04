@@ -52,7 +52,6 @@ class MockSyncer : public Syncer {
                     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
                     SyncSession*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, sessions::SyncSession*));
-  MOCK_METHOD2(RetrySyncShare, bool(ModelTypeSet, sessions::SyncSession*));
 };
 
 MockSyncer::MockSyncer()
@@ -552,7 +551,7 @@ TEST_F(SyncSchedulerTest, Polling) {
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_,_)).Times(AtLeast(kMinNumSamples))
       .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                 RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
@@ -573,7 +572,7 @@ TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_,_)).Times(AtLeast(kMinNumSamples))
       .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                 RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   scheduler()->OnReceivedShortPollIntervalUpdate(poll_interval);
@@ -601,7 +600,7 @@ TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
               sessions::test_util::SimulatePollIntervalUpdate(poll2)),
           Return(true)))
       .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                 WithArg<1>(
                     RecordSyncShareMultiple(&times, kMinNumSamples))));
 
@@ -693,7 +692,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromPoll) {
       .RetiresOnSaturation();
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
       .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                 RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   TimeTicks optimal_start = TimeTicks::Now() + poll + throttle1;
@@ -1126,7 +1125,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
   // Now let the Poll timer do its thing.
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
       .WillRepeatedly(DoAll(
-              Invoke(sessions::test_util::SimulatePollRetrySuccess),
+              Invoke(sessions::test_util::SimulatePollSuccess),
               RecordSyncShareMultiple(&times, kMinNumSamples)));
   RunLoop();
   Mock::VerifyAndClearExpectations(syncer());
@@ -1149,9 +1148,9 @@ TEST_F(SyncSchedulerTest, TransientPollFailure) {
   UseMockDelayProvider(); // Will cause test failure if backoff is initiated.
 
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetryFailed),
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollFailed),
                       RecordSyncShare(&times)))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                       RecordSyncShare(&times)));
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
@@ -1285,7 +1284,7 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
   ::testing::InSequence seq;
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
       .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                 RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   connection()->SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
@@ -1298,7 +1297,7 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
   // but after poll finished with auth error from poll timer it should retry
   // poll once more
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                       RecordSyncShare(&times)));
   scheduler()->OnCredentialsUpdated();
   connection()->SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
@@ -1314,9 +1313,9 @@ TEST_F(SyncSchedulerTest, SuccessfulRetry) {
   scheduler()->OnReceivedGuRetryDelay(delay);
   EXPECT_EQ(delay, GetRetryTimerDelay());
 
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
+  EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                 RecordSyncShare(&times)));
 
   // Run to wait for retrying.
@@ -1335,18 +1334,18 @@ TEST_F(SyncSchedulerTest, FailedRetry) {
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(1);
   scheduler()->OnReceivedGuRetryDelay(delay);
 
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
+  EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetryFailed),
+          DoAll(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed),
                 QuitLoopNowAction()));
 
   // Run to wait for retrying.
   RunLoop();
 
   EXPECT_TRUE(scheduler()->IsBackingOff());
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
+  EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                 QuitLoopNowAction()));
 
   // Run to wait for second retrying.
@@ -1381,8 +1380,8 @@ TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
   RunLoop();
   EXPECT_EQ(delay2, GetRetryTimerDelay());
 
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+  EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times)));
 
   // Run to wait for retrying.

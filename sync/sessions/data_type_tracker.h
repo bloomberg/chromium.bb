@@ -67,6 +67,9 @@ class DataTypeTracker {
   // updates.
   bool HasPendingInvalidation() const;
 
+  // Returns true if an explicit refresh request is still outstanding.
+  bool HasRefreshRequestPending() const;
+
   // Fills in the legacy invalidaiton payload information fields.
   void SetLegacyNotificationHint(
       sync_pb::DataTypeProgressMarker* progress) const;

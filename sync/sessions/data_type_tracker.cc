@@ -130,26 +130,25 @@ void DataTypeTracker::UpdatePayloadBufferSize(size_t new_size) {
 }
 
 bool DataTypeTracker::IsSyncRequired() const {
-  return !IsThrottled() &&
-      (local_nudge_count_ > 0 ||
-       local_refresh_request_count_ > 0 ||
-       HasPendingInvalidation() ||
-       drop_tracker_.IsRecoveringFromDropEvent());
+  return !IsThrottled() && (HasLocalChangePending() || IsGetUpdatesRequired());
 }
 
 bool DataTypeTracker::IsGetUpdatesRequired() const {
   return !IsThrottled() &&
-      (local_refresh_request_count_ > 0 ||
-       HasPendingInvalidation() ||
-       drop_tracker_.IsRecoveringFromDropEvent());
+      (HasRefreshRequestPending() || HasPendingInvalidation());
 }
 
 bool DataTypeTracker::HasLocalChangePending() const {
   return local_nudge_count_ > 0;
 }
 
+bool DataTypeTracker::HasRefreshRequestPending() const {
+  return local_refresh_request_count_ > 0;
+}
+
 bool DataTypeTracker::HasPendingInvalidation() const {
-  return !pending_invalidations_.IsEmpty();
+  return !pending_invalidations_.IsEmpty()
+      || drop_tracker_.IsRecoveringFromDropEvent();
 }
 
 void DataTypeTracker::SetLegacyNotificationHint(

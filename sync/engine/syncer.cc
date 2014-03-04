@@ -70,7 +70,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
             session,
             &get_updates_processor,
             kCreateMobileBookmarksFolder)) {
-      return HandleCycleEnd(session, nudge_tracker.updates_source());
+      return HandleCycleEnd(session, nudge_tracker.GetLegacySource());
     }
   }
 
@@ -81,7 +81,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
       BuildAndPostCommits(request_types, session, &commit_processor);
   session->mutable_status_controller()->set_commit_result(commit_result);
 
-  return HandleCycleEnd(session, nudge_tracker.updates_source());
+  return HandleCycleEnd(session, nudge_tracker.GetLegacySource());
 }
 
 bool Syncer::ConfigureSyncShare(
@@ -116,22 +116,6 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
       &get_updates_processor,
       kCreateMobileBookmarksFolder);
   return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
-}
-
-bool Syncer::RetrySyncShare(ModelTypeSet request_types,
-                            SyncSession* session) {
-  VLOG(1) << "Retrying types " << ModelTypeSetToString(request_types);
-  HandleCycleBegin(session);
-  RetryGetUpdatesDelegate retry_delegate;
-  GetUpdatesProcessor get_updates_processor(
-      session->context()->model_type_registry()->update_handler_map(),
-      retry_delegate);
-  DownloadAndApplyUpdates(
-      request_types,
-      session,
-      &get_updates_processor,
-      kCreateMobileBookmarksFolder);
-  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::RETRY);
 }
 
 bool Syncer::DownloadAndApplyUpdates(

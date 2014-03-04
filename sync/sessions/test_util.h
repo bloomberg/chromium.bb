@@ -47,11 +47,11 @@ void SimulateConnectionFailure(ModelTypeSet requested_types,
                                const sessions::NudgeTracker& nudge_tracker,
                                sessions::SyncSession* session);
 
-// Poll/Retry successes and failures.
-void SimulatePollRetrySuccess(ModelTypeSet requested_types,
-                              sessions::SyncSession* session);
-void SimulatePollRetryFailed(ModelTypeSet requested_types,
-                             sessions::SyncSession* session);
+// Poll successes and failures.
+void SimulatePollSuccess(ModelTypeSet requested_types,
+                         sessions::SyncSession* session);
+void SimulatePollFailed(ModelTypeSet requested_types,
+                        sessions::SyncSession* session);
 
 void SimulateGuRetryDelayCommandImpl(sessions::SyncSession* session,
                                      base::TimeDelta delay);

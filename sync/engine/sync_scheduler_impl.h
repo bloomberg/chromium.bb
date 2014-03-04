@@ -161,9 +161,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Invoke the Syncer to perform a poll job.
   void DoPollSyncSessionJob();
 
-  // Invoke the Syncer to perform a retry job.
-  void DoRetrySyncSessionJob();
-
   // Helper function to calculate poll interval.
   base::TimeDelta GetPollInterval();
 
