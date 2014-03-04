@@ -2081,6 +2081,10 @@ String CanvasRenderingContext2D::font() const
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
+    // The style resolution required for rendering text is not available in frame-less documents.
+    if (!canvas()->document().frame())
+        return;
+
     MutableStylePropertyMap::iterator i = m_fetchedFonts.find(newFont);
     RefPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : nullptr;
 
@@ -2199,8 +2203,13 @@ void CanvasRenderingContext2D::strokeText(const String& text, float x, float y, 
 
 PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
 {
-    FontCachePurgePreventer fontCachePurgePreventer;
     RefPtr<TextMetrics> metrics = TextMetrics::create();
+
+    // The style resolution required for rendering text is not available in frame-less documents.
+    if (!canvas()->document().frame())
+        return metrics.release();
+
+    FontCachePurgePreventer fontCachePurgePreventer;
     canvas()->document().updateStyleIfNeeded();
     metrics->setWidth(accessFont().width(TextRun(text)));
     return metrics.release();
@@ -2218,6 +2227,10 @@ static void replaceCharacterInString(String& text, WTF::CharacterMatchFunctionPt
 
 void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth, bool useMaxWidth)
 {
+    // The style resolution required for rendering text is not available in frame-less documents.
+    if (!canvas()->document().frame())
+        return;
+
     // accessFont needs the style to be up to date, but updating style can cause script to run,
     // (e.g. due to autofocus) which can free the GraphicsContext, so update style before grabbing
     // the GraphicsContext.

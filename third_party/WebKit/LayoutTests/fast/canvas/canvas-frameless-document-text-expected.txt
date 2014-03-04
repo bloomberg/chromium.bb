@@ -1,0 +1,9 @@
+This verifies that the browser does not crash when drawing text to a canvas in a frame-less document.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
