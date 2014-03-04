@@ -115,7 +115,7 @@ DOMWrapperWorld::~DOMWrapperWorld()
 #ifndef NDEBUG
 static bool isIsolatedWorldId(int worldId)
 {
-    return worldId != MainWorldId && worldId != WorkerWorldId;
+    return MainWorldId < worldId  && worldId < IsolatedWorldIdLimit;
 }
 #endif
 
