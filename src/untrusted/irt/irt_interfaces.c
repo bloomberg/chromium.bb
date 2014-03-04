@@ -33,36 +33,97 @@ static int list_mappings_filter(void) {
   return nacl_list_mappings_enabled;
 }
 
+static int non_pnacl_filter(void) {
+  static int pnacl_mode = -1;
+  if (NACL_UNLIKELY(-1 == pnacl_mode)) {
+    NACL_SYSCALL(sysconf)(NACL_ABI__SC_NACL_PNACL_MODE, &pnacl_mode);
+  }
+  return !pnacl_mode;
+}
+
 static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
-  { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
+  /*
+   * "irt-fdio" is disabled under PNaCl because file descriptors in
+   * general are not exposed in PNaCl's in-browser ABI (since
+   * open_resource() is also disabled under PNaCl).  "irt-fdio" is
+   * only exposed under PNaCl via the "dev" query string since writing
+   * to stdout/stderr is useful for debugging.
+   */
+  { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio),
+    non_pnacl_filter },
   { NACL_IRT_DEV_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
+  /*
+   * "irt-filename" is made available to non-PNaCl NaCl apps only for
+   * compatibility, because existing nexes abort on startup if
+   * "irt-filename" is not available.
+   */
   { NACL_IRT_FILENAME_v0_1, &nacl_irt_filename, sizeof(nacl_irt_filename),
-    NULL },
+    non_pnacl_filter },
   { NACL_IRT_DEV_FILENAME_v0_2, &nacl_irt_dev_filename,
     sizeof(nacl_irt_dev_filename), file_access_filter },
+  /*
+   * The old versions of "irt-memory", v0.1 and v0.2, which contain
+   * the deprecated sysbrk() function, are disabled under PNaCl.  See:
+   * https://code.google.com/p/nativeclient/issues/detail?id=3542
+   */
   { NACL_IRT_MEMORY_v0_1, &nacl_irt_memory_v0_1, sizeof(nacl_irt_memory_v0_1),
-    NULL },
+    non_pnacl_filter },
   { NACL_IRT_MEMORY_v0_2, &nacl_irt_memory_v0_2, sizeof(nacl_irt_memory_v0_2),
-    NULL },
+    non_pnacl_filter },
   { NACL_IRT_MEMORY_v0_3, &nacl_irt_memory, sizeof(nacl_irt_memory), NULL },
-  { NACL_IRT_DYNCODE_v0_1, &nacl_irt_dyncode, sizeof(nacl_irt_dyncode), NULL },
+  /*
+   * "irt-dyncode" is not supported under PNaCl because dynamically
+   * loading architecture-specific native code is not portable.
+   */
+  { NACL_IRT_DYNCODE_v0_1, &nacl_irt_dyncode, sizeof(nacl_irt_dyncode),
+    non_pnacl_filter },
   { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread), NULL },
   { NACL_IRT_FUTEX_v0_1, &nacl_irt_futex, sizeof(nacl_irt_futex), NULL },
-  { NACL_IRT_MUTEX_v0_1, &nacl_irt_mutex, sizeof(nacl_irt_mutex), NULL },
-  { NACL_IRT_COND_v0_1, &nacl_irt_cond, sizeof(nacl_irt_cond), NULL },
-  { NACL_IRT_SEM_v0_1, &nacl_irt_sem, sizeof(nacl_irt_sem), NULL },
+  /*
+   * "irt-mutex", "irt-cond" and "irt-sem" are deprecated and
+   * superseded by the "irt-futex" interface, and so are disabled
+   * under PNaCl.  See:
+   * https://code.google.com/p/nativeclient/issues/detail?id=3484
+   */
+  { NACL_IRT_MUTEX_v0_1, &nacl_irt_mutex, sizeof(nacl_irt_mutex),
+    non_pnacl_filter },
+  { NACL_IRT_COND_v0_1, &nacl_irt_cond, sizeof(nacl_irt_cond),
+    non_pnacl_filter },
+  { NACL_IRT_SEM_v0_1, &nacl_irt_sem, sizeof(nacl_irt_sem),
+    non_pnacl_filter },
   { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls), NULL },
+  /*
+   * "irt-blockhook" is deprecated.  It was provided for implementing
+   * thread suspension for conservative garbage collection, but this
+   * is probably not a portable use case under PNaCl, so this
+   * interface is disabled under PNaCl.  See:
+   * https://code.google.com/p/nativeclient/issues/detail?id=3539
+   */
   { NACL_IRT_BLOCKHOOK_v0_1, &nacl_irt_blockhook, sizeof(nacl_irt_blockhook),
-    NULL },
+    non_pnacl_filter },
+  /*
+   * "irt-resource-open" is primarily provided for use by nacl-glibc's
+   * dynamic linker, which is not supported under PNaCl.
+   * open_resource() returns a file descriptor, but it is the only
+   * interface in NaCl to do so inside Chromium.  This is inconsistent
+   * with PPAPI, which does not expose file descriptors (except in
+   * private/dev interfaces).  See:
+   * https://code.google.com/p/nativeclient/issues/detail?id=3574
+   */
   { NACL_IRT_RESOURCE_OPEN_v0_1, &nacl_irt_resource_open,
-    sizeof(nacl_irt_resource_open), NULL },
+    sizeof(nacl_irt_resource_open), non_pnacl_filter },
   { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random), NULL },
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock), NULL },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
     sizeof(nacl_irt_dev_getpid), file_access_filter },
+  /*
+   * "irt-exception-handling" is not supported under PNaCl because it
+   * exposes non-portable, architecture-specific register state.  See:
+   * https://code.google.com/p/nativeclient/issues/detail?id=3444
+   */
   { NACL_IRT_EXCEPTION_HANDLING_v0_1, &nacl_irt_exception_handling,
-    sizeof(nacl_irt_exception_handling), NULL },
+    sizeof(nacl_irt_exception_handling), non_pnacl_filter },
   { NACL_IRT_DEV_LIST_MAPPINGS_v0_1, &nacl_irt_dev_list_mappings,
     sizeof(nacl_irt_dev_list_mappings), list_mappings_filter },
 };
