@@ -2063,8 +2063,11 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
     // with the mouse/touch/keyboard, we flag as being in a size loop.
     if ((notification_code & sc_mask) == SC_SIZE)
       in_size_loop_ = true;
+    base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
     DefWindowProc(hwnd(), WM_SYSCOMMAND, notification_code,
                   MAKELPARAM(point.x(), point.y()));
+    if (!ref.get())
+      return;
     in_size_loop_ = false;
   }
 }
