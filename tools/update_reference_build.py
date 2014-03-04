@@ -6,12 +6,21 @@
 
 """Updates the Chrome reference builds.
 
-Use -r option to update a Chromium reference build, or -b option for Chrome
-official builds.
+To update Chromium (unofficial) reference build, use the -r option and give a
+Chromium SVN revision number, like 228977. To update a Chrome (official) build,
+use the -v option and give a Chrome version number like 30.0.1595.0.
+
+If you're getting a Chrome build, you can give the flag --gs to fetch from
+Google Storage. Otherwise, it will be fetched from go/chrome_official_builds.
+
+Before running this script, you should first verify that you are authenticated
+for SVN. You can do this by running:
+  $ svn ls svn://svn.chromium.org/chrome/trunk/deps/reference_builds
+You may need to get your SVN password from https://chromium-access.appspot.com/.
 
 Usage:
   $ cd /tmp
-  $ /path/to/update_reference_build.py -r <revision>
+  $ /path/to/update_reference_build.py --gs -v <version>
   $ cd reference_builds/reference_builds
   $ gcl change
   $ gcl upload <change>
@@ -98,8 +107,8 @@ class BuildUpdater(object):
 
   def __init__(self, options):
     self._platforms = options.platforms.split(',')
-    self._revision = options.build_number or int(options.revision)
-    self._use_build_number = bool(options.build_number)
+    self._version_or_revision = options.version or int(options.revision)
+    self._use_official_version = bool(options.version)
     self._use_gs = options.use_gs
 
   @staticmethod
@@ -125,30 +134,56 @@ class BuildUpdater(object):
     logging.info(stdout)
     return (exit_code, stdout)
 
-  def _GetBuildUrl(self, platform, revision, filename):
-    if self._use_build_number:
+  def _GetBuildUrl(self, platform, version_or_revision, filename):
+    """Returns the URL for fetching one file.
+
+    Args:
+      platform: Platform name, must be a key in |self._BUILD_PLATFORM_MAP|.
+      version_or_revision: Either an SVN revision, e.g. 234567, or a Chrome
+          version number, e.g. 30.0.1600.1.
+      filename: Name of the file to fetch.
+
+    Returns:
+      The URL for fetching a file. This may be a GS or HTTP URL.
+    """
+    if self._use_official_version:
       # Chrome Google storage bucket.
+      version = version_or_revision
       if self._use_gs:
-        release = revision[:revision.find('.')]
+        release = version[:version.find('.')]
         return (CHROME_GS_URL_FMT % (
             release,
-            revision,
+            version,
             self._BUILD_PLATFORM_MAP[platform],
             filename))
       # Chrome internal archive.
       return (CHROME_INTERNAL_URL_FMT % (
-          revision,
+          version,
           self._BUILD_PLATFORM_MAP[platform],
           filename))
     # Chromium archive.
+    revision = version_or_revision
     return CHROMIUM_URL_FMT % (urllib.quote_plus(platform), revision, filename)
 
-  def _FindBuildRevision(self, platform, revision, filename):
-    # TODO(shadi): Iterate over build numbers to find a valid one.
-    if self._use_build_number:
-      return (revision
-              if self._DoesBuildExist(platform, revision, filename) else None)
+  def _FindBuildVersionOrRevision(
+      self, platform, version_or_revision, filename):
+    """Searches for a version or revision where a filename can be found.
 
+    Args:
+      platform: Platform name.
+      version_or_revision: Either Chrome version or Chromium revision.
+      filename: Filename to look for.
+
+    Returns:
+      A version or revision where the file could be found, or None.
+    """
+    # TODO(shadi): Iterate over official versions to find a valid one.
+    if self._use_official_version:
+      version = version_or_revision
+      return (version
+              if self._DoesBuildExist(platform, version, filename) else None)
+
+    revision = version_or_revision
     MAX_REVISIONS_PER_BUILD = 100
     for revision_guess in xrange(revision, revision + MAX_REVISIONS_PER_BUILD):
       if self._DoesBuildExist(platform, revision_guess, filename):
@@ -157,57 +192,72 @@ class BuildUpdater(object):
         time.sleep(.1)
     return None
 
-  def _DoesBuildExist(self, platform, build_number, filename):
-    url = self._GetBuildUrl(platform, build_number, filename)
+  def _DoesBuildExist(self, platform, version, filename):
+    """Checks whether a file can be found for the given Chrome version.
+
+    Args:
+      platform: Platform name.
+      version: Chrome version number, e.g. 30.0.1600.1.
+      filename: Filename to look for.
+
+    Returns:
+      True if the file could be found, False otherwise.
+    """
+    url = self._GetBuildUrl(platform, version, filename)
     if self._use_gs:
       return self._DoesGSFileExist(url)
 
-    r = urllib2.Request(url)
-    r.get_method = lambda: 'HEAD'
+    request = urllib2.Request(url)
+    request.get_method = lambda: 'HEAD'
     try:
-      urllib2.urlopen(r)
+      urllib2.urlopen(request)
       return True
     except urllib2.HTTPError, err:
       if err.code == 404:
         return False
 
   def _DoesGSFileExist(self, gs_file_name):
+    """Returns True if the GS file can be found, False otherwise."""
     exit_code = BuildUpdater._GetCmdStatusAndOutput(
         ['gsutil', 'ls', gs_file_name])[0]
     return not exit_code
 
   def _GetPlatformFiles(self, platform):
-    if self._use_build_number:
+    """Returns a list of filenames to fetch for the given platform."""
+    if self._use_official_version:
       return BuildUpdater._CHROME_PLATFORM_FILES_MAP[platform]
     return BuildUpdater._PLATFORM_FILES_MAP[platform]
 
   def _DownloadBuilds(self):
     for platform in self._platforms:
-      for f in self._GetPlatformFiles(platform):
+      for filename in self._GetPlatformFiles(platform):
         output = os.path.join('dl', platform,
-                              '%s_%s_%s' % (platform, self._revision, f))
+                              '%s_%s_%s' % (platform,
+                                            self._version_or_revision,
+                                            filename))
         if os.path.exists(output):
           logging.info('%s alread exists, skipping download', output)
           continue
-        build_revision = self._FindBuildRevision(platform, self._revision, f)
-        if not build_revision:
+        version_or_revision = self._FindBuildVersionOrRevision(
+            platform, self._version_or_revision, filename)
+        if not version_or_revision:
           logging.critical('Failed to find %s build for r%s\n', platform,
-                           self._revision)
+                           self._version_or_revision)
           sys.exit(1)
         dirname = os.path.dirname(output)
         if dirname and not os.path.exists(dirname):
           os.makedirs(dirname)
-        url = self._GetBuildUrl(platform, build_revision, f)
+        url = self._GetBuildUrl(platform, version_or_revision, filename)
         self._DownloadFile(url, output)
 
   def _DownloadFile(self, url, output):
     logging.info('Downloading %s, saving to %s', url, output)
-    if self._use_build_number and self._use_gs:
+    if self._use_official_version and self._use_gs:
       BuildUpdater._GetCmdStatusAndOutput(['gsutil', 'cp', url, output])
     else:
-      r = urllib2.urlopen(url)
+      response = urllib2.urlopen(url)
       with file(output, 'wb') as f:
-        f.write(r.read())
+        f.write(response.read())
 
   def _FetchSvnRepos(self):
     if not os.path.exists('reference_builds'):
@@ -220,6 +270,15 @@ class BuildUpdater(object):
         ['gclient', 'sync'], 'reference_builds')
 
   def _UnzipFile(self, dl_file, dest_dir):
+    """Unzips a file if it is a zip file.
+
+    Args:
+      dl_file: The downloaded file to unzip.
+      dest_dir: The destination directory to unzip to.
+
+    Returns:
+      True if the file was unzipped. False if it wasn't a zip file.
+    """
     if not zipfile.is_zipfile(dl_file):
       return False
     logging.info('Opening %s', dl_file)
@@ -297,8 +356,9 @@ def ParseOptions(argv):
   parser = optparse.OptionParser()
   usage = 'usage: %prog <options>'
   parser.set_usage(usage)
-  parser.add_option('-b', dest='build_number',
-                    help='Chrome official build number to pick up.')
+  parser.add_option('-v', dest='version',
+                    help='Chrome official version to pick up '
+                         '(e.g. 30.0.1600.1).')
   parser.add_option('--gs', dest='use_gs', action='store_true', default=False,
                     help='Use Google storage for official builds. Used with -b '
                          'option. Default is false (i.e. use internal storage.')
@@ -307,17 +367,17 @@ def ParseOptions(argv):
                     help='Comma separated list of platforms to download '
                          '(as defined by the chromium builders).')
   parser.add_option('-r', dest='revision',
-                    help='Revision to pick up.')
+                    help='Chromium revision to pick up (e.g. 234567).')
 
   (options, _) = parser.parse_args(argv)
-  if not options.revision and not options.build_number:
-    logging.critical('Must specify either -r or -b.\n')
+  if not options.revision and not options.version:
+    logging.critical('Must specify either -r or -v.\n')
     sys.exit(1)
-  if options.revision and options.build_number:
-    logging.critical('Must specify either -r or -b but not both.\n')
+  if options.revision and options.version:
+    logging.critical('Must specify either -r or -v but not both.\n')
     sys.exit(1)
-  if options.use_gs and not options.build_number:
-    logging.critical('Can only use --gs with -b option.\n')
+  if options.use_gs and not options.version:
+    logging.critical('Can only use --gs with -v option.\n')
     sys.exit(1)
 
   return options
