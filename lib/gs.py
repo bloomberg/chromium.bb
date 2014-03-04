@@ -359,8 +359,7 @@ class GSContext(object):
       return cros_build_lib.RunCommand(['cat', path], **kwargs)
     return self.DoCommand(['cat', path], **kwargs)
 
-  def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
-               version=None):
+  def CopyInto(self, local_path, remote_dir, filename=None, **kwargs):
     """Upload a local file into a directory in google storage.
 
     Args:
@@ -368,21 +367,14 @@ class GSContext(object):
       remote_dir: Full gs:// url of the directory to transfer the file into.
       filename: If given, the filename to place the content at; if not given,
         it's discerned from basename(local_path).
-      acl: If given, a canned ACL.
-      version: If given, the generation; essentially the timestamp of the last
-        update.  Note this is not the same as sequence-number; it's
-        monotonically increasing bucket wide rather than reset per file.
-        The usage of this is if we intend to replace/update only if the version
-        is what we expect.  This is useful for distributed reasons- for example,
-        to ensure you don't overwrite someone else's creation, a version of
-        0 states "only update if no version exists".
+      **kwargs: See Copy() for documentation.
     """
     filename = filename if filename is not None else local_path
     # Basename it even if an explicit filename was given; we don't want
     # people using filename as a multi-directory path fragment.
     return self.Copy(local_path,
                       '%s/%s' % (remote_dir, os.path.basename(filename)),
-                      acl=acl, version=version)
+                      **kwargs)
 
   @staticmethod
   def _GetTrackerFilenames(dest_path):
@@ -452,6 +444,7 @@ class GSContext(object):
 
       # If the file does not exist, one of the following errors occurs.
       if ('InvalidUriError:' in error or
+          'Attempt to get key for' in error or
           'CommandException: No URIs matched' in error or
           'CommandException: One or more URIs matched no objects' in error or
           'CommandException: No such object' in error or
@@ -527,6 +520,13 @@ class GSContext(object):
       cmd += ['-h', header]
     if version is not None:
       cmd += ['-h', 'x-goog-if-generation-match:%d' % int(version)]
+
+    # Enable parallel copy/update of multiple files if stdin is not to
+    # be piped to the command. This does not split a single file into
+    # smaller components for upload.
+    if kwargs.get('input') is None:
+      cmd += ['-m']
+
     cmd.extend(gsutil_cmd)
 
     if retries is None:
@@ -544,7 +544,7 @@ class GSContext(object):
                                      cmd, sleep=self._sleep_time,
                                      extra_env=extra_env, **kwargs)
 
-  def Copy(self, src_path, dest_path, acl=None, **kwargs):
+  def Copy(self, src_path, dest_path, acl=None, recursive=True, **kwargs):
     """Copy to/from GS bucket.
 
     Canned ACL permissions can be specified on the gsutil cp command line.
@@ -557,6 +557,7 @@ class GSContext(object):
       dest_path: Fully qualified local path or full gs:// path of the dest
                  file.
       acl: One of the google storage canned_acls to apply.
+      recursive: Whether to copy recursively.
 
     Returns:
       Return the CommandResult from the run.
@@ -565,6 +566,8 @@ class GSContext(object):
       RunCommandError if the command failed despite retries.
     """
     cmd = ['cp']
+    if recursive:
+      cmd.append('-r')
 
     acl = self.acl if acl is None else acl
     if acl is not None:
@@ -576,6 +579,7 @@ class GSContext(object):
             dest_path.startswith(BASE_GS_URL)):
       # Don't retry on local copies.
       kwargs.setdefault('retries', 0)
+
     return self.DoCommand(cmd, **kwargs)
 
   def LS(self, path, raw=False, **kwargs):
