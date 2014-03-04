@@ -628,10 +628,12 @@ cr.define('options', function() {
     showSection_: function(section, container, animate) {
       // Delay starting the transition if animating so that hidden change will
       // be processed.
-      if (animate)
+      if (animate) {
         this.animatedSectionHeightChange_(section, container, true);
-      else
+      } else {
+        section.hidden = false;
         section.style.height = 'auto';
+      }
     },
 
     /**

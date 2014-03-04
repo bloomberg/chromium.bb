@@ -6,15 +6,13 @@
  * TestFixture for browser options WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function BrowserOptionsWebUITest() {}
 
 BrowserOptionsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
-  /**
-   * Browse to browser options.
-   **/
+  /** @override */
   browsePreload: 'chrome://chrome/settings/',
 };
 
@@ -28,4 +26,43 @@ GEN('#define MAYBE_testOpenBrowserOptions testOpenBrowserOptions');
 GEN('#endif  // defined(OS_MACOSX)');
 TEST_F('BrowserOptionsWebUITest', 'MAYBE_testOpenBrowserOptions', function() {
   assertEquals(this.browsePreload, document.location.href);
+});
+
+
+/**
+ * @extends {testing.Test}
+ * @constructor
+ */
+function BrowserOptionsFrameWebUITest() {}
+
+BrowserOptionsFrameWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings-frame/settings',
+};
+
+TEST_F('BrowserOptionsFrameWebUITest', 'testAdvancedSettingsHiddenByDefault',
+    function() {
+  assertEquals(this.browsePreload, document.location.href);
+  expectTrue($('advanced-settings').hidden);
+});
+
+
+/**
+ * @extends {testing.Test}
+ * @constructor
+ */
+function AdvancedSettingsWebUITest() {}
+
+AdvancedSettingsWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings-frame/autofill',
+};
+
+TEST_F('AdvancedSettingsWebUITest', 'testAdvancedSettingsShown', function() {
+  assertEquals(this.browsePreload, document.location.href);
+  expectFalse($('advanced-settings').hidden);
 });
