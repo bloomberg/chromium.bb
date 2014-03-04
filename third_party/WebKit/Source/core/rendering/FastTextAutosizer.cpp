@@ -136,7 +136,7 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
             inflateTable(toRenderTable(block));
     }
 
-    if (block->childrenInline())
+    if (block->childrenInline() && block->firstChild())
         inflate(block);
 }
 
@@ -198,9 +198,6 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
 {
     ASSERT(enabled());
 
-    if (currentCluster()->m_root == block)
-        m_clusterStack.removeLast();
-
     if (block == m_firstBlock) {
         m_firstBlock = 0;
         m_clusterStack.clear();
@@ -208,6 +205,8 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
 #ifndef NDEBUG
         m_blocksThatHaveBegunLayout.clear();
 #endif
+    } else if (currentCluster()->m_root == block) {
+        m_clusterStack.removeLast();
     }
 }
 
