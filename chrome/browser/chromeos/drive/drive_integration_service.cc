@@ -102,6 +102,10 @@ FileError InitializeMetadata(
     internal::ResourceMetadata* resource_metadata,
     const ResourceIdCanonicalizer& id_canonicalizer,
     const base::FilePath& downloads_directory) {
+  // Files in temporary directory need not persist across sessions. Clean up
+  // the directory content while initialization.
+  base::DeleteFile(cache_root_directory.Append(kTemporaryFileDirectory),
+                   true);  // recursive
   if (!base::CreateDirectory(cache_root_directory.Append(
           kMetadataDirectory)) ||
       !base::CreateDirectory(cache_root_directory.Append(
