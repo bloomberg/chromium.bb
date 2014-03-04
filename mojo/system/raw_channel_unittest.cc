@@ -1,13 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(vtl): Factor out the remaining POSIX-specific bits of this test (once we
-// have a non-POSIX implementation).
-
 #include "mojo/system/raw_channel.h"
-
-#include <sys/socket.h>
 
 #include <vector>
 
@@ -25,12 +20,17 @@
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "mojo/common/test/test_utils.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
 #include "mojo/system/embedder/platform_handle.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/test_utils.h"
+
+#if defined(OS_POSIX)
+#include <sys/socket.h>
+#endif
 
 namespace mojo {
 namespace system {
@@ -71,10 +71,10 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
 
 // -----------------------------------------------------------------------------
 
-class RawChannelPosixTest : public test::TestWithIOThreadBase {
+class RawChannelTest : public test::TestWithIOThreadBase {
  public:
-  RawChannelPosixTest() {}
-  virtual ~RawChannelPosixTest() {}
+  RawChannelTest() {}
+  virtual ~RawChannelTest() {}
 
   virtual void SetUp() OVERRIDE {
     test::TestWithIOThreadBase::SetUp();
@@ -95,10 +95,10 @@ class RawChannelPosixTest : public test::TestWithIOThreadBase {
   embedder::ScopedPlatformHandle handles[2];
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RawChannelPosixTest);
+  DISALLOW_COPY_AND_ASSIGN(RawChannelTest);
 };
 
-// RawChannelPosixTest.WriteMessage --------------------------------------------
+// RawChannelTest.WriteMessage -------------------------------------------------
 
 class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
  public:
@@ -187,7 +187,7 @@ class TestMessageReaderAndChecker {
 };
 
 // Tests writing (and verifies reading using our own custom reader).
-TEST_F(RawChannelPosixTest, WriteMessage) {
+TEST_F(RawChannelTest, WriteMessage) {
   WriteOnlyRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
@@ -217,7 +217,7 @@ TEST_F(RawChannelPosixTest, WriteMessage) {
                                    base::Unretained(rc.get())));
 }
 
-// RawChannelPosixTest.OnReadMessage -------------------------------------------
+// RawChannelTest.OnReadMessage ------------------------------------------------
 
 class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
  public:
@@ -278,7 +278,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
 };
 
 // Tests reading (writing using our own custom writer).
-TEST_F(RawChannelPosixTest, OnReadMessage) {
+TEST_F(RawChannelTest, OnReadMessage) {
   ReadCheckerRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
@@ -313,7 +313,7 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
                                    base::Unretained(rc.get())));
 }
 
-// RawChannelPosixTest.WriteMessageAndOnReadMessage ----------------------------
+// RawChannelTest.WriteMessageAndOnReadMessage ---------------------------------
 
 class RawChannelWriterThread : public base::SimpleThread {
  public:
@@ -380,7 +380,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ReadCountdownRawChannelDelegate);
 };
 
-TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
+TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   static const size_t kNumWriterThreads = 10;
   static const size_t kNumWriteMessagesPerThread = 4000;
 
@@ -433,37 +433,46 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
                                    base::Unretained(writer_rc.get())));
 }
 
-// RawChannelPosixTest.OnFatalError --------------------------------------------
+// RawChannelTest.OnFatalError -------------------------------------------------
 
 class FatalErrorRecordingRawChannelDelegate
     : public ReadCountdownRawChannelDelegate {
  public:
-  FatalErrorRecordingRawChannelDelegate(size_t expected_read_count_)
-      : ReadCountdownRawChannelDelegate(expected_read_count_),
+  FatalErrorRecordingRawChannelDelegate(size_t expected_read_count,
+                                        bool expect_read_error,
+                                        bool expect_write_error)
+      : ReadCountdownRawChannelDelegate(expected_read_count),
         got_fatal_error_event_(false, false),
-        on_fatal_error_call_count_(0),
-        last_fatal_error_(FATAL_ERROR_UNKNOWN) {}
+        expecting_read_error_(expect_read_error),
+        expecting_write_error_(expect_write_error) {
+  }
 
   virtual ~FatalErrorRecordingRawChannelDelegate() {}
 
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
-    CHECK_EQ(on_fatal_error_call_count_, 0);
-    on_fatal_error_call_count_++;
-    last_fatal_error_ = fatal_error;
-    got_fatal_error_event_.Signal();
+    if (fatal_error == FATAL_ERROR_FAILED_READ) {
+      ASSERT_TRUE(expecting_read_error_);
+      expecting_read_error_ = false;
+    } else if (fatal_error == FATAL_ERROR_FAILED_WRITE) {
+      ASSERT_TRUE(expecting_write_error_);
+      expecting_write_error_ = false;
+    } else {
+      ASSERT_TRUE(false);
+    }
+
+    if (!expecting_read_error_ && !expecting_write_error_)
+      got_fatal_error_event_.Signal();
   }
 
-  FatalError WaitForFatalError() {
+  void WaitForFatalError() {
     got_fatal_error_event_.Wait();
-    CHECK_EQ(on_fatal_error_call_count_, 1);
-    return last_fatal_error_;
   }
 
  private:
   base::WaitableEvent got_fatal_error_event_;
 
-  int on_fatal_error_call_count_;
-  FatalError last_fatal_error_;
+  bool expecting_read_error_;
+  bool expecting_write_error_;
 
   DISALLOW_COPY_AND_ASSIGN(FatalErrorRecordingRawChannelDelegate);
 };
@@ -471,10 +480,48 @@ class FatalErrorRecordingRawChannelDelegate
 // Tests fatal errors.
 // TODO(vtl): Figure out how to make reading fail reliably. (I'm not convinced
 // that it does.)
-TEST_F(RawChannelPosixTest, OnFatalError) {
+TEST_F(RawChannelTest, OnFatalError) {
+  FatalErrorRecordingRawChannelDelegate delegate(0, false, true);
+
+  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
+                                               &delegate,
+                                               io_thread_message_loop()));
+
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&InitOnIOThread, rc.get()));
+
+  // Close the handle of the other end, which should make writing fail.
+  handles[1].reset();
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
+
+  // TODO(vtl): In theory, it's conceivable that closing the other end might
+  // lead to read failing. In practice, it doesn't seem to.
+  delegate.WaitForFatalError();
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(2)));
+
+  // Sleep a bit, to make sure we don't get another |OnFatalError()|
+  // notification. (If we actually get another one, |OnFatalError()| crashes.)
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+  test::PostTaskAndWait(io_thread_task_runner(),
+                        FROM_HERE,
+                        base::Bind(&RawChannel::Shutdown,
+                                   base::Unretained(rc.get())));
+}
+
+#if defined(OS_POSIX)
+// RawChannelTest.ReadUnaffectedByWriteFatalError ------------------------------
+
+// TODO(yzshen): On Windows, I haven't figured out a way to shut down one
+// direction of the named pipe.
+TEST_F(RawChannelTest, ReadUnaffectedByWriteFatalError) {
   const size_t kMessageCount = 5;
 
-  FatalErrorRecordingRawChannelDelegate delegate(2 * kMessageCount);
+  FatalErrorRecordingRawChannelDelegate delegate(2 * kMessageCount, false,
+                                                 true);
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
                                                io_thread_message_loop()));
@@ -495,10 +542,7 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 
-  // TODO(vtl): In theory, it's conceivable that closing the other end might
-  // lead to read failing. In practice, it doesn't seem to.
-  EXPECT_EQ(RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE,
-            delegate.WaitForFatalError());
+  delegate.WaitForFatalError();
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(2)));
 
@@ -519,12 +563,13 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));
 }
+#endif  // defined(OS_POSIX)
 
-// RawChannelPosixTest.WriteMessageAfterShutdown -------------------------------
+// RawChannelTest.WriteMessageAfterShutdown ------------------------------------
 
 // Makes sure that calling |WriteMessage()| after |Shutdown()| behaves
 // correctly.
-TEST_F(RawChannelPosixTest, WriteMessageAfterShutdown) {
+TEST_F(RawChannelTest, WriteMessageAfterShutdown) {
   WriteOnlyRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,

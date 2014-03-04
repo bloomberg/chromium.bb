@@ -68,7 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   struct Header;
  public:
   // This represents a view of serialized message data in a raw buffer.
-  class View {
+  class MOJO_SYSTEM_IMPL_EXPORT View {
    public:
     // Constructs a view from the given buffer of the given size. (The size must
     // be as provided by |MessageInTransit::GetNextMessageSize()|.) The buffer

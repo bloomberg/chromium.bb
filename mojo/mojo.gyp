@@ -96,6 +96,7 @@
       'dependencies': [
         'mojo_system',
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'defines': [
         'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
@@ -180,7 +181,7 @@
         'system/message_pipe_dispatcher_unittest.cc',
         'system/message_pipe_unittest.cc',
         'system/multiprocess_message_pipe_unittest.cc',
-        'system/raw_channel_posix_unittest.cc',
+        'system/raw_channel_unittest.cc',
         'system/remote_message_pipe_posix_unittest.cc',
         'system/simple_dispatcher_unittest.cc',
         'system/test_utils.cc',
