@@ -1998,3 +1998,12 @@ blink_web.dll!WebCore::Editor::pasteAsPlainText
 blink_web.dll!WebCore::executePasteAndMatchStyle
 blink_web.dll!WebCore::Editor::Command::execute
 blink_web.dll!WebCore::Document::execCommand
+
+UNINITIALIZED READ
+name=BUG_349128
+content.dll!std::*
+...
+content.dll!content::BrowserAccessibilityManagerWin::*
+...
+content.dll!content::BrowserAccessibilityManager::UpdateNode
+content.dll!content::BrowserAccessibilityManager::UpdateNodes
