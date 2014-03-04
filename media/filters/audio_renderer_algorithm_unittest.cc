@@ -101,31 +101,31 @@ class AudioRendererAlgorithmTest : public testing::Test {
     while (!algorithm_.IsQueueFull()) {
       switch (sample_format_) {
         case kSampleFormatU8:
-          buffer = MakeInterleavedAudioBuffer<uint8>(sample_format_,
-                                                     channels_,
-                                                     1,
-                                                     1,
-                                                     kFrameSize,
-                                                     kNoTimestamp(),
-                                                     kNoTimestamp());
+          buffer = MakeAudioBuffer<uint8>(sample_format_,
+                                          channels_,
+                                          1,
+                                          1,
+                                          kFrameSize,
+                                          kNoTimestamp(),
+                                          kNoTimestamp());
           break;
         case kSampleFormatS16:
-          buffer = MakeInterleavedAudioBuffer<int16>(sample_format_,
-                                                     channels_,
-                                                     1,
-                                                     1,
-                                                     kFrameSize,
-                                                     kNoTimestamp(),
-                                                     kNoTimestamp());
+          buffer = MakeAudioBuffer<int16>(sample_format_,
+                                          channels_,
+                                          1,
+                                          1,
+                                          kFrameSize,
+                                          kNoTimestamp(),
+                                          kNoTimestamp());
           break;
         case kSampleFormatS32:
-          buffer = MakeInterleavedAudioBuffer<int32>(sample_format_,
-                                                     channels_,
-                                                     1,
-                                                     1,
-                                                     kFrameSize,
-                                                     kNoTimestamp(),
-                                                     kNoTimestamp());
+          buffer = MakeAudioBuffer<int32>(sample_format_,
+                                          channels_,
+                                          1,
+                                          1,
+                                          kFrameSize,
+                                          kNoTimestamp(),
+                                          kNoTimestamp());
           break;
         default:
           NOTREACHED() << "Unrecognized format " << sample_format_;

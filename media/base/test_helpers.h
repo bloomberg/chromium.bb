@@ -85,9 +85,11 @@ class TestVideoConfig {
 };
 
 // Create an AudioBuffer containing |frames| frames of data, where each sample
-// is of type T. Each frame will have the data from |channels| channels
-// interleaved. |start| and |increment| are used to specify the values for the
-// samples. Since this is interleaved data, channel 0 data will be:
+// is of type T.
+//
+// For interleaved formats, each frame will have the data from |channels|
+// channels interleaved. |start| and |increment| are used to specify the values
+// for the samples. Since this is interleaved data, channel 0 data will be:
 //   |start|
 //   |start| + |channels| * |increment|
 //   |start| + 2 * |channels| * |increment|, and so on.
@@ -95,23 +97,10 @@ class TestVideoConfig {
 // requires data to be of type T, but it is verified that |format| is an
 // interleaved format.
 //
-// |start_time| will be used as the start time for the samples. |duration| is
-// the duration.
-template <class T>
-scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
-    SampleFormat format,
-    int channels,
-    T start,
-    T increment,
-    int frames,
-    base::TimeDelta start_time,
-    base::TimeDelta duration);
-
-// Create an AudioBuffer containing |frames| frames of data, where each sample
-// is of type T. Since this is planar data, there will be a block for each of
-// |channel| channels. |start| and |increment| are used to specify the values
-// for the samples, which are created in channel order. Since this is planar
-// data, channel 0 data will be:
+// For planar formats, there will be a block for each of |channel| channels.
+// |start| and |increment| are used to specify the values for the samples, which
+// are created in channel order. Since this is planar data, channel 0 data will
+// be:
 //   |start|
 //   |start| + |increment|
 //   |start| + 2 * |increment|, and so on.
@@ -122,14 +111,13 @@ scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
 // |start_time| will be used as the start time for the samples. |duration| is
 // the duration.
 template <class T>
-scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
-    SampleFormat format,
-    int channels,
-    T start,
-    T increment,
-    int frames,
-    base::TimeDelta start_time,
-    base::TimeDelta duration);
+scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
+                                           int channels,
+                                           T start,
+                                           T increment,
+                                           int frames,
+                                           base::TimeDelta timestamp,
+                                           base::TimeDelta duration);
 
 // Create a fake video DecoderBuffer for testing purpose. The buffer contains
 // part of video decoder config info embedded so that the testing code can do

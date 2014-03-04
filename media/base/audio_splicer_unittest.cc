@@ -34,7 +34,7 @@ class AudioSplicerTest : public ::testing::Test {
   }
 
   scoped_refptr<AudioBuffer> GetNextInputBuffer(float value, int frame_size) {
-    scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<float>(
+    scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(
         kSampleFormat,
         kChannels,
         value,

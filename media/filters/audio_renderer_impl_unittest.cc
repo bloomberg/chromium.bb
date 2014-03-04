@@ -302,13 +302,13 @@ class AudioRendererImplTest : public ::testing::Test {
     CHECK(!read_cb_.is_null());
 
     scoped_refptr<AudioBuffer> buffer =
-        MakePlanarAudioBuffer<float>(kSampleFormat,
-                                     kChannels,
-                                     kPlayingAudio,
-                                     0.0f,
-                                     size,
-                                     next_timestamp_->GetTimestamp(),
-                                     next_timestamp_->GetFrameDuration(size));
+        MakeAudioBuffer<float>(kSampleFormat,
+                               kChannels,
+                               kPlayingAudio,
+                               0.0f,
+                               size,
+                               next_timestamp_->GetTimestamp(),
+                               next_timestamp_->GetFrameDuration(size));
     next_timestamp_->AddFrames(size);
 
     DeliverBuffer(AudioDecoder::kOk, buffer);

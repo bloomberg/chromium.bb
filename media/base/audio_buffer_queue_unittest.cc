@@ -34,12 +34,12 @@ TEST(AudioBufferQueueTest, AppendAndClear) {
   const base::TimeDelta kNoTime = kNoTimestamp();
   AudioBufferQueue buffer;
   EXPECT_EQ(0, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 10, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(frames, buffer.frames());
   buffer.Clear();
   EXPECT_EQ(0, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 20, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(frames, buffer.frames());
 }
@@ -51,19 +51,19 @@ TEST(AudioBufferQueueTest, MultipleAppend) {
   AudioBufferQueue buffer;
 
   // Append 40 frames in 5 buffers.
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 10, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(8, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 10, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(16, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 10, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(24, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 10, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(32, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 10, 1, frames, kNoTime, kNoTime));
   EXPECT_EQ(40, buffer.frames());
 }
@@ -77,7 +77,7 @@ TEST(AudioBufferQueueTest, IteratorCheck) {
 
   // Append 40 frames in 5 buffers. Intersperse ReadFrames() to make the
   // iterator is pointing to the correct position.
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 10.0f, 1.0f, frames, kNoTime, kNoTime));
   EXPECT_EQ(8, buffer.frames());
 
@@ -85,10 +85,10 @@ TEST(AudioBufferQueueTest, IteratorCheck) {
   EXPECT_EQ(4, buffer.frames());
   VerifyResult(bus->channel(0), 4, 10.0f, 1.0f);
 
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 20.0f, 1.0f, frames, kNoTime, kNoTime));
   EXPECT_EQ(12, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 30.0f, 1.0f, frames, kNoTime, kNoTime));
   EXPECT_EQ(20, buffer.frames());
 
@@ -97,10 +97,10 @@ TEST(AudioBufferQueueTest, IteratorCheck) {
   EXPECT_EQ(0, buffer.frames());
   VerifyResult(bus->channel(0), 4, 34.0f, 1.0f);
 
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 40.0f, 1.0f, frames, kNoTime, kNoTime));
   EXPECT_EQ(8, buffer.frames());
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 50.0f, 1.0f, frames, kNoTime, kNoTime));
   EXPECT_EQ(16, buffer.frames());
 
@@ -121,7 +121,7 @@ TEST(AudioBufferQueueTest, Seek) {
   AudioBufferQueue buffer;
 
   // Add 6 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 1.0f, 1.0f, frames, kNoTime, kNoTime));
   EXPECT_EQ(6, buffer.frames());
 
@@ -143,11 +143,11 @@ TEST(AudioBufferQueueTest, ReadF32) {
   AudioBufferQueue buffer;
 
   // Add 76 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 1.0f, 1.0f, 6, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 13.0f, 1.0f, 10, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 33.0f, 1.0f, 60, kNoTime, kNoTime));
   EXPECT_EQ(76, buffer.frames());
 
@@ -182,7 +182,7 @@ TEST(AudioBufferQueueTest, ReadU8) {
   AudioBufferQueue buffer;
 
   // Add 4 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<uint8>(
+  buffer.Append(MakeAudioBuffer<uint8>(
       kSampleFormatU8, channels, 128, 1, frames, kNoTime, kNoTime));
 
   // Read all 4 frames from the buffer. Data is interleaved, so ch[0] should be
@@ -204,9 +204,9 @@ TEST(AudioBufferQueueTest, ReadS16) {
   AudioBufferQueue buffer;
 
   // Add 24 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatS16, channels, 1, 1, 4, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatS16, channels, 9, 1, 20, kNoTime, kNoTime));
   EXPECT_EQ(24, buffer.frames());
 
@@ -226,9 +226,9 @@ TEST(AudioBufferQueueTest, ReadS32) {
   AudioBufferQueue buffer;
 
   // Add 24 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<int32>(
+  buffer.Append(MakeAudioBuffer<int32>(
       kSampleFormatS32, channels, 1, 1, 4, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<int32>(
+  buffer.Append(MakeAudioBuffer<int32>(
       kSampleFormatS32, channels, 9, 1, 20, kNoTime, kNoTime));
   EXPECT_EQ(24, buffer.frames());
 
@@ -254,9 +254,9 @@ TEST(AudioBufferQueueTest, ReadF32Planar) {
   AudioBufferQueue buffer;
 
   // Add 14 frames of data.
-  buffer.Append(MakePlanarAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatPlanarF32, channels, 1.0f, 1.0f, 4, kNoTime, kNoTime));
-  buffer.Append(MakePlanarAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatPlanarF32, channels, 50.0f, 1.0f, 10, kNoTime, kNoTime));
   EXPECT_EQ(14, buffer.frames());
 
@@ -277,9 +277,9 @@ TEST(AudioBufferQueueTest, ReadS16Planar) {
   AudioBufferQueue buffer;
 
   // Add 24 frames of data.
-  buffer.Append(MakePlanarAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatPlanarS16, channels, 1, 1, 4, kNoTime, kNoTime));
-  buffer.Append(MakePlanarAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatPlanarS16, channels, 100, 5, 20, kNoTime, kNoTime));
   EXPECT_EQ(24, buffer.frames());
 
@@ -301,17 +301,17 @@ TEST(AudioBufferQueueTest, ReadManyChannels) {
   AudioBufferQueue buffer;
 
   // Add 76 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 0.0f, 1.0f, 6, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 6.0f * channels, 1.0f, 10, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<float>(kSampleFormatF32,
-                                                  channels,
-                                                  16.0f * channels,
-                                                  1.0f,
-                                                  60,
-                                                  kNoTime,
-                                                  kNoTime));
+  buffer.Append(MakeAudioBuffer<float>(kSampleFormatF32,
+                                       channels,
+                                       16.0f * channels,
+                                       1.0f,
+                                       60,
+                                       kNoTime,
+                                       kNoTime));
   EXPECT_EQ(76, buffer.frames());
 
   // Read 3 frames from the buffer. F32 is interleaved, so ch[0] should be
@@ -330,7 +330,7 @@ TEST(AudioBufferQueueTest, Peek) {
   AudioBufferQueue buffer;
 
   // Add 60 frames of data.
-  buffer.Append(MakeInterleavedAudioBuffer<float>(
+  buffer.Append(MakeAudioBuffer<float>(
       kSampleFormatF32, channels, 0.0f, 1.0f, 60, kNoTime, kNoTime));
   EXPECT_EQ(60, buffer.frames());
 
@@ -381,7 +381,7 @@ TEST(AudioBufferQueueTest, Time) {
   // Add two buffers (second one added later):
   //   first:  start=0s,  duration=10s
   //   second: start=30s, duration=10s
-  buffer.Append(MakeInterleavedAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatS16, channels, 1, 1, 10, start_time1, duration));
   EXPECT_EQ(10, buffer.frames());
 
@@ -399,7 +399,7 @@ TEST(AudioBufferQueueTest, Time) {
             buffer.current_time());
 
   // Add second buffer for more data.
-  buffer.Append(MakeInterleavedAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatS16, channels, 1, 1, 10, start_time2, duration));
   EXPECT_EQ(16, buffer.frames());
 
@@ -430,9 +430,9 @@ TEST(AudioBufferQueueTest, NoTime) {
   scoped_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
 
   // Add two buffers with no timestamps. Time should always be unknown.
-  buffer.Append(MakeInterleavedAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatS16, channels, 1, 1, 10, kNoTime, kNoTime));
-  buffer.Append(MakeInterleavedAudioBuffer<int16>(
+  buffer.Append(MakeAudioBuffer<int16>(
       kSampleFormatS16, channels, 1, 1, 10, kNoTime, kNoTime));
   EXPECT_EQ(20, buffer.frames());
 
