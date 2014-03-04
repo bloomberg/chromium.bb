@@ -514,9 +514,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // RenderFrameObserver
   virtual void OnDestruct() OVERRIDE;
 
-  // Update any transforms that should be applied to the texture layer.
-  void UpdateLayerTransform();
-
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
   friend class PpapiUnittest;
