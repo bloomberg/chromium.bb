@@ -12,7 +12,7 @@ import sys
 
 
 def IsRealDepotTools(path):
-  return os.path.isfile(os.path.join(path, 'breakpad.py'))
+  return os.path.isfile(os.path.join(path, 'gclient'))
 
 
 def add_depot_tools_to_path():
@@ -23,7 +23,7 @@ def add_depot_tools_to_path():
       return i
   # Then look if depot_tools is in PATH, common case.
   for i in os.environ['PATH'].split(os.pathsep):
-    if i.rstrip(os.sep).endswith('depot_tools') and IsRealDepotTools(i):
+    if IsRealDepotTools(i):
       sys.path.append(i.rstrip(os.sep))
       return i
   # Rare case, it's not even in PATH, look upward up to root.
