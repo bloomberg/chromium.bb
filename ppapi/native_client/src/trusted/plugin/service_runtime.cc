@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#define NACL_LOG_MODULE_NAME "Plugin::ServiceRuntime"
+#define NACL_LOG_MODULE_NAME "Plugin_ServiceRuntime"
 
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 
