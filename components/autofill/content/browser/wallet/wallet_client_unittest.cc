@@ -103,7 +103,6 @@ const char kGetWalletItemsValidResponse[] =
     "    {"
     "      \"descriptive_name\":\"descriptive_name\","
     "      \"type\":\"VISA\","
-    "      \"supported_currency\":\"currency_code\","
     "      \"last_four_digits\":\"4111\","
     "      \"expiration_month\":12,"
     "      \"expiration_year\":3000,"

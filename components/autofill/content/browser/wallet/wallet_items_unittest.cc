@@ -22,10 +22,6 @@ const char kMaskedInstrument[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
     "  \"type\":\"VISA\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
@@ -51,10 +47,6 @@ const char kMaskedInstrumentMissingStatus[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
     "  \"type\":\"VISA\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
@@ -78,10 +70,6 @@ const char kMaskedInstrumentMissingStatus[] =
 const char kMaskedInstrumentMissingType[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
@@ -106,10 +94,6 @@ const char kMaskedInstrumentMissingLastFourDigits[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
     "  \"type\":\"VISA\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
     "  \"billing_address\":"
@@ -133,10 +117,6 @@ const char kMaskedInstrumentMissingAddress[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
     "  \"type\":\"VISA\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
@@ -148,10 +128,6 @@ const char kMaskedInstrumentMalformedAddress[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
     "  \"type\":\"VISA\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
@@ -173,10 +149,6 @@ const char kMaskedInstrumentMissingObjectId[] =
     "{"
     "  \"descriptive_name\":\"descriptive_name\","
     "  \"type\":\"VISA\","
-    "  \"supported_currency\":"
-    "  ["
-    "    \"currency\""
-    "  ],"
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
@@ -246,10 +218,6 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "    {"
     "      \"descriptive_name\":\"descriptive_name\","
     "      \"type\":\"VISA\","
-    "      \"supported_currency\":"
-    "      ["
-    "        \"currency\""
-    "      ],"
     "      \"last_four_digits\":\"last_four_digits\","
     "      \"expiration_month\":12,"
     "      \"expiration_year\":2012,"
@@ -311,10 +279,6 @@ const char kWalletItems[] =
     "    {"
     "      \"descriptive_name\":\"descriptive_name\","
     "      \"type\":\"VISA\","
-    "      \"supported_currency\":"
-    "      ["
-    "        \"currency\""
-    "      ],"
     "      \"last_four_digits\":\"last_four_digits\","
     "      \"expiration_month\":12,"
     "      \"expiration_year\":2012,"
@@ -467,12 +431,9 @@ TEST_F(WalletItemsTest, CreateMaskedInstrument) {
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
                   std::string()));
-  std::vector<base::string16> supported_currencies;
-  supported_currencies.push_back(ASCIIToUTF16("currency"));
   WalletItems::MaskedInstrument masked_instrument(
       ASCIIToUTF16("descriptive_name"),
       WalletItems::MaskedInstrument::VISA,
-      supported_currencies,
       ASCIIToUTF16("last_four_digits"),
       12,
       2012,
@@ -596,12 +557,9 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                   ASCIIToUTF16("sorting_code"),
                   ASCIIToUTF16("phone_number"),
                   std::string()));
-  std::vector<base::string16> supported_currencies;
-  supported_currencies.push_back(ASCIIToUTF16("currency"));
   scoped_ptr<WalletItems::MaskedInstrument> masked_instrument(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
                                         WalletItems::MaskedInstrument::VISA,
-                                        supported_currencies,
                                         ASCIIToUTF16("last_four_digits"),
                                         12,
                                         2012,

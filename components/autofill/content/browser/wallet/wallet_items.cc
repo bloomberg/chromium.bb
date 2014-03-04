@@ -103,7 +103,6 @@ base::string16 DisplayStringFromType(WalletItems::MaskedInstrument::Type type) {
 WalletItems::MaskedInstrument::MaskedInstrument(
     const base::string16& descriptive_name,
     const WalletItems::MaskedInstrument::Type& type,
-    const std::vector<base::string16>& supported_currencies,
     const base::string16& last_four_digits,
     int expiration_month,
     int expiration_year,
@@ -112,7 +111,6 @@ WalletItems::MaskedInstrument::MaskedInstrument(
     const std::string& object_id)
     : descriptive_name_(descriptive_name),
       type_(type),
-      supported_currencies_(supported_currencies),
       last_four_digits_(last_four_digits),
       expiration_month_(expiration_month),
       expiration_year_(expiration_year),
@@ -169,18 +167,6 @@ scoped_ptr<WalletItems::MaskedInstrument>
     return scoped_ptr<MaskedInstrument>();
   }
 
-  std::vector<base::string16> supported_currencies;
-  const base::ListValue* supported_currency_list;
-  if (dictionary.GetList("supported_currency", &supported_currency_list)) {
-    for (size_t i = 0; i < supported_currency_list->GetSize(); ++i) {
-      base::string16 currency;
-      if (supported_currency_list->GetString(i, &currency))
-        supported_currencies.push_back(currency);
-    }
-  } else {
-    DVLOG(1) << "Response from Google Wallet missing supported currency";
-  }
-
   int expiration_month;
   if (!dictionary.GetInteger("expiration_month", &expiration_month))
     DVLOG(1) << "Response from Google Wallet missing expiration month";
@@ -195,7 +181,6 @@ scoped_ptr<WalletItems::MaskedInstrument>
 
   return scoped_ptr<MaskedInstrument>(new MaskedInstrument(descriptive_name,
                                                            type,
-                                                           supported_currencies,
                                                            last_four_digits,
                                                            expiration_month,
                                                            expiration_year,
@@ -209,8 +194,6 @@ bool WalletItems::MaskedInstrument::operator==(
   if (descriptive_name_ != other.descriptive_name_)
     return false;
   if (type_ != other.type_)
-    return false;
-  if (supported_currencies_ != other.supported_currencies_)
     return false;
   if (last_four_digits_ != other.last_four_digits_)
     return false;

@@ -39,7 +39,6 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithDetails(
   return make_scoped_ptr(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
                                         type,
-                                        std::vector<base::string16>(),
                                         ASCIIToUTF16("1111"),
                                         12,
                                         FutureYear(),

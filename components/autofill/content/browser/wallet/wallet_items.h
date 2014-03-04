@@ -104,9 +104,6 @@ class WalletItems {
 
     const base::string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
-    const std::vector<base::string16>& supported_currencies() const {
-      return supported_currencies_;
-    }
     const base::string16& last_four_digits() const { return last_four_digits_; }
     int expiration_month() const { return expiration_month_; }
     int expiration_year() const { return expiration_year_; }
@@ -130,7 +127,6 @@ class WalletItems {
 
     MaskedInstrument(const base::string16& descriptive_name,
                      const Type& type,
-                     const std::vector<base::string16>& supported_currencies,
                      const base::string16& last_four_digits,
                      int expiration_month,
                      int expiration_year,
@@ -144,9 +140,6 @@ class WalletItems {
 
     // The payment network of the instrument. For example, Visa.
     Type type_;
-
-    // |supported_currencies_| are ISO 4217 currency codes, e.g. USD.
-    std::vector<base::string16> supported_currencies_;
 
     // The last four digits of the primary account number of the instrument.
     base::string16 last_four_digits_;
