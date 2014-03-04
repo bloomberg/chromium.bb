@@ -12,6 +12,7 @@
 #include "base/mac/mac_util.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/sprite_view.h"
 #import "chrome/browser/ui/cocoa/tabs/media_indicator_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
@@ -87,8 +88,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     // Remember the icon's frame, so that if the icon is ever removed, a new
     // one can later replace it in the proper location.
     originalIconFrame_ = NSMakeRect(19, 5, 16, 16);
-    iconView_.reset([[NSImageView alloc] initWithFrame:originalIconFrame_]);
-    [iconView_ setAutoresizingMask:NSViewMaxXMargin];
+    iconView_.reset([[SpriteView alloc] initWithFrame:originalIconFrame_]);
+    [iconView_ setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
 
     // When the icon is removed, the title expands to the left to fill the
     // space left by the icon.  When the close button is removed, the title
@@ -217,11 +218,11 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   return selected_ || active_;
 }
 
-- (NSView*)iconView {
+- (SpriteView*)iconView {
   return iconView_;
 }
 
-- (void)setIconView:(NSView*)iconView {
+- (void)setIconView:(SpriteView*)iconView {
   [iconView_ removeFromSuperview];
   iconView_.reset([iconView retain]);
 
@@ -305,6 +306,24 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (BOOL)shouldShowCloseButton {
   return chrome::ShouldTabShowCloseButton(
       [self iconCapacity], [self mini], [self selected]);
+}
+
+- (void)setIconImage:(NSImage*)image {
+  [self setIconImage:image withToastAnimation:NO];
+}
+
+- (void)setIconImage:(NSImage*)image withToastAnimation:(BOOL)animate {
+  if (image == nil) {
+    [self setIconView:nil];
+  } else {
+    if (iconView_.get() == nil) {
+      base::scoped_nsobject<SpriteView> iconView([[SpriteView alloc] init]);
+      [iconView setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+      [self setIconView:iconView];
+    }
+
+    [iconView_ setImage:image withToastAnimation:animate];
+  }
 }
 
 - (void)updateVisibility {

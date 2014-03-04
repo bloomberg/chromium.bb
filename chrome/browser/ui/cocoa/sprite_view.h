@@ -11,18 +11,16 @@
 // the sprites in the form of a horizontal strip.
 @interface SpriteView : NSView
 
-// |image| contains the sprites in the form of a horizontal strip.
-// |spriteWidth| specifies the width of each sprite.
-// The sprite's height is the same as the height of |image|.
-// Each sprite will be displayed for |duration| seconds.
-- (instancetype)initWithImage:(NSImage*)image
-                        width:(CGFloat)spriteWidth
-                     duration:(CGFloat)duration;
+// |image| contains square sprites in a horizontal strip.
+// The sprites will be animated, with each sprite shown for 30ms.
+// It is OK to pass in a single sprite (a square image), in which case there
+// will be no animation.
+- (void)setImage:(NSImage*)image;
 
-// Same as above, but defaults to a square sprite where the sprite's
-// width and height is the same as the height of |image|.
-// Each sprite will be displayed for 30ms.
-- (instancetype)initWithImage:(NSImage*)image;
+// Same as above, with a toast animation to transition to the new image.
+// The old image will animate to the bottom, and then the new image will
+// animate back up to position.
+- (void)setImage:(NSImage*)image withToastAnimation:(BOOL)animate;
 
 @end
 

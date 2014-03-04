@@ -1630,7 +1630,6 @@
         'browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm',
         'browser/ui/cocoa/tabs/tab_strip_view_unittest.mm',
         'browser/ui/cocoa/tabs/tab_view_unittest.mm',
-        'browser/ui/cocoa/tabs/throbber_view_unittest.mm',
         'browser/ui/cocoa/task_manager_mac_unittest.mm',
         'browser/ui/cocoa/toolbar/reload_button_unittest.mm',
         'browser/ui/cocoa/toolbar/toolbar_button_unittest.mm',

@@ -286,7 +286,7 @@ const double kWidthOfMouseResizeArea = 15.0;
 }
 
 - (void)updateIcon {
-  NSView* icon = nil;
+  base::scoped_nsobject<NSView> iconView;
   if (throbberShouldSpin_) {
     // If the throbber is spinning now, no need to replace it.
     if ([[titlebar_view_ icon] isKindOfClass:[SpriteView class]])
@@ -295,7 +295,9 @@ const double kWidthOfMouseResizeArea = 15.0;
     NSImage* iconImage =
         ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_THROBBER).ToNSImage();
-    icon = [[[SpriteView alloc] initWithImage:iconImage] autorelease];
+    SpriteView* spriteView = [[SpriteView alloc] init];
+    [spriteView setImage:iconImage];
+    iconView.reset(spriteView);
   } else {
     const gfx::Image& page_icon = windowShim_->panel()->GetCurrentPageIcon();
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -303,13 +305,11 @@ const double kWidthOfMouseResizeArea = 15.0;
     NSImage* iconImage = page_icon.IsEmpty() ?
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage() :
         page_icon.ToNSImage();
-    NSImageView* iconView =
-        [[[NSImageView alloc] initWithFrame:iconFrame] autorelease];
-    [iconView setImage:iconImage];
-    icon = iconView;
+    NSImageView* imageView = [[NSImageView alloc] initWithFrame:iconFrame];
+    [imageView setImage:iconImage];
+    iconView.reset(imageView);
   }
-
-  [titlebar_view_ setIcon:icon];
+  [titlebar_view_ setIcon:iconView];
 }
 
 - (void)updateThrobber:(BOOL)shouldSpin {

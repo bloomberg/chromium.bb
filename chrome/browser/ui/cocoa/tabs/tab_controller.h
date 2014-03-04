@@ -25,6 +25,7 @@ enum TabLoadingState {
 namespace TabControllerInternal {
 class MenuDelegate;
 }
+@class SpriteView;
 @class TabView;
 @protocol TabControllerTarget;
 
@@ -41,7 +42,7 @@ class MenuDelegate;
 
 @interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
-  base::scoped_nsobject<NSView> iconView_;
+  base::scoped_nsobject<SpriteView> iconView_;
   base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
@@ -76,7 +77,7 @@ class MenuDelegate;
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
-@property(assign, nonatomic) NSView* iconView;
+@property(readonly, nonatomic) NSView* iconView;
 @property(assign, nonatomic) MediaIndicatorView* mediaIndicatorView;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
@@ -91,6 +92,14 @@ class MenuDelegate;
 
 // The view associated with this controller, pre-casted as a TabView
 - (TabView*)tabView;
+
+// Sets the tab's icon image.
+// |image| must be 16x16 in size.
+// |image| can be a horizontal strip of image sprites which will be animated.
+// Setting |animate| to YES will animate away the old image before animating
+// the new image back to position.
+- (void)setIconImage:(NSImage*)image;
+- (void)setIconImage:(NSImage*)image withToastAnimation:(BOOL)animate;
 
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.

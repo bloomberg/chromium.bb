@@ -96,19 +96,6 @@ CGFloat RightMargin(NSRect superFrame, NSRect subFrame) {
   return NSMaxX(superFrame) - NSMaxX(subFrame);
 }
 
-// Helper to create an NSImageView that contains an image fetched from
-// ui::ResourceBundle.
-NSImageView* CreateImageViewFromResourceBundle(int resource_id) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  NSImage* const image = rb.GetNativeImageNamed(resource_id).ToNSImage();
-  CHECK(!!image);
-  NSRect frame;
-  frame.size = [image size];
-  NSImageView* const view = [[NSImageView alloc] initWithFrame:frame];
-  [view setImage:image];
-  return view;
-}
-
 // The dragging code in TabView makes heavy use of autorelease pools so
 // inherit from CocoaTest to have one created for us.
 class TabControllerTest : public CocoaTest {
@@ -375,9 +362,11 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   EXPECT_FALSE([controller shouldShowCloseButton]);
 
   // Setting the icon when tab is at min width should not show icon (bug 18359).
-  base::scoped_nsobject<NSView> newIcon(
-      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 16, 16)]);
-  [controller setIconView:newIcon.get()];
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> image(
+      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
+  [controller setIconImage:image];
+  NSView* newIcon = [controller iconView];
   EXPECT_TRUE([newIcon isHidden]);
 
   // Tab is at selected minimum width. Since it's selected, the close box
@@ -501,8 +490,9 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
   // tested effectively.  If animations were left enabled, the
   // shouldShowMediaIndicator method would return true during fade-out
   // transitions.
-  base::scoped_nsobject<NSImageView> faviconView(
-      CreateImageViewFromResourceBundle(IDR_DEFAULT_FAVICON));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> favicon(
+      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView(
       [[MediaIndicatorView alloc] init]);
   [mediaIndicatorView disableAnimations];
@@ -526,7 +516,7 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
         [controller setMini:(isMiniTab ? YES : NO)];
         [controller setActive:(isActiveTab ? YES : NO)];
         [[controller mediaIndicatorView] updateIndicator:mediaState];
-        [controller setIconView:faviconView];
+        [controller setIconImage:favicon];
 
         // Test layout for every width from maximum to minimum.
         NSRect tabFrame = [[controller view] frame];
