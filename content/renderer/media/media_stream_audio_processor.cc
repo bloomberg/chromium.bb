@@ -252,6 +252,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   const bool enable_ns = GetPropertyFromConstraints(
       &native_constraints, MediaConstraintsInterface::kNoiseSuppression);
+  const bool enable_experimental_ns = GetPropertyFromConstraints(
+        &native_constraints,
+        MediaConstraintsInterface::kExperimentalNoiseSuppression);
   const bool enable_high_pass_filter = GetPropertyFromConstraints(
       &native_constraints, MediaConstraintsInterface::kHighpassFilter);
 
@@ -261,7 +264,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // Return immediately if no audio processing component is enabled.
   if (!enable_aec && !enable_experimental_aec && !enable_ns &&
       !enable_high_pass_filter && !enable_typing_detection && !enable_agc &&
-      !audio_mirroring_) {
+      !audio_mirroring_ && !enable_experimental_ns) {
     return;
   }
 
@@ -280,6 +283,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   if (enable_ns)
     EnableNoiseSuppression(audio_processing_.get());
+
+  if (enable_experimental_ns)
+    EnableExperimentalNoiseSuppression(audio_processing_.get());
 
   if (enable_high_pass_filter)
     EnableHighPassFilter(audio_processing_.get());
@@ -390,9 +396,13 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
   }
 
   audio_processing_->set_stream_delay_ms(total_delay_ms);
+
   webrtc::GainControl* agc = audio_processing_->gain_control();
   int err = agc->set_stream_analog_level(volume);
   DCHECK_EQ(err, 0) << "set_stream_analog_level() error: " << err;
+
+  audio_processing_->set_stream_key_pressed(key_pressed);
+
   err = audio_processing_->ProcessStream(audio_frame);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 

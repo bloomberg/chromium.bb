@@ -54,6 +54,9 @@ void EnableEchoCancellation(AudioProcessing* audio_processing);
 // Enables the noise suppression in |audio_processing|.
 void EnableNoiseSuppression(AudioProcessing* audio_processing);
 
+// Enables the experimental noise suppression in |audio_processing|.
+void EnableExperimentalNoiseSuppression(AudioProcessing* audio_processing);
+
 // Enables the high pass filter in |audio_processing|.
 void EnableHighPassFilter(AudioProcessing* audio_processing);
 
