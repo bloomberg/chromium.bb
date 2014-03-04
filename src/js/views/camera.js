@@ -593,6 +593,9 @@ camera.views.Camera.prototype.initialize = function(callback) {
         }.bind(this));
   }
 
+  // Initialize the web camera.
+  this.start_();
+
   // Acquire the gallery model.
   camera.models.Gallery.getInstance(function(model) {
     this.model_ = model;
@@ -609,8 +612,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
  * @override
  */
 camera.views.Camera.prototype.onEnter = function() {
-  if (!this.running_ && this.mainCanvas_ && this.mainFastCanvas_)
-    this.start_();
   this.performanceMonitors_.reset();
   this.mainProcessor_.performanceMonitors_.reset();
   this.mainFastProcessor_.performanceMonitors_.reset();
@@ -666,7 +667,7 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
-  if (this.performanceTestTimer_)
+  if (this.performanceTestTimer_ || !this.model_)
     return;
   this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
 };
@@ -1001,7 +1002,8 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'U+0047':  // G key for the gallery.
-      this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
+      if (this.model_)
+        this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
       event.preventDefault();
       break;
   }
@@ -1261,7 +1263,7 @@ camera.views.Camera.prototype.stopPerformanceTest_ = function() {
  * @private
  */
 camera.views.Camera.prototype.takePicture_ = function() {
-  if (!this.running_)
+  if (!this.running_ || !this.model_)
     return;
 
   var toggleTimer = document.querySelector('#toggle-timer');
@@ -1580,14 +1582,13 @@ camera.views.Camera.prototype.start_ = function() {
     if (bounds.width == 640 && bounds.height == 360)
       this.setDefaultGeometry_();
 
-    setTimeout(function() {
-      // Remove the initialization layer, but with some small delay to give
-      // the UI change to reflow and update correctly.
-      document.body.classList.remove('initializing');
+    // Remove the initialization layer.
+    document.body.classList.remove('initializing');
 
-      // Show tools after some small delay to make it more visible.
+    // Set the ribbon in the initialization mode for 500 ms. This forces repaint
+    // of the ribbon, even if it is hidden, or animations are in progress.
+    setTimeout(function() {
       this.ribbonInitialization_ = false;
-      this.setExpanded_(true);
     }.bind(this), 500);
 
     if (this.retryStartTimer_) {

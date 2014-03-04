@@ -229,22 +229,21 @@ camera.Camera.prototype = {
  * Starts the app by initializing views and showing the camera view.
  */
 camera.Camera.prototype.start = function() {
-  var queue = new camera.util.Queue();
-
-  // Initialize all views.
-  queue.run(this.cameraView_.initialize.bind(this.cameraView_));
-  queue.run(this.albumView_.initialize.bind(this.albumView_));
-  queue.run(this.browserView_.initialize.bind(this.browserView_));
-  queue.run(this.dialogView_.initialize.bind(this.dialogView_));
-
-  // Display the camera view after initializing.
-  queue.run(function(callback) {
-    this.tooltipManager_.initialize();
-    this.viewsStack_.push(this.cameraView_);
-    camera.util.makeElementsUnfocusableByMouse();
-    camera.util.setAriaAttributes();
-    callback();
-  }.bind(this));
+  // Initialize all views, and then start the app.
+  Promise.all([
+      new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
+      new Promise(this.albumView_.initialize.bind(this.albumView_)),
+      new Promise(this.browserView_.initialize.bind(this.browserView_)),
+      new Promise(this.dialogView_.initialize.bind(this.dialogView_))]).
+    then(function() {
+      this.tooltipManager_.initialize();
+      this.viewsStack_.push(this.cameraView_);
+      camera.util.makeElementsUnfocusableByMouse();
+      camera.util.setAriaAttributes();
+    }.bind(this)).
+    catch(function(error) {
+      console.error('Failed to initialize the Camera app.');
+    });
 };
 
 /**
