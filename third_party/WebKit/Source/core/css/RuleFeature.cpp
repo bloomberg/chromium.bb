@@ -432,9 +432,13 @@ bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<Atom
     if (thisElementNeedsStyleRecalc) {
         element->setNeedsStyleRecalc(LocalStyleChange);
     } else if (foundInvalidationSet && someChildrenNeedStyleRecalc) {
-        // Clone the RenderStyle in order to preserve correct style sharing.
-        if (RenderStyle* renderStyle = element->renderStyle())
-            element->renderer()->setStyle(RenderStyle::clone(renderStyle));
+        // Clone the RenderStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
+        if (RenderObject* renderer = element->renderer()) {
+            ASSERT(renderer->style());
+            renderer->setStyleInternal(RenderStyle::clone(renderer->style()));
+        } else {
+            element->setNeedsStyleRecalc(LocalStyleChange);
+        }
     }
 
     invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
