@@ -155,7 +155,7 @@ function load() {
                                 BrowserOptions.getInstance());
     if (!loadTimeData.getBoolean('disableCreateExistingManagedUsers')) {
       OptionsPage.registerOverlay(ManagedUserImportOverlay.getInstance(),
-                                  BrowserOptions.getInstance());
+                                  CreateProfileOverlay.getInstance());
     }
     OptionsPage.registerOverlay(ManagedUserLearnMoreOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());

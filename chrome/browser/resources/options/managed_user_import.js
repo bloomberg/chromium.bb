@@ -55,20 +55,19 @@ cr.define('options', function() {
 
       var self = this;
       $('managed-user-import-cancel').onclick = function(event) {
-        OptionsPage.closeOverlay();
-        self.updateImportInProgress_(false);
+        if (self.inProgress_) {
+          self.updateImportInProgress_(false);
 
-        // 'cancelCreateProfile' is handled by CreateProfileHandler.
-        chrome.send('cancelCreateProfile');
+          // 'cancelCreateProfile' is handled by CreateProfileHandler.
+          chrome.send('cancelCreateProfile');
+        }
+        OptionsPage.closeOverlay();
       };
 
       $('managed-user-import-ok').onclick =
           this.showAvatarGridOrSubmit_.bind(this);
-
-      $('create-new-user-link').onclick = function(event) {
-        options.ManagedUserListData.removeObserver(self);
-        OptionsPage.navigateToPage('createProfile');
-      };
+      $('managed-user-select-avatar-ok').onclick =
+          this.showAvatarGridOrSubmit_.bind(this);
     },
 
     /**
@@ -82,15 +81,7 @@ cr.define('options', function() {
       this.updateImportInProgress_(false);
       $('managed-user-import-error-bubble').hidden = true;
       $('managed-user-import-ok').disabled = true;
-      $('select-avatar-grid').hidden = true;
-      $('managed-user-list').hidden = false;
-
-      $('managed-user-import-ok').textContent =
-          loadTimeData.getString('managedUserImportOk');
-      $('managed-user-import-text').textContent =
-          loadTimeData.getString('managedUserImportText');
-      $('managed-user-import-title').textContent =
-          loadTimeData.getString('managedUserImportTitle');
+      this.showAppropriateElements_(/* isSelectAvatarMode */ false);
     },
 
     /**
@@ -98,6 +89,25 @@ cr.define('options', function() {
      */
     didClosePage: function() {
       options.ManagedUserListData.removeObserver(this);
+    },
+
+    /**
+     * Shows either the managed user import dom elements or the select avatar
+     * dom elements.
+     * @param {boolean} isSelectAvatarMode True if the overlay should show the
+     *     select avatar grid, and false if the overlay should show the managed
+     *     user list.
+     * @private
+     */
+    showAppropriateElements_: function(isSelectAvatarMode) {
+      var avatarElements =
+          this.pageDiv.querySelectorAll('.managed-user-select-avatar');
+      for (var i = 0; i < avatarElements.length; i++)
+        avatarElements[i].hidden = !isSelectAvatarMode;
+      var importElements =
+          this.pageDiv.querySelectorAll('.managed-user-import');
+      for (var i = 0; i < importElements.length; i++)
+        importElements[i].hidden = isSelectAvatarMode;
     },
 
     /**
@@ -137,18 +147,10 @@ cr.define('options', function() {
      * @private
      */
     showAvatarGridHelper_: function() {
-      $('managed-user-list').hidden = true;
-      $('select-avatar-grid').hidden = false;
+      this.showAppropriateElements_(/* isSelectAvatarMode */ true);
       $('select-avatar-grid').redraw();
       $('select-avatar-grid').selectedItem =
           loadTimeData.getValue('avatarIcons')[0];
-
-      $('managed-user-import-ok').textContent =
-          loadTimeData.getString('managedUserSelectAvatarOk');
-      $('managed-user-import-text').textContent =
-          loadTimeData.getString('managedUserSelectAvatarText');
-      $('managed-user-import-title').textContent =
-          loadTimeData.getString('managedUserSelectAvatarTitle');
     },
 
     /**
@@ -158,10 +160,11 @@ cr.define('options', function() {
      * @private
      */
     updateImportInProgress_: function(inProgress) {
+      this.inProgress_ = inProgress;
       $('managed-user-import-ok').disabled = inProgress;
+      $('managed-user-select-avatar-ok').disabled = inProgress;
       $('managed-user-list').disabled = inProgress;
       $('select-avatar-grid').disabled = inProgress;
-      $('create-new-user-link').disabled = inProgress;
       $('managed-user-import-throbber').hidden = !inProgress;
     },
 

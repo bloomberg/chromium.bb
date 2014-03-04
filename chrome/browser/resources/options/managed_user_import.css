@@ -2,15 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#create-new-user-link {
-  position: absolute;
-}
-
 #managed-user-import {
   width: 612px;
 }
 
-#managed-user-import-text {
+#managed-user-import-text,
+#managed-user-select-avatar-text {
   padding-bottom: 10px;
   padding-left: 17px;
   white-space: pre-wrap;
