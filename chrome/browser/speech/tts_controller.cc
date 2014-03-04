@@ -10,13 +10,7 @@
 #include "base/float_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/tts_platform.h"
-#include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 
 namespace {
 // A value to be used to indicate that there is no char index available.
@@ -120,7 +114,8 @@ TtsController* TtsController::GetInstance() {
 TtsController::TtsController()
     : current_utterance_(NULL),
       paused_(false),
-      platform_impl_(NULL) {
+      platform_impl_(NULL),
+      tts_engine_delegate_(NULL) {
 }
 
 TtsController::~TtsController() {
@@ -172,6 +167,9 @@ void TtsController::SpeakNow(Utterance* utterance) {
     if (native_voices.empty() && !voices.empty()) {
       // TODO(dtseng): Notify extension caller of an error.
       utterance->set_voice_name("");
+      // TODO(gaochun): Replace the global variable g_browser_process with
+      // GetContentClient()->browser() to eliminate the dependency of browser
+      // once TTS implementation was moved to content.
       utterance->set_lang(g_browser_process->GetApplicationLocale());
       index = GetMatchingVoice(utterance, voices);
 
@@ -192,7 +190,8 @@ void TtsController::SpeakNow(Utterance* utterance) {
     DCHECK(!voice.extension_id.empty());
     current_utterance_ = utterance;
     utterance->set_extension_id(voice.extension_id);
-    ExtensionTtsEngineSpeak(utterance, voice);
+    if (tts_engine_delegate_)
+      tts_engine_delegate_->Speak(utterance, voice);
     bool sends_end_event =
         voice.events.find(TTS_EVENT_END) != voice.events.end();
     if (!sends_end_event) {
@@ -237,7 +236,8 @@ void TtsController::Stop() {
   paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
 #if !defined(OS_ANDROID)
-    ExtensionTtsEngineStop(current_utterance_);
+    if (tts_engine_delegate_)
+      tts_engine_delegate_->Stop(current_utterance_);
 #endif
   } else {
     GetPlatformImpl()->clear_error();
@@ -255,7 +255,8 @@ void TtsController::Pause() {
   paused_ = true;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
 #if !defined(OS_ANDROID)
-    ExtensionTtsEnginePause(current_utterance_);
+    if (tts_engine_delegate_)
+      tts_engine_delegate_->Pause(current_utterance_);
 #endif
   } else if (current_utterance_) {
     GetPlatformImpl()->clear_error();
@@ -267,7 +268,8 @@ void TtsController::Resume() {
   paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
 #if !defined(OS_ANDROID)
-    ExtensionTtsEngineResume(current_utterance_);
+    if (tts_engine_delegate_)
+      tts_engine_delegate_->Resume(current_utterance_);
 #endif
   } else if (current_utterance_) {
     GetPlatformImpl()->clear_error();
@@ -298,8 +300,8 @@ void TtsController::OnTtsEvent(int utterance_id,
 void TtsController::GetVoices(Profile* profile,
                               std::vector<VoiceData>* out_voices) {
 #if !defined(OS_ANDROID)
-  if (profile)
-    GetExtensionVoices(profile, out_voices);
+  if (profile && tts_engine_delegate_)
+    tts_engine_delegate_->GetVoices(profile, out_voices);
 #endif
 
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
@@ -440,4 +442,9 @@ void TtsController::AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) {
 void TtsController::RemoveVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
   voices_changed_delegates_.erase(delegate);
+}
+
+void TtsController::SetTtsEngineDelegate(
+    TtsEngineDelegate* delegate) {
+  tts_engine_delegate_ = delegate;
 }

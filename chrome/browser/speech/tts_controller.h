@@ -77,6 +77,29 @@ struct VoiceData {
   std::string native_voice_identifier;
 };
 
+// Interface that delegates TTS requests to user-installed extensions.
+class TtsEngineDelegate {
+ public:
+  virtual ~TtsEngineDelegate() {}
+
+  // Return a list of all available voices registered.
+  virtual void GetVoices(Profile* profile,
+                         std::vector<VoiceData>* out_voices) = 0;
+
+  // Speak the given utterance by sending an event to the given TTS engine.
+  virtual void Speak(Utterance* utterance, const VoiceData& voice) = 0;
+
+  // Stop speaking the given utterance by sending an event to the target
+  // associated with this utterance.
+  virtual void Stop(Utterance* utterance) = 0;
+
+  // Pause in the middle of speaking this utterance.
+  virtual void Pause(Utterance* utterance) = 0;
+
+  // Resume speaking this utterance.
+  virtual void Resume(Utterance* utterance) = 0;
+};
+
 // Class that wants to receive events on utterances.
 class UtteranceEventDelegate {
  public:
@@ -297,6 +320,10 @@ class TtsController {
   // Remove delegate that wants to be notified when the set of voices changes.
   void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate);
 
+  // Set the delegate that processes TTS requests with user-installed
+  // extensions.
+  void SetTtsEngineDelegate(TtsEngineDelegate* delegate);
+
   // For unit testing.
   void SetPlatformImpl(TtsPlatformImpl* platform_impl);
   int QueueSize();
@@ -345,6 +372,9 @@ class TtsController {
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
   TtsPlatformImpl* platform_impl_;
+
+  // The delegate that processes TTS requests with user-installed extensions.
+  TtsEngineDelegate* tts_engine_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsController);
 };
