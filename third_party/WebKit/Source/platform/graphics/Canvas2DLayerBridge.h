@@ -70,7 +70,8 @@ public:
     // ImageBufferSurface implementation
     void willUse();
     SkCanvas* canvas() const { return m_canvas.get(); }
-    bool isValid();
+    bool surfaceIsValid();
+    bool recoverSurface();
     blink::WebLayer* layer() const;
     Platform3DObject getBackingTexture();
     bool isAccelerated() const { return true; }

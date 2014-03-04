@@ -55,7 +55,7 @@ public:
     // ImageBufferSurface implementation
     virtual void willUse() OVERRIDE { m_layerBridge->willUse(); }
     virtual SkCanvas* canvas() const OVERRIDE { return m_layerBridge->canvas(); }
-    virtual bool isValid() const OVERRIDE { return m_layerBridge && m_layerBridge->isValid(); }
+    virtual bool isValid() const OVERRIDE { return m_layerBridge && (m_layerBridge->surfaceIsValid() || m_layerBridge->recoverSurface()); }
     virtual blink::WebLayer* layer() const OVERRIDE { return m_layerBridge->layer(); }
     virtual Platform3DObject getBackingTexture() const OVERRIDE { return m_layerBridge->getBackingTexture(); }
     virtual bool isAccelerated() const OVERRIDE { return m_layerBridge->isAccelerated(); }

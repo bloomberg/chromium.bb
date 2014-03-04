@@ -204,7 +204,7 @@ void Canvas2DLayerBridge::limitPendingFrames()
 void Canvas2DLayerBridge::prepareForDraw()
 {
     ASSERT(m_layer);
-    if (!isValid()) {
+    if (!surfaceIsValid() && !recoverSurface()) {
         if (m_canvas) {
             // drop pending commands because there is no surface to draw to
             m_canvas->silentFlush();
@@ -287,6 +287,8 @@ bool Canvas2DLayerBridge::hasReleasedMailbox() const
 
 void Canvas2DLayerBridge::freeReleasedMailbox()
 {
+    if (m_contextProvider->context3d()->isContextLost() || !m_surfaceIsValid)
+        return;
     MailboxInfo* mailboxInfo = releasedMailboxInfo();
     if (!mailboxInfo)
         return;
@@ -312,45 +314,49 @@ blink::WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
     // Check on m_layer is necessary because context() may be called during
     // the destruction of m_layer
-    if (m_layer) {
-        isValid(); // To ensure rate limiter is disabled if context is lost.
+    if (m_layer && !surfaceIsValid()) {
+        recoverSurface(); // To ensure rate limiter is disabled if context is lost.
     }
     return m_contextProvider->context3d();
 }
 
-bool Canvas2DLayerBridge::isValid()
+bool Canvas2DLayerBridge::surfaceIsValid()
 {
-    ASSERT(m_layer);
+    return !m_destructionInProgress && !m_contextProvider->context3d()->isContextLost() && m_surfaceIsValid;
+}
+
+bool Canvas2DLayerBridge::recoverSurface()
+{
+    ASSERT(m_layer && !surfaceIsValid());
     if (m_destructionInProgress)
         return false;
-    if (m_contextProvider->context3d()->isContextLost() || !m_surfaceIsValid) {
-        // Attempt to recover.
-        blink::WebGraphicsContext3D* sharedContext = 0;
-        m_layer->clearTexture();
-        m_mailboxes.clear();
-        m_releasedMailboxInfoIndex = InvalidMailboxIndex;
-        m_contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-        if (m_contextProvider)
-            sharedContext = m_contextProvider->context3d();
 
-        if (!sharedContext || sharedContext->isContextLost()) {
-            m_surfaceIsValid = false;
+    blink::WebGraphicsContext3D* sharedContext = 0;
+    m_layer->clearTexture();
+    m_mailboxes.clear();
+    m_releasedMailboxInfoIndex = InvalidMailboxIndex;
+    m_contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (m_contextProvider)
+        sharedContext = m_contextProvider->context3d();
+
+    if (!sharedContext || sharedContext->isContextLost()) {
+        m_surfaceIsValid = false;
+    } else {
+        IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
+        RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount));
+        if (surface.get()) {
+            m_canvas->setSurface(surface.get());
+            m_surfaceIsValid = true;
+            // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         } else {
-            IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
-            RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount));
-            if (surface.get()) {
-                m_canvas->setSurface(surface.get());
-                m_surfaceIsValid = true;
-                // FIXME: draw sad canvas picture into new buffer crbug.com/243842
-            } else {
-                // Surface allocation failed. Set m_surfaceIsValid to false to
-                // trigger subsequent retry.
-                m_surfaceIsValid = false;
-            }
+            // Surface allocation failed. Set m_surfaceIsValid to false to
+            // trigger subsequent retry.
+            m_surfaceIsValid = false;
         }
     }
     if (!m_surfaceIsValid)
         setRateLimitingEnabled(false);
+
     return m_surfaceIsValid;
 }
 
@@ -365,7 +371,7 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
         m_lastImageId = 0;
         return false;
     }
-    if (!isValid())
+    if (!surfaceIsValid() && !recoverSurface())
         return false;
 
     blink::WebGraphicsContext3D* webContext = context();
@@ -490,7 +496,7 @@ void Canvas2DLayerBridge::willUse()
 Platform3DObject Canvas2DLayerBridge::getBackingTexture()
 {
     ASSERT(!m_destructionInProgress);
-    if (!isValid())
+    if (!surfaceIsValid() && !recoverSurface())
         return 0;
     willUse();
     m_canvas->flush();
