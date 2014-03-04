@@ -14,6 +14,14 @@
 #include <windows.h>
 #endif
 
+#ifdef PVALLOC_AVAILABLE
+// Build config explicitly tells us whether or not pvalloc is available.
+#elif defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
+#define PVALLOC_AVAILABLE 1
+#else
+#define PVALLOC_AVAILABLE 0
+#endif
+
 namespace base {
 
 // Enables low fragmentation heap (LFH) for every heaps of this process. This

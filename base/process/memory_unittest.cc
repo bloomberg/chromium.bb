@@ -243,12 +243,15 @@ TEST_F(OutOfMemoryDeathTest, Valloc) {
 }
 
 #if defined(OS_LINUX)
+
+#if PVALLOC_AVAILABLE == 1
 TEST_F(OutOfMemoryDeathTest, Pvalloc) {
   ASSERT_DEATH({
       SetUpInDeathAssert();
       value_ = pvalloc(test_size_);
     }, "");
 }
+#endif  // PVALLOC_AVAILABLE == 1
 
 TEST_F(OutOfMemoryDeathTest, Memalign) {
   ASSERT_DEATH({
