@@ -264,7 +264,7 @@ void ContentDecryptor_Private::SessionClosed(uint32_t session_id) {
 
 void ContentDecryptor_Private::SessionError(uint32_t session_id,
                                             int32_t media_error,
-                                            int32_t system_code) {
+                                            uint32_t system_code) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->SessionError(
         associated_instance_.pp_instance(),

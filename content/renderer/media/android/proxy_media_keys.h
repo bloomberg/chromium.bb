@@ -52,7 +52,7 @@ class ProxyMediaKeys : public media::MediaKeys {
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
-                      int system_code);
+                      uint32 system_code);
 
  private:
   RendererMediaPlayerManager* manager_;

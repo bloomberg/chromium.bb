@@ -128,7 +128,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void SessionError(PP_Instance instance,
                             uint32_t session_id,
                             int32_t media_error,
-                            int32_t system_code) OVERRIDE;
+                            uint32_t system_code) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
@@ -234,7 +234,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void OnHostMsgSessionError(PP_Instance instance,
                                      uint32_t session_id,
                                      int32_t media_error,
-                                     int32_t system_code);
+                                     uint32_t system_code);
   virtual void OnHostMsgDecoderInitializeDone(
       PP_Instance instance,
       PP_DecryptorStreamType decoder_type,

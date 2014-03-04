@@ -240,7 +240,7 @@ void ProxyDecryptor::OnSessionClosed(uint32 session_id) {
 
 void ProxyDecryptor::OnSessionError(uint32 session_id,
                                     media::MediaKeys::KeyError error_code,
-                                    int system_code) {
+                                    uint32 system_code) {
   // Assumes that OnSessionCreated() has been called before this.
   key_error_cb_.Run(LookupWebSessionId(session_id), error_code, system_code);
 }

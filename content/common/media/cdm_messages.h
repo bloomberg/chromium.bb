@@ -67,4 +67,4 @@ IPC_MESSAGE_ROUTED4(CdmMsg_SessionError,
                     int /* cdm_id */,
                     uint32_t /* session_id */,
                     media::MediaKeys::KeyError /* error_code */,
-                    int /* system_code */)
+                    uint32_t /* system_code */)

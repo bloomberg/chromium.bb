@@ -332,7 +332,9 @@ class AesDecryptorTest : public testing::Test {
   MOCK_METHOD1(OnSessionReady, void(uint32 session_id));
   MOCK_METHOD1(OnSessionClosed, void(uint32 session_id));
   MOCK_METHOD3(OnSessionError,
-               void(uint32 session_id, MediaKeys::KeyError, int system_code));
+               void(uint32 session_id,
+                    MediaKeys::KeyError,
+                    uint32 system_code));
 
   AesDecryptor decryptor_;
   AesDecryptor::DecryptCB decrypt_cb_;

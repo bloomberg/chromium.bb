@@ -592,7 +592,7 @@ void ClearKeyCdm::OnSessionClosed(uint32 session_id) {
 
 void ClearKeyCdm::OnSessionError(uint32 session_id,
                                  media::MediaKeys::KeyError error_code,
-                                 int system_code) {
+                                 uint32 system_code) {
   host_->OnSessionError(
       session_id, static_cast<cdm::MediaKeyError>(error_code), system_code);
 }

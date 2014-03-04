@@ -104,7 +104,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
                               media::MediaKeys::KeyError error_code,
-                              int system_code) OVERRIDE;
+                              uint32 system_code) OVERRIDE;
 
 #if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);

@@ -86,7 +86,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
 
 void WebContentDecryptionModuleSessionImpl::OnSessionError(
     media::MediaKeys::KeyError error_code,
-    int system_code) {
+    uint32 system_code) {
   client_->error(static_cast<Client::MediaKeyErrorCode>(error_code),
                  system_code);
 }

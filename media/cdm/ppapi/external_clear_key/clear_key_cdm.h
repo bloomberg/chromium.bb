@@ -81,7 +81,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,
                       MediaKeys::KeyError error_code,
-                      int system_code);
+                      uint32 system_code);
 
   // Prepares next heartbeat message and sets a timer for it.
   void ScheduleNextHeartBeat();

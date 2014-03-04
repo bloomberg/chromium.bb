@@ -573,7 +573,7 @@ void PPB_Instance_Proxy::SessionClosed(PP_Instance instance,
 void PPB_Instance_Proxy::SessionError(PP_Instance instance,
                                       uint32_t session_id,
                                       int32_t media_error,
-                                      int32_t system_code) {
+                                      uint32_t system_code) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SessionError(
       API_ID_PPB_INSTANCE, instance, session_id, media_error, system_code));
 }
@@ -1094,13 +1094,13 @@ void PPB_Instance_Proxy::OnHostMsgSessionClosed(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgSessionError(PP_Instance instance,
                                                uint32_t session_id,
                                                int32_t media_error,
-                                               int32_t system_error) {
+                                               uint32_t system_code) {
   if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->SessionError(
-        instance, session_id, media_error, system_error);
+        instance, session_id, media_error, system_code);
   }
 }
 

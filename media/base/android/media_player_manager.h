@@ -103,7 +103,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
                               media::MediaKeys::KeyError error_code,
-                              int system_code) = 0;
+                              uint32 system_code) = 0;
 };
 
 }  // namespace media

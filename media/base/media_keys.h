@@ -93,7 +93,7 @@ typedef base::Callback<void(uint32 session_id)> SessionClosedCB;
 
 typedef base::Callback<void(uint32 session_id,
                             media::MediaKeys::KeyError error_code,
-                            int system_code)> SessionErrorCB;
+                            uint32 system_code)> SessionErrorCB;
 
 }  // namespace media
 

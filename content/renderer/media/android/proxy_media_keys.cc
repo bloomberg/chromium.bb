@@ -113,7 +113,7 @@ void ProxyMediaKeys::OnSessionClosed(uint32 session_id) {
 
 void ProxyMediaKeys::OnSessionError(uint32 session_id,
                                     media::MediaKeys::KeyError error_code,
-                                    int system_code) {
+                                    uint32 system_code) {
   session_error_cb_.Run(session_id, error_code, system_code);
 }
 

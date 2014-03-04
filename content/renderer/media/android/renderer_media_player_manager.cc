@@ -318,7 +318,7 @@ void RendererMediaPlayerManager::OnSessionError(
     int cdm_id,
     uint32 session_id,
     media::MediaKeys::KeyError error_code,
-    int system_code) {
+    uint32 system_code) {
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionError(session_id, error_code, system_code);

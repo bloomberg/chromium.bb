@@ -627,7 +627,7 @@ void ContentDecryptorDelegate::OnSessionClosed(uint32 session_id) {
 
 void ContentDecryptorDelegate::OnSessionError(uint32 session_id,
                                               int32_t media_error,
-                                              int32_t system_code) {
+                                              uint32_t system_code) {
   if (session_error_cb_.is_null())
     return;
 

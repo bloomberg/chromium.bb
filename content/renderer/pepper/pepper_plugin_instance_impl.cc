@@ -2367,7 +2367,7 @@ void PepperPluginInstanceImpl::SessionClosed(PP_Instance instance,
 void PepperPluginInstanceImpl::SessionError(PP_Instance instance,
                                             uint32_t session_id,
                                             int32_t media_error,
-                                            int32_t system_code) {
+                                            uint32_t system_code) {
   content_decryptor_delegate_->OnSessionError(
       session_id, media_error, system_code);
 }

@@ -143,18 +143,18 @@ class PPB_Instance_API {
 #if !defined(OS_NACL)
   // Content Decryptor.
   virtual void SessionCreated(PP_Instance instance,
-                              uint32 session_id,
+                              uint32_t session_id,
                               PP_Var web_session_id) = 0;
   virtual void SessionMessage(PP_Instance instance,
-                              uint32 session_id,
+                              uint32_t session_id,
                               PP_Var message,
                               PP_Var destination_url) = 0;
-  virtual void SessionReady(PP_Instance instance, uint32 session_id) = 0;
-  virtual void SessionClosed(PP_Instance instance, uint32 session_id) = 0;
+  virtual void SessionReady(PP_Instance instance, uint32_t session_id) = 0;
+  virtual void SessionClosed(PP_Instance instance, uint32_t session_id) = 0;
   virtual void SessionError(PP_Instance instance,
-                            uint32 session_id,
+                            uint32_t session_id,
                             int32_t media_error,
-                            int32_t system_error) = 0;
+                            uint32_t system_code) = 0;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) = 0;

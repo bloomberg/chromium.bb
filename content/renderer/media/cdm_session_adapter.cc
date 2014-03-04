@@ -129,7 +129,7 @@ void CdmSessionAdapter::OnSessionClosed(uint32 session_id) {
 
 void CdmSessionAdapter::OnSessionError(uint32 session_id,
                                        media::MediaKeys::KeyError error_code,
-                                       int system_code) {
+                                       uint32 system_code) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << session_id;

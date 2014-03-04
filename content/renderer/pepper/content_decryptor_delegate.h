@@ -92,7 +92,7 @@ class ContentDecryptorDelegate {
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,
                       int32_t media_error,
-                      int32_t system_code);
+                      uint32_t system_code);
   void DeliverBlock(PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info);
   void DecoderInitializeDone(PP_DecryptorStreamType decoder_type,

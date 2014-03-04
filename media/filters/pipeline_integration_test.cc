@@ -93,7 +93,7 @@ class FakeEncryptedMedia {
     // Errors are not expected unless overridden.
     virtual void OnSessionError(uint32 session_id,
                                 MediaKeys::KeyError error_code,
-                                int system_code) {
+                                uint32 system_code) {
       FAIL() << "Unexpected Key Error";
     }
 
@@ -140,7 +140,7 @@ class FakeEncryptedMedia {
 
   void OnSessionError(uint32 session_id,
                       MediaKeys::KeyError error_code,
-                      int system_code) {
+                      uint32 system_code) {
     app_->OnSessionError(session_id, error_code, system_code);
   }
 

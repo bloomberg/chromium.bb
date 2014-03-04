@@ -220,7 +220,7 @@ class WebMediaPlayerAndroid
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
                   media::MediaKeys::KeyError error_code,
-                  int system_code);
+                  uint32 system_code);
   void OnKeyMessage(const std::string& session_id,
                     const std::vector<uint8>& message,
                     const std::string& destination_url);

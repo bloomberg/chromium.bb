@@ -49,7 +49,7 @@ class ProxyDecryptor {
   typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
   typedef base::Callback<void(const std::string& session_id,
                               media::MediaKeys::KeyError error_code,
-                              int system_code)> KeyErrorCB;
+                              uint32 system_code)> KeyErrorCB;
   typedef base::Callback<void(const std::string& session_id,
                               const std::vector<uint8>& message,
                               const std::string& default_url)> KeyMessageCB;
@@ -99,7 +99,7 @@ class ProxyDecryptor {
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
-                      int system_code);
+                      uint32 system_code);
 
   // Helper function to determine session_id for the provided |web_session_id|.
   uint32 LookupSessionId(const std::string& web_session_id) const;

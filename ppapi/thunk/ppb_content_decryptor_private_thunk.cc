@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Mon Jan 13 12:02:23 2014.
+//   modified Wed Feb 26 16:37:47 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -59,7 +59,7 @@ void SessionClosed(PP_Instance instance, uint32_t session_id) {
 void SessionError(PP_Instance instance,
                   uint32_t session_id,
                   int32_t media_error,
-                  int32_t system_code) {
+                  uint32_t system_code) {
   VLOG(4) << "PPB_ContentDecryptor_Private::SessionError()";
   EnterInstance enter(instance);
   if (enter.failed())
@@ -143,8 +143,8 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_10
-    g_ppb_contentdecryptor_private_thunk_0_10 = {
+const PPB_ContentDecryptor_Private_0_11
+    g_ppb_contentdecryptor_private_thunk_0_11 = {
   &SessionCreated,
   &SessionMessage,
   &SessionReady,
@@ -160,9 +160,9 @@ const PPB_ContentDecryptor_Private_0_10
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_10*
-    GetPPB_ContentDecryptor_Private_0_10_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_10;
+PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_11*
+    GetPPB_ContentDecryptor_Private_0_11_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_11;
 }
 
 }  // namespace thunk

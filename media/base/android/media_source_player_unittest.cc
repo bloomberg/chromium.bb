@@ -88,7 +88,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
                               media::MediaKeys::KeyError error_code,
-                              int system_code) OVERRIDE {}
+                              uint32 system_code) OVERRIDE {}
 
   bool playback_completed() const {
     return playback_completed_;

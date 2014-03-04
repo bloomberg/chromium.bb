@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Wed Jan  8 16:02:43 2014.
+ *   modified Wed Feb 26 16:37:47 2014.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_10 \
-    "PPB_ContentDecryptor_Private;0.10"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_11 \
+    "PPB_ContentDecryptor_Private;0.11"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_10
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_11
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * browser side support for the Content Decryption Module (CDM) for Encrypted
  * Media Extensions: http://www.w3.org/TR/encrypted-media/
  */
-struct PPB_ContentDecryptor_Private_0_10 {
+struct PPB_ContentDecryptor_Private_0_11 {
   /**
    * A session has been created by the CDM.
    *
@@ -123,7 +123,7 @@ struct PPB_ContentDecryptor_Private_0_10 {
   void (*SessionError)(PP_Instance instance,
                        uint32_t session_id,
                        int32_t media_error,
-                       int32_t system_code);
+                       uint32_t system_code);
   /**
    * Called after the <code>Decrypt()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to
@@ -253,7 +253,7 @@ struct PPB_ContentDecryptor_Private_0_10 {
       const struct PP_DecryptedSampleInfo* decrypted_sample_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_10 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_11 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

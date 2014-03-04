@@ -365,7 +365,7 @@ void PpapiDecryptor::OnSessionClosed(uint32 session_id) {
 
 void PpapiDecryptor::OnSessionError(uint32 session_id,
                                     media::MediaKeys::KeyError error_code,
-                                    int system_code) {
+                                    uint32 system_code) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   session_error_cb_.Run(session_id, error_code, system_code);
 }

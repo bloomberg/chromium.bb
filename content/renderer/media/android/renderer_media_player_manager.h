@@ -175,7 +175,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnSessionError(int cdm_id,
                       uint32 session_id,
                       media::MediaKeys::KeyError error_code,
-                      int system_code);
+                      uint32 system_code);
 
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibility.

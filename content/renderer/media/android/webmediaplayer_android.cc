@@ -1332,15 +1332,23 @@ void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
 
 void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
                                        media::MediaKeys::KeyError error_code,
-                                       int system_code) {
+                                       uint32 system_code) {
   EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
                              error_code, media::MediaKeys::kMaxKeyError);
+
+  unsigned short short_system_code = 0;
+  if (system_code > std::numeric_limits<unsigned short>::max()) {
+    LOG(WARNING) << "system_code exceeds unsigned short limit.";
+    short_system_code = std::numeric_limits<unsigned short>::max();
+  } else {
+    short_system_code = static_cast<unsigned short>(system_code);
+  }
 
   client_->keyError(
       WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
-      system_code);
+      short_system_code);
 }
 
 void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,

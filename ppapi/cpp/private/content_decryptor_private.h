@@ -68,7 +68,7 @@ class ContentDecryptor_Private {
   void SessionClosed(uint32_t session_id);
   void SessionError(uint32_t session_id,
                     int32_t media_error,
-                    int32_t system_code);
+                    uint32_t system_code);
 
   // The plugin must not hold a reference to the encrypted buffer resource
   // provided to Decrypt() when it calls this method. The browser will reuse

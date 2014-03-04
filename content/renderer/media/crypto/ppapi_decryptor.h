@@ -95,7 +95,7 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
-                      int system_code);
+                      uint32 system_code);
 
   // Callback to notify that a fatal error happened in |plugin_cdm_delegate_|.
   // The error is terminal and |plugin_cdm_delegate_| should not be used after

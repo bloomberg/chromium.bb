@@ -45,7 +45,8 @@ class WebContentDecryptionModuleSessionImpl
                         const std::string& destination_url);
   void OnSessionReady();
   void OnSessionClosed();
-  void OnSessionError(media::MediaKeys::KeyError error_code, int system_code);
+  void OnSessionError(media::MediaKeys::KeyError error_code,
+                      uint32 system_code);
 
  private:
   scoped_refptr<CdmSessionAdapter> adapter_;

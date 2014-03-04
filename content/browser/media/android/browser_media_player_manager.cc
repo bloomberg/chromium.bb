@@ -413,7 +413,7 @@ void BrowserMediaPlayerManager::OnSessionError(
     int cdm_id,
     uint32 session_id,
     media::MediaKeys::KeyError error_code,
-    int system_code) {
+    uint32 system_code) {
   Send(new CdmMsg_SessionError(
       routing_id(), cdm_id, session_id, error_code, system_code));
 }

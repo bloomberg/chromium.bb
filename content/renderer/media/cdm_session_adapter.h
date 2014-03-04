@@ -80,7 +80,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void OnSessionClosed(uint32 session_id);
   void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
-                      int system_code);
+                      uint32 system_code);
 
   // Helper function of the callbacks.
   WebContentDecryptionModuleSessionImpl* GetSession(uint32 session_id);
