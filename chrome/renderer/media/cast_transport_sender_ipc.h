@@ -18,7 +18,8 @@ class CastTransportSenderIPC
     : public media::cast::transport::CastTransportSender {
  public:
   CastTransportSenderIPC(
-      const media::cast::transport::CastTransportConfig& config,
+      const net::IPEndPoint& local_end_point,
+      const net::IPEndPoint& remote_end_point,
       const media::cast::transport::CastTransportStatusCallback& status_cb);
 
   virtual ~CastTransportSenderIPC();
@@ -27,6 +28,10 @@ class CastTransportSenderIPC
   virtual void SetPacketReceiver(
       const media::cast::transport::PacketReceiverCallback& packet_callback)
       OVERRIDE;
+  virtual void InitializeAudio(
+      const media::cast::transport::CastTransportAudioConfig& config) OVERRIDE;
+  virtual void InitializeVideo(
+      const media::cast::transport::CastTransportVideoConfig& config) OVERRIDE;
   virtual void InsertCodedAudioFrame(
       const media::cast::transport::EncodedAudioFrame* audio_frame,
       const base::TimeTicks& recorded_time) OVERRIDE;

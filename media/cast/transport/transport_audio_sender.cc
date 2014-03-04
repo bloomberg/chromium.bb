@@ -14,17 +14,15 @@ namespace cast {
 namespace transport {
 
 TransportAudioSender::TransportAudioSender(
-    const CastTransportConfig& config,
+    const CastTransportAudioConfig& config,
     base::TickClock* clock,
-    const scoped_refptr<base::TaskRunner>& transport_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
-    : rtp_sender_(clock,
-                  config,
-                  true,
-                  transport_task_runner,
-                  paced_packet_sender),
+    : rtp_sender_(clock, transport_task_runner, paced_packet_sender),
       encryptor_() {
-  initialized_ = encryptor_.Initialize(config.aes_key, config.aes_iv_mask);
+  rtp_sender_.InitializeAudio(config);
+  initialized_ =
+      encryptor_.Initialize(config.base.aes_key, config.base.aes_iv_mask);
 }
 
 TransportAudioSender::~TransportAudioSender() {}
@@ -47,7 +45,7 @@ bool TransportAudioSender::EncryptAudioFrame(
     const EncodedAudioFrame& audio_frame,
     EncodedAudioFrame* encrypted_frame) {
   if (!encryptor_.Encrypt(
-           audio_frame.frame_id, audio_frame.data, &encrypted_frame->data))
+          audio_frame.frame_id, audio_frame.data, &encrypted_frame->data))
     return false;
 
   encrypted_frame->codec = audio_frame.codec;

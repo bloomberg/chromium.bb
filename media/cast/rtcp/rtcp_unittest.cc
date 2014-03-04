@@ -158,11 +158,12 @@ class RtcpTest : public ::testing::Test {
         receiver_to_sender_(cast_environment_, testing_clock_) {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    transport::CastTransportConfig transport_config;
+    net::IPEndPoint dummy_endpoint;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         NULL,
         testing_clock_,
-        transport_config,
+        dummy_endpoint,
+        dummy_endpoint,
         base::Bind(&UpdateCastTransportStatus),
         task_runner_,
         &sender_to_receiver_));
@@ -172,7 +173,9 @@ class RtcpTest : public ::testing::Test {
   virtual ~RtcpTest() {}
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-    EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
+    bool result = (status == transport::TRANSPORT_AUDIO_INITIALIZED ||
+                   status == transport::TRANSPORT_VIDEO_INITIALIZED);
+    EXPECT_TRUE(result);
   }
 
   void RunTasks(int during_ms) {

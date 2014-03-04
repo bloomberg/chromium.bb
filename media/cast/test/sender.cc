@@ -411,21 +411,27 @@ int main(int argc, char** argv) {
       media::cast::GetVideoSenderConfig();
 
   // Setting up transport config.
-  media::cast::transport::CastTransportConfig config;
-  config.receiver_endpoint = CreateUDPAddress(remote_ip_address, remote_port);
-  config.local_endpoint = CreateUDPAddress("0.0.0.0", 0);
-  config.audio_ssrc = audio_config.sender_ssrc;
-  config.video_ssrc = video_config.sender_ssrc;
-  config.audio_rtp_config = audio_config.rtp_config;
-  config.video_rtp_config = video_config.rtp_config;
+  media::cast::transport::CastTransportAudioConfig transport_audio_config;
+  media::cast::transport::CastTransportVideoConfig transport_video_config;
+  net::IPEndPoint remote_endpoint =
+      CreateUDPAddress(remote_ip_address, remote_port);
+  net::IPEndPoint local_endpoint = CreateUDPAddress("0.0.0.0", 0);
+  transport_audio_config.base.ssrc = audio_config.sender_ssrc;
+  transport_audio_config.base.rtp_config = audio_config.rtp_config;
+  transport_video_config.base.ssrc = video_config.sender_ssrc;
+  transport_video_config.base.rtp_config = video_config.rtp_config;
 
-  scoped_ptr<media::cast::transport::CastTransportSender> transport_sender(
-      media::cast::transport::CastTransportSender::CreateCastTransportSender(
-          NULL,
+  scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =
+      media::cast::transport::CastTransportSender::Create(
+          NULL,  // net log.
           clock.get(),
-          config,
+          local_endpoint,
+          remote_endpoint,
           base::Bind(&UpdateCastTransportStatus),
-          io_message_loop.message_loop_proxy()));
+          io_message_loop.message_loop_proxy());
+
+  transport_sender->InitializeAudio(transport_audio_config);
+  transport_sender->InitializeVideo(transport_video_config);
 
   // Enable main and send side threads only. Enable raw event and stats logging.
   // Running transport on the main thread.

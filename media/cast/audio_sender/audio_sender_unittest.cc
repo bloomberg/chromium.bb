@@ -77,16 +77,20 @@ class AudioSenderTest : public ::testing::Test {
     audio_config_.bitrate = kDefaultAudioEncoderBitrate;
     audio_config_.rtp_config.payload_type = 127;
 
-    transport::CastTransportConfig transport_config;
-    transport_config.audio_rtp_config.payload_type = 127;
-    transport_config.audio_channels = 2;
+    transport::CastTransportAudioConfig transport_config;
+    transport_config.base.rtp_config.payload_type = 127;
+    transport_config.channels = 2;
+    net::IPEndPoint dummy_endpoint;
+
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         NULL,
         testing_clock_,
-        transport_config,
+        dummy_endpoint,
+        dummy_endpoint,
         base::Bind(&UpdateCastTransportStatus),
         task_runner_,
         &transport_));
+    transport_sender_->InitializeAudio(transport_config);
     audio_sender_.reset(new AudioSender(
         cast_environment_, audio_config_, transport_sender_.get()));
     task_runner_->RunTasks();
@@ -95,7 +99,7 @@ class AudioSenderTest : public ::testing::Test {
   virtual ~AudioSenderTest() {}
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-    EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
+    EXPECT_EQ(status, transport::TRANSPORT_AUDIO_INITIALIZED);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.

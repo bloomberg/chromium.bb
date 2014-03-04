@@ -17,19 +17,17 @@ namespace cast {
 namespace transport {
 
 TransportVideoSender::TransportVideoSender(
-    const CastTransportConfig& config,
+    const CastTransportVideoConfig& config,
     base::TickClock* clock,
-    const scoped_refptr<base::TaskRunner>& transport_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
-          config.video_rtp_config.max_delay_ms)),
+          config.base.rtp_config.max_delay_ms)),
       encryptor_(),
-      rtp_sender_(clock,
-                  config,
-                  false,
-                  transport_task_runner,
-                  paced_packet_sender) {
-  initialized_ = encryptor_.Initialize(config.aes_key, config.aes_iv_mask);
+      rtp_sender_(clock, transport_task_runner, paced_packet_sender) {
+  rtp_sender_.InitializeVideo(config);
+  initialized_ =
+      encryptor_.Initialize(config.base.aes_key, config.base.aes_iv_mask);
 }
 
 TransportVideoSender::~TransportVideoSender() {}
@@ -57,7 +55,7 @@ bool TransportVideoSender::EncryptVideoFrame(
     const EncodedVideoFrame& video_frame,
     EncodedVideoFrame* encrypted_frame) {
   if (!encryptor_.Encrypt(
-           video_frame.frame_id, video_frame.data, &(encrypted_frame->data)))
+          video_frame.frame_id, video_frame.data, &(encrypted_frame->data)))
     return false;
 
   encrypted_frame->codec = video_frame.codec;

@@ -43,9 +43,11 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
       : transport_sender_(transport_sender),
         frequency_(0),
         sender_info_(),
-        rtp_timestamp_(0) {
-    transport_sender_->SubscribeAudioRtpStatsCallback(base::Bind(
-        &LocalRtpSenderStatistics::StoreStatistics, base::Unretained(this)));
+        rtp_timestamp_(0),
+        weak_factory_(this) {
+    transport_sender_->SubscribeAudioRtpStatsCallback(
+        base::Bind(&LocalRtpSenderStatistics::StoreStatistics,
+                   weak_factory_.GetWeakPtr()));
   }
 
   virtual void GetStatistics(const base::TimeTicks& now,
@@ -83,6 +85,8 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
   transport::RtcpSenderInfo sender_info_;
   base::TimeTicks time_sent_;
   uint32 rtp_timestamp_;
+
+  base::WeakPtrFactory<LocalRtpSenderStatistics> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpSenderStatistics);
 };

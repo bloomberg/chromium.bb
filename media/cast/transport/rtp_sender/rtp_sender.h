@@ -30,15 +30,22 @@ namespace transport {
 // This class handles splitting encoded audio and video frames into packets and
 // add an RTP header to each packet. The sent packets are stored until they are
 // acknowledged by the remote peer or timed out.
-class RtpSender : public base::SupportsWeakPtr<RtpSender>{
+class RtpSender {
  public:
-  RtpSender(base::TickClock* clock,
-            const CastTransportConfig& config,
-            bool is_audio,
-            const scoped_refptr<base::TaskRunner>& transport_task_runner,
-            PacedSender* const transport);
+  RtpSender(
+      base::TickClock* clock,
+      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
+      PacedSender* const transport);
 
   ~RtpSender();
+
+  // Initialize audio stack. Audio must be initialized prior to sending encoded
+  // audio frames.
+  void InitializeAudio(const CastTransportAudioConfig& config);
+
+  // Initialize video stack. Video must be initialized prior to sending encoded
+  // video frames.
+  void InitializeVideo(const CastTransportVideoConfig& config);
 
   // The video_frame objects ownership is handled by the main cast thread.
   void IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
@@ -60,12 +67,15 @@ class RtpSender : public base::SupportsWeakPtr<RtpSender>{
   void RtpStatistics();
   void UpdateSequenceNumber(Packet* packet);
 
+  base::TickClock* clock_;  // Not owned by this class.
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;
   PacedSender* const transport_;
   CastTransportRtpStatistics stats_callback_;
-  scoped_refptr<base::TaskRunner> transport_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
+
+  base::WeakPtrFactory<RtpSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpSender);
 };

@@ -43,29 +43,33 @@ struct RtpConfig {
   int payload_type;
 };
 
-struct CastTransportConfig {
-  CastTransportConfig();
-  ~CastTransportConfig();
+// TODO(mikhal): Consider combining this with the cast_sender config.
+struct CastTransportBaseConfig {
+  CastTransportBaseConfig();
+  ~CastTransportBaseConfig();
 
-  // Transport: Local receiver.
-  net::IPEndPoint receiver_endpoint;
-  net::IPEndPoint local_endpoint;
-
-  uint32 audio_ssrc;
-  uint32 video_ssrc;
-
-  VideoCodec video_codec;
-  AudioCodec audio_codec;
-
-  // RTP.
-  RtpConfig audio_rtp_config;
-  RtpConfig video_rtp_config;
-
-  int audio_frequency;
-  int audio_channels;
-
+  uint32 ssrc;
+  RtpConfig rtp_config;
   std::string aes_key;      // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesBlockSize.
+};
+
+struct CastTransportAudioConfig {
+  CastTransportAudioConfig();
+  ~CastTransportAudioConfig();
+
+  CastTransportBaseConfig base;
+  AudioCodec codec;
+  int frequency;
+  int channels;
+};
+
+struct CastTransportVideoConfig {
+  CastTransportVideoConfig();
+  ~CastTransportVideoConfig();
+
+  CastTransportBaseConfig base;
+  VideoCodec codec;
 };
 
 struct EncodedVideoFrame {

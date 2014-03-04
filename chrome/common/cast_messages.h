@@ -65,19 +65,23 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtpConfig)
   IPC_STRUCT_TRAITS_MEMBER(payload_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportConfig)
-  IPC_STRUCT_TRAITS_MEMBER(receiver_endpoint)
-  IPC_STRUCT_TRAITS_MEMBER(local_endpoint)
-  IPC_STRUCT_TRAITS_MEMBER(audio_ssrc)
-  IPC_STRUCT_TRAITS_MEMBER(video_ssrc)
-  IPC_STRUCT_TRAITS_MEMBER(video_codec)
-  IPC_STRUCT_TRAITS_MEMBER(audio_codec)
-  IPC_STRUCT_TRAITS_MEMBER(audio_frequency)
-  IPC_STRUCT_TRAITS_MEMBER(audio_channels)
-  IPC_STRUCT_TRAITS_MEMBER(audio_rtp_config)
-  IPC_STRUCT_TRAITS_MEMBER(video_rtp_config)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportBaseConfig)
+  IPC_STRUCT_TRAITS_MEMBER(ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_config)
   IPC_STRUCT_TRAITS_MEMBER(aes_key)
   IPC_STRUCT_TRAITS_MEMBER(aes_iv_mask)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportAudioConfig)
+  IPC_STRUCT_TRAITS_MEMBER(base)
+  IPC_STRUCT_TRAITS_MEMBER(codec)
+  IPC_STRUCT_TRAITS_MEMBER(frequency)
+  IPC_STRUCT_TRAITS_MEMBER(channels)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportVideoConfig)
+  IPC_STRUCT_TRAITS_MEMBER(base)
+  IPC_STRUCT_TRAITS_MEMBER(codec)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::SendRtcpFromRtpSenderData)
@@ -109,6 +113,16 @@ IPC_MESSAGE_CONTROL5(
 
 // Cast messages sent from the renderer to the browser.
 
+IPC_MESSAGE_CONTROL2(
+  CastHostMsg_InitializeAudio,
+  int32 /*channel_id*/,
+  media::cast::transport::CastTransportAudioConfig /*config*/)
+
+IPC_MESSAGE_CONTROL2(
+  CastHostMsg_InitializeVideo,
+  int32 /*channel_id*/,
+  media::cast::transport::CastTransportVideoConfig /*config*/)
+
 IPC_MESSAGE_CONTROL3(
     CastHostMsg_InsertCodedAudioFrame,
     int32 /* channel_id */,
@@ -135,10 +149,11 @@ IPC_MESSAGE_CONTROL3(
     bool /* is_audio */,
     media::cast::MissingFramesAndPacketsMap /* missing_packets */)
 
-IPC_MESSAGE_CONTROL2(
+IPC_MESSAGE_CONTROL3(
     CastHostMsg_New,
     int32 /* channel_id */,
-    media::cast::transport::CastTransportConfig /* config */);
+    net::IPEndPoint /*local_end_point*/,
+    net::IPEndPoint /*remote_end_point*/);
 
 IPC_MESSAGE_CONTROL1(
     CastHostMsg_Delete,

@@ -29,12 +29,17 @@ class CastTransportSenderImpl : public CastTransportSender {
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,
-      const CastTransportConfig& config,
+      const net::IPEndPoint& local_end_point,
+      const net::IPEndPoint& remote_end_point,
       const CastTransportStatusCallback& status_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacketSender* external_transport);
 
   virtual ~CastTransportSenderImpl();
+
+  virtual void InitializeAudio(const CastTransportAudioConfig& config) OVERRIDE;
+
+  virtual void InitializeVideo(const CastTransportVideoConfig& config) OVERRIDE;
 
   // CastTransportSender implementation.
   virtual void SetPacketReceiver(const PacketReceiverCallback& packet_receiver)
@@ -66,11 +71,14 @@ class CastTransportSenderImpl : public CastTransportSender {
       const CastTransportRtpStatistics& callback) OVERRIDE;
 
  private:
+  base::TickClock* clock_;  // Not owned by this class.
+  CastTransportStatusCallback status_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
   scoped_ptr<UdpTransport> transport_;
   PacedSender pacer_;
   RtcpBuilder rtcp_builder_;
-  TransportAudioSender audio_sender_;
-  TransportVideoSender video_sender_;
+  scoped_ptr<TransportAudioSender> audio_sender_;
+  scoped_ptr<TransportVideoSender> video_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTransportSenderImpl);
 };

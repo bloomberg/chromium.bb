@@ -38,6 +38,12 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
   // Forwarding functions.
+  void OnInitializeAudio(
+      int32 channel_id,
+      const media::cast::transport::CastTransportAudioConfig& config);
+  void OnInitializeVideo(
+      int32 channel_id,
+      const media::cast::transport::CastTransportVideoConfig& config);
   void OnInsertCodedAudioFrame(
       int32 channel_id,
       const media::cast::transport::EncodedAudioFrame& audio_frame,
@@ -58,13 +64,15 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       const media::cast::MissingFramesAndPacketsMap& missing_packets);
   void OnNew(
       int32 channel_id,
-      const media::cast::transport::CastTransportConfig& config);
+      const net::IPEndPoint& local_end_point,
+      const net::IPEndPoint& remote_end_point);
   void OnDelete(int32 channel_id);
 
   IDMap<media::cast::transport::CastTransportSender, IDMapOwnPointer> id_map_;
 
   // Clock used by Cast transport.
   base::DefaultTickClock clock_;
+
   DISALLOW_COPY_AND_ASSIGN(CastTransportHostFilter);
 };
 

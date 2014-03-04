@@ -76,7 +76,7 @@ class PacedSender : public PacedPacketSender,
   // Not owned by this class.
   base::TickClock* const clock_;
   PacketSender* transport_;  // Not owned by this class.
-  scoped_refptr<base::TaskRunner> transport_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
   size_t burst_size_;
   size_t packets_sent_in_burst_;
   base::TimeTicks time_last_process_;

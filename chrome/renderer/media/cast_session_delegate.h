@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
@@ -101,6 +102,7 @@ class CastSessionDelegate {
 
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  base::WeakPtrFactory<CastSessionDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSessionDelegate);
 };

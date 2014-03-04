@@ -19,7 +19,6 @@ class VideoFrame;
 
 namespace cast {
 namespace transport {
-
 class PacedSender;
 
 // Not thread safe. Only called from the main cast transport thread.
@@ -28,9 +27,9 @@ class PacedSender;
 class TransportVideoSender : public base::NonThreadSafe {
  public:
   TransportVideoSender(
-      const CastTransportConfig& config,
+      const CastTransportVideoConfig& config,
       base::TickClock* clock,
-      const scoped_refptr<base::TaskRunner>& transport_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacedSender* const paced_packet_sender);
 
   virtual ~TransportVideoSender();

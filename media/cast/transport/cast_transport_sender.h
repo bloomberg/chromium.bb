@@ -5,7 +5,6 @@
 // This is the main interface for the cast transport sender. The cast sender
 // handles the cast pipeline from encoded frames (both audio and video), to
 // encryption, packetization and transport.
-// All configurations are done at creation.
 
 // Construction of the Cast Sender and the Cast Transport Sender should be done
 // in the following order:
@@ -13,6 +12,8 @@
 // 2. Create CastSender (accepts CastTransportSender as an input).
 // 3. Call CastTransportSender::SetPacketReceiver to ensure that the packets
 //    received by the CastTransportSender will be sent to the CastSender.
+// 4. Initialize audio and/or video.
+// Steps 3 & 4 can be done interchangeably.
 
 // Destruction: The CastTransportSender is assumed to be valid as long as the
 // CastSender is alive. Therefore the CastSender should be destructed before the
@@ -39,6 +40,8 @@ namespace media {
 namespace cast {
 namespace transport {
 
+// Following the initialization of either audio or video an initialization
+// status will be sent via this callback.
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
@@ -49,14 +52,22 @@ typedef base::Callback<void(const RtcpSenderInfo& sender_info,
 // The application should only trigger this class from the transport thread.
 class CastTransportSender : public base::NonThreadSafe {
  public:
-  static CastTransportSender* CreateCastTransportSender(
+  static scoped_ptr<CastTransportSender> Create(
       net::NetLog* net_log,
       base::TickClock* clock,
-      const CastTransportConfig& config,
+      const net::IPEndPoint& local_end_point,
+      const net::IPEndPoint& remote_end_point,
       const CastTransportStatusCallback& status_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~CastTransportSender() {}
+
+  // Audio/Video initialization.
+  // Encoded frames cannot be transmitted until the relevant initialize method
+  // is called.
+  virtual void InitializeAudio(const CastTransportAudioConfig& config) = 0;
+
+  virtual void InitializeVideo(const CastTransportVideoConfig& config) = 0;
 
   // Sets the Cast packet receiver. Should be called after creation on the
   // Cast sender. Packets won't be received until this function is called.
@@ -85,9 +96,9 @@ class CastTransportSender : public base::NonThreadSafe {
       bool is_audio,
       const MissingFramesAndPacketsMap& missing_packets) = 0;
 
-  // Audio/Video RTP statistics.
   // RTP statistics will be returned on a regular interval on the designated
   // callback.
+  // Must be called after initialization of the corresponding A/V pipeline.
   virtual void SubscribeAudioRtpStatsCallback(
       const CastTransportRtpStatistics& callback) = 0;
 

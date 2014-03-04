@@ -13,13 +13,14 @@
 #include "media/cast/transport/cast_transport_sender.h"
 
 CastTransportSenderIPC::CastTransportSenderIPC(
-    const media::cast::transport::CastTransportConfig& config,
+    const net::IPEndPoint& local_end_point,
+    const net::IPEndPoint& remote_end_point,
     const media::cast::transport::CastTransportStatusCallback& status_cb)
     : status_callback_(status_cb) {
   if (CastIPCDispatcher::Get()) {
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);
   }
-  Send(new CastHostMsg_New(channel_id_, config));
+  Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point));
 }
 
 CastTransportSenderIPC::~CastTransportSenderIPC() {
@@ -32,6 +33,16 @@ CastTransportSenderIPC::~CastTransportSenderIPC() {
 void CastTransportSenderIPC::SetPacketReceiver(
     const media::cast::transport::PacketReceiverCallback& packet_callback) {
   packet_callback_ = packet_callback;
+}
+
+void CastTransportSenderIPC::InitializeAudio(
+    const media::cast::transport::CastTransportAudioConfig& config) {
+  Send(new CastHostMsg_InitializeAudio(channel_id_, config));
+}
+
+void CastTransportSenderIPC::InitializeVideo(
+    const media::cast::transport::CastTransportVideoConfig& config) {
+  Send(new CastHostMsg_InitializeVideo(channel_id_, config));
 }
 
 void CastTransportSenderIPC::InsertCodedAudioFrame(

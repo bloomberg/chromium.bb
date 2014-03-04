@@ -90,14 +90,17 @@ class VideoSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             GetLoggingConfigWithRawEventsAndStatsEnabled());
-    transport::CastTransportConfig transport_config;
+    transport::CastTransportVideoConfig transport_config;
+    net::IPEndPoint dummy_endpoint;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         NULL,
         testing_clock_,
-        transport_config,
+        dummy_endpoint,
+        dummy_endpoint,
         base::Bind(&UpdateCastTransportStatus),
         task_runner_,
         &transport_));
+    transport_sender_->InitializeVideo(transport_config);
   }
 
   virtual ~VideoSenderTest() {}
@@ -108,7 +111,7 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-    EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
+    EXPECT_EQ(status, transport::TRANSPORT_VIDEO_INITIALIZED);
   }
 
   void InitEncoder(bool external) {

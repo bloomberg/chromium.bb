@@ -18,17 +18,19 @@ RtpConfig::RtpConfig()
       max_delay_ms(kDefaultRtpMaxDelayMs),
       payload_type(0) {}
 
-CastTransportConfig::CastTransportConfig()
-    : audio_ssrc(0),
-      video_ssrc(0),
-      video_codec(kVp8),
-      audio_codec(kOpus),
-      audio_frequency(0),
-      audio_channels(0),
-      aes_key(""),
-      aes_iv_mask("") {}
+CastTransportBaseConfig::CastTransportBaseConfig()
+    : ssrc(0) {}
 
-CastTransportConfig::~CastTransportConfig() {}
+CastTransportBaseConfig::~CastTransportBaseConfig() {}
+
+CastTransportAudioConfig::CastTransportAudioConfig()
+    : codec(kOpus), frequency(0), channels(0) {}
+
+CastTransportAudioConfig::~CastTransportAudioConfig() {}
+
+CastTransportVideoConfig::CastTransportVideoConfig() : codec(kVp8) {}
+
+CastTransportVideoConfig::~CastTransportVideoConfig() {}
 
 EncodedVideoFrame::EncodedVideoFrame()
     : codec(kVp8),
@@ -70,8 +72,7 @@ RtcpDlrrReportBlock::RtcpDlrrReportBlock()
 RtcpDlrrReportBlock::~RtcpDlrrReportBlock() {}
 
 SendRtcpFromRtpSenderData::SendRtcpFromRtpSenderData()
-    : packet_type_flags(0),
-      sending_ssrc(0) {}
+    : packet_type_flags(0), sending_ssrc(0) {}
 SendRtcpFromRtpSenderData::~SendRtcpFromRtpSenderData() {}
 
 }  // namespace transport

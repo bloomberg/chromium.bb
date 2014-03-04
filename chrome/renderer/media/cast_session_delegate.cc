@@ -45,7 +45,8 @@ const int kMaxAudioEventEntries = kMaxSerializedBytes / 75;
 CastSessionDelegate::CastSessionDelegate()
     : transport_configured_(false),
       io_message_loop_proxy_(
-          content::RenderThread::Get()->GetIOMessageLoopProxy()) {
+          content::RenderThread::Get()->GetIOMessageLoopProxy()),
+      weak_factory_(this) {
   DCHECK(io_message_loop_proxy_);
 }
 
@@ -101,9 +102,8 @@ void CastSessionDelegate::StartVideo(
   StartSendingInternal();
 }
 
-void CastSessionDelegate::StartUDP(
-    const net::IPEndPoint& local_endpoint,
-    const net::IPEndPoint& remote_endpoint) {
+void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
+                                   const net::IPEndPoint& remote_endpoint) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   transport_configured_ = true;
   local_endpoint_ = local_endpoint;
@@ -154,7 +154,6 @@ void CastSessionDelegate::GetEventLogsAndReset(
   media::cast::EncodingEventSubscriber* subscriber = is_audio ?
       audio_event_subscriber_.get() : video_event_subscriber_.get();
   if (!subscriber) {
-    VLOG(2) << "Logging is currently disabled.";
     callback.Run(make_scoped_ptr(new std::string).Pass());
     return;
   }
@@ -201,28 +200,31 @@ void CastSessionDelegate::StartSendingInternal() {
 
   Initialize();
 
-  media::cast::transport::CastTransportConfig config;
-
-  // TODO(hubbe): set config.aes_key and config.aes_iv_mask.
-  config.local_endpoint = local_endpoint_;
-  config.receiver_endpoint = remote_endpoint_;
-  if (audio_config_) {
-    config.audio_ssrc = audio_config_->sender_ssrc;
-    config.audio_codec = audio_config_->codec;
-    config.audio_rtp_config = audio_config_->rtp_config;
-    config.audio_frequency = audio_config_->frequency;
-    config.audio_channels = audio_config_->channels;
-  }
-  if (video_config_) {
-    config.video_ssrc = video_config_->sender_ssrc;
-    config.video_codec = video_config_->codec;
-    config.video_rtp_config = video_config_->rtp_config;
-  }
-
+  // Rationale for using unretained: The callback cannot be called after the
+  // destruction of CastTransportSenderIPC, and they both share the same thread.
   cast_transport_.reset(new CastTransportSenderIPC(
-      config,
+      local_endpoint_,
+      remote_endpoint_,
       base::Bind(&CastSessionDelegate::StatusNotificationCB,
                  base::Unretained(this))));
+
+  // TODO(hubbe): set config.aes_key and config.aes_iv_mask.
+  if (audio_config_) {
+    media::cast::transport::CastTransportAudioConfig config;
+    config.base.ssrc = audio_config_->sender_ssrc;
+    config.codec = audio_config_->codec;
+    config.base.rtp_config = audio_config_->rtp_config;
+    config.frequency = audio_config_->frequency;
+    config.channels = audio_config_->channels;
+    cast_transport_->InitializeAudio(config);
+  }
+  if (video_config_) {
+    media::cast::transport::CastTransportVideoConfig config;
+    config.base.ssrc = video_config_->sender_ssrc;
+    config.codec = video_config_->codec;
+    config.base.rtp_config = video_config_->rtp_config;
+    cast_transport_->InitializeVideo(config);
+  }
 
   cast_sender_.reset(CastSender::CreateCastSender(
       cast_environment_,
@@ -230,7 +232,7 @@ void CastSessionDelegate::StartSendingInternal() {
       video_config_.get(),
       NULL,  // GPU.
       base::Bind(&CastSessionDelegate::InitializationResult,
-                 base::Unretained(this)),
+                 weak_factory_.GetWeakPtr()),
       cast_transport_.get()));
   cast_transport_->SetPacketReceiver(cast_sender_->packet_receiver());
 }
