@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libaddressinput/address_validator.h>
+#include "address_validator_test.h"
 
 #include <libaddressinput/address_data.h>
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_problem.h>
+#include <libaddressinput/address_validator.h>
 #include <libaddressinput/downloader.h>
 #include <libaddressinput/load_rules_delegate.h>
 #include <libaddressinput/storage.h>
@@ -35,12 +36,6 @@
 
 namespace i18n {
 namespace addressinput {
-
-scoped_ptr<AddressValidator> BuildAddressValidatorForTesting(
-    const std::string& validation_data_url,
-    scoped_ptr<Downloader> downloader,
-    scoped_ptr<Storage> storage,
-    LoadRulesDelegate* load_rules_delegate);
 
 class AddressValidatorTest : public testing::TestWithParam<std::string>,
                              public LoadRulesDelegate {
