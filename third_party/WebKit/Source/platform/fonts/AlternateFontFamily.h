@@ -106,18 +106,26 @@ inline const AtomicString& alternateFamilyName(const AtomicString& familyName)
 
 inline const AtomicString getFallbackFontFamily(const FontDescription& description)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("Monospace", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("sans-serif", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("serif", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("monospace", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, cursiveStr, ("cursive", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, fantasyStr, ("fantasy", AtomicString::ConstructFromLiteral));
 
     switch (description.genericFamily()) {
+    case FontDescription::SansSerifFamily:
+        return sansStr;
     case FontDescription::SerifFamily:
         return serifStr;
     case FontDescription::MonospaceFamily:
         return monospaceStr;
-    case FontDescription::SansSerifFamily:
+    case FontDescription::CursiveFamily:
+        return cursiveStr;
+    case FontDescription::FantasyFamily:
+        return fantasyStr;
     default:
-        return sansStr;
+        // Let the caller use the system default font.
+        return emptyAtom;
     }
 }
 

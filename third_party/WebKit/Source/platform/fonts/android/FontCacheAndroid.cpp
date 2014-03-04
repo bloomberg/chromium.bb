@@ -64,7 +64,8 @@ static AtomicString getFamilyNameForCharacter(UChar32 c, UScriptCode script)
 
     SkString skiaFamilyName;
     if (!SkGetFallbackFamilyNameForChar(c, locale, &skiaFamilyName) || skiaFamilyName.isEmpty())
-        return AtomicString();
+        return emptyAtom;
+
     return skiaFamilyName.c_str();
 }
 
@@ -72,7 +73,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
 {
     AtomicString familyName = getFamilyNameForCharacter(c, fontDescription.script());
     if (familyName.isEmpty())
-        return nullptr;
+        return getLastResortFallbackFont(fontDescription, DoNotRetain);
     return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, familyName), DoNotRetain);
 }
 

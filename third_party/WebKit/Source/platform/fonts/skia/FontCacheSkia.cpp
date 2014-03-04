@@ -86,7 +86,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     return fontDataFromFontPlatformData(&platformData, DoNotRetain);
 }
 
-#endif // !OS(WINDOWNS) && !OS(ANDROID)
+#endif // !OS(WIN) && !OS(ANDROID)
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
@@ -107,29 +107,10 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)
 {
-    name = "";
-
     // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the name into
     // the fallback name (like "monospace") that fontconfig understands.
     if (!family.length() || family.startsWith("-webkit-")) {
-        static const struct {
-            FontDescription::GenericFamilyType mType;
-            const char* mName;
-        } fontDescriptions[] = {
-            { FontDescription::SerifFamily, "serif" },
-            { FontDescription::SansSerifFamily, "sans-serif" },
-            { FontDescription::MonospaceFamily, "monospace" },
-            { FontDescription::CursiveFamily, "cursive" },
-            { FontDescription::FantasyFamily, "fantasy" }
-        };
-
-        FontDescription::GenericFamilyType type = fontDescription.genericFamily();
-        for (unsigned i = 0; i < SK_ARRAY_COUNT(fontDescriptions); i++) {
-            if (type == fontDescriptions[i].mType) {
-                name = fontDescriptions[i].mName;
-                break;
-            }
-        }
+        name = getFallbackFontFamily(fontDescription).string().utf8();
     } else {
         // convert the name to utf8
         name = family.utf8();
@@ -167,6 +148,6 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontDescription.useSubpixelPositioning());
     return result;
 }
-#endif // !OS(WINDOWNS)
+#endif // !OS(WIN)
 
 } // namespace WebCore
