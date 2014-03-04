@@ -68,10 +68,6 @@ const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
 
 #if defined(OS_CHROMEOS)
-// Disable the notification when a low-power USB charger is connected.
-const char kAshDisableUsbChargerNotification[] =
-    "ash-disable-usb-charger-notification";
-
 // TODO(jamescook): Remove this unused flag. It exists only to allow the
 // "Enable audio device menu" about:flags item to have the tri-state
 // default/enabled/disabled UI.
@@ -207,13 +203,6 @@ bool ShowAudioDeviceMenu() {
   return false;
 #endif
 }
-
-#if defined(OS_CHROMEOS)
-bool UseUsbChargerNotification() {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshDisableUsbChargerNotification);
-}
-#endif
 
 }  // namespace switches
 }  // namespace ash

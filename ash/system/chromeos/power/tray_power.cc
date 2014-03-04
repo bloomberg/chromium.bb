@@ -242,8 +242,7 @@ void TrayPower::OnPowerStatusChanged() {
           ash::switches::kAshHideNotificationsForFactory))
     return;
 
-  if (ash::switches::UseUsbChargerNotification())
-    MaybeShowUsbChargerNotification();
+  MaybeShowUsbChargerNotification();
 
   if (battery_alert)
     ShowNotificationView();
