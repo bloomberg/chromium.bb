@@ -332,9 +332,11 @@ bool Canvas2DLayerBridge::recoverSurface()
         return false;
 
     blink::WebGraphicsContext3D* sharedContext = 0;
-    m_layer->clearTexture();
+    // We must clear the mailboxes before calling m_layer->clearTexture() to prevent
+    // re-entry via mailboxReleased from operating on defunct GrContext objects.
     m_mailboxes.clear();
     m_releasedMailboxInfoIndex = InvalidMailboxIndex;
+    m_layer->clearTexture();
     m_contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (m_contextProvider)
         sharedContext = m_contextProvider->context3d();
