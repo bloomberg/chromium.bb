@@ -328,6 +328,17 @@ class ArchivingStageMixin(object):
     build_root = self._build_root
     config = config or builder_run.config
 
+    commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
+    get_changes_from_pool = (sync_instance and
+                             isinstance(sync_instance, commit_queue_stages) and
+                             sync_instance.pool)
+
+    get_statuses_from_slaves = (config['master'] and
+                                completion_instance and
+                                isinstance(completion_instance,
+                                           MasterSlaveSyncCompletionStage))
+
+    config = config or builder_run.config
 
     start_time = results_lib.Results.start_time
     current_time = datetime.datetime.now()
@@ -395,9 +406,7 @@ class ArchivingStageMixin(object):
           'log': builder_run.ConstructDashboardURL(stage=entry.name),
       })
 
-    commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
-    if (sync_instance and isinstance(sync_instance, commit_queue_stages) and
-        sync_instance.pool):
+    if get_changes_from_pool:
       changes = []
       pool = sync_instance.pool
       for change in pool.changes:
@@ -415,17 +424,15 @@ class ArchivingStageMixin(object):
 
     # If we were a CQ master, then include a summary of the status of slave cq
     # builders in metadata
-    if config['master']:
-      if (completion_instance and
-          isinstance(completion_instance, MasterSlaveSyncCompletionStage)):
-        statuses = completion_instance.GetSlaveStatuses()
-        if not statuses:
-          logging.warning('completion_instance did not have any statuses '
-                          'to report. Will not add slave status to metadata.')
+    if get_statuses_from_slaves:
+      statuses = completion_instance.GetSlaveStatuses()
+      if not statuses:
+        logging.warning('completion_instance did not have any statuses '
+                        'to report. Will not add slave status to metadata.')
 
-        metadata['slave_targets'] = {}
-        for builder, status in statuses.iteritems():
-          metadata['slave_targets'][builder] = status.AsFlatDict()
+      metadata['slave_targets'] = {}
+      for builder, status in statuses.iteritems():
+        metadata['slave_targets'][builder] = status.AsFlatDict()
 
     return metadata
 
