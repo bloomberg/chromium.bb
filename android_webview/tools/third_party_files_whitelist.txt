@@ -70,8 +70,6 @@ content/browser/renderer_host/render_widget_host_view_mac.mm
 content/browser/renderer_host/web_input_event_aurax11.cc
 # Copyright Google Inc, no license. Not used on Android.
 google_update/google_update_idl.idl
-# Copyright Eli Bendersky; BSD license. Tool only.
-mojo/public/bindings/pylib/parse/mojo_lexer.py
 # Native client not used in Android. Contains the word "Copyright"
 native_client_sdk/doc_generated/rest-devsite-examples.html
 # String '(c)' used in certificates organization names
