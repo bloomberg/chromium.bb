@@ -32,6 +32,13 @@ function FileTransferController(doc,
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
 
+  this.directoryModel_.getFileList().addEventListener(
+      'change', function(event) {
+    if (this.directoryModel_.getFileListSelection().
+        getIndexSelected(event.index)) {
+      this.onSelectionChanged_();
+    }
+  }.bind(this));
   this.directoryModel_.getFileListSelection().addEventListener('change',
       this.onSelectionChanged_.bind(this));
 
