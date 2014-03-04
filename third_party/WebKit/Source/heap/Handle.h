@@ -193,7 +193,6 @@ public:
             current->trace(visitor);
     }
 
-private:
     virtual ~PersistentAnchor()
     {
         // FIXME: oilpan: Ideally we should have no left-over persistents at this point. However currently there is a
@@ -201,6 +200,8 @@ private:
         // persistent or e.g. be RefCountedGarbageCollected we cannot guarantee there are no remaining Persistents at
         // this point.
     }
+
+private:
     PersistentAnchor() : PersistentNode(TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
     {
         m_next = this;

@@ -455,7 +455,7 @@ public:
 
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap.
-    HeapContainsCache* heapContainsCache() { return m_heapContainsCache; }
+    HeapContainsCache* heapContainsCache() { return m_heapContainsCache.get(); }
     bool contains(Address);
     bool contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     bool contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
@@ -466,7 +466,7 @@ public:
     BaseHeapPage* heapPageFromAddress(Address);
 
     // List of persistent roots allocated on the given thread.
-    PersistentNode* roots() const { return m_persistents; }
+    PersistentNode* roots() const { return m_persistents.get(); }
 
     // List of global persistent roots not owned by any particular thread.
     // globalRootsMutex must be acquired before any modifications.
@@ -520,7 +520,7 @@ private:
     void trace(Visitor*);
 
     ThreadIdentifier m_thread;
-    PersistentNode* m_persistents;
+    OwnPtr<PersistentNode> m_persistents;
     StackState m_stackState;
     intptr_t* m_startOfStack;
     intptr_t* m_endOfStack;
@@ -534,7 +534,7 @@ private:
     size_t m_noAllocationCount;
     bool m_inGC;
     BaseHeap* m_heaps[NumberOfHeaps];
-    HeapContainsCache* m_heapContainsCache;
+    OwnPtr<HeapContainsCache> m_heapContainsCache;
     HeapStats m_stats;
     HeapStats m_statsAfterLastGC;
 

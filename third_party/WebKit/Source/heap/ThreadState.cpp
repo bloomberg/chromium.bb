@@ -229,6 +229,7 @@ private:
 
 ThreadState::ThreadState()
     : m_thread(currentThread())
+    , m_persistents(adoptPtr(new PersistentAnchor()))
     , m_startOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
     , m_endOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
     , m_safePointScopeMarker(0)
@@ -239,13 +240,12 @@ ThreadState::ThreadState()
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
     , m_inGC(false)
-    , m_heapContainsCache(new HeapContainsCache())
+    , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
     , m_isCleaningUp(false)
 {
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
-    m_persistents = new PersistentAnchor();
     m_stats.clear();
     m_statsAfterLastGC.clear();
     // First allocate the general heap, second iterate through to
@@ -260,8 +260,6 @@ ThreadState::~ThreadState()
     checkThread();
     for (int i = GeneralHeap; i < NumberOfHeaps; i++)
         delete m_heaps[i];
-    delete m_persistents;
-    m_persistents = 0;
     deleteAllValues(m_interruptors);
     **s_threadSpecific = 0;
 }
