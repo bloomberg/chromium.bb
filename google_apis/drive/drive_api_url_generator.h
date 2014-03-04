@@ -91,6 +91,9 @@ class DriveApiUrlGenerator {
   // Generates a URL for downloading a file.
   GURL GenerateDownloadFileUrl(const std::string& resource_id) const;
 
+  // Generates a URL for adding permissions.
+  GURL GetPermissionsInsertUrl(const std::string& resource_id) const;
+
  private:
   const GURL base_url_;
   const GURL base_download_url_;

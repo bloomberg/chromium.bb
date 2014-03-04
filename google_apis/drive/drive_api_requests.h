@@ -844,6 +844,54 @@ class DownloadFileRequest : public DownloadFileRequestBase {
   DISALLOW_COPY_AND_ASSIGN(DownloadFileRequest);
 };
 
+//========================== PermissionsInsertRequest ==========================
+
+// Enumeration type for specifying type of permissions.
+enum PermissionType {
+  PERMISSION_TYPE_ANYONE,
+  PERMISSION_TYPE_DOMAIN,
+  PERMISSION_TYPE_GROUP,
+  PERMISSION_TYPE_USER,
+};
+
+// Enumeration type for specifying the role of permissions.
+enum PermissionRole {
+  PERMISSION_ROLE_OWNER,
+  PERMISSION_ROLE_READER,
+  PERMISSION_ROLE_WRITER,
+  PERMISSION_ROLE_COMMENTER,
+};
+
+// This class performs the request for adding permission on a specified file.
+class PermissionsInsertRequest : public EntryActionRequest {
+ public:
+  // See https://developers.google.com/drive/v2/reference/permissions/insert.
+  PermissionsInsertRequest(RequestSender* sender,
+                           const DriveApiUrlGenerator& url_generator,
+                           const EntryActionCallback& callback);
+  virtual ~PermissionsInsertRequest();
+
+  void set_id(const std::string& id) { id_ = id; }
+  void set_type(PermissionType type) { type_ = type; }
+  void set_role(PermissionRole role) { role_ = role; }
+  void set_value(const std::string& value) { value_ = value; }
+
+  // UrlFetchRequestBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  std::string id_;
+  PermissionType type_;
+  PermissionRole role_;
+  std::string value_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionsInsertRequest);
+};
+
 }  // namespace drive
 }  // namespace google_apis
 

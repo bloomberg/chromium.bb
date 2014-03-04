@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -35,6 +36,13 @@ const char kTestChildrenResponse[] =
     "\"id\": \"resource_id\",\n"
     "\"selfLink\": \"self_link\",\n"
     "\"childLink\": \"child_link\",\n"
+    "}\n";
+
+const char kTestPermissionResponse[] =
+    "{\n"
+    "\"kind\": \"drive#permission\",\n"
+    "\"id\": \"resource_id\",\n"
+    "\"selfLink\": \"self_link\",\n"
     "}\n";
 
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
@@ -1769,6 +1777,79 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest_GetContentCallback) {
 
   const std::string expected_contents = kTestId + kTestId + kTestId;
   EXPECT_EQ(expected_contents, contents);
+}
+
+TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
+  expected_content_type_ = "application/json";
+  expected_content_ = kTestPermissionResponse;
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+
+  // Add comment permission to the user "user@example.com".
+  {
+    base::RunLoop run_loop;
+    drive::PermissionsInsertRequest* request =
+        new drive::PermissionsInsertRequest(
+            request_sender_.get(),
+            *url_generator_,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error)));
+    request->set_id("resource_id");
+    request->set_role(drive::PERMISSION_ROLE_COMMENTER);
+    request->set_type(drive::PERMISSION_TYPE_USER);
+    request->set_value("user@example.com");
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id/permissions",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  scoped_ptr<base::Value> expected(base::JSONReader::Read(
+      "{\"additionalRoles\":[\"commenter\"], \"role\":\"reader\", "
+      "\"type\":\"user\",\"value\":\"user@example.com\"}"));
+  ASSERT_TRUE(expected);
+
+  scoped_ptr<base::Value> result(base::JSONReader::Read(http_request_.content));
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_TRUE(base::Value::Equals(expected.get(), result.get()));
+
+  // Add "can edit" permission to users in "example.com".
+  error = GDATA_OTHER_ERROR;
+  {
+    base::RunLoop run_loop;
+    drive::PermissionsInsertRequest* request =
+        new drive::PermissionsInsertRequest(
+            request_sender_.get(),
+            *url_generator_,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error)));
+    request->set_id("resource_id2");
+    request->set_role(drive::PERMISSION_ROLE_WRITER);
+    request->set_type(drive::PERMISSION_TYPE_DOMAIN);
+    request->set_value("example.com");
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id2/permissions",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  expected.reset(base::JSONReader::Read(
+      "{\"role\":\"writer\", \"type\":\"domain\",\"value\":\"example.com\"}"));
+  ASSERT_TRUE(expected);
+
+  result.reset(base::JSONReader::Read(http_request_.content));
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_TRUE(base::Value::Equals(expected.get(), result.get()));
 }
 
 }  // namespace google_apis

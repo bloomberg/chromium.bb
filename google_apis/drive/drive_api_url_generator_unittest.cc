@@ -434,4 +434,11 @@ TEST_F(DriveApiUrlGeneratorTest, GenerateDownloadFileUrl) {
       test_url_generator_.GenerateDownloadFileUrl("resourceId").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GeneratePermissionsInsertUrl) {
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg/permissions",
+            url_generator_.GetPermissionsInsertUrl("0ADK06pfg").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/file%3Aabc/permissions",
+            test_url_generator_.GetPermissionsInsertUrl("file:abc").spec());
+}
+
 }  // namespace google_apis

@@ -834,5 +834,72 @@ DownloadFileRequest::DownloadFileRequest(
 DownloadFileRequest::~DownloadFileRequest() {
 }
 
+//========================== PermissionsInsertRequest ==========================
+
+PermissionsInsertRequest::PermissionsInsertRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const EntryActionCallback& callback)
+    : EntryActionRequest(sender, callback),
+      url_generator_(url_generator),
+      type_(PERMISSION_TYPE_USER),
+      role_(PERMISSION_ROLE_READER) {
+}
+
+PermissionsInsertRequest::~PermissionsInsertRequest() {
+}
+
+GURL PermissionsInsertRequest::GetURL() const {
+  return url_generator_.GetPermissionsInsertUrl(id_);
+}
+
+net::URLFetcher::RequestType
+PermissionsInsertRequest::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
+                                              std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  switch (type_) {
+    case PERMISSION_TYPE_ANYONE:
+      root.SetString("type", "anyone");
+      break;
+    case PERMISSION_TYPE_DOMAIN:
+      root.SetString("type", "domain");
+      break;
+    case PERMISSION_TYPE_GROUP:
+      root.SetString("type", "group");
+      break;
+    case PERMISSION_TYPE_USER:
+      root.SetString("type", "user");
+      break;
+  }
+  switch (role_) {
+    case PERMISSION_ROLE_OWNER:
+      root.SetString("role", "owner");
+      break;
+    case PERMISSION_ROLE_READER:
+      root.SetString("role", "reader");
+      break;
+    case PERMISSION_ROLE_WRITER:
+      root.SetString("role", "writer");
+      break;
+    case PERMISSION_ROLE_COMMENTER:
+      root.SetString("role", "reader");
+      {
+        base::ListValue* list = new base::ListValue;
+        list->AppendString("commenter");
+        root.Set("additionalRoles", list);
+      }
+      break;
+  }
+  root.SetString("value", value_);
+  base::JSONWriter::Write(&root, upload_content);
+  return true;
+}
+
 }  // namespace drive
 }  // namespace google_apis

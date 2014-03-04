@@ -30,6 +30,7 @@ const char kDriveV2FileTrashUrlFormat[] = "/drive/v2/files/%s/trash";
 const char kDriveV2InitiateUploadNewFileUrl[] = "/upload/drive/v2/files";
 const char kDriveV2InitiateUploadExistingFileUrlPrefix[] =
     "/upload/drive/v2/files/";
+const char kDriveV2PermissionsUrlFormat[] = "/drive/v2/files/%s/permissions";
 
 // apps.delete and file.authorize API is exposed through a special endpoint
 // v2internal that is accessible only by the official API key for Chrome.
@@ -214,6 +215,13 @@ GURL DriveApiUrlGenerator::GetInitiateUploadExistingFileUrl(
 GURL DriveApiUrlGenerator::GenerateDownloadFileUrl(
     const std::string& resource_id) const {
   return base_download_url_.Resolve(net::EscapePath(resource_id));
+}
+
+GURL DriveApiUrlGenerator::GetPermissionsInsertUrl(
+    const std::string& resource_id) const {
+  return base_url_.Resolve(
+      base::StringPrintf(kDriveV2PermissionsUrlFormat,
+                         net::EscapePath(resource_id).c_str()));
 }
 
 }  // namespace google_apis
