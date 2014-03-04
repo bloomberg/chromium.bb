@@ -112,13 +112,40 @@ void BrowserBlacklistBeaconSetup() {
   if (!blacklist_registry_key.Valid())
     return;
 
+  // Record the results of the last blacklist setup.
+  DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
+  blacklist_registry_key.ReadValueDW(blacklist::kBeaconState, &blacklist_state);
+
+  if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
+    RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
+  } else {
+    switch (blacklist_state) {
+      case blacklist::BLACKLIST_SETUP_RUNNING:
+        RecordBlacklistSetupEvent(BLACKLIST_SETUP_FAILED);
+        break;
+      case blacklist::BLACKLIST_THUNK_SETUP:
+        RecordBlacklistSetupEvent(BLACKLIST_THUNK_SETUP_FAILED);
+        break;
+      case blacklist::BLACKLIST_INTERCEPTING:
+        RecordBlacklistSetupEvent(BLACKLIST_INTERCEPTION_FAILED);
+        break;
+    }
+
+    // Since some part of the blacklist failed, mark it as disabled
+    // for this version.
+    if (blacklist_state != blacklist::BLACKLIST_DISABLED) {
+      blacklist_registry_key.WriteValue(blacklist::kBeaconState,
+                                        blacklist::BLACKLIST_DISABLED);
+    }
+  }
+
   // Find the last recorded blacklist version.
   base::string16 blacklist_version;
   blacklist_registry_key.ReadValue(blacklist::kBeaconVersion,
                                    &blacklist_version);
 
   if (blacklist_version != TEXT(CHROME_VERSION_STRING)) {
-    // The blacklist hasn't run for this version yet, so enable it.
+    // The blacklist hasn't been enabled for this version yet, so enable it.
     LONG set_version = blacklist_registry_key.WriteValue(
         blacklist::kBeaconVersion,
         TEXT(CHROME_VERSION_STRING));
@@ -131,39 +158,5 @@ void BrowserBlacklistBeaconSetup() {
     // succeed, since otherwise the blacklist wasn't properly setup.
     if (set_version == ERROR_SUCCESS && set_state == ERROR_SUCCESS)
       RecordBlacklistSetupEvent(BLACKLIST_SETUP_ENABLED);
-
-    // Don't try to record if the blacklist setup succeeded or failed in the
-    // run since it could have been from either this version or the previous
-    // version (since crashes occur before we set the version in the registry).
-  } else {
-    // The blacklist version didn't change, so record the results of the
-    // latest setup.
-    DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
-    blacklist_registry_key.ReadValueDW(blacklist::kBeaconState,
-                                       &blacklist_state);
-
-    // Record the results of the latest blacklist setup.
-    if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
-      RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
-    } else {
-      switch (blacklist_state) {
-        case blacklist::BLACKLIST_SETUP_RUNNING:
-          RecordBlacklistSetupEvent(BLACKLIST_SETUP_FAILED);
-          break;
-        case blacklist::BLACKLIST_THUNK_SETUP:
-          RecordBlacklistSetupEvent(BLACKLIST_THUNK_SETUP_FAILED);
-          break;
-        case blacklist::BLACKLIST_INTERCEPTING:
-          RecordBlacklistSetupEvent(BLACKLIST_INTERCEPTION_FAILED);
-          break;
-      }
-
-      // Since some part of the blacklist failed, ensure it is now disabled
-      // for this version.
-      if (blacklist_state != blacklist::BLACKLIST_DISABLED) {
-        blacklist_registry_key.WriteValue(blacklist::kBeaconState,
-                                          blacklist::BLACKLIST_DISABLED);
-      }
-    }
   }
 }

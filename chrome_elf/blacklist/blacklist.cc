@@ -15,7 +15,6 @@
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/service_resolver.h"
-#include "version.h"  // NOLINT
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -201,23 +200,6 @@ bool LeaveSetupBeacon() {
 
   if (blacklist_state != BLACKLIST_ENABLED ||
       result != ERROR_SUCCESS || type != REG_DWORD) {
-    ::RegCloseKey(key);
-    return false;
-  }
-
-  // If the blacklist wasn't set as enabled for this version, don't
-  // use it.
-  wchar_t key_data[255] = {};
-  DWORD key_data_size = sizeof(key_data);
-  result = ::RegQueryValueEx(key,
-                             blacklist::kBeaconVersion,
-                             0,
-                             &type,
-                             reinterpret_cast<LPBYTE>(key_data),
-                             &key_data_size);
-
-  if (wcscmp(key_data, TEXT(CHROME_VERSION_STRING)) != 0 ||
-      result != ERROR_SUCCESS || type != REG_SZ) {
     ::RegCloseKey(key);
     return false;
   }

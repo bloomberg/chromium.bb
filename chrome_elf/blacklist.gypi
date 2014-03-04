@@ -21,7 +21,6 @@
         # as that would risk pulling in base's link-time dependencies which
         # chrome_elf cannot do.
         '../base/base.gyp:base_static',
-        '../chrome/chrome.gyp:chrome_version_header',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_breakpad',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
         '../sandbox/sandbox.gyp:sandbox',

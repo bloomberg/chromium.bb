@@ -82,17 +82,6 @@ TEST_F(BlacklistTest, Beacon) {
 
   // Resetting the beacon should work when setup beacon is present.
   EXPECT_TRUE(blacklist::ResetBeacon());
-
-  // Change the version and ensure that the setup fails due to the version
-  // mismatch.
-  base::string16 different_version(L"other_version");
-  ASSERT_NE(different_version, TEXT(CHROME_VERSION_STRING));
-
-  result = blacklist_registry_key.WriteValue(blacklist::kBeaconVersion,
-                                             different_version.c_str());
-  EXPECT_EQ(ERROR_SUCCESS, result);
-
-  EXPECT_FALSE(blacklist::LeaveSetupBeacon());
 }
 
 TEST_F(BlacklistTest, AddAndRemoveModules) {
