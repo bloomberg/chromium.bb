@@ -72,6 +72,17 @@ class SyncTest : public InProcessBrowserTest {
                             // LOCAL_PYTHON_SERVER.
   };
 
+  // This enum is used in conjunction with WithParamInterface to run tests with
+  // and without the fake server.
+  // TODO(pvalenzuela): Remove this when FakeServer is the default server.
+  enum FakeServerExperiment {
+    // The test should use the default logic for determining the test server.
+    USE_DEFAULT_SERVER,
+
+    // The test should use the fake server.
+    USE_FAKE_SERVER,
+  };
+
   // NOTE: IMPORTANT the enum here should match with
   // the enum defined on the chromiumsync.py test server impl.
   enum SyncErrorFrequency {
@@ -269,7 +280,7 @@ class SyncTest : public InProcessBrowserTest {
   base::FilePath password_file_;
 
   // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
-  scoped_ptr<syncer::FakeServer> fake_server_;
+  scoped_ptr<fake_server::FakeServer> fake_server_;
 
  private:
   // Helper to ProfileManager::CreateProfile that handles path creation.

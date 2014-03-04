@@ -12,8 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/test/fake_server/fake_server_entity.h"
 
-namespace syncer {
+namespace fake_server {
 
 // A fake version of the Sync server used for testing.
 class FakeServer {
@@ -29,35 +30,46 @@ class FakeServer {
                     std::string* response);
 
  private:
-  typedef std::map<std::string, sync_pb::SyncEntity> EntityMap;
+  typedef std::map<std::string, FakeServerEntity*> EntityMap;
 
   // Processes a GetUpdates call.
-  sync_pb::ClientToServerResponse HandleGetUpdatesRequest(
-      const sync_pb::ClientToServerMessage& message);
+  bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
+                               sync_pb::GetUpdatesResponse* response);
 
   // Processes a Commit call.
-  sync_pb::ClientToServerResponse HandleCommitRequest(
-      const sync_pb::ClientToServerMessage& message);
+  bool HandleCommitRequest(const sync_pb::CommitMessage& commit,
+                           sync_pb::CommitResponse* response);
 
   // Inserts the appropriate permanent items in |entities_|.
-  void CreateDefaultPermanentItems(
-      const std::vector<ModelType>& first_time_types);
-
-  // Creates and saves a SyncEntity of the given |model_type|. The entity's
-  // id_string and server_defined_unique_tag fields are set to |id|. The
-  // non_unique_name and name fields are set to |name|. Since tags are used as
-  // ids, the parent_id_string field is set to |parent_tag|.
-  void CreateSyncEntity(ModelType model_type,
-                        const std::string& id,
-                        const std::string& name,
-                        const std::string& parent_tag);
+  bool CreateDefaultPermanentItems(
+      const std::vector<syncer::ModelType>& first_time_types);
 
   // Saves a |entity| to |entities_|.
-  void SaveEntity(sync_pb::SyncEntity* entity);
+  void SaveEntity(FakeServerEntity* entity);
 
-  // Commits a client-side |entity| to |entities_|.
-  sync_pb::SyncEntity CommitEntity(const sync_pb::SyncEntity& entity,
-                                   std::string guid);
+  // Commits a client-side SyncEntity to the server as a FakeServerEntity.
+  // The client that sent the commit is identified via |client_guid| and all
+  // entity ID renaming is tracked with |client_to_server_ids|. If the commit
+  // is successful, true is returned and the server's version of the SyncEntity
+  // is stored in |server_entity|.
+  bool CommitEntity(const sync_pb::SyncEntity& client_entity,
+                    sync_pb::CommitResponse_EntryResponse* entry_response,
+                    std::string client_guid,
+                    std::map<std::string, std::string>* client_to_server_ids);
+
+  // Populates |entry_response| based on |entity|. It is assumed that
+  // SaveEntity has already been called on |entity|.
+  void BuildEntryResponseForSuccessfulCommit(
+      sync_pb::CommitResponse_EntryResponse* entry_response,
+      FakeServerEntity* entity);
+
+  // Determines whether the SyncEntity with id_string |id| is a child of an
+  // entity with id_string |potential_parent_id|.
+  bool IsChild(const std::string& id, const std::string& potential_parent_id);
+
+  // Creates and saves tombstones for all children of the entity with the given
+  // |id|. A tombstone is not created for the entity itself.
+  bool DeleteChildren(const std::string& id);
 
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.
@@ -74,6 +86,6 @@ class FakeServer {
   std::vector<std::string> keystore_keys_;
 };
 
-}  // namespace syncer
+}  // namespace fake_server
 
 #endif  // SYNC_TEST_FAKE_SERVER_FAKE_SERVER_H_

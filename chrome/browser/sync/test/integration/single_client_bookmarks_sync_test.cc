@@ -21,16 +21,22 @@ using bookmarks_helper::RemoveAll;
 using bookmarks_helper::SetFavicon;
 using bookmarks_helper::SetTitle;
 
-class SingleClientBookmarksSyncTest : public SyncTest {
+class SingleClientBookmarksSyncTest
+    : public SyncTest,
+      public testing::WithParamInterface<SyncTest::FakeServerExperiment> {
  public:
-  SingleClientBookmarksSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientBookmarksSyncTest() : SyncTest(SINGLE_CLIENT) {
+    if (GetParam() == USE_FAKE_SERVER) {
+      UseFakeServer();
+    }
+  }
   virtual ~SingleClientBookmarksSyncTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Starting state:
@@ -146,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 // Test that a client doesn't mutate the favicon data in the process
 // of storing the favicon data from sync to the database or in the process
 // of requesting data from the database for sync.
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        SetFaviconHiDPIDifferentCodec) {
   // Set the supported scale factors to 1x and 2x such that
   // BookmarkModel::GetFavicon() requests both 1x and 2x.
@@ -187,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   EXPECT_TRUE(original_favicon_bytes->Equals(final_favicon_bytes));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        BookmarkAllNodesRemovedEvent) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Starting state:
@@ -235,3 +241,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   // Verify model matches verifier.
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
+
+INSTANTIATE_TEST_CASE_P(TestServerComparison,
+                        SingleClientBookmarksSyncTest,
+                        testing::Values(SyncTest::USE_DEFAULT_SERVER,
+                                        SyncTest::USE_FAKE_SERVER));

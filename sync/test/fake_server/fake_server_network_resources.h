@@ -13,26 +13,27 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace syncer {
+namespace fake_server {
 
 class FakeServer;
 class HttpPostProviderFactory;
 
-class FakeServerNetworkResources : public NetworkResources {
+class FakeServerNetworkResources : public syncer::NetworkResources {
   public:
    FakeServerNetworkResources(FakeServer* fake_server);
    virtual ~FakeServerNetworkResources();
 
    // NetworkResources
-   virtual scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
+   virtual
+   scoped_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
        net::URLRequestContextGetter* baseline_context_getter,
-       const NetworkTimeUpdateCallback& network_time_update_callback,
-       CancelationSignal* cancelation_signal) OVERRIDE;
+       const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
+       syncer::CancelationSignal* cancelation_signal) OVERRIDE;
 
   private:
    FakeServer* const fake_server_;
 };
 
-}  // namespace syncer
+}  // namespace fake_server
 
 #endif  // SYNC_TEST_FAKE_SERVER_FAKE_SERVER_NETWORK_RESOURCES_H_

@@ -2474,7 +2474,6 @@
         'browser/sync/test/integration/passwords_helper.h',
         'browser/sync/test/integration/preferences_helper.cc',
         'browser/sync/test/integration/preferences_helper.h',
-        'browser/sync/test/integration/prototype_fake_server_test.cc',
         'browser/sync/test/integration/search_engines_helper.cc',
         'browser/sync/test/integration/search_engines_helper.h',
         'browser/sync/test/integration/sessions_helper.cc',

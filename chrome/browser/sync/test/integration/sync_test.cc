@@ -328,7 +328,7 @@ void SyncTest::InitializeInstance(int index) {
     // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
     profile_sync_service->OverrideNetworkResourcesForTest(
         make_scoped_ptr<syncer::NetworkResources>(
-            new syncer::FakeServerNetworkResources(fake_server_.get())));
+            new fake_server::FakeServerNetworkResources(fake_server_.get())));
   }
 
   clients_[index] =
@@ -514,7 +514,7 @@ void SyncTest::SetUpTestServerIfRequired() {
     if (!SetUpLocalTestServer())
       LOG(FATAL) << "Failed to set up local test server";
   } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    fake_server_.reset(new syncer::FakeServer());
+    fake_server_.reset(new fake_server::FakeServer());
     // Similar to LOCAL_LIVE_SERVER, we must start this for XMPP.
     SetUpLocalPythonTestServer();
     SetupMockGaiaResponses();

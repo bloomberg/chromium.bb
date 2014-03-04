@@ -11,12 +11,12 @@
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/http_post_provider_interface.h"
 
-namespace syncer {
+namespace fake_server {
 
 class FakeServer;
 
 class FakeServerHttpPostProvider
-    : public HttpPostProviderInterface,
+    : public syncer::HttpPostProviderInterface,
       public base::RefCountedThreadSafe<FakeServerHttpPostProvider> {
  public:
   explicit FakeServerHttpPostProvider(FakeServer* fake_server);
@@ -50,15 +50,16 @@ class FakeServerHttpPostProvider
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProvider);
 };
 
-class FakeServerHttpPostProviderFactory : public HttpPostProviderFactory {
+class FakeServerHttpPostProviderFactory
+    : public syncer::HttpPostProviderFactory {
  public:
   explicit FakeServerHttpPostProviderFactory(FakeServer* fake_server);
   virtual ~FakeServerHttpPostProviderFactory();
 
   // HttpPostProviderFactory:
   virtual void Init(const std::string& user_agent) OVERRIDE;
-  virtual HttpPostProviderInterface* Create() OVERRIDE;
-  virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE;
+  virtual syncer::HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(syncer::HttpPostProviderInterface* http) OVERRIDE;
 
  private:
   FakeServer* const fake_server_;
@@ -66,6 +67,6 @@ class FakeServerHttpPostProviderFactory : public HttpPostProviderFactory {
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProviderFactory);
 };
 
-}  //  namespace syncer
+}  //  namespace fake_server
 
 #endif  // SYNC_TEST_FAKE_SERVER_FAKE_SERVER_HTTP_POST_PROVIDER_H_

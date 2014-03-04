@@ -11,20 +11,24 @@
 #include "sync/test/fake_server/fake_server.h"
 #include "sync/test/fake_server/fake_server_http_post_provider.h"
 
-namespace syncer {
+using syncer::CancelationSignal;
+using syncer::HttpPostProviderFactory;
+using syncer::NetworkTimeUpdateCallback;
+
+namespace fake_server {
 
 FakeServerNetworkResources::FakeServerNetworkResources(FakeServer* fake_server)
     : fake_server_(fake_server) { }
 
 FakeServerNetworkResources::~FakeServerNetworkResources() {}
 
-scoped_ptr<HttpPostProviderFactory>
+scoped_ptr<syncer::HttpPostProviderFactory>
     FakeServerNetworkResources::GetHttpPostProviderFactory(
         net::URLRequestContextGetter* baseline_context_getter,
         const NetworkTimeUpdateCallback& network_time_update_callback,
         CancelationSignal* cancelation_signal) {
-  return make_scoped_ptr<HttpPostProviderFactory>(
+  return make_scoped_ptr<syncer::HttpPostProviderFactory>(
       new FakeServerHttpPostProviderFactory(fake_server_));
 }
 
-}  // namespace syncer
+}  // namespace fake_server

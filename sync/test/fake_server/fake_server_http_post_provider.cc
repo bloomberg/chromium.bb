@@ -8,7 +8,9 @@
 
 #include "sync/test/fake_server/fake_server.h"
 
-namespace syncer {
+using syncer::HttpPostProviderInterface;
+
+namespace fake_server {
 
 FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
     FakeServer* fake_server) : fake_server_(fake_server) { }
@@ -77,4 +79,4 @@ const std::string FakeServerHttpPostProvider::GetResponseHeaderValue(
 void FakeServerHttpPostProvider::Abort() {
 }
 
-}  // namespace syncer
+}  // namespace fake_server
