@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -135,6 +136,8 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+
+  bool first_frame_;
 };
 
 VideoCaptureController::VideoCaptureController()
@@ -146,7 +149,7 @@ VideoCaptureController::VideoCaptureController()
 VideoCaptureController::VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     const base::WeakPtr<VideoCaptureController>& controller,
     const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
-    : controller_(controller), buffer_pool_(buffer_pool) {}
+    : controller_(controller), buffer_pool_(buffer_pool), first_frame_(true) {}
 
 VideoCaptureController::VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
 
@@ -431,6 +434,19 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           format,
           frame,
           timestamp));
+
+  if (first_frame_) {
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Width",
+                         frame_format.frame_size.width());
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
+                         frame_format.frame_size.height());
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate",
+                         frame_format.frame_rate);
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.PixelFormat",
+                              frame_format.pixel_format,
+                              media::PIXEL_FORMAT_MAX);
+    first_frame_ = false;
+  }
 }
 
 void

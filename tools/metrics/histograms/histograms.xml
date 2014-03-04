@@ -7430,6 +7430,35 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.FrameRate" units="fps">
+  <summary>
+    Video Capture Device frame rate requested by VideoCaptureManager on
+    AllocateAndStart(). The collection is made in the VideoCaptureController
+    upon reception of the first frame.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Height" units="pixels">
+  <summary>
+    Video Capture Device captured frame height in pixels. The collection is made
+    in the VideoCaptureController upon reception of the first frame.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.PixelFormat" enum="CapturePixelFormat">
+  <summary>
+    Pixel format provided by a Video Capture Device. The collection is made in
+    the VideoCaptureController upon reception of the first frame.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Width" units="pixels">
+  <summary>
+    Video Capture Device captured frame width in pixels. The collection is made
+    in the VideoCaptureController upon reception of the first frame.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCaptureManager" units="ms">
   <summary>Measures the time taken for VideoCaptureManager::</summary>
 </histogram>
@@ -25104,6 +25133,18 @@ other types of suffix sets.
   <int value="1" label="webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
   <int value="3" label="webgl"/>
+</enum>
+
+<enum name="CapturePixelFormat" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="I420"/>
+  <int value="2" label="YUY2"/>
+  <int value="3" label="UYVY"/>
+  <int value="4" label="RGB24"/>
+  <int value="5" label="ARGB"/>
+  <int value="6" label="MJPEG"/>
+  <int value="7" label="NV21"/>
+  <int value="8" label="YV12"/>
 </enum>
 
 <enum name="CatSixtyFour" type="int">
