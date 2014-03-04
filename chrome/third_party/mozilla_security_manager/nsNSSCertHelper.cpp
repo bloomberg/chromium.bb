@@ -537,11 +537,14 @@ std::string ProcessGeneralName(PRArenaPool* arena,
       break;
     case certIPAddress: {
       key = l10n_util::GetStringUTF8(IDS_CERT_GENERAL_NAME_IP_ADDRESS);
+
       net::IPAddressNumber ip(
           current->name.other.data,
           current->name.other.data + current->name.other.len);
-      value = net::IPEndPoint(ip, 0).ToStringWithoutPort();
-      if (value.empty()) {
+
+      if (net::GetAddressFamily(ip) != net::ADDRESS_FAMILY_UNSPECIFIED) {
+        value = net::IPAddressToString(ip);
+      } else {
         // Invalid IP address.
         value = ProcessRawBytes(&current->name.other);
       }
