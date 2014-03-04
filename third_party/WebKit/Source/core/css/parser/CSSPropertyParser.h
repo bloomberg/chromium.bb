@@ -404,7 +404,8 @@ CSSPropertyID cssPropertyID(const CSSParserString&);
 CSSPropertyID cssPropertyID(const String&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 
-bool isValidNthToken(const CSSParserString&);
+bool isKeywordPropertyID(CSSPropertyID);
+bool isValidKeywordPropertyAndValue(CSSPropertyID, int valueID, const CSSParserContext&);
 
 } // namespace WebCore
 

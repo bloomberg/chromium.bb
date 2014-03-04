@@ -322,6 +322,8 @@ inline int cssyylex(void* yylval, BisonCSSParser* parser)
     return parser->m_tokenizer.lex(yylval);
 }
 
+bool isValidNthToken(const CSSParserString&);
+
 } // namespace WebCore
 
 #endif // BisonCSSParser_h
