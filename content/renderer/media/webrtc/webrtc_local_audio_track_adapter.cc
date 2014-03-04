@@ -80,6 +80,10 @@ std::vector<int> WebRtcLocalAudioTrackAdapter::VoeChannels() const {
   return voe_channels_;
 }
 
+void WebRtcLocalAudioTrackAdapter::SetSignalLevel(int signal_level) {
+  // TODO(xians): Implements this.
+}
+
 void WebRtcLocalAudioTrackAdapter::AddChannel(int channel_id) {
   DVLOG(1) << "WebRtcLocalAudioTrack::AddChannel(channel_id="
            << channel_id << ")";

@@ -46,6 +46,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
 
   std::vector<int> VoeChannels() const;
 
+  // Called on the audio thread by the WebRtcLocalAudioTrack to set the signal
+  // level of the audio data.
+  void SetSignalLevel(int signal_level);
+
  private:
   // webrtc::MediaStreamTrack implementation.
   virtual std::string kind() const OVERRIDE;

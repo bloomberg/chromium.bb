@@ -240,6 +240,8 @@
     'renderer/media/crypto/ppapi_decryptor.h',
     'renderer/media/crypto/proxy_decryptor.cc',
     'renderer/media/crypto/proxy_decryptor.h',
+    'renderer/media/media_stream_audio_level_calculator.cc',
+    'renderer/media/media_stream_audio_level_calculator.h',
     'renderer/media/media_stream_audio_renderer.cc',
     'renderer/media/media_stream_audio_renderer.h',
     'renderer/media/media_stream_center.h',

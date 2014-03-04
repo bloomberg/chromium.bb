@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc_local_audio_track.h"
 
 #include "content/public/renderer/media_stream_audio_sink.h"
+#include "content/renderer/media/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/media_stream_audio_sink_owner.h"
 #include "content/renderer/media/media_stream_audio_track_sink.h"
 #include "content/renderer/media/peer_connection_audio_sink_owner.h"
@@ -46,6 +47,13 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
                                     bool key_pressed,
                                     bool need_audio_processing) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
+
+  // Calculate the signal level regardless if the track is disabled or enabled.
+  int signal_level = level_calculator_->Calculate(
+      audio_data, audio_parameters_.channels(),
+      audio_parameters_.frames_per_buffer());
+  adapter_->SetSignalLevel(signal_level);
+
   scoped_refptr<WebRtcAudioCapturer> capturer;
   SinkList::ItemList sinks;
   SinkList::ItemList sinks_to_notify_format;
@@ -98,6 +106,7 @@ void WebRtcLocalAudioTrack::OnSetFormat(
   DCHECK(capture_thread_checker_.CalledOnValidThread());
 
   audio_parameters_ = params;
+  level_calculator_.reset(new MediaStreamAudioLevelCalculator());
 
   base::AutoLock auto_lock(lock_);
   // Remember to notify all sinks of the new format.

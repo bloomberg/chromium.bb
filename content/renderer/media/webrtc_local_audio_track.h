@@ -18,6 +18,7 @@
 
 namespace content {
 
+class MediaStreamAudioLevelCalculator;
 class MediaStreamAudioSink;
 class MediaStreamAudioSinkOwner;
 class MediaStreamAudioTrackSink;
@@ -115,6 +116,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // The source provider to feed the track data to other clients like
   // WebAudio.
   scoped_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
+
+  // Used to calculate the signal level that shows in the UI.
+  // Accessed on only the audio thread.
+  scoped_ptr<MediaStreamAudioLevelCalculator> level_calculator_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioTrack);
 };
