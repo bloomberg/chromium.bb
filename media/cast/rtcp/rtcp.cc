@@ -239,6 +239,12 @@ void Rtcp::SendRtcpFromRtpReceiver(
   transport::RtcpReportBlock report_block;
   RtcpReceiverReferenceTimeReport rrtr;
 
+  // Attach our NTP to all RTCP packets; with this information a "smart" sender
+  // can make decisions based on how old the RTCP message is.
+  packet_type_flags |= RtcpSender::kRtcpRrtr;
+  ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
+  SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
+
   if (cast_message) {
     packet_type_flags |= RtcpSender::kRtcpCast;
   }
@@ -272,10 +278,6 @@ void Rtcp::SendRtcpFromRtpReceiver(
     } else {
       report_block.delay_since_last_sr = 0;
     }
-
-    packet_type_flags |= RtcpSender::kRtcpRrtr;
-    ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
-    SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
     UpdateNextTimeToSendRtcp();
   }
   rtcp_sender_->SendRtcpFromRtpReceiver(
