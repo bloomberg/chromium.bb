@@ -39,6 +39,10 @@ void RemoveLogin(PasswordStore* store, const autofill::PasswordForm& form);
 void UpdateLogin(PasswordStore* store, const autofill::PasswordForm& form);
 }
 
+namespace syncer {
+class SyncableService;
+}
+
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
@@ -159,6 +163,10 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // needs to shut itself down.
   virtual void Shutdown();
 
+#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
+  base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
+#endif
+
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
   // Sync's interaction with password store needs to be synchronous.
@@ -245,6 +253,8 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // background tasks -- see |GetBackgroundTaskRunner|.
   scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner_;
 
+  scoped_ptr<PasswordSyncableService> syncable_service_;
+
  private:
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.
@@ -270,6 +280,14 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   void CopyAndForwardLoginsResult(
       PasswordStore::GetLoginsRequest* request,
       const std::vector<autofill::PasswordForm*>& matched_forms);
+
+#if defined(PASSWORD_MANAGER_ENABLE_SYNC)
+  // Creates PasswordSyncableService instance on the background thread.
+  void InitSyncableService();
+
+  // Deletes PasswordSyncableService instance on the background thread.
+  void DestroySyncableService();
+#endif
 
   // The observers.
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;

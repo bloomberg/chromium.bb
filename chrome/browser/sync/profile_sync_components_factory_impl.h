@@ -59,10 +59,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-  virtual SyncComponents CreatePasswordSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      PasswordStore* password_store,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,

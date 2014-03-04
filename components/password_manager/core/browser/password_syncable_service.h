@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
@@ -31,15 +32,11 @@ class SyncErrorFactory;
 
 class PasswordStore;
 
-class PasswordSyncableService : public syncer::SyncableService {
+class PasswordSyncableService : public syncer::SyncableService,
+                                public base::NonThreadSafe {
  public:
-  // TODO(lipalani) - The |PasswordStore| should outlive
-  // |PasswordSyncableService| and there should be a code
-  // guarantee to that effect. Currently this object is not instantiated.
-  // When this class is completed and instantiated the object lifetime
-  // guarantee will be implemented.
-  explicit PasswordSyncableService(
-      scoped_refptr<PasswordStore> password_store);
+  // |PasswordSyncableService| is owned by |PasswordStore|.
+  explicit PasswordSyncableService(PasswordStore* password_store);
   virtual ~PasswordSyncableService();
 
   // syncer::SyncableServiceImplementations
@@ -103,7 +100,9 @@ class PasswordSyncableService : public syncer::SyncableService {
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // The password store that adds/updates/deletes password entries.
-  scoped_refptr<PasswordStore> password_store_;
+  PasswordStore* const password_store_;
+
+  bool is_processing_sync_changes_;
 };
 
 // Converts the |password| into a SyncData object.

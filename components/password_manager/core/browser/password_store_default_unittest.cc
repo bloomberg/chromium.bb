@@ -109,6 +109,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 
   STLDeleteElements(&expected_forms);
   store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
@@ -175,4 +176,5 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   store->RemoveObserver(&observer);
   store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
 }

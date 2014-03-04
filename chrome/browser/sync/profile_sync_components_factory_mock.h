@@ -55,11 +55,6 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD3(CreatePasswordSyncComponents,
-               SyncComponents(
-                   ProfileSyncService* profile_sync_service,
-                   PasswordStore* password_store,
-                   browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_METHOD2(CreateSessionSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));

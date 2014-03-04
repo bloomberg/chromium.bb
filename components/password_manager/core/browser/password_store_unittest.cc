@@ -180,4 +180,5 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   STLDeleteElements(&all_forms);
   store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
 }

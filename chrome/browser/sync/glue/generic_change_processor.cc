@@ -85,12 +85,18 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
   for (syncer::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
     if (it->action == syncer::ChangeRecord::ACTION_DELETE) {
-      syncer_changes_.push_back(
-          syncer::SyncChange(
-              FROM_HERE,
-              syncer::SyncChange::ACTION_DELETE,
-              syncer::SyncData::CreateRemoteData(
-                  it->id, it->specifics, base::Time())));
+      scoped_ptr<sync_pb::EntitySpecifics> specifics;
+      if (it->specifics.has_password()) {
+        DCHECK(it->extra.get());
+        specifics.reset(new sync_pb::EntitySpecifics(it->specifics));
+        specifics->mutable_password()->mutable_client_only_encrypted_data()->
+            CopyFrom(it->extra->unencrypted());
+      }
+      syncer_changes_.push_back(syncer::SyncChange(
+          FROM_HERE,
+          syncer::SyncChange::ACTION_DELETE,
+          syncer::SyncData::CreateRemoteData(
+              it->id, specifics ? *specifics : it->specifics, base::Time())));
     } else {
       syncer::SyncChange::SyncChangeType action =
           (it->action == syncer::ChangeRecord::ACTION_ADD) ?
