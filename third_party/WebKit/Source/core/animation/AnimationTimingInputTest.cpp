@@ -17,17 +17,10 @@ namespace WebCore {
 class AnimationAnimationTimingInputTest : public ::testing::Test {
 protected:
     AnimationAnimationTimingInputTest()
-        : isolate(v8::Isolate::GetCurrent())
-        , scope(isolate)
-        , context(v8::Context::New(isolate))
-        , contextScope(context)
+        : m_isolate(v8::Isolate::GetCurrent())
+        , m_scope(V8BindingTestScope::create(m_isolate))
     {
     }
-
-    v8::Isolate* isolate;
-    v8::HandleScope scope;
-    v8::Local<v8::Context> context;
-    v8::Context::Scope contextScope;
 
     void populateTiming(Timing& timing, Dictionary timingInputDictionary)
     {
@@ -36,9 +29,9 @@ protected:
 
     Timing applyTimingInputNumber(String timingProperty, double timingPropertyValue)
     {
-        v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
+        v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
-        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
         Timing timing;
         populateTiming(timing, timingInputDictionary);
         return timing;
@@ -46,13 +39,18 @@ protected:
 
     Timing applyTimingInputString(String timingProperty, String timingPropertyValue)
     {
-        v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
+        v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
-        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+        Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
         Timing timing;
         populateTiming(timing, timingInputDictionary);
         return timing;
     }
+
+    v8::Isolate* m_isolate;
+
+private:
+    OwnPtr<V8BindingTestScope> m_scope;
 };
 
 TEST_F(AnimationAnimationTimingInputTest, TimingInputStartDelay)
@@ -177,8 +175,8 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputEmpty)
     Timing updatedTiming;
     Timing controlTiming;
 
-    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
-    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     populateTiming(updatedTiming, timingInputDictionary);
 
     EXPECT_EQ(controlTiming.startDelay, updatedTiming.startDelay);

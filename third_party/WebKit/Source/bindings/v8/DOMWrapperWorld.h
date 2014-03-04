@@ -51,12 +51,13 @@ enum WorldIdConstants {
     EmbedderWorldIdLimit = (1 << 29),
     ScriptPreprocessorIsolatedWorldId,
     WorkerWorldId,
+    TestingWorldId,
 };
 
 // This class represent a collection of DOM wrappers for a specific world.
 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
-    static PassRefPtr<DOMWrapperWorld> create(int worldId, int extensionGroup);
+    static PassRefPtr<DOMWrapperWorld> create(int worldId = -1, int extensionGroup = -1);
 
     static const int mainWorldExtensionGroup = 0;
     static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
@@ -96,7 +97,7 @@ public:
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }
     bool isWorkerWorld() const { return m_worldId == WorkerWorldId; }
-    bool isIsolatedWorld() const { return !isMainWorld() && !isWorkerWorld(); }
+    bool isIsolatedWorld() const { return MainWorldId < m_worldId  && m_worldId <= EmbedderWorldIdLimit; }
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }

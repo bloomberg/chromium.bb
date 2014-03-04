@@ -93,14 +93,11 @@ void checkKeyPathNumberValue(const ScriptValue& value, const String& keyPath, in
 class IDBKeyFromValueAndKeyPathTest : public testing::Test {
 public:
     IDBKeyFromValueAndKeyPathTest()
-        : m_handleScope(v8::Isolate::GetCurrent())
-        , m_scope(v8::Context::New(v8::Isolate::GetCurrent()))
+        : m_scope(V8BindingTestScope::create(v8::Isolate::GetCurrent()))
     {
     }
-
 private:
-    v8::HandleScope m_handleScope;
-    v8::Context::Scope m_scope;
+    OwnPtr<V8BindingTestScope> m_scope;
 };
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)

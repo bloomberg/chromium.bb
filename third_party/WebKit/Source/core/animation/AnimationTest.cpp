@@ -36,17 +36,10 @@ protected:
 class AnimationAnimationV8Test : public AnimationAnimationTest {
 protected:
     AnimationAnimationV8Test()
-        : isolate(v8::Isolate::GetCurrent())
-        , scope(isolate)
-        , context(v8::Context::New(isolate))
-        , contextScope(context)
+        : m_isolate(v8::Isolate::GetCurrent())
+        , m_scope(V8BindingTestScope::create(m_isolate))
     {
     }
-
-    v8::Isolate* isolate;
-    v8::HandleScope scope;
-    v8::Local<v8::Context> context;
-    v8::Context::Scope contextScope;
 
     PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
     {
@@ -62,13 +55,18 @@ protected:
     {
         return Animation::createUnsafe(element, keyframeDictionaryVector);
     }
+
+    v8::Isolate* m_isolate;
+
+private:
+    OwnPtr<V8BindingTestScope> m_scope;
 };
 
 TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(isolate);
+    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
@@ -77,8 +75,8 @@ TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
     setV8ObjectPropertyAsString(keyframe2, "offset", "1");
     setV8ObjectPropertyAsString(keyframe2, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
 
-    jsKeyframes.append(Dictionary(keyframe1, isolate));
-    jsKeyframes.append(Dictionary(keyframe2, isolate));
+    jsKeyframes.append(Dictionary(keyframe1, m_isolate));
+    jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
     String value1;
     ASSERT_TRUE(jsKeyframes[0].get("width", value1));
@@ -142,7 +140,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
 {
     Vector<Dictionary, 0> jsKeyframes;
 
-    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
+    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
     setV8ObjectPropertyAsNumber(timingInput, "delay", 2);
     setV8ObjectPropertyAsNumber(timingInput, "endDelay", 0.5);
     setV8ObjectPropertyAsString(timingInput, "fill", "backwards");
@@ -151,7 +149,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
     setV8ObjectPropertyAsNumber(timingInput, "playbackRate", 2);
     setV8ObjectPropertyAsString(timingInput, "direction", "reverse");
     setV8ObjectPropertyAsString(timingInput, "easing", "step-start");
-    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
 
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
 
@@ -170,9 +168,9 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 {
     Vector<Dictionary, 0> jsKeyframes;
 
-    v8::Handle<v8::Object> timingInputWithDuration = v8::Object::New(isolate);
+    v8::Handle<v8::Object> timingInputWithDuration = v8::Object::New(m_isolate);
     setV8ObjectPropertyAsNumber(timingInputWithDuration, "duration", 2.5);
-    Dictionary timingInputDictionaryWithDuration = Dictionary(v8::Handle<v8::Value>::Cast(timingInputWithDuration), isolate);
+    Dictionary timingInputDictionaryWithDuration = Dictionary(v8::Handle<v8::Value>::Cast(timingInputWithDuration), m_isolate);
 
     RefPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration);
 
@@ -188,8 +186,8 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
     EXPECT_EQ("", stringDuration);
 
 
-    v8::Handle<v8::Object> timingInputNoDuration = v8::Object::New(isolate);
-    Dictionary timingInputDictionaryNoDuration = Dictionary(v8::Handle<v8::Value>::Cast(timingInputNoDuration), isolate);
+    v8::Handle<v8::Object> timingInputNoDuration = v8::Object::New(m_isolate);
+    Dictionary timingInputDictionaryNoDuration = Dictionary(v8::Handle<v8::Value>::Cast(timingInputNoDuration), m_isolate);
 
     RefPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration);
 
@@ -208,8 +206,8 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
-    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
 
     RefPtr<TimedItemTiming> specified = animation->specified();
@@ -250,8 +248,8 @@ TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
 TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    v8::Handle<v8::Object> timingInput = v8::Object::New(isolate);
-    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), isolate);
+    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+    Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
 
     RefPtr<TimedItemTiming> specified = animation->specified();

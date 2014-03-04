@@ -734,4 +734,18 @@ v8::Isolate* toIsolate(LocalFrame* frame)
     return frame->script().isolate();
 }
 
+PassOwnPtr<V8BindingTestScope> V8BindingTestScope::create(v8::Isolate* isolate)
+{
+    return adoptPtr(new V8BindingTestScope(isolate));
+}
+
+V8BindingTestScope::V8BindingTestScope(v8::Isolate* isolate)
+    : m_handleScope(isolate)
+    , m_context(v8::Context::New(isolate))
+    , m_contextScope(m_context)
+    , m_world(DOMWrapperWorld::create())
+    , m_perContextData(V8PerContextData::create(m_context, m_world.get()))
+{
+}
+
 } // namespace WebCore
