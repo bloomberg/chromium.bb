@@ -70,8 +70,7 @@ Polymer('audio-player', {
       if (currentTrack && currentTrack.url != this.audioElement.src) {
         this.audioElement.src = currentTrack.url;
         currentTrackUrl = this.audioElement.src;
-        if (this.audioController.playing)
-          this.audioElement.play();
+        this.audioElement.play();
       }
     }
 
@@ -85,7 +84,7 @@ Polymer('audio-player', {
    * @param {boolean} newValue new value.
    */
   onControllerPlayingChanged: function(oldValue, newValue) {
-    this.setAttribute('playing', newValue);
+    this.playing = newValue;
 
     if (newValue) {
       if (!this.audioElement.src) {
@@ -104,6 +103,7 @@ Polymer('audio-player', {
 
     // When the new status is "stopped".
     this.cancelAutoAdvance_();
+    this.audioController.playing = false;
     this.audioElement.pause();
     this.currenttrackurl = '';
     this.lastAudioUpdateTime_ = null;
@@ -202,8 +202,15 @@ Polymer('audio-player', {
     var isNextTrackAvailable =
         (this.trackList.getNextTrackIndex(forward, repeat) !== -1);
 
-    this.audioController.playing = isNextTrackAvailable;
     this.trackList.currentTrackIndex = nextTrackIndex;
+
+    if (isNextTrackAvailable) {
+      var nextTrack = this.trackList.tracks[nextTrackIndex];
+      this.audioElement.src = nextTrack.url;
+      this.audioElement.play();
+    } else {
+      this.audioElement.pause();
+    }
   },
 
   /**
