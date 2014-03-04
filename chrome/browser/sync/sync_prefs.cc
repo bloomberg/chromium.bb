@@ -74,9 +74,9 @@ void SyncPrefs::RegisterProfilePrefs(
   user_types.Remove(syncer::BOOKMARKS);
 
   // These two prefs are set from sync experiment to enable enhanced bookmarks.
-  registry->RegisterBooleanPref(
+  registry->RegisterIntegerPref(
       prefs::kEnhancedBookmarksExperimentEnabled,
-      false,
+      0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterStringPref(

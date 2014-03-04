@@ -9,13 +9,19 @@
 
 #include "extensions/common/extension.h"
 
+enum BookmarksExperimentState {
+  kNoBookmarksExperiment,
+  kBookmarksExperimentEnabled,
+  kBookmarksExperimentEnabledUserOptOut
+};
+
 // Returns true if Enhanced bookmarks extension is installed
 bool IsBookmarksExtensionInstalled(
     const extensions::ExtensionIdSet& extension_ids);
 
 // If user not in Finch experiment then opt-in user into experiment.
 // Returns true if user was opt-in.
-bool OptInIntoBookmarksExperiment();
+bool OptInIntoBookmarksExperiment(BookmarksExperimentState state);
 
 // Returns true if enhanced bookmarks experiment is enabled.
 bool IsEnhancedBookmarksExperimentEnabled();

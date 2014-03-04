@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
@@ -1000,11 +1001,30 @@ void ProfileSyncService::OnExperimentsChanged(
     profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
   }
 
-  if (experiments.enhanced_bookmarks_enabled) {
-    profile_->GetPrefs()->SetBoolean(prefs::kEnhancedBookmarksExperimentEnabled,
-                                     true);
+  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
+  // "" and "1" means experiment is enabled.
+  if ((CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+           switches::kEnhancedBookmarksExperiment) != "0")) {
+    profile_->GetPrefs()->SetInteger(prefs::kEnhancedBookmarksExperimentEnabled,
+                                     experiments.enhanced_bookmarks_enabled ?
+                                         kBookmarksExperimentEnabled :
+                                         kNoBookmarksExperiment);
     profile_->GetPrefs()->SetString(prefs::kEnhancedBookmarksExtensionId,
                                     experiments.enhanced_bookmarks_ext_id);
+  } else {
+    // User opt-out from chrome://flags
+    if (experiments.enhanced_bookmarks_enabled) {
+      profile_->GetPrefs()->SetInteger(
+          prefs::kEnhancedBookmarksExperimentEnabled,
+          kBookmarksExperimentEnabledUserOptOut);
+      // Keep extension id up-to-date in case will opt-in later.
+      profile_->GetPrefs()->SetString(prefs::kEnhancedBookmarksExtensionId,
+                                      experiments.enhanced_bookmarks_ext_id);
+    } else {
+      profile_->GetPrefs()->ClearPref(
+          prefs::kEnhancedBookmarksExperimentEnabled);
+      profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
+    }
   }
 
   // If this is a first time sync for a client, this will be called before

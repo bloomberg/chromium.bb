@@ -39,20 +39,26 @@ bool IsBookmarksExtensionInstalled(
   return false;
 }
 
-bool OptInIntoBookmarksExperiment() {
+bool OptInIntoBookmarksExperiment(BookmarksExperimentState state) {
   if (base::FieldTrialList::FindFullName(kFieldTrialName) != "Default")
     return false;
 
   // Opt-in user into Finch group.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kManualEnhancedBookmarks);
+  if (state == kBookmarksExperimentEnabledUserOptOut)
+    command_line->AppendSwitch(switches::kManualEnhancedBookmarksOptout);
+  else
+    command_line->AppendSwitch(switches::kManualEnhancedBookmarks);
+
   return true;
 }
 
 bool IsEnhancedBookmarksExperimentEnabled() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kManualEnhancedBookmarks))
+  if (command_line->HasSwitch(switches::kManualEnhancedBookmarks) ||
+      command_line->HasSwitch(switches::kManualEnhancedBookmarksOptout)) {
     return true;
+  }
 
   std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
   extensions::FeatureProvider* feature_provider =

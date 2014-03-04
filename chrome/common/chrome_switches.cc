@@ -593,7 +593,7 @@ const char kEnableDeviceDiscoveryNotifications[] =
 const char kEnableDomDistiller[]               = "enable-dom-distiller";
 
 // Enable Enhanced Bookmarks.
-const char kEnableEnhancedBookmarks[] = "enable-enhanced-bookmarks";
+const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";
 
 // Enables experimentation with ephemeral apps, which are launched without
 // installing in Chrome.
@@ -989,8 +989,10 @@ const char kManagedUserId[]                 = "managed-user-id";
 // this switch also causes Sync to be set up for a managed user.
 const char kManagedUserSyncToken[]          = "managed-user-sync-token";
 
-// Use to opt-in user into Finch experiment group.
+// Use to opt-in user into Finch experiment groups.
 const char kManualEnhancedBookmarks[] = "manual-enhanced-bookmarks";
+const char kManualEnhancedBookmarksOptout[] =
+    "manual-enhanced-bookmarks-optout";
 
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";

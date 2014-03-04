@@ -1795,12 +1795,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppsShowOnFirstPaint)
   },
   {
-    "enable-enhanced-bookmarks",
+    "enhanced-bookmarks-experiment",
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
     kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kEnableEnhancedBookmarks, "1",
-                                        switches::kEnableEnhancedBookmarks, "0")
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+        switches::kEnhancedBookmarksExperiment, "1",
+        switches::kEnhancedBookmarksExperiment, "0")
   },
 #if defined(OS_ANDROID)
   {
@@ -2011,9 +2012,17 @@ void GetSanitizedEnabledFlags(
 }
 
 bool SkipConditionalExperiment(const Experiment& experiment) {
-  if (experiment.internal_name == std::string("enable-enhanced-bookmarks")) {
+  if (experiment.internal_name ==
+      std::string("enhanced-bookmarks-experiment")) {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    // Dont't skip experiment if it has non default value.
+    // It means user selected it.
+    if (command_line->HasSwitch(switches::kEnhancedBookmarksExperiment))
+      return false;
+
     return !IsEnhancedBookmarksExperimentEnabled();
   }
+
   return false;
 }
 

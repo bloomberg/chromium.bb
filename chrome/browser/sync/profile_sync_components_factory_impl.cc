@@ -228,13 +228,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     pss->RegisterDataTypeController(
         new PasswordDataTypeController(this, profile_, pss));
   }
-  ExtensionService* extension_service = extension_system_->extension_service();
-  if (extension_service) {
-    if (IsBookmarksExtensionInstalled(
-            extension_service->extensions()->GetIDs())) {
-      OptInIntoBookmarksExperiment();
-    }
-  }
+
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (IsEnableSyncArticlesSet()) {
     pss->RegisterDataTypeController(

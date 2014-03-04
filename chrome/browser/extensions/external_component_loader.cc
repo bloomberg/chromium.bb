@@ -55,24 +55,53 @@ void ExternalComponentLoader::StartLoading() {
                       extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
-  if (CommandLine::ForCurrentProcess()->
-          GetSwitchValueASCII(switches::kEnableEnhancedBookmarks) != "0") {
-    std::string ext_id;
-    if (profile_->GetPrefs()->GetBoolean(
-            prefs::kEnhancedBookmarksExperimentEnabled)) {
-      ext_id =
-          profile_->GetPrefs()->GetString(prefs::kEnhancedBookmarksExtensionId);
+  BookmarksExperimentState experiment_state =
+      static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
+          prefs::kEnhancedBookmarksExperimentEnabled));
+  if (experiment_state == kBookmarksExperimentEnabled) {
+    // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
+    // "0" - user opted out.
+    if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnhancedBookmarksExperiment) != "0") {
+      // Experiment enabled.
+      std::string ext_id = profile_->GetPrefs()->GetString(
+          prefs::kEnhancedBookmarksExtensionId);
+      if (!ext_id.empty()) {
+        prefs_->SetString(ext_id + ".external_update_url",
+                          extension_urls::GetWebstoreUpdateUrl().spec());
+        OptInIntoBookmarksExperiment(kBookmarksExperimentEnabled);
+      }
     } else {
-      ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
+      // Experiment enabled but user opted out.
+      profile_->GetPrefs()->SetInteger(
+          prefs::kEnhancedBookmarksExperimentEnabled,
+          kBookmarksExperimentEnabledUserOptOut);
+      OptInIntoBookmarksExperiment(kBookmarksExperimentEnabledUserOptOut);
     }
-    if (!ext_id.empty()) {
-      prefs_->SetString(ext_id + ".external_update_url",
-                        extension_urls::GetWebstoreUpdateUrl().spec());
+  } else if (experiment_state == kBookmarksExperimentEnabledUserOptOut) {
+    if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnhancedBookmarksExperiment) == "0") {
+      // User opted out.
+      OptInIntoBookmarksExperiment(kBookmarksExperimentEnabledUserOptOut);
+    } else {
+      // User opted in again.
+      profile_->GetPrefs()->SetInteger(
+          prefs::kEnhancedBookmarksExperimentEnabled,
+          kBookmarksExperimentEnabled);
+      std::string ext_id = profile_->GetPrefs()->GetString(
+          prefs::kEnhancedBookmarksExtensionId);
+      if (!ext_id.empty()) {
+        prefs_->SetString(ext_id + ".external_update_url",
+                          extension_urls::GetWebstoreUpdateUrl().spec());
+        OptInIntoBookmarksExperiment(kBookmarksExperimentEnabled);
+      }
     }
   } else {
+    // Experiment disabled.
     profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExperimentEnabled);
     profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
   }
+
   LoadFinished();
 }
 
