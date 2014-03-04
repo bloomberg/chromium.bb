@@ -104,7 +104,6 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       password_edited_(false),
       enabled_(password_generation::IsPasswordGenerationEnabled()) {
   DVLOG(2) << "Password Generation is " << (enabled_ ? "Enabled" : "Disabled");
-  render_view_->GetWebView()->setPasswordGeneratorClient(this);
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
@@ -188,21 +187,6 @@ bool PasswordGenerationAgent::ShouldAnalyzeDocument(
   }
 
   return true;
-}
-
-void PasswordGenerationAgent::openPasswordGenerator(
-    blink::WebInputElement& element) {
-  blink::WebElement button(element.passwordGeneratorButtonElement());
-  gfx::Rect rect(button.boundsInViewportSpace());
-  scoped_ptr<PasswordForm> password_form(
-      CreatePasswordForm(element.form()));
-  // We should not have shown the icon we can't create a valid PasswordForm.
-  DCHECK(password_form.get());
-
-  Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
-                                                       rect,
-                                                       element.maxLength(),
-                                                       *password_form));
 }
 
 bool PasswordGenerationAgent::OnMessageReceived(const IPC::Message& message) {
