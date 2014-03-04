@@ -9,10 +9,10 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.TestShellTab;
 import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.chrome.testshell.TestShellTab;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 import java.util.concurrent.TimeoutException;

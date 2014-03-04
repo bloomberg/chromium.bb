@@ -28,8 +28,10 @@ def GetNewMetadata(device, apk_package):
   """Gets the metadata on the device for the apk_package apk."""
   output = device.RunShellCommand('ls -l /data/app/')
   # Matches lines like:
-  # -rw-r--r-- system   system    7376582 2013-04-19 16:34 org.chromium.chrome.testshell.apk
-  # -rw-r--r-- system   system    7376582 2013-04-19 16:34 org.chromium.chrome.testshell-1.apk
+  # -rw-r--r-- system   system    7376582 2013-04-19 16:34 \
+  # org.chromium.chrome.shell.apk
+  # -rw-r--r-- system   system    7376582 2013-04-19 16:34 \
+  # org.chromium.chrome.shell-1.apk
   apk_matcher = lambda s: re.match('.*%s(-[0-9]*)?.apk$' % apk_package, s)
   matches = filter(apk_matcher, output)
   return matches[0] if matches else None

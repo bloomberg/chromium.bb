@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+ -->
+
+<resources>
+    <string name="url_hint">Type URL Here</string>
+    <string name="print_menu">Print…</string>
+    <string name="signin_select_account">Select Account</string>
+    <string name="signin_sign_in">Sign in</string>
+    <string name="signin_cancel">Cancel</string>
+    <string name="signout_title">Do you want to sign out?</string>
+    <string name="signout_sign_out">Sign out</string>
+    <string name="signout_cancel">Cancel</string>
+    <string name="browser_process_initialization_failed">Initialization failed.</string>
+</resources>

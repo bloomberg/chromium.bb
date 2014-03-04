@@ -12,8 +12,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 
 import java.util.concurrent.Callable;
 

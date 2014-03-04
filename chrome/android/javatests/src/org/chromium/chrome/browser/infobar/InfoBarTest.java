@@ -4,20 +4,19 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-
 
 import java.util.List;
 

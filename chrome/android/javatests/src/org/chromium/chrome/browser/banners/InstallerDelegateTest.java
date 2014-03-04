@@ -8,7 +8,7 @@ import android.content.pm.PackageInfo;
 import android.os.HandlerThread;
 import android.test.mock.MockPackageManager;
 
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 

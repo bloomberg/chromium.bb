@@ -10,8 +10,8 @@ import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
 
 import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.testshell.ChromiumTestShellActivity;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellActivity;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 
 /**
  * Base class for Chrome's ContentProvider tests.

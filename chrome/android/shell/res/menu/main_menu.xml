@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/MAIN_MENU"
+           android:visible="false">
+        <item android:id="@+id/signin"
+              android:title="@string/signin_sign_in" />
+        <item android:id="@+id/print"
+              android:title="@string/print_menu" />
+    </group>
+
+    <group android:id="@+id/PHONE_ICON_MENU_ITEMS"
+        android:visible="false">
+        <!-- These items are never made visible in the default list. They are only used
+             to pass through the clicks from the icon row in the custom menu. -->
+        <item android:id="@+id/back_menu_id"
+            android:title="@null" />
+        <item android:id="@+id/forward_menu_id"
+            android:title="@null" />
+        <item android:id="@+id/bookmark_this_page_id"
+            android:title="@null" />
+    </group>
+</menu>
+

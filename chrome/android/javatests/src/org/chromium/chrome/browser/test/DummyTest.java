@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.test;
 
 import org.chromium.base.test.util.HostDrivenTest;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 
 /**
  * Dummy test suite for verifying the host-driven test framework.

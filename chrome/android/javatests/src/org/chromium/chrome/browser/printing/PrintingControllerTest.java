@@ -17,8 +17,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.chrome.testshell.TestShellTab;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.TestShellTab;
 
 import java.io.File;
 import java.io.FileInputStream;

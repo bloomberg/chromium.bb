@@ -66,7 +66,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'content:content/test/data/android/device_files'),
     I('ChromiumTestShell',
       'ChromiumTestShell.apk',
-      'org.chromium.chrome.testshell',
+      'org.chromium.chrome.shell',
       'ChromiumTestShellTest',
       'chrome:chrome/test/data/android/device_files',
       constants.CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR),

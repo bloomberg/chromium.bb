@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.test.FlakyTest;
 
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.testshell.ChromiumTestShellActivity;
-import org.chromium.chrome.testshell.ChromiumTestShellApplication;
-import org.chromium.chrome.testshell.ChromiumTestShellApplicationObserver;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellActivity;
+import org.chromium.chrome.shell.ChromiumTestShellApplication;
+import org.chromium.chrome.shell.ChromiumTestShellApplicationObserver;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 

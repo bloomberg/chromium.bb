@@ -55,7 +55,7 @@ Status Device::SetUp(const std::string& package,
     device_socket = "content_shell_devtools_remote";
     command_line_file = "/data/local/tmp/content-shell-command-line";
     exec_name = "content_shell";
-  } else if (package.compare("org.chromium.chrome.testshell") == 0) {
+  } else if (package.compare("org.chromium.chrome.shell") == 0) {
     // Chromium test shell.
     known_activity = ".ChromiumTestShellActivity";
     device_socket = "chromium_testshell_devtools_remote";

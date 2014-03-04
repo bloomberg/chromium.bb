@@ -9,8 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.testshell.ChromiumTestShellActivity;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellActivity;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;

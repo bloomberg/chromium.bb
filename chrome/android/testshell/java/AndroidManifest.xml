@@ -7,10 +7,10 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chromium.chrome.testshell">
+    package="org.chromium.chrome.shell">
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="19" />
-    <permission android:name="org.chromium.chrome.testshell.permission.SANDBOX"
+    <permission android:name="org.chromium.chrome.shell.permission.SANDBOX"
             android:protectionLevel="signature" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -26,15 +26,15 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <!-- Only Chrome can receive the messages and registration result for GCM -->
-    <permission android:name="org.chromium.chrome.testshell.permission.C2D_MESSAGE"
+    <permission android:name="org.chromium.chrome.shell.permission.C2D_MESSAGE"
                 android:protectionLevel="signature" />
-    <uses-permission android:name="org.chromium.chrome.testshell.permission.C2D_MESSAGE" />
+    <uses-permission android:name="org.chromium.chrome.shell.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-    <application android:name="org.chromium.chrome.testshell.ChromiumTestShellApplication"
+    <application android:name="org.chromium.chrome.shell.ChromiumTestShellApplication"
             android:icon="@mipmap/app_icon"
             android:label="Chrome Shell">
-        <activity android:name="org.chromium.chrome.testshell.ChromiumTestShellActivity"
+        <activity android:name="org.chromium.chrome.shell.ChromiumTestShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
@@ -129,7 +129,7 @@
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <category android:name="org.chromium.chrome.testshell"/>
+                <category android:name="org.chromium.chrome.shell"/>
             </intent-filter>
         </receiver>
         <service android:exported="false"
@@ -168,12 +168,12 @@
         </receiver>
 
         <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
-                  android:authorities="org.chromium.chrome.testshell"
+                  android:authorities="org.chromium.chrome.shell"
                   android:exported="true" />
 
         <!-- Sync adapter for browser sync. -->
         <service android:exported="false"
-                 android:name="org.chromium.chrome.testshell.sync.ChromiumTestShellSyncAdapterService">
+                 android:name="org.chromium.chrome.shell.sync.ChromiumTestShellSyncAdapterService">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -182,7 +182,7 @@
         </service>
 
         <!-- Broadcast receiver that will be notified of account changes. -->
-        <receiver android:name="org.chromium.chrome.testshell.signin.AccountsChangedReceiver">
+        <receiver android:name="org.chromium.chrome.shell.signin.AccountsChangedReceiver">
             <intent-filter>
                 <action android:name="android.accounts.LOGIN_ACCOUNTS_CHANGED" />
             </intent-filter>

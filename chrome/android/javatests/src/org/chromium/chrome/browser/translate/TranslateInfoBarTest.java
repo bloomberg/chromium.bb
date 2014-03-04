@@ -8,11 +8,11 @@ import android.test.FlakyTest;
 
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.TranslateUtil;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 
 import java.util.List;
 

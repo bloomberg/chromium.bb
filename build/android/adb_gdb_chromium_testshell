@@ -12,5 +12,5 @@ export ADB_GDB_PROGNAME=$(basename "$0")
 export ADB_GDB_ACTIVITY=.ChromiumTestShellActivity
 "$PROGDIR"/adb_gdb \
     --program-name=ChromiumTestShell \
-    --package-name=org.chromium.chrome.testshell \
+    --package-name=org.chromium.chrome.shell \
     "$@"

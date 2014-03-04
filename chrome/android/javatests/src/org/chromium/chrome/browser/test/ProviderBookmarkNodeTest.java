@@ -12,7 +12,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProvider.Type;
 import org.chromium.chrome.browser.test.util.BookmarkUtils;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 
 import java.util.Random;
 

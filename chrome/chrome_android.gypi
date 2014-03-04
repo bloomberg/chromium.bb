@@ -56,9 +56,9 @@
       ],
       'variables': {
         'apk_name': 'ChromiumTestShell',
-        'manifest_package_name': 'org.chromium.chrome.testshell',
+        'manifest_package_name': 'org.chromium.chrome.shell',
         'java_in_dir': 'android/testshell/java',
-        'resource_dir': 'android/testshell/res',
+        'resource_dir': 'android/shell/res',
         'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
         'native_lib_target': 'libchromiumtestshell',
         'native_lib_version_name': '<(version_full)',

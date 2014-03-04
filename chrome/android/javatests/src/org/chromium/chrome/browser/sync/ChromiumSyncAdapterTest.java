@@ -14,7 +14,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromiumTestShellTestBase;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 
