@@ -32885,6 +32885,15 @@ other types of suffix sets.
   <int value="49" label="INVALID_PRIORITY"/>
   <int value="50" label="INVALID_STREAM_FRAME"/>
   <int value="51" label="PACKET_READ_ERROR"/>
+  <int value="52" label="INVALID_CHANNEL_ID_SIGNATURE"/>
+  <int value="53" label="CRYPTO_SYMMETRIC_KEY_SETUP_FAILED"/>
+  <int value="54" label="CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO"/>
+  <int value="55" label="VERSION_NEGOTIATION_MISMATCH"/>
+  <int value="56" label="INVALID_HEADERS_STREAM_DATA"/>
+  <int value="57" label="INVALID_WINDOW_UPDATE_DATA"/>
+  <int value="58" label="INVALID_BLOCKED_DATA"/>
+  <int value="59" label="FLOW_CONTROL_ERROR"/>
+  <int value="60" label="INVALID_STOP_WAITING_DATA"/>
 </enum>
 
 <enum name="QuicHandshakeState" type="int">
