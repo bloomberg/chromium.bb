@@ -81,6 +81,9 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
             Document* document = candidate.importedDocument();
             if (!document)
                 continue;
+            if (collector.hasVisited(document))
+                continue;
+            collector.willVisit(document);
             document->styleEngine()->updateStyleSheetsInImport(collector);
             continue;
         }

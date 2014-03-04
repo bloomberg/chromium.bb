@@ -58,12 +58,7 @@ bool StyleSheetCandidate::isImport() const
 Document* StyleSheetCandidate::importedDocument() const
 {
     ASSERT(isImport());
-    // The stylesheet update traversal shouldn't go into shared import
-    // to prevent it from stepping into cycle.
-    HTMLLinkElement& element = toHTMLLinkElement(m_node);
-    if (!element.importOwnsLoader())
-        return 0;
-    return element.import();
+    return toHTMLLinkElement(m_node).import();
 }
 
 bool StyleSheetCandidate::isAlternate() const

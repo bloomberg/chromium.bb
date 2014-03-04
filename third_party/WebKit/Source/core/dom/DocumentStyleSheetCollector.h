@@ -27,12 +27,14 @@
 #ifndef DocumentStyleSheetCollector_h
 #define DocumentStyleSheetCollector_h
 
+#include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 class CSSStyleSheet;
+class Document;
 class StyleSheet;
 class StyleSheetCollection;
 
@@ -40,21 +42,27 @@ class DocumentStyleSheetCollector {
 public:
     friend class ImportedDocumentStyleSheetCollector;
 
-    DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList);
+    DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList, HashSet<Document*>&);
     ~DocumentStyleSheetCollector();
 
     void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
+    bool hasVisited(Document* document) const { return m_visitedDocuments.contains(document); }
+    void willVisit(Document* document) { m_visitedDocuments.add(document); }
+
 private:
     Vector<RefPtr<StyleSheet> >& m_styleSheetsForStyleSheetList;
     Vector<RefPtr<CSSStyleSheet> >& m_activeAuthorStyleSheets;
+    HashSet<Document*>& m_visitedDocuments;
 };
 
 class ActiveDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
 public:
     ActiveDocumentStyleSheetCollector(StyleSheetCollection&);
+private:
+    HashSet<Document*> m_visitedDocuments;
 };
 
 class ImportedDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {

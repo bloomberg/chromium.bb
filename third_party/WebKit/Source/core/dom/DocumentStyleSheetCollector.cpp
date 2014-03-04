@@ -33,9 +33,10 @@
 
 namespace WebCore {
 
-DocumentStyleSheetCollector::DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList)
+DocumentStyleSheetCollector::DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList, HashSet<Document*>& visitedDocuments)
     : m_styleSheetsForStyleSheetList(sheetsForList)
     , m_activeAuthorStyleSheets(activeList)
+    , m_visitedDocuments(visitedDocuments)
 {
 }
 
@@ -59,12 +60,12 @@ void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet)
 }
 
 ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(StyleSheetCollection& collection)
-    : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList, collection.m_activeAuthorStyleSheets)
+    : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList, collection.m_activeAuthorStyleSheets, m_visitedDocuments)
 {
 }
 
 ImportedDocumentStyleSheetCollector::ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector& collector, Vector<RefPtr<StyleSheet> >& sheetForList)
-    : DocumentStyleSheetCollector(sheetForList, collector.m_activeAuthorStyleSheets)
+    : DocumentStyleSheetCollector(sheetForList, collector.m_activeAuthorStyleSheets, collector.m_visitedDocuments)
 {
 }
 
