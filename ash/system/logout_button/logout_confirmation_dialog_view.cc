@@ -27,10 +27,6 @@ namespace {
 
 const int kCountdownUpdateIntervalMs = 1000;  // 1 second.
 
-inline int Round(double x) {
-    return static_cast<int>(x + 0.5);
-}
-
 }  // namespace
 
 LogoutConfirmationDialogView::LogoutConfirmationDialogView(
@@ -117,15 +113,13 @@ void LogoutConfirmationDialogView::UpdateCountdown() {
     return;
   const base::TimeDelta time_remaining = countdown_start_time_ +
       duration_ - delegate_->GetCurrentTime();
-  // Round the remaining time to nearest second, and use this value for
-  // the countdown display and actual enforcement.
-  int seconds_remaining = Round(time_remaining.InSecondsF());
-  if (seconds_remaining > 0) {
+  if (time_remaining > base::TimeDelta::FromSeconds(0)) {
     text_label_->SetText(l10n_util::GetStringFUTF16(
         IDS_ASH_LOGOUT_CONFIRMATION_WARNING,
-        ui::TimeFormat::Simple(
-            ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
-            base::TimeDelta::FromSeconds(seconds_remaining))));
+        ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
+                                 ui::TimeFormat::LENGTH_LONG,
+                                 10,
+                                 time_remaining)));
   } else {
     text_label_->SetText(l10n_util::GetStringUTF16(
         IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW));
