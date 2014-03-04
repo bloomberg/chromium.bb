@@ -1761,10 +1761,10 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
   uint8_t* bitmap_pixels = NULL;
   SkBitmap on_demand_tile_raster_bitmap_dest;
-  SkBitmap::Config config = SkBitmapConfig(quad->texture_format);
-  if (on_demand_tile_raster_bitmap_.getConfig() != config) {
+  SkColorType colorType = ResourceFormatToSkColorType(quad->texture_format);
+  if (on_demand_tile_raster_bitmap_.colorType() != colorType) {
     on_demand_tile_raster_bitmap_.copyTo(&on_demand_tile_raster_bitmap_dest,
-                                         config);
+                                         colorType);
     // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
     // bitmap data. This check will be removed once crbug.com/293728 is fixed.
     CHECK_EQ(0u, on_demand_tile_raster_bitmap_dest.rowBytes() % 4);

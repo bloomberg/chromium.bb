@@ -21,7 +21,7 @@ enum ResourceFormat {
   RESOURCE_FORMAT_MAX = ETC1,
 };
 
-SkBitmap::Config SkBitmapConfig(ResourceFormat format);
+SkColorType ResourceFormatToSkColorType(ResourceFormat format);
 
 }  // namespace cc
 

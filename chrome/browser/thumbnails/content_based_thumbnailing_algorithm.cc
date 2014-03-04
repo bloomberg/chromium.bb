@@ -143,7 +143,7 @@ SkBitmap ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
   // idependent.
   if (clipped_bitmap.width() == result_bitmap.width() &&
       clipped_bitmap.height() == result_bitmap.height()) {
-    clipped_bitmap.copyTo(&result_bitmap, SkBitmap::kARGB_8888_Config);
+    clipped_bitmap.copyTo(&result_bitmap, kPMColor_SkColorType);
   }
 #endif
 

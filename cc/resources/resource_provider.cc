@@ -121,12 +121,10 @@ class IdentityAllocator : public SkBitmap::Allocator {
   void* buffer_;
 };
 
-void CopyBitmap(const SkBitmap& src,
-                uint8_t* dst,
-                SkBitmap::Config dst_config) {
+void CopyBitmap(const SkBitmap& src, uint8_t* dst, SkColorType dst_colorType) {
   SkBitmap dst_bitmap;
   IdentityAllocator allocator(dst);
-  src.copyTo(&dst_bitmap, dst_config, &allocator);
+  src.copyTo(&dst_bitmap, dst_colorType, &allocator);
   // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
   // bitmap data. This check will be removed once crbug.com/293728 is fixed.
   CHECK_EQ(0u, dst_bitmap.rowBytes() % 4);
@@ -512,9 +510,10 @@ bool ResourceProvider::BitmapRasterBuffer::DoUnlockForWrite() {
       raster_bitmap_generation_id_ != raster_bitmap_.getGenerationID();
 
   if (raster_bitmap_changed) {
-    SkBitmap::Config buffer_config = SkBitmapConfig(resource()->format);
-    if (mapped_buffer_ && (buffer_config != raster_bitmap_.config()))
-      CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_config);
+    SkColorType buffer_colorType =
+        ResourceFormatToSkColorType(resource()->format);
+    if (mapped_buffer_ && (buffer_colorType != raster_bitmap_.colorType()))
+      CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_colorType);
   }
   raster_bitmap_.reset();
 

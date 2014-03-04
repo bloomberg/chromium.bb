@@ -102,7 +102,7 @@ SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
     for (size_t i = 0; i < image_reps.size(); ++i) {
       const SkBitmap& copy_src = image_reps[i].sk_bitmap();
       SkBitmap copy_dst;
-      copy_src.copyTo(&copy_dst, SkBitmap::kARGB_8888_Config);
+      copy_src.copyTo(&copy_dst, kPMColor_SkColorType);
       frame_copy.AddRepresentation(gfx::ImageSkiaRep(
           copy_dst, image_reps[i].scale()));
     }

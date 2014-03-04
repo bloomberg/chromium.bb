@@ -2575,8 +2575,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
   const SkBitmap* bitmap = image_data->GetMappedBitmap();
   // Make a deep copy, so that the cursor remains valid even after the original
   // image data gets freed.
-  if (!bitmap->copyTo(&custom_cursor->customImage.getSkBitmap(),
-                      bitmap->config())) {
+  if (!bitmap->copyTo(&custom_cursor->customImage.getSkBitmap())) {
     return PP_FALSE;
   }
 

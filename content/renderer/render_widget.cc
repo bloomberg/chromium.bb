@@ -2201,7 +2201,7 @@ bool RenderWidget::OnSnapshotHelper(const gfx::Rect& src_subrect,
   canvas->restore();
 
   const SkBitmap& bitmap = skia::GetTopDevice(*canvas)->accessBitmap(false);
-  if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))
+  if (!bitmap.copyTo(snapshot, kPMColor_SkColorType))
     return false;
 
   UMA_HISTOGRAM_TIMES("Renderer4.Snapshot",

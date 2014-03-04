@@ -675,7 +675,7 @@ void LayerTreeHost::SetOverhangBitmap(const SkBitmap& bitmap) {
   if (bitmap.isImmutable()) {
     bitmap_copy = bitmap;
   } else {
-    bitmap.copyTo(&bitmap_copy, bitmap.config());
+    bitmap.copyTo(&bitmap_copy);
     bitmap_copy.setImmutable();
   }
 

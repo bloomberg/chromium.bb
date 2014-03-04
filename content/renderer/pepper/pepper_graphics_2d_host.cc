@@ -381,7 +381,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   // Copy to device independent bitmap when target canvas doesn't support
   // platform paint.
   if (!skia::SupportsPlatformPaint(canvas))
-    backing_bitmap.copyTo(&image, SkBitmap::kARGB_8888_Config);
+    backing_bitmap.copyTo(&image, kPMColor_SkColorType);
   else
     image = backing_bitmap;
 

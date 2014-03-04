@@ -6,13 +6,13 @@
 
 namespace cc {
 
-SkBitmap::Config SkBitmapConfig(ResourceFormat format) {
+SkColorType ResourceFormatToSkColorType(ResourceFormat format) {
   switch (format) {
     case RGBA_4444:
-      return SkBitmap::kARGB_4444_Config;
+      return kARGB_4444_SkColorType;
     case RGBA_8888:
     case BGRA_8888:
-      return SkBitmap::kARGB_8888_Config;
+      return kPMColor_SkColorType;
     case ETC1:
     case LUMINANCE_8:
     case RGB_565:
@@ -20,7 +20,7 @@ SkBitmap::Config SkBitmapConfig(ResourceFormat format) {
       break;
   }
   NOTREACHED();
-  return SkBitmap::kARGB_8888_Config;
+  return kPMColor_SkColorType;
 }
 
 }  // namespace cc

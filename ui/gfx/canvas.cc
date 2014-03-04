@@ -119,14 +119,14 @@ int Canvas::DefaultCanvasTextAlignment() {
 }
 
 ImageSkiaRep Canvas::ExtractImageRep() const {
-  const SkBitmap& device_bitmap = canvas_->getDevice()->accessBitmap(false);
-
   // Make a bitmap to return, and a canvas to draw into it. We don't just want
   // to call extractSubset or the copy constructor, since we want an actual copy
   // of the bitmap.
+  const SkISize size = canvas_->getDeviceSize();
   SkBitmap result;
-  device_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
+  result.allocN32Pixels(size.width(), size.height());
 
+  canvas_->readPixels(&result, 0, 0);
   return ImageSkiaRep(result, image_scale_);
 }
 
@@ -144,8 +144,7 @@ void Canvas::DrawDashedRect(const Rect& rect, SkColor color) {
     delete dots;
     last_color = color;
     dots = new SkBitmap;
-    dots->setConfig(SkBitmap::kARGB_8888_Config, col_pixels, row_pixels);
-    dots->allocPixels();
+    dots->allocN32Pixels(col_pixels, row_pixels);
     dots->eraseARGB(0, 0, 0, 0);
 
     uint32_t* dot = dots->getAddr32(0, 0);
