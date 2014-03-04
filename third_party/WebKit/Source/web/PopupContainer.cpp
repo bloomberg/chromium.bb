@@ -472,6 +472,8 @@ void PopupContainer::popupOpened(const IntRect& bounds)
         return;
 
     WebWidget* webwidget = webView->client()->createPopupMenu(WebPopupTypeSelect);
+    if (!webwidget)
+        return;
     // We only notify when the WebView has to handle the popup, as when
     // the popup is handled externally, the fact that a popup is showing is
     // transparent to the WebView.
