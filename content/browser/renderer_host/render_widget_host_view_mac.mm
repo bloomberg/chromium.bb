@@ -45,6 +45,8 @@
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "skia/ext/platform_canvas.h"
@@ -1856,6 +1858,13 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
       ack);
   software_frame_manager_->SwapToNewFrameComplete(
       !render_widget_host_->is_hidden());
+
+  // Notify observers, tab capture observers in particular, that a new software
+  // frame has come in.
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+      Source<RenderWidgetHost>(render_widget_host_),
+      NotificationService::NoDetails());
 }
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
