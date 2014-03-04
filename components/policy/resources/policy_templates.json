@@ -5948,7 +5948,7 @@
       'name': 'VariationsRestrictParameter',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:27-', 'android:34-'],
+      'supported_on': ['chrome.*:27-', 'android:34-', 'ios:35-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
