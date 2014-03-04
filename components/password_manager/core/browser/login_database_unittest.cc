@@ -39,7 +39,7 @@ class LoginDatabaseTest : public testing::Test {
 
   void FormsAreEqual(const PasswordForm& expected, const PasswordForm& actual) {
     PasswordForm expected_copy(expected);
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
     // On the Mac we should never be storing passwords in the database.
     expected_copy.password_value = ASCIIToUTF16("");
 #endif
@@ -175,7 +175,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   // Password element was updated.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // On the Mac we should never be storing passwords in the database.
   EXPECT_EQ(base::string16(), result[0]->password_value);
 #else
@@ -662,13 +662,13 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   EXPECT_EQ(incomplete_form.origin, result[0]->origin);
   EXPECT_EQ(incomplete_form.signon_realm, result[0]->signon_realm);
   EXPECT_EQ(incomplete_form.username_value, result[0]->username_value);
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // On Mac, passwords are not stored in login database, instead they're in
   // the keychain.
   EXPECT_TRUE(result[0]->password_value.empty());
 #else
   EXPECT_EQ(incomplete_form.password_value, result[0]->password_value);
-#endif  // !OS_MACOSX
+#endif  // OS_MACOSX && !OS_IOS
   EXPECT_TRUE(result[0]->preferred);
   EXPECT_FALSE(result[0]->ssl_valid);
 
@@ -697,9 +697,9 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
 
   // This time we should have all the info available.
   PasswordForm expected_form(completed_form);
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   expected_form.password_value.clear();
-#endif  // OS_MACOSX
+#endif  // OS_MACOSX && !OS_IOS
   EXPECT_EQ(expected_form, *result[0]);
   ClearResults(&result);
 }

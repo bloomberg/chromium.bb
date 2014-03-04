@@ -253,9 +253,6 @@
                 ['include', '^signin/'],
                 ['include', '^sync_driver/'],
                 ['include', '^translate/'],
-                # TODO(blundell): Provide the iOS login DB implementation and
-                # then re-enable this test. http://crbug.com/341429
-                ['exclude', '^password_manager/core/browser/login_database_unittest.cc'],
               ],
               'actions': [
                 {
