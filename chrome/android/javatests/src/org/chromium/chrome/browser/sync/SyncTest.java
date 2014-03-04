@@ -135,8 +135,6 @@ public class SyncTest extends ChromiumTestShellTestBase {
     }
 
     @HostDrivenTest
-    /* http://crbug.com/348951 */
-    @DisabledTest
     public void testDisableAndEnableSync() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
         Account account =
