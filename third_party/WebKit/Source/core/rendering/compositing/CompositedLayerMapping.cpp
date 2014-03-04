@@ -1603,6 +1603,9 @@ bool CompositedLayerMapping::isSimpleContainerCompositingLayer() const
 
 static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
 {
+    if (!parent->hasVisibleDescendant())
+        return false;
+
     // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
     parent->stackingNode()->updateLayerListsIfNeeded();
 
@@ -1610,22 +1613,12 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
     LayerListMutationDetector mutationChecker(parent->stackingNode());
 #endif
 
-    RenderLayerStackingNodeIterator normalFlowIterator(*parent->stackingNode(), NormalFlowChildren);
+    RenderLayerStackingNodeIterator normalFlowIterator(*parent->stackingNode(), AllChildren);
     while (RenderLayerStackingNode* curNode = normalFlowIterator.next()) {
         RenderLayer* curLayer = curNode->layer();
-        if (!curLayer->hasCompositedLayerMapping()
-            && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
-            return true;
-    }
-
-    if (!parent->hasVisibleDescendant())
-        return false;
-
-    RenderLayerStackingNodeIterator zOrderIterator(*parent->stackingNode(), NegativeZOrderChildren | PositiveZOrderChildren);
-    while (RenderLayerStackingNode* curNode = zOrderIterator.next()) {
-        RenderLayer* curLayer = curNode->layer();
-        if (!curLayer->hasCompositedLayerMapping()
-            && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
+        if (curLayer->hasCompositedLayerMapping())
+            continue;
+        if (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer))
             return true;
     }
 
