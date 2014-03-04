@@ -26458,6 +26458,7 @@ other types of suffix sets.
   <int value="258"
       label="Power management settings when the user becomes idle"/>
   <int value="259" label="Screen lock delays"/>
+  <int value="260" label="Media keys default to function keys"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

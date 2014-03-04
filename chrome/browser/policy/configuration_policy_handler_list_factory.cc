@@ -451,6 +451,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kChromeOsMultiProfileUserBehavior,
     prefs::kMultiProfileUserBehavior,
     base::Value::TYPE_STRING },
+  { key::kKeyboardDefaultToFunctionKeys,
+    prefs::kLanguageSendFunctionKeys,
+    base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

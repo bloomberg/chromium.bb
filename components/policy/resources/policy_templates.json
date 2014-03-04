@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 259
+#   For your editing convenience: highest ID currently used: 260
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -5680,6 +5680,25 @@
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime.'''
+        },
+        {
+          'name': 'KeyboardDefaultToFunctionKeys',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:35-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 260,
+          'caption': '''Media keys default to function keys''',
+          'desc': '''Changes the default behaviour of the top row keys to function keys.
+
+          If this policy is set to true, the keyboard's top row of keys will produce function key commands per default. The search key has to be pressed to revert their behavior back to media keys.
+
+          If this policy is set to false or left unset, the keyboard will produce media key commands per default and function key commands when the search key is held.'''
         },
         {
           'name': 'ScreenMagnifierType',

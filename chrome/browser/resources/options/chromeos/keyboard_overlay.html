@@ -74,11 +74,16 @@
     </table>
     <div class="settings-row">
       <div class="checkbox">
-        <label>
+        <span class="controlled-setting-with-label">
           <input id="send-function-keys" type="checkbox"
               pref="settings.language.send_function_keys" dialog-pref>
-          <span i18n-content="sendFunctionKeys"></span>
-        </label>
+          <span>
+            <label for="send-function-keys" i18n-content="sendFunctionKeys">
+            </label>
+            <span class="bubble-button controlled-setting-indicator"
+                pref="settings.language.send_function_keys"></span>
+          </span>
+        </span>
       </div>
       <label id="send-function-keys-description" for="send-function-keys"
           i18n-content="sendFunctionKeysDescription">

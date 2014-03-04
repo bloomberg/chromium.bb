@@ -1966,6 +1966,18 @@
     ]
   },
 
+  "KeyboardDefaultToFunctionKeys": {
+    "os": ["chromeos"],
+    "test_policy": { "KeyboardDefaultToFunctionKeys": true },
+    "pref_mappings": [
+      { "pref": "settings.language.send_function_keys",
+        "indicator_tests": [
+          { "policy": { "KeyboardDefaultToFunctionKeys": true } }
+        ]
+      }
+    ]
+  },
+
   "AttestationEnabledForUser": {
     "os": ["chromeos"],
     "test_policy": { "AttestationEnabledForUser": true },
