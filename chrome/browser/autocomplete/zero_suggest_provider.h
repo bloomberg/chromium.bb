@@ -74,12 +74,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // BaseSearchProvider:
   virtual const TemplateURL* GetTemplateURL(
       const SuggestResult& result) const OVERRIDE;
-  virtual const AutocompleteInput GetInput(
-      const SuggestResult& result) const OVERRIDE;
+  virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
+  virtual int GetDefaultResultRelevance() const OVERRIDE;
 
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.
@@ -91,9 +91,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Fetches zero-suggest suggestions by sending a request using |suggest_url|.
   void Run(const GURL& suggest_url);
-
-  // Parses results from the zero-suggest server and updates |results_|.
-  void ParseSuggestResults(const base::Value& root_val);
 
   // Converts the parsed results to a set of AutocompleteMatches and adds them
   // to |matches_|.  Also update the histograms for how many results were

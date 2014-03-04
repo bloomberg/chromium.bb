@@ -26,10 +26,6 @@ class SearchProviderTest;
 class SuggestionDeletionHandler;
 class TemplateURLService;
 
-namespace base {
-class Value;
-}
-
 namespace net {
 class URLFetcher;
 }
@@ -163,14 +159,17 @@ class SearchProvider : public BaseSearchProvider {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // BaseSearchProvider:
+  virtual void SortResults(bool is_keyword,
+                           const base::ListValue* relevances,
+                           Results* results) OVERRIDE;
   virtual const TemplateURL* GetTemplateURL(
       const SuggestResult& result) const OVERRIDE;
-  virtual const AutocompleteInput GetInput(
-      const SuggestResult& result) const OVERRIDE;
+  virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
+  virtual int GetDefaultResultRelevance() const OVERRIDE;
 
   // This gets called when we have requested a suggestion deletion from the
   // server to handle the results of the deletion.
@@ -216,11 +215,6 @@ class SearchProvider : public BaseSearchProvider {
   net::URLFetcher* CreateSuggestFetcher(int id,
                                         const TemplateURL* template_url,
                                         const AutocompleteInput& input);
-
-  // Parses results from the suggest server and updates the appropriate suggest
-  // and navigation result lists, depending on whether |is_keyword| is true.
-  // Returns whether the appropriate result list members were updated.
-  bool ParseSuggestResults(base::Value* root_val, bool is_keyword);
 
   // Converts the parsed results to a set of AutocompleteMatches, |matches_|.
   void ConvertResultsToAutocompleteMatches();

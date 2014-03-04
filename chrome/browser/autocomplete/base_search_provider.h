@@ -26,6 +26,7 @@ class Profile;
 class TemplateURL;
 
 namespace base {
+class ListValue;
 class Value;
 }
 
@@ -355,14 +356,26 @@ class BaseSearchProvider : public AutocompleteProvider,
                      int accepted_suggestion,
                      MatchMap* map);
 
+  // Parses results from the suggest server and updates the appropriate suggest
+  // and navigation result lists in |results|. |is_keyword_result| indicates
+  // whether the response was received from the keyword provider.
+  // Returns whether the appropriate result list members were updated.
+  bool ParseSuggestResults(const base::Value& root_val,
+                           bool is_keyword_result,
+                           Results* results);
+
+  // Called at the end of ParseSuggestResults to rank the |results|.
+  virtual void SortResults(bool is_keyword,
+                           const base::ListValue* relevances,
+                           Results* results);
+
   // Returns the TemplateURL for the given |result|.
   virtual const TemplateURL* GetTemplateURL(
       const SuggestResult& result) const = 0;
 
-  // Returns the AutocompleteInput based on whether the |result| is from the
-  // default provider or from the keyword provider.
-  virtual const AutocompleteInput GetInput(
-      const SuggestResult& result) const = 0;
+  // Returns the AutocompleteInput for keyword provider or default provider
+  // based on the value of |is_keyword|.
+  virtual const AutocompleteInput GetInput(bool is_keyword) const = 0;
 
   // Returns whether the destination URL corresponding to the given |result|
   // should contain command-line-specified query params.
@@ -374,6 +387,9 @@ class BaseSearchProvider : public AutocompleteProvider,
 
   // Clears the current results.
   virtual void ClearAllResults() = 0;
+
+  // Returns the relevance to use if it was not explicitly set by the server.
+  virtual int GetDefaultResultRelevance() const = 0;
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion

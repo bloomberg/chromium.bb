@@ -104,7 +104,7 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   if (request_succeeded) {
     scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
     if (data.get())
-      ParseSuggestResults(*data.get());
+      ParseSuggestResults(*data.get(), false, &results_);
   }
   done_ = true;
 
@@ -166,12 +166,11 @@ const TemplateURL* ZeroSuggestProvider::GetTemplateURL(
   return template_url_service_->GetDefaultSearchProvider();
 }
 
-const AutocompleteInput ZeroSuggestProvider::GetInput(
-    const SuggestResult& result) const {
-  AutocompleteInput input;
-  // Set |input|'s text to be |query_string| to avoid bolding.
-  input.UpdateText(result.suggestion(), base::string16::npos, input.parts());
-  return input;
+const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
+  return AutocompleteInput(
+      base::string16(), base::string16::npos, base::string16(),
+      GURL(current_query_), current_page_classification_, true, false, false,
+      AutocompleteInput::ALL_MATCHES);
 }
 
 bool ZeroSuggestProvider::ShouldAppendExtraParams(
@@ -198,19 +197,15 @@ void ZeroSuggestProvider::ClearAllResults() {
   matches_.clear();
 }
 
+int ZeroSuggestProvider::GetDefaultResultRelevance() const {
+  return kDefaultZeroSuggestRelevance;
+}
+
 void ZeroSuggestProvider::AddSuggestResultsToMap(
     const SuggestResults& results,
     MatchMap* map) {
-  for (size_t i = 0; i < results.size(); ++i) {
-    const base::string16& query_string(results[i].suggestion());
-    // TODO(mariakhomenko): Do not reconstruct SuggestResult objects with
-    // a different query -- create correct objects to begin with.
-    const SuggestResult suggestion(
-        query_string, AutocompleteMatchType::SEARCH_SUGGEST, query_string,
-        base::string16(), base::string16(), std::string(), std::string(), false,
-        results[i].relevance(), true, false, query_string);
-    AddMatchToMap(suggestion, std::string(), i, map);
-  }
+  for (size_t i = 0; i < results.size(); ++i)
+    AddMatchToMap(results[i], std::string(), i, map);
 }
 
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
@@ -268,87 +263,6 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   }
   have_pending_request_ = true;
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
-}
-
-void ZeroSuggestProvider::ParseSuggestResults(const base::Value& root_val) {
-  base::string16 query;
-  const base::ListValue* root_list = NULL;
-  const base::ListValue* results = NULL;
-  const base::ListValue* relevances = NULL;
-  // The response includes the query, which should be empty for ZeroSuggest
-  // responses.
-  if (!root_val.GetAsList(&root_list) || !root_list->GetString(0, &query) ||
-      (!query.empty()) || !root_list->GetList(1, &results))
-    return;
-
-  // 3rd element: Description list.
-  const base::ListValue* descriptions = NULL;
-  root_list->GetList(2, &descriptions);
-
-  // 4th element: Disregard the query URL list for now.
-
-  // Reset suggested relevance information from the provider.
-  results_.verbatim_relevance = -1;
-
-  // 5th element: Optional key-value pairs from the Suggest server.
-  const base::ListValue* types = NULL;
-  const base::DictionaryValue* extras = NULL;
-  if (root_list->GetDictionary(4, &extras)) {
-    extras->GetList("google:suggesttype", &types);
-
-    // Discard this list if its size does not match that of the suggestions.
-    if (extras->GetList("google:suggestrelevance", &relevances) &&
-        relevances->GetSize() != results->GetSize())
-      relevances = NULL;
-    extras->GetInteger("google:verbatimrelevance",
-                       &results_.verbatim_relevance);
-
-    // Check if the active suggest field trial (if any) has triggered.
-    bool triggered = false;
-    extras->GetBoolean("google:fieldtrialtriggered", &triggered);
-    field_trial_triggered_ |= triggered;
-    field_trial_triggered_in_session_ |= triggered;
-  }
-
-  // Clear the previous results now that new results are available.
-  results_.suggest_results.clear();
-  results_.navigation_results.clear();
-
-  base::string16 result, title;
-  std::string type;
-  const base::string16 current_query_string16 =
-      base::ASCIIToUTF16(current_query_);
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  for (size_t index = 0; results->GetString(index, &result); ++index) {
-    // Google search may return empty suggestions for weird input characters,
-    // they make no sense at all and can cause problems in our code.
-    if (result.empty())
-      continue;
-
-    int relevance = kDefaultZeroSuggestRelevance;
-
-    // Apply valid suggested relevance scores; discard invalid lists.
-    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
-      relevances = NULL;
-    if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
-      // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(URLFixerUpper::FixupURL(
-          base::UTF16ToUTF8(result), std::string()));
-      if (url.is_valid()) {
-        if (descriptions != NULL)
-          descriptions->GetString(index, &title);
-        results_.navigation_results.push_back(NavigationResult(
-            *this, url, title, false, relevance, relevances != NULL,
-            current_query_string16, languages));
-      }
-    } else {
-      results_.suggest_results.push_back(SuggestResult(
-          result, AutocompleteMatchType::SEARCH_SUGGEST, result,
-          base::string16(), base::string16(), std::string(), std::string(),
-          false, relevance, relevances != NULL, false, current_query_string16));
-    }
-  }
 }
 
 void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(

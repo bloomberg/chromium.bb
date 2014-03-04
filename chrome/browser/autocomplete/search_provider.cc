@@ -34,7 +34,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search/instant_controller.h"
-#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
@@ -91,18 +90,6 @@ bool HasMultipleWords(const base::string16& text) {
     }
   }
   return false;
-}
-
-AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
-  if (type == "ENTITY")
-    return AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
-  if (type == "INFINITE")
-    return AutocompleteMatchType::SEARCH_SUGGEST_INFINITE;
-  if (type == "PERSONALIZED_QUERY")
-    return AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
-  if (type == "PROFILE")
-    return AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
-  return AutocompleteMatchType::SEARCH_SUGGEST;
 }
 
 }  // namespace
@@ -460,12 +447,42 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     }
 
     scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
-    results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
+    results_updated = data.get() && ParseSuggestResults(
+        *data.get(), is_keyword,
+        is_keyword ? &keyword_results_ : &default_results_);
   }
 
   UpdateMatches();
   if (done_ || results_updated)
     listener_->OnProviderUpdate(results_updated);
+}
+
+void SearchProvider::SortResults(bool is_keyword,
+                                 const base::ListValue* relevances,
+                                 Results* results) {
+  // Ignore suggested scores for non-keyword matches in keyword mode; if the
+  // server is allowed to score these, it could interfere with the user's
+  // ability to get good keyword results.
+  const bool abandon_suggested_scores =
+      !is_keyword && !providers_.keyword_provider().empty();
+  // Apply calculated relevance scores to suggestions if a valid list was
+  // not provided or we're abandoning suggested scores entirely.
+  if ((relevances == NULL) || abandon_suggested_scores) {
+    ApplyCalculatedSuggestRelevance(&results->suggest_results);
+    ApplyCalculatedNavigationRelevance(&results->navigation_results);
+    // If abandoning scores entirely, also abandon the verbatim score.
+    if (abandon_suggested_scores)
+      results->verbatim_relevance = -1;
+  }
+
+  // Keep the result lists sorted.
+  const CompareScoredResults comparator = CompareScoredResults();
+  std::stable_sort(results->suggest_results.begin(),
+                   results->suggest_results.end(),
+                   comparator);
+  std::stable_sort(results->navigation_results.begin(),
+                   results->navigation_results.end(),
+                   comparator);
 }
 
 const TemplateURL* SearchProvider::GetTemplateURL(
@@ -474,9 +491,8 @@ const TemplateURL* SearchProvider::GetTemplateURL(
                                         : providers_.GetDefaultProviderURL();
 }
 
-const AutocompleteInput SearchProvider::GetInput(
-    const SuggestResult& result) const {
-  return result.from_keyword_provider() ? keyword_input_ : input_;
+const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
+  return is_keyword ? keyword_input_ : input_;
 }
 
 bool SearchProvider::ShouldAppendExtraParams(
@@ -500,6 +516,10 @@ void SearchProvider::StopSuggest() {
 void SearchProvider::ClearAllResults() {
   keyword_results_.Clear();
   default_results_.Clear();
+}
+
+int SearchProvider::GetDefaultResultRelevance() const {
+  return -1;
 }
 
 void SearchProvider::OnDeletionComplete(bool success,
@@ -822,156 +842,6 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
   return fetcher;
-}
-
-bool SearchProvider::ParseSuggestResults(base::Value* root_val,
-                                         bool is_keyword) {
-  base::string16 query;
-  base::ListValue* root_list = NULL;
-  base::ListValue* results_list = NULL;
-  const base::string16& input_text =
-      is_keyword ? keyword_input_.text() : input_.text();
-  if (!root_val->GetAsList(&root_list) || !root_list->GetString(0, &query) ||
-      (query != input_text) || !root_list->GetList(1, &results_list))
-    return false;
-
-  // 3rd element: Description list.
-  base::ListValue* descriptions = NULL;
-  root_list->GetList(2, &descriptions);
-
-  // 4th element: Disregard the query URL list for now.
-
-  // Reset suggested relevance information from the default provider.
-  Results* results = is_keyword ? &keyword_results_ : &default_results_;
-  results->verbatim_relevance = -1;
-
-  // 5th element: Optional key-value pairs from the Suggest server.
-  base::ListValue* types = NULL;
-  base::ListValue* relevances = NULL;
-  base::ListValue* suggestion_details = NULL;
-  base::DictionaryValue* extras = NULL;
-  int prefetch_index = -1;
-  if (root_list->GetDictionary(4, &extras)) {
-    extras->GetList("google:suggesttype", &types);
-
-    // Discard this list if its size does not match that of the suggestions.
-    if (extras->GetList("google:suggestrelevance", &relevances) &&
-        (relevances->GetSize() != results_list->GetSize()))
-      relevances = NULL;
-    extras->GetInteger("google:verbatimrelevance",
-                       &results->verbatim_relevance);
-
-    // Check if the active suggest field trial (if any) has triggered either
-    // for the default provider or keyword provider.
-    bool triggered = false;
-    extras->GetBoolean("google:fieldtrialtriggered", &triggered);
-    field_trial_triggered_ |= triggered;
-    field_trial_triggered_in_session_ |= triggered;
-
-    base::DictionaryValue* client_data = NULL;
-    if (extras->GetDictionary("google:clientdata", &client_data) && client_data)
-      client_data->GetInteger("phi", &prefetch_index);
-
-    if (extras->GetList("google:suggestdetail", &suggestion_details) &&
-        suggestion_details->GetSize() != results_list->GetSize())
-      suggestion_details = NULL;
-
-    // Store the metadata that came with the response in case we need to pass it
-    // along with the prefetch query to Instant.
-    JSONStringValueSerializer json_serializer(&results->metadata);
-    json_serializer.Serialize(*extras);
-  }
-
-  // Clear the previous results now that new results are available.
-  results->suggest_results.clear();
-  results->navigation_results.clear();
-
-  base::string16 suggestion;
-  std::string type;
-  int relevance = -1;
-  // Prohibit navsuggest in FORCED_QUERY mode.  Users wants queries, not URLs.
-  const bool allow_navsuggest =
-      (is_keyword ? keyword_input_.type() : input_.type()) !=
-      AutocompleteInput::FORCED_QUERY;
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
-    // Google search may return empty suggestions for weird input characters,
-    // they make no sense at all and can cause problems in our code.
-    if (suggestion.empty())
-      continue;
-
-    // Apply valid suggested relevance scores; discard invalid lists.
-    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
-      relevances = NULL;
-    if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
-      // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(URLFixerUpper::FixupURL(
-          base::UTF16ToUTF8(suggestion), std::string()));
-      if (url.is_valid() && allow_navsuggest) {
-        base::string16 title;
-        if (descriptions != NULL)
-          descriptions->GetString(index, &title);
-        results->navigation_results.push_back(NavigationResult(
-            *this, url, title, is_keyword, relevance, true, input_text,
-            languages));
-      }
-    } else {
-      AutocompleteMatchType::Type match_type = GetAutocompleteMatchType(type);
-      bool should_prefetch = static_cast<int>(index) == prefetch_index;
-      base::DictionaryValue* suggestion_detail = NULL;
-      base::string16 match_contents = suggestion;
-      base::string16 match_contents_prefix;
-      base::string16 annotation;
-      std::string suggest_query_params;
-      std::string deletion_url;
-
-      if (suggestion_details) {
-        suggestion_details->GetDictionary(index, &suggestion_detail);
-        if (suggestion_detail) {
-          suggestion_detail->GetString("du", &deletion_url);
-          suggestion_detail->GetString("t", &match_contents);
-          suggestion_detail->GetString("mp", &match_contents_prefix);
-          // Error correction for bad data from server.
-          if (match_contents.empty())
-            match_contents = suggestion;
-          suggestion_detail->GetString("a", &annotation);
-          suggestion_detail->GetString("q", &suggest_query_params);
-        }
-      }
-
-      // TODO(kochi): Improve calculator suggestion presentation.
-      results->suggest_results.push_back(SuggestResult(
-          suggestion, match_type, match_contents, match_contents_prefix,
-          annotation, suggest_query_params, deletion_url, is_keyword, relevance,
-          true, should_prefetch, input_text));
-    }
-  }
-
-  // Ignore suggested scores for non-keyword matches in keyword mode; if the
-  // server is allowed to score these, it could interfere with the user's
-  // ability to get good keyword results.
-  const bool abandon_suggested_scores =
-      !is_keyword && !providers_.keyword_provider().empty();
-  // Apply calculated relevance scores to suggestions if a valid list was
-  // not provided or we're abandoning suggested scores entirely.
-  if ((relevances == NULL) || abandon_suggested_scores) {
-    ApplyCalculatedSuggestRelevance(&results->suggest_results);
-    ApplyCalculatedNavigationRelevance(&results->navigation_results);
-    // If abandoning scores entirely, also abandon the verbatim score.
-    if (abandon_suggested_scores)
-      results->verbatim_relevance = -1;
-  }
-
-  // Keep the result lists sorted.
-  const CompareScoredResults comparator = CompareScoredResults();
-  std::stable_sort(results->suggest_results.begin(),
-                   results->suggest_results.end(),
-                   comparator);
-  std::stable_sort(results->navigation_results.begin(),
-                   results->navigation_results.end(),
-                   comparator);
-  return true;
 }
 
 void SearchProvider::ConvertResultsToAutocompleteMatches() {

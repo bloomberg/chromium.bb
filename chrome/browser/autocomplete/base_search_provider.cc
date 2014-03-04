@@ -20,6 +20,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
@@ -27,6 +28,22 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
+
+namespace {
+
+AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
+  if (type == "ENTITY")
+    return AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  if (type == "INFINITE")
+    return AutocompleteMatchType::SEARCH_SUGGEST_INFINITE;
+  if (type == "PERSONALIZED_QUERY")
+    return AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
+  if (type == "PROFILE")
+    return AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+  return AutocompleteMatchType::SEARCH_SUGGEST;
+}
+
+} // namespace
 
 // BaseSearchProvider ---------------------------------------------------------
 
@@ -63,7 +80,7 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
     if (field_trial_triggered_in_session_) {
       new_entry.mutable_field_trial_triggered_in_session()->Add(
           field_trial_hashes[i]);
-     }
+    }
   }
 }
 
@@ -122,6 +139,13 @@ BaseSearchProvider::SuggestResult::~SuggestResult() {}
 void BaseSearchProvider::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
     const base::string16& input_text) {
+  if (input_text.empty()) {
+    // In case of zero-suggest results, do not highlight matches.
+    match_contents_class_.push_back(
+        ACMatchClassification(0, ACMatchClassification::NONE));
+    return;
+  }
+
   base::string16 lookup_text = input_text;
   if (type_ == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
     const size_t contents_index =
@@ -218,6 +242,13 @@ void BaseSearchProvider::NavigationResult::CalculateAndClassifyMatchContents(
     const bool allow_bolding_nothing,
     const base::string16& input_text,
     const std::string& languages) {
+  if (input_text.empty()) {
+    // In case of zero-suggest results, do not highlight matches.
+    match_contents_class_.push_back(
+        ACMatchClassification(0, ACMatchClassification::NONE));
+    return;
+  }
+
   // First look for the user's input inside the formatted url as it would be
   // without trimming the scheme, so we can find matches at the beginning of the
   // scheme.
@@ -464,8 +495,8 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
       instant_service->omnibox_start_margin() : chrome::kDisableStartMargin;
 
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, GetInput(result), result, GetTemplateURL(result),
-      accepted_suggestion, omnibox_start_margin,
+      this, GetInput(result.from_keyword_provider()), result,
+      GetTemplateURL(result), accepted_suggestion, omnibox_start_margin,
       ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
@@ -537,4 +568,134 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
       }
     }
   }
+}
+
+bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
+                                             bool is_keyword_result,
+                                             Results* results) {
+  base::string16 query;
+  const base::ListValue* root_list = NULL;
+  const base::ListValue* results_list = NULL;
+  const AutocompleteInput& input = GetInput(is_keyword_result);
+
+  if (!root_val.GetAsList(&root_list) || !root_list->GetString(0, &query) ||
+      query != input.text() || !root_list->GetList(1, &results_list))
+    return false;
+
+  // 3rd element: Description list.
+  const base::ListValue* descriptions = NULL;
+  root_list->GetList(2, &descriptions);
+
+  // 4th element: Disregard the query URL list for now.
+
+  // Reset suggested relevance information.
+  results->verbatim_relevance = -1;
+
+  // 5th element: Optional key-value pairs from the Suggest server.
+  const base::ListValue* types = NULL;
+  const base::ListValue* relevances = NULL;
+  const base::ListValue* suggestion_details = NULL;
+  const base::DictionaryValue* extras = NULL;
+  int prefetch_index = -1;
+  if (root_list->GetDictionary(4, &extras)) {
+    extras->GetList("google:suggesttype", &types);
+
+    // Discard this list if its size does not match that of the suggestions.
+    if (extras->GetList("google:suggestrelevance", &relevances) &&
+        (relevances->GetSize() != results_list->GetSize()))
+      relevances = NULL;
+    extras->GetInteger("google:verbatimrelevance",
+                       &results->verbatim_relevance);
+
+    // Check if the active suggest field trial (if any) has triggered either
+    // for the default provider or keyword provider.
+    bool triggered = false;
+    extras->GetBoolean("google:fieldtrialtriggered", &triggered);
+    field_trial_triggered_ |= triggered;
+    field_trial_triggered_in_session_ |= triggered;
+
+    const base::DictionaryValue* client_data = NULL;
+    if (extras->GetDictionary("google:clientdata", &client_data) && client_data)
+      client_data->GetInteger("phi", &prefetch_index);
+
+    if (extras->GetList("google:suggestdetail", &suggestion_details) &&
+        suggestion_details->GetSize() != results_list->GetSize())
+      suggestion_details = NULL;
+
+    // Store the metadata that came with the response in case we need to pass it
+    // along with the prefetch query to Instant.
+    JSONStringValueSerializer json_serializer(&results->metadata);
+    json_serializer.Serialize(*extras);
+  }
+
+  // Clear the previous results now that new results are available.
+  results->suggest_results.clear();
+  results->navigation_results.clear();
+
+  base::string16 suggestion;
+  std::string type;
+  int relevance = GetDefaultResultRelevance();
+  // Prohibit navsuggest in FORCED_QUERY mode.  Users wants queries, not URLs.
+  const bool allow_navsuggest = input.type() != AutocompleteInput::FORCED_QUERY;
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
+    // Google search may return empty suggestions for weird input characters,
+    // they make no sense at all and can cause problems in our code.
+    if (suggestion.empty())
+      continue;
+
+    // Apply valid suggested relevance scores; discard invalid lists.
+    if (relevances != NULL && !relevances->GetInteger(index, &relevance))
+      relevances = NULL;
+    if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
+      // Do not blindly trust the URL coming from the server to be valid.
+      GURL url(URLFixerUpper::FixupURL(
+          base::UTF16ToUTF8(suggestion), std::string()));
+      if (url.is_valid() && allow_navsuggest) {
+        base::string16 title;
+        if (descriptions != NULL)
+          descriptions->GetString(index, &title);
+        results->navigation_results.push_back(NavigationResult(
+            *this, url, title, is_keyword_result, relevance,
+            relevances != NULL, input.text(), languages));
+      }
+    } else {
+      AutocompleteMatchType::Type match_type = GetAutocompleteMatchType(type);
+      bool should_prefetch = static_cast<int>(index) == prefetch_index;
+      const base::DictionaryValue* suggestion_detail = NULL;
+      base::string16 match_contents = suggestion;
+      base::string16 match_contents_prefix;
+      base::string16 annotation;
+      std::string suggest_query_params;
+      std::string deletion_url;
+
+      if (suggestion_details) {
+        suggestion_details->GetDictionary(index, &suggestion_detail);
+        if (suggestion_detail) {
+          suggestion_detail->GetString("du", &deletion_url);
+          suggestion_detail->GetString("t", &match_contents);
+          suggestion_detail->GetString("mp", &match_contents_prefix);
+          // Error correction for bad data from server.
+          if (match_contents.empty())
+            match_contents = suggestion;
+          suggestion_detail->GetString("a", &annotation);
+          suggestion_detail->GetString("q", &suggest_query_params);
+        }
+      }
+
+      // TODO(kochi): Improve calculator suggestion presentation.
+      results->suggest_results.push_back(SuggestResult(
+          suggestion, match_type, match_contents, match_contents_prefix,
+          annotation, suggest_query_params, deletion_url, is_keyword_result,
+          relevance, relevances != NULL, should_prefetch, input.text()));
+    }
+  }
+  SortResults(is_keyword_result, relevances, results);
+  return true;
+}
+
+void BaseSearchProvider::SortResults(bool is_keyword,
+                                     const base::ListValue* relevances,
+                                     Results* results) {
 }
