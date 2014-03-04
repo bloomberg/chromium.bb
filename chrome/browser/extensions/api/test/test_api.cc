@@ -37,6 +37,7 @@ namespace CreateIncognitoTab = api::test::CreateIncognitoTab;
 namespace Log = api::test::Log;
 namespace NotifyFail = api::test::NotifyFail;
 namespace PassMessage = api::test::PassMessage;
+namespace WaitForRoundTrip = api::test::WaitForRoundTrip;
 
 TestExtensionFunction::~TestExtensionFunction() {}
 
@@ -146,6 +147,15 @@ bool TestGetConfigFunction::RunImpl() {
   }
 
   SetResult(test_config_state->config_state()->DeepCopy());
+  return true;
+}
+
+TestWaitForRoundTripFunction::~TestWaitForRoundTripFunction() {}
+
+bool TestWaitForRoundTripFunction::RunImpl() {
+  scoped_ptr<WaitForRoundTrip::Params> params(
+      WaitForRoundTrip::Params::Create(*args_));
+  SetResult(new base::StringValue(params->message));
   return true;
 }
 

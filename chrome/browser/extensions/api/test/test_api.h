@@ -132,6 +132,17 @@ class TestGetConfigFunction : public ChromeSyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class TestWaitForRoundTripFunction : public TestExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("test.waitForRoundTrip", UNKNOWN)
+
+ protected:
+  virtual ~TestWaitForRoundTripFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_

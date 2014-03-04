@@ -412,10 +412,10 @@ function testSizeConstraints() {
       chrome.app.window.create('test.html', {
         bounds: { width: 250, height: 250 }
       }, callbackPass(function(win) {
-        chrome.test.assertEq(undefined, win.getMinWidth());
-        chrome.test.assertEq(undefined, win.getMinHeight());
-        chrome.test.assertEq(undefined, win.getMaxWidth());
-        chrome.test.assertEq(undefined, win.getMaxHeight());
+        chrome.test.assertEq(null, win.getMinWidth());
+        chrome.test.assertEq(null, win.getMinHeight());
+        chrome.test.assertEq(null, win.getMaxWidth());
+        chrome.test.assertEq(null, win.getMaxHeight());
         win.close();
       }));
     },
@@ -434,15 +434,15 @@ function testSizeConstraints() {
         win.setMinHeight(null);
         win.setMaxWidth(null);
         win.setMaxHeight(null);
-        win.setBounds({ width: 103, height: 102 });
 
-        win.contentWindow.onresize = callbackPass(function() {
-          chrome.test.assertEq(undefined, win.getMinWidth());
-          chrome.test.assertEq(undefined, win.getMinHeight());
-          chrome.test.assertEq(undefined, win.getMaxWidth());
-          chrome.test.assertEq(undefined, win.getMaxHeight());
+        // dummy call to ensure constraints have been changed in the browser
+        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
+          chrome.test.assertEq(null, win.getMinWidth());
+          chrome.test.assertEq(null, win.getMinHeight());
+          chrome.test.assertEq(null, win.getMaxWidth());
+          chrome.test.assertEq(null, win.getMaxHeight());
           win.close();
-        });
+        }));
       }));
     },
 
@@ -460,15 +460,15 @@ function testSizeConstraints() {
         win.setMinHeight(99);
         win.setMaxWidth(106);
         win.setMaxHeight(107);
-        win.setBounds({ width: 103, height: 102 });
 
-        win.contentWindow.onresize = callbackPass(function() {
+        // dummy call to ensure constraints have been changed in the browser
+        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
           chrome.test.assertEq(98, win.getMinWidth());
           chrome.test.assertEq(99, win.getMinHeight());
           chrome.test.assertEq(106, win.getMaxWidth());
           chrome.test.assertEq(107, win.getMaxHeight());
           win.close();
-        });
+        }));
       }));
     },
 
@@ -479,13 +479,15 @@ function testSizeConstraints() {
         maxWidth: 104, maxHeight: 105
       }, callbackPass(function(win) {
         win.setMinWidth(200);
-        win.contentWindow.onresize = callbackPass(function() {
+
+        // dummy call to ensure constraints have been changed in the browser
+        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
           chrome.test.assertEq(200, win.getMinWidth());
           chrome.test.assertEq(101, win.getMinHeight());
           chrome.test.assertEq(200, win.getMaxWidth());
           chrome.test.assertEq(105, win.getMaxHeight());
           win.close();
-        });
+        }));
       }));
     },
 
@@ -497,13 +499,14 @@ function testSizeConstraints() {
       }, callbackPass(function(win) {
         win.setMinHeight(200);
 
-        win.contentWindow.onresize = callbackPass(function() {
+        // dummy call to ensure constraints have been changed in the browser
+        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
           chrome.test.assertEq(100, win.getMinWidth());
           chrome.test.assertEq(200, win.getMinHeight());
           chrome.test.assertEq(104, win.getMaxWidth());
           chrome.test.assertEq(200, win.getMaxHeight());
           win.close();
-        });
+        }));
       }));
     },
 
@@ -515,13 +518,14 @@ function testSizeConstraints() {
       }, callbackPass(function(win) {
         win.setMaxWidth(50);
 
-        win.contentWindow.onresize = callbackPass(function() {
+        // dummy call to ensure constraints have been changed in the browser
+        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
           chrome.test.assertEq(100, win.getMinWidth());
           chrome.test.assertEq(101, win.getMinHeight());
           chrome.test.assertEq(100, win.getMaxWidth());
           chrome.test.assertEq(105, win.getMaxHeight());
           win.close();
-        });
+        }));
       }));
     },
 
@@ -533,13 +537,14 @@ function testSizeConstraints() {
       }, callbackPass(function(win) {
         win.setMaxHeight(50);
 
-        win.contentWindow.onresize = callbackPass(function() {
+        // dummy call to ensure constraints have been changed in the browser
+        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
           chrome.test.assertEq(100, win.getMinWidth());
           chrome.test.assertEq(101, win.getMinHeight());
           chrome.test.assertEq(104, win.getMaxWidth());
           chrome.test.assertEq(101, win.getMaxHeight());
           win.close();
-        });
+        }));
       }));
     },
   ]);

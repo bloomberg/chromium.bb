@@ -23,7 +23,7 @@ function testAlwaysOnTop(testId, value) {
 
     // setAlwaysOnTop is synchronous in the browser, so send an async request to
     // ensure we get the updated value of isAlwaysOnTop.
-    chrome.runtime.getPlatformInfo(callbackPass(function(platformInfo) {
+    chrome.test.waitForRoundTrip("msg", callbackPass(function(platformInfo) {
       // Check that isAlwaysOnTop() returns false.
       chrome.test.assertEq(false, win.isAlwaysOnTop());
 

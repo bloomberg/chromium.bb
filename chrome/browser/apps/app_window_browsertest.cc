@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestoreAfterClose) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestoreAfterClose")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestSizeConstraints) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestSizeConstraints) {
   ASSERT_TRUE(RunAppWindowAPITest("testSizeConstraints")) << message_;
 }
 

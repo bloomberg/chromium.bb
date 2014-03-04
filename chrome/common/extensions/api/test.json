@@ -353,6 +353,21 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "waitForRoundTrip",
+        "type": "function",
+        "description": "Sends a string message one round trip from the renderer to the browser process and back.",
+        "parameters": [
+          {"type": "string", "name": "message"},
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"type": "string", "name": "message"}
+            ]
+          }
+        ]
       }
     ],
     "events": [
