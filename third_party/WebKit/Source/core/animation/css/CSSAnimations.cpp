@@ -94,7 +94,7 @@ static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeEffectMod
 }
 
 static void resolveKeyframes(StyleResolver* resolver, Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
-    Vector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
+    WillBeHeapVector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
 {
     // When the element is null, use its parent for scoping purposes.
     const Element* elementForScoping = element ? element : &parentElement;
@@ -407,7 +407,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
             Timing timing;
             bool isPaused;
             RefPtr<TimingFunction> defaultTimingFunction = timingFromAnimationData(animationData, timing, isPaused);
-            Vector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
+            WillBeHeapVector<std::pair<KeyframeEffectModel::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
             resolveKeyframes(resolver, element, parentElement, style, parentStyle, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
             if (!keyframesAndTimingFunctions.isEmpty()) {
                 HashSet<RefPtr<InertAnimation> > animations;
