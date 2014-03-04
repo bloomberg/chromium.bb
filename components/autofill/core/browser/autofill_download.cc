@@ -4,10 +4,6 @@
 
 #include "components/autofill/core/browser/autofill_download.h"
 
-#include <algorithm>
-#include <ostream>
-#include <vector>
-
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -28,38 +24,23 @@
 namespace autofill {
 
 namespace {
-const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 
+const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 const size_t kMaxFormCacheSize = 16;
 
-// Generate field assignments xml that can be manually changed and then fed back
-// into the Autofill server as experiment data.
-static void LogFieldAssignments(
-    const FormStructure& form,
-    const ServerFieldTypeSet& available_field_types) {
-  std::string form_xml;
-  if (!form.EncodeFieldAssignments(available_field_types, &form_xml))
-    return;
-
-  VLOG(1) << "AutofillDownloadManager FieldAssignments for "
-          << form.source_url()
-          << " :\n"
-          << form_xml;
-}
-
-}  // namespace
-
-// static
-std::string AutofillDownloadManager::AutofillRequestTypeToString(
-    const AutofillRequestType type) {
+std::string AutofillRequestTypeToString(
+    AutofillDownloadManager::AutofillRequestType type) {
   switch (type) {
     case AutofillDownloadManager::REQUEST_QUERY:
       return "query";
     case AutofillDownloadManager::REQUEST_UPLOAD:
       return "upload";
   }
+  NOTREACHED();
   return std::string();
 }
+
+}  // namespace
 
 struct AutofillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
@@ -127,8 +108,6 @@ bool AutofillDownloadManager::StartUploadRequest(
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 &form_xml))
     return false;
-
-  LogFieldAssignments(form, available_field_types);
 
   if (next_upload_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.

@@ -89,8 +89,6 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   friend class AutofillDownloadTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
 
-  static std::string AutofillRequestTypeToString(const AutofillRequestType);
-
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
 
