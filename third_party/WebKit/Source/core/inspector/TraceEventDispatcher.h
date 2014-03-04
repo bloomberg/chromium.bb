@@ -74,8 +74,14 @@ public:
             }
             for (int i = 0; i < m_argumentCount; ++i) {
                 m_argumentNames[i] = argumentNames[i];
-                m_argumentTypes[i] = argumentTypes[i];
-                m_argumentValues[i] = argumentValues[i];
+                if (argumentTypes[i] == TRACE_VALUE_TYPE_COPY_STRING) {
+                    m_stringArguments[i] = reinterpret_cast<const char*>(argumentValues[i]);
+                    m_argumentValues[i].m_string = reinterpret_cast<const char*>(m_stringArguments[i].characters8());
+                    m_argumentTypes[i] = TRACE_VALUE_TYPE_STRING;
+                } else {
+                    m_argumentValues[i].m_int = argumentValues[i];
+                    m_argumentTypes[i] = argumentTypes[i];
+                }
             }
         }
 
@@ -127,7 +133,11 @@ public:
         int m_argumentCount;
         const char* m_argumentNames[MaxArguments];
         unsigned char m_argumentTypes[MaxArguments];
-        unsigned long long m_argumentValues[MaxArguments];
+        WebCore::TraceEvent::TraceValueUnion m_argumentValues[MaxArguments];
+        // These are only used as buffers for TRACE_VALUE_TYPE_COPY_STRING.
+        // Consider allocating the entire vector of buffered trace events and their copied arguments out of a special arena
+        // to make things more compact.
+        String m_stringArguments[MaxArguments];
     };
 
     typedef void (TraceEventTargetBase::*TraceEventHandlerMethod)(const TraceEvent&);

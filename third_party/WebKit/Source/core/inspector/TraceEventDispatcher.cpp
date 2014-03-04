@@ -151,11 +151,12 @@ const TraceEvent::TraceValueUnion& TraceEventDispatcher::TraceEvent::parameter(c
 {
     static WebCore::TraceEvent::TraceValueUnion missingValue;
     size_t index = findParameter(name);
+    ASSERT(isMainThread());
     if (index == kNotFound || m_argumentTypes[index] != expectedType) {
         ASSERT_NOT_REACHED();
         return missingValue;
     }
-    return *reinterpret_cast<const WebCore::TraceEvent::TraceValueUnion*>(m_argumentValues + index);
+    return m_argumentValues[index];
 }
 
 } // namespace WebCore
