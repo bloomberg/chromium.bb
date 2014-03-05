@@ -58,7 +58,7 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet
             CSSSelector::Relation relation = current->relation();
             // FIXME: it would be better to use setNeedsStyleRecalc for all shadow hosts matching
             // scopeSelector. Currently requests full style recalc.
-            if (relation == CSSSelector::DescendantTree || relation == CSSSelector::ChildTree)
+            if (relation == CSSSelector::ShadowDeep || relation == CSSSelector::ShadowAll)
                 return false;
             if (relation != CSSSelector::Descendant && relation != CSSSelector::Child && relation != CSSSelector::SubSelector)
                 break;

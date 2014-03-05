@@ -35,14 +35,14 @@ function cleanUp()
     document.getElementById('sandbox').innerHTML = '';
 }
 
-description('Test for ^ combinator, http://crbug.com/309504.');
+description('Test for /shadow-all/ combinator, http://crbug.com/309504.');
 
 var sandbox = document.getElementById('sandbox');
 
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('span', {'id': 'target'},
@@ -56,7 +56,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
@@ -71,7 +71,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
@@ -87,7 +87,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div#sandbox > div > div ^ span { border: 1px solid green; }')),
+            document.createTextNode('div#sandbox > div > div /shadow-all/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('span', {'id': 'target'},
@@ -100,7 +100,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
@@ -116,7 +116,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
@@ -124,7 +124,7 @@ sandbox.appendChild(
                 createDOM('span', {'id': 'target'},
                     document.createTextNode('red border because of specificity.'))))));
 
-// Since :host's specificity is the same as *, div ^^ span wins.
+// Since :host's specificity is the same as *, div /shadow-all/ span wins.
 borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
@@ -133,7 +133,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host ^ span { border: 1px solid green; }')),
+                document.createTextNode(':host /shadow-all/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -145,12 +145,12 @@ borderColorShouldBe('host//target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// div ^ span's div cannot match a shadow host whose shadow tree contains the style.
+// div /shadow-all/ span's div cannot match a shadow host whose shadow tree contains the style.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div ^ span { border: 1px solid green; }')),
+                document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -163,12 +163,12 @@ borderColorShouldBe('host//target', 'rgb(0, 0, 0)');
 cleanUp();
 
 
-// div ^ span can match [div -- sr -- span] in its sibling shadow tree.
+// div /shadow-all/ span can match [div -- sr -- span] in its sibling shadow tree.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div ^ span { border: 1px solid green; }')),
+                document.createTextNode('div /shadow-all/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -182,12 +182,12 @@ borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// :host div ^ div should match.
+// :host div /shadow-all/ div should match.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host div ^ div { border: 1px solid green; }')),
+                document.createTextNode(':host div /shadow-all/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'target'},
@@ -202,7 +202,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div:host ^ span { border: 1px solid green; }')),
+                document.createTextNode('div:host /shadow-all/ span { border: 1px solid green; }')),
             createDOM('span', {'id': 'target'},
                 document.createTextNode('no border, because div:host matches nothing.')))));
 
@@ -210,13 +210,13 @@ borderColorShouldBe('host/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div (=shadow host) div ^ div should not match.
+// div (=shadow host) div /shadow-all/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div > div ^ div { border: 1px solid green; }')),
+                document.createTextNode('div > div /shadow-all/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'target'},
@@ -226,13 +226,13 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div + div ^ div should match.
+// div + div /shadow-all/ div should match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div + div ^ div { border: 1px solid green; }')),
+                document.createTextNode('div + div /shadow-all/ div { border: 1px solid green; }')),
             createDOM('div', {},
                 document.createTextNode('sibling')),
             createDOM('div', {'id': 'host2'},
@@ -244,13 +244,13 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// :host + div ^ div should not match.
+// :host + div /shadow-all/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host + div ^ div { border: 1px solid green; }')),
+                document.createTextNode(':host + div /shadow-all/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'siblingShadow'},
                 createShadowRoot(
                     createDOM('div', {},
@@ -264,12 +264,12 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div ^ span in an insert shadow tree cannot match any element in active shadow tree.
+// div /shadow-all/ span in an insert shadow tree cannot match any element in active shadow tree.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div ^ span { border: 1px solid red; }')),
+                document.createTextNode('div /shadow-all/ span { border: 1px solid red; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(

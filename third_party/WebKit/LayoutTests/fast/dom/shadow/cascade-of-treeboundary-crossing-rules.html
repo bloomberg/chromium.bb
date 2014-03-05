@@ -60,11 +60,11 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode('div ^^ span { border: 1px solid red; }')),
+                    document.createTextNode('div /shadow-deep/ span { border: 1px solid red; }')),
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(
                         createDOM('style', {},
@@ -82,7 +82,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ p:empty { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ p:empty { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('div', {},

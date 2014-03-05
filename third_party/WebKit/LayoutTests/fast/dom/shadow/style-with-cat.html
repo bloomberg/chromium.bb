@@ -33,16 +33,16 @@ function cleanUp()
     document.getElementById('sandbox').innerHTML = '';
 }
 
-description('Test for ^^ combinator, http://crbug.com/309504.');
+description('Test for /shadow-deep/ combinator, http://crbug.com/309504.');
 
 var sandbox = document.getElementById('sandbox');
 
-// div ^^ span should match host/target.
+// div /shadow-deep/ span should match host/target.
 
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('span', {'id': 'target'},
@@ -52,12 +52,12 @@ borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// div ^^ span should match host/host2/target and target2.
+// div /shadow-deep/ span should match host/host2/target and target2.
 
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('div', {'id': 'host2'},
@@ -74,7 +74,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div#sandbox > div > div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div#sandbox > div > div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('content', {}),
@@ -87,17 +87,17 @@ borderColorShouldBe('target2', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// Testing div ^^ span in inner scope vs div ^^ span in outer scope
+// Testing div /shadow-deep/ span in inner scope vs div /shadow-deep/ span in outer scope
 
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('div', {'id': 'host2'},
                     createDOM('style', {},
-                        document.createTextNode('div ^^ span { border: 1px solid red; }')),
+                        document.createTextNode('div /shadow-deep/ span { border: 1px solid red; }')),
                     createShadowRoot(
                         createDOM('span', {'id': 'target'},
                             document.createTextNode('green border, because of hat.')))))),
@@ -110,7 +110,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
@@ -126,7 +126,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div ^^ span { border: 1px solid green; }')),
+            document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
@@ -134,7 +134,7 @@ sandbox.appendChild(
                 createDOM('span', {'id': 'target'},
                     document.createTextNode('red border because of specificity.'))))));
 
-// Since :host's specificity is the same as *, div ^^ span wins.
+// Since :host's specificity is the same as *, div /shadow-deep/ span wins.
 borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
@@ -143,7 +143,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host ^^ span { border: 1px solid green; }')),
+                document.createTextNode(':host /shadow-deep/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -155,12 +155,12 @@ borderColorShouldBe('host//target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// div ^^ span cannot match, because div cannot match any shadow host.
+// div /shadow-deep/ span cannot match, because div cannot match any shadow host.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div ^^ span { border: 1px solid green; }')),
+                document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -172,12 +172,12 @@ borderColorShouldBe('host//target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// .foo ^^ span, .foo is an ancestor of some shadow host which has span in its hosting shadow tree, should match.
+// .foo /shadow-deep/ span, .foo is an ancestor of some shadow host which has span in its hosting shadow tree, should match.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('.foo ^^ span { border: 1px solid green; }')),
+                document.createTextNode('.foo /shadow-deep/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -193,13 +193,13 @@ borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
 cleanUp();
 
 
-// :host div ^^ div should match.
+// :host div /shadow-deep/ div should match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host div ^^ div { border: 1px solid green; }')),
+                document.createTextNode(':host div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'target'},
@@ -209,13 +209,13 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// div :host div ^^ div should not match.
+// div :host div /shadow-deep/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div :host div ^^ div { border: 1px solid green; }')),
+                document.createTextNode('div :host div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'target'},
@@ -225,13 +225,13 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// :host ^ :host ^^ div should not match.
+// :host /shadow-all/ :host /shadow-deep/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host ^ :host ^^ div { border: 1px solid green; }')),
+                document.createTextNode(':host /shadow-all/ :host /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'host3'},
@@ -243,13 +243,13 @@ borderColorShouldBe('host/host2/host3/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div (=shadow host) div ^^ div should not match.
+// div (=shadow host) div /shadow-deep/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div > div ^^ div { border: 1px solid green; }')),
+                document.createTextNode('div > div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'target'},
@@ -259,13 +259,13 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div + div ^^ div should match.
+// div + div /shadow-deep/ div should match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div + div ^^ div { border: 1px solid green; }')),
+                document.createTextNode('div + div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {},
                 document.createTextNode('sibling')),
             createDOM('div', {'id': 'host2'},
@@ -281,7 +281,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div + div ^^ div { border: 1px solid green; }')),
+                document.createTextNode('div + div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {},
                 document.createTextNode('sibling')),
             createDOM('div', {'id': 'host2'},
@@ -295,13 +295,13 @@ borderColorShouldBe('host/host2/host3/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// :host + div ^^ div should not match.
+// :host + div /shadow-deep/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host + div ^^ div { border: 1px solid green; }')),
+                document.createTextNode(':host + div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'siblingShadow'},
                 createShadowRoot(
                     createDOM('div', {},
@@ -319,7 +319,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host + div ^^ div { border: 1px solid green; }')),
+                document.createTextNode(':host + div /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {},
                 document.createTextNode('sibling')),
             createDOM('div', {'id': 'host2'},
@@ -333,12 +333,12 @@ borderColorShouldBe('host/host2/host3/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// div ^^ span in a sibling shadow tree can match.
+// div /shadow-deep/ span in a sibling shadow tree can match.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div ^^ span { border: 1px solid green; }')),
+                document.createTextNode('div /shadow-deep/ span { border: 1px solid green; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(
@@ -352,12 +352,12 @@ borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// :host ^^ * should not match desendant nodes of div#host.
+// :host /shadow-deep/ * should not match desendant nodes of div#host.
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host ^^ * { border: 1px solid red; }')),
+                document.createTextNode(':host /shadow-deep/ * { border: 1px solid red; }')),
             createDOM('content', {})),
         createDOM('div', {'id': 'child'},
             document.createTextNode('show not red'))));
@@ -371,7 +371,7 @@ cleanUp();
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {},
-            document.createTextNode('div#outer ^^ div#inner h1 { border: 1px solid red; }')),
+            document.createTextNode('div#outer /shadow-deep/ div#inner h1 { border: 1px solid red; }')),
         createDOM('div', {'id': 'outer'},
             createDOM('div', {'id': 'inner'},
                 createShadowRoot(
@@ -382,13 +382,13 @@ borderColorShouldNotBe('inner/target', 'rgb(255, 0, 0)');
 
 cleanUp();
 
-// :host ^^ span is declared in a shadow tree, but the shadow root does not participate in composed tree.
+// :host /shadow-deep/ span is declared in a shadow tree, but the shadow root does not participate in composed tree.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host ^^ span { border: 1px solid red; }')),
+                document.createTextNode(':host /shadow-deep/ span { border: 1px solid red; }')),
             createDOM('span', {},
                 document.createTextNode('some text'))),
         createShadowRoot(

@@ -9,7 +9,7 @@
   <pre id="console"></pre>
 </body>
 <script>
-description("Test for ::content with ^^ and :host.");
+description("Test for ::content with /shadow-deep/ and :host.");
 
 var sandbox = document.getElementById('sandbox');
 
@@ -23,7 +23,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host(#host1) ^^ #content1::content > .content { color: green; }')),
+                    ':host(#host1) /shadow-deep/ #content1::content > .content { color: green; }')),
             createDOM('div', {},
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(
@@ -42,7 +42,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    '#host2 ^^ #content2::content > #parentOfContent1 > #content1::content > .content { color: green; }')),
+                    '#host2 /shadow-deep/ #content2::content > #parentOfContent1 > #content1::content > .content { color: green; }')),
             createDOM('div', {},
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(
@@ -61,8 +61,8 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host ^^ #content2::content > #parentOfShadow1 > #shadow1::content > .content { color: green; }' +
-                    ':host ^^ #content2::content > #shadow1::content > #content1::content > .content { color: red; }')),
+                    ':host /shadow-deep/ #content2::content > #parentOfShadow1 > #shadow1::content > .content { color: green; }' +
+                    ':host /shadow-deep/ #content2::content > #shadow1::content > #content1::content > .content { color: red; }')),
             createDOM('content', {'id': 'content1'})),
         createShadowRoot(
             createDOM('div', {},
@@ -84,7 +84,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host ^^ :host > #content2::content > #shadow1::content > #content1::content > .content { color: red; }')),
+                    ':host /shadow-deep/ :host > #content2::content > #shadow1::content > #content1::content > .content { color: red; }')),
             createDOM('content', {'id': 'content1'})),
         createShadowRoot(
             createDOM('div', {},
@@ -106,7 +106,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host ^^ #content2::content > #parentOfContent1 > #content1::content > .content { color: green; }')),
+                    ':host /shadow-deep/ #content2::content > #parentOfContent1 > #content1::content > .content { color: green; }')),
             createDOM('div', {},
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(

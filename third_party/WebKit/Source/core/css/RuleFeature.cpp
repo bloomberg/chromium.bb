@@ -116,7 +116,7 @@ static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
         } else if (!isSkippableComponentForInvalidation(*component)) {
             return false;
         }
-        // FIXME: We can probably support ChildTree and DescendantTree.
+        // FIXME: We can probably support ShadowAll and ShadowDeep.
         switch (component->relation()) {
         case CSSSelector::Descendant:
         case CSSSelector::Child:

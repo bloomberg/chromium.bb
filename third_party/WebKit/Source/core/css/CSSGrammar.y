@@ -1045,15 +1045,17 @@ combinator:
     '+' maybe_space { $$ = CSSSelector::DirectAdjacent; }
     | '~' maybe_space { $$ = CSSSelector::IndirectAdjacent; }
     | '>' maybe_space { $$ = CSSSelector::Child; }
-    | '^' maybe_space {
+    // FIXME: implement named combinator and replace the following /shadow/, /shadow-all/ and 
+    // /shadow-deep/ with named combinator's implementation.
+    | '/' IDENT '/' maybe_space {
         if (!RuntimeEnabledFeatures::shadowDOMEnabled())
             YYERROR;
-        $$ = CSSSelector::ChildTree;
-    }
-    | '^' '^' maybe_space {
-        if (!RuntimeEnabledFeatures::shadowDOMEnabled())
+        if ($2.equalIgnoringCase("shadow-all"))
+            $$ = CSSSelector::ShadowAll;
+        else if ($2.equalIgnoringCase("shadow-deep"))
+            $$ = CSSSelector::ShadowDeep;
+        else
             YYERROR;
-        $$ = CSSSelector::DescendantTree;
     }
     ;
 

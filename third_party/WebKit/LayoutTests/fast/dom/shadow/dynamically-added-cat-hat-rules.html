@@ -38,10 +38,10 @@ sandbox.appendChild(
 document.body.offsetLeft;
 
 var style = document.createElement('style');
-style.innerHTML = 'div ^ .foo { background: green; }'
-    + 'div ^ #target2 { background: green; }'
-    + 'div ^^ .bar { background: blue; }'
-    + 'div ^^ #target4 { background: blue; }';
+style.innerHTML = 'div /shadow-all/ .foo { background: green; }'
+    + 'div /shadow-all/ #target2 { background: green; }'
+    + 'div /shadow-deep/ .bar { background: blue; }'
+    + 'div /shadow-deep/ #target4 { background: blue; }';
 document.body.appendChild(style);
 
 backgroundColorShouldBe('host/target1', 'rgb(0, 128, 0)');

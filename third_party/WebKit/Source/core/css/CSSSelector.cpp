@@ -760,10 +760,10 @@ String CSSSelector::selectorText(const String& rightSide) const
             if (cs->relationIsAffectedByPseudoContent() && tagHistory->pseudoType() != CSSSelector::PseudoContent)
                 return tagHistory->selectorText("::-webkit-distributed(> " + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
-        case CSSSelector::ChildTree:
-            return tagHistory->selectorText(" ^ " + str.toString() + rightSide);
-        case CSSSelector::DescendantTree:
-            return tagHistory->selectorText(" ^^ " + str.toString() + rightSide);
+        case CSSSelector::ShadowAll:
+            return tagHistory->selectorText(" /shadow-all/ " + str.toString() + rightSide);
+        case CSSSelector::ShadowDeep:
+            return tagHistory->selectorText(" /shadow-deep/ " + str.toString() + rightSide);
         case CSSSelector::DirectAdjacent:
             return tagHistory->selectorText(" + " + str.toString() + rightSide);
         case CSSSelector::IndirectAdjacent:

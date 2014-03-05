@@ -129,9 +129,10 @@ namespace WebCore {
             IndirectAdjacent, // ~ combinator
             SubSelector, // "No space" combinator
             ShadowPseudo, // Special case of shadow DOM pseudo elements
-            // FIXME: rename ChildTree and DescendantTree when the spec for this is written down.
-            ChildTree, // ^ operator for shadow DOM
-            DescendantTree // ^^ operator for shadow DOM
+            // FIXME: implement named combinator and replace the following /shadow/, /shadow-all/ and
+            // /shadow-deep/ with named combinator's implementation.
+            ShadowAll,
+            ShadowDeep
         };
 
         enum PseudoType {
