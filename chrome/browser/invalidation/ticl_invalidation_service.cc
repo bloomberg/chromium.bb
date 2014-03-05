@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/gcm_network_channel_delegate_impl.h"
 #include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
@@ -15,8 +14,6 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
 #include "sync/notifier/invalidation_util.h"
@@ -89,9 +86,10 @@ void TiclInvalidationService::Init() {
     StartInvalidator(PUSH_CLIENT_CHANNEL);
   }
 
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                              content::Source<Profile>(profile_));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  signin_manager->AddObserver(this);
+
   oauth2_token_service_->AddObserver(this);
 }
 
@@ -163,12 +161,8 @@ InvalidationLogger* TiclInvalidationService::GetInvalidationLogger() {
   return &logger_;
 }
 
-void TiclInvalidationService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void TiclInvalidationService::GoogleSignedOut(const std::string& username) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT);
   Logout();
 }
 
@@ -290,6 +284,9 @@ std::string TiclInvalidationService::GetOwnerName() const { return "TICL"; }
 
 void TiclInvalidationService::Shutdown() {
   DCHECK(CalledOnValidThread());
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  signin_manager->RemoveObserver(this);
   oauth2_token_service_->RemoveObserver(this);
   if (IsStarted()) {
     StopInvalidator();

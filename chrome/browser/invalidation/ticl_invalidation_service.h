@@ -12,16 +12,14 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidator_registrar.h"
 
 class Profile;
-class SigninManagerBase;
 
 namespace syncer {
 class Invalidator;
@@ -31,13 +29,12 @@ namespace invalidation {
 
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
-class TiclInvalidationService
-    : public base::NonThreadSafe,
-      public InvalidationService,
-      public content::NotificationObserver,
-      public OAuth2TokenService::Consumer,
-      public OAuth2TokenService::Observer,
-      public syncer::InvalidationHandler {
+class TiclInvalidationService : public base::NonThreadSafe,
+                                public InvalidationService,
+                                public OAuth2TokenService::Consumer,
+                                public OAuth2TokenService::Observer,
+                                public SigninManagerBase::Observer,
+                                public syncer::InvalidationHandler {
  public:
   TiclInvalidationService(SigninManagerBase* signin,
                           ProfileOAuth2TokenService* oauth2_token_service,
@@ -59,11 +56,6 @@ class TiclInvalidationService
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   void RequestAccessToken();
 
   // OAuth2TokenService::Consumer implementation
@@ -78,6 +70,9 @@ class TiclInvalidationService
   // OAuth2TokenService::Observer implementation
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+
+  // SigninManagerBase::Observer implementation.
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
@@ -116,8 +111,6 @@ class TiclInvalidationService
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
   scoped_ptr<InvalidatorStorage> invalidator_storage_;
   scoped_ptr<syncer::Invalidator> invalidator_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   // TiclInvalidationService needs to remember access token in order to
   // invalidate it with OAuth2TokenService.
