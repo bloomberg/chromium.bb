@@ -32,8 +32,22 @@ bool SharedWorkerServiceImpl::TerminateWorker(int process_id, int route_id) {
 }
 
 std::vector<WorkerService::WorkerInfo> SharedWorkerServiceImpl::GetWorkers() {
-  // TODO(horo): implement this.
   std::vector<WorkerService::WorkerInfo> results;
+  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
+       iter != worker_hosts_.end();
+       ++iter) {
+    SharedWorkerHost* host = iter->second;
+    const SharedWorkerInstance* instance = host->instance();
+    if (instance) {
+      WorkerService::WorkerInfo info;
+      info.url = instance->url();
+      info.name = instance->name();
+      info.route_id = host->worker_route_id();
+      info.process_id = host->process_id();
+      info.handle = host->container_render_filter()->PeerHandle();
+      results.push_back(info);
+    }
+  }
   return results;
 }
 
