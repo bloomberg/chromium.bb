@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.2",
+  "version": "4.3",
   "entries": [
     {
       "id": 1,
@@ -848,6 +848,18 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "unroll_for_loop_with_sampler_array_index"
+      ]
+    },
+    {
+      "id": 64,
+      "description": "Linux AMD drivers incorrectly return initial value of 1 for TEXTURE_MAX_ANISOTROPY",
+      "cr_bugs": [348237],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "init_texture_max_anisotropy"
       ]
     }
   ]

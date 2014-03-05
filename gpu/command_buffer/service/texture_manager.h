@@ -159,6 +159,9 @@ class GPU_EXPORT Texture {
     return estimated_size() > 0;
   }
 
+  // Initialize TEXTURE_MAX_ANISOTROPY to 1 if we haven't done so yet.
+  void InitTextureMaxAnisotropyIfNeeded(GLenum target);
+
  private:
   friend class MailboxManager;
   friend class MailboxManagerTest;
@@ -378,6 +381,9 @@ class GPU_EXPORT Texture {
 
   // Cache of the computed CanRenderCondition flag.
   CanRenderCondition can_render_condition_;
+
+  // Whether we have initialized TEXTURE_MAX_ANISOTROPY to 1.
+  bool texture_max_anisotropy_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };

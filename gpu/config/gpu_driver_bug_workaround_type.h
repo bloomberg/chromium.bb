@@ -46,6 +46,8 @@
          force_integrated_gpu)                               \
   GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
          init_gl_position_in_vertex_shader)                  \
+  GPU_OP(INIT_TEXTURE_MAX_ANISOTROPY,                        \
+         init_texture_max_anisotropy)                        \
   GPU_OP(INIT_VARYINGS_WITHOUT_STATIC_USE,                   \
          init_varyings_without_static_use)                   \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \

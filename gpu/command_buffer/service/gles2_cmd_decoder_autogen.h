@@ -1223,7 +1223,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  glGetTexParameterfv(target, pname, params);
+  DoGetTexParameterfv(target, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
@@ -1259,7 +1259,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  glGetTexParameteriv(target, pname, params);
+  DoGetTexParameteriv(target, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);

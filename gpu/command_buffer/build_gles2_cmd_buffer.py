@@ -1778,12 +1778,20 @@ _FUNCTION_INFO = {
     'client_test': False,
     },
   'GetString': {
-      'type': 'Custom',
-      'client_test': False,
-      'cmd_args': 'GLenumStringType name, uint32 bucket_id',
+    'type': 'Custom',
+    'client_test': False,
+    'cmd_args': 'GLenumStringType name, uint32 bucket_id',
   },
-  'GetTexParameterfv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
-  'GetTexParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
+  'GetTexParameterfv': {
+    'type': 'GETn',
+    'decoder_func': 'DoGetTexParameterfv',
+    'result': ['SizedResult<GLfloat>']
+  },
+  'GetTexParameteriv': {
+    'type': 'GETn',
+    'decoder_func': 'DoGetTexParameteriv',
+    'result': ['SizedResult<GLint>']
+  },
   'GetTranslatedShaderSourceANGLE': {
     'type': 'STRn',
     'get_len_func': 'DoGetShaderiv',

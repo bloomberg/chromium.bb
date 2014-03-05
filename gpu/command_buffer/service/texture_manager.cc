@@ -119,7 +119,8 @@ Texture::Texture(GLuint service_id)
       immutable_(false),
       has_images_(false),
       estimated_size_(0),
-      can_render_condition_(CAN_RENDER_ALWAYS) {
+      can_render_condition_(CAN_RENDER_ALWAYS),
+      texture_max_anisotropy_initialized_(false) {
 }
 
 Texture::~Texture() {
@@ -753,6 +754,14 @@ bool Texture::IsLevelCleared(GLenum target, GLint level) const {
   const Texture::LevelInfo& info = level_infos_[face_index][level];
 
   return info.cleared;
+}
+
+void Texture::InitTextureMaxAnisotropyIfNeeded(GLenum target) {
+  if (texture_max_anisotropy_initialized_)
+    return;
+  texture_max_anisotropy_initialized_ = true;
+  GLfloat params[] = { 1.0f };
+  glTexParameterfv(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, params);
 }
 
 bool Texture::ClearLevel(
