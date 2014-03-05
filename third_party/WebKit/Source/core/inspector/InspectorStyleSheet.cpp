@@ -741,36 +741,6 @@ String InspectorStyle::shorthandValue(const String& shorthandProperty) const
     return value;
 }
 
-String InspectorStyle::shorthandPriority(const String& shorthandProperty) const
-{
-    String priority = m_style->getPropertyPriority(shorthandProperty);
-    if (priority.isEmpty()) {
-        for (unsigned i = 0; i < m_style->length(); ++i) {
-            String individualProperty = m_style->item(i);
-            if (m_style->getPropertyShorthand(individualProperty) != shorthandProperty)
-                continue;
-            priority = m_style->getPropertyPriority(individualProperty);
-            break;
-        }
-    }
-    return priority;
-}
-
-Vector<String> InspectorStyle::longhandProperties(const String& shorthandProperty) const
-{
-    Vector<String> properties;
-    HashSet<String> foundProperties;
-    for (unsigned i = 0; i < m_style->length(); ++i) {
-        String individualProperty = m_style->item(i);
-        if (foundProperties.contains(individualProperty) || m_style->getPropertyShorthand(individualProperty) != shorthandProperty)
-            continue;
-
-        foundProperties.add(individualProperty);
-        properties.append(individualProperty);
-    }
-    return properties;
-}
-
 NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
 {
     DEFINE_STATIC_LOCAL(String, defaultPrefix, ("    "));
@@ -888,7 +858,6 @@ InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, Inspecto
     , m_pageStyleSheet(pageStyleSheet)
     , m_origin(origin)
     , m_documentURL(documentURL)
-    , m_isRevalidating(false)
     , m_listener(listener)
 {
     m_parsedStyleSheet = new ParsedStyleSheet();
@@ -1509,24 +1478,6 @@ bool InspectorStyleSheet::styleSheetTextWithChangedStyle(CSSStyleDeclaration* st
 InspectorCSSId InspectorStyleSheet::ruleId(CSSStyleRule* rule) const
 {
     return ruleOrStyleId(rule->style());
-}
-
-void InspectorStyleSheet::revalidateStyle(CSSStyleDeclaration* pageStyle)
-{
-    if (m_isRevalidating)
-        return;
-
-    m_isRevalidating = true;
-    ensureFlatRules();
-    for (unsigned i = 0, size = m_flatRules.size(); i < size; ++i) {
-        CSSStyleRule* parsedRule = InspectorCSSAgent::asCSSStyleRule(m_flatRules.at(i).get());
-        if (parsedRule && parsedRule->style() == pageStyle) {
-            if (parsedRule->styleRule()->properties().asText() != pageStyle->cssText())
-                setStyleText(pageStyle, pageStyle->cssText());
-            break;
-        }
-    }
-    m_isRevalidating = false;
 }
 
 bool InspectorStyleSheet::originalStyleSheetText(String* result) const

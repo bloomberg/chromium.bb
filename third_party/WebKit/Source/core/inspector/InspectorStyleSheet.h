@@ -149,8 +149,6 @@ private:
     PassRefPtr<CSSRuleSourceData> extractSourceData() const;
     bool applyStyleText(const String&);
     String shorthandValue(const String& shorthandProperty) const;
-    String shorthandPriority(const String& shorthandProperty) const;
-    Vector<String> longhandProperties(const String& shorthandProperty) const;
     NewLineAndWhitespace& newLineAndWhitespaceDelimiters() const;
     inline Document* ownerDocument() const;
 
@@ -230,7 +228,6 @@ private:
     bool ensureSourceData();
     void ensureFlatRules() const;
     bool styleSheetTextWithChangedStyle(CSSStyleDeclaration*, const String& newStyleText, String* result);
-    void revalidateStyle(CSSStyleDeclaration*);
     bool originalStyleSheetText(String* result) const;
     bool resourceStyleSheetText(String* result) const;
     bool inlineStyleSheetText(String* result) const;
@@ -246,7 +243,6 @@ private:
     RefPtr<CSSStyleSheet> m_pageStyleSheet;
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;
     String m_documentURL;
-    bool m_isRevalidating;
     ParsedStyleSheet* m_parsedStyleSheet;
     mutable CSSRuleVector m_flatRules;
     Listener* m_listener;
