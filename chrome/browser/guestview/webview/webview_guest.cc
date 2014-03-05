@@ -785,7 +785,10 @@ void WebViewGuest::OnAccessibilityStatusChanged(
     accessibility_subscription_.reset();
   } else if (details.notification_type ==
       chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
-    InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
+    if (details.enabled)
+      InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
+    else
+      chromevox_injected_ = false;
   }
 }
 #endif
