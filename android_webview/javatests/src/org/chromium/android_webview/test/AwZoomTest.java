@@ -15,6 +15,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 
+import java.util.Locale;
 import java.util.concurrent.Callable;
 
 /**
@@ -35,7 +36,7 @@ public class AwZoomTest extends AwTestBase {
 
     private String getZoomableHtml(float scale) {
         final int divWidthPercent = (int)(100.0f / scale);
-        return String.format("<html><head><meta name=\"viewport\" content=\"" +
+        return String.format(Locale.US, "<html><head><meta name=\"viewport\" content=\"" +
                 "width=device-width, minimum-scale=%f, maximum-scale=2.0, initial-scale=%f" +
                 "\"/></head><body style='margin:0'>" +
                 "<div style='width:%d%%;height:100px;border:1px solid black'>Zoomable</div>" +

@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Scanner;
 
 /** Helper for fetching the host list. */
@@ -183,12 +184,13 @@ public class HostListLoader {
 
     private static void sortHosts(ArrayList<HostInfo> hosts) {
         Comparator<HostInfo> hostComparator = new Comparator<HostInfo>() {
+            @Override
             public int compare(HostInfo a, HostInfo b) {
                 if (a.isOnline != b.isOnline) {
                     return a.isOnline ? -1 : 1;
                 }
-                String aName = a.name.toUpperCase();
-                String bName = b.name.toUpperCase();
+                String aName = a.name.toUpperCase(Locale.getDefault());
+                String bName = b.name.toUpperCase(Locale.getDefault());
                 return aName.compareTo(bName);
             }
         };
