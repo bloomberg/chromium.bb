@@ -29,6 +29,16 @@ bool WorkerDocumentSet::Contains(BrowserMessageFilter* parent,
   return false;
 }
 
+bool WorkerDocumentSet::ContainsExternalRenderer(
+      int worker_process_id) const {
+  for (DocumentInfoSet::const_iterator i = document_set_.begin();
+       i != document_set_.end(); ++i) {
+    if (i->render_process_id() != worker_process_id)
+      return true;
+  }
+  return false;
+}
+
 void WorkerDocumentSet::Remove(BrowserMessageFilter* parent,
                                unsigned long long document_id) {
   for (DocumentInfoSet::iterator i = document_set_.begin();

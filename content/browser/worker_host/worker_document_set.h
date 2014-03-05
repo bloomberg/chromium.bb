@@ -64,6 +64,10 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   bool Contains(BrowserMessageFilter* parent,
                 unsigned long long document_id) const;
 
+  // Checks to see if the document set contains any documents which is
+  // associated with other renderer process than worker_process_id.
+  bool ContainsExternalRenderer(int worker_process_id) const;
+
   // Removes a specific document from a worker's document set when that document
   // is detached.
   void Remove(BrowserMessageFilter* parent, unsigned long long document_id);
