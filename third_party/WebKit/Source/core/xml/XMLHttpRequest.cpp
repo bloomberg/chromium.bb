@@ -959,6 +959,7 @@ void XMLHttpRequest::clearResponse()
     m_responseDocument = nullptr;
 
     m_responseBlob = nullptr;
+    m_downloadedBlobLength = 0;
 
     m_responseStream = nullptr;
 
