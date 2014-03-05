@@ -422,6 +422,13 @@ void WebRtcAudioRenderer::EnterPauseState() {
 void WebRtcAudioRenderer::Stop() {
   DVLOG(1) << "WebRtcAudioRenderer::Stop()";
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Make sure to stop the sink while _not_ holding the lock since the Render()
+  // callback may currently be executing and try to grab the lock while we're
+  // stopping the thread on which it runs.
+  // Stop the sink before calling RemoveAudioRenderer() to make sure that no
+  // more callbacks will be made while the renderer is being removed.
+  sink_->Stop();
+
   {
     base::AutoLock auto_lock(lock_);
     if (state_ == UNINITIALIZED)
@@ -436,11 +443,6 @@ void WebRtcAudioRenderer::Stop() {
     source_ = NULL;
     state_ = UNINITIALIZED;
   }
-
-  // Make sure to stop the sink while _not_ holding the lock since the Render()
-  // callback may currently be executing and try to grab the lock while we're
-  // stopping the thread on which it runs.
-  sink_->Stop();
 }
 
 void WebRtcAudioRenderer::SetVolume(float volume) {

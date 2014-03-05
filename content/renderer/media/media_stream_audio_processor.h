@@ -96,6 +96,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   virtual void OnPlayoutData(media::AudioBus* audio_bus,
                              int sample_rate,
                              int audio_delay_milliseconds) OVERRIDE;
+  virtual void OnPlayoutDataSourceChanged() OVERRIDE;
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
