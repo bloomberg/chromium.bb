@@ -80,3 +80,7 @@ NTPUserDataLoggerTest.TestLogging
 
 # http://crbug.com/340837
 ChromeBlacklistTrialTest.*
+
+# Crashes in light mode
+# http://crbug.com/349443
+GoogleNowBackgroundUnitTest.*
