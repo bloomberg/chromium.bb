@@ -97,6 +97,14 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
   source->AddResourcePath("polymer_loader.js", IDR_KEYBOARD_POLYMER_LOADER);
   source->AddResourcePath("roboto_bold.ttf", IDR_KEYBOARD_ROBOTO_BOLD_TTF);
+  source->AddResourcePath("sounds/keypress-delete.wav",
+                          IDR_KEYBOARD_SOUNDS_KEYPRESS_DELETE);
+  source->AddResourcePath("sounds/keypress-return.wav",
+                          IDR_KEYBOARD_SOUNDS_KEYPRESS_RETURN);
+  source->AddResourcePath("sounds/keypress-spacebar.wav",
+                          IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR);
+  source->AddResourcePath("sounds/keypress-standard.wav",
+                          IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD);
   source->AddResourcePath("touch_fuzzing.js", IDR_KEYBOARD_TOUCH_FUZZING_JS);
   source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);
 

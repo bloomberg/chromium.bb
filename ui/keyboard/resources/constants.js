@@ -22,7 +22,17 @@ var FONT_SIZE_RATIO = 2.5;
 var LayoutAlignment = {
   CENTER: "center",
   STRETCH: "stretch",
-}
+};
+
+/**
+ * The enumerations of key sounds.
+ * @const
+ * @type {enum}
+ */
+var Sound = {
+  NONE: "none",
+  DEFAULT: "keypress-standard",
+};
 
 /**
  * The enumeration of swipe directions.
@@ -56,3 +66,9 @@ var DEFAULT_KEY_WEIGHT_Y = 70;
 // number before the key is rendered.
 var KEY_PADDING_TOP = 1;
 var KEY_PADDING_BOTTOM = 1;
+
+/**
+ * The default volume for keyboard sounds.
+ * @type {number}
+ */
+var DEFAULT_VOLUME = 0.3;

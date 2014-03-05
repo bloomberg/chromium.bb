@@ -11,7 +11,7 @@
     on-enable-sel="{{enableSel}}" on-enable-dbl="{{enableDbl}}"
     on-key-out="{{keyOut}}" on-show-options="{{showOptions}}"
     on-set-layout="{{setLayout}}" on-type-key="{{type}}"
-    attributes="keyset layout inputType inputTypeToLayoutMap">
+    attributes="inputType inputTypeToLayoutMap keyset layout volume">
   <template>
     <style>
       :host {
@@ -307,9 +307,12 @@
       inputType: null,
       lastPressedKey: null,
       shift: null,
+      sounds: {},
       stale: true,
       swipeHandler: null,
       voiceInput_: null,
+      //TODO(rsadam@): Add a control to let users change this.
+      volume: DEFAULT_VOLUME,
 
       /**
        * The default input type to keyboard layout map. The key must be one of
@@ -320,6 +323,23 @@
         number: "numeric",
         text: "qwerty",
         password: "qwerty"
+      },
+
+      /**
+       * Caches the specified sound on the keyboard.
+       * @param {string} soundId The name of the .wav file in the "sounds"
+           directory.
+       */
+      addSound: function(soundId) {
+        // Check if already loaded.
+        if (soundId == Sound.NONE || this.sounds[soundId])
+          return;
+        var audio = document.createElement('audio');
+        audio.preload = "auto";
+        audio.id = soundId;
+        audio.src = "../sounds/" + soundId + ".wav";
+        audio.volume = this.volume;
+        this.sounds[soundId] = audio;
       },
 
       /**
@@ -481,6 +501,7 @@
         this.lastPressedKey = event.target;
         this.lastPressedKey.classList.add('active');
         repeatKey.cancel();
+        this.playSound(detail.sound);
 
         var char = detail.char;
         switch(char) {
@@ -761,6 +782,20 @@
       },
 
       /**
+       * Plays the specified sound.
+       * @param {Sound} sound The id of the audio tag.
+       */
+      playSound: function(sound) {
+        if (!sound || sound == Sound.NONE)
+          return;
+        var soundElement = this.sounds[sound];
+        if (!soundElement)
+          console.error("Cannot find audio tag: " + sound);
+        else
+          soundElement.play();
+      },
+
+      /**
        * Whether we should transit to upper case when seeing a space after
        * punctuation.
        * @return {boolean}
@@ -860,6 +895,16 @@
           this.alt.onNonControlKeyTyped();
         this.classList.remove('ctrl-active');
         this.classList.remove('alt-active');
+      },
+
+      /**
+       * Callback function for when volume is changed.
+       */
+      volumeChanged: function() {
+        var toChange = keys(this.sounds);
+        for (var i = 0; i < toChange.length; i++) {
+          this.sounds[toChange[i]].volume = this.volume;
+        }
       },
 
       /**

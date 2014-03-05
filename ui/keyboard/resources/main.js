@@ -629,7 +629,19 @@ function expandHTML(importedContent) {
 function flattenKeysets(content) {
   var importedContent = importHTML(content);
   expandHTML(importedContent);
+  resolveAudio(importedContent);
   return importedContent;
+}
+
+function resolveAudio(content) {
+  var keyboard = $('keyboard');
+  keyboard.addSound(Sound.DEFAULT);
+  var nodes = content.querySelectorAll('[sound]').array();
+  // Get id's of all unique sounds.
+  for (var i = 0; i < nodes.length; i++) {
+    var id = nodes[i].getAttribute('sound');
+    keyboard.addSound(id);
+  }
 }
 
 // Prevents all default actions of touch. Keyboard should use its own gesture
