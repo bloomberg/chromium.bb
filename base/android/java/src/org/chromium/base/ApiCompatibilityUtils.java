@@ -256,6 +256,7 @@ public class ApiCompatibilityUtils {
     /**
      * @see android.widget.ImageView#setImageAlpha(int)
      */
+    @SuppressWarnings("deprecation")
     public static void setImageAlpha(ImageView iv, int alpha) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             iv.setImageAlpha(alpha);

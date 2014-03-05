@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.annotation.SuppressLint;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback;
 import android.view.KeyEvent;
@@ -87,6 +88,7 @@ class WindowCallbackWrapper implements Window.Callback {
     }
 
     @Override
+    @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
         mCallback.onDetachedFromWindow();
     }

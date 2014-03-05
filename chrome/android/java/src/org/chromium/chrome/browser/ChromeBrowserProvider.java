@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -1279,6 +1280,7 @@ public class ChromeBrowserProvider extends ContentProvider {
                 context, url, title, favicon, rValue, gValue, bValue);
     }
 
+    @SuppressLint("NewApi")
     private void notifyChange(final Uri uri) {
         // If the calling user is different than current one, we need to post a
         // task to notify change, otherwise, a system level hidden permission
