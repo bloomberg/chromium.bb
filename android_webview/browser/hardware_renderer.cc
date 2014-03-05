@@ -34,53 +34,42 @@ base::LazyInstance<scoped_refptr<internal::DeferredGpuCommandService> >
 
 }  // namespace
 
-HardwareRenderer::HardwareRenderer(SharedRendererState* shared_renderer_state)
-    : shared_renderer_state_(shared_renderer_state),
+HardwareRenderer::HardwareRenderer(SharedRendererState* state)
+    : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
-      manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
+      manager_key_(GLViewRendererManager::GetInstance()->PushBack(
+          shared_renderer_state_)) {
   DCHECK(last_egl_context_);
-}
-
-HardwareRenderer::~HardwareRenderer() {
-  GLViewRendererManager* mru = GLViewRendererManager::GetInstance();
-  if (manager_key_ != mru->NullKey()) {
-    mru->NoLongerExpectsDrawGL(manager_key_);
-    manager_key_ = mru->NullKey();
-  }
-
-  if (gl_surface_) {
-    ScopedAppGLStateRestore state_restore(
-        ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
-    internal::ScopedAllowGL allow_gl;
-
-    shared_renderer_state_->CompositorReleaseHwDraw();
-    gl_surface_ = NULL;
-  }
-  DCHECK(manager_key_ == GLViewRendererManager::GetInstance()->NullKey());
-}
-
-bool HardwareRenderer::InitializeHardwareDraw() {
-  TRACE_EVENT0("android_webview", "InitializeHardwareDraw");
   if (!g_service.Get()) {
     g_service.Get() = new internal::DeferredGpuCommandService;
     content::SynchronousCompositor::SetGpuService(g_service.Get());
   }
 
-  bool success = true;
-  if (!gl_surface_) {
-    scoped_refptr<AwGLSurface> gl_surface = new AwGLSurface;
-    success = shared_renderer_state_->CompositorInitializeHwDraw(gl_surface);
-    if (success)
-      gl_surface_ = gl_surface;
-  }
+  ScopedAppGLStateRestore state_restore(
+      ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
+  internal::ScopedAllowGL allow_gl;
 
-  return success;
+  gl_surface_ = new AwGLSurface;
+  bool success =
+      shared_renderer_state_->CompositorInitializeHwDraw(gl_surface_);
+  DCHECK(success);
 }
 
-void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
+HardwareRenderer::~HardwareRenderer() {
+  GLViewRendererManager* mru = GLViewRendererManager::GetInstance();
+  mru->Remove(manager_key_);
+
+  ScopedAppGLStateRestore state_restore(
+      ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
+  internal::ScopedAllowGL allow_gl;
+
+  shared_renderer_state_->CompositorReleaseHwDraw();
+  gl_surface_ = NULL;
+}
+
+bool HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
-  manager_key_ = GLViewRendererManager::GetInstance()->DidDrawGL(
-      manager_key_, shared_renderer_state_);
+  GLViewRendererManager::GetInstance()->DidDrawGL(manager_key_);
   const DrawGLInput input = shared_renderer_state_->GetDrawGLInput();
 
   // We need to watch if the current Android context has changed and enforce
@@ -88,7 +77,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   EGLContext current_context = eglGetCurrentContext();
   if (!current_context) {
     DLOG(ERROR) << "DrawGL called without EGLContext";
-    return;
+    return false;
   }
 
   // TODO(boliu): Handle context loss.
@@ -99,12 +88,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   internal::ScopedAllowGL allow_gl;
 
   if (draw_info->mode == AwDrawGLInfo::kModeProcess)
-    return;
-
-  if (!InitializeHardwareDraw()) {
-    DLOG(ERROR) << "WebView hardware initialization failed";
-    return;
-  }
+    return false;
 
   // Update memory budget. This will no-op in compositor if the policy has not
   // changed since last draw.
@@ -129,28 +113,20 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                       draw_info->clip_right - draw_info->clip_left,
                       draw_info->clip_bottom - draw_info->clip_top);
 
-  gfx::Rect viewport_rect;
-  if (draw_info->is_layer) {
-    viewport_rect = clip_rect;
-  } else {
-    viewport_rect = input.global_visible_rect;
-    clip_rect.Intersect(viewport_rect);
-  }
-
   bool did_draw = shared_renderer_state_->CompositorDemandDrawHw(
       gfx::Size(draw_info->width, draw_info->height),
       transform,
-      viewport_rect,
+      clip_rect,  // viewport
       clip_rect,
       state_restore.stencil_enabled());
   gl_surface_->ResetBackingFrameBufferObject();
 
   if (did_draw) {
-    DrawGLResult result;
-    result.frame_id = input.frame_id;
-    result.clip_contains_visible_rect = clip_rect.Contains(viewport_rect);
-    shared_renderer_state_->SetDrawGLResult(result);
+    result->frame_id = input.frame_id;
+    result->clip_contains_visible_rect =
+        clip_rect.Contains(input.global_visible_rect);
   }
+  return did_draw;
 }
 
 bool HardwareRenderer::TrimMemory(int level, bool visible) {

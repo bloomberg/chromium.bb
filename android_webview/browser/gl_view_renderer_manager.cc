@@ -37,24 +37,23 @@ void GLViewRendererManager::MarkRenderThread() {
   DCHECK(render_thread_.is_equal(base::PlatformThread::CurrentHandle()));
 }
 
-GLViewRendererManager::Key GLViewRendererManager::DidDrawGL(Key key,
-                                                            RendererType view) {
-  AutoLock auto_lock(lock_);
+GLViewRendererManager::Key GLViewRendererManager::PushBack(RendererType view) {
   MarkRenderThread();
-
-  if (key == mru_list_.end()) {
-    DCHECK(mru_list_.end() ==
-           std::find(mru_list_.begin(), mru_list_.end(), view));
-    mru_list_.push_front(view);
-    return mru_list_.begin();
-  } else {
-    DCHECK(*key == view);
-    mru_list_.splice(mru_list_.begin(), mru_list_, key);
-    return key;
-  }
+  DCHECK(mru_list_.end() ==
+         std::find(mru_list_.begin(), mru_list_.end(), view));
+  mru_list_.push_back(view);
+  Key back = mru_list_.end();
+  back--;
+  return back;
 }
 
-void GLViewRendererManager::NoLongerExpectsDrawGL(Key key) {
+void GLViewRendererManager::DidDrawGL(Key key) {
+  AutoLock auto_lock(lock_);
+  DCHECK(mru_list_.end() != key);
+  mru_list_.splice(mru_list_.begin(), mru_list_, key);
+}
+
+void GLViewRendererManager::Remove(Key key) {
   AutoLock auto_lock(lock_);
   DCHECK(mru_list_.end() != key);
   mru_list_.erase(key);
@@ -66,11 +65,6 @@ GLViewRendererManager::GetMostRecentlyDrawn() const {
   if (mru_list_.begin() == mru_list_.end())
     return NULL;
   return *mru_list_.begin();
-}
-
-GLViewRendererManager::Key GLViewRendererManager::NullKey() {
-  AutoLock auto_lock(lock_);
-  return mru_list_.end();
 }
 
 }  // namespace android_webview

@@ -53,9 +53,10 @@ void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   }
 }
 
-void SharedRendererState::SetCompositor(
+void SharedRendererState::SetCompositorOnUiThread(
     content::SynchronousCompositor* compositor) {
   AutoLock lock(lock_);
+  DCHECK(ui_loop_->BelongsToCurrentThread());
   both().compositor = compositor;
 }
 
@@ -111,16 +112,6 @@ void SharedRendererState::SetDrawGLInput(const DrawGLInput& input) {
 DrawGLInput SharedRendererState::GetDrawGLInput() const {
   AutoLock lock(lock_);
   return both().draw_gl_input;
-}
-
-void SharedRendererState::SetDrawGLResult(const DrawGLResult& result) {
-  AutoLock lock(lock_);
-  both().draw_gl_result = result;
-}
-
-DrawGLResult SharedRendererState::GetDrawGLResult() const {
-  AutoLock lock(lock_);
-  return both().draw_gl_result;
 }
 
 internal::BothThreads& SharedRendererState::both() {

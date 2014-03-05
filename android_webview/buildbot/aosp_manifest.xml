@@ -244,7 +244,7 @@
   <project path="frameworks/testing" name="platform/frameworks/testing" />
   <project path="frameworks/uiautomator" name="platform/frameworks/uiautomator" />
   <project path="frameworks/volley" name="platform/frameworks/volley" />
-  <project path="frameworks/webview" name="platform/frameworks/webview" revision="efe9d9c0d598bc9cfecf53803997f2afdf93318e" remote="aosp" />
+  <project path="frameworks/webview" name="platform/frameworks/webview" revision="f246f9015ed47f7a7d03764d0271918318c82e93" remote="aosp" />
   <project path="frameworks/wilhelm" name="platform/frameworks/wilhelm" />
   <project path="hardware/akm" name="platform/hardware/akm" />
   <project path="hardware/broadcom/libbt" name="platform/hardware/broadcom/libbt" groups="pdk" />

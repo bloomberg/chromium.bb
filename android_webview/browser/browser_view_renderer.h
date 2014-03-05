@@ -28,7 +28,6 @@ class WebContents;
 namespace android_webview {
 
 class BrowserViewRendererClient;
-class HardwareRenderer;
 
 // Delegate to perform rendering actions involving Java objects.
 class BrowserViewRendererJavaHelper {
@@ -66,19 +65,14 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // returns true. A false return value indicates nothing was or will be drawn.
   // |java_canvas| is the target of the draw. |is_hardware_canvas| indicates
   // a GL Draw maybe possible on this canvas. |scroll| if the view's current
-  // scroll offset. |clip| is the canvas's clip bounds. |visible_rect| is the
-  // intersection of the view size and the window in window coordinates.
+  // scroll offset. |clip| is the canvas's clip bounds. |global_visible_rect|
+  // is the intersection of the view size and the window in window coordinates.
   bool OnDraw(jobject java_canvas,
               bool is_hardware_canvas,
               const gfx::Vector2d& scroll,
+              const gfx::Rect& global_visible_rect,
               const gfx::Rect& clip);
-
-  // Called in response to a prior BrowserViewRendererClient::RequestDrawGL()
-  // call. See AwDrawGLInfo documentation for more details of the contract.
-  void DrawGL(AwDrawGLInfo* draw_info);
-
-  // The global visible rect changed and this is the new value.
-  void SetGlobalVisibleRect(const gfx::Rect& visible_rect);
+  void DidDrawGL(const DrawGLResult& result);
 
   // CapturePicture API methods.
   skia::RefPtr<SkPicture> CapturePicture(int width, int height);
@@ -105,8 +99,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool IsVisible() const;
   gfx::Rect GetScreenRect() const;
 
-  // ComponentCallbacks2.onTrimMemory callback.
-  void TrimMemory(int level);
+  // Force invoke the compositor to run produce a 1x1 software frame that is
+  // immediately discarded. This is a hack to force invoke parts of the
+  // compositor that are not directly exposed here.
+  void ForceFakeCompositeSW();
 
   // SynchronousCompositorClient overrides
   virtual void DidInitializeCompositor(
@@ -131,16 +127,16 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
  private:
   // Checks the continuous invalidate and block invalidate state, and schedule
-  // invalidates appropriately. If |invalidate_ignore_compositor| is true,
-  // then send a view invalidate regardless of compositor expectation.
-  void EnsureContinuousInvalidation(bool invalidate_ignore_compositor);
+  // invalidates appropriately. If |force_invalidate| is true, then send a view
+  // invalidate regardless of compositor expectation.
+  void EnsureContinuousInvalidation(bool force_invalidate);
   bool DrawSWInternal(jobject java_canvas, const gfx::Rect& clip_bounds);
   bool CompositeSW(SkCanvas* canvas);
+  void DidComposite(bool force_invalidate);
 
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
   void FallbackTickFired();
-  void ForceFakeCompositeSW();
 
   gfx::Vector2d max_scroll_offset() const;
 
@@ -152,8 +148,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   SharedRendererState* shared_renderer_state_;
   content::WebContents* web_contents_;
   bool has_compositor_;
-
-  scoped_ptr<HardwareRenderer> hardware_renderer_;
 
   bool is_paused_;
   bool view_visible_;

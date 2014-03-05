@@ -138,6 +138,12 @@ public class AwContents {
          *         should fallback to the SW path.
          */
         boolean requestDrawGL(Canvas canvas);
+
+        /**
+         * Run the action on with EGLContext current or return false.
+         * See hidden View#executeHardwareAction for details.
+         */
+        public boolean executeHardwareAction(Runnable action);
     }
 
     private long mNativeAwContents;
@@ -419,9 +425,18 @@ public class AwContents {
     //--------------------------------------------------------------------------------------------
     private class AwComponentCallbacks implements ComponentCallbacks2 {
         @Override
-        public void onTrimMemory(int level) {
+        public void onTrimMemory(final int level) {
             if (mNativeAwContents == 0) return;
-            nativeTrimMemory(mNativeAwContents, level);
+            boolean visibleRectEmpty = getGlobalVisibleRect().isEmpty();
+            final boolean visible = mIsViewVisible && mIsWindowVisible && !visibleRectEmpty;
+            // Don't care about return value of executeHardwareAction since if view is not
+            // hardware accelerated, then there is nothing to clean up anyway.
+            mInternalAccessAdapter.executeHardwareAction(new Runnable() {
+                @Override
+                public void run() {
+                    nativeTrimMemoryOnRenderThread(mNativeAwContents, level, visible);
+                }
+            });
         }
 
         @Override
@@ -561,7 +576,6 @@ public class AwContents {
         mContentsClient.installWebContentsObserver(mContentViewCore);
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
-        updateGlobalVisibleRect();
 
         // The only call to onShow. onHide should never be called.
         mContentViewCore.onShow();
@@ -720,20 +734,15 @@ public class AwContents {
         return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
-    // This is only to avoid heap allocations inside updateGLobalVisibleRect. It should treated
+    // This is only to avoid heap allocations inside getGlobalVisibleRect. It should treated
     // as a local variable in the function and not used anywhere else.
     private static final Rect sLocalGlobalVisibleRect = new Rect();
 
-    @CalledByNative
-    private void updateGlobalVisibleRect() {
-        if (mNativeAwContents == 0) return;
+    private Rect getGlobalVisibleRect() {
         if (!mContainerView.getGlobalVisibleRect(sLocalGlobalVisibleRect)) {
             sLocalGlobalVisibleRect.setEmpty();
         }
-
-        nativeSetGlobalVisibleRect(mNativeAwContents, sLocalGlobalVisibleRect.left,
-                sLocalGlobalVisibleRect.top, sLocalGlobalVisibleRect.right,
-                sLocalGlobalVisibleRect.bottom);
+        return sLocalGlobalVisibleRect;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -751,9 +760,12 @@ public class AwContents {
 
         mScrollOffsetManager.syncScrollOffsetFromOnDraw();
         canvas.getClipBounds(mClipBoundsTemporary);
+        Rect globalVisibleRect = getGlobalVisibleRect();
 
         if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                 mContainerView.getScrollX(), mContainerView.getScrollY(),
+                globalVisibleRect.left, globalVisibleRect.top,
+                globalVisibleRect.right, globalVisibleRect.bottom,
                 mClipBoundsTemporary.left, mClipBoundsTemporary.top,
                 mClipBoundsTemporary.right, mClipBoundsTemporary.bottom)) {
             // Can happen during initialization when compositor is not set up. Or when clearView
@@ -1548,7 +1560,7 @@ public class AwContents {
         nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                 mContainerView.getHeight());
         mSettings.setEnableSupportedHardwareAcceleratedFeatures(
-            mContainerView.isHardwareAccelerated());
+                mContainerView.isHardwareAccelerated());
 
         if (mComponentCallbacks != null) return;
         mComponentCallbacks = new AwComponentCallbacks();
@@ -1563,6 +1575,18 @@ public class AwContents {
         mIsAttachedToWindow = false;
         hideAutofillPopup();
         if (mNativeAwContents != 0) {
+            if (mContainerView.isHardwareAccelerated()) {
+                boolean result = mInternalAccessAdapter.executeHardwareAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        nativeReleaseHardwareDrawOnRenderThread(mNativeAwContents);
+                    }
+                });
+                if (!result) {
+                    Log.d(TAG, "executeHardwareAction failed");
+                }
+            }
+
             nativeOnDetachedFromWindow(mNativeAwContents);
         }
 
@@ -2031,9 +2055,8 @@ public class AwContents {
     private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
     private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,
             boolean isHardwareAccelerated, int scrollX, int scrollY,
+            int visibleLeft, int visibleTop, int visibleRight, int visibleBottom,
             int clipLeft, int clipTop, int clipRight, int clipBottom);
-    private native void nativeSetGlobalVisibleRect(long nativeAwContents, int visibleLeft,
-            int visibleTop, int visibleRight, int visibleBottom);
     private native void nativeFindAllAsync(long nativeAwContents, String searchString);
     private native void nativeFindNext(long nativeAwContents, boolean forward);
     private native void nativeClearMatches(long nativeAwContents);
@@ -2051,6 +2074,7 @@ public class AwContents {
     private native void nativeSetIsPaused(long nativeAwContents, boolean paused);
     private native void nativeOnAttachedToWindow(long nativeAwContents, int w, int h);
     private static native void nativeOnDetachedFromWindow(long nativeAwContents);
+    private static native void nativeReleaseHardwareDrawOnRenderThread(long nativeAwContents);
     private native void nativeSetDipScale(long nativeAwContents, float dipScale);
     private native void nativeSetFixedLayoutSize(long nativeAwContents,
             int widthDip, int heightDip);
@@ -2077,7 +2101,9 @@ public class AwContents {
 
     private native void nativeSetJsOnlineProperty(long nativeAwContents, boolean networkUp);
 
-    private native void nativeTrimMemory(long nativeAwContents, int level);
+    private native void nativeTrimMemoryOnRenderThread(long nativeAwContents, int level,
+            boolean visible);
 
     private native void nativeCreatePdfExporter(long nativeAwContents, AwPdfExporter awPdfExporter);
+
 }

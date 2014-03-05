@@ -5,7 +5,6 @@
 #include "android_webview/browser/browser_view_renderer.h"
 
 #include "android_webview/browser/browser_view_renderer_client.h"
-#include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/jni_android.h"
@@ -66,27 +65,18 @@ BrowserViewRenderer::~BrowserViewRenderer() {
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, NULL);
 }
 
-void BrowserViewRenderer::TrimMemory(int level) {
-  if (hardware_renderer_) {
-    client_->UpdateGlobalVisibleRect();
-    bool visible = view_visible_ && window_visible_ &&
-                   !draw_gl_input_.global_visible_rect.IsEmpty();
-    if (hardware_renderer_->TrimMemory(level, visible)) {
-      // Force a draw for compositor to drop tiles synchronously.
-      ForceFakeCompositeSW();
-    }
-  }
-}
-
 bool BrowserViewRenderer::OnDraw(jobject java_canvas,
                                  bool is_hardware_canvas,
                                  const gfx::Vector2d& scroll,
+                                 const gfx::Rect& global_visible_rect,
                                  const gfx::Rect& clip) {
   draw_gl_input_.frame_id++;
   draw_gl_input_.scroll_offset = scroll;
+  draw_gl_input_.global_visible_rect = global_visible_rect;
   if (clear_view_)
     return false;
   if (is_hardware_canvas && attached_to_window_) {
+    shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
     // We should be performing a hardware draw here. If we don't have the
     // compositor yet or if RequestDrawGL fails, it means we failed this draw
     // and thus return false here to clear to background color for this draw.
@@ -96,34 +86,8 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
   return DrawSWInternal(java_canvas, clip);
 }
 
-void BrowserViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
-  if (!attached_to_window_ || !has_compositor_)
-    return;
-
-  // TODO(boliu): We should remove dependency on UpdateGlobalVisibleRect
-  // in DrawGL.
-  client_->UpdateGlobalVisibleRect();
-  shared_renderer_state_->SetDrawGLInput(draw_gl_input_);
-
-  if (draw_gl_input_.global_visible_rect.IsEmpty())
-    return;
-
-  if (!hardware_renderer_) {
-    hardware_renderer_.reset(new HardwareRenderer(shared_renderer_state_));
-  }
-
-  hardware_renderer_->DrawGL(draw_info);
-  const DrawGLResult result = shared_renderer_state_->GetDrawGLResult();
-
-  if (result.frame_id == draw_gl_input_.frame_id) {
-    fallback_tick_.Cancel();
-    block_invalidates_ = false;
-    EnsureContinuousInvalidation(!result.clip_contains_visible_rect);
-  }
-}
-
-void BrowserViewRenderer::SetGlobalVisibleRect(const gfx::Rect& visible_rect) {
-  draw_gl_input_.global_visible_rect = visible_rect;
+void BrowserViewRenderer::DidDrawGL(const DrawGLResult& result) {
+  DidComposite(!result.clip_contains_visible_rect);
 }
 
 bool BrowserViewRenderer::DrawSWInternal(jobject java_canvas,
@@ -243,7 +207,6 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
 void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
   attached_to_window_ = false;
-  hardware_renderer_.reset();
 }
 
 bool BrowserViewRenderer::IsAttachedToWindow() const {
@@ -266,16 +229,15 @@ void BrowserViewRenderer::DidInitializeCompositor(
   DCHECK(compositor);
   DCHECK(!has_compositor_);
   has_compositor_ = true;
-  shared_renderer_state_->SetCompositor(compositor);
+  shared_renderer_state_->SetCompositorOnUiThread(compositor);
 }
 
 void BrowserViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::DidDestroyCompositor");
-  DCHECK(!hardware_renderer_.get());
   DCHECK(has_compositor_);
   has_compositor_ = false;
-  shared_renderer_state_->SetCompositor(NULL);
+  shared_renderer_state_->SetCompositorOnUiThread(NULL);
 }
 
 void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
@@ -423,11 +385,10 @@ void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
   client_->DidOverscroll(rounded_overscroll_delta);
 }
 
-void BrowserViewRenderer::EnsureContinuousInvalidation(
-    bool invalidate_ignore_compositor) {
+void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
   // This method should be called again when any of these conditions change.
   bool need_invalidate =
-      compositor_needs_continuous_invalidate_ || invalidate_ignore_compositor;
+      compositor_needs_continuous_invalidate_ || force_invalidate;
   if (!need_invalidate || block_invalidates_)
     return;
 
@@ -454,8 +415,8 @@ void BrowserViewRenderer::EnsureContinuousInvalidation(
                                   base::Unretained(this)));
 
   // No need to reschedule fallback tick if compositor does not need to be
-  // ticked. This can happen if this is reached because
-  // invalidate_ignore_compositor is true.
+  // ticked. This can happen if this is reached because force_invalidate is
+  // true.
   if (compositor_needs_continuous_invalidate_) {
     BrowserThread::PostDelayedTask(
         BrowserThread::UI,
@@ -487,12 +448,15 @@ void BrowserViewRenderer::ForceFakeCompositeSW() {
 
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(has_compositor_);
-
   bool result = shared_renderer_state_->CompositorDemandDrawSw(canvas);
+  DidComposite(false);
+  return result;
+}
+
+void BrowserViewRenderer::DidComposite(bool force_invalidate) {
   fallback_tick_.Cancel();
   block_invalidates_ = false;
-  EnsureContinuousInvalidation(false);
-  return result;
+  EnsureContinuousInvalidation(force_invalidate);
 }
 
 std::string BrowserViewRenderer::ToString(AwDrawGLInfo* draw_info) const {

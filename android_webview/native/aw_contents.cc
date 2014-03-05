@@ -11,6 +11,7 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
+#include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
@@ -86,8 +87,8 @@ static void DrawGLFunction(int view_context,
                            void* spare) {
   // |view_context| is the value that was returned from the java
   // AwContents.onPrepareDrawGL; this cast must match the code there.
-  reinterpret_cast<android_webview::BrowserViewRenderer*>(view_context)->DrawGL(
-      draw_info);
+  reinterpret_cast<android_webview::AwContents*>(view_context)
+      ->DrawGL(draw_info);
 }
 }
 
@@ -184,7 +185,9 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 }
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
-    : web_contents_(web_contents.Pass()),
+    : weak_factory_on_ui_thread_(this),
+      ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
+      web_contents_(web_contents.Pass()),
       shared_renderer_state_(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           this),
@@ -302,6 +305,7 @@ void AwContents::SetAwAutofillManagerDelegate(jobject delegate) {
 
 AwContents::~AwContents() {
   DCHECK(AwContents::FromWebContents(web_contents_.get()) == this);
+  DCHECK(!hardware_renderer_.get());
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())
     find_helper_->SetListener(NULL);
@@ -362,7 +366,28 @@ jint GetNativeInstanceCount(JNIEnv* env, jclass) {
 
 jint AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return reinterpret_cast<jint>(&browser_view_renderer_);
+  return reinterpret_cast<jint>(this);
+}
+
+void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
+  if (!hardware_renderer_) {
+    // TODO(boliu): Use executeHardwareAction to synchronously initialize
+    // hardware on first functor request. Then functor can point directly
+    // to HardwareRenderer.
+    hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
+  }
+
+  DrawGLResult result;
+  if (hardware_renderer_->DrawGL(draw_info, &result)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&AwContents::DidDrawGL, ui_thread_weak_ptr_, result));
+  }
+}
+
+void AwContents::DidDrawGL(const DrawGLResult& result) {
+  browser_view_renderer_.DidDrawGL(result);
 }
 
 namespace {
@@ -651,14 +676,6 @@ void AwContents::PostInvalidate() {
     Java_AwContents_postInvalidateOnAnimation(env, obj.obj());
 }
 
-void AwContents::UpdateGlobalVisibleRect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_AwContents_updateGlobalVisibleRect(env, obj.obj());
-}
-
 void AwContents::OnNewPicture() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
@@ -771,6 +788,10 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   browser_view_renderer_.OnDetachedFromWindow();
 }
 
+void AwContents::ReleaseHardwareDrawOnRenderThread(JNIEnv* env, jobject obj) {
+  hardware_renderer_.reset();
+}
+
 base::android::ScopedJavaLocalRef<jbyteArray>
 AwContents::GetOpaqueState(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -809,6 +830,10 @@ bool AwContents::OnDraw(JNIEnv* env,
                         jboolean is_hardware_accelerated,
                         jint scroll_x,
                         jint scroll_y,
+                        jint visible_left,
+                        jint visible_top,
+                        jint visible_right,
+                        jint visible_bottom,
                         jint clip_left,
                         jint clip_top,
                         jint clip_right,
@@ -818,22 +843,12 @@ bool AwContents::OnDraw(JNIEnv* env,
       canvas,
       is_hardware_accelerated,
       gfx::Vector2d(scroll_x, scroll_y),
-      gfx::Rect(
-          clip_left, clip_top, clip_right - clip_left, clip_bottom - clip_top));
-}
-
-void AwContents::SetGlobalVisibleRect(JNIEnv* env,
-                                      jobject obj,
-                                      jint visible_left,
-                                      jint visible_top,
-                                      jint visible_right,
-                                      jint visible_bottom) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  browser_view_renderer_.SetGlobalVisibleRect(
       gfx::Rect(visible_left,
                 visible_top,
                 visible_right - visible_left,
-                visible_bottom - visible_top));
+                visible_bottom - visible_top),
+      gfx::Rect(
+          clip_left, clip_top, clip_right - clip_left, clip_bottom - clip_top));
 }
 
 void AwContents::SetPendingWebContentsForPopup(
@@ -1026,9 +1041,22 @@ void AwContents::SetJsOnlineProperty(JNIEnv* env,
   render_view_host_ext_->SetJsOnlineProperty(network_up);
 }
 
-void AwContents::TrimMemory(JNIEnv* env, jobject obj, jint level) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  browser_view_renderer_.TrimMemory(level);
+void AwContents::TrimMemoryOnRenderThread(JNIEnv* env,
+                                          jobject obj,
+                                          jint level,
+                                          jboolean visible) {
+  if (hardware_renderer_) {
+    if (hardware_renderer_->TrimMemory(level, visible)) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&AwContents::ForceFakeComposite, ui_thread_weak_ptr_));
+    }
+  }
+}
+
+void AwContents::ForceFakeComposite() {
+  browser_view_renderer_.ForceFakeCompositeSW();
 }
 
 void SetShouldDownloadFavicons(JNIEnv* env, jclass jclazz) {

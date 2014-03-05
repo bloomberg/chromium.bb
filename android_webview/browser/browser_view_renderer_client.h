@@ -26,10 +26,6 @@ class BrowserViewRendererClient {
   // Called to trigger view invalidations.
   virtual void PostInvalidate() = 0;
 
-  // Synchronously call back to SetGlobalVisibleRect with current value.
-  // TODO(boliu): Remove this and pass value down when needed.
-  virtual void UpdateGlobalVisibleRect() = 0;
-
   // Called to get view's absolute location on the screen.
   virtual gfx::Point GetLocationOnScreen() = 0;
 

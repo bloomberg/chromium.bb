@@ -23,6 +23,7 @@
 
 class SkBitmap;
 class TabContents;
+struct AwDrawGLInfo;
 
 namespace content {
 class WebContents;
@@ -34,6 +35,7 @@ class AwContentsContainer;
 class AwContentsClientBridge;
 class AwPdfExporter;
 class AwWebContentsDelegate;
+class HardwareRenderer;
 
 // Native side of java-class of same name.
 // Provides the ownership of and access to browser components required for
@@ -98,6 +100,7 @@ class AwContents : public FindHelper::Listener,
   void SetIsPaused(JNIEnv* env, jobject obj, bool paused);
   void OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h);
   void OnDetachedFromWindow(JNIEnv* env, jobject obj);
+  void ReleaseHardwareDrawOnRenderThread(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(
       JNIEnv* env, jobject obj);
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
@@ -109,22 +112,22 @@ class AwContents : public FindHelper::Listener,
               jboolean is_hardware_accelerated,
               jint scroll_x,
               jint scroll_y,
+              jint visible_left,
+              jint visible_top,
+              jint visible_right,
+              jint visible_bottom,
               jint clip_left,
               jint clip_top,
               jint clip_right,
               jint clip_bottom);
-  void SetGlobalVisibleRect(JNIEnv* env,
-                            jobject obj,
-                            jint visible_left,
-                            jint visible_top,
-                            jint visible_right,
-                            jint visible_bottom);
   jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
   jlong CapturePicture(JNIEnv* env, jobject obj, int width, int height);
   void EnableOnNewPicture(JNIEnv* env, jobject obj, jboolean enabled);
   void ClearView(JNIEnv* env, jobject obj);
   void SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
                              jstring url, jstring extra_headers);
+
+  void DrawGL(AwDrawGLInfo* draw_info);
 
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
@@ -160,7 +163,6 @@ class AwContents : public FindHelper::Listener,
   // BrowserViewRenderer::Client implementation.
   virtual bool RequestDrawGL(jobject canvas) OVERRIDE;
   virtual void PostInvalidate() OVERRIDE;
-  virtual void UpdateGlobalVisibleRect() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
   virtual void SetMaxContainerViewScrollOffset(
@@ -192,11 +194,19 @@ class AwContents : public FindHelper::Listener,
   void SetAwAutofillManagerDelegate(jobject delegate);
 
   void SetJsOnlineProperty(JNIEnv* env, jobject obj, jboolean network_up);
-  void TrimMemory(JNIEnv* env, jobject obj, jint level);
+  void TrimMemoryOnRenderThread(JNIEnv* env,
+                                jobject obj,
+                                jint level,
+                                jboolean visible);
 
  private:
   void InitAutofillIfNecessary(bool enabled);
   void SetAndroidWebViewRendererPrefs();
+  void DidDrawGL(const DrawGLResult& result);
+  void ForceFakeComposite();
+
+  base::WeakPtrFactory<AwContents> weak_factory_on_ui_thread_;
+  base::WeakPtr<AwContents> ui_thread_weak_ptr_;
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -208,6 +218,7 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<AwContents> pending_contents_;
   SharedRendererState shared_renderer_state_;
   BrowserViewRenderer browser_view_renderer_;
+  scoped_ptr<HardwareRenderer> hardware_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
 
   // GURL is supplied by the content layer as requesting frame.

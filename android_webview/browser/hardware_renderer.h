@@ -25,18 +25,17 @@ class DeferredGpuCommandService;
 
 class HardwareRenderer {
  public:
-  explicit HardwareRenderer(SharedRendererState* shared_renderer_state);
+  explicit HardwareRenderer(SharedRendererState* state);
   ~HardwareRenderer();
 
   static void CalculateTileMemoryPolicy();
 
-  void DrawGL(AwDrawGLInfo* draw_info);
+  bool DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result);
   bool TrimMemory(int level, bool visible);
 
  private:
   friend class internal::DeferredGpuCommandService;
 
-  bool InitializeHardwareDraw();
   void SetMemoryPolicy(content::SynchronousCompositorMemoryPolicy& new_policy);
 
   SharedRendererState* shared_renderer_state_;
@@ -67,6 +66,7 @@ class ScopedAllowGL {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
 };
 
+// TODO(boliu): Teach this class about RT.
 class DeferredGpuCommandService
     : public gpu::InProcessCommandBuffer::Service,
       public base::RefCountedThreadSafe<DeferredGpuCommandService> {

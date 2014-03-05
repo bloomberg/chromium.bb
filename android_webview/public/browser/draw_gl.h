@@ -50,22 +50,6 @@ struct AwDrawGLInfo {
   // Input: current transformation matrix in surface pixels.
   // Uses the column-based OpenGL matrix format.
   float transform[16];
-
-  // Output: tells the caller what to do next.
-  enum StatusMask {
-    kStatusMaskDone = 0x0,
-    kStatusMaskDraw = 0x1,
-    kStatusMaskInvoke = 0x2,
-  };
-
-  // Output: mask indicating the status after calling the functor.
-  unsigned int status_mask;
-
-  // Output: dirty region to redraw in surface coordinates.
-  float dirty_left;
-  float dirty_top;
-  float dirty_right;
-  float dirty_bottom;
 };
 
 // Function to invoke a direct GL draw into the client's pre-configured

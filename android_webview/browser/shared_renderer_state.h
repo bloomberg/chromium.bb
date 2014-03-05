@@ -41,7 +41,6 @@ struct BothThreads {
   // TODO(boliu): Remove |compositor| from shared state.
   content::SynchronousCompositor* compositor;
   DrawGLInput draw_gl_input;
-  DrawGLResult draw_gl_result;
 
   BothThreads();
 };
@@ -61,7 +60,7 @@ class SharedRendererState {
   void ClientRequestDrawGL();
 
   // Holds the compositor and lock protects all calls into it.
-  void SetCompositor(content::SynchronousCompositor* compositor);
+  void SetCompositorOnUiThread(content::SynchronousCompositor* compositor);
   bool CompositorInitializeHwDraw(scoped_refptr<gfx::GLSurface> surface);
   void CompositorReleaseHwDraw();
   bool CompositorDemandDrawHw(gfx::Size surface_size,
@@ -76,9 +75,6 @@ class SharedRendererState {
 
   void SetDrawGLInput(const DrawGLInput& input);
   DrawGLInput GetDrawGLInput() const;
-
-  void SetDrawGLResult(const DrawGLResult& result);
-  DrawGLResult GetDrawGLResult() const;
 
  private:
   void ClientRequestDrawGLOnUIThread();

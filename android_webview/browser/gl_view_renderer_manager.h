@@ -28,18 +28,18 @@ class GLViewRendererManager {
 
   static GLViewRendererManager* GetInstance();
 
+  // TODO(boliu): Move RenderThread checking out of this class.
   bool OnRenderThread() const;
 
-  // If |key| is NullKey(), then |view| is inserted at the front and a new key
-  // is returned. Otherwise |key| must point to |view| which is moved to the
-  // front.
-  Key DidDrawGL(Key key, RendererType view);
+  Key PushBack(RendererType view);
 
-  void NoLongerExpectsDrawGL(Key key);
+  // |key| must be already in manager. Move renderer corresponding to |key| to
+  // most recent.
+  void DidDrawGL(Key key);
+
+  void Remove(Key key);
 
   RendererType GetMostRecentlyDrawn() const;
-
-  Key NullKey();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<GLViewRendererManager>;
