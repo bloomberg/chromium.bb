@@ -31,8 +31,16 @@ void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
 
 // Check that InputHandlerManager outlives compositor thread because it uses
 // raw pointers to post tasks.
+// Disabled under LeakSanitizer due to memory leaks. http://crbug.com/348994
+#if defined(LEAK_SANITIZER)
+#define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
+  DISABLED_InputHandlerManagerDestroyedAfterCompositorThread
+#else
+#define MAYBE_InputHandlerManagerDestroyedAfterCompositorThread \
+  InputHandlerManagerDestroyedAfterCompositorThread
+#endif
 TEST_F(RenderThreadImplBrowserTest,
-    InputHandlerManagerDestroyedAfterCompositorThread) {
+    MAYBE_InputHandlerManagerDestroyedAfterCompositorThread) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableThreadedCompositing);
 

@@ -968,7 +968,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
 
 // This test makes sure we do not crash if app is closed while interstitial
 // page is being shown in guest.
-IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
+// Disabled under LeakSanitizer due to memory leaks. http://crbug.com/321662
+#if defined(LEAK_SANITIZER)
+#define MAYBE_InterstitialTeardown DISABLED_InterstitialTeardown
+#else
+#define MAYBE_InterstitialTeardown InterstitialTeardown
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/297014
   if (base::win::GetVersion() <= base::win::VERSION_XP)
