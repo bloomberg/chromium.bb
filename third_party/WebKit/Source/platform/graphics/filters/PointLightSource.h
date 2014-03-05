@@ -34,13 +34,19 @@ public:
         return adoptRef(new PointLightSource(position));
     }
 
+    virtual PassRefPtr<LightSource> create(const FloatPoint3D& scale, const FloatSize& offset) const OVERRIDE
+    {
+        FloatPoint3D position(m_position.x() * scale.x() - offset.width(), m_position.y() * scale.y() - offset.height(), m_position.z() * scale.z());
+        return adoptRef(new PointLightSource(position));
+    }
+
     const FloatPoint3D& position() const { return m_position; }
     virtual bool setX(float) OVERRIDE;
     virtual bool setY(float) OVERRIDE;
     virtual bool setZ(float) OVERRIDE;
 
-    virtual void initPaintingData(PaintingData&) OVERRIDE;
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z) OVERRIDE;
+    virtual void initPaintingData(PaintingData&) const OVERRIDE;
+    virtual void updatePaintingData(PaintingData&, int x, int y, float z) const OVERRIDE;
 
     virtual TextStream& externalRepresentation(TextStream&) const OVERRIDE;
 

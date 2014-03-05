@@ -35,11 +35,11 @@
 
 namespace WebCore {
 
-void PointLightSource::initPaintingData(PaintingData&)
+void PointLightSource::initPaintingData(PaintingData&) const
 {
 }
 
-void PointLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z)
+void PointLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z) const
 {
     paintingData.lightVector.setX(m_position.x() - x);
     paintingData.lightVector.setY(m_position.y() - y);

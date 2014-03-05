@@ -35,6 +35,13 @@ public:
         return adoptRef(new SpotLightSource(position, direction, specularExponent, limitingConeAngle));
     }
 
+    virtual PassRefPtr<LightSource> create(const FloatPoint3D& scale, const FloatSize& offset) const OVERRIDE
+    {
+        FloatPoint3D position(m_position.x() * scale.x() - offset.width(), m_position.y() * scale.y() - offset.height(), m_position.z() * scale.z());
+        FloatPoint3D direction(m_direction.x() * scale.x() - offset.width(), m_direction.y() * scale.y() - offset.height(), m_direction.z() * scale.z());
+        return adoptRef(new SpotLightSource(position, direction, m_specularExponent, m_limitingConeAngle));
+    }
+
     const FloatPoint3D& position() const { return m_position; }
     const FloatPoint3D& direction() const { return m_direction; }
     float specularExponent() const { return m_specularExponent; }
@@ -50,8 +57,8 @@ public:
     virtual bool setSpecularExponent(float) OVERRIDE;
     virtual bool setLimitingConeAngle(float) OVERRIDE;
 
-    virtual void initPaintingData(PaintingData&) OVERRIDE;
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z) OVERRIDE;
+    virtual void initPaintingData(PaintingData&) const OVERRIDE;
+    virtual void updatePaintingData(PaintingData&, int x, int y, float z) const OVERRIDE;
 
     virtual TextStream& externalRepresentation(TextStream&) const OVERRIDE;
 

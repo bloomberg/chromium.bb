@@ -5,11 +5,11 @@ description("Tests dynamic updates of the 'specularExponent' property of the SVG
 createSVGTestCase();
 
 var spotLightElement = createSVGElement("feSpotLight");
-spotLightElement.setAttribute("x", "113");
-spotLightElement.setAttribute("y", "0");
+spotLightElement.setAttribute("x", "83");
+spotLightElement.setAttribute("y", "-30");
 spotLightElement.setAttribute("z", "100");
-spotLightElement.setAttribute("pointsAtX", "113");
-spotLightElement.setAttribute("pointsAtY", "100");
+spotLightElement.setAttribute("pointsAtX", "83");
+spotLightElement.setAttribute("pointsAtY", "70");
 spotLightElement.setAttribute("pointsAtZ", "0");
 spotLightElement.setAttribute("specularExponent", "20");
 spotLightElement.setAttribute("limitingConeAngle", "15");

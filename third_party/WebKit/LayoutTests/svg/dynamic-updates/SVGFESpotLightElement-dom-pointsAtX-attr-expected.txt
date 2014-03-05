@@ -5,8 +5,8 @@ Tests dynamic updates of the 'pointsAtX' attribute of the SVGFESpotLightElement 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS spotLightElement.getAttribute('pointsAtX') is "0"
-PASS spotLightElement.getAttribute('pointsAtX') is "113"
+PASS spotLightElement.getAttribute('pointsAtX') is "-30"
+PASS spotLightElement.getAttribute('pointsAtX') is "83"
 PASS successfullyParsed is true
 
 TEST COMPLETE

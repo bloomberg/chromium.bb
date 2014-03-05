@@ -40,7 +40,7 @@ namespace WebCore {
 // according to the SVG 1.1 SE light regression tests
 static const float antiAliasTreshold = 0.016f;
 
-void SpotLightSource::initPaintingData(PaintingData& paintingData)
+void SpotLightSource::initPaintingData(PaintingData& paintingData) const
 {
     paintingData.privateColorVector = paintingData.colorVector;
     paintingData.directionVector.setX(m_direction.x() - m_position.x());
@@ -70,7 +70,7 @@ void SpotLightSource::initPaintingData(PaintingData& paintingData)
         paintingData.specularExponent = 2;
 }
 
-void SpotLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z)
+void SpotLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z) const
 {
     paintingData.lightVector.setX(m_position.x() - x);
     paintingData.lightVector.setY(m_position.y() - y);

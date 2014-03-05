@@ -117,16 +117,16 @@ inline void FELighting::platformApplyNeon(LightingData& data, LightSource::Paint
     floatArguments.colorBlue = m_lightingColor.blue();
     floatArguments.padding4 = 0;
 
-    if (m_lightSource->type() == LS_POINT) {
+    if (data.lightSource->type() == LS_POINT) {
         neonData.flags |= FLAG_POINT_LIGHT;
-        PointLightSource* pointLightSource = static_cast<PointLightSource*>(m_lightSource.get());
+        PointLightSource* pointLightSource = static_cast<PointLightSource*>(data.lightSource.get());
         floatArguments.lightX = pointLightSource->position().x();
         floatArguments.lightY = pointLightSource->position().y();
         floatArguments.lightZ = pointLightSource->position().z();
         floatArguments.padding2 = 0;
-    } else if (m_lightSource->type() == LS_SPOT) {
+    } else if (data.lightSource->type() == LS_SPOT) {
         neonData.flags |= FLAG_SPOT_LIGHT;
-        SpotLightSource* spotLightSource = static_cast<SpotLightSource*>(m_lightSource.get());
+        SpotLightSource* spotLightSource = static_cast<SpotLightSource*>(data.lightSource.get());
         floatArguments.lightX = spotLightSource->position().x();
         floatArguments.lightY = spotLightSource->position().y();
         floatArguments.lightZ = spotLightSource->position().z();
@@ -144,7 +144,7 @@ inline void FELighting::platformApplyNeon(LightingData& data, LightSource::Paint
         if (spotLightSource->specularExponent() == 1)
             neonData.flags |= FLAG_CONE_EXPONENT_IS_1;
     } else {
-        ASSERT(m_lightSource->type() == LS_DISTANT);
+        ASSERT(data.lightSource->type() == LS_DISTANT);
         floatArguments.lightX = paintingData.lightVector.x();
         floatArguments.lightY = paintingData.lightVector.y();
         floatArguments.lightZ = paintingData.lightVector.z();

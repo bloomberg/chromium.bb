@@ -69,10 +69,12 @@ public:
     LightType type() const { return m_type; }
     virtual TextStream& externalRepresentation(TextStream&) const = 0;
 
-    virtual void initPaintingData(PaintingData&) = 0;
+    virtual PassRefPtr<LightSource> create(const FloatPoint3D& scale, const FloatSize& offset) const = 0;
+
+    virtual void initPaintingData(PaintingData&) const = 0;
     // z is a float number, since it is the alpha value scaled by a user
     // specified "surfaceScale" constant, which type is <number> in the SVG standard
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z) = 0;
+    virtual void updatePaintingData(PaintingData&, int x, int y, float z) const = 0;
 
     virtual bool setAzimuth(float) { return false; }
     virtual bool setElevation(float) { return false; }

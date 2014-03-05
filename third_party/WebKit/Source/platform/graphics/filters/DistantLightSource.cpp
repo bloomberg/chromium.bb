@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-void DistantLightSource::initPaintingData(PaintingData& paintingData)
+void DistantLightSource::initPaintingData(PaintingData& paintingData) const
 {
     float azimuth = deg2rad(m_azimuth);
     float elevation = deg2rad(m_elevation);
@@ -45,7 +45,7 @@ void DistantLightSource::initPaintingData(PaintingData& paintingData)
     paintingData.lightVectorLength = 1;
 }
 
-void DistantLightSource::updatePaintingData(PaintingData&, int, int, float)
+void DistantLightSource::updatePaintingData(PaintingData&, int, int, float) const
 {
 }
 

@@ -5,11 +5,11 @@ description("Tests dynamic updates of the 'pointsAtX' property of the SVGFESpotL
 createSVGTestCase();
 
 var spotLightElement = createSVGElement("feSpotLight");
-spotLightElement.setAttribute("x", "113");
-spotLightElement.setAttribute("y", "0");
+spotLightElement.setAttribute("x", "83");
+spotLightElement.setAttribute("y", "-30");
 spotLightElement.setAttribute("z", "100");
-spotLightElement.setAttribute("pointsAtX", "0");
-spotLightElement.setAttribute("pointsAtY", "100");
+spotLightElement.setAttribute("pointsAtX", "-30");
+spotLightElement.setAttribute("pointsAtY", "70");
 spotLightElement.setAttribute("pointsAtZ", "0");
 spotLightElement.setAttribute("specularExponent", "1");
 spotLightElement.setAttribute("limitingConeAngle", "15");
@@ -38,11 +38,11 @@ rectElement.setAttribute("height", "200");
 rectElement.setAttribute("filter", "url(#myFilter)");
 rootSVGElement.appendChild(rectElement);
 
-shouldBe("spotLightElement.pointsAtX.baseVal", "0");
+shouldBe("spotLightElement.pointsAtX.baseVal", "-30");
 
 function repaintTest() {
-    spotLightElement.pointsAtX.baseVal = 113;
-    shouldBe("spotLightElement.pointsAtX.baseVal", "113");
+    spotLightElement.pointsAtX.baseVal = 83;
+    shouldBe("spotLightElement.pointsAtX.baseVal", "83");
 
     completeTest();
 }

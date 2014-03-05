@@ -187,7 +187,7 @@ inline void FELighting::LightingData::bottomRight(int offset, IntPoint& normalVe
 inline void FELighting::inlineSetPixel(int offset, LightingData& data, LightSource::PaintingData& paintingData,
                                        int lightX, int lightY, float factorX, float factorY, IntPoint& normal2DVector)
 {
-    m_lightSource->updatePaintingData(paintingData, lightX, lightY, static_cast<float>(data.pixels->item(offset + cAlphaChannelOffset)) * data.surfaceScale);
+    data.lightSource->updatePaintingData(paintingData, lightX, lightY, static_cast<float>(data.pixels->item(offset + cAlphaChannelOffset)) * data.surfaceScale);
 
     float lightStrength;
     if (!normal2DVector.x() && !normal2DVector.y()) {
@@ -302,6 +302,20 @@ inline void FELighting::platformApply(LightingData& data, LightSource::PaintingD
 #endif
 }
 
+void FELighting::getTransform(FloatPoint3D* scale, FloatSize* offset) const
+{
+    FloatRect initialEffectRect = effectBoundaries();
+    FloatRect absoluteEffectRect = filter()->mapLocalRectToAbsoluteRect(initialEffectRect);
+    FloatPoint absoluteLocation(absolutePaintRect().location());
+    FloatSize positionOffset(absoluteLocation - absoluteEffectRect.location());
+    offset->setWidth(positionOffset.width());
+    offset->setHeight(positionOffset.height());
+    scale->setX(initialEffectRect.width() > 0.0f && initialEffectRect.width() > 0.0f ? absoluteEffectRect.width() / initialEffectRect.width() : 1.0f);
+    scale->setY(initialEffectRect.height() > 0.0f && initialEffectRect.height() > 0.0f ? absoluteEffectRect.height() / initialEffectRect.height() : 1.0f);
+    // X and Y scale should be the same, but, if not, do a best effort by averaging the 2 for Z scale
+    scale->setZ(0.5f * (scale->x() + scale->y()));
+}
+
 bool FELighting::drawLighting(Uint8ClampedArray* pixels, int width, int height)
 {
     LightSource::PaintingData paintingData;
@@ -320,9 +334,14 @@ bool FELighting::drawLighting(Uint8ClampedArray* pixels, int width, int height)
     data.widthMultipliedByPixelSize = width * cPixelSize;
     data.widthDecreasedByOne = width - 1;
     data.heightDecreasedByOne = height - 1;
+    FloatPoint3D worldScale;
+    FloatSize originOffset;
+    getTransform(&worldScale, &originOffset);
+    RefPtr<LightSource> lightSource = m_lightSource->create(worldScale, originOffset);
+    data.lightSource = lightSource.get();
     Color lightColor = adaptColorToOperatingColorSpace(m_lightingColor);
     paintingData.colorVector = FloatPoint3D(lightColor.red(), lightColor.green(), lightColor.blue());
-    m_lightSource->initPaintingData(paintingData);
+    data.lightSource->initPaintingData(paintingData);
 
     // Top/Left corner.
     IntPoint normalVector;
