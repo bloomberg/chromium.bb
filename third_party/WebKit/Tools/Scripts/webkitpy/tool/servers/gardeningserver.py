@@ -112,13 +112,14 @@ class GardeningHTTPRequestHandler(ReflectionHandler):
         _log.debug("calling %s, input='%s'", command, json_input)
         return_code, output, error = self._run_webkit_patch(command, json_input)
         print >> sys.stderr, error
+        json_result = {"return_code": return_code}
         if return_code:
             _log.error("rebaseline-json failed: %d, output='%s'" % (return_code, output))
+            json_result["output"] = output
         else:
             _log.debug("rebaseline-json succeeded")
 
-        # FIXME: propagate error and/or log messages back to the UI.
-        self._serve_text('success')
+        self._serve_text(json.dumps(json_result))
 
     def localresult(self):
         path = self.query['path'][0]

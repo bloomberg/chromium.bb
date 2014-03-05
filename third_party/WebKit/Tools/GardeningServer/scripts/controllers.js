@@ -53,8 +53,19 @@ function rebaselineWithStatusUpdates(failureInfoList, resultsByTest)
     });
 
     if (failuresToRebaseline.length) {
-        checkout.rebaseline(failuresToRebaseline, function() {
-            statusView.addFinalMessage(id, 'Rebaseline done! Please land with "webkit-patch land-cowhand".');
+        // FIXME: checkout.rebaseline() accepts only 3 arguments, we pass 5.
+        checkout.rebaseline(failuresToRebaseline, function(response) {
+            try {
+                var json = JSON.parse(response);
+                if (!json.result_code) {
+                    statusView.addFinalMessage(id, 'Rebaseline done! Please commit locally and land with "git cl dcommit".');
+                } else {
+                    statusView.addMessage(id, 'Rebaseline failed (code=' + json.result_code + ')!');
+                    statusView.addFinalMessage(id, json.output);
+                }
+            } catch (e) {
+                statusView.addFinalMessage(id, 'Invalid response received: "' + response + '"');
+            }
         }, function(failureInfo) {
             statusView.addMessage(id, failureInfo.testName + ' on ' + ui.displayNameForBuilder(failureInfo.builderName));
         }, function() {
@@ -88,7 +99,7 @@ function updateExpectationsWithStatusUpdates(failureInfoList)
     statusView.addMessage(id, 'Updating expectations of ' + testName + '...');
 
     checkout.updateExpectations(failureInfoList, function() {
-        statusView.addFinalMessage(id, 'Expectations update done! Please land with "webkit-patch land-cowhand".');
+        statusView.addFinalMessage(id, 'Expectations update done! Please commit them locally and land with "git cl dcommit".');
     }, function() {
         statusView.addFinalMessage(id, kCheckoutUnavailableMessage);
     });

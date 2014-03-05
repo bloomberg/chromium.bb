@@ -82,7 +82,7 @@ checkout.rebaseline = function(failureInfoList, progressCallback, debugBotsCallb
             tests[failureInfo.testName][failureInfo.builderName] =
                 base.uniquifyArray(base.flattenArray(failureInfo.failureTypeList.map(results.failureTypeToExtensionList)));
         }
-        return net.post('/rebaselineall', JSON.stringify(tests));
+        net.post('/rebaselineall', JSON.stringify(tests)).then(progressCallback, progressCallback);
     });
 };
 

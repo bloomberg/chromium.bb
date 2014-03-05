@@ -60,7 +60,7 @@ class MockServer(object):
 
 
 # The real GardeningHTTPRequestHandler has a constructor that's too hard to
-# call in a unit test, so we create a subclass that's easier to constrcut.
+# call in a unit test, so we create a subclass that's easier to construct.
 class TestGardeningHTTPRequestHandler(GardeningHTTPRequestHandler):
     def __init__(self, server):
         self.server = server
@@ -121,7 +121,7 @@ class GardeningServerTest(unittest.TestCase):
 
     def disabled_test_rebaselineall(self):
         expected_stderr = "MOCK run_command: ['echo', 'rebaseline-json'], cwd=/mock-checkout, input={\"user-scripts/another-test.html\":{\"%s\": [%s]}}\n"
-        expected_stdout = "== Begin Response ==\nsuccess\n== End Response ==\n"
+        expected_stdout = "== Begin Response ==\n{result_code: 0}\n== End Response ==\n"
         server = MockServer()
 
         self.output = ['{"add": [], "delete": []}', '']
