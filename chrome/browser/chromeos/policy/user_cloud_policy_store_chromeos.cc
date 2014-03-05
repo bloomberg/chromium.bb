@@ -256,9 +256,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   LoadPolicyKey(policy_key_path_, &policy_key_);
   policy_key_loaded_ = true;
 
-  scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidator(policy.Pass(),
-                      CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+      policy.Pass(), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
   validator->ValidateUsername(username_, true);
   const bool allow_rotation = false;
   validator->ValidateSignature(
@@ -376,9 +375,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
 void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator for the loaded policy.
-  scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidator(policy.Pass(),
-                      CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+      policy.Pass(), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
   validator->ValidateUsername(username_, true);
   const bool allow_rotation = false;
   validator->ValidateSignature(policy_key_,
