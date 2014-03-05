@@ -40,13 +40,15 @@ class CppBundleGenerator(object):
                api_defs,
                cpp_type_generator,
                cpp_namespace,
-               source_file_dir):
+               source_file_dir,
+               impl_dir):
     self._root = root
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
     self._cpp_namespace = cpp_namespace
     self._source_file_dir = source_file_dir
+    self._impl_dir = impl_dir
 
     self.api_cc_generator = _APICCGenerator(self)
     self.api_h_generator = _APIHGenerator(self)
@@ -183,8 +185,9 @@ class _APICCGenerator(object):
       namespace_name = namespace.unix_name.replace("experimental_", "")
       implementation_header = namespace.compiler_options.get(
           "implemented_in",
-          "chrome/browser/extensions/api/%s/%s_api.h" % (namespace_name,
-                                                         namespace_name))
+          "%s/%s/%s_api.h" % (self._bundle._impl_dir,
+                              namespace_name,
+                              namespace_name))
       if not os.path.exists(
           os.path.join(self._bundle._root,
                        os.path.normpath(implementation_header))):

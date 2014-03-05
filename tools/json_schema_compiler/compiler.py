@@ -38,7 +38,8 @@ def GenerateSchema(generator,
                    root,
                    destdir,
                    root_namespace,
-                   dart_overrides_dir):
+                   dart_overrides_dir,
+                   impl_dir):
   schema_loader = SchemaLoader(
       os.path.dirname(os.path.relpath(os.path.normpath(filenames[0]), root)),
       os.path.dirname(filenames[0]))
@@ -82,7 +83,8 @@ def GenerateSchema(generator,
                                               api_defs,
                                               type_generator,
                                               root_namespace,
-                                              namespace.source_file_dir)
+                                              namespace.source_file_dir,
+                                              impl_dir)
     generators = [
       ('generated_api.cc', cpp_bundle_generator.api_cc_generator),
       ('generated_api.h', cpp_bundle_generator.api_h_generator),
@@ -138,6 +140,8 @@ if __name__ == '__main__':
       ' %s' % GENERATORS)
   parser.add_option('-D', '--dart-overrides-dir', dest='dart_overrides_dir',
       help='Adds custom dart from files in the given directory (Dart only).')
+  parser.add_option('-i', '--impl-dir', dest='impl_dir',
+      help='The root path of all API implementations')
 
   (opts, filenames) = parser.parse_args()
 
@@ -151,6 +155,7 @@ if __name__ == '__main__':
         "Unless in bundle mode, only one file can be specified at a time.")
 
   result = GenerateSchema(opts.generator, filenames, opts.root, opts.destdir,
-                          opts.namespace, opts.dart_overrides_dir)
+                          opts.namespace, opts.dart_overrides_dir,
+                          opts.impl_dir)
   if not opts.destdir:
     print result

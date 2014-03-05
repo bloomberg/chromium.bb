@@ -9,8 +9,11 @@
     #   cc_dir: path to generated files
     #   root_namespace: the C++ namespace that all generated files go under
     # Functions and namespaces can be excluded by setting "nocompile" to true.
+    # The default root path of API implementation sources is
+    # chrome/browser/extensions/api and can be overridden by setting "impl_dir".
     'api_gen_dir': '<(DEPTH)/tools/json_schema_compiler',
     'api_gen': '<(api_gen_dir)/compiler.py',
+    'impl_dir%': 'chrome/browser/extensions/api',
   },
   'actions': [
     {
@@ -43,6 +46,7 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--generator=cpp-bundle',
+        '--impl-dir=<(impl_dir)',
         '<@(schema_files)',
         '<@(non_compiled_schema_files)',
       ],
