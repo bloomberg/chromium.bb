@@ -115,6 +115,7 @@ class VideoReceiver : public base::NonThreadSafe,
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<RtpReceiverStatistics> rtp_video_receiver_statistics_;
   base::TimeDelta time_offset_;  // Sender-receiver offset estimation.
+  int time_offset_counter_;
   transport::TransportEncryptionHandler decryptor_;
   std::list<VideoFrameEncodedCallback> queued_encoded_callbacks_;
   bool time_incoming_packet_updated_;
