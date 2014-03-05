@@ -17,7 +17,6 @@ class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
     super(MissingDisplayFrameRateError, self).__init__(
         'Missing display frame rate metrics: ' + name)
 
-
 class NotEnoughFramesError(page_measurement.MeasurementFailure):
   def __init__(self):
     super(NotEnoughFramesError, self).__init__(

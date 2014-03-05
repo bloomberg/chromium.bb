@@ -9,7 +9,6 @@ from metrics.rendering_stats import UI_COMP_NAME, BEGIN_COMP_NAME, END_COMP_NAME
 from metrics.rendering_stats import GetScrollInputLatencyEvents
 from metrics.rendering_stats import ComputeMouseWheelScrollLatency
 from metrics.rendering_stats import ComputeTouchScrollLatency
-from metrics.rendering_stats import HasRenderingStats
 from metrics.rendering_stats import RenderingStats
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline import model
@@ -200,30 +199,6 @@ def AddInputLatencyStats(mock_timer, input_type, start_thread, end_thread,
         (data[END_COMP_NAME]['time'] - data[UI_COMP_NAME]['time']) / 1000.0)
 
 class RenderingStatsUnitTest(unittest.TestCase):
-  def testHasRenderingStats(self):
-    timeline = model.TimelineModel()
-    timer = MockTimer()
-
-    # A process without rendering stats
-    process_without_stats = timeline.GetOrCreateProcess(pid = 1)
-    thread_without_stats = process_without_stats.GetOrCreateThread(tid = 11)
-    process_without_stats.FinalizeImport()
-    self.assertFalse(HasRenderingStats(thread_without_stats))
-
-    # A process with rendering stats, but no frames in them
-    process_without_frames = timeline.GetOrCreateProcess(pid = 2)
-    thread_without_frames = process_without_frames.GetOrCreateThread(tid = 21)
-    AddMainThreadRenderingStats(timer, thread_without_frames, True, None)
-    process_without_frames.FinalizeImport()
-    self.assertFalse(HasRenderingStats(thread_without_frames))
-
-    # A process with rendering stats and frames in them
-    process_with_frames = timeline.GetOrCreateProcess(pid = 3)
-    thread_with_frames = process_with_frames.GetOrCreateThread(tid = 31)
-    AddImplThreadRenderingStats(timer, thread_with_frames, True, None)
-    process_with_frames.FinalizeImport()
-    self.assertTrue(HasRenderingStats(thread_with_frames))
-
   def testFromTimeline(self):
     timeline = model.TimelineModel()
 
@@ -245,10 +220,10 @@ class RenderingStatsUnitTest(unittest.TestCase):
     ref_stats.AppendNewRange()
     for i in xrange(0, 10):
       first = (i == 0)
-      AddMainThreadRenderingStats(timer, renderer_main, first, None)
-      AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
-      AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
-      AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
+      AddMainThreadRenderingStats(timer, renderer_main, first, ref_stats)
+      AddImplThreadRenderingStats(timer, renderer_compositor, first, ref_stats)
+      AddMainThreadRenderingStats(timer, browser_main, first, None)
+      AddImplThreadRenderingStats(timer, browser_compositor, first, None)
     renderer_main.EndSlice(timer.Get())
 
     # Create 5 main and impl rendering stats events not within any action.
@@ -265,10 +240,10 @@ class RenderingStatsUnitTest(unittest.TestCase):
     ref_stats.AppendNewRange()
     for i in xrange(0, 10):
       first = (i == 0)
-      AddMainThreadRenderingStats(timer, renderer_main, first, None)
-      AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
-      AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
-      AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
+      AddMainThreadRenderingStats(timer, renderer_main, first, ref_stats)
+      AddImplThreadRenderingStats(timer, renderer_compositor, first, ref_stats)
+      AddMainThreadRenderingStats(timer, browser_main, first, None)
+      AddImplThreadRenderingStats(timer, browser_compositor, first, None)
     renderer_main.EndSlice(timer.Get())
 
     # Create 10 main and impl rendering stats events for Action A.
@@ -277,23 +252,20 @@ class RenderingStatsUnitTest(unittest.TestCase):
     ref_stats.AppendNewRange()
     for i in xrange(0, 10):
       first = (i == 0)
-      AddMainThreadRenderingStats(timer, renderer_main, first, None)
-      AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
-      AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
-      AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
+      AddMainThreadRenderingStats(timer, renderer_main, first, ref_stats)
+      AddImplThreadRenderingStats(timer, renderer_compositor, first, ref_stats)
+      AddMainThreadRenderingStats(timer, browser_main, first, None)
+      AddImplThreadRenderingStats(timer, browser_compositor, first, None)
     renderer_main.EndSlice(timer.Get())
 
-    browser.FinalizeImport()
-    renderer.FinalizeImport()
+    renderer_main.FinalizeImport()
+    renderer_compositor.FinalizeImport()
 
     timeline_markers = timeline.FindTimelineMarkers(
         ['ActionA', 'ActionB', 'ActionA'])
     timeline_ranges = [ timeline_bounds.Bounds.CreateFromEvent(marker)
                         for marker in timeline_markers ]
     stats = RenderingStats(renderer, browser, timeline_ranges)
-
-    # Check if we are using the browser compositor's stats
-    self.assertEquals(stats.top_level_process, browser)
 
     # Compare rendering stats to reference.
     self.assertEquals(stats.frame_timestamps, ref_stats.frame_timestamps)
@@ -365,8 +337,8 @@ class RenderingStatsUnitTest(unittest.TestCase):
                                   renderer_main, ref_latency_stats)
     renderer_main.EndSlice(timer.Get())
 
-    browser.FinalizeImport()
-    renderer.FinalizeImport()
+    browser_main.FinalizeImport()
+    renderer_main.FinalizeImport()
 
     mouse_wheel_scroll_events = []
     touch_scroll_events = []

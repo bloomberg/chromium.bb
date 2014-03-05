@@ -15,7 +15,6 @@ BEGIN_COMP_NAME = 'INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT'
 # This is when the input event has reached swap buffer.
 END_COMP_NAME = 'INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT'
 
-
 def GetScrollInputLatencyEvents(scroll_type, browser_process, timeline_range):
   """Get scroll events' LatencyInfo from the browser process's trace buffer
      that are within the timeline_range.
@@ -40,7 +39,6 @@ def GetScrollInputLatencyEvents(scroll_type, browser_process, timeline_range):
           scroll_events.append(ss)
   return scroll_events
 
-
 def ComputeMouseWheelScrollLatency(mouse_wheel_events):
   """ Compute the mouse wheel scroll latency.
 
@@ -58,7 +56,6 @@ def ComputeMouseWheelScrollLatency(mouse_wheel_events):
       latency = data[END_COMP_NAME]['time'] - data[BEGIN_COMP_NAME]['time']
       mouse_wheel_latency.append(latency / 1000.0)
   return mouse_wheel_latency
-
 
 def ComputeTouchScrollLatency(touch_scroll_events):
   """ Compute the touch scroll latency.
@@ -86,22 +83,6 @@ def ComputeTouchScrollLatency(touch_scroll_events):
         touch_scroll_latency.append(latency / 1000.0)
   return touch_scroll_latency
 
-
-def HasRenderingStats(process):
-  """ Returns True if the process contains at least one
-      BenchmarkInstrumentation::*RenderingStats event with a frame.
-  """
-  for event in process.IterAllSlicesOfName(
-      'BenchmarkInstrumentation::MainThreadRenderingStats'):
-    if 'data' in event.args and event.args['data']['frame_count'] == 1:
-      return True
-  for event in process.IterAllSlicesOfName(
-      'BenchmarkInstrumentation::ImplThreadRenderingStats'):
-    if 'data' in event.args and event.args['data']['frame_count'] == 1:
-      return True
-  return False
-
-
 class RenderingStats(object):
   def __init__(self, renderer_process, browser_process, timeline_ranges):
     """
@@ -115,11 +96,7 @@ class RenderingStats(object):
     All *_time values are measured in milliseconds.
     """
     assert(len(timeline_ranges) > 0)
-    # Find the top level process with rendering stats (browser or renderer).
-    if HasRenderingStats(browser_process):
-      self.top_level_process = browser_process
-    else:
-      self.top_level_process  = renderer_process
+    self.renderer_process = renderer_process
 
     self.frame_timestamps = []
     self.frame_times = []
@@ -176,7 +153,7 @@ class RenderingStats(object):
   def initMainThreadStatsFromTimeline(self, timeline_range):
     event_name = 'BenchmarkInstrumentation::MainThreadRenderingStats'
     events = []
-    for event in self.top_level_process.IterAllSlicesOfName(event_name):
+    for event in self.renderer_process.IterAllSlicesOfName(event_name):
       if event.start >= timeline_range.min and event.end <= timeline_range.max:
         if 'data' not in event.args:
           continue
@@ -207,7 +184,7 @@ class RenderingStats(object):
   def initImplThreadStatsFromTimeline(self, timeline_range):
     event_name = 'BenchmarkInstrumentation::ImplThreadRenderingStats'
     events = []
-    for event in self.top_level_process.IterAllSlicesOfName(event_name):
+    for event in self.renderer_process.IterAllSlicesOfName(event_name):
       if event.start >= timeline_range.min and event.end <= timeline_range.max:
         if 'data' not in event.args:
           continue
