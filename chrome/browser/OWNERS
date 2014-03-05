@@ -10,6 +10,9 @@ per-file chrome_content_browser_client_unittest.cc=*
 per-file chrome_browser_field_trials*=asvitkine@chromium.org
 per-file chrome_browser_field_trials*=stevet@chromium.org
 
+per-file chrome_elf_init_*=csharp@chromium.org
+per-file chrome_elf_init_*=robertshield@chromium.org
+
 per-file enumerate_modules_model*=finnur@chromium.org
 
 per-file shell_integration_win*=gab@chromium.org
