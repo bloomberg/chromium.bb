@@ -779,6 +779,7 @@ ease-in
 ease-out
 ease-in-out
 step-start
+step-middle
 step-end
 
 //

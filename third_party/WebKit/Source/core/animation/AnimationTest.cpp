@@ -12,7 +12,6 @@
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "platform/animation/TimingFunctionTestHelper.h"
 
 #include <gtest/gtest.h>
 

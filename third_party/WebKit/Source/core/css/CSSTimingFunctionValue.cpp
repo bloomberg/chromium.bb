@@ -46,12 +46,28 @@ bool CSSCubicBezierTimingFunctionValue::equals(const CSSCubicBezierTimingFunctio
 
 String CSSStepsTimingFunctionValue::customCSSText() const
 {
-    return "steps(" + String::number(m_steps) + ", " + (m_stepAtStart ? "start" : "end") + ')';
+    String stepAtPositionString;
+    switch (m_stepAtPosition) {
+    case StepsTimingFunction::StepAtStart:
+        stepAtPositionString = "start";
+        break;
+    case StepsTimingFunction::StepAtMiddle:
+        stepAtPositionString = "middle";
+        break;
+    case StepsTimingFunction::StepAtEnd:
+        stepAtPositionString = "end";
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        stepAtPositionString = "end";
+        break;
+    }
+    return "steps(" + String::number(m_steps) + ", " + stepAtPositionString + ')';
 }
 
 bool CSSStepsTimingFunctionValue::equals(const CSSStepsTimingFunctionValue& other) const
 {
-    return m_steps == other.m_steps && m_stepAtStart == other.m_stepAtStart;
+    return m_steps == other.m_steps && m_stepAtPosition == other.m_stepAtPosition;
 }
 
 } // namespace WebCore

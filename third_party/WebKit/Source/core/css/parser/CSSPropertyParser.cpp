@@ -3127,7 +3127,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
 {
     CSSParserValue* value = m_valueList->current();
     if (value->id == CSSValueEase || value->id == CSSValueLinear || value->id == CSSValueEaseIn || value->id == CSSValueEaseOut
-        || value->id == CSSValueEaseInOut || value->id == CSSValueStepStart || value->id == CSSValueStepEnd)
+        || value->id == CSSValueEaseInOut || value->id == CSSValueStepStart || value->id == CSSValueStepEnd
+        || (value->id == CSSValueStepMiddle && RuntimeEnabledFeatures::webAnimationsAPIEnabled()))
         return cssValuePool().createIdentifierValue(value->id);
 
     // We must be a function.
@@ -3143,7 +3144,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
 
         // There are two values.
         int numSteps;
-        bool stepAtStart = false;
+        StepsTimingFunction::StepAtPosition stepAtPosition = StepsTimingFunction::StepAtEnd;
 
         CSSParserValue* v = args->current();
         if (!validUnit(v, FInteger))
@@ -3158,12 +3159,24 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
             if (!isComma(v))
                 return nullptr;
             v = args->next();
-            if (v->id != CSSValueStart && v->id != CSSValueEnd)
+            switch (v->id) {
+            case CSSValueMiddle:
+                if (!RuntimeEnabledFeatures::webAnimationsAPIEnabled())
+                    return nullptr;
+                stepAtPosition = StepsTimingFunction::StepAtMiddle;
+                break;
+            case CSSValueStart:
+                stepAtPosition = StepsTimingFunction::StepAtStart;
+                break;
+            case CSSValueEnd:
+                stepAtPosition = StepsTimingFunction::StepAtEnd;
+                break;
+            default:
                 return nullptr;
-            stepAtStart = v->id == CSSValueStart;
+            }
         }
 
-        return CSSStepsTimingFunctionValue::create(numSteps, stepAtStart);
+        return CSSStepsTimingFunctionValue::create(numSteps, stepAtPosition);
     }
 
     if (equalIgnoringCase(value->function->name, "cubic-bezier(")) {

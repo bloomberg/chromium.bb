@@ -38,7 +38,6 @@
 #include "core/animation/AnimatableValueTestHelper.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/CompositorAnimationsTestHelper.h"
-#include "platform/animation/TimingFunctionTestHelper.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"
@@ -83,7 +82,7 @@ protected:
         m_linearTimingFunction = LinearTimingFunction::create();
         m_cubicEaseTimingFunction = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
         m_cubicCustomTimingFunction = CubicBezierTimingFunction::create(1, 2, 3, 4);
-        m_stepTimingFunction = StepsTimingFunction::create(1, false);
+        m_stepTimingFunction = StepsTimingFunction::create(1, StepsTimingFunction::StepAtEnd);
 
         m_timing = createCompositableTiming();
         m_compositorTiming = CompositorAnimationsImpl::CompositorTiming();

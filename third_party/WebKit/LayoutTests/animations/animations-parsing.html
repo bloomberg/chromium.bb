@@ -402,6 +402,18 @@ shouldBe("computedStyle.animationTimingFunction", "'ease'");
 shouldBe("style.webkitAnimationTimingFunction", "''");
 shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
 
+style.animationTimingFunction = "step-middle";
+shouldBe("style.animationTimingFunction", "'step-middle'");
+shouldBe("computedStyle.animationTimingFunction", "'ease'");
+shouldBe("style.webkitAnimationTimingFunction", "'step-middle'");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
+
+style.animationTimingFunction = "steps(5, middle)";
+shouldBe("style.animationTimingFunction", "'steps(5, middle)'");
+shouldBe("computedStyle.animationTimingFunction", "'ease'");
+shouldBe("style.webkitAnimationTimingFunction", "'steps(5, middle)'");
+shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
+
 debug("Valid animation-delay values.");
 // Initial test.
 shouldBe("computedStyle.animationDelay", "'0s'");

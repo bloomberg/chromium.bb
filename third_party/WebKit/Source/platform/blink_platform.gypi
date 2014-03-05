@@ -905,9 +905,7 @@
     ],
     # NOTE: these are legacy unit tests, do not add more!
     'platform_web_unittest_files': [
-      'animation/TimingFunctionTestHelper.cpp',
-      'animation/TimingFunctionTestHelper.h',
-      'animation/TimingFunctionTestHelperTest.cpp',
+      'animation/TimingFunctionTest.cpp',
       'graphics/DeferredImageDecoderTest.cpp',
       'graphics/ImageDecodingStoreTest.cpp',
       'graphics/ImageFrameGeneratorTest.cpp',

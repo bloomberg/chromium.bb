@@ -27,6 +27,7 @@
 #define CSSTimingFunctionValue_h
 
 #include "core/css/CSSValue.h"
+#include "platform/animation/TimingFunction.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -69,13 +70,13 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSCubicBezierTimingFunctionValue, isCubicBezierTimi
 
 class CSSStepsTimingFunctionValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSStepsTimingFunctionValue> create(int steps, bool stepAtStart)
+    static PassRefPtrWillBeRawPtr<CSSStepsTimingFunctionValue> create(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSStepsTimingFunctionValue(steps, stepAtStart));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSStepsTimingFunctionValue(steps, stepAtPosition));
     }
 
     int numberOfSteps() const { return m_steps; }
-    bool stepAtStart() const { return m_stepAtStart; }
+    StepsTimingFunction::StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
 
     String customCSSText() const;
 
@@ -84,15 +85,15 @@ public:
     void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
 
 private:
-    CSSStepsTimingFunctionValue(int steps, bool stepAtStart)
+    CSSStepsTimingFunctionValue(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)
         : CSSValue(StepsTimingFunctionClass)
         , m_steps(steps)
-        , m_stepAtStart(stepAtStart)
+        , m_stepAtPosition(stepAtPosition)
     {
     }
 
     int m_steps;
-    bool m_stepAtStart;
+    StepsTimingFunction::StepAtPosition m_stepAtPosition;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue, isStepsTimingFunctionValue());

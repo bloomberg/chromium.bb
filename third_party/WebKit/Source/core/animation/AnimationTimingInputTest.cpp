@@ -8,7 +8,6 @@
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/TimedItemTiming.h"
-#include "platform/animation/TimingFunctionTestHelper.h"
 
 #include <gtest/gtest.h>
 
@@ -156,18 +155,18 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputTimingFunction)
     EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut), *applyTimingInputString("easing", "ease-out").timingFunction);
     EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut), *applyTimingInputString("easing", "ease-in-out").timingFunction);
     EXPECT_EQ(*LinearTimingFunction::create(), *applyTimingInputString("easing", "linear").timingFunction);
-    EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "initial").timingFunction);
     EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::Start), *applyTimingInputString("easing", "step-start").timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::Middle), *applyTimingInputString("easing", "step-middle").timingFunction);
     EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::End), *applyTimingInputString("easing", "step-end").timingFunction);
     EXPECT_EQ(*CubicBezierTimingFunction::create(1, 1, 0.3, 0.3), *applyTimingInputString("easing", "cubic-bezier(1, 1, 0.3, 0.3)").timingFunction);
-    EXPECT_EQ(*StepsTimingFunction::create(3, true), *applyTimingInputString("easing", "steps(3, start)").timingFunction);
-    EXPECT_EQ(*StepsTimingFunction::create(5, false), *applyTimingInputString("easing", "steps(5, end)").timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::create(3, StepsTimingFunction::StepAtStart), *applyTimingInputString("easing", "steps(3, start)").timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::StepAtMiddle), *applyTimingInputString("easing", "steps(5, middle)").timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::StepAtEnd), *applyTimingInputString("easing", "steps(5, end)").timingFunction);
     EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "steps(5.6, end)").timingFunction);
-    // FIXME: Step-middle not yet implemented. Change this test when it is working.
-    EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "steps(5, middle)").timingFunction);
     EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "cubic-bezier(2, 2, 0.3, 0.3)").timingFunction);
     EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "rubbish").timingFunction);
     EXPECT_EQ(*defaultTimingFunction, *applyTimingInputNumber("easing", 2).timingFunction);
+    EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "initial").timingFunction);
 }
 
 TEST_F(AnimationAnimationTimingInputTest, TimingInputEmpty)

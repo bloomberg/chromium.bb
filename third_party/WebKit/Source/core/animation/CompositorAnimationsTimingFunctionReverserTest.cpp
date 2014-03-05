@@ -32,8 +32,6 @@
 
 #include "core/animation/CompositorAnimations.h"
 
-#include "platform/animation/TimingFunctionTestHelper.h"
-
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -82,26 +80,6 @@ TEST_F(AnimationCompositorAnimationsTimingFunctionReverserTest, CubicReverse)
     RefPtr<TimingFunction> cubicEaseTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
     RefPtr<TimingFunction> cubicEaseTimingReversed = CubicBezierTimingFunction::create(1.0 - 0.25, 0.0, 1.0 - 0.25, 1.0 - 0.1);
     EXPECT_REFV_EQ(cubicEaseTimingReversed, reverse(cubicEaseTiming));
-}
-
-TEST_F(AnimationCompositorAnimationsTimingFunctionReverserTest, ChainedReverse)
-{
-    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::create();
-    RefPtr<ChainedTimingFunction> chainedLinearSingle = ChainedTimingFunction::create();
-    chainedLinearSingle->appendSegment(1.0, linearTiming.get());
-    EXPECT_REFV_EQ(chainedLinearSingle, reverse(chainedLinearSingle));
-
-    RefPtr<TimingFunction> cubicEaseInTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
-    RefPtr<TimingFunction> cubicEaseOutTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
-
-    RefPtr<ChainedTimingFunction> chainedMixed = ChainedTimingFunction::create();
-    chainedMixed->appendSegment(0.75, chainedLinearSingle.get());
-    chainedMixed->appendSegment(1.0, cubicEaseInTiming.get());
-
-    RefPtr<ChainedTimingFunction> chainedMixedReversed = ChainedTimingFunction::create();
-    chainedMixedReversed->appendSegment(0.25, cubicEaseOutTiming.get());
-    chainedMixedReversed->appendSegment(1.0, chainedLinearSingle.get());
-    EXPECT_REFV_EQ(chainedMixedReversed, reverse(chainedMixed));
 }
 
 } // namespace

@@ -38,7 +38,6 @@
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 
-
 namespace WebCore {
 
 class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
@@ -56,7 +55,7 @@ public:
 
     // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
     // accuracy and is not guaranteed.
-    virtual double evaluate(double fraction, double accuracy) const =0;
+    virtual double evaluate(double fraction, double accuracy) const = 0;
 
 protected:
     TimingFunction(Type type)
@@ -87,9 +86,6 @@ private:
     {
     }
 };
-
-// Forward declare so we can friend it below. Don't use in production code!
-class ChainedTimingFunctionTestHelper;
 
 class PLATFORM_EXPORT CubicBezierTimingFunction FINAL : public TimingFunction {
 public:
@@ -172,12 +168,19 @@ public:
     enum SubType {
         Start,
         End,
+        Middle,
         Custom
     };
 
-    static PassRefPtr<StepsTimingFunction> create(int steps, bool stepAtStart)
+    enum StepAtPosition {
+        StepAtStart,
+        StepAtMiddle,
+        StepAtEnd
+    };
+
+    static PassRefPtr<StepsTimingFunction> create(int steps, StepAtPosition stepAtPosition)
     {
-        return adoptRef(new StepsTimingFunction(Custom, steps, stepAtStart));
+        return adoptRef(new StepsTimingFunction(Custom, steps, stepAtPosition));
     }
 
     static StepsTimingFunction* preset(SubType subType)
@@ -185,12 +188,17 @@ public:
         switch (subType) {
         case Start:
             {
-                DEFINE_STATIC_REF(StepsTimingFunction, start, (adoptRef(new StepsTimingFunction(Start, 1, true))));
+                DEFINE_STATIC_REF(StepsTimingFunction, start, (adoptRef(new StepsTimingFunction(Start, 1, StepAtStart))));
                 return start;
+            }
+        case Middle:
+            {
+                DEFINE_STATIC_REF(StepsTimingFunction, middle, (adoptRef(new StepsTimingFunction(Middle, 1, StepAtMiddle))));
+                return middle;
             }
         case End:
             {
-                DEFINE_STATIC_REF(StepsTimingFunction, end, (adoptRef(new StepsTimingFunction(End, 1, false))));
+                DEFINE_STATIC_REF(StepsTimingFunction, end, (adoptRef(new StepsTimingFunction(End, 1, StepAtEnd))));
                 return end;
             }
         default:
@@ -207,21 +215,21 @@ public:
     virtual double evaluate(double fraction, double) const OVERRIDE;
 
     int numberOfSteps() const { return m_steps; }
-    bool stepAtStart() const { return m_stepAtStart; }
+    StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
 
     SubType subType() const { return m_subType; }
 
 private:
-    StepsTimingFunction(SubType subType, int steps, bool stepAtStart)
+    StepsTimingFunction(SubType subType, int steps, StepAtPosition stepAtPosition)
         : TimingFunction(StepsFunction)
         , m_steps(steps)
-        , m_stepAtStart(stepAtStart)
+        , m_stepAtPosition(stepAtPosition)
         , m_subType(subType)
     {
     }
 
     int m_steps;
-    bool m_stepAtStart;
+    StepAtPosition m_stepAtPosition;
     SubType m_subType;
 };
 
@@ -275,7 +283,6 @@ private:
 
         // Allow PrintTo/operator== of the segments. Can be removed once
         // ChainedTimingFunction has a public API for segments.
-        friend class ChainedTimingFunctionTestHelper;
         friend class ChainedTimingFunction;
     };
 
@@ -297,6 +304,13 @@ private:
     // ChainedTimingFunction has a public API for segments.
     friend class ChainedTimingFunctionTestHelper;
 };
+
+PLATFORM_EXPORT bool operator==(const LinearTimingFunction&, const TimingFunction&);
+PLATFORM_EXPORT bool operator==(const CubicBezierTimingFunction&, const TimingFunction&);
+PLATFORM_EXPORT bool operator==(const StepsTimingFunction&, const TimingFunction&);
+
+PLATFORM_EXPORT bool operator==(const TimingFunction&, const TimingFunction&);
+PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 
 #define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName) \
     DEFINE_TYPE_CASTS( \

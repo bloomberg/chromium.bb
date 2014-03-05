@@ -3269,6 +3269,7 @@
             'css/analyzer/DescendantInvalidationSetTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',
+            'css/parser/BisonCSSParserTest.cpp',
             'dom/DocumentMarkerControllerTest.cpp',
             'dom/DocumentTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
