@@ -66,7 +66,6 @@
 #include "platform/FileMetadata.h"
 #include "platform/FileSystemType.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/drm/ContentDecryptionModuleSession.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/graphics/filters/FilterOperation.h"
@@ -443,9 +442,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonNone, NoButton);
 COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonLeft, LeftButton);
 COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonMiddle, MiddleButton);
 COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonRight, RightButton);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeUnknown, ContentDecryptionModuleSessionClient::UnknownError);
-COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeClient, ContentDecryptionModuleSessionClient::ClientError);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionAllowed, NotificationClient::PermissionAllowed);
 COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionNotAllowed, NotificationClient::PermissionNotAllowed);

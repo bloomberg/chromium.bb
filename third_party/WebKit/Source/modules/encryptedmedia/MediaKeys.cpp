@@ -36,7 +36,8 @@
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/UUID.h"
-#include "platform/drm/ContentDecryptionModule.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -69,7 +70,7 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
 
     // 3. Let cdm be the content decryption module corresponding to keySystem.
     // 4. Load cdm if necessary.
-    OwnPtr<ContentDecryptionModule> cdm = ContentDecryptionModule::create(keySystem);
+    OwnPtr<blink::WebContentDecryptionModule> cdm = adoptPtr(blink::Platform::current()->createContentDecryptionModule(keySystem));
     if (!cdm) {
         exceptionState.throwDOMException(NotSupportedError, "A content decryption module could not be loaded for the '" + keySystem + "' key system.");
         return nullptr;
@@ -81,7 +82,7 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
     return adoptRefWillBeNoop(new MediaKeys(context, keySystem, cdm.release()));
 }
 
-MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwnPtr<ContentDecryptionModule> cdm)
+MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule> cdm)
     : ContextLifecycleObserver(context)
     , m_mediaElement(0)
     , m_keySystem(keySystem)
@@ -172,7 +173,7 @@ void MediaKeys::setMediaElement(HTMLMediaElement* element)
 
 blink::WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
 {
-    return m_cdm ? m_cdm->contentDecryptionModule() : 0;
+    return m_cdm.get();
 }
 
 void MediaKeys::initializeNewSessionTimerFired(Timer<MediaKeys>*)
