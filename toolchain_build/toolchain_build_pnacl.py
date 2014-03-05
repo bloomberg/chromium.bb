@@ -193,7 +193,7 @@ def CopyWindowsHostLibs(host):
     return []
   if command.Runnable.use_cygwin:
     libs = ('cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygwin1.dll', 'cygintl-8.dll',
-            'cygstdc++-6.dll', 'cygz.dll', 'cygncurses-10.dll')
+            'cygstdc++-6.dll', 'cygz.dll')
     return [command.Copy(
                     os.path.join(CYGWIN_PATH, 'bin', lib),
                     os.path.join('%(output)s', 'bin', lib))
@@ -373,6 +373,7 @@ def HostTools(host, options):
                   ['--prefix=/',
                    '--enable-shared',
                    '--disable-zlib',
+                   '--disable-terminfo',
                    '--disable-jit',
                    '--disable-bindings', # ocaml is currently the only binding.
                    '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',

@@ -910,9 +910,14 @@ llvm-configure() {
   llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
   # re: --enable-targets  "x86" brings in both i686 and x86_64.
+  #
   # Disabling zlib features for now to reduce set of shared lib deps.
   # This may disable things like compressed debug info:
   # https://code.google.com/p/nativeclient/issues/detail?id=3592
+  #
+  # Disabling terminfo removes a dependency on libtinfo on Linux which
+  # is awkward mostly because it would require a multilib x86-32 copy
+  # of libtinfo installed.  This just disables output colouring.
   local binutils_include="${TC_SRC_BINUTILS}/include"
   RunWithLog "llvm.configure" \
       env -i PATH="${PATH}" \
@@ -921,7 +926,8 @@ llvm-configure() {
              CXX="${CXX}" \
              ${srcdir}/configure \
              --enable-shared \
-             --enable-zlib=no \
+             --disable-zlib \
+             --disable-terminfo \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,arm,mips \
@@ -2816,7 +2822,7 @@ HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
   # On windows, copy the cygwin DLLs needed by the driver tools
   if ${BUILD_PLATFORM_WIN}; then
     StepBanner "DRIVER" "Copying cygwin libraries"
-    local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z ncurses-10"
+    local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z"
     for name in ${deps}; do
       cp "/bin/cyg${name}.dll" "${destdir}"
     done
