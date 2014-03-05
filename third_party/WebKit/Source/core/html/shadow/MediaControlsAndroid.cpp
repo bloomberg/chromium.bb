@@ -59,10 +59,8 @@ bool MediaControlsAndroid::initializeControls(Document& document)
 
 void MediaControlsAndroid::setMediaController(MediaControllerInterface* controller)
 {
-    if (m_overlayPlayButton)
-        m_overlayPlayButton->setMediaController(controller);
-    if (m_overlayEnclosure)
-        m_overlayEnclosure->setMediaController(controller);
+    m_overlayPlayButton->setMediaController(controller);
+    m_overlayEnclosure->setMediaController(controller);
     MediaControls::setMediaController(controller);
 }
 

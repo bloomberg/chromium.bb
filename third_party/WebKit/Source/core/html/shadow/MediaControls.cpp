@@ -151,28 +151,18 @@ void MediaControls::setMediaController(MediaControllerInterface* controller)
         return;
     m_mediaController = controller;
 
-    if (m_panel)
-        m_panel->setMediaController(controller);
+    m_panel->setMediaController(controller);
     if (m_textDisplayContainer)
         m_textDisplayContainer->setMediaController(controller);
-    if (m_playButton)
-        m_playButton->setMediaController(controller);
-    if (m_currentTimeDisplay)
-        m_currentTimeDisplay->setMediaController(controller);
-    if (m_timeline)
-        m_timeline->setMediaController(controller);
-    if (m_panelMuteButton)
-        m_panelMuteButton->setMediaController(controller);
-    if (m_volumeSlider)
-        m_volumeSlider->setMediaController(controller);
-    if (m_toggleClosedCaptionsButton)
-        m_toggleClosedCaptionsButton->setMediaController(controller);
-    if (m_fullScreenButton)
-        m_fullScreenButton->setMediaController(controller);
-    if (m_durationDisplay)
-        m_durationDisplay->setMediaController(controller);
-    if (m_enclosure)
-        m_enclosure->setMediaController(controller);
+    m_playButton->setMediaController(controller);
+    m_currentTimeDisplay->setMediaController(controller);
+    m_timeline->setMediaController(controller);
+    m_panelMuteButton->setMediaController(controller);
+    m_volumeSlider->setMediaController(controller);
+    m_toggleClosedCaptionsButton->setMediaController(controller);
+    m_fullScreenButton->setMediaController(controller);
+    m_durationDisplay->setMediaController(controller);
+    m_enclosure->setMediaController(controller);
 }
 
 void MediaControls::reset()
@@ -194,23 +184,19 @@ void MediaControls::reset()
 
     m_panelMuteButton->show();
 
-    if (m_volumeSlider) {
-        if (!m_mediaController->hasAudio())
-            m_volumeSlider->hide();
-        else {
-            m_volumeSlider->show();
-            m_volumeSlider->setVolume(m_mediaController->volume());
-        }
+    if (!m_mediaController->hasAudio()) {
+        m_volumeSlider->hide();
+    } else {
+        m_volumeSlider->show();
+        m_volumeSlider->setVolume(m_mediaController->volume());
     }
 
     refreshClosedCaptionsButtonVisibility();
 
-    if (m_fullScreenButton) {
-        if (m_mediaController->hasVideo())
-            m_fullScreenButton->show();
-        else
-            m_fullScreenButton->hide();
-    }
+    if (m_mediaController->hasVideo())
+        m_fullScreenButton->show();
+    else
+        m_fullScreenButton->hide();
 
     makeOpaque();
 }
@@ -315,23 +301,18 @@ void MediaControls::changedMute()
 
 void MediaControls::changedVolume()
 {
-    if (m_volumeSlider)
-        m_volumeSlider->setVolume(m_mediaController->volume());
-    if (m_panelMuteButton && m_panelMuteButton->renderer())
+    m_volumeSlider->setVolume(m_mediaController->volume());
+    if (m_panelMuteButton->renderer())
         m_panelMuteButton->renderer()->repaint();
 }
 
 void MediaControls::changedClosedCaptionsVisibility()
 {
-    if (m_toggleClosedCaptionsButton)
-        m_toggleClosedCaptionsButton->updateDisplayType();
+    m_toggleClosedCaptionsButton->updateDisplayType();
 }
 
 void MediaControls::refreshClosedCaptionsButtonVisibility()
 {
-    if (!m_toggleClosedCaptionsButton)
-        return;
-
     if (m_mediaController->hasClosedCaptions())
         m_toggleClosedCaptionsButton->show();
     else
@@ -448,8 +429,7 @@ void MediaControls::createTextTrackDisplay()
     RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(document());
     m_textDisplayContainer = textDisplayContainer.get();
 
-    if (m_mediaController)
-        m_textDisplayContainer->setMediaController(m_mediaController);
+    m_textDisplayContainer->setMediaController(m_mediaController);
 
     insertTextTrackContainer(textDisplayContainer.release());
 }
