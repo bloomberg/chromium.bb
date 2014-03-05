@@ -887,6 +887,8 @@ crbug.com/339373 http/tests/websocket/workers/worker-simple.html [ Skip ]
 crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
 crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Skip ]
 
+crbug.com/349537 http/tests/websocket/workers/worker-reload-repeated.html [ Crash Pass ]
+
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 # Heap buffer overflow failures on Linux ASAN
