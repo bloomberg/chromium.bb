@@ -9,23 +9,48 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import Run
 from driver_env import env
+from driver_log import Log
+from driver_tools import ParseArgs, Run
 import filetype
 
+EXTRA_ENV = {
+  'INPUTS':     '',
+  'FLAGS':      '',
+}
+
+PATTERNS = [
+  ( '(-.*)',    "env.append('FLAGS', $0)"),
+  ( '(.*)',     "env.append('INPUTS', pathtools.normalize($0))"),
+]
+
 def main(argv):
-  env.set('ARGS', *argv)
-  if filetype.IsLLVMBitcode(argv[1]):
-    # Hack to support newlib build.
-    # Newlib determines whether the toolchain supports .init_array, etc., by
-    # compiling a small test and looking for a specific section tidbit using
-    # readelf.  Since pnacl compiles to bitcode, readelf isn't available.
-    # TODO(sehr): we may want to implement a whole readelf on bitcode.
-    if len(argv) == 2 and argv[0] == '-S':
-      print 'INIT_ARRAY'
-      return 0
-    return 1
-  Run('${READELF} ${ARGS}')
+  env.update(EXTRA_ENV)
+  ParseArgs(argv, PATTERNS)
+  inputs = env.get('INPUTS')
+  if len(inputs) == 0:
+    Log.Fatal("No input files given")
+
+  for infile in inputs:
+    env.push()
+    env.set('input', infile)
+    if filetype.IsLLVMBitcode(infile):
+      # Hack to support newlib build.
+      # Newlib determines whether the toolchain supports .init_array, etc., by
+      # compiling a small test and looking for a specific section tidbit using
+      # "readelf -S". Since pnacl compiles to bitcode, readelf isn't available.
+      # (there is a line: "if ${READELF} -S conftest | grep -e INIT_ARRAY"
+      # in newlib's configure file).
+      # TODO(sehr): we may want to implement a whole readelf on bitcode.
+      flags = env.get('FLAGS')
+      if len(flags) == 1 and flags[0] == '-S':
+        print 'INIT_ARRAY'
+        return 0
+      Log.Fatal('Cannot handle pnacl-readelf %s' % str(argv))
+      return 1
+    Run('"${READELF}" ${FLAGS} ${input}')
+    env.pop()
+
   # only reached in case of no errors
   return 0
 
