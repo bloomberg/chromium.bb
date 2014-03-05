@@ -161,6 +161,13 @@ MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
 
 void MediaStreamAudioProcessor::PushCaptureData(media::AudioBus* audio_source) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
+  if (audio_mirroring_ &&
+      capture_converter_->source_parameters().channel_layout() ==
+          media::CHANNEL_LAYOUT_STEREO) {
+    // Swap the first and second channels.
+    audio_source->SwapChannels(0, 1);
+  }
+
   capture_converter_->Push(audio_source);
 }
 
@@ -405,12 +412,6 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
 
   err = audio_processing_->ProcessStream(audio_frame);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
-
-  // TODO(xians): Add support for typing detection, audio level calculation.
-
-  if (audio_mirroring_ && audio_frame->num_channels_ == 2) {
-    // TODO(xians): Swap the stereo channels after switching to media::AudioBus.
-  }
 
   if (typing_detector_ &&
       audio_frame->vad_activity_ != webrtc::AudioFrame::kVadUnknown) {

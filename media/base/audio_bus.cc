@@ -333,4 +333,11 @@ void AudioBus::Scale(float volume) {
   }
 }
 
+void AudioBus::SwapChannels(int a, int b) {
+  DCHECK(a < channels() && a >= 0);
+  DCHECK(b < channels() && b >= 0);
+  DCHECK_NE(a, b);
+  std::swap(channel_data_[a], channel_data_[b]);
+}
+
 }  // namespace media
