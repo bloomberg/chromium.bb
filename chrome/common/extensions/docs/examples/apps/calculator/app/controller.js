@@ -19,21 +19,10 @@ if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
       appWindow.contentWindow.onload = function() {
         new Controller(new Model(9), new View(appWindow.contentWindow));
       };
-
-      chrome.storage.local.set({windowVisible: true});
-      appWindow.onClosed.addListener(function() {
-        chrome.storage.local.set({windowVisible: false});
-      });
     });
   }
 
   chrome.app.runtime.onLaunched.addListener(showCalculatorWindow);
-  chrome.app.runtime.onRestarted.addListener(function() {
-    chrome.storage.local.get('windowVisible', function(data) {
-      if (data.windowVisible)
-        showCalculatorWindow();
-    });
-  });
 }
 
 function Controller(model, view) {
