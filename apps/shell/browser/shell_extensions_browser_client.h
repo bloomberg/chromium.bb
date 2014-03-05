@@ -12,8 +12,6 @@ class PrefService;
 
 namespace extensions {
 
-class ExtensionsAPIClient;
-
 // An ExtensionsBrowserClient that supports a single content::BrowserContent
 // with no related incognito context.
 class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
@@ -66,9 +64,6 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
  private:
   // The single BrowserContext for app_shell. Not owned.
   content::BrowserContext* browser_context_;
-
-  // Support for extension APIs.
-  scoped_ptr<ExtensionsAPIClient> api_client_;
 
   // The PrefService for |browser_context_|.
   scoped_ptr<PrefService> prefs_;

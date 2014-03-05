@@ -11,9 +11,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
+#include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_test_util.h"
 #include "content/public/test/test_browser_thread.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

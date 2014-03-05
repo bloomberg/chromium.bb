@@ -33,10 +33,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -44,9 +40,6 @@
 namespace extensions {
 
 ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
-#if !defined(OS_ANDROID)
-  api_client_.reset(new ChromeExtensionsAPIClient);
-#endif
   // Only set if it hasn't already been set (e.g. by a test).
   if (GetCurrentChannel() == GetDefaultChannel())
     SetCurrentChannel(chrome::VersionInfo::GetChannel());

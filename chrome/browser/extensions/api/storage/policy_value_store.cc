@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/value_store/value_store_change.h"
 #include "extensions/browser/value_store/value_store_util.h"
 

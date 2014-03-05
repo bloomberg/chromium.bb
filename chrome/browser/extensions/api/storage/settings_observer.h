@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_OBSERVER_H_
 
 #include "base/observer_list_threadsafe.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
+#include "chrome/browser/extensions/api/storage/settings_namespace.h"
 
 namespace extensions {
 

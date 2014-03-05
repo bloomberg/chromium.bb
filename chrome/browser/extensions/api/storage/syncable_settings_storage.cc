@@ -5,10 +5,10 @@
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/storage/settings_namespace.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 

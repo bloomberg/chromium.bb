@@ -21,7 +21,6 @@ class ValueStore;
 namespace extensions {
 class SettingsStorageFactory;
 
-// Performs work for the storage API on the FILE thread.
 class SettingsBackend {
  public:
   SettingsBackend(const scoped_refptr<SettingsStorageFactory>& storage_factory,
