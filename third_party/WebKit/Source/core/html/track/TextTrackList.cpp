@@ -46,7 +46,13 @@ TextTrackList::TextTrackList(HTMLMediaElement* owner)
 
 TextTrackList::~TextTrackList()
 {
+    ASSERT(!m_owner);
+
     m_asyncEventQueue->close();
+
+    for (unsigned i = 0; i < length(); ++i) {
+        item(i)->setTrackList(0);
+    }
 }
 
 unsigned TextTrackList::length() const
@@ -229,7 +235,6 @@ void TextTrackList::remove(TextTrack* track)
 void TextTrackList::removeAllInbandTracks()
 {
     for (unsigned i = 0; i < m_inbandTracks.size(); ++i) {
-        m_inbandTracks[i]->invalidateTrackIndex();
         m_inbandTracks[i]->setTrackList(0);
     }
     m_inbandTracks.clear();
@@ -262,12 +267,9 @@ ExecutionContext* TextTrackList::executionContext() const
     return m_owner->executionContext();
 }
 
-void TextTrackList::clearOwnerAndClients()
+void TextTrackList::clearOwner()
 {
     m_owner = 0;
-
-    for (unsigned i = 0; i < length(); ++i)
-        item(i)->clearClient();
 }
 
 void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, PassRefPtr<TextTrack> track)

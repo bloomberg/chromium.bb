@@ -38,13 +38,13 @@ using blink::WebString;
 
 namespace WebCore {
 
-PassRefPtr<InbandTextTrack> InbandTextTrack::create(Document& document, TextTrackClient* client, WebInbandTextTrack* webTrack)
+PassRefPtr<InbandTextTrack> InbandTextTrack::create(Document& document, WebInbandTextTrack* webTrack)
 {
-    return adoptRef(new InbandTextTrack(document, client, webTrack));
+    return adoptRef(new InbandTextTrack(document, webTrack));
 }
 
-InbandTextTrack::InbandTextTrack(Document& document, TextTrackClient* client, WebInbandTextTrack* webTrack)
-    : TextTrack(document, client, emptyAtom, webTrack->label(), webTrack->language(), webTrack->id(), InBand)
+InbandTextTrack::InbandTextTrack(Document& document, WebInbandTextTrack* webTrack)
+    : TextTrack(document, emptyAtom, webTrack->label(), webTrack->language(), webTrack->id(), InBand)
     , m_webTrack(webTrack)
 {
     m_webTrack->setClient(this);
@@ -93,7 +93,6 @@ void InbandTextTrack::setTrackList(TextTrackList* trackList)
     ASSERT(m_webTrack);
     m_webTrack->setClient(0);
     m_webTrack = 0;
-    clearClient();
 }
 
 void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id, const WebString& content, const WebString& settings)

@@ -44,23 +44,12 @@ class TextTrackList;
 class VTTRegion;
 class VTTRegionList;
 
-class TextTrackClient {
-public:
-    virtual ~TextTrackClient() { }
-    virtual void textTrackKindChanged(TextTrack*) = 0;
-    virtual void textTrackModeChanged(TextTrack*) = 0;
-    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) = 0;
-    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*) = 0;
-    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>) = 0;
-    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) = 0;
-};
-
 class TextTrack : public TrackBase, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TrackBase);
 public:
-    static PassRefPtr<TextTrack> create(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
+    static PassRefPtr<TextTrack> create(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
-        return adoptRef(new TextTrack(document, client, kind, label, language, emptyAtom, AddTrack));
+        return adoptRef(new TextTrack(document, kind, label, language, emptyAtom, AddTrack));
     }
     virtual ~TextTrack();
 
@@ -81,7 +70,7 @@ public:
     static const AtomicString& showingKeyword();
 
     AtomicString mode() const { return m_mode; }
-    void setMode(const AtomicString&);
+    virtual void setMode(const AtomicString&);
 
     enum ReadinessState { NotLoaded = 0, Loading = 1, Loaded = 2, FailedToLoad = 3 };
     ReadinessState readinessState() const { return m_readinessState; }
@@ -90,8 +79,7 @@ public:
     TextTrackCueList* cues();
     TextTrackCueList* activeCues() const;
 
-    void clearClient() { m_client = 0; }
-    TextTrackClient* client() { return m_client; }
+    HTMLMediaElement* mediaElement();
 
     void addCue(PassRefPtr<TextTrackCue>);
     void removeCue(TextTrackCue*, ExceptionState&);
@@ -129,7 +117,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
 protected:
-    TextTrack(Document&, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
+    TextTrack(Document&, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
 
     virtual bool isValidKind(const AtomicString& kind) const OVERRIDE { return isValidKindKeyword(kind); }
     virtual AtomicString defaultKind() const OVERRIDE { return subtitlesKeyword(); }
@@ -147,7 +135,6 @@ private:
 
     TextTrackList* m_trackList;
     AtomicString m_mode;
-    TextTrackClient* m_client;
     TextTrackType m_trackType;
     ReadinessState m_readinessState;
     int m_trackIndex;

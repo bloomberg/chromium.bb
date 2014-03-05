@@ -73,7 +73,6 @@ typedef Vector<CueInterval> CueList;
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
 class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public ActiveDOMObject, public MediaControllerInterface
-    , private TextTrackClient
 {
 public:
     static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
@@ -233,13 +232,12 @@ public:
     void updateTextTrackDisplay();
     void textTrackReadyStateChanged(TextTrack*);
 
-    // TextTrackClient
-    virtual void textTrackKindChanged(TextTrack*) OVERRIDE FINAL;
-    virtual void textTrackModeChanged(TextTrack*) OVERRIDE FINAL;
-    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) OVERRIDE FINAL;
-    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*) OVERRIDE FINAL;
-    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE FINAL;
-    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE FINAL;
+    void textTrackKindChanged(TextTrack*);
+    void textTrackModeChanged(TextTrack*);
+    void textTrackAddCues(TextTrack*, const TextTrackCueList*);
+    void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
+    void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>);
+    void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>);
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which

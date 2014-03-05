@@ -45,11 +45,12 @@ public:
 
     void scheduleLoad(const KURL&);
 
-    // This shadows TextTrack::clearClient, but need not be virtual.
-    void clearClient();
+    // TextTrack method.
+    virtual void setMode(const AtomicString&) OVERRIDE;
 
     size_t trackElementIndex();
     HTMLTrackElement* trackElement() { return m_trackElement; }
+    void clearTrackElement();
 
     virtual bool isDefault() const OVERRIDE { return m_isDefault; }
     virtual void setIsDefault(bool isDefault) OVERRIDE  { m_isDefault = isDefault; }

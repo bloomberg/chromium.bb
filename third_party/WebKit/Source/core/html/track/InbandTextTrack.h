@@ -43,14 +43,14 @@ class TextTrackCue;
 
 class InbandTextTrack FINAL : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
-    static PassRefPtr<InbandTextTrack> create(Document&, TextTrackClient*, blink::WebInbandTextTrack*);
+    static PassRefPtr<InbandTextTrack> create(Document&, blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();
 
     size_t inbandTrackIndex();
     virtual void setTrackList(TextTrackList*) OVERRIDE FINAL;
 
 private:
-    InbandTextTrack(Document&, TextTrackClient*, blink::WebInbandTextTrack*);
+    InbandTextTrack(Document&, blink::WebInbandTextTrack*);
 
     virtual void addWebVTTCue(double, double, const blink::WebString&, const blink::WebString&, const blink::WebString&) OVERRIDE;
 

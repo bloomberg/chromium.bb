@@ -61,7 +61,7 @@ inline HTMLTrackElement::HTMLTrackElement(Document& document)
 HTMLTrackElement::~HTMLTrackElement()
 {
     if (m_track)
-        m_track->clearClient();
+        m_track->clearTrackElement();
 }
 
 PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
@@ -262,46 +262,6 @@ const AtomicString& HTMLTrackElement::mediaElementCrossOriginAttribute() const
         return parent->fastGetAttribute(HTMLNames::crossoriginAttr);
 
     return nullAtom;
-}
-
-void HTMLTrackElement::textTrackKindChanged(TextTrack* track)
-{
-    if (HTMLMediaElement* parent = mediaElement())
-        return parent->textTrackKindChanged(track);
-}
-
-void HTMLTrackElement::textTrackModeChanged(TextTrack* track)
-{
-    // Since we've moved to a new parent, we may now be able to load.
-    if (readyState() == HTMLTrackElement::NONE)
-        scheduleLoad();
-
-    if (HTMLMediaElement* parent = mediaElement())
-        return parent->textTrackModeChanged(track);
-}
-
-void HTMLTrackElement::textTrackAddCues(TextTrack* track, const TextTrackCueList* cues)
-{
-    if (HTMLMediaElement* parent = mediaElement())
-        return parent->textTrackAddCues(track, cues);
-}
-
-void HTMLTrackElement::textTrackRemoveCues(TextTrack* track, const TextTrackCueList* cues)
-{
-    if (HTMLMediaElement* parent = mediaElement())
-        return parent->textTrackRemoveCues(track, cues);
-}
-
-void HTMLTrackElement::textTrackAddCue(TextTrack* track, PassRefPtr<TextTrackCue> cue)
-{
-    if (HTMLMediaElement* parent = mediaElement())
-        return parent->textTrackAddCue(track, cue);
-}
-
-void HTMLTrackElement::textTrackRemoveCue(TextTrack* track, PassRefPtr<TextTrackCue> cue)
-{
-    if (HTMLMediaElement* parent = mediaElement())
-        return parent->textTrackRemoveCue(track, cue);
 }
 
 HTMLMediaElement* HTMLTrackElement::mediaElement() const

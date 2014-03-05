@@ -67,7 +67,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
-    void clearOwnerAndClients();
+    void clearOwner();
     HTMLMediaElement* owner() const;
 
     void scheduleChangeEvent();

@@ -95,14 +95,13 @@ const AtomicString& TextTrack::showingKeyword()
     return ended;
 }
 
-TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
+TextTrack::TextTrack(Document& document, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
     : TrackBase(TrackBase::TextTrack, label, language, id)
     , m_cues(nullptr)
     , m_regions(nullptr)
     , m_document(&document)
     , m_trackList(0)
     , m_mode(disabledKeyword())
-    , m_client(client)
     , m_trackType(type)
     , m_readinessState(NotLoaded)
     , m_trackIndex(invalidTrackIndex)
@@ -115,10 +114,9 @@ TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicSt
 
 TextTrack::~TextTrack()
 {
-    if (m_cues) {
-        if (m_client)
-            m_client->textTrackRemoveCues(this, m_cues.get());
+    ASSERT(!m_trackList);
 
+    if (m_cues) {
         for (size_t i = 0; i < m_cues->length(); ++i)
             m_cues->item(i)->setTrack(0);
     }
@@ -127,7 +125,6 @@ TextTrack::~TextTrack()
         for (size_t i = 0; i < m_regions->length(); ++i)
             m_regions->item(i)->setTrack(0);
     }
-    clearClient();
 }
 
 bool TextTrack::isValidKindKeyword(const AtomicString& value)
@@ -148,13 +145,11 @@ bool TextTrack::isValidKindKeyword(const AtomicString& value)
 
 void TextTrack::setTrackList(TextTrackList* trackList)
 {
-    // NOTE: We are using m_trackList->owner() instead of m_client here because
-    // when a HTMLTrackElement is reparented, HTMLTrackElement::textTrackRemoveCues()
-    // will forward the call to the new parent instead of the element the track is being
-    // removed from.
-    if (!trackList && m_trackList && m_trackList->owner() && m_cues)
-        m_trackList->owner()->textTrackRemoveCues(this, m_cues.get());
+    if (!trackList && mediaElement() && m_cues)
+        mediaElement()->textTrackRemoveCues(this, m_cues.get());
+
     m_trackList = trackList;
+    invalidateTrackIndex();
 }
 
 void TextTrack::setKind(const AtomicString& newKind)
@@ -162,8 +157,8 @@ void TextTrack::setKind(const AtomicString& newKind)
     AtomicString oldKind = kind();
     TrackBase::setKind(newKind);
 
-    if (m_client && oldKind != kind())
-        m_client->textTrackKindChanged(this);
+    if (mediaElement() && oldKind != kind())
+        mediaElement()->textTrackKindChanged(this);
 }
 
 void TextTrack::setMode(const AtomicString& mode)
@@ -177,8 +172,8 @@ void TextTrack::setMode(const AtomicString& mode)
 
     // If mode changes to disabled, remove this track's cues from the client
     // because they will no longer be accessible from the cues() function.
-    if (mode == disabledKeyword() && m_client && m_cues)
-        m_client->textTrackRemoveCues(this, m_cues.get());
+    if (mode == disabledKeyword() && mediaElement() && m_cues)
+        mediaElement()->textTrackRemoveCues(this, m_cues.get());
 
     if (mode != showingKeyword() && m_cues)
         for (size_t i = 0; i < m_cues->length(); ++i)
@@ -186,8 +181,8 @@ void TextTrack::setMode(const AtomicString& mode)
 
     m_mode = mode;
 
-    if (m_client)
-        m_client->textTrackModeChanged(this);
+    if (mediaElement())
+        mediaElement()->textTrackModeChanged(this);
 }
 
 TextTrackCueList* TextTrack::cues()
@@ -207,8 +202,8 @@ void TextTrack::removeAllCues()
     if (!m_cues)
         return;
 
-    if (m_client)
-        m_client->textTrackRemoveCues(this, m_cues.get());
+    if (mediaElement())
+        mediaElement()->textTrackRemoveCues(this, m_cues.get());
 
     for (size_t i = 0; i < m_cues->length(); ++i)
         m_cues->item(i)->setTrack(0);
@@ -254,8 +249,8 @@ void TextTrack::addCue(PassRefPtr<TextTrackCue> prpCue)
     cue->setTrack(this);
     ensureTextTrackCueList()->add(cue);
 
-    if (m_client)
-        m_client->textTrackAddCue(this, cue.get());
+    if (mediaElement())
+        mediaElement()->textTrackAddCue(this, cue.get());
 }
 
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
@@ -281,8 +276,8 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
     }
 
     cue->setTrack(0);
-    if (m_client)
-        m_client->textTrackRemoveCue(this, cue);
+    if (mediaElement())
+        mediaElement()->textTrackRemoveCue(this, cue);
 }
 
 VTTRegionList* TextTrack::ensureVTTRegionList()
@@ -358,24 +353,24 @@ void TextTrack::removeRegion(VTTRegion* region, ExceptionState &exceptionState)
 
 void TextTrack::cueWillChange(TextTrackCue* cue)
 {
-    if (!m_client)
+    if (!mediaElement())
         return;
 
     // The cue may need to be repositioned in the media element's interval tree, may need to
     // be re-rendered, etc, so remove it before the modification...
-    m_client->textTrackRemoveCue(this, cue);
+    mediaElement()->textTrackRemoveCue(this, cue);
 }
 
 void TextTrack::cueDidChange(TextTrackCue* cue)
 {
-    if (!m_client)
+    if (!mediaElement())
         return;
 
     // Make sure the TextTrackCueList order is up-to-date.
     ensureTextTrackCueList()->updateCueIndex(cue);
 
     // ... and add it back again.
-    m_client->textTrackAddCue(this, cue);
+    mediaElement()->textTrackAddCue(this, cue);
 }
 
 int TextTrack::trackIndex()
@@ -431,6 +426,11 @@ const AtomicString& TextTrack::interfaceName() const
 ExecutionContext* TextTrack::executionContext() const
 {
     return m_document;
+}
+
+HTMLMediaElement* TextTrack::mediaElement()
+{
+    return m_trackList ? m_trackList->owner() : 0;
 }
 
 } // namespace WebCore
