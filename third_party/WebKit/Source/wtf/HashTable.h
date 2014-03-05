@@ -280,6 +280,8 @@ namespace WTF {
         HashTable();
         ~HashTable()
         {
+            if (Allocator::isGarbageCollected)
+                return;
             if (LIKELY(!m_table))
                 return;
             deallocateTable(m_table, m_tableSize);
@@ -887,6 +889,8 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::deallocateTable(ValueType* table, unsigned size)
     {
+        if (Allocator::isGarbageCollected)
+            return;
         if (Traits::needsDestruction) {
             for (unsigned i = 0; i < size; ++i) {
                 if (!isDeletedBucket(table[i]))
