@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
+#include "chrome/common/extensions/api/generated_api.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -152,6 +153,13 @@ ApiActivityMonitor* ShellExtensionsBrowserClient::GetApiActivityMonitor(
 ExtensionSystemProvider*
 ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ShellExtensionSystemFactory::GetInstance();
+}
+
+void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
+    ExtensionFunctionRegistry* registry) const {
+  // TODO(rockot): Remove this once we have enough APIs moved out of src/chrome
+  // See http://crbug.com/349042
+  extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 }  // namespace extensions

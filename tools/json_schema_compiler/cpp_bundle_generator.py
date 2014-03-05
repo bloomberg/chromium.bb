@@ -206,7 +206,7 @@ class _APICCGenerator(object):
         c.Append("#endif  // %s" % ifdefs, indent_level=0)
     c.Append()
     c.Append('#include '
-                 '"chrome/browser/extensions/extension_function_registry.h"')
+                 '"extensions/browser/extension_function_registry.h"')
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()

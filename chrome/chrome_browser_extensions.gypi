@@ -710,8 +710,6 @@
         'browser/extensions/extension_error_ui_default.h',
         'browser/extensions/extension_function_dispatcher.cc',
         'browser/extensions/extension_function_dispatcher.h',
-        'browser/extensions/extension_function_registry.cc',
-        'browser/extensions/extension_function_registry.h',
         'browser/extensions/extension_function_util.cc',
         'browser/extensions/extension_function_util.h',
         'browser/extensions/extension_host.cc',

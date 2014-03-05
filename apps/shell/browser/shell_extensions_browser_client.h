@@ -60,6 +60,8 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual ApiActivityMonitor* GetApiActivityMonitor(
       content::BrowserContext* context) OVERRIDE;
   virtual ExtensionSystemProvider* GetExtensionSystemFactory() OVERRIDE;
+  virtual void RegisterExtensionFunctions(
+      ExtensionFunctionRegistry* registry) const OVERRIDE;
 
  private:
   // The single BrowserContext for app_shell. Not owned.

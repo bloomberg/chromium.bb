@@ -79,9 +79,6 @@ class ExtensionFunctionDispatcher
   static bool OverrideFunction(const std::string& name,
                                ExtensionFunctionFactory factory);
 
-  // Resets all functions to their initial implementation.
-  static void ResetFunctions();
-
   // Dispatches an IO-thread extension function. Only used for specific
   // functions that must be handled on the IO-thread.
   static void DispatchOnIOThread(

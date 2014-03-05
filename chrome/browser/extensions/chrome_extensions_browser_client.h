@@ -71,6 +71,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual ApiActivityMonitor* GetApiActivityMonitor(
       content::BrowserContext* context) OVERRIDE;
   virtual ExtensionSystemProvider* GetExtensionSystemFactory() OVERRIDE;
+  virtual void RegisterExtensionFunctions(
+      ExtensionFunctionRegistry* registry) const OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

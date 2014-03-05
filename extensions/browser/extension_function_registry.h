@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_REGISTRY_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_REGISTRY_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_FUNCTION_REGISTRY_H_
+#define EXTENSIONS_BROWSER_EXTENSION_FUNCTION_REGISTRY_H_
 
 #include <map>
 #include <string>
@@ -17,7 +17,7 @@ class ExtensionFunction;
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 
 // Template for defining ExtensionFunctionFactory.
-template<class T>
+template <class T>
 ExtensionFunction* NewExtensionFunction() {
   return new T();
 }
@@ -30,9 +30,6 @@ class ExtensionFunctionRegistry {
   explicit ExtensionFunctionRegistry();
   virtual ~ExtensionFunctionRegistry();
 
-  // Resets all functions to their default values.
-  void ResetFunctions();
-
   // Adds all function names to 'names'.
   void GetAllNames(std::vector<std::string>* names);
 
@@ -44,7 +41,7 @@ class ExtensionFunctionRegistry {
   // Factory method for the ExtensionFunction registered as 'name'.
   ExtensionFunction* NewFunction(const std::string& name);
 
-  template<class T>
+  template <class T>
   void RegisterFunction() {
     ExtensionFunctionFactory factory = &NewExtensionFunction<T>;
     factories_[T::function_name()] =
@@ -54,8 +51,9 @@ class ExtensionFunctionRegistry {
   struct FactoryEntry {
    public:
     explicit FactoryEntry();
-    explicit FactoryEntry(ExtensionFunctionFactory factory,
-      extensions::functions::HistogramValue histogram_value);
+    explicit FactoryEntry(
+        ExtensionFunctionFactory factory,
+        extensions::functions::HistogramValue histogram_value);
 
     ExtensionFunctionFactory factory_;
     extensions::functions::HistogramValue histogram_value_;
@@ -65,4 +63,4 @@ class ExtensionFunctionRegistry {
   FactoryMap factories_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_REGISTRY_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_REGISTRY_H_

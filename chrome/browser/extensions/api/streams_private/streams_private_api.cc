@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/streams_private.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/stream_handle.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 
 namespace extensions {

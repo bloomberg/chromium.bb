@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -25,6 +24,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api_activity_monitor.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -227,10 +227,6 @@ bool ExtensionFunctionDispatcher::OverrideFunction(
     const std::string& name, ExtensionFunctionFactory factory) {
   return ExtensionFunctionRegistry::GetInstance()->OverrideFunction(name,
                                                                     factory);
-}
-
-void ExtensionFunctionDispatcher::ResetFunctions() {
-  ExtensionFunctionRegistry::GetInstance()->ResetFunctions();
 }
 
 // static

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 
 class CommandLine;
+class ExtensionFunctionRegistry;
 class PrefService;
 
 namespace content {
@@ -125,6 +126,10 @@ class ExtensionsBrowserClient {
   // Returns the factory that provides an ExtensionSystem to be returned from
   // ExtensionSystem::Get.
   virtual ExtensionSystemProvider* GetExtensionSystemFactory() = 0;
+
+  // Registers extension functions not belonging to the core extensions APIs.
+  virtual void RegisterExtensionFunctions(
+      ExtensionFunctionRegistry* registry) const = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

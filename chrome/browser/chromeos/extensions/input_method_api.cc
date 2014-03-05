@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/event_names.h"
-#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {

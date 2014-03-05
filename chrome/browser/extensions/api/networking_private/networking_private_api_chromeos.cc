@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -25,6 +24,7 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
+#include "extensions/browser/extension_function_registry.h"
 
 namespace api = extensions::api::networking_private;
 

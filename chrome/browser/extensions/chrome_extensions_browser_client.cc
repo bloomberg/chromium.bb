@@ -9,6 +9,10 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
+#include "chrome/browser/extensions/api/runtime/runtime_api.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -21,8 +25,10 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/generated_api.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
@@ -209,6 +215,41 @@ ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(
 ExtensionSystemProvider*
 ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ExtensionSystemFactory::GetInstance();
+}
+
+void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
+    ExtensionFunctionRegistry* registry) const {
+// TODO(rockot): Figure out if and why Android really needs to build
+// ChromeExtensionsBrowserClient and refactor so this ifdef isn't necessary.
+// See http://crbug.com/349436
+#if defined(ENABLE_EXTENSIONS)
+  // WebRequest.
+  registry->RegisterFunction<WebRequestAddEventListener>();
+  registry->RegisterFunction<WebRequestEventHandled>();
+
+  // Preferences.
+  registry->RegisterFunction<extensions::GetPreferenceFunction>();
+  registry->RegisterFunction<extensions::SetPreferenceFunction>();
+  registry->RegisterFunction<extensions::ClearPreferenceFunction>();
+
+  // Direct Preference Access for Component Extensions.
+  registry->RegisterFunction<
+      extensions::chromedirectsetting::GetDirectSettingFunction>();
+  registry->RegisterFunction<
+      extensions::chromedirectsetting::SetDirectSettingFunction>();
+  registry->RegisterFunction<
+      extensions::chromedirectsetting::ClearDirectSettingFunction>();
+
+  // Runtime.
+  registry->RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
+  registry->RegisterFunction<extensions::RuntimeSetUninstallURLFunction>();
+  registry->RegisterFunction<extensions::RuntimeReloadFunction>();
+  registry->RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
+  registry->RegisterFunction<extensions::RuntimeRestartFunction>();
+
+  // Generated APIs.
+  extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
+#endif
 }
 
 }  // namespace extensions
