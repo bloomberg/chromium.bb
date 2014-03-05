@@ -345,13 +345,11 @@ class DriveBackendSyncTest : public testing::Test,
                   folder_id, &remote_entries));
     std::map<std::string, const google_apis::ResourceEntry*>
         remote_entry_by_title;
-    for (ScopedVector<google_apis::ResourceEntry>::iterator itr =
-             remote_entries.begin();
-         itr != remote_entries.end();
-         ++itr) {
-      const google_apis::ResourceEntry& remote_entry = **itr;
-      EXPECT_FALSE(ContainsKey(remote_entry_by_title, remote_entry.title()));
-      remote_entry_by_title[remote_entry.title()] = *itr;
+    for (size_t i = 0; i < remote_entries.size(); ++i) {
+      google_apis::ResourceEntry* remote_entry = remote_entries[i];
+      EXPECT_FALSE(ContainsKey(remote_entry_by_title, remote_entry->title()))
+          << "title: " << remote_entry->title();
+      remote_entry_by_title[remote_entry->title()] = remote_entry;
     }
 
     fileapi::FileSystemURL url(CreateURL(app_id, path));

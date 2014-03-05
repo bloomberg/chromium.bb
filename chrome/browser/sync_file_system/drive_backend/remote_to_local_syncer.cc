@@ -131,7 +131,7 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
       NOTREACHED();
     }
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Remote -> Local]: Missing remote file case.");
+              "[Remote -> Local]: Missing remote metadata case.");
     HandleMissingRemoteMetadata(callback);
     return;
   }

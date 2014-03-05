@@ -93,11 +93,17 @@ void MetadataDatabaseIndex::StoreFileTracker(scoped_ptr<FileTracker> tracker) {
   FileTracker* old_tracker = tracker_by_id_.get(tracker_id);
 
   if (!old_tracker) {
+    DVLOG(3) << "Adding new tracker: " << tracker->tracker_id()
+             << " " << GetTrackerTitle(*tracker);
+
     AddToAppIDIndex(*tracker);
     AddToPathIndexes(*tracker);
     AddToFileIDIndexes(*tracker);
     AddToDirtyTrackerIndexes(*tracker);
   } else {
+    DVLOG(3) << "Updating tracker: " << tracker->tracker_id()
+             << " " << GetTrackerTitle(*tracker);
+
     UpdateInAppIDIndex(*old_tracker, *tracker);
     UpdateInPathIndexes(*old_tracker, *tracker);
     UpdateInFileIDIndexes(*old_tracker, *tracker);
@@ -117,6 +123,9 @@ void MetadataDatabaseIndex::RemoveFileTracker(int64 tracker_id) {
     NOTREACHED();
     return;
   }
+
+  DVLOG(3) << "Removing tracker: "
+           << tracker->tracker_id() << " " << GetTrackerTitle(*tracker);
 
   RemoveFromAppIDIndex(*tracker);
   RemoveFromPathIndexes(*tracker);
@@ -146,6 +155,22 @@ TrackerIDSet MetadataDatabaseIndex::GetFileTrackerIDsByParentAndTitle(
   return FindItem(found->second, title);
 }
 
+std::vector<int64> MetadataDatabaseIndex::GetFileTrackerIDsByParent(
+    int64 parent_tracker_id) const {
+  std::vector<int64> result;
+  TrackerIDsByParentAndTitle::const_iterator found =
+      trackers_by_parent_and_title_.find(parent_tracker_id);
+  if (found == trackers_by_parent_and_title_.end())
+    return result;
+
+  for (TrackerIDsByTitle::const_iterator itr = found->second.begin();
+       itr != found->second.end(); ++itr) {
+    result.insert(result.end(), itr->second.begin(), itr->second.end());
+  }
+
+  return result;
+}
+
 std::string MetadataDatabaseIndex::PickMultiTrackerFileID() const {
   if (multi_tracker_file_ids_.empty())
     return std::string();
@@ -169,16 +194,31 @@ void MetadataDatabaseIndex::DemoteDirtyTracker(int64 tracker_id) {
     demoted_dirty_trackers_.insert(tracker_id);
 }
 
+bool MetadataDatabaseIndex::HasDemotedDirtyTracker() const {
+  return !demoted_dirty_trackers_.empty();
+}
+
 void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers() {
   dirty_trackers_.insert(demoted_dirty_trackers_.begin(),
                          demoted_dirty_trackers_.end());
   demoted_dirty_trackers_.clear();
 }
 
+std::vector<std::string> MetadataDatabaseIndex::GetRegisteredAppIDs() const {
+  std::vector<std::string> result;
+  result.reserve(app_root_by_app_id_.size());
+  for (TrackerIDByAppID::const_iterator itr = app_root_by_app_id_.begin();
+       itr != app_root_by_app_id_.end(); ++itr)
+    result.push_back(itr->first);
+  return result;
+}
+
 void MetadataDatabaseIndex::AddToAppIDIndex(
     const FileTracker& new_tracker) {
   if (!IsAppRoot(new_tracker))
     return;
+
+  DVLOG(3) << "  Add to app_root_by_app_id_: " << new_tracker.app_id();
 
   DCHECK(new_tracker.active());
   DCHECK(!ContainsKey(app_root_by_app_id_, new_tracker.app_id()));
@@ -194,11 +234,17 @@ void MetadataDatabaseIndex::UpdateInAppIDIndex(
     DCHECK(old_tracker.active());
     DCHECK(!new_tracker.active());
     DCHECK(ContainsKey(app_root_by_app_id_, old_tracker.app_id()));
+
+    DVLOG(3) << "  Remove from app_root_by_app_id_: " << old_tracker.app_id();
+
     app_root_by_app_id_.erase(old_tracker.app_id());
   } else if (!IsAppRoot(old_tracker) && IsAppRoot(new_tracker)) {
     DCHECK(!old_tracker.active());
     DCHECK(new_tracker.active());
     DCHECK(!ContainsKey(app_root_by_app_id_, new_tracker.app_id()));
+
+    DVLOG(3) << "  Add to app_root_by_app_id_: " << new_tracker.app_id();
+
     app_root_by_app_id_[new_tracker.app_id()] = new_tracker.tracker_id();
   }
 }
@@ -208,16 +254,24 @@ void MetadataDatabaseIndex::RemoveFromAppIDIndex(
   if (IsAppRoot(tracker)) {
     DCHECK(tracker.active());
     DCHECK(ContainsKey(app_root_by_app_id_, tracker.app_id()));
+
+    DVLOG(3) << "  Remove from app_root_by_app_id_: " << tracker.app_id();
+
     app_root_by_app_id_.erase(tracker.app_id());
   }
 }
 
 void MetadataDatabaseIndex::AddToFileIDIndexes(
     const FileTracker& new_tracker) {
+  DVLOG(3) << "  Add to trackers_by_file_id_: " << new_tracker.file_id();
+
   trackers_by_file_id_[new_tracker.file_id()].Insert(new_tracker);
 
-  if (trackers_by_file_id_[new_tracker.file_id()].size() > 1)
+  if (trackers_by_file_id_[new_tracker.file_id()].size() > 1) {
+    DVLOG_IF(3, !ContainsKey(multi_tracker_file_ids_, new_tracker.file_id()))
+        << "  Add to multi_tracker_file_ids_: " << new_tracker.file_id();
     multi_tracker_file_ids_.insert(new_tracker.file_id());
+  }
 }
 
 void MetadataDatabaseIndex::UpdateInFileIDIndexes(
@@ -237,21 +291,43 @@ void MetadataDatabaseIndex::UpdateInFileIDIndexes(
 
 void MetadataDatabaseIndex::RemoveFromFileIDIndexes(
     const FileTracker& tracker) {
-  DCHECK(ContainsKey(trackers_by_file_id_, tracker.file_id()));
-  trackers_by_file_id_.erase(tracker.file_id());
+  TrackerIDsByFileID::iterator found =
+      trackers_by_file_id_.find(tracker.file_id());
+  if (found == trackers_by_file_id_.end()) {
+    NOTREACHED();
+    return;
+  }
 
-  if (trackers_by_file_id_[tracker.file_id()].size() <= 1)
+  DVLOG(3) << "  Remove from trackers_by_file_id_: "
+           << tracker.tracker_id();
+  found->second.Erase(tracker.tracker_id());
+
+  if (trackers_by_file_id_[tracker.file_id()].size() <= 1) {
+    DVLOG_IF(3, ContainsKey(multi_tracker_file_ids_, tracker.file_id()))
+        << "  Remove from multi_tracker_file_ids_: " << tracker.file_id();
     multi_tracker_file_ids_.erase(tracker.file_id());
+  }
+
+  if (found->second.empty())
+    trackers_by_file_id_.erase(found);
 }
 
 void MetadataDatabaseIndex::AddToPathIndexes(
     const FileTracker& new_tracker) {
   int64 parent = new_tracker.parent_tracker_id();
   std::string title = GetTrackerTitle(new_tracker);
+
+  DVLOG(3) << "  Add to trackers_by_parent_and_title_: "
+           << parent << " " << title;
+
   trackers_by_parent_and_title_[parent][title].Insert(new_tracker);
 
-  if (trackers_by_parent_and_title_[parent][title].size() > 1)
+  if (trackers_by_parent_and_title_[parent][title].size() > 1) {
+    DVLOG_IF(3, !ContainsKey(multi_backing_file_paths_,
+                             ParentIDAndTitle(parent, title)))
+        << "  Add to multi_backing_file_paths_: " << parent << " " << title;
     multi_backing_file_paths_.insert(ParentIDAndTitle(parent, title));
+  }
 }
 
 void MetadataDatabaseIndex::UpdateInPathIndexes(
@@ -259,11 +335,51 @@ void MetadataDatabaseIndex::UpdateInPathIndexes(
     const FileTracker& new_tracker) {
   DCHECK_EQ(old_tracker.tracker_id(), new_tracker.tracker_id());
   DCHECK_EQ(old_tracker.parent_tracker_id(), new_tracker.parent_tracker_id());
-  DCHECK_EQ(GetTrackerTitle(old_tracker), GetTrackerTitle(new_tracker));
+  DCHECK(GetTrackerTitle(old_tracker) == GetTrackerTitle(new_tracker) ||
+         !old_tracker.has_synced_details());
 
   int64 tracker_id = new_tracker.tracker_id();
   int64 parent = new_tracker.parent_tracker_id();
+  std::string old_title = GetTrackerTitle(old_tracker);
   std::string title = GetTrackerTitle(new_tracker);
+
+  TrackerIDsByTitle* trackers_by_title = &trackers_by_parent_and_title_[parent];
+
+  if (old_title != title) {
+    TrackerIDsByTitle::iterator found = trackers_by_title->find(old_title);
+    if (found != trackers_by_title->end()) {
+      DVLOG(3) << "  Remove from trackers_by_parent_and_title_: "
+             << parent << " " << old_title;
+
+      found->second.Erase(tracker_id);
+      if (found->second.empty())
+        trackers_by_title->erase(found);
+    } else {
+      NOTREACHED();
+    }
+
+    DVLOG(3) << "  Add to trackers_by_parent_and_title_: "
+             << parent << " " << title;
+
+    (*trackers_by_title)[title].Insert(new_tracker);
+
+    if (trackers_by_parent_and_title_[parent][old_title].size() <= 1) {
+      DVLOG_IF(3, ContainsKey(multi_backing_file_paths_,
+                              ParentIDAndTitle(parent, title)))
+          << "  Remove from multi_backing_file_paths_: "
+          << parent << " " << title;
+      multi_backing_file_paths_.erase(ParentIDAndTitle(parent, title));
+    }
+
+    if (trackers_by_parent_and_title_[parent][title].size() > 1) {
+      DVLOG_IF(3, !ContainsKey(multi_backing_file_paths_,
+                               ParentIDAndTitle(parent, title)))
+          << "  Add to multi_backing_file_paths_: " << parent << " " << title;
+      multi_backing_file_paths_.insert(ParentIDAndTitle(parent, title));
+    }
+
+    return;
+  }
 
   if (old_tracker.active() && !new_tracker.active())
     trackers_by_parent_and_title_[parent][title].Deactivate(tracker_id);
@@ -279,10 +395,19 @@ void MetadataDatabaseIndex::RemoveFromPathIndexes(
 
   DCHECK(ContainsKey(trackers_by_parent_and_title_, parent));
   DCHECK(ContainsKey(trackers_by_parent_and_title_[parent], title));
+
+  DVLOG(3) << "  Remove from trackers_by_parent_and_title_: "
+           << parent << " " << title;
+
   trackers_by_parent_and_title_[parent][title].Erase(tracker_id);
 
-  if (trackers_by_parent_and_title_[parent][title].size() <= 1)
+  if (trackers_by_parent_and_title_[parent][title].size() <= 1) {
+    DVLOG_IF(3, ContainsKey(multi_backing_file_paths_,
+                            ParentIDAndTitle(parent, title)))
+        << "  Remove from multi_backing_file_paths_: "
+        << parent << " " << title;
     multi_backing_file_paths_.erase(ParentIDAndTitle(parent, title));
+  }
 
   if (trackers_by_parent_and_title_[parent][title].empty()) {
     trackers_by_parent_and_title_[parent].erase(title);
@@ -296,8 +421,10 @@ void MetadataDatabaseIndex::AddToDirtyTrackerIndexes(
   DCHECK(!ContainsKey(dirty_trackers_, new_tracker.tracker_id()));
   DCHECK(!ContainsKey(demoted_dirty_trackers_, new_tracker.tracker_id()));
 
-  if (new_tracker.dirty())
+  if (new_tracker.dirty()) {
+    DVLOG(3) << "  Add to dirty_trackers_: " << new_tracker.tracker_id();
     dirty_trackers_.insert(new_tracker.tracker_id());
+  }
 }
 
 void MetadataDatabaseIndex::UpdateInDirtyTrackerIndexes(
@@ -309,11 +436,17 @@ void MetadataDatabaseIndex::UpdateInDirtyTrackerIndexes(
   if (old_tracker.dirty() && !new_tracker.dirty()) {
     DCHECK(ContainsKey(dirty_trackers_, tracker_id) ||
            ContainsKey(demoted_dirty_trackers_, tracker_id));
+
+    DVLOG(3) << "  Remove from dirty_trackers_: " << tracker_id;
+
     dirty_trackers_.erase(tracker_id);
     demoted_dirty_trackers_.erase(tracker_id);
   } else if (!old_tracker.dirty() && new_tracker.dirty()) {
     DCHECK(!ContainsKey(dirty_trackers_, tracker_id));
     DCHECK(!ContainsKey(demoted_dirty_trackers_, tracker_id));
+
+    DVLOG(3) << "  Add to dirty_trackers_: " << tracker_id;
+
     dirty_trackers_.insert(tracker_id);
   }
 }
@@ -324,7 +457,10 @@ void MetadataDatabaseIndex::RemoveFromDirtyTrackerIndexes(
     int64 tracker_id = tracker.tracker_id();
     DCHECK(ContainsKey(dirty_trackers_, tracker_id) ||
            ContainsKey(demoted_dirty_trackers_, tracker_id));
+
+    DVLOG(3) << "  Remove from dirty_trackers_: " << tracker_id;
     dirty_trackers_.erase(tracker_id);
+
     demoted_dirty_trackers_.erase(tracker_id);
   }
 }

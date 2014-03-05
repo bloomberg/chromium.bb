@@ -1105,14 +1105,8 @@ bool MetadataDatabase::GetNormalPriorityDirtyTracker(
   return true;
 }
 
-bool MetadataDatabase::GetLowPriorityDirtyTracker(
-    FileTracker* tracker) const {
-  DirtyTrackers::const_iterator itr = low_priority_dirty_trackers_.begin();
-  if (itr == low_priority_dirty_trackers_.end())
-    return false;
-  if (tracker)
-    *tracker = **itr;
-  return true;
+bool MetadataDatabase::HasLowPriorityDirtyTracker() const {
+  return !low_priority_dirty_trackers_.empty();
 }
 
 bool MetadataDatabase::HasDirtyTracker() const {

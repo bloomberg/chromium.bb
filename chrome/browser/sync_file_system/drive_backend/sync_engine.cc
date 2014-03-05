@@ -300,8 +300,14 @@ void SyncEngine::DownloadRemoteVersion(
 }
 
 void SyncEngine::PromoteDemotedChanges() {
-  if (metadata_database_)
+  if (metadata_database_ && metadata_database_->HasLowPriorityDirtyTracker()) {
     metadata_database_->PromoteLowerPriorityTrackersToNormal();
+    FOR_EACH_OBSERVER(
+        Observer,
+        service_observers_,
+        OnRemoteChangeQueueUpdated(
+            metadata_database_->CountDirtyTracker()));
+  }
 }
 
 void SyncEngine::ApplyLocalChange(

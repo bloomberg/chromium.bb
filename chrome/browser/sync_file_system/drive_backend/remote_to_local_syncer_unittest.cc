@@ -348,7 +348,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFolder) {
 
   // Tracker for the remote file should be lowered.
   EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_TRUE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_TRUE(GetMetadataDatabase()->HasLowPriorityDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFile) {
@@ -413,7 +413,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFile) {
 
   // Tracker for the remote file should be lowered.
   EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_TRUE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_TRUE(GetMetadataDatabase()->HasLowPriorityDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, Conflict_CreateNestedFolderOnFile) {

@@ -92,6 +92,8 @@ class MetadataDatabaseIndex {
       int64 parent_tracker_id,
       const std::string& title) const;
 
+  std::vector<int64> GetFileTrackerIDsByParent(int64 parent_tracker_id) const;
+
   // Returns the |file_id| of a file that has multiple trackers.
   std::string PickMultiTrackerFileID() const;
 
@@ -106,8 +108,12 @@ class MetadataDatabaseIndex {
   // Demotes a dirty tracker.
   void DemoteDirtyTracker(int64 tracker_id);
 
+  bool HasDemotedDirtyTracker() const;
+
   // Promotes all demoted dirty trackers to normal dirty trackers.
   void PromoteDemotedDirtyTrackers();
+
+  std::vector<std::string> GetRegisteredAppIDs() const;
 
  private:
   typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;

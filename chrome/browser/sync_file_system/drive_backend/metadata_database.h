@@ -343,8 +343,7 @@ class MetadataDatabase {
   bool GetNormalPriorityDirtyTracker(FileTracker* tracker) const;
 
   // Returns true if there is a low priority dirty tracker.
-  // Assigns the dirty tracker if exists and |tracker| is non-NULL.
-  bool GetLowPriorityDirtyTracker(FileTracker* tracker) const;
+  bool HasLowPriorityDirtyTracker() const;
 
   bool HasDirtyTracker() const;
   size_t CountDirtyTracker() const;
