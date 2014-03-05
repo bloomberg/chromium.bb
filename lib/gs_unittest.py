@@ -328,8 +328,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     with mock.patch.object(retry_util, 'GenericRetry', autospec=True):
       ctx.Copy('/blah', 'gs://foon', version=version)
       cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags + list(headers)
-      cmd.append('-m')
-      cmd += ['cp', '-r', '--', '/blah', 'gs://foon']
+      cmd += ['cp', '--', '/blah', 'gs://foon']
 
       retry_util.GenericRetry.assert_called_once_with(
           ctx._RetryFilter, retries,
@@ -512,12 +511,6 @@ class GSContextTest(AbstractGSContextTest):
     self.assertRaises(gs.timeout_util.TimeoutError,
                       ctx.WaitForGsPaths, ['/path1', '/path2'],
                       timeout=1, period=0.02)
-
-  def testNoParallelOpWithStdin(self):
-    """Tests that "-m" is not used when we pipe the input."""
-    ctx = gs.GSContext()
-    ctx.Copy('-', 'gs://abc/1', input='foo')
-    self.gs_mock.assertCommandContains(['-m'], expected=False)
 
 
 class NetworkGSContextTest(cros_test_lib.TempDirTestCase):
