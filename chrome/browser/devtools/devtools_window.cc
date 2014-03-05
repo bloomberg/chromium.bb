@@ -87,7 +87,7 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // If |infobar_service| is NULL, runs |callback| with a single argument with
   // value "false".  Otherwise, creates a dev tools confirm infobar and delegate
-  // and adds the inofbar to |infobar_service|.
+  // and adds the infobar to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const DevToolsWindow::InfoBarCallback& callback,
                      const base::string16& message);
@@ -701,7 +701,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
         content::WebContents::FromRenderViewHost(inspected_rvh)));
 
   embedder_message_dispatcher_.reset(
-      new DevToolsEmbedderMessageDispatcher(this));
+      DevToolsEmbedderMessageDispatcher::createForDevToolsFrontend(this));
 }
 
 // static
@@ -971,7 +971,8 @@ void DevToolsWindow::DispatchOnEmbedder(const std::string& message) {
   int id = 0;
   dict->GetInteger(kFrontendHostId, &id);
 
-  std::string error = embedder_message_dispatcher_->Dispatch(method, params);
+  std::string error;
+  embedder_message_dispatcher_->Dispatch(method, params, &error);
   if (id) {
     scoped_ptr<base::Value> id_value(base::Value::CreateIntegerValue(id));
     scoped_ptr<base::Value> error_value(base::Value::CreateStringValue(error));

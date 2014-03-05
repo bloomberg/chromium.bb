@@ -59,18 +59,13 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void ResetZoom() = 0;
   };
 
-  explicit DevToolsEmbedderMessageDispatcher(Delegate* delegate);
+  virtual ~DevToolsEmbedderMessageDispatcher() {}
+  virtual bool Dispatch(const std::string& method,
+                        const base::ListValue* params,
+                        std::string* error) = 0;
 
-  ~DevToolsEmbedderMessageDispatcher();
-
-  std::string Dispatch(const std::string& method, base::ListValue* params);
-
- private:
-  typedef base::Callback<bool(const base::ListValue&)> Handler;
-  void RegisterHandler(const std::string& method, const Handler& handler);
-
-  typedef std::map<std::string, Handler> HandlerMap;
-  HandlerMap handlers_;
+  static DevToolsEmbedderMessageDispatcher* createForDevToolsFrontend(
+      Delegate* delegate);
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_EMBEDDER_MESSAGE_DISPATCHER_H_

@@ -80,6 +80,8 @@ class Argument {
 
 bool ParseAndHandle0(const base::Callback<void(void)>& handler,
                      const base::ListValue& list) {
+  if (list.GetSize() != 0)
+      return false;
   handler.Run();
   return true;
 }
@@ -130,7 +132,7 @@ bool ParseAndHandle3(const base::Callback<void(A1, A2, A3)>& handler,
 }
 
 template <class A1, class A2, class A3, class A4>
-bool ParseAndHandle3(const base::Callback<void(A1, A2, A3, A4)>& handler,
+bool ParseAndHandle4(const base::Callback<void(A1, A2, A3, A4)>& handler,
                      const base::ListValue& list) {
   if (list.GetSize() != 4)
     return false;
@@ -150,115 +152,116 @@ bool ParseAndHandle3(const base::Callback<void(A1, A2, A3, A4)>& handler,
   return true;
 }
 
-typedef base::Callback<bool(const base::ListValue&)> ListValueParser;
+} // namespace
 
-ListValueParser BindToListParser(const base::Callback<void()>& handler) {
-  return base::Bind(&ParseAndHandle0, handler);
-}
+/**
+ * Dispatcher for messages sent from the frontend running in an
+ * isolated renderer (chrome-devtools:// or chrome://inspect) to the embedder
+ * in the browser.
+ *
+ * The messages are sent via InspectorFrontendHost.sendMessageToEmbedder or
+ * chrome.send method accordingly.
+ */
+class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
+ public:
+  virtual ~DispatcherImpl() {}
 
-template <class A1>
-ListValueParser BindToListParser(const base::Callback<void(A1)>& handler) {
-  return base::Bind(&ParseAndHandle1<A1>, handler);
-}
+  virtual bool Dispatch(const std::string& method,
+                        const base::ListValue* params,
+                        std::string* error) OVERRIDE {
+    HandlerMap::iterator it = handlers_.find(method);
+    if (it == handlers_.end())
+      return false;
 
-template <class A1, class A2>
-ListValueParser BindToListParser(const base::Callback<void(A1,A2)>& handler) {
-  return base::Bind(&ParseAndHandle2<A1, A2>, handler);
-}
+    if (it->second.Run(*params))
+      return true;
 
-template <class A1, class A2, class A3>
-ListValueParser BindToListParser(
-    const base::Callback<void(A1,A2,A3)>& handler) {
-  return base::Bind(&ParseAndHandle3<A1, A2, A3>, handler);
-}
+    if (error)
+      *error = "Invalid frontend host message parameters: " + method;
+    return false;
+  }
 
-template <class A1, class A2, class A3, class A4>
-ListValueParser BindToListParser(
-    const base::Callback<void(A1,A2,A3,A4)>& handler) {
-  return base::Bind(&ParseAndHandle3<A1, A2, A3, A4>, handler);
-}
+  typedef base::Callback<bool(const base::ListValue&)> Handler;
+  void RegisterHandler(const std::string& method, const Handler& handler) {
+    handlers_[method] = handler;
+  }
 
-}  // namespace
+  template<class T>
+  void RegisterHandler(const std::string& method,
+                       void (T::*handler)(), T* delegate) {
+    handlers_[method] = base::Bind(&ParseAndHandle0,
+                                   base::Bind(handler,
+                                              base::Unretained(delegate)));
+  }
 
-DevToolsEmbedderMessageDispatcher::DevToolsEmbedderMessageDispatcher(
-    Delegate* delegate) {
-  RegisterHandler("bringToFront",
-      BindToListParser(base::Bind(&Delegate::ActivateWindow,
-                                  base::Unretained(delegate))));
-  RegisterHandler("closeWindow",
-      BindToListParser(base::Bind(&Delegate::CloseWindow,
-                                  base::Unretained(delegate))));
-  RegisterHandler("setContentsInsets",
-      BindToListParser(base::Bind(&Delegate::SetContentsInsets,
-                                  base::Unretained(delegate))));
-  RegisterHandler("setContentsResizingStrategy",
-      BindToListParser(base::Bind(&Delegate::SetContentsResizingStrategy,
-                                  base::Unretained(delegate))));
-  RegisterHandler("inspectElementCompleted",
-        BindToListParser(base::Bind(&Delegate::InspectElementCompleted,
-                                    base::Unretained(delegate))));
-  RegisterHandler("moveWindowBy",
-      BindToListParser(base::Bind(&Delegate::MoveWindow,
-                                  base::Unretained(delegate))));
-  RegisterHandler("setIsDocked",
-      BindToListParser(base::Bind(&Delegate::SetIsDocked,
-                                  base::Unretained(delegate))));
-  RegisterHandler("openInNewTab",
-      BindToListParser(base::Bind(&Delegate::OpenInNewTab,
-                                  base::Unretained(delegate))));
-  RegisterHandler("save",
-      BindToListParser(base::Bind(&Delegate::SaveToFile,
-                                  base::Unretained(delegate))));
-  RegisterHandler("append",
-      BindToListParser(base::Bind(&Delegate::AppendToFile,
-                                  base::Unretained(delegate))));
-  RegisterHandler("requestFileSystems",
-      BindToListParser(base::Bind(&Delegate::RequestFileSystems,
-                                  base::Unretained(delegate))));
-  RegisterHandler("addFileSystem",
-      BindToListParser(base::Bind(&Delegate::AddFileSystem,
-                                  base::Unretained(delegate))));
-  RegisterHandler("removeFileSystem",
-      BindToListParser(base::Bind(&Delegate::RemoveFileSystem,
-                                  base::Unretained(delegate))));
-  RegisterHandler("upgradeDraggedFileSystemPermissions",
-                  BindToListParser(
-                      base::Bind(&Delegate::UpgradeDraggedFileSystemPermissions,
-                                 base::Unretained(delegate))));
-  RegisterHandler("indexPath",
-      BindToListParser(base::Bind(&Delegate::IndexPath,
-                                  base::Unretained(delegate))));
-  RegisterHandler("stopIndexing",
-      BindToListParser(base::Bind(&Delegate::StopIndexing,
-                                  base::Unretained(delegate))));
-  RegisterHandler("searchInPath",
-      BindToListParser(base::Bind(&Delegate::SearchInPath,
-                                  base::Unretained(delegate))));
-  RegisterHandler("zoomIn",
-      BindToListParser(base::Bind(&Delegate::ZoomIn,
-                                  base::Unretained(delegate))));
-  RegisterHandler("zoomOut",
-      BindToListParser(base::Bind(&Delegate::ZoomOut,
-                                  base::Unretained(delegate))));
-  RegisterHandler("resetZoom",
-      BindToListParser(base::Bind(&Delegate::ResetZoom,
-                                  base::Unretained(delegate))));
-}
+  template<class T, class A1>
+  void RegisterHandler(const std::string& method,
+                       void (T::*handler)(A1), T* delegate) {
+    handlers_[method] = base::Bind(ParseAndHandle1<A1>,
+                                   base::Bind(handler,
+                                              base::Unretained(delegate)));
+  }
 
-DevToolsEmbedderMessageDispatcher::~DevToolsEmbedderMessageDispatcher() {}
+  template<class T, class A1, class A2>
+  void RegisterHandler(const std::string& method,
+                       void (T::*handler)(A1, A2), T* delegate) {
+    handlers_[method] = base::Bind(ParseAndHandle2<A1, A2>,
+                                   base::Bind(handler,
+                                              base::Unretained(delegate)));
+  }
 
-std::string DevToolsEmbedderMessageDispatcher::Dispatch(
-    const std::string& method, base::ListValue* params) {
-  HandlerMap::iterator it = handlers_.find(method);
-  if (it == handlers_.end())
-    return "Unsupported frontend host method: " + method;
+  template<class T, class A1, class A2, class A3>
+  void RegisterHandler(const std::string& method,
+                       void (T::*handler)(A1, A2, A3), T* delegate) {
+    handlers_[method] = base::Bind(ParseAndHandle3<A1, A2, A3>,
+                                   base::Bind(handler,
+                                              base::Unretained(delegate)));
+  }
 
-  if (!it->second.Run(*params))
-    return "Invalid frontend host message parameters: " + method;
-  return "";
-}
+  template<class T, class A1, class A2, class A3, class A4>
+  void RegisterHandler(const std::string& method,
+                       void (T::*handler)(A1, A2, A3, A4), T* delegate) {
+    handlers_[method] = base::Bind(ParseAndHandle4<A1, A2, A3, A4>,
+                                   base::Bind(handler,
+                                              base::Unretained(delegate)));
+  }
 
-void DevToolsEmbedderMessageDispatcher::RegisterHandler(
-    const std::string& method, const Handler& handler) {
-  handlers_[method] = handler;
+ private:
+  typedef std::map<std::string, Handler> HandlerMap;
+  HandlerMap handlers_;
+};
+
+
+DevToolsEmbedderMessageDispatcher*
+    DevToolsEmbedderMessageDispatcher::createForDevToolsFrontend(
+        Delegate* delegate) {
+  DispatcherImpl* d = new DispatcherImpl();
+
+  d->RegisterHandler("bringToFront", &Delegate::ActivateWindow, delegate);
+  d->RegisterHandler("closeWindow", &Delegate::CloseWindow, delegate);
+  d->RegisterHandler("setContentsInsets",
+                     &Delegate::SetContentsInsets, delegate);
+  d->RegisterHandler("setContentsResizingStrategy",
+                     &Delegate::SetContentsResizingStrategy, delegate);
+  d->RegisterHandler("inspectElementCompleted",
+                     &Delegate::InspectElementCompleted, delegate);
+  d->RegisterHandler("moveWindowBy", &Delegate::MoveWindow, delegate);
+  d->RegisterHandler("setIsDocked", &Delegate::SetIsDocked, delegate);
+  d->RegisterHandler("openInNewTab", &Delegate::OpenInNewTab, delegate);
+  d->RegisterHandler("save", &Delegate::SaveToFile, delegate);
+  d->RegisterHandler("append", &Delegate::AppendToFile, delegate);
+  d->RegisterHandler("requestFileSystems",
+                     &Delegate::RequestFileSystems, delegate);
+  d->RegisterHandler("addFileSystem", &Delegate::AddFileSystem, delegate);
+  d->RegisterHandler("removeFileSystem", &Delegate::RemoveFileSystem, delegate);
+  d->RegisterHandler("upgradeDraggedFileSystemPermissions",
+                     &Delegate::UpgradeDraggedFileSystemPermissions, delegate);
+  d->RegisterHandler("indexPath", &Delegate::IndexPath, delegate);
+  d->RegisterHandler("stopIndexing", &Delegate::StopIndexing, delegate);
+  d->RegisterHandler("searchInPath", &Delegate::SearchInPath, delegate);
+  d->RegisterHandler("zoomIn", &Delegate::ZoomIn, delegate);
+  d->RegisterHandler("zoomOut", &Delegate::ZoomOut, delegate);
+  d->RegisterHandler("resetZoom", &Delegate::ResetZoom, delegate);
+
+  return d;
 }
