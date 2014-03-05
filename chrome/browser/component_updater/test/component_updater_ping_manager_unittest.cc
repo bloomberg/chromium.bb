@@ -61,7 +61,8 @@ void ComponentUpdaterPingManagerTest::RunThreadsUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ComponentUpdaterPingManagerTest, PingManagerTest) {
+// Test is flaky: http://crbug.com/349547
+TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   scoped_ptr<InterceptorFactory> interceptor_factory(new InterceptorFactory);
   URLRequestPostInterceptor* interceptor =
       interceptor_factory->CreateInterceptor();
