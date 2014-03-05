@@ -72,9 +72,9 @@ enum shell_surface_type {
  * in the following order (top-most first):
  *  • Lock layer (only ever displayed on its own)
  *  • Cursor layer
+ *  • Input panel layer
  *  • Fullscreen layer
  *  • Panel layer
- *  • Input panel layer
  *  • Workspace layers
  *  • Background layer
  *
@@ -3886,18 +3886,19 @@ resume_desktop(struct desktop_shell *shell)
 	terminate_screensaver(shell);
 
 	wl_list_remove(&shell->lock_layer.link);
-	wl_list_insert(&shell->compositor->cursor_layer.link,
-		       &shell->fullscreen_layer.link);
-	wl_list_insert(&shell->fullscreen_layer.link,
-		       &shell->panel_layer.link);
 	if (shell->showing_input_panels) {
-		wl_list_insert(&shell->panel_layer.link,
+		wl_list_insert(&shell->compositor->cursor_layer.link,
 			       &shell->input_panel_layer.link);
 		wl_list_insert(&shell->input_panel_layer.link,
-			       &ws->layer.link);
+			       &shell->fullscreen_layer.link);
 	} else {
-		wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
+		wl_list_insert(&shell->compositor->cursor_layer.link,
+			       &shell->fullscreen_layer.link);
 	}
+	wl_list_insert(&shell->fullscreen_layer.link,
+		       &shell->panel_layer.link);
+	wl_list_insert(&shell->panel_layer.link,
+		       &ws->layer.link),
 
 	restore_focus_state(shell, get_current_workspace(shell));
 

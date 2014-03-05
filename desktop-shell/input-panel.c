@@ -63,7 +63,7 @@ show_input_panels(struct wl_listener *listener, void *data)
 	shell->showing_input_panels = true;
 
 	if (!shell->locked)
-		wl_list_insert(&shell->panel_layer.link,
+		wl_list_insert(&shell->compositor->cursor_layer.link,
 			       &shell->input_panel_layer.link);
 
 	wl_list_for_each_safe(ipsurf, next,
