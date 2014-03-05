@@ -134,11 +134,11 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
             break;
 
         // If we're going to expand to include the startSpecialContainer, it must be fully selected.
-        if (startSpecialContainer && !endSpecialContainer && comparePositions(positionInParentAfterNode(startSpecialContainer), end) > -1)
+        if (startSpecialContainer && !endSpecialContainer && comparePositions(positionInParentAfterNode(*startSpecialContainer), end) > -1)
             break;
 
         // If we're going to expand to include the endSpecialContainer, it must be fully selected.
-        if (endSpecialContainer && !startSpecialContainer && comparePositions(start, positionInParentBeforeNode(endSpecialContainer)) > -1)
+        if (endSpecialContainer && !startSpecialContainer && comparePositions(start, positionInParentBeforeNode(*endSpecialContainer)) > -1)
             break;
 
         if (startSpecialContainer && startSpecialContainer->isDescendantOf(endSpecialContainer))
@@ -386,9 +386,9 @@ void DeleteSelectionCommand::removeNode(PassRefPtr<Node> node, ShouldAssumeConte
         m_needPlaceholder = true;
 
     // FIXME: Update the endpoints of the range being deleted.
-    updatePositionForNodeRemoval(m_endingPosition, node.get());
-    updatePositionForNodeRemoval(m_leadingWhitespace, node.get());
-    updatePositionForNodeRemoval(m_trailingWhitespace, node.get());
+    updatePositionForNodeRemoval(m_endingPosition, *node);
+    updatePositionForNodeRemoval(m_leadingWhitespace, *node);
+    updatePositionForNodeRemoval(m_trailingWhitespace, *node);
 
     CompositeEditCommand::removeNode(node, shouldAssumeContentIsAlwaysEditable);
 }
@@ -511,7 +511,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 RefPtr<Node> nextNode = NodeTraversal::nextSkippingChildren(*node);
                 // if we just removed a node from the end container, update end position so the
                 // check above will work
-                updatePositionForNodeRemoval(m_downstreamEnd, node.get());
+                updatePositionForNodeRemoval(m_downstreamEnd, *node);
                 removeNode(node.get());
                 node = nextNode.get();
             } else {
@@ -755,7 +755,7 @@ void DeleteSelectionCommand::removeRedundantBlocks()
     while (node != rootNode) {
         if (isRemovableBlock(node)) {
             if (node == m_endingPosition.anchorNode())
-                updatePositionForNodeRemovalPreservingChildren(m_endingPosition, node);
+                updatePositionForNodeRemovalPreservingChildren(m_endingPosition, *node);
 
             CompositeEditCommand::removeNodePreservingChildren(node);
             node = m_endingPosition.anchorNode();

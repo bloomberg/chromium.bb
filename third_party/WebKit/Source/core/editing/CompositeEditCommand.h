@@ -121,7 +121,7 @@ protected:
     void removeNodePreservingChildren(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void removeNodeAndPruneAncestors(PassRefPtr<Node>, Node* excludeNode = 0);
     void moveRemainingSiblingsToNewParent(Node*, Node* pastLastNodeToMove, PassRefPtr<Element> prpNewParent);
-    void updatePositionForNodeRemovalPreservingChildren(Position&, Node*);
+    void updatePositionForNodeRemovalPreservingChildren(Position&, Node&);
     void prune(PassRefPtr<Node>, Node* excludeNode = 0);
     void replaceTextInNode(PassRefPtr<Text>, unsigned offset, unsigned count, const String& replacementText);
     Position replaceSelectedTextInNode(const String&);

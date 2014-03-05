@@ -122,7 +122,7 @@ static Position positionAvoidingPrecedingNodes(Position pos)
             break;
 
         if (pos.containerNode()->nonShadowBoundaryParentNode())
-            nextPosition = positionInParentAfterNode(pos.containerNode());
+            nextPosition = positionInParentAfterNode(*pos.containerNode());
 
         if (nextPosition == pos
             || enclosingBlock(nextPosition.containerNode()) != enclosingBlockNode
@@ -620,12 +620,12 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
             continue;
 
         if (isProhibitedParagraphChild(toHTMLElement(node)->localName())) {
-            if (HTMLElement* paragraphElement = toHTMLElement(enclosingNodeWithTag(positionInParentBeforeNode(node.get()), pTag)))
+            if (HTMLElement* paragraphElement = toHTMLElement(enclosingNodeWithTag(positionInParentBeforeNode(*node), pTag)))
                 moveNodeOutOfAncestor(node, paragraphElement);
         }
 
         if (isHeaderElement(node.get())) {
-            if (HTMLElement* headerElement = toHTMLElement(highestEnclosingNodeOfType(positionInParentBeforeNode(node.get()), isHeaderElement)))
+            if (HTMLElement* headerElement = toHTMLElement(highestEnclosingNodeOfType(positionInParentBeforeNode(*node), isHeaderElement)))
                 moveNodeOutOfAncestor(node, headerElement);
         }
     }
@@ -973,7 +973,7 @@ void ReplaceSelectionCommand::doApply()
         Node* br = endingSelection().start().deprecatedNode();
         ASSERT(br->hasTagName(brTag));
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder).
-        insertionPos = positionInParentBeforeNode(br);
+        insertionPos = positionInParentBeforeNode(*br);
         removeNode(br);
     }
 
@@ -1000,9 +1000,9 @@ void ReplaceSelectionCommand::doApply()
         ASSERT(insertionBlock != currentRoot);
         VisiblePosition visibleInsertionPos(insertionPos);
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
-            insertionPos = positionInParentAfterNode(insertionBlock.get());
+            insertionPos = positionInParentAfterNode(*insertionBlock);
         else if (isStartOfBlock(visibleInsertionPos))
-            insertionPos = positionInParentBeforeNode(insertionBlock.get());
+            insertionPos = positionInParentBeforeNode(*insertionBlock);
     }
 
     // Paste at start or end of link goes outside of link.
@@ -1047,7 +1047,7 @@ void ReplaceSelectionCommand::doApply()
                 if (!splitStart)
                     splitStart = insertionPos.containerNode();
                 nodeToSplitTo = splitTreeToNode(splitStart, nodeToSplitTo->parentNode()).get();
-                insertionPos = positionInParentBeforeNode(nodeToSplitTo.get());
+                insertionPos = positionInParentBeforeNode(*nodeToSplitTo);
             }
         }
     }
@@ -1377,15 +1377,16 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         if (positionIsOffsetInAnchor)
             position.moveToOffset(previous->length() + position.offsetInContainerNode());
         else
-            updatePositionForNodeRemoval(position, previous.get());
+            updatePositionForNodeRemoval(position, *previous);
 
         if (positionOnlyToBeUpdatedIsOffsetInAnchor) {
             if (positionOnlyToBeUpdated.containerNode() == text)
                 positionOnlyToBeUpdated.moveToOffset(previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
             else if (positionOnlyToBeUpdated.containerNode() == previous)
                 positionOnlyToBeUpdated.moveToPosition(text, positionOnlyToBeUpdated.offsetInContainerNode());
-        } else
-            updatePositionForNodeRemoval(positionOnlyToBeUpdated, previous.get());
+        } else {
+            updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
+        }
 
         removeNode(previous);
     }
@@ -1395,12 +1396,12 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         insertTextIntoNode(text, originalLength, next->data());
 
         if (!positionIsOffsetInAnchor)
-            updatePositionForNodeRemoval(position, next.get());
+            updatePositionForNodeRemoval(position, *next);
 
         if (positionOnlyToBeUpdatedIsOffsetInAnchor && positionOnlyToBeUpdated.containerNode() == next)
             positionOnlyToBeUpdated.moveToPosition(text, originalLength + positionOnlyToBeUpdated.offsetInContainerNode());
         else
-            updatePositionForNodeRemoval(positionOnlyToBeUpdated, next.get());
+            updatePositionForNodeRemoval(positionOnlyToBeUpdated, *next);
 
         removeNode(next);
     }

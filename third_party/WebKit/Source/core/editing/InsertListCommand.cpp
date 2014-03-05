@@ -156,7 +156,7 @@ void InsertListCommand::doApply()
                 // FIXME: This is an inefficient way to keep selection alive because indexForVisiblePosition walks from
                 // the beginning of the document to the endOfSelection everytime this code is executed.
                 // But not using index is hard because there are so many ways we can lose selection inside doApplyForSingleParagraph.
-                doApplyForSingleParagraph(forceCreateList, listTag, currentSelection.get());
+                doApplyForSingleParagraph(forceCreateList, listTag, *currentSelection);
                 if (endOfSelection.isNull() || endOfSelection.isOrphan() || startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
                     endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scope.get());
                     // If endOfSelection is null, then some contents have been deleted from the document.
@@ -177,7 +177,7 @@ void InsertListCommand::doApply()
                 startOfCurrentParagraph = startOfNextParagraph(endingSelection().visibleStart());
             }
             setEndingSelection(endOfSelection);
-            doApplyForSingleParagraph(forceCreateList, listTag, currentSelection.get());
+            doApplyForSingleParagraph(forceCreateList, listTag, *currentSelection);
             // Fetch the end of the selection, for the reason mentioned above.
             if (endOfSelection.isNull() || endOfSelection.isOrphan()) {
                 endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scope.get());
@@ -189,10 +189,11 @@ void InsertListCommand::doApply()
         }
     }
 
-    doApplyForSingleParagraph(false, listTag, endingSelection().firstRange().get());
+    ASSERT(endingSelection().firstRange());
+    doApplyForSingleParagraph(false, listTag, *endingSelection().firstRange());
 }
 
-void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const QualifiedName& listTag, Range* currentSelection)
+void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const QualifiedName& listTag, Range& currentSelection)
 {
     // FIXME: This will produce unexpected results for a selection that starts just before a
     // table and ends inside the first cell, selectionForParagraphIteration should probably
@@ -216,9 +217,9 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const Qu
             return;
 
         // If the entire list is selected, then convert the whole list.
-        if (switchListType && isNodeVisiblyContainedWithin(listNode.get(), currentSelection)) {
-            bool rangeStartIsInList = visiblePositionBeforeNode(listNode.get()) == VisiblePosition(currentSelection->startPosition());
-            bool rangeEndIsInList = visiblePositionAfterNode(listNode.get()) == VisiblePosition(currentSelection->endPosition());
+        if (switchListType && isNodeVisiblyContainedWithin(*listNode, currentSelection)) {
+            bool rangeStartIsInList = visiblePositionBeforeNode(*listNode) == VisiblePosition(currentSelection.startPosition());
+            bool rangeEndIsInList = visiblePositionAfterNode(*listNode) == VisiblePosition(currentSelection.endPosition());
 
             RefPtr<HTMLElement> newList = createHTMLElement(document(), listTag);
             insertNodeBefore(newList, listNode);
@@ -239,9 +240,9 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const Qu
             // Restore the start and the end of current selection if they started inside listNode
             // because moveParagraphWithClones could have removed them.
             if (rangeStartIsInList && newList)
-                currentSelection->setStart(newList, 0, IGNORE_EXCEPTION);
+                currentSelection.setStart(newList, 0, IGNORE_EXCEPTION);
             if (rangeEndIsInList && newList)
-                currentSelection->setEnd(newList, lastOffsetInNode(newList.get()), IGNORE_EXCEPTION);
+                currentSelection.setEnd(newList, lastOffsetInNode(newList.get()), IGNORE_EXCEPTION);
 
             setEndingSelection(VisiblePosition(firstPositionInNode(newList.get())));
 
@@ -374,7 +375,7 @@ PassRefPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePositio
         // Also avoid the containing list item.
         Node* listChild = enclosingListChild(insertionPos.deprecatedNode());
         if (listChild && listChild->hasTagName(liTag))
-            insertionPos = positionInParentBeforeNode(listChild);
+            insertionPos = positionInParentBeforeNode(*listChild);
 
         insertNodeAt(listElement, insertionPos);
 

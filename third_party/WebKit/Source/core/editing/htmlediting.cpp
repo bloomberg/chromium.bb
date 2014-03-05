@@ -272,7 +272,7 @@ VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& positio
     }
 
     while (p.deprecatedNode() && !isEditablePosition(p) && p.deprecatedNode()->isDescendantOf(highestRoot))
-        p = isAtomicNode(p.deprecatedNode()) ? positionInParentAfterNode(p.deprecatedNode()) : nextVisuallyDistinctCandidate(p);
+        p = isAtomicNode(p.deprecatedNode()) ? positionInParentAfterNode(*p.deprecatedNode()) : nextVisuallyDistinctCandidate(p);
 
     if (p.deprecatedNode() && p.deprecatedNode() != highestRoot && !p.deprecatedNode()->isDescendantOf(highestRoot))
         return VisiblePosition();
@@ -297,7 +297,7 @@ VisiblePosition lastEditablePositionBeforePositionInRoot(const Position& positio
     }
 
     while (p.deprecatedNode() && !isEditablePosition(p) && p.deprecatedNode()->isDescendantOf(highestRoot))
-        p = isAtomicNode(p.deprecatedNode()) ? positionInParentBeforeNode(p.deprecatedNode()) : previousVisuallyDistinctCandidate(p);
+        p = isAtomicNode(p.deprecatedNode()) ? positionInParentBeforeNode(*p.deprecatedNode()) : previousVisuallyDistinctCandidate(p);
 
     if (p.deprecatedNode() && p.deprecatedNode() != highestRoot && !p.deprecatedNode()->isDescendantOf(highestRoot))
         return VisiblePosition();
@@ -460,7 +460,7 @@ Position positionBeforeContainingSpecialElement(const Position& pos, Node** cont
     Node* n = firstInSpecialElement(pos);
     if (!n)
         return pos;
-    Position result = positionInParentBeforeNode(n);
+    Position result = positionInParentBeforeNode(*n);
     if (result.isNull() || result.deprecatedNode()->rootEditableElement() != pos.deprecatedNode()->rootEditableElement())
         return pos;
     if (containingSpecialElement)
@@ -473,7 +473,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, Node **conta
     Node* n = lastInSpecialElement(pos);
     if (!n)
         return pos;
-    Position result = positionInParentAfterNode(n);
+    Position result = positionInParentAfterNode(*n);
     if (result.isNull() || result.deprecatedNode()->rootEditableElement() != pos.deprecatedNode()->rootEditableElement())
         return pos;
     if (containingSpecialElement)
@@ -500,24 +500,22 @@ Node* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 }
 
 // Returns the visible position at the beginning of a node
-VisiblePosition visiblePositionBeforeNode(Node* node)
+VisiblePosition visiblePositionBeforeNode(Node& node)
 {
-    ASSERT(node);
-    if (node->hasChildren())
-        return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
-    ASSERT(node->parentNode());
-    ASSERT(!node->parentNode()->isShadowRoot());
+    if (node.hasChildren())
+        return VisiblePosition(firstPositionInOrBeforeNode(&node), DOWNSTREAM);
+    ASSERT(node.parentNode());
+    ASSERT(!node.parentNode()->isShadowRoot());
     return VisiblePosition(positionInParentBeforeNode(node));
 }
 
 // Returns the visible position at the ending of a node
-VisiblePosition visiblePositionAfterNode(Node* node)
+VisiblePosition visiblePositionAfterNode(Node& node)
 {
-    ASSERT(node);
-    if (node->hasChildren())
-        return VisiblePosition(lastPositionInOrAfterNode(node), DOWNSTREAM);
-    ASSERT(node->parentNode());
-    ASSERT(!node->parentNode()->isShadowRoot());
+    if (node.hasChildren())
+        return VisiblePosition(lastPositionInOrAfterNode(&node), DOWNSTREAM);
+    ASSERT(node.parentNode());
+    ASSERT(!node.parentNode()->isShadowRoot());
     return VisiblePosition(positionInParentAfterNode(node));
 }
 
@@ -719,7 +717,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
     return firstList->hasTagName(secondList->tagQName()) // make sure the list types match (ol vs. ul)
     && firstList->rendererIsEditable() && secondList->rendererIsEditable() // both lists are editable
     && firstList->rootEditableElement() == secondList->rootEditableElement() // don't cross editing boundaries
-    && isVisiblyAdjacent(positionInParentAfterNode(firstList), positionInParentBeforeNode(secondList));
+    && isVisiblyAdjacent(positionInParentAfterNode(*firstList), positionInParentBeforeNode(*secondList));
     // Make sure there is no visible content between this li and the previous list
 }
 
@@ -890,7 +888,7 @@ unsigned numEnclosingMailBlockquotes(const Position& p)
     return num;
 }
 
-void updatePositionForNodeRemoval(Position& position, Node* node)
+void updatePositionForNodeRemoval(Position& position, Node& node)
 {
     if (position.isNull())
         return;
@@ -904,17 +902,17 @@ void updatePositionForNodeRemoval(Position& position, Node* node)
             position = positionInParentAfterNode(node);
         break;
     case Position::PositionIsOffsetInAnchor:
-        if (position.containerNode() == node->parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node->nodeIndex())
+        if (position.containerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
             position.moveToOffset(position.offsetInContainerNode() - 1);
-        else if (node->containsIncludingShadowDOM(position.containerNode()))
+        else if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentBeforeNode(node);
         break;
     case Position::PositionIsAfterAnchor:
-        if (node->containsIncludingShadowDOM(position.anchorNode()))
+        if (node.containsIncludingShadowDOM(position.anchorNode()))
             position = positionInParentAfterNode(node);
         break;
     case Position::PositionIsBeforeAnchor:
-        if (node->containsIncludingShadowDOM(position.anchorNode()))
+        if (node.containsIncludingShadowDOM(position.anchorNode()))
             position = positionInParentBeforeNode(node);
         break;
     }
@@ -1044,20 +1042,18 @@ bool isVisiblyAdjacent(const Position& first, const Position& second)
 
 // Determines whether a node is inside a range or visibly starts and ends at the boundaries of the range.
 // Call this function to determine whether a node is visibly fit inside selectedRange
-bool isNodeVisiblyContainedWithin(Node* node, const Range* selectedRange)
+bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange)
 {
-    ASSERT(node);
-    ASSERT(selectedRange);
     // If the node is inside the range, then it surely is contained within
-    if (selectedRange->compareNode(node, IGNORE_EXCEPTION) == Range::NODE_INSIDE)
+    if (selectedRange.compareNode(&node, IGNORE_EXCEPTION) == Range::NODE_INSIDE)
         return true;
 
-    bool startIsVisuallySame = visiblePositionBeforeNode(node) == VisiblePosition(selectedRange->startPosition());
-    if (startIsVisuallySame && comparePositions(positionInParentAfterNode(node), selectedRange->endPosition()) < 0)
+    bool startIsVisuallySame = visiblePositionBeforeNode(node) == VisiblePosition(selectedRange.startPosition());
+    if (startIsVisuallySame && comparePositions(positionInParentAfterNode(node), selectedRange.endPosition()) < 0)
         return true;
 
-    bool endIsVisuallySame = visiblePositionAfterNode(node) == VisiblePosition(selectedRange->endPosition());
-    if (endIsVisuallySame && comparePositions(selectedRange->startPosition(), positionInParentBeforeNode(node)) < 0)
+    bool endIsVisuallySame = visiblePositionAfterNode(node) == VisiblePosition(selectedRange.endPosition());
+    if (endIsVisuallySame && comparePositions(selectedRange.startPosition(), positionInParentBeforeNode(node)) < 0)
         return true;
 
     return startIsVisuallySame && endIsVisuallySame;

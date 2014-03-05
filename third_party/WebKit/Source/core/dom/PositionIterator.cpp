@@ -41,7 +41,7 @@ PositionIterator::operator Position() const
         // FIXME: This check is inadaquete because any ancestor could be ignored by editing
         if (editingIgnoresContent(m_nodeAfterPositionInAnchor->parentNode()))
             return positionBeforeNode(m_anchorNode);
-        return positionInParentBeforeNode(m_nodeAfterPositionInAnchor);
+        return positionInParentBeforeNode(*m_nodeAfterPositionInAnchor);
     }
     if (m_anchorNode->hasChildren())
         return lastPositionInOrAfterNode(m_anchorNode);

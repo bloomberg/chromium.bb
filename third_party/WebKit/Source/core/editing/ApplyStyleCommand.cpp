@@ -612,11 +612,11 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
         // Avoid removing the dir attribute and the unicode-bidi and direction properties from the unsplit ancestors.
         Position embeddingRemoveStart = removeStart;
         if (startUnsplitAncestor && nodeFullySelected(startUnsplitAncestor, removeStart, end))
-            embeddingRemoveStart = positionInParentAfterNode(startUnsplitAncestor);
+            embeddingRemoveStart = positionInParentAfterNode(*startUnsplitAncestor);
 
         Position embeddingRemoveEnd = end;
         if (endUnsplitAncestor && nodeFullySelected(endUnsplitAncestor, removeStart, end))
-            embeddingRemoveEnd = positionInParentBeforeNode(endUnsplitAncestor).downstream();
+            embeddingRemoveEnd = positionInParentBeforeNode(*endUnsplitAncestor).downstream();
 
         if (embeddingRemoveEnd != removeStart || embeddingRemoveEnd != end) {
             styleWithoutEmbedding = style->copy();
@@ -656,8 +656,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
         Node* embeddingEndNode = highestEmbeddingAncestor(end.deprecatedNode(), enclosingBlock(end.deprecatedNode()));
 
         if (embeddingStartNode || embeddingEndNode) {
-            Position embeddingApplyStart = embeddingStartNode ? positionInParentAfterNode(embeddingStartNode) : start;
-            Position embeddingApplyEnd = embeddingEndNode ? positionInParentBeforeNode(embeddingEndNode) : end;
+            Position embeddingApplyStart = embeddingStartNode ? positionInParentAfterNode(*embeddingStartNode) : start;
+            Position embeddingApplyEnd = embeddingEndNode ? positionInParentBeforeNode(*embeddingEndNode) : end;
             ASSERT(embeddingApplyStart.isNotNull() && embeddingApplyEnd.isNotNull());
 
             if (!embeddingStyle) {
@@ -704,7 +704,7 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
     RefPtr<Range> range = Range::create(startNode->document(), start, end);
     Element* editableRoot = startNode->rootEditableElement();
     if (startNode != editableRoot) {
-        while (editableRoot && startNode->parentNode() != editableRoot && isNodeVisiblyContainedWithin(startNode->parentNode(), range.get()))
+        while (editableRoot && startNode->parentNode() != editableRoot && isNodeVisiblyContainedWithin(*startNode->parentNode(), *range))
             startNode = startNode->parentNode();
     }
 

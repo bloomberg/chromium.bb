@@ -394,7 +394,7 @@ void CompositeEditCommand::moveRemainingSiblingsToNewParent(Node* node, Node* pa
     }
 }
 
-void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Position& position, Node* node)
+void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Position& position, Node& node)
 {
     int offset = (position.anchorType() == Position::PositionIsOffsetInAnchor) ? position.offsetInContainerNode() : 0;
     updatePositionForNodeRemoval(position, node);
@@ -519,21 +519,22 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
     case Position::PositionIsOffsetInAnchor:
         break;
     case Position::PositionIsBeforeAnchor:
-        return positionInParentBeforeNode(pos.anchorNode());
+        return positionInParentBeforeNode(*pos.anchorNode());
     case Position::PositionIsAfterAnchor:
-        return positionInParentAfterNode(pos.anchorNode());
+        return positionInParentAfterNode(*pos.anchorNode());
     }
 
     Node* tabSpan = tabSpanNode(pos.containerNode());
+    ASSERT(tabSpan);
 
     if (pos.offsetInContainerNode() <= caretMinOffset(pos.containerNode()))
-        return positionInParentBeforeNode(tabSpan);
+        return positionInParentBeforeNode(*tabSpan);
 
     if (pos.offsetInContainerNode() >= caretMaxOffset(pos.containerNode()))
-        return positionInParentAfterNode(tabSpan);
+        return positionInParentAfterNode(*tabSpan);
 
     splitTextNodeContainingElement(toText(pos.containerNode()), pos.offsetInContainerNode());
-    return positionInParentBeforeNode(tabSpan);
+    return positionInParentBeforeNode(*tabSpan);
 }
 
 void CompositeEditCommand::insertNodeAtTabSpanPosition(PassRefPtr<Node> node, const Position& pos)
@@ -1271,7 +1272,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
     RefPtr<Element> newBlock = nullptr;
     if (ContainerNode* blockEnclosingList = listNode->parentNode()) {
         if (blockEnclosingList->hasTagName(liTag)) { // listNode is inside another list item
-            if (visiblePositionAfterNode(blockEnclosingList) == visiblePositionAfterNode(listNode.get())) {
+            if (visiblePositionAfterNode(*blockEnclosingList) == visiblePositionAfterNode(*listNode)) {
                 // If listNode appears at the end of the outer list item, then move listNode outside of this list item
                 // e.g. <ul><li>hello <ul><li><br></li></ul> </li></ul> should become <ul><li>hello</li> <ul><li><br></li></ul> </ul> after this section
                 // If listNode does NOT appear at the end, then we should consider it as a regular paragraph.
@@ -1408,7 +1409,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             if (lineBreakExistsAtVisiblePosition(visiblePos) && downstream.deprecatedNode()->isDescendantOf(enclosingAnchor))
                 return original;
 
-            result = positionInParentAfterNode(enclosingAnchor);
+            result = positionInParentAfterNode(*enclosingAnchor);
         }
         // If visually just before an anchor, insert *outside* the anchor unless it's the first
         // VisiblePosition in a paragraph, to match NSTextView.
@@ -1422,7 +1423,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             if (!enclosingAnchor)
                 return original;
 
-            result = positionInParentBeforeNode(enclosingAnchor);
+            result = positionInParentBeforeNode(*enclosingAnchor);
         }
     }
 

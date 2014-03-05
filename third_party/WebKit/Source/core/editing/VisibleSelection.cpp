@@ -571,7 +571,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
             while (p.isNotNull() && !(lowestEditableAncestor(p.containerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
                 Node* root = editableRootForPosition(p);
                 shadowAncestor = root ? root->shadowHost() : 0;
-                p = isAtomicNode(p.containerNode()) ? positionInParentBeforeNode(p.containerNode()) : previousVisuallyDistinctCandidate(p);
+                p = isAtomicNode(p.containerNode()) ? positionInParentBeforeNode(*p.containerNode()) : previousVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
                     p = positionAfterNode(shadowAncestor);
             }
@@ -600,7 +600,7 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
             while (p.isNotNull() && !(lowestEditableAncestor(p.containerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
                 Node* root = editableRootForPosition(p);
                 shadowAncestor = root ? root->shadowHost() : 0;
-                p = isAtomicNode(p.containerNode()) ? positionInParentAfterNode(p.containerNode()) : nextVisuallyDistinctCandidate(p);
+                p = isAtomicNode(p.containerNode()) ? positionInParentAfterNode(*p.containerNode()) : nextVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
                     p = positionBeforeNode(shadowAncestor);
             }

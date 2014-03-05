@@ -73,7 +73,7 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     RefPtr<Range> range = Range::create(document(), start, endOfSelection);
 
     if (isElementForFormatBlock(refNode->tagQName()) && VisiblePosition(start) == startOfBlock(VisiblePosition(start))
-        && (VisiblePosition(end) == endOfBlock(VisiblePosition(end)) || isNodeVisiblyContainedWithin(refNode, range.get()))
+        && (VisiblePosition(end) == endOfBlock(VisiblePosition(end)) || isNodeVisiblyContainedWithin(*refNode, *range))
         && refNode != root && !root->isDescendantOf(refNode)) {
         // Already in a block element that only contains the current paragraph
         if (refNode->hasTagName(tagName()))

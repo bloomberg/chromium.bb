@@ -325,9 +325,9 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
         Position start = m_selection.start();
         Position end = m_selection.end();
         if (startRemoved)
-            updatePositionForNodeRemoval(start, &node);
+            updatePositionForNodeRemoval(start, node);
         if (endRemoved)
-            updatePositionForNodeRemoval(end, &node);
+            updatePositionForNodeRemoval(end, node);
 
         if (start.isNotNull() && end.isNotNull()) {
             if (m_selection.isBaseFirst())
