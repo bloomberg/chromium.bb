@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"/>
     <CheckBox android:id="@+id/pin_dialog_check"
-            android:text="@string/pin_entry_pair"
+            android:text="@string/remember_pin"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"/>
 </LinearLayout>

@@ -208,8 +208,8 @@ public class JniInterface {
     @CalledByNative
     private static void displayAuthenticationPrompt(boolean pairingSupported) {
         AlertDialog.Builder pinPrompt = new AlertDialog.Builder(sContext);
-        pinPrompt.setTitle(sContext.getString(R.string.pin_entry_title));
-        pinPrompt.setMessage(sContext.getString(R.string.pin_entry_message));
+        pinPrompt.setTitle(sContext.getString(R.string.title_authenticate));
+        pinPrompt.setMessage(sContext.getString(R.string.pin_message_android));
         pinPrompt.setIcon(android.R.drawable.ic_lock_lock);
 
         final View pinEntry = sContext.getLayoutInflater().inflate(R.layout.pin_dialog, null);
@@ -224,7 +224,7 @@ public class JniInterface {
         }
 
         pinPrompt.setPositiveButton(
-                R.string.pin_entry_connect, new DialogInterface.OnClickListener() {
+                R.string.connect_button, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User provided a PIN code");
@@ -234,13 +234,10 @@ public class JniInterface {
                 });
 
         pinPrompt.setNegativeButton(
-                R.string.pin_entry_cancel, new DialogInterface.OnClickListener() {
+                R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User canceled pin entry prompt");
-                        Toast.makeText(sContext,
-                                sContext.getString(R.string.msg_pin_canceled),
-                                Toast.LENGTH_LONG).show();
                         disconnectFromHost();
                     }
                 });

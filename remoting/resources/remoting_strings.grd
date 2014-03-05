@@ -306,7 +306,7 @@
         <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDS_DESCRIPTION_HOME">
           Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
         </message>
-        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED">
+        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chromoting again.
         </message>
         <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
@@ -390,6 +390,15 @@
       </if>
 
       <if expr="is_android">
+        <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
+          Show/hide keyboard.
+        </message>
+        <message desc="Message displayed to the user if there are no hosts registered to their account" name="IDS_HOST_LIST_EMPTY_ANDROID" formatter_data="android_java">
+          You have no computers registered.
+        </message>
+        <message desc="Title of the authentication dialog" name="IDS_TITLE_AUTHENTICATE" formatter_data="android_java">
+          Authenticate to host
+        </message>
         <message desc="Title displayed in the action-bar for the Android Help screen" name="IDS_ACTIONBAR_HELP_TITLE" formatter_data="android_java">
           Help
         </message>
@@ -404,6 +413,9 @@
         </message>
         <message desc="Label for the button on the Android popup dialog that is shown when there are no Google accounts on the device. Pressing this button launches the Android system screen for adding a new Google account to the device." name="IDS_NOACCOUNTS_ADD_ACCOUNT" formatter_data="android_java">
           Add account
+        </message>
+        <message desc="Error that is shown if a network error occurs, including the case where the device is off-line." name="IDS_ERROR_NETWORK_ERROR" formatter_data="android_java">
+          A network error occurred. Please check that your device is on-line and try again.
         </message>
       </if>
 
@@ -422,7 +434,7 @@
       <message desc="Label next to the PIN confirmation edit box. The user must enter a PIN before enabling remote access to their computer." name="IDS_ASK_PIN_DIALOG_CONFIRM_LABEL">
         Re-type PIN
       </message>
-      <message desc="Label for general-purpose Cancel buttons." name="IDS_CANCEL">
+      <message desc="Label for general-purpose Cancel buttons." name="IDS_CANCEL" formatter_data="android_java">
         Cancel
       </message>
       <message desc="In the connection history dialog, clicking this button will delete the connection history." name="IDS_CLEAR_HISTORY">
@@ -431,7 +443,7 @@
       <message desc="Label for general-purpose Close buttons." name="IDS_CLOSE" formatter_data="android_java">
         Close
       </message>
-      <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDS_CONNECT_BUTTON">
+      <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDS_CONNECT_BUTTON" formatter_data="android_java">
         Connect
       </message>
       <message desc="Label for the connect button for hosts running an out-of-date version of the Me2Me host software. The user clicks this button to acknowledge the message but continue with the connection anyway." name="IDS_CONNECT_ANYWAY">
@@ -464,7 +476,7 @@
       <message desc="Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host." name="IDS_DISABLE_HOST">
         Disable
       </message>
-      <message desc="Label for the client-side disconnect button. Clicking this button disconnects oneself from the host." name="IDS_DISCONNECT_MYSELF_BUTTON">
+      <message desc="Label for the client-side disconnect button. Clicking this button disconnects oneself from the host." name="IDS_DISCONNECT_MYSELF_BUTTON" formatter_data="android_java">
         Disconnect
       </message>
       <message desc="Column header in the connection history table showing the length of time for which a connection was active, if available." name="IDS_DURATION_HEADER">
@@ -473,7 +485,7 @@
       <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDS_ERROR_HOST_OVERLOAD">
         Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.
       </message>
-      <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDS_ERROR_HOST_IS_OFFLINE">
+      <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDS_ERROR_HOST_IS_OFFLINE" formatter_data="android_java">
         The remote computer is not responding to connection requests. Please verify that it is online and try again.
       </message>
       <message desc="Error displayed if an invalid access code is entered." name="IDS_ERROR_INVALID_ACCESS_CODE">
@@ -488,10 +500,10 @@
       <message desc="Error displayed when the service returns a 503 error. Such errors are usually temporary, and resolve themselves in about 30 seconds." name="IDS_ERROR_SERVICE_UNAVAILABLE">
         The service is temporarily unavailable. Please try again later.
       </message>
-      <message desc="Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further." name="IDS_ERROR_UNEXPECTED">
+      <message desc="Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further." name="IDS_ERROR_UNEXPECTED" formatter_data="android_java">
         An unexpected error occurred. Please report this problem to the developers.
       </message>
-      <message desc="Text displayed while a client is connecting to a host, but before the connection is established." name="IDS_FOOTER_CONNECTING">
+      <message desc="Text displayed while a client is connecting to a host, but before the connection is established." name="IDS_FOOTER_CONNECTING" formatter_data="android_java">
         Connecting…
       </message>
       <message desc="Footer text displayed at the host after an access code has been generated, but before a client connects." name="IDS_FOOTER_WAITING">
@@ -602,7 +614,7 @@
       <message desc="Sub-title for the remote assistance section of the UI, which contains buttons to share this computer or to connect to another computer, both on a one-off basis." name="IDS_MODE_IT2ME">
         Remote Assistance
       </message>
-      <message desc="Sub-title for the remote access section of the UI, which contains a list of currently-shared hosts and a button to enable this computer for long-term sharing." name="IDS_MODE_ME2ME">
+      <message desc="Sub-title for the remote access section of the UI, which contains a list of currently-shared hosts and a button to enable this computer for long-term sharing." name="IDS_MODE_ME2ME" formatter_data="android_java">
         My Computers
       </message>
       <message desc="Label for general-purpose OK buttons." name="IDS_OK">
@@ -629,6 +641,9 @@
       <message desc="Message displayed to the user asking them to enter a PIN for the host they are connecting to." name="IDS_PIN_MESSAGE">
         Please enter your PIN for <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>.
       </message>
+      <message desc="Message displayed to the user asking them to enter a PIN for the host they are connecting to." name="IDS_PIN_MESSAGE_ANDROID" formatter_data="android_java">
+        Please enter your PIN for the remote computer.
+      </message>
       <message desc="Error message displayed to the user if they enter different PINs in the boxes marked 'PIN' and 'retype PIN'." name="IDS_PINS_NOT_EQUAL">
         Please enter the same PIN in both boxes.
       </message>
@@ -647,7 +662,7 @@
       <message desc="Tool-bar button used to access the Full-screen and shrink-to-fit features ('screen' in this context refers to the fact that the options are related to how the remote screen is displayed)." name="IDS_SCREEN_OPTIONS">
         Screen options
       </message>
-      <message desc="Label for the client-side menu button that sends a Ctrl-Alt-Del sequence to the host. Clicking this button behaves as if Ctrl, Alt and Del were pressed and then released at the host." name="IDS_SEND_CTRL_ALT_DEL">
+      <message desc="Label for the client-side menu button that sends a Ctrl-Alt-Del sequence to the host. Clicking this button behaves as if Ctrl, Alt and Del were pressed and then released at the host." name="IDS_SEND_CTRL_ALT_DEL" formatter_data="android_java">
         Ctrl-Alt-Del
       </message>
       <message desc="Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. For example, Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected." name="IDS_SEND_KEYS">
@@ -677,7 +692,7 @@
       <message desc="The tool-tip shown when the user hovers over the 'delete host' button. Clicking this button removes the host from the list and disables connections to it." name="IDS_TOOLTIP_DELETE">
         Disable remote connections to this computer
       </message>
-      <message desc="The tool-tip shown when the user hovers over the 'refresh host list' button. Clicking this button reloads the host list without reloading the app." name="IDS_TOOLTIP_REFRESH">
+      <message desc="The tool-tip shown when the user hovers over the 'refresh host list' button. Clicking this button reloads the host list without reloading the app." name="IDS_TOOLTIP_REFRESH" formatter_data="android_java">
         Refresh the list of hosts
       </message>
       <message desc="The tool-tip shown when the user hovers over the 'rename host' button. Clicking this button allows the host name to be edited in-place." name="IDS_TOOLTIP_RENAME">
@@ -692,7 +707,7 @@
       <message desc="Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters." name="IDS_WHY_IS_THIS_SAFE">
         Why is this safe?
       </message>
-      <message desc="Check-box displayed when the user enters their PIN to connect to a host allowing them to 'pair' the client and host, avoiding the need to enter the PIN each time." name="IDS_REMEMBER_PIN">
+      <message desc="Check-box displayed when the user enters their PIN to connect to a host allowing them to 'pair' the client and host, avoiding the need to enter the PIN each time." name="IDS_REMEMBER_PIN" formatter_data="android_java">
         Don't ask for a PIN again when connecting to this host from this computer.
       </message>
       <message name="IDS_HANGOUTS_INVITATION" desc="Text for the invitation to try Remote Desktop app in Hangouts.">

@@ -255,15 +255,17 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
             mHostListLoader.retrieveHostList(authToken, this);
         } catch (OperationCanceledException ex) {
-            explanation = getString(R.string.error_auth_canceled);
+            // User canceled authentication. No need to report an error.
         } catch (AuthenticatorException ex) {
-            explanation = getString(R.string.error_no_accounts);
+            explanation = getString(R.string.error_unexpected);
         } catch (IOException ex) {
-            explanation = getString(R.string.error_bad_connection);
+            explanation = getString(R.string.error_network_error);
         }
 
         if (result == null) {
-            Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+            if (explanation != null) {
+                Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+            }
             return;
         }
 
@@ -301,14 +303,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             case AUTH_FAILED:
                 break;
             case NETWORK_ERROR:
-                explanation = getString(R.string.error_bad_connection);
+                explanation = getString(R.string.error_network_error);
                 break;
-            case SERVICE_UNAVAILABLE:
             case UNEXPECTED_RESPONSE:
-                explanation = getString(R.string.error_unexpected_response);
-                break;
+            case SERVICE_UNAVAILABLE:
             case UNKNOWN:
-                explanation = getString(R.string.error_unknown);
+                explanation = getString(R.string.error_unexpected);
                 break;
             default:
                 // Unreachable.
@@ -338,7 +338,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         } else {
             // Authentication truly failed.
             Log.e("auth", "Fresh auth token was also rejected");
-            explanation = getString(R.string.error_auth_failed);
+            explanation = getString(R.string.error_authentication_failed);
             Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
         }
     }
@@ -350,12 +350,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         mRefreshButton.setEnabled(mAccount != null);
 
         if (mHosts == null) {
-            mGreeting.setText(getString(R.string.inst_empty_list));
+            mGreeting.setText(getString(R.string.host_list_empty_android));
             mList.setAdapter(null);
             return;
         }
 
-        mGreeting.setText(getString(R.string.inst_host_list));
+        mGreeting.setText(getString(R.string.mode_me2me));
 
         ArrayAdapter<HostInfo> displayer = new HostListAdapter(this, R.layout.host, mHosts);
         Log.i("hostlist", "About to populate host list display");
@@ -374,7 +374,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                 // The connection is still being established, so we'll report the current progress.
                 if (mProgressIndicator == null) {
                     mProgressIndicator = ProgressDialog.show(this,
-                            getString(R.string.progress_title), stateText, true, true,
+                            getString(R.string.footer_connecting), stateText, true, true,
                             new DialogInterface.OnCancelListener() {
                                 @Override
                                 public void onCancel(DialogInterface dialog) {

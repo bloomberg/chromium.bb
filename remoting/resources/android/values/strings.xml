@@ -8,40 +8,6 @@
 <!--User-facing strings for the Android app-->
 <!--TODO(solb) Merge in with localized strings-->
 <resources>
-    <!--Instructional blurbs-->
-    <string name="inst_host_list">My computers:</string>
-    <string name="inst_empty_list">There are no computers to display</string>
-
-    <!--Dialog box messages-->
-    <string name="progress_title">Starting remote desktop session</string>
-    <string name="pin_entry_title">Authenticate to host</string>
-    <string name="pin_entry_message">Enter the host\'s PIN</string>
-    <string name="pin_entry_pair">Don\'t ask in the future</string>
-    <string name="pin_entry_connect">Connect</string>
-    <string name="pin_entry_cancel">Cancel</string>
-
-    <!--Action bar buttons-->
-    <string name="actionbar_directoryrefresh">Refresh</string>
-    <string name="actionbar_disconnect">Disconnect</string>
-    <string name="actionbar_hide">Hide</string>
-    <string name="actionbar_keyboard">Keyboard</string>
-    <string name="actionbar_send_ctrl_alt_del">Send Ctrl-Alt-Del</string>
-
-    <!--Informative messages-->
-    <string name="msg_pin_canceled">No PIN was provided, so the connection attempt was canceled</string>
-    <string name="msg_pin_entered">Attempting to authenticate to specified host with provided PIN</string>
-
-    <!--Error messages-->
-    <string name="error_unknown">Unexpected error</string>
-    <string name="error_auth_canceled">Authentication prompt canceled by user</string>
-    <string name="error_no_accounts">Device not linked to any Google accounts</string>
-    <string name="error_auth_failed">Authentication with specified account failed</string>
-    <string name="error_bad_connection">No network connection</string>
-    <string name="error_cataloging_hosts">Unable to display host list</string>
-    <string name="error_displaying_host">Unable to display host entry</string>
-    <string name="error_unexpected_response">Account has no remote desktop hosts registered</string>
-    <string name="error_reading_host">Unable to read host entry</string>
-
     <!--Protocol states (see remoting/protocol/connection_to_host.h)-->
     <string-array name="protoc_states">
         <item>Initializing protocol</item>
