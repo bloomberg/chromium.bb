@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/banners/app_banner_settings_helper.h"
 
+#include <algorithm>
 #include <string>
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -13,17 +14,25 @@
 #include "url/gurl.h"
 
 namespace {
+std::string SanitizePackageName(std::string package_name) {
+  // DictionaryValue doesn't allow '.' in the keys.  Replace them with ' '
+  // because you can't have a package name with a ' ' in it.
+  std::replace(package_name.begin(), package_name.end(), '.', ' ');
+  return package_name;
+}
+
 // Max number of apps that a particular site may show a banner for.
 const size_t kMaxAppsPerSite = 3;
-}
+}  // namespace
 
 bool AppBannerSettingsHelper::IsAllowed(content::WebContents* web_contents,
                                         const GURL& origin_url,
                                         const std::string& package_name) {
+  std::string sanitized_package_name = SanitizePackageName(package_name);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (profile->IsOffTheRecord() || web_contents->GetURL() != origin_url ||
-      package_name.empty()) {
+      sanitized_package_name.empty()) {
     return false;
   }
 
@@ -41,11 +50,11 @@ bool AppBannerSettingsHelper::IsAllowed(content::WebContents* web_contents,
     // We've never blocked a banner on this site.
     return true;
   } else if (value->IsType(base::Value::TYPE_DICTIONARY)) {
-    // We expect to get dictionary back, where the keys are the package names.
+    // We expect to get a Dictionary back, where the keys are the package names.
     base::DictionaryValue* banner_dict =
         static_cast<base::DictionaryValue*>(value.get());
     bool is_allowed = false;
-    if (banner_dict->GetBoolean(package_name, &is_allowed)) {
+    if (banner_dict->GetBoolean(sanitized_package_name, &is_allowed)) {
       return is_allowed;
     } else {
       return banner_dict->size() < ::kMaxAppsPerSite;
@@ -70,6 +79,9 @@ bool AppBannerSettingsHelper::IsAllowed(content::WebContents* web_contents,
 void AppBannerSettingsHelper::Block(content::WebContents* web_contents,
                                     const GURL& origin_url,
                                     const std::string& package_name) {
+  std::string sanitized_package_name = SanitizePackageName(package_name);
+  DCHECK(!sanitized_package_name.empty());
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
@@ -91,7 +103,7 @@ void AppBannerSettingsHelper::Block(content::WebContents* web_contents,
   }
 
   // Update the setting and save it back.
-  banner_dict->SetBoolean(package_name, false);
+  banner_dict->SetBoolean(sanitized_package_name, false);
   settings->SetWebsiteSetting(pattern,
                               ContentSettingsPattern::Wildcard(),
                               CONTENT_SETTINGS_TYPE_APP_BANNER,
