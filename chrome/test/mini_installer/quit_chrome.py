@@ -71,7 +71,7 @@ def main():
   if not CloseWindows(chrome_path):
     # TODO(robertshield): Investigate why Chrome occasionally doesn't shut down.
     print 'Warning: Chrome not responding to window closure. Killing process...'
-    KillNamedProcess(chrome_path):
+    KillNamedProcess(chrome_path)
   return 0
 
 
