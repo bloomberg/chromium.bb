@@ -56,6 +56,20 @@ enum FontWeight {
     FontWeightBold = FontWeight700
 };
 
+// Numeric values matching OS/2 & Windows Metrics usWidthClass table.
+// https://www.microsoft.com/typography/otspec/os2.htm
+enum FontStretch {
+    FontStretchUltraCondensed = 1,
+    FontStretchExtraCondensed = 2,
+    FontStretchCondensed = 3,
+    FontStretchSemiCondensed = 4,
+    FontStretchNormal = 5,
+    FontStretchSemiExpanded = 6,
+    FontStretchExpanded = 7,
+    FontStretchExtraExpanded = 8,
+    FontStretchUltraExpanded = 9
+};
+
 enum FontItalic {
     FontItalicOff = 0,
     FontItalicOn = 1
@@ -87,6 +101,7 @@ public:
         , m_smallCaps(FontSmallCapsOff)
         , m_isAbsoluteSize(false)
         , m_weight(FontWeightNormal)
+        , m_stretch(FontStretchNormal)
         , m_genericFamily(NoFamily)
         , m_usePrinterFont(false)
         , m_kerning(AutoKerning)
@@ -117,6 +132,7 @@ public:
     FontSmallCaps smallCaps() const { return static_cast<FontSmallCaps>(m_smallCaps); }
     bool isAbsoluteSize() const { return m_isAbsoluteSize; }
     FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
+    FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
     FontWeight lighterWeight() const;
     FontWeight bolderWeight() const;
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
@@ -161,6 +177,7 @@ public:
     void setSmallCaps(bool c) { setSmallCaps(c ? FontSmallCapsOn : FontSmallCapsOff); }
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }
+    void setStretch(FontStretch s) { m_stretch = s; }
     void setGenericFamily(GenericFamilyType genericFamily) { m_genericFamily = genericFamily; }
     void setUsePrinterFont(bool p) { m_usePrinterFont = p; }
     void setKerning(Kerning kerning) { m_kerning = kerning; updateTypesettingFeatures(); }
@@ -213,6 +230,7 @@ private:
     unsigned m_isAbsoluteSize : 1; // Whether or not CSS specified an explicit size
                                   // (logical sizes like "medium" don't count).
     unsigned m_weight : 8; // FontWeight
+    unsigned m_stretch : 4; // FontStretch
     unsigned m_genericFamily : 3; // GenericFamilyType
     unsigned m_usePrinterFont : 1;
 
@@ -252,6 +270,7 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_smallCaps == other.m_smallCaps
         && m_isAbsoluteSize == other.m_isAbsoluteSize
         && m_weight == other.m_weight
+        && m_stretch == other.m_stretch
         && m_genericFamily == other.m_genericFamily
         && m_usePrinterFont == other.m_usePrinterFont
         && m_kerning == other.m_kerning

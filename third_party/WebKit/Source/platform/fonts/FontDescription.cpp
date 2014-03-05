@@ -42,7 +42,7 @@ struct SameSizeAsFontDescription {
     float sizes[4];
     // FXIME: Make them fit into one word.
     uint32_t bitfields;
-    uint32_t bitfields2 : 8;
+    uint32_t bitfields2 : 12;
 };
 
 COMPILE_ASSERT(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription), FontDescription_should_stay_small);
@@ -99,8 +99,8 @@ FontTraitsMask FontDescription::traitsMask() const
 {
     return static_cast<FontTraitsMask>((m_italic ? FontStyleItalicMask : FontStyleNormalMask)
             | (m_smallCaps ? FontVariantSmallCapsMask : FontVariantNormalMask)
-            | (FontWeight100Mask << (m_weight - FontWeight100)));
-
+            | (FontWeight100Mask << (m_weight - FontWeight100))
+            | (m_stretch << FontStretchBit1));
 }
 
 void FontDescription::setTraitsMask(FontTraitsMask traitsMask)
@@ -138,6 +138,7 @@ void FontDescription::setTraitsMask(FontTraitsMask traitsMask)
     }
     setItalic((traitsMask & FontStyleItalicMask) ? FontItalicOn : FontItalicOff);
     setSmallCaps((traitsMask & FontVariantSmallCapsMask) ? FontSmallCapsOn : FontSmallCapsOff);
+    setStretch(static_cast<FontStretch>((traitsMask & FontStretchMask) >> FontStretchBit1));
 }
 
 FontDescription FontDescription::makeNormalFeatureSettings() const

@@ -881,6 +881,7 @@
       'TestingPlatformSupport.h',
       'animation/UnitBezierTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
+      'fonts/FontDescriptionTest.cpp',
       'fonts/FontTest.cpp',
       'geometry/FloatPolygonTest.cpp',
       'geometry/FloatRoundedRectTest.cpp',

@@ -42,6 +42,10 @@ enum {
     FontWeight700Bit,
     FontWeight800Bit,
     FontWeight900Bit,
+    FontStretchBit1,
+    FontStretchBit2,
+    FontStretchBit3,
+    FontStretchBit4,
     FontTraitsMaskWidth
 };
 
@@ -63,7 +67,12 @@ enum FontTraitsMask {
     FontWeight700Mask = 1 << FontWeight700Bit,
     FontWeight800Mask = 1 << FontWeight800Bit,
     FontWeight900Mask = 1 << FontWeight900Bit,
-    FontWeightMask = FontWeight100Mask | FontWeight200Mask | FontWeight300Mask | FontWeight400Mask | FontWeight500Mask | FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask
+    FontWeightMask = FontWeight100Mask | FontWeight200Mask | FontWeight300Mask | FontWeight400Mask | FontWeight500Mask | FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask,
+    FontStretchBit1Mask = 1 << FontStretchBit1,
+    FontStretchBit2Mask = 1 << FontStretchBit2,
+    FontStretchBit3Mask = 1 << FontStretchBit3,
+    FontStretchBit4Mask = 1 << FontStretchBit4,
+    FontStretchMask = FontStretchBit1Mask | FontStretchBit2Mask | FontStretchBit3Mask | FontStretchBit4Mask
 };
 
 } // namespace WebCore
