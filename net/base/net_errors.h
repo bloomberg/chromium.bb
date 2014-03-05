@@ -36,8 +36,9 @@ NET_EXPORT const char* ErrorToString(int error);
 inline bool IsCertificateError(int error) {
   // Certificate errors are negative integers from net::ERR_CERT_BEGIN
   // (inclusive) to net::ERR_CERT_END (exclusive) in *decreasing* order.
+  // ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN is currently an exception to this
+  // rule.
   return (error <= ERR_CERT_BEGIN && error > ERR_CERT_END) ||
-         (error == ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY) ||
          (error == ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
 }
 
