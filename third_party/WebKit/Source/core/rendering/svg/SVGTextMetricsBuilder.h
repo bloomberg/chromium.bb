@@ -41,9 +41,9 @@ public:
     void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
 
 private:
-    bool advance();
-    void advanceSimpleText();
-    void advanceComplexText();
+    SVGTextMetrics computeMetricsForCurrentCharacter();
+    SVGTextMetrics computeMetricsForCurrentCharacterSimple();
+    SVGTextMetrics computeMetricsForCurrentCharacterComplex();
     bool currentCharacterStartsSurrogatePair() const;
 
     void initializeMeasurementWithTextRenderer(RenderSVGInlineText*);
@@ -54,14 +54,10 @@ private:
     TextRun m_run;
     unsigned m_textPosition;
     bool m_isComplexText;
-    SVGTextMetrics m_currentMetrics;
     float m_totalWidth;
 
     // Simple text only.
     OwnPtr<WidthIterator> m_simpleWidthIterator;
-
-    // Complex text only.
-    SVGTextMetrics m_complexStartToCurrentMetrics;
 };
 
 } // namespace WebCore
