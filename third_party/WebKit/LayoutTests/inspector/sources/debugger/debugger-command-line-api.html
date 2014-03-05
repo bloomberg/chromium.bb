@@ -12,10 +12,13 @@ function testFunction()
 var test = function()
 {
     InspectorTest.addSniffer(WebInspector, "inspect", inspect);
-    InspectorTest.addSniffer(WebInspector, "_updateFocusedNode", updateFocusedNode);
+    InspectorTest.addSniffer(WebInspector.Revealer, "reveal", updateFocusedNode);
 
-    function updateFocusedNode()
+    function updateFocusedNode(node)
     {
+        if (!(node instanceof WebInspector.DOMNode))
+            return;
+
         InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
         InspectorTest.completeDebuggerTest();
     }

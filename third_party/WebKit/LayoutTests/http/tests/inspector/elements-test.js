@@ -68,8 +68,7 @@ InspectorTest.selectNodeWithId = function(idValue, callback)
     callback = InspectorTest.safeWrap(callback);
     function onNodeFound(node)
     {
-        if (node)
-            WebInspector._updateFocusedNode(node.id);
+        WebInspector.Revealer.reveal(node);
         callback(node);
     }
     InspectorTest.nodeWithId(idValue, onNodeFound);

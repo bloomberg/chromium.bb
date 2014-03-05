@@ -35,11 +35,14 @@ function test()
     InspectorTest.runTestSuite([
         function testRevealElement(next)
         {
-            InspectorTest.addSniffer(WebInspector, "_updateFocusedNode", step2);
+            InspectorTest.addSniffer(WebInspector.Revealer, "reveal", step2);
             evalAndDump("inspect($('#p1'))");
 
-            function step2()
+            function step2(node)
             {
+                if (!(node instanceof WebInspector.DOMNode))
+                    return;
+
                 InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
                 next();
             }

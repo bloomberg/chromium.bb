@@ -41,8 +41,7 @@ function test()
         InspectorTest.findNode(matchFunction, callback);
         function callback(node)
         {
-            if (node)
-                WebInspector._updateFocusedNode(node.id);
+            WebInspector.Revealer.reveal(node);
             next(node);
         }
     }
