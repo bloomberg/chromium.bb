@@ -20,6 +20,11 @@
 #include "mkvwriter.hpp"
 #include "webmids.hpp"
 
+#ifdef _MSC_VER
+// Disable MSVC warnings that suggest making code non-portable.
+#pragma warning(disable:4996)
+#endif
+
 namespace mkvmuxer {
 
 namespace {
