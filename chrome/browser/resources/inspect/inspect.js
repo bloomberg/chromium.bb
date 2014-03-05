@@ -50,6 +50,8 @@ function onHashChange() {
  * @return {boolean} True if successful.
  */
 function selectTab(id) {
+  closePortForwardingConfig();
+
   var tabContents = document.querySelectorAll('#content > div');
   var tabHeaders = $('navigation').querySelectorAll('.tab-header');
   var found = false;
@@ -618,6 +620,9 @@ function openPortForwardingConfig() {
 }
 
 function closePortForwardingConfig() {
+  if (!$('port-forwarding-overlay').classList.contains('open'))
+    return;
+
   $('port-forwarding-overlay').classList.remove('open');
   document.removeEventListener('keyup', handleKey);
   unsetModal($('port-forwarding-overlay'));
