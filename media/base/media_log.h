@@ -73,6 +73,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   void SetIntegerProperty(const char* key, int value);
   void SetDoubleProperty(const char* key, double value);
   void SetBooleanProperty(const char* key, bool value);
+  void SetTimeProperty(const char* key, base::TimeDelta value);
 
  protected:
   friend class base::RefCountedThreadSafe<MediaLog>;

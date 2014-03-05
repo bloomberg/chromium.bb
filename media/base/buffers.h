@@ -37,7 +37,7 @@ MEDIA_EXPORT extern inline base::TimeDelta kNoTimestamp() {
 
 // Represents an infinite stream duration.
 MEDIA_EXPORT extern inline base::TimeDelta kInfiniteDuration() {
-  return base::TimeDelta::FromMicroseconds(kint64max);
+  return base::TimeDelta::Max();
 }
 
 }  // namespace media

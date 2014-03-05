@@ -141,7 +141,10 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateStringEvent(
 scoped_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
     MediaLogEvent::Type type, const char* property, base::TimeDelta value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(type));
-  event->params.SetDouble(property, value.InSecondsF());
+  if (value.is_max())
+    event->params.SetString(property, "unknown");
+  else
+    event->params.SetDouble(property, value.InSecondsF());
   return event.Pass();
 }
 
@@ -225,6 +228,16 @@ void MediaLog::SetBooleanProperty(
     const char* key, bool value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetBoolean(key, value);
+  AddEvent(event.Pass());
+}
+
+void MediaLog::SetTimeProperty(
+    const char* key, base::TimeDelta value) {
+  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
+  if (value.is_max())
+    event->params.SetString(key, "unknown");
+  else
+    event->params.SetDouble(key, value.InSecondsF());
   AddEvent(event.Pass());
 }
 
