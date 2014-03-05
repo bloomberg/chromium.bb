@@ -883,6 +883,7 @@
       'clipboard/ClipboardUtilitiesTest.cpp',
       'fonts/FontDescriptionTest.cpp',
       'fonts/FontTest.cpp',
+      'fonts/android/FontCacheAndroidTest.cpp',
       'geometry/FloatPolygonTest.cpp',
       'geometry/FloatRoundedRectTest.cpp',
       'geometry/RegionTest.cpp',

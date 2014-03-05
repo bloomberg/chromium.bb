@@ -47,8 +47,10 @@
                 # base.gyp for TODO(jrg)s about this strategy.
                 ['OS=="android" and android_webview_build==0 and gtest_target_type == "shared_library"', {
                     'dependencies': [
-                        '../Source/web/web_tests.gyp:webkit_unit_tests_apk',
                         '../Source/heap/blink_heap_tests.gyp:blink_heap_unittests_apk',
+                        '../Source/platform/blink_platform_tests.gyp:blink_platform_unittests_apk',
+                        '../Source/web/web_tests.gyp:webkit_unit_tests_apk',
+                        '../Source/wtf/wtf_tests.gyp:wtf_unittests_apk',
                     ],
                 }],
             ],

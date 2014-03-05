@@ -1064,6 +1064,8 @@ TEST(WTF_PartitionAlloc, LostFreePagesBug)
     TestShutdown();
 }
 
+#if !OS(ANDROID)
+
 // Make sure that malloc(-1) dies.
 // In the past, we had an integer overflow that would alias malloc(-1) to
 // malloc(0), which is not good.
@@ -1130,6 +1132,8 @@ TEST(WTF_PartitionAllocDeathTest, GuardPages)
 
     TestShutdown();
 }
+
+#endif // !OS(ANDROID)
 
 // Tests that the countLeadingZeros() functions work to our satisfaction.
 // It doesn't seem worth the overhead of a whole new file for these tests, so
