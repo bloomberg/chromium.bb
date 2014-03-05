@@ -326,6 +326,7 @@ class RemoteDeviceUpdater(object):
   ROOTFS_FILENAME = 'update.gz'
   STATEFUL_FILENAME = 'stateful.tgz'
   DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
+  DEVSERVER_FILENAME = 'devserver.py'
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
   UPDATE_CHECK_INTERVAL = 10
@@ -463,7 +464,7 @@ class RemoteDeviceUpdater(object):
     device.RunCommand(['mkdir', '-p', payload_dir])
     logging.info('Copying rootfs payload to device...')
     device.CopyToDevice(payload, payload_dir)
-    devserver_bin = os.path.join(src_dir, 'devserver.py')
+    devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
     ds = ds_wrapper.RemoteDevServerWrapper(
         device, devserver_bin, static_dir=static_dir, log_dir=device.work_dir)
 
@@ -591,6 +592,29 @@ class RemoteDeviceUpdater(object):
       logging.info('You can find the log files and/or payloads in %s',
                    self.tempdir)
 
+  def _CanRunDevserver(self, device, tempdir):
+    """We can run devserver on |device|.
+
+    If the stateful partition is corrupted, Python or other packages
+    (e.g. cherrypy) that Cros Flash needs for rootfs update may be
+    missing on |device|.
+
+    Args:
+       device: A ChromiumOSDevice object.
+       tempdir: A temporary directory to store files.
+
+    Returns:
+      True if we can start devserver; False otherwise.
+    """
+    try:
+      src_dir = self._CopyDevServerPackage(device, tempdir)
+      devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
+      device.RunCommand(['python', devserver_bin, '--help'])
+    except cros_build_lib.RunCommandError:
+      return False
+
+    return True
+
   def Run(self):
     """Performs remote device update."""
     old_root_dev, new_root_dev = None, None
@@ -617,6 +641,29 @@ class RemoteDeviceUpdater(object):
                                  src_image=self.src_image)
 
         self._CheckPayloads(payload_dir)
+
+        restore_stateful = False
+        if (not self._CanRunDevserver(device, self.tempdir) and
+            self.do_rootfs_update):
+          logging.info('Checking if we can run devserver on the device.')
+          msg = ('Cannot start devserver! The stateful partition may be '
+                 'corrupted. Cros Flash can try to restore the stateful '
+                 'partition first.')
+          restore_stateful = self.yes or cros_build_lib.BooleanPrompt(
+              default=False, prolog=msg)
+          if not restore_stateful:
+            cros_build_lib.Die('Cannot continue to perform rootfs update!')
+
+        if restore_stateful:
+          logging.warning('Restoring the stateful partition...')
+          payload = os.path.join(payload_dir, self.STATEFUL_FILENAME)
+          self.UpdateStateful(device, payload, clobber=self.clobber_stateful)
+          device.Reboot()
+          if self._CanRunDevserver(device, self.tempdir):
+            logging.info('Stateful partition restored.')
+          else:
+            cros_build_lib.Die('Unable to restore stateful partition. Exiting.')
+
         # Perform device updates.
         if self.do_rootfs_update:
           self.SetupRootfsUpdate(device)
@@ -629,7 +676,7 @@ class RemoteDeviceUpdater(object):
           self.UpdateRootfs(device, payload, self.tempdir)
           logging.info('Rootfs update completed.')
 
-        if self.do_stateful_update:
+        if self.do_stateful_update and not restore_stateful:
           payload = os.path.join(payload_dir, self.STATEFUL_FILENAME)
           self.UpdateStateful(device, payload, clobber=self.clobber_stateful)
           logging.info('Stateful update completed.')
