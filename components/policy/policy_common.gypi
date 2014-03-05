@@ -92,6 +92,8 @@
         'core/common/external_data_manager.h',
         'core/common/forwarding_policy_provider.cc',
         'core/common/forwarding_policy_provider.h',
+        'core/common/mac_util.cc',
+        'core/common/mac_util.h',
         'core/common/policy_bundle.cc',
         'core/common/policy_bundle.h',
         'core/common/policy_details.h',
@@ -173,6 +175,12 @@
             'core/common/cloud/user_cloud_policy_manager.h',
             'core/common/cloud/user_cloud_policy_store.cc',
             'core/common/cloud/user_cloud_policy_store.h',
+          ],
+        }],
+        ['OS!="ios" and OS!="mac"', {
+          'sources!': [
+            'core/common/mac_util.cc',
+            'core/common/mac_util.h',
           ],
         }],
       ],

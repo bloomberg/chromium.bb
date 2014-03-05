@@ -11,8 +11,15 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
+
+#if defined(OS_IOS) || defined(OS_MACOSX)
+#include <CoreFoundation/CoreFoundation.h>
+
+#include "base/mac/scoped_cftyperef.h"
+#endif
 
 namespace policy {
 
@@ -45,6 +52,99 @@ bool PolicyServiceIsEmpty(const PolicyService* service) {
   }
   return map.empty();
 }
+
+#if defined(OS_IOS) || defined(OS_MACOSX)
+CFPropertyListRef ValueToProperty(const base::Value* value) {
+  switch (value->GetType()) {
+    case base::Value::TYPE_NULL:
+      return kCFNull;
+
+    case base::Value::TYPE_BOOLEAN: {
+      bool bool_value;
+      if (value->GetAsBoolean(&bool_value))
+        return bool_value ? kCFBooleanTrue : kCFBooleanFalse;
+      break;
+    }
+
+    case base::Value::TYPE_INTEGER: {
+      int int_value;
+      if (value->GetAsInteger(&int_value)) {
+        return CFNumberCreate(
+            kCFAllocatorDefault, kCFNumberIntType, &int_value);
+      }
+      break;
+    }
+
+    case base::Value::TYPE_DOUBLE: {
+      double double_value;
+      if (value->GetAsDouble(&double_value)) {
+        return CFNumberCreate(
+            kCFAllocatorDefault, kCFNumberDoubleType, &double_value);
+      }
+      break;
+    }
+
+    case base::Value::TYPE_STRING: {
+      std::string string_value;
+      if (value->GetAsString(&string_value))
+        return base::SysUTF8ToCFStringRef(string_value);
+      break;
+    }
+
+    case base::Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* dict_value;
+      if (value->GetAsDictionary(&dict_value)) {
+        // |dict| is owned by the caller.
+        CFMutableDictionaryRef dict =
+            CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                      dict_value->size(),
+                                      &kCFTypeDictionaryKeyCallBacks,
+                                      &kCFTypeDictionaryValueCallBacks);
+        for (base::DictionaryValue::Iterator iterator(*dict_value);
+             !iterator.IsAtEnd(); iterator.Advance()) {
+          // CFDictionaryAddValue() retains both |key| and |value|, so make sure
+          // the references are balanced.
+          base::ScopedCFTypeRef<CFStringRef> key(
+              base::SysUTF8ToCFStringRef(iterator.key()));
+          base::ScopedCFTypeRef<CFPropertyListRef> cf_value(
+              ValueToProperty(&iterator.value()));
+          if (cf_value)
+            CFDictionaryAddValue(dict, key, cf_value);
+        }
+        return dict;
+      }
+      break;
+    }
+
+    case base::Value::TYPE_LIST: {
+      const base::ListValue* list;
+      if (value->GetAsList(&list)) {
+        CFMutableArrayRef array =
+            CFArrayCreateMutable(NULL, list->GetSize(), &kCFTypeArrayCallBacks);
+        for (base::ListValue::const_iterator it(list->begin());
+             it != list->end(); ++it) {
+          // CFArrayAppendValue() retains |value|, so make sure the reference
+          // created by ValueToProperty() is released.
+          base::ScopedCFTypeRef<CFPropertyListRef> cf_value(
+              ValueToProperty(*it));
+          if (cf_value)
+            CFArrayAppendValue(array, cf_value);
+        }
+        return array;
+      }
+      break;
+    }
+
+    case base::Value::TYPE_BINARY:
+      // This type isn't converted (though it can be represented as CFData)
+      // because there's no equivalent JSON type, and policy values can only
+      // take valid JSON values.
+      break;
+  }
+
+  return NULL;
+}
+#endif  // defined(OS_IOS) || defined(OS_MACOSX)
 
 }  // namespace policy
 

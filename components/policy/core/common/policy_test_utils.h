@@ -47,6 +47,14 @@ class PolicyDetailsMap {
 // current policies and returns false.
 bool PolicyServiceIsEmpty(const PolicyService* service);
 
+#if defined(OS_IOS) || defined(OS_MACOSX)
+
+// Converts a base::Value to the equivalent CFPropertyListRef.
+// The returned value is owned by the caller.
+CFPropertyListRef ValueToProperty(const base::Value* value);
+
+#endif
+
 }  // namespace policy
 
 std::ostream& operator<<(std::ostream& os, const policy::PolicyBundle& bundle);

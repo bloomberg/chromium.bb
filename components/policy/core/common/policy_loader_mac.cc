@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/mac_util.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
 #include "components/policy/core/common/policy_map.h"
@@ -23,40 +24,9 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 
-using base::mac::CFCast;
 using base::ScopedCFTypeRef;
 
 namespace policy {
-
-namespace {
-
-// Callback function for CFDictionaryApplyFunction. |key| and |value| are an
-// entry of the CFDictionary that should be converted into an equivalent entry
-// in the DictionaryValue in |context|.
-void DictionaryEntryToValue(const void* key, const void* value, void* context) {
-  if (CFStringRef cf_key = CFCast<CFStringRef>(key)) {
-    base::Value* converted =
-        PolicyLoaderMac::CreateValueFromProperty(
-            static_cast<CFPropertyListRef>(value));
-    if (converted) {
-      const std::string string = base::SysCFStringRefToUTF8(cf_key);
-      static_cast<base::DictionaryValue *>(context)->Set(string, converted);
-    }
-  }
-}
-
-// Callback function for CFArrayApplyFunction. |value| is an entry of the
-// CFArray that should be converted into an equivalent entry in the ListValue
-// in |context|.
-void ArrayEntryToValue(const void* value, void* context) {
-  base::Value* converted =
-      PolicyLoaderMac::CreateValueFromProperty(
-          static_cast<CFPropertyListRef>(value));
-  if (converted)
-    static_cast<base::ListValue *>(context)->Append(converted);
-}
-
-}  // namespace
 
 PolicyLoaderMac::PolicyLoaderMac(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -102,11 +72,13 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
     PolicyLevel level = forced ? POLICY_LEVEL_MANDATORY :
                                  POLICY_LEVEL_RECOMMENDED;
     // TODO(joaodasilva): figure the policy scope.
-    base::Value* policy = CreateValueFromProperty(value);
-    if (policy)
-      chrome_policy.Set(it.key(), level, POLICY_SCOPE_USER, policy, NULL);
-    else
+    scoped_ptr<base::Value> policy = PropertyToValue(value);
+    if (policy) {
+      chrome_policy.Set(
+          it.key(), level, POLICY_SCOPE_USER, policy.release(), NULL);
+    } else {
       status.Add(POLICY_LOAD_STATUS_PARSE_ERROR);
+    }
   }
 
   if (!policy_present)
@@ -126,50 +98,6 @@ base::Time PolicyLoaderMac::LastModificationTime() {
   }
 
   return file_info.last_modified;
-}
-
-// static
-base::Value* PolicyLoaderMac::CreateValueFromProperty(
-    CFPropertyListRef property) {
-  if (CFCast<CFNullRef>(property))
-    return base::Value::CreateNullValue();
-
-  if (CFBooleanRef boolean = CFCast<CFBooleanRef>(property))
-    return base::Value::CreateBooleanValue(CFBooleanGetValue(boolean));
-
-  if (CFNumberRef number = CFCast<CFNumberRef>(property)) {
-    // CFNumberGetValue() converts values implicitly when the conversion is not
-    // lossy. Check the type before trying to convert.
-    if (CFNumberIsFloatType(number)) {
-      double double_value;
-      if (CFNumberGetValue(number, kCFNumberDoubleType, &double_value))
-        return base::Value::CreateDoubleValue(double_value);
-    } else {
-      int int_value;
-      if (CFNumberGetValue(number, kCFNumberIntType, &int_value))
-        return base::Value::CreateIntegerValue(int_value);
-    }
-  }
-
-  if (CFStringRef string = CFCast<CFStringRef>(property))
-    return base::Value::CreateStringValue(base::SysCFStringRefToUTF8(string));
-
-  if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {
-    base::DictionaryValue* dict_value = new base::DictionaryValue();
-    CFDictionaryApplyFunction(dict, DictionaryEntryToValue, dict_value);
-    return dict_value;
-  }
-
-  if (CFArrayRef array = CFCast<CFArrayRef>(property)) {
-    base::ListValue* list_value = new base::ListValue();
-    CFArrayApplyFunction(array,
-                         CFRangeMake(0, CFArrayGetCount(array)),
-                         ArrayEntryToValue,
-                         list_value);
-    return list_value;
-  }
-
-  return NULL;
 }
 
 void PolicyLoaderMac::LoadPolicyForDomain(
@@ -218,7 +146,7 @@ void PolicyLoaderMac::LoadPolicyForComponent(
         preferences_->AppValueIsForced(pref_name, bundle_id);
     PolicyLevel level = forced ? POLICY_LEVEL_MANDATORY :
                                  POLICY_LEVEL_RECOMMENDED;
-    scoped_ptr<base::Value> policy_value(CreateValueFromProperty(value));
+    scoped_ptr<base::Value> policy_value = PropertyToValue(value);
     if (policy_value) {
       policy->Set(it.key(), level, POLICY_SCOPE_USER,
                   policy_value.release(), NULL);

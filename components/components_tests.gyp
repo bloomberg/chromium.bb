@@ -424,6 +424,11 @@
                     'policy/core/common/cloud/user_cloud_policy_store_unittest.cc',
                   ],
                 }],
+                ['OS=="ios" or OS=="mac"', {
+                  'sources': [
+                    'policy/core/common/mac_util_unittest.cc',
+                  ],
+                }],
               ],
             }],
           ],

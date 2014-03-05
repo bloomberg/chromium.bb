@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include <CoreFoundation/CoreFoundation.h>
-
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
@@ -20,7 +18,6 @@ class MacPreferences;
 
 namespace base {
 class SequencedTaskRunner;
-class Value;
 }  // namespace base
 
 namespace policy {
@@ -42,12 +39,6 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
   virtual void InitOnBackgroundThread() OVERRIDE;
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
   virtual base::Time LastModificationTime() OVERRIDE;
-
-  // Converts a CFPropertyListRef to the equivalent base::Value. CFDictionary
-  // entries whose key is not a CFStringRef are ignored.
-  // The returned value is owned by the caller.
-  // Returns NULL if an invalid CFType was found, such as CFDate or CFData.
-  static base::Value* CreateValueFromProperty(CFPropertyListRef property);
 
  private:
   // Callback for the FilePathWatcher.
