@@ -171,7 +171,7 @@ public:
     virtual void sanitizeValueInResponseToMinOrMaxAttributeChange();
     virtual bool shouldRespectAlignAttribute();
     virtual FileList* files();
-    virtual void setFiles(PassRefPtr<FileList>);
+    virtual void setFiles(PassRefPtrWillBeRawPtr<FileList>);
     // Should return true if the given DragData has more than one dropped files.
     virtual bool receiveDroppedFiles(const DragData*);
     virtual String droppedFileSystemId();

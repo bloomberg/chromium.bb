@@ -99,7 +99,7 @@ PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(const String& data, const
     return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(PassRefPtr<File> file)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(PassRefPtrWillBeRawPtr<File> file)
 {
     if (!file)
         return nullptr;

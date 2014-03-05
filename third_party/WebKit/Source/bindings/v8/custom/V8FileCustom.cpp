@@ -90,7 +90,7 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
 
     long long fileSize = blobData->length();
-    RefPtr<File> file = File::create(fileName, properties.lastModified(), BlobDataHandle::create(blobData.release(), fileSize));
+    RefPtrWillBeRawPtr<File> file = File::create(fileName, properties.lastModified(), BlobDataHandle::create(blobData.release(), fileSize));
     v8SetReturnValue(info, file.release());
 }
 

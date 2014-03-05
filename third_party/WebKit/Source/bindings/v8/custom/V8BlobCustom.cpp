@@ -40,7 +40,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "Blob", info.Holder(), info.GetIsolate());
     if (!info.Length()) {
-        RefPtr<Blob> blob = Blob::create();
+        RefPtrWillBeRawPtr<Blob> blob = Blob::create();
         v8SetReturnValue(info, blob.release());
         return;
     }
@@ -78,7 +78,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
 
     long long blobSize = blobData->length();
-    RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), blobSize));
+    RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), blobSize));
     v8SetReturnValue(info, blob.release());
 }
 

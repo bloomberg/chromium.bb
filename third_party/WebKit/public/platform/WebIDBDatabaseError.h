@@ -55,7 +55,7 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator WTF::PassRefPtr<WebCore::DOMError>() const;
+    operator PassRefPtrWillBeRawPtr<WebCore::DOMError>() const;
 #endif
 
 private:

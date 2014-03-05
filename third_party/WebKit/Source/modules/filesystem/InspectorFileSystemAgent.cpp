@@ -42,6 +42,7 @@
 #include "core/html/VoidCallback.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorState.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
@@ -470,7 +471,7 @@ bool FileContentRequest::didGetEntry(Entry* entry)
 
 bool FileContentRequest::didGetFile(File* file)
 {
-    RefPtr<Blob> blob = file->slice(m_start, m_end);
+    RefPtrWillBeRawPtr<Blob> blob = file->slice(m_start, m_end);
     m_reader->setOnload(this);
     m_reader->setOnerror(this);
 

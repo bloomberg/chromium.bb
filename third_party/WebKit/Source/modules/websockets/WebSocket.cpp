@@ -45,6 +45,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "heap/Handle.h"
 #include "modules/websockets/CloseEvent.h"
 #include "platform/Logging.h"
 #include "platform/blob/BlobData.h"
@@ -627,7 +628,7 @@ void WebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
         binaryData->swap(*rawData->mutableData());
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendData(rawData.release(), 0, BlobDataItem::toEndOfFile);
-        RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
+        RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
         m_eventQueue->dispatch(MessageEvent::create(blob.release(), SecurityOrigin::create(m_url)->toString()));
         break;
     }

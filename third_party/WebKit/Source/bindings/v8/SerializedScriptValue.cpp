@@ -61,6 +61,7 @@
 #include "core/fileapi/FileList.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/DataView.h"
+#include "heap/Handle.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferContents.h"
@@ -1854,7 +1855,7 @@ private:
             return false;
         if (!doReadUint64(&size))
             return false;
-        RefPtr<Blob> blob = Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
+        RefPtrWillBeRawPtr<Blob> blob = Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
         *value = toV8(blob.release(), v8::Handle<v8::Object>(), m_isolate);
         return true;
     }
@@ -1877,7 +1878,7 @@ private:
 
     bool readFile(v8::Handle<v8::Value>* value)
     {
-        RefPtr<File> file = doReadFileHelper();
+        RefPtrWillBeRawPtr<File> file = doReadFileHelper();
         if (!file)
             return false;
         *value = toV8(file.release(), v8::Handle<v8::Object>(), m_isolate);
@@ -1891,9 +1892,9 @@ private:
         uint32_t length;
         if (!doReadUint32(&length))
             return false;
-        RefPtr<FileList> fileList = FileList::create();
+        RefPtrWillBeRawPtr<FileList> fileList = FileList::create();
         for (unsigned i = 0; i < length; ++i) {
-            RefPtr<File> file = doReadFileHelper();
+            RefPtrWillBeRawPtr<File> file = doReadFileHelper();
             if (!file)
                 return false;
             fileList->append(file.release());
@@ -1902,7 +1903,7 @@ private:
         return true;
     }
 
-    PassRefPtr<File> doReadFileHelper()
+    PassRefPtrWillBeRawPtr<File> doReadFileHelper()
     {
         if (m_version < 3)
             return nullptr;

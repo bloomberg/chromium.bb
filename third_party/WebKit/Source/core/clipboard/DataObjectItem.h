@@ -51,7 +51,7 @@ public:
     };
 
     static PassRefPtrWillBeRawPtr<DataObjectItem> createFromString(const String& type, const String& data);
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromFile(PassRefPtr<File>);
+    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromFile(PassRefPtrWillBeRawPtr<File>);
     static PassRefPtrWillBeRawPtr<DataObjectItem> createFromURL(const String& url, const String& title);
     static PassRefPtrWillBeRawPtr<DataObjectItem> createFromHTML(const String& html, const KURL& baseURL);
     static PassRefPtrWillBeRawPtr<DataObjectItem> createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
@@ -60,7 +60,7 @@ public:
     Kind kind() const { return m_kind; }
     String type() const { return m_type; }
     String getAsString() const;
-    PassRefPtr<Blob> getAsFile() const;
+    PassRefPtrWillBeRawPtr<Blob> getAsFile() const;
 
     // Used to support legacy DataTransfer APIs and renderer->browser serialization.
     PassRefPtr<SharedBuffer> sharedBuffer() const { return m_sharedBuffer; }
@@ -68,7 +68,7 @@ public:
     KURL baseURL() const { return m_baseURL; }
     bool isFilename() const;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     enum DataSource {
@@ -84,7 +84,7 @@ private:
     String m_type;
 
     String m_data;
-    RefPtr<File> m_file;
+    RefPtrWillBeMember<File> m_file;
     RefPtr<SharedBuffer> m_sharedBuffer;
     // Optional metadata. Currently used for URL, HTML, and dragging files in.
     String m_title;

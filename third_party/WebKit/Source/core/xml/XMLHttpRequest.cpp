@@ -1427,4 +1427,10 @@ ExecutionContext* XMLHttpRequest::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
+void XMLHttpRequest::trace(Visitor* visitor)
+{
+    visitor->trace(m_responseBlob);
+    visitor->trace(m_responseStream);
+}
+
 } // namespace WebCore

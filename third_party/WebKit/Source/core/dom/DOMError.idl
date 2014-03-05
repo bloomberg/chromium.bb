@@ -26,6 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
+    WillBeGarbageCollected,
     NoInterfaceObject
 ] interface DOMError {
     readonly attribute DOMString name;

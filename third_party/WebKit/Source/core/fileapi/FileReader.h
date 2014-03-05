@@ -37,6 +37,7 @@
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/ThreadSpecific.h"
@@ -48,10 +49,10 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileReader FINAL : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
-    REFCOUNTED_EVENT_TARGET(FileReader);
+class FileReader FINAL : public RefCountedWillBeRefCountedGarbageCollected<FileReader>, public ScriptWrappable, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<FileReader>);
 public:
-    static PassRefPtr<FileReader> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<FileReader> create(ExecutionContext*);
 
     virtual ~FileReader();
 
@@ -71,7 +72,7 @@ public:
     void doAbort();
 
     ReadyState readyState() const { return m_state; }
-    PassRefPtr<FileError> error() { return m_error; }
+    PassRefPtrWillBeRawPtr<FileError> error() { return m_error; }
     FileReaderLoader::ReadType readType() const { return m_readType; }
     PassRefPtr<ArrayBuffer> arrayBufferResult() const;
     String stringResult();
@@ -95,6 +96,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
+
+    void trace(Visitor*);
 
 private:
     class ThrottlingController;
@@ -127,7 +130,7 @@ private:
     String m_encoding;
 
     OwnPtr<FileReaderLoader> m_loader;
-    RefPtr<FileError> m_error;
+    RefPtrWillBeMember<FileError> m_error;
     double m_lastProgressNotificationTimeMS;
 };
 

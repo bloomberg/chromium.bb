@@ -528,7 +528,7 @@ FileList* InputType::files()
     return 0;
 }
 
-void InputType::setFiles(PassRefPtr<FileList>)
+void InputType::setFiles(PassRefPtrWillBeRawPtr<FileList>)
 {
 }
 

@@ -144,7 +144,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
@@ -222,8 +222,8 @@ private:
     bool m_async;
     bool m_includeCredentials;
     unsigned long m_timeoutMilliseconds;
-    RefPtr<Blob> m_responseBlob;
-    RefPtr<Stream> m_responseStream;
+    RefPtrWillBeMember<Blob> m_responseBlob;
+    RefPtrWillBeMember<Stream> m_responseStream;
 
     RefPtr<ThreadableLoader> m_loader;
     State m_state;

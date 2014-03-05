@@ -211,9 +211,9 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
         if (!control->appendFormData(dataList, false))
             continue;
 
-        const Vector<FormDataList::Item>& items = dataList.items();
+        const WillBeHeapVector<FormDataList::Item>& items = dataList.items();
 
-        for (Vector<FormDataList::Item>::const_iterator j(items.begin()); j != items.end(); ++j) {
+        for (WillBeHeapVector<FormDataList::Item>::const_iterator j(items.begin()); j != items.end(); ++j) {
             if (!encodedString->isEmpty())
                 encodedString->append('&');
             FormDataBuilder::encodeStringAsFormData(*encodedString, j->data());

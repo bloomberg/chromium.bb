@@ -194,15 +194,15 @@ Vector<String> Clipboard::types() const
     return types;
 }
 
-PassRefPtr<FileList> Clipboard::files() const
+PassRefPtrWillBeRawPtr<FileList> Clipboard::files() const
 {
-    RefPtr<FileList> files = FileList::create();
+    RefPtrWillBeRawPtr<FileList> files = FileList::create();
     if (!canReadData())
         return files.release();
 
     for (size_t i = 0; i < m_dataObject->length(); ++i) {
         if (m_dataObject->item(i)->kind() == DataObjectItem::FileKind) {
-            RefPtr<Blob> blob = m_dataObject->item(i)->getAsFile();
+            RefPtrWillBeRawPtr<Blob> blob = m_dataObject->item(i)->getAsFile();
             if (blob && blob->isFile())
                 files->append(toFile(blob.get()));
         }
@@ -478,7 +478,7 @@ bool Clipboard::hasFileOfType(const String& type) const
     if (!canReadTypes())
         return false;
 
-    RefPtr<FileList> fileList = files();
+    RefPtrWillBeRawPtr<FileList> fileList = files();
     if (fileList->isEmpty())
         return false;
 

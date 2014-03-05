@@ -33,6 +33,7 @@
 #define FileInputType_h
 
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
+#include "heap/Handle.h"
 #include "platform/FileChooser.h"
 #include "wtf/RefPtr.h"
 
@@ -58,7 +59,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual bool canSetStringValue() const OVERRIDE;
     virtual FileList* files() OVERRIDE;
-    virtual void setFiles(PassRefPtr<FileList>) OVERRIDE;
+    virtual void setFiles(PassRefPtrWillBeRawPtr<FileList>) OVERRIDE;
     virtual bool canSetValue(const String&) OVERRIDE;
     virtual bool getTypeSpecificValue(String&) OVERRIDE; // Checked first, before internal storage or the value attribute.
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
@@ -73,10 +74,10 @@ private:
     // FileChooserClient implementation.
     virtual void filesChosen(const Vector<FileChooserFileInfo>&) OVERRIDE;
 
-    PassRefPtr<FileList> createFileList(const Vector<FileChooserFileInfo>& files) const;
+    PassRefPtrWillBeRawPtr<FileList> createFileList(const Vector<FileChooserFileInfo>& files) const;
     void receiveDropForDirectoryUpload(const Vector<String>&);
 
-    RefPtr<FileList> m_fileList;
+    RefPtrWillBePersistent<FileList> m_fileList;
 
     String m_droppedFileSystemId;
 };

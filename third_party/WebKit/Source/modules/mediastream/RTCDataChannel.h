@@ -27,6 +27,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
@@ -70,7 +71,7 @@ public:
     void send(const String&, ExceptionState&);
     void send(PassRefPtr<ArrayBuffer>, ExceptionState&);
     void send(PassRefPtr<ArrayBufferView>, ExceptionState&);
-    void send(PassRefPtr<Blob>, ExceptionState&);
+    void send(PassRefPtrWillBeRawPtr<Blob>, ExceptionState&);
 
     void close();
 

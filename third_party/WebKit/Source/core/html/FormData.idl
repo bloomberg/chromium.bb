@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     Constructor([Default=Undefined] optional HTMLFormElement form),
     ImplementedAs=DOMFormData
 ] interface FormData {

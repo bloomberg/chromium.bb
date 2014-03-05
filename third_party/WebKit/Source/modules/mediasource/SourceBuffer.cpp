@@ -293,13 +293,13 @@ void SourceBuffer::appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState
     appendBufferInternal(static_cast<const unsigned char*>(data->baseAddress()), data->byteLength(), exceptionState);
 }
 
-void SourceBuffer::appendStream(PassRefPtr<Stream> stream, ExceptionState& exceptionState)
+void SourceBuffer::appendStream(PassRefPtrWillBeRawPtr<Stream> stream, ExceptionState& exceptionState)
 {
     m_streamMaxSizeValid = false;
     appendStreamInternal(stream, exceptionState);
 }
 
-void SourceBuffer::appendStream(PassRefPtr<Stream> stream, unsigned long long maxSize, ExceptionState& exceptionState)
+void SourceBuffer::appendStream(PassRefPtrWillBeRawPtr<Stream> stream, unsigned long long maxSize, ExceptionState& exceptionState)
 {
     m_streamMaxSizeValid = maxSize > 0;
     if (m_streamMaxSizeValid)
@@ -572,7 +572,7 @@ void SourceBuffer::removeAsyncPart()
     scheduleEvent(EventTypeNames::updateend);
 }
 
-void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionState& exceptionState)
+void SourceBuffer::appendStreamInternal(PassRefPtrWillBeRawPtr<Stream> stream, ExceptionState& exceptionState)
 {
     // Section 3.2 appendStream()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendStream-void-Stream-stream-unsigned-long-long-maxSize
@@ -706,6 +706,7 @@ void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 void SourceBuffer::trace(Visitor* visitor)
 {
     visitor->trace(m_source);
+    visitor->trace(m_stream);
 }
 
 } // namespace WebCore

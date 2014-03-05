@@ -81,7 +81,7 @@ void DataTransferItem::getAsString(ExecutionContext* context, PassOwnPtr<StringC
     StringCallback::scheduleCallback(callback, context, m_item->getAsString());
 }
 
-PassRefPtr<Blob> DataTransferItem::getAsFile() const
+PassRefPtrWillBeRawPtr<Blob> DataTransferItem::getAsFile() const
 {
     if (!m_clipboard->canReadData())
         return nullptr;

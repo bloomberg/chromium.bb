@@ -38,6 +38,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "heap/Handle.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBTransaction.h"
@@ -67,7 +68,7 @@ public:
     virtual ~IDBRequest();
 
     ScriptValue result(ExceptionState&);
-    PassRefPtr<DOMError> error(ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<DOMError> error(ExceptionState&) const;
     ScriptValue source(ExecutionContext*) const;
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
 
@@ -94,7 +95,7 @@ public:
     void setPendingCursor(PassRefPtr<IDBCursor>);
     void abort();
 
-    virtual void onError(PassRefPtr<DOMError>);
+    virtual void onError(PassRefPtrWillBeRawPtr<DOMError>);
     virtual void onSuccess(const Vector<String>&);
     virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>);
     virtual void onSuccess(PassRefPtr<IDBKey>);
@@ -156,7 +157,7 @@ private:
 
     RefPtr<IDBAny> m_source;
     RefPtr<IDBAny> m_result;
-    RefPtr<DOMError> m_error;
+    RefPtrWillBePersistent<DOMError> m_error;
 
     bool m_hasPendingActivity;
     Vector<RefPtr<Event> > m_enqueuedEvents;

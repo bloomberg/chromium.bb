@@ -22,6 +22,7 @@
 #define FormDataList_h
 
 #include "core/fileapi/Blob.h"
+#include "heap/Handle.h"
 #include "platform/network/FormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CString.h"
@@ -32,18 +33,21 @@ namespace WebCore {
 class FormDataList {
 public:
     class Item {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         Item() { }
         Item(const WTF::CString& data) : m_data(data) { }
-        Item(PassRefPtr<Blob> blob, const String& filename) : m_blob(blob), m_filename(filename) { }
+        Item(PassRefPtrWillBeRawPtr<Blob> blob, const String& filename) : m_blob(blob), m_filename(filename) { }
 
         const WTF::CString& data() const { return m_data; }
         Blob* blob() const { return m_blob.get(); }
         const String& filename() const { return m_filename; }
 
+        void trace(Visitor*);
+
     private:
         WTF::CString m_data;
-        RefPtr<Blob> m_blob;
+        RefPtrWillBeMember<Blob> m_blob;
         String m_filename;
     };
 
@@ -64,29 +68,39 @@ public:
         appendString(key);
         appendString(String::number(value));
     }
-    void appendBlob(const String& key, PassRefPtr<Blob> blob, const String& filename = String())
+    void appendBlob(const String& key, PassRefPtrWillBeRawPtr<Blob> blob, const String& filename = String())
     {
         appendString(key);
         appendBlob(blob, filename);
     }
 
-    const Vector<Item>& items() const { return m_items; }
+    const WillBeHeapVector<Item>& items() const { return m_items; }
     const WTF::TextEncoding& encoding() const { return m_encoding; }
 
     PassRefPtr<FormData> createFormData(const WTF::TextEncoding&, FormData::EncodingType = FormData::FormURLEncoded);
     PassRefPtr<FormData> createMultiPartFormData(const WTF::TextEncoding&);
+
+    void trace(Visitor*);
 
 private:
     void appendKeyValuePairItemsTo(FormData*, const WTF::TextEncoding&, bool isMultiPartForm, FormData::EncodingType = FormData::FormURLEncoded);
 
     void appendString(const CString&);
     void appendString(const String&);
-    void appendBlob(PassRefPtr<Blob>, const String& filename);
+    void appendBlob(PassRefPtrWillBeRawPtr<Blob>, const String& filename);
 
     WTF::TextEncoding m_encoding;
-    Vector<Item> m_items;
+    WillBeHeapVector<Item> m_items;
 };
 
 } // namespace WebCore
+
+// FIXME: oilpan: remove once traceability can be derived/inferred.
+namespace WTF {
+template<>
+struct NeedsTracing<WebCore::FormDataList::Item> {
+    static const bool value = true;
+};
+}
 
 #endif // FormDataList_h

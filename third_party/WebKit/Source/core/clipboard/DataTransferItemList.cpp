@@ -90,7 +90,7 @@ PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(const String&
     return DataTransferItem::create(m_clipboard, item);
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(PassRefPtr<File> file)
+PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(PassRefPtrWillBeRawPtr<File> file)
 {
     if (!m_clipboard->canWriteData())
         return nullptr;

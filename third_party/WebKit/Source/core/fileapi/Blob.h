@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/URLRegistry.h"
+#include "heap/Handle.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -43,22 +44,22 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class Blob : public ScriptWrappable, public URLRegistrable, public RefCounted<Blob> {
+class Blob : public RefCountedWillBeGarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
 public:
-    static PassRefPtr<Blob> create()
+    static PassRefPtrWillBeRawPtr<Blob> create()
     {
-        return adoptRef(new Blob(BlobDataHandle::create()));
+        return adoptRefWillBeNoop(new Blob(BlobDataHandle::create()));
     }
 
-    static PassRefPtr<Blob> create(PassRefPtr<BlobDataHandle> blobDataHandle)
+    static PassRefPtrWillBeRawPtr<Blob> create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRef(new Blob(blobDataHandle));
+        return adoptRefWillBeNoop(new Blob(blobDataHandle));
     }
 
     virtual ~Blob();
 
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
-    virtual PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
+    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
     virtual void close(ExecutionContext*);
 
     String type() const { return m_blobDataHandle->type(); }
@@ -75,6 +76,8 @@ public:
 
     // URLRegistrable to support PublicURLs.
     virtual URLRegistry& registry() const OVERRIDE FINAL;
+
+    void trace(Visitor*) { }
 
 protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);

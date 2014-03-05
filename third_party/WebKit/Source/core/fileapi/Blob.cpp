@@ -33,6 +33,7 @@
 
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/fileapi/File.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 
@@ -103,7 +104,7 @@ void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
         end = size;
 }
 
-PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
+PassRefPtrWillBeRawPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
 {
     long long size = this->size();
     clampSliceOffsets(size, start, end);

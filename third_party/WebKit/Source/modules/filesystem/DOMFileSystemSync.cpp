@@ -65,7 +65,7 @@ DOMFileSystemSync::~DOMFileSystemSync()
 {
 }
 
-void DOMFileSystemSync::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtr<FileError> fileError)
+void DOMFileSystemSync::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
 {
     errorCallback->handleEvent(fileError.get());
 }
@@ -88,7 +88,7 @@ public:
 
         bool m_failed;
         int m_code;
-        RefPtr<File> m_file;
+        RefPtrWillBePersistent<File> m_file;
 
       private:
         CreateFileResult()
@@ -163,7 +163,7 @@ private:
 
 } // namespace
 
-PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     RefPtr<CreateFileHelper::CreateFileResult> result(CreateFileHelper::CreateFileResult::create());
@@ -172,7 +172,7 @@ PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, E
         exceptionState.throwDOMException(result->m_code, "Could not create '" + fileEntry->name() + "'.");
         return nullptr;
     }
-    return result->m_file;
+    return result->m_file.get();
 }
 
 namespace {

@@ -31,6 +31,7 @@
 #ifndef FileEntrySync_h
 #define FileEntrySync_h
 
+#include "heap/Handle.h"
 #include "modules/filesystem/EntrySync.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -51,7 +52,7 @@ public:
 
     virtual bool isFile() const OVERRIDE { return true; }
 
-    PassRefPtr<File> file(ExceptionState&);
+    PassRefPtrWillBeRawPtr<File> file(ExceptionState&);
     PassRefPtr<FileWriterSync> createWriter(ExceptionState&);
 
 private:

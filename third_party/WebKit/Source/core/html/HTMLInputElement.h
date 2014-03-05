@@ -202,7 +202,7 @@ public:
     bool multiple() const;
 
     FileList* files();
-    void setFiles(PassRefPtr<FileList>);
+    void setFiles(PassRefPtrWillBeRawPtr<FileList>);
 
     // Returns true if the given DragData has more than one dropped files.
     bool receiveDroppedFiles(const DragData*);

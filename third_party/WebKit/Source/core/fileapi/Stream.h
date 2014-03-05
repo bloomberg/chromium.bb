@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -42,11 +43,11 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class Stream FINAL : public ScriptWrappable, public ActiveDOMObject, public RefCounted<Stream> {
+class Stream FINAL : public RefCountedWillBeRefCountedGarbageCollected<Stream>, public ScriptWrappable, public ActiveDOMObject {
 public:
-    static PassRefPtr<Stream> create(ExecutionContext* context, const String& mediaType)
+    static PassRefPtrWillBeRawPtr<Stream> create(ExecutionContext* context, const String& mediaType)
     {
-        RefPtr<Stream> stream = adoptRef(new Stream(context, mediaType));
+        RefPtrWillBeRawPtr<Stream> stream = adoptRefWillBeRefCountedGarbageCollected(new Stream(context, mediaType));
         stream->suspendIfNeeded();
         return stream.release();
     }
@@ -79,6 +80,8 @@ public:
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
+
+    void trace(Visitor*) { }
 
 protected:
     Stream(ExecutionContext*, const String& mediaType);

@@ -33,6 +33,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "heap/Handle.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "public/platform/WebIDBDatabase.h"
@@ -75,7 +76,7 @@ public:
     // Implement the IDBTransaction IDL
     const String& mode() const;
     IDBDatabase* db() const { return m_database.get(); }
-    PassRefPtr<DOMError> error() const { return m_error; }
+    PassRefPtrWillBeRawPtr<DOMError> error() const { return m_error; }
     PassRefPtr<IDBObjectStore> objectStore(const String& name, ExceptionState&);
     void abort(ExceptionState&);
 
@@ -84,13 +85,13 @@ public:
     void objectStoreCreated(const String&, PassRefPtr<IDBObjectStore>);
     void objectStoreDeleted(const String&);
     void setActive(bool);
-    void setError(PassRefPtr<DOMError>);
+    void setError(PassRefPtrWillBeRawPtr<DOMError>);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void onAbort(PassRefPtr<DOMError>);
+    void onAbort(PassRefPtrWillBeRawPtr<DOMError>);
     void onComplete();
 
     // EventTarget
@@ -124,7 +125,7 @@ private:
     State m_state;
     bool m_hasPendingActivity;
     bool m_contextStopped;
-    RefPtr<DOMError> m_error;
+    RefPtrWillBePersistent<DOMError> m_error;
 
     ListHashSet<RefPtr<IDBRequest> > m_requestList;
 

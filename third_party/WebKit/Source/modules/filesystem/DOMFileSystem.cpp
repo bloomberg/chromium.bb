@@ -107,7 +107,7 @@ void DOMFileSystem::removePendingCallbacks()
     unsetPendingActivity(this);
 }
 
-void DOMFileSystem::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtr<FileError> fileError)
+void DOMFileSystem::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
 {
     scheduleCallback(errorCallback, fileError);
 }

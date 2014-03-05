@@ -27,6 +27,7 @@
 #define File_h
 
 #include "core/fileapi/Blob.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,49 +46,49 @@ public:
         AllContentTypes,
     };
 
-    static PassRefPtr<File> create(const String& path, ContentTypeLookupPolicy policy = WellKnownContentTypes)
+    static PassRefPtrWillBeRawPtr<File> create(const String& path, ContentTypeLookupPolicy policy = WellKnownContentTypes)
     {
-        return adoptRef(new File(path, policy));
+        return adoptRefWillBeNoop(new File(path, policy));
     }
 
-    static PassRefPtr<File> create(const String& name, double modificationTime, PassRefPtr<BlobDataHandle> blobDataHandle)
+    static PassRefPtrWillBeRawPtr<File> create(const String& name, double modificationTime, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRef(new File(name, modificationTime, blobDataHandle));
+        return adoptRefWillBeNoop(new File(name, modificationTime, blobDataHandle));
     }
 
     // For deserialization.
-    static PassRefPtr<File> create(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
+    static PassRefPtrWillBeRawPtr<File> create(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRef(new File(path, name, relativePath, hasSnaphotData, size, lastModified, blobDataHandle));
+        return adoptRefWillBeNoop(new File(path, name, relativePath, hasSnaphotData, size, lastModified, blobDataHandle));
     }
 
-    static PassRefPtr<File> createWithRelativePath(const String& path, const String& relativePath);
+    static PassRefPtrWillBeRawPtr<File> createWithRelativePath(const String& path, const String& relativePath);
 
     // If filesystem files live in the remote filesystem, the port might pass the valid metadata (whose length field is non-negative) and cache in the File object.
     //
     // Otherwise calling size(), lastModifiedTime() and slice() will synchronously query the file metadata.
-    static PassRefPtr<File> createForFileSystemFile(const String& name, const FileMetadata& metadata)
+    static PassRefPtrWillBeRawPtr<File> createForFileSystemFile(const String& name, const FileMetadata& metadata)
     {
-        return adoptRef(new File(name, metadata));
+        return adoptRefWillBeNoop(new File(name, metadata));
     }
 
-    static PassRefPtr<File> createForFileSystemFile(const KURL& url, const FileMetadata& metadata)
+    static PassRefPtrWillBeRawPtr<File> createForFileSystemFile(const KURL& url, const FileMetadata& metadata)
     {
-        return adoptRef(new File(url, metadata));
+        return adoptRefWillBeNoop(new File(url, metadata));
     }
 
     KURL fileSystemURL() const { ASSERT(hasValidFileSystemURL()); return m_fileSystemURL; }
 
     // Create a file with a name exposed to the author (via File.name and associated DOM properties) that differs from the one provided in the path.
-    static PassRefPtr<File> createWithName(const String& path, const String& name, ContentTypeLookupPolicy policy = WellKnownContentTypes)
+    static PassRefPtrWillBeRawPtr<File> createWithName(const String& path, const String& name, ContentTypeLookupPolicy policy = WellKnownContentTypes)
     {
         if (name.isEmpty())
-            return adoptRef(new File(path, policy));
-        return adoptRef(new File(path, name, policy));
+            return adoptRefWillBeNoop(new File(path, policy));
+        return adoptRefWillBeNoop(new File(path, name, policy));
     }
 
     virtual unsigned long long size() const OVERRIDE;
-    virtual PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const OVERRIDE;
     virtual void close(ExecutionContext*) OVERRIDE;
 
     virtual bool isFile() const OVERRIDE { return true; }

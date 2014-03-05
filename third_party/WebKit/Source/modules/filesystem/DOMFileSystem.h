@@ -35,6 +35,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
 
@@ -58,7 +59,7 @@ public:
     // DOMFileSystemBase overrides.
     virtual void addPendingCallbacks() OVERRIDE;
     virtual void removePendingCallbacks() OVERRIDE;
-    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtr<FileError>) OVERRIDE;
+    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<FileError>) OVERRIDE;
 
     void createWriter(const FileEntry*, PassOwnPtr<FileWriterCallback>, PassOwnPtr<ErrorCallback>);
     void createFile(const FileEntry*, PassOwnPtr<FileCallback>, PassOwnPtr<ErrorCallback>);
@@ -66,13 +67,13 @@ public:
     // Schedule a callback. This should not cross threads (should be called on the same context thread).
     // FIXME: move this to a more generic place.
     template <typename CB, typename CBArg>
-    static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, PassRefPtr<CBArg>);
+    static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, PassRefPtrWillBeRawPtr<CBArg>);
 
     template <typename CB, typename CBArg>
     static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, const CBArg&);
 
     template <typename CB, typename CBArg>
-    void scheduleCallback(PassOwnPtr<CB> callback, PassRefPtr<CBArg> callbackArg)
+    void scheduleCallback(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> callbackArg)
     {
         scheduleCallback(executionContext(), callback, callbackArg);
     }
@@ -90,7 +91,7 @@ private:
     template <typename CB, typename CBArg>
     class DispatchCallbacRefPtrArgTask FINAL : public ExecutionContextTask {
     public:
-        DispatchCallbacRefPtrArgTask(PassOwnPtr<CB> callback, PassRefPtr<CBArg> arg)
+        DispatchCallbacRefPtrArgTask(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
             : m_callback(callback)
             , m_callbackArg(arg)
         {
@@ -103,7 +104,7 @@ private:
 
     private:
         OwnPtr<CB> m_callback;
-        RefPtr<CBArg> m_callbackArg;
+        RefPtrWillBePersistent<CBArg> m_callbackArg;
     };
 
     template <typename CB, typename CBArg>
@@ -127,7 +128,7 @@ private:
 };
 
 template <typename CB, typename CBArg>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwnPtr<CB> callback, PassRefPtr<CBArg> arg)
+void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
 {
     ASSERT(executionContext->isContextThread());
     if (callback)

@@ -65,7 +65,7 @@ public:
     void clearAll();
     // Returns null if an item already exists with the provided type.
     PassRefPtrWillBeRawPtr<DataObjectItem> add(const String& data, const String& type);
-    PassRefPtrWillBeRawPtr<DataObjectItem> add(PassRefPtr<File>);
+    PassRefPtrWillBeRawPtr<DataObjectItem> add(PassRefPtrWillBeRawPtr<File>);
 
     // WebCore helpers.
     void clearData(const String& type);

@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     CustomConstructor,
     CustomConstructor(sequence<any> blobParts, optional BlobPropertyBag options),
     GlobalContext=Window&WorkerGlobalScope,

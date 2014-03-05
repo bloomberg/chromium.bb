@@ -26,6 +26,7 @@
 #ifndef IDBDatabaseCallbacks_h
 #define IDBDatabaseCallbacks_h
 
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -43,7 +44,7 @@ public:
     virtual void onForcedClose();
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
 
-    virtual void onAbort(int64_t transactionId, PassRefPtr<DOMError>);
+    virtual void onAbort(int64_t transactionId, PassRefPtrWillBeRawPtr<DOMError>);
     virtual void onComplete(int64_t transactionId);
 
     void connect(IDBDatabase*);

@@ -32,6 +32,7 @@
 #define ServiceWorkerError_h
 
 #include "core/dom/DOMError.h"
+#include "heap/Handle.h"
 #include "public/platform/WebServiceWorkerError.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -41,10 +42,10 @@ class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
     typedef blink::WebServiceWorkerError WebType;
-    static PassRefPtr<DOMError> from(WebType* webErrorRaw)
+    static PassRefPtrWillBeRawPtr<DOMError> from(WebType* webErrorRaw)
     {
         OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
-        RefPtr<DOMError> error = DOMError::create(errorString(webError->errorType), webError->message);
+        RefPtrWillBeRawPtr<DOMError> error = DOMError::create(errorString(webError->errorType), webError->message);
         return error.release();
     }
 

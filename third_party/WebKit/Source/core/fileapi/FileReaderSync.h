@@ -32,6 +32,7 @@
 #define FileReaderSync_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -43,11 +44,11 @@ class ExceptionState;
 class FileReaderLoader;
 class ExecutionContext;
 
-class FileReaderSync FINAL : public RefCounted<FileReaderSync>, public ScriptWrappable {
+class FileReaderSync FINAL : public RefCountedWillBeGarbageCollectedFinalized<FileReaderSync>, public ScriptWrappable {
 public:
-    static PassRefPtr<FileReaderSync> create()
+    static PassRefPtrWillBeRawPtr<FileReaderSync> create()
     {
-        return adoptRef(new FileReaderSync());
+        return adoptRefWillBeNoop(new FileReaderSync());
     }
 
     ~FileReaderSync() { }
@@ -60,6 +61,8 @@ public:
     }
     String readAsText(ExecutionContext*, Blob*, const String& encoding, ExceptionState&);
     String readAsDataURL(ExecutionContext*, Blob*, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     FileReaderSync();

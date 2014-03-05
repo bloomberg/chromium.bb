@@ -648,7 +648,7 @@ bool Dictionary::convert(ConversionContext& context, const String& key, ArrayVal
     return get(key, value);
 }
 
-bool Dictionary::get(const String& key, RefPtr<DOMError>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<DOMError>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

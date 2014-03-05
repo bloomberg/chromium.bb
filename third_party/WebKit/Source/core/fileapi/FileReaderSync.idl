@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     GlobalContext=WorkerGlobalScope,
     Constructor
 ] interface FileReaderSync {

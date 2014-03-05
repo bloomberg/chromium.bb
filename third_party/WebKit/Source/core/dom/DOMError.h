@@ -29,35 +29,38 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class DOMError : public RefCounted<DOMError>, public ScriptWrappable {
+class DOMError : public RefCountedWillBeGarbageCollectedFinalized<DOMError>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMError> create(const String& name)
+    static PassRefPtrWillBeRawPtr<DOMError> create(const String& name)
     {
-        return adoptRef(new DOMError(name));
+        return adoptRefWillBeNoop(new DOMError(name));
     }
-    static PassRefPtr<DOMError> create(const String& name, const String& message)
+    static PassRefPtrWillBeRawPtr<DOMError> create(const String& name, const String& message)
     {
-        return adoptRef(new DOMError(name, message));
-    }
-
-    static PassRefPtr<DOMError> create(ExceptionCode ec)
-    {
-        return adoptRef(new DOMError(DOMException::getErrorName(ec), DOMException::getErrorMessage(ec)));
+        return adoptRefWillBeNoop(new DOMError(name, message));
     }
 
-    static PassRefPtr<DOMError> create(ExceptionCode ec, const String& message)
+    static PassRefPtrWillBeRawPtr<DOMError> create(ExceptionCode ec)
     {
-        return adoptRef(new DOMError(DOMException::getErrorName(ec), message));
+        return adoptRefWillBeNoop(new DOMError(DOMException::getErrorName(ec), DOMException::getErrorMessage(ec)));
+    }
+
+    static PassRefPtrWillBeRawPtr<DOMError> create(ExceptionCode ec, const String& message)
+    {
+        return adoptRefWillBeNoop(new DOMError(DOMException::getErrorName(ec), message));
     }
 
     const String& name() const { return m_name; }
     const String& message() const { return m_message; }
+
+    void trace(Visitor*) { }
 
 protected:
     explicit DOMError(const String& name);

@@ -1316,7 +1316,7 @@ FileList* HTMLInputElement::files()
     return m_inputType->files();
 }
 
-void HTMLInputElement::setFiles(PassRefPtr<FileList> files)
+void HTMLInputElement::setFiles(PassRefPtrWillBeRawPtr<FileList> files)
 {
     m_inputType->setFiles(files);
 }

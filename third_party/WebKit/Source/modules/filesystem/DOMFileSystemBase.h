@@ -80,7 +80,7 @@ public:
     virtual void removePendingCallbacks() { }
 
     // Overridden by subclasses to handle sync vs async error-handling.
-    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtr<FileError>) = 0;
+    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<FileError>) = 0;
 
     const String& name() const { return m_name; }
     FileSystemType type() const { return m_type; }

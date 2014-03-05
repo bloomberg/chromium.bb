@@ -76,20 +76,15 @@ v8::Handle<v8::Value>  WebDOMError::toV8Value()
     return toV8(m_private.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
 }
 
-WebDOMError::WebDOMError(const WTF::PassRefPtr<WebCore::DOMError>& error)
+WebDOMError::WebDOMError(const PassRefPtrWillBeRawPtr<WebCore::DOMError>& error)
     : m_private(error)
 {
 }
 
-WebDOMError& WebDOMError::operator=(const WTF::PassRefPtr<WebCore::DOMError>& error)
+WebDOMError& WebDOMError::operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMError>& error)
 {
     m_private = error;
     return *this;
-}
-
-WebDOMError::operator WTF::PassRefPtr<WebCore::DOMError>() const
-{
-    return m_private.get();
 }
 
 } // namespace blink

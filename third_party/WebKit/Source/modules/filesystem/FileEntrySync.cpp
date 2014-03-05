@@ -43,7 +43,7 @@ FileEntrySync::FileEntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const Str
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<File> FileEntrySync::file(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<File> FileEntrySync::file(ExceptionState& exceptionState)
 {
     return filesystem()->createFile(this, exceptionState);
 }

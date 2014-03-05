@@ -32,6 +32,7 @@
 #define DOMFileSystemSync_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 
 namespace WebCore {
@@ -53,11 +54,11 @@ public:
 
     virtual ~DOMFileSystemSync();
 
-    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtr<FileError>) OVERRIDE;
+    virtual void reportError(PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<FileError>) OVERRIDE;
 
     PassRefPtr<DirectoryEntrySync> root();
 
-    PassRefPtr<File> createFile(const FileEntrySync*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<File> createFile(const FileEntrySync*, ExceptionState&);
     PassRefPtr<FileWriterSync> createWriter(const FileEntrySync*, ExceptionState&);
 
 private:

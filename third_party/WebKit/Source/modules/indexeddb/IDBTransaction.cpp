@@ -112,7 +112,7 @@ const String& IDBTransaction::mode() const
     return modeToString(m_mode);
 }
 
-void IDBTransaction::setError(PassRefPtr<DOMError> error)
+void IDBTransaction::setError(PassRefPtrWillBeRawPtr<DOMError> error)
 {
     ASSERT(m_state != Finished);
     ASSERT(error);
@@ -225,7 +225,7 @@ void IDBTransaction::unregisterRequest(IDBRequest* request)
     m_requestList.remove(request);
 }
 
-void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
+void IDBTransaction::onAbort(PassRefPtrWillBeRawPtr<DOMError> prpError)
 {
     IDB_TRACE("IDBTransaction::onAbort");
     if (m_contextStopped) {
@@ -234,7 +234,7 @@ void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
         return;
     }
 
-    RefPtr<DOMError> error = prpError;
+    RefPtrWillBeRawPtr<DOMError> error = prpError;
     ASSERT(m_state != Finished);
 
     if (m_state != Finishing) {

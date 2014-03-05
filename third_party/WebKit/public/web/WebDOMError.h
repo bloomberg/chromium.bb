@@ -67,9 +67,8 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value> toV8Value();
 
 #if BLINK_IMPLEMENTATION
-    WebDOMError(const WTF::PassRefPtr<WebCore::DOMError>&);
-    WebDOMError& operator=(const WTF::PassRefPtr<WebCore::DOMError>&);
-    operator WTF::PassRefPtr<WebCore::DOMError>() const;
+    explicit WebDOMError(const PassRefPtrWillBeRawPtr<WebCore::DOMError>&);
+    WebDOMError& operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMError>&);
 #endif
 
 protected:

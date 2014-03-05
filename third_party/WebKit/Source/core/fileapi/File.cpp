@@ -84,9 +84,9 @@ static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSyste
     return blobData.release();
 }
 
-PassRefPtr<File> File::createWithRelativePath(const String& path, const String& relativePath)
+PassRefPtrWillBeRawPtr<File> File::createWithRelativePath(const String& path, const String& relativePath)
 {
-    RefPtr<File> file = adoptRef(new File(path, AllContentTypes));
+    RefPtrWillBeRawPtr<File> file = adoptRefWillBeNoop(new File(path, AllContentTypes));
     file->m_relativePath = relativePath;
     return file.release();
 }
@@ -181,7 +181,7 @@ unsigned long long File::size() const
     return static_cast<unsigned long long>(size);
 }
 
-PassRefPtr<Blob> File::slice(long long start, long long end, const String& contentType) const
+PassRefPtrWillBeRawPtr<Blob> File::slice(long long start, long long end, const String& contentType) const
 {
     if (!m_hasBackingFile)
         return Blob::slice(start, end, contentType);

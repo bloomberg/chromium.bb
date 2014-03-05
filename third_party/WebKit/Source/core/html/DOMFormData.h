@@ -32,6 +32,7 @@
 #define DOMFormData_h
 
 #include "core/html/FormDataList.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -45,10 +46,17 @@ namespace WebCore {
 class Blob;
 class HTMLFormElement;
 
-class DOMFormData : public FormDataList, public ScriptWrappable, public RefCounted<DOMFormData> {
+class DOMFormData : public RefCountedWillBeGarbageCollectedFinalized<DOMFormData>, public FormDataList, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMFormData> create(HTMLFormElement* form) { return adoptRef(new DOMFormData(form)); }
-    static PassRefPtr<DOMFormData> create(const WTF::TextEncoding& encoding) { return adoptRef(new DOMFormData(encoding)); }
+    static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form)
+    {
+        return adoptRefWillBeNoop(new DOMFormData(form));
+    }
+
+    static PassRefPtrWillBeRawPtr<DOMFormData> create(const WTF::TextEncoding& encoding)
+    {
+        return adoptRefWillBeNoop(new DOMFormData(encoding));
+    }
 
     void append(const String& name, const String& value);
     void append(const String& name, Blob*, const String& filename = String());

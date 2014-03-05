@@ -97,7 +97,7 @@ public:
     bool get(const String&, Dictionary&) const;
     bool get(const String&, Vector<String>&) const;
     bool get(const String&, ArrayValue&) const;
-    bool get(const String&, RefPtr<DOMError>&) const;
+    bool get(const String&, RefPtrWillBeRawPtr<DOMError>&) const;
     bool get(const String&, OwnPtr<VoidCallback>&) const;
     bool get(const String&, v8::Local<v8::Value>&) const;
 

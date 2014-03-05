@@ -132,9 +132,9 @@ private:
     HashSet<FileReader*> m_runningReaders;
 };
 
-PassRefPtr<FileReader> FileReader::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<FileReader> FileReader::create(ExecutionContext* context)
 {
-    RefPtr<FileReader> fileReader(adoptRef(new FileReader(context)));
+    RefPtrWillBeRawPtr<FileReader> fileReader(adoptRefWillBeRefCountedGarbageCollected(new FileReader(context)));
     fileReader->suspendIfNeeded();
     return fileReader.release();
 }
@@ -402,6 +402,11 @@ String FileReader::stringResult()
     if (!m_loader || m_error)
         return String();
     return m_loader->stringResult();
+}
+
+void FileReader::trace(Visitor* visitor)
+{
+    visitor->trace(m_error);
 }
 
 } // namespace WebCore

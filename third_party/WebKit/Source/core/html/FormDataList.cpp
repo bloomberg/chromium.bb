@@ -43,7 +43,7 @@ void FormDataList::appendString(const CString& string)
     m_items.append(string);
 }
 
-void FormDataList::appendBlob(PassRefPtr<Blob> blob, const String& filename)
+void FormDataList::appendBlob(PassRefPtrWillBeRawPtr<Blob> blob, const String& filename)
 {
     m_items.append(Item(blob, filename));
 }
@@ -69,7 +69,7 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
 
     Vector<char> encodedData;
 
-    const Vector<FormDataList::Item>& items = this->items();
+    const WillBeHeapVector<Item>& items = this->items();
     size_t formDataListSize = items.size();
     ASSERT(!(formDataListSize % 2));
     for (size_t i = 0; i < formDataListSize; i += 2) {
@@ -138,6 +138,16 @@ void FormDataList::appendKeyValuePairItemsTo(FormData* formData, const WTF::Text
         FormDataBuilder::addBoundaryToMultiPartHeader(encodedData, formData->boundary().data(), true);
 
     formData->appendData(encodedData.data(), encodedData.size());
+}
+
+void FormDataList::trace(Visitor* visitor)
+{
+    visitor->trace(m_items);
+}
+
+void FormDataList::Item::trace(Visitor* visitor)
+{
+    visitor->trace(m_blob);
 }
 
 } // namespace

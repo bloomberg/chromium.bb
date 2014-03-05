@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMError.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -70,7 +71,10 @@ public:
     static const char syntaxErrorMessage[];
     static const char typeMismatchErrorMessage[];
 
-    static PassRefPtr<FileError> create(ErrorCode code) { return adoptRef(new FileError(code)); }
+    static PassRefPtrWillBeRawPtr<FileError> create(ErrorCode code)
+    {
+        return adoptRefWillBeNoop(new FileError(code));
+    }
 
     ErrorCode code() const { return m_code; }
 

@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/fileapi/File.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -35,11 +36,11 @@
 
 namespace WebCore {
 
-class FileList : public ScriptWrappable, public RefCounted<FileList> {
+class FileList : public RefCountedWillBeGarbageCollectedFinalized<FileList>, public ScriptWrappable {
 public:
-    static PassRefPtr<FileList> create()
+    static PassRefPtrWillBeRawPtr<FileList> create()
     {
-        return adoptRef(new FileList);
+        return adoptRefWillBeNoop(new FileList);
     }
 
     unsigned length() const { return m_files.size(); }
@@ -47,13 +48,15 @@ public:
 
     bool isEmpty() const { return m_files.isEmpty(); }
     void clear() { m_files.clear(); }
-    void append(PassRefPtr<File> file) { m_files.append(file); }
+    void append(PassRefPtrWillBeRawPtr<File> file) { m_files.append(file); }
     Vector<String> paths() const;
+
+    void trace(Visitor*);
 
 private:
     FileList();
 
-    Vector<RefPtr<File> > m_files;
+    WillBeHeapVector<RefPtrWillBeMember<File> > m_files;
 };
 
 } // namespace WebCore

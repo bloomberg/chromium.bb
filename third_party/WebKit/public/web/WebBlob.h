@@ -37,6 +37,10 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
+#if BLINK_IMPLEMENTATION
+#include "heap/Handle.h"
+#endif
+
 namespace v8 {
 class Value;
 template <class T> class Handle;
@@ -70,9 +74,8 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value>  toV8Value();
 
 #if BLINK_IMPLEMENTATION
-    WebBlob(const WTF::PassRefPtr<WebCore::Blob>&);
-    WebBlob& operator=(const WTF::PassRefPtr<WebCore::Blob>&);
-    operator WTF::PassRefPtr<WebCore::Blob>() const;
+    explicit WebBlob(const PassRefPtrWillBeRawPtr<WebCore::Blob>&);
+    WebBlob& operator=(const PassRefPtrWillBeRawPtr<WebCore::Blob>&);
 #endif
 
 protected:

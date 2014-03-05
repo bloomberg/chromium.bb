@@ -32,6 +32,7 @@
 #include "core/dom/DOMStringList.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
+#include "heap/Handle.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBObjectStore.h"
@@ -83,7 +84,7 @@ public:
 
     // IDBDatabaseCallbacks
     void onVersionChange(int64_t oldVersion, int64_t newVersion);
-    void onAbort(int64_t, PassRefPtr<DOMError>);
+    void onAbort(int64_t, PassRefPtrWillBeRawPtr<DOMError>);
     void onComplete(int64_t);
 
     // ActiveDOMObject

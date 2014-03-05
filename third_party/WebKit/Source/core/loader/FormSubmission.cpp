@@ -42,6 +42,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "heap/Handle.h"
 #include "platform/network/FormData.h"
 #include "platform/network/FormDataBuilder.h"
 #include "wtf/CurrentTime.h"
@@ -208,7 +209,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
         }
     }
     WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.inputEncoding(), document.defaultCharset());
-    RefPtr<DOMFormData> domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
+    RefPtrWillBeRawPtr<DOMFormData> domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
     Vector<pair<String, String> > formValues;
 
     bool containsPasswordData = false;

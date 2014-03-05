@@ -99,7 +99,7 @@ WebVector<WebDragData::Item> WebDragData::items() const
                 item.binaryData = originalItem->sharedBuffer();
             } else if (originalItem->isFilename()) {
                 item.storageType = Item::StorageTypeFilename;
-                RefPtr<WebCore::Blob> blob = originalItem->getAsFile();
+                RefPtrWillBeRawPtr<WebCore::Blob> blob = originalItem->getAsFile();
                 if (blob->isFile()) {
                     File* file = toFile(blob.get());
                     item.filenameData = file->path();

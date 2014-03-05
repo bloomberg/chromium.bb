@@ -69,7 +69,7 @@ public:
     {
         return adoptRef(new MessageEvent(data, origin));
     }
-    static PassRefPtr<MessageEvent> create(PassRefPtr<Blob> data, const String& origin = String())
+    static PassRefPtr<MessageEvent> create(PassRefPtrWillBeRawPtr<Blob> data, const String& origin = String())
     {
         return adoptRef(new MessageEvent(data, origin));
     }
@@ -123,13 +123,13 @@ private:
     MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>);
 
     explicit MessageEvent(const String& data, const String& origin);
-    explicit MessageEvent(PassRefPtr<Blob> data, const String& origin);
+    explicit MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& origin);
     explicit MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin);
 
     DataType m_dataType;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
-    RefPtr<Blob> m_dataAsBlob;
+    RefPtrWillBePersistent<Blob> m_dataAsBlob;
     RefPtr<ArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;

@@ -50,4 +50,9 @@ Vector<String> FileList::paths() const
     return paths;
 }
 
+void FileList::trace(Visitor* visitor)
+{
+    visitor->trace(m_files);
+}
+
 } // namespace WebCore
