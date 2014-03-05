@@ -293,6 +293,9 @@ def main():
   if args:
     parser.error('Unknown options %s' % args)
 
+  # Remove the last builds "bad devices" before checking device statuses.
+  android_commands.ResetBadDevices()
+
   if options.restart_usb:
     expected_devices = GetLastDevices(os.path.abspath(options.out_dir))
     devices = android_commands.GetAttachedDevices()

@@ -10,6 +10,7 @@ Assumes adb binary is currently on system path.
 import collections
 import datetime
 import inspect
+import json
 import logging
 import os
 import re
@@ -77,6 +78,29 @@ def GetAVDs():
   return avds
 
 
+def ResetBadDevices():
+  """Removes the file that keeps track of bad devices for a current build."""
+  if os.path.exists(constants.BAD_DEVICES_JSON):
+    os.remove(constants.BAD_DEVICES_JSON)
+
+
+def ExtendBadDevices(devices):
+  """Adds devices to BAD_DEVICES_JSON file.
+
+  The devices listed in the BAD_DEVICES_JSON file will not be returned by
+  GetAttachedDevices.
+
+  Args:
+    devices: list of bad devices to be added to the BAD_DEVICES_JSON file.
+  """
+  if os.path.exists(constants.BAD_DEVICES_JSON):
+    with open(constants.BAD_DEVICES_JSON, 'r') as f:
+      bad_devices = json.load(f)
+    devices.extend(bad_devices)
+  with open(constants.BAD_DEVICES_JSON, 'w') as f:
+    json.dump(list(set(devices)), f)
+
+
 def GetAttachedDevices(hardware=True, emulator=True, offline=False):
   """Returns a list of attached, android devices and emulators.
 
@@ -123,6 +147,13 @@ def GetAttachedDevices(hardware=True, emulator=True, offline=False):
   # Now add offline devices if offline is true
   if offline:
     devices = devices + offline_devices
+
+  # Remove bad devices listed in the bad_devices json file.
+  if os.path.exists(constants.BAD_DEVICES_JSON):
+    with open(constants.BAD_DEVICES_JSON, 'r') as f:
+      bad_devices = json.load(f)
+    logging.info('Avoiding bad devices %s', ' '.join(bad_devices))
+    devices = [device for device in devices if device not in bad_devices]
 
   preferred_device = os.environ.get('ANDROID_SERIAL')
   if preferred_device in devices:

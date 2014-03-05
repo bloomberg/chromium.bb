@@ -138,6 +138,10 @@ EMULATOR_SDK_ROOT = os.environ.get('ANDROID_EMULATOR_SDK_ROOT',
                                    os.path.join(DIR_SOURCE_ROOT,
                                                 'android_emulator_sdk'))
 
+BAD_DEVICES_JSON = os.path.join(DIR_SOURCE_ROOT,
+                                os.environ.get('CHROMIUM_OUT_DIR', 'out'),
+                                'bad_devices.json')
+
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
 
