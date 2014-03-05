@@ -41,7 +41,7 @@ bool DecodeAudioFileData(
 
   size_t number_of_channels = reader.channels();
   double file_sample_rate = reader.sample_rate();
-  size_t number_of_frames = static_cast<size_t>(reader.number_of_frames());
+  size_t number_of_frames = static_cast<size_t>(reader.GetNumberOfFrames());
 
   // Apply sanity checks to make sure crazy values aren't coming out of
   // FFmpeg.

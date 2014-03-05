@@ -4,6 +4,8 @@
 
 #include "media/filters/audio_file_reader.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -23,21 +25,6 @@ AudioFileReader::AudioFileReader(FFmpegURLProtocol* protocol)
 
 AudioFileReader::~AudioFileReader() {
   Close();
-}
-
-base::TimeDelta AudioFileReader::duration() const {
-  const AVRational av_time_base = {1, AV_TIME_BASE};
-
-  // Add one microsecond to avoid rounding-down errors which can occur when
-  // |duration| has been calculated from an exact number of sample-frames.
-  // One microsecond is much less than the time of a single sample-frame
-  // at any real-world sample-rate.
-  return ConvertFromTimeBase(
-      av_time_base, glue_->format_context()->duration + 1);
-}
-
-int64 AudioFileReader::number_of_frames() const {
-  return static_cast<int64>(duration().InSecondsF() * sample_rate());
 }
 
 bool AudioFileReader::Open() {
@@ -201,8 +188,10 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
       }
 
       // Truncate, if necessary, if the destination isn't big enough.
-      if (current_frame + frames_read > audio_bus->frames())
+      if (current_frame + frames_read > audio_bus->frames()) {
+        DLOG(ERROR) << "Truncating decoded data due to output size.";
         frames_read = audio_bus->frames() - current_frame;
+      }
 
       // Deinterleave each channel and convert to 32bit floating-point with
       // nominal range -1.0 -> +1.0.  If the output is already in float planar
@@ -239,6 +228,21 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
   // Returns the actual number of sample-frames decoded.
   // Ideally this represents the "true" exact length of the file.
   return current_frame;
+}
+
+base::TimeDelta AudioFileReader::GetDuration() const {
+  const AVRational av_time_base = {1, AV_TIME_BASE};
+
+  // Add one microsecond to avoid rounding-down errors which can occur when
+  // |duration| has been calculated from an exact number of sample-frames.
+  // One microsecond is much less than the time of a single sample-frame
+  // at any real-world sample-rate.
+  return ConvertFromTimeBase(av_time_base,
+                             glue_->format_context()->duration + 1);
+}
+
+int AudioFileReader::GetNumberOfFrames() const {
+  return static_cast<int>(ceil(GetDuration().InSecondsF() * sample_rate()));
 }
 
 }  // namespace media
