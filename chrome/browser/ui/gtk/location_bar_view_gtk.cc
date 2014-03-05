@@ -1025,15 +1025,15 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
               IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_RIGHT).
           RenderToWidget(widget);
     } else {
-      NineBox(IDR_OMNIBOX_BORDER_AND_SHADOW_TOP_LEFT,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_TOP,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_TOP_RIGHT,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_LEFT,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_CENTER,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_RIGHT,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_LEFT,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM,
-              IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_RIGHT).
+      NineBox(IDR_TEXTFIELD_TOP_LEFT,
+              IDR_TEXTFIELD_TOP,
+              IDR_TEXTFIELD_TOP_RIGHT,
+              IDR_TEXTFIELD_LEFT,
+              IDR_TEXTFIELD_CENTER,
+              IDR_TEXTFIELD_RIGHT,
+              IDR_TEXTFIELD_BOTTOM_LEFT,
+              IDR_TEXTFIELD_BOTTOM,
+              IDR_TEXTFIELD_BOTTOM_RIGHT).
           RenderToWidget(widget);
     }
   }

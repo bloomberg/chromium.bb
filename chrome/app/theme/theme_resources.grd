@@ -516,15 +516,6 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_ICON" file="common/notification_welcome_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_LEARN_MORE" file="common/notification_welcome_learn_more.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFIER_BLOCK_BUTTON" file="common/block_notifier.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM" file="common/omnibox_border_and_shadow_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_LEFT" file="common/omnibox_border_and_shadow_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_RIGHT" file="common/omnibox_border_and_shadow_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_CENTER" file="common/omnibox_border_and_shadow_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_LEFT" file="common/omnibox_border_and_shadow_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_RIGHT" file="common/omnibox_border_and_shadow_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_TOP" file="common/omnibox_border_and_shadow_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_TOP_LEFT" file="common/omnibox_border_and_shadow_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_TOP_RIGHT" file="common/omnibox_border_and_shadow_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM" file="common/omnibox_content_setting_bubble_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_LEFT" file="common/omnibox_content_setting_bubble_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_RIGHT" file="common/omnibox_content_setting_bubble_bottom_right.png" />
@@ -880,7 +871,7 @@
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP" file="screen_capture_notification_grip.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREENSHOT_NOTIFICATION_ICON" file="common/notification_screenshot_icon.png" />
-      <if expr="chromeos"> 
+      <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_SECONDARY_USER_SETTINGS" file="cros/secondary_user_settings.png" />
       </if>
       <if expr="enable_settings_app">
@@ -1132,6 +1123,15 @@
         <structure type="chrome_scaled_image" name="IDR_TEMPORARY_GOOGLE_PLUS_ICON" file="google_chrome/ic_gplus_color_16.png" />
       </if>
 
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM" file="common/textfield_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_LEFT" file="common/textfield_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_BOTTOM_RIGHT" file="common/textfield_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_CENTER" file="common/textfield_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_LEFT" file="common/textfield_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_RIGHT" file="common/textfield_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP" file="common/textfield_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP_LEFT" file="common/textfield_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTFIELD_TOP_RIGHT" file="common/textfield_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" />
       <if expr="not use_ash">
         <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="theme_frame.png" />

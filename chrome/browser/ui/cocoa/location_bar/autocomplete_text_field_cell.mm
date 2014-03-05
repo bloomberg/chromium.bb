@@ -40,8 +40,7 @@ NSString* const kButtonDecorationKey = @"ButtonDecoration";
 const ui::NinePartImageIds kPopupBorderImageIds =
     IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
 
-const ui::NinePartImageIds kNormalBorderImageIds =
-    IMAGE_GRID(IDR_OMNIBOX_BORDER_AND_SHADOW);
+const ui::NinePartImageIds kNormalBorderImageIds = IMAGE_GRID(IDR_TEXTFIELD);
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.

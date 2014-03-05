@@ -156,8 +156,7 @@ FindBarView::FindBarView(FindBarHost* host)
 
   preferred_height_ = rb.GetImageSkiaNamed(IDR_FIND_DIALOG_MIDDLE)->height();
 
-  // Use the Omnibox border images for the textfield border.
-  static const int kImages[] = IMAGE_GRID(IDR_OMNIBOX_BORDER_AND_SHADOW);
+  static const int kImages[] = IMAGE_GRID(IDR_TEXTFIELD);
   find_text_border_.reset(views::Painter::CreateImageGridPainter(kImages));
 
   EnableCanvasFlippingForRTLUI(true);
