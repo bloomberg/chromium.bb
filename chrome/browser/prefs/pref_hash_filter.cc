@@ -17,21 +17,16 @@
 
 PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,
-    const TrackedPreferenceMetadata tracked_preferences[],
-    size_t tracked_preferences_size,
+    const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
     size_t reporting_ids_count,
-    EnforcementLevel enforcement_level,
     const base::Closure& reset_callback)
         : pref_hash_store_(pref_hash_store.Pass()),
           reset_callback_(reset_callback) {
   DCHECK(pref_hash_store_);
-  DCHECK_GE(reporting_ids_count, tracked_preferences_size);
+  DCHECK_GE(reporting_ids_count, tracked_preferences.size());
 
-  for (size_t i = 0; i < tracked_preferences_size; ++i) {
+  for (size_t i = 0; i < tracked_preferences.size(); ++i) {
     const TrackedPreferenceMetadata& metadata = tracked_preferences[i];
-
-    EnforcementLevel enforcement_level_for_pref =
-        std::min(enforcement_level, metadata.max_enforcement_level);
 
     scoped_ptr<TrackedPreference> tracked_preference;
     switch (metadata.strategy) {
@@ -39,13 +34,13 @@ PrefHashFilter::PrefHashFilter(
         tracked_preference.reset(
             new TrackedAtomicPreference(metadata.name, metadata.reporting_id,
                                         reporting_ids_count,
-                                        enforcement_level_for_pref));
+                                        metadata.enforcement_level));
         break;
       case TRACKING_STRATEGY_SPLIT:
         tracked_preference.reset(
             new TrackedSplitPreference(metadata.name, metadata.reporting_id,
                                        reporting_ids_count,
-                                       enforcement_level_for_pref));
+                                       metadata.enforcement_level));
         break;
     }
     DCHECK(tracked_preference);

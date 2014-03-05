@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -47,24 +48,20 @@ class PrefHashFilter : public PrefFilter {
   struct TrackedPreferenceMetadata {
     size_t reporting_id;
     const char* name;
-    // This preference will not be enforced above this level no matter what the
-    // |enforcement_level| is set to.
-    EnforcementLevel max_enforcement_level;
+    EnforcementLevel enforcement_level;
     PrefTrackingStrategy strategy;
   };
 
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
   // using |pref_hash_store| to check/store hashes.
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
-  // than |tracked_preferences_size|). |enforcement_level| determines when this
-  // filter will enforce factory defaults upon detecting an untrusted preference
-  // value. |reset_callback| is called when a reset event occurs.
-  PrefHashFilter(scoped_ptr<PrefHashStore> pref_hash_store,
-                 const TrackedPreferenceMetadata tracked_preferences[],
-                 size_t tracked_preferences_size,
-                 size_t reporting_ids_count,
-                 EnforcementLevel enforcement_level,
-                 const base::Closure& reset_callback);
+  // than |tracked_preferences.size()|). |reset_callback| is called when a reset
+  // event occurs.
+  PrefHashFilter(
+      scoped_ptr<PrefHashStore> pref_hash_store,
+      const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
+      size_t reporting_ids_count,
+      const base::Closure& reset_callback);
 
   virtual ~PrefHashFilter();
 

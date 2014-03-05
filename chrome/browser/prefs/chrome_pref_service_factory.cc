@@ -4,6 +4,9 @@
 
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
@@ -219,6 +222,25 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
   return enforcement_group;
 }
 
+// Returns the effective preference tracking configuration.
+std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+GetTrackingConfiguration() {
+  const PrefHashFilter::EnforcementLevel maximum_level =
+      GetSettingsEnforcementGroup() == GROUP_NO_ENFORCEMENT
+          ? PrefHashFilter::NO_ENFORCEMENT
+          : PrefHashFilter::ENFORCE_ON_LOAD;
+
+  std::vector<PrefHashFilter::TrackedPreferenceMetadata> result;
+  for (size_t i = 0; i < arraysize(kTrackedPrefs); ++i) {
+    PrefHashFilter::TrackedPreferenceMetadata data = kTrackedPrefs[i];
+    if (data.enforcement_level > maximum_level)
+      data.enforcement_level = maximum_level;
+    result.push_back(data);
+  }
+  return result;
+}
+
+
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
   // Sample the histogram also for the successful case in order to get a
@@ -296,14 +318,9 @@ void HandleResetEvent() {
 
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store) {
-  const PrefHashFilter::EnforcementLevel enforcement_level =
-      GetSettingsEnforcementGroup() == GROUP_NO_ENFORCEMENT ?
-          PrefHashFilter::NO_ENFORCEMENT : PrefHashFilter::ENFORCE_ON_LOAD;
   return make_scoped_ptr(new PrefHashFilter(pref_hash_store.Pass(),
-                                            kTrackedPrefs,
-                                            arraysize(kTrackedPrefs),
+                                            GetTrackingConfiguration(),
                                             kTrackedPrefsReportingIDsCount,
-                                            enforcement_level,
                                             base::Bind(&HandleResetEvent)));
 }
 

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -288,17 +289,26 @@ void MockPrefHashStore::MockPrefHashStoreTransaction::StoreSplitHash(
 // MockPrefHashStore (owned by the PrefHashFilter) is returned in
 // |mock_pref_hash_store|.
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
-    PrefHashFilter::EnforcementLevel enforcement_level,
+    PrefHashFilter::EnforcementLevel max_enforcement_level,
     MockPrefHashStore** mock_pref_hash_store,
     const base::Closure& reset_callback) {
   scoped_ptr<MockPrefHashStore> temp_mock_pref_hash_store(
       new MockPrefHashStore);
   if (mock_pref_hash_store)
     *mock_pref_hash_store = temp_mock_pref_hash_store.get();
+  std::vector<PrefHashFilter::TrackedPreferenceMetadata> configuration(
+      kTestTrackedPrefs, kTestTrackedPrefs + arraysize(kTestTrackedPrefs));
+  for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::iterator it =
+           configuration.begin();
+       it != configuration.end();
+       ++it) {
+    if (it->enforcement_level > max_enforcement_level)
+      it->enforcement_level = max_enforcement_level;
+  }
   return scoped_ptr<PrefHashFilter>(
       new PrefHashFilter(temp_mock_pref_hash_store.PassAs<PrefHashStore>(),
-                         kTestTrackedPrefs, arraysize(kTestTrackedPrefs),
-                         arraysize(kTestTrackedPrefs), enforcement_level,
+                         configuration,
+                         arraysize(kTestTrackedPrefs),
                          reset_callback));
 }
 
