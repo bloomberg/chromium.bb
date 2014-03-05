@@ -30,14 +30,11 @@ bool TestLicenseServer::Start() {
     return false;
   }
 
-  base::FilePath license_server_path;
-  server_config_->GetLicenseServerPath(&license_server_path);
-  if (!base::PathExists(license_server_path)) {
-    VLOG(0) << "Missing license server file at " << license_server_path.value();
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  if (!server_config_->GetServerCommandLine(&command_line)) {
+    VLOG(0) << "Could not get server command line to launch.";
     return false;
   }
-  CommandLine command_line(license_server_path);
-  server_config_->AppendCommandLineArgs(&command_line);
 
   VLOG(0) << "Starting test license server " <<
       command_line.GetCommandLineString();

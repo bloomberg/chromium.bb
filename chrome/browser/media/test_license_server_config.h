@@ -25,11 +25,9 @@ class TestLicenseServerConfig {
   // http://localhost:8888/license_server
   virtual std::string GetServerURL() = 0;
 
-  // Retrieves the path for the license server binaries.
-  virtual void GetLicenseServerPath(base::FilePath* path) = 0;
-
-  // Appends any necessary server command line arguments.
-  virtual void AppendCommandLineArgs(CommandLine* command_line) {}
+  // Returns true if it successfully sets the command line to run the license
+  // server with needed args and switches.
+  virtual bool GetServerCommandLine(CommandLine* command_line) = 0;
 
   // Returns true if the server is supported on current platform.
   virtual bool IsPlatformSupported() = 0;
