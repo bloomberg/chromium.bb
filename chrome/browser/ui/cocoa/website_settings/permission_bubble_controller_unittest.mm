@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 @interface PermissionBubbleController (ExposedForTesting)
@@ -23,10 +25,6 @@
 @end
 
 namespace {
-const char* const kOKButtonLabel = "OK";
-const char* const kAllowButtonLabel = "Allow";
-const char* const kBlockButtonLabel = "Block";
-const char* const kCustomizeLabel = "Customize";
 const char* const kPermissionA = "Permission A";
 const char* const kPermissionB = "Permission B";
 const char* const kPermissionC = "Permission C";
@@ -65,9 +63,16 @@ class PermissionBubbleControllerTest : public CocoaTest,
     EXPECT_CALL(*request, GetMessageTextFragment()).Times(1);
   }
 
-  NSButton* FindButtonWithTitle(const std::string& text) {
+  NSButton* FindButtonWithTitle(const std::string& title) {
+    return FindButtonWithTitle(base::SysUTF8ToNSString(title));
+  }
+
+  NSButton* FindButtonWithTitle(int title_id) {
+    return FindButtonWithTitle(l10n_util::GetNSString(title_id));
+  }
+
+  NSButton* FindButtonWithTitle(NSString* title) {
     NSView* parent = base::mac::ObjCCastStrict<NSView>([controller_ bubble]);
-    NSString* title = base::SysUTF8ToNSString(text);
     for (NSView* child in [parent subviews]) {
       NSButton* button = base::mac::ObjCCast<NSButton>(child);
       if ([title isEqualToString:[button title]]) {
@@ -112,10 +117,10 @@ TEST_F(PermissionBubbleControllerTest, ShowSinglePermission) {
          customizationMode:NO];
 
   EXPECT_TRUE(FindTextFieldWithString(kPermissionA));
-  EXPECT_TRUE(FindButtonWithTitle(kAllowButtonLabel));
-  EXPECT_TRUE(FindButtonWithTitle(kBlockButtonLabel));
-  EXPECT_FALSE(FindButtonWithTitle(kOKButtonLabel));
-  EXPECT_FALSE(FindButtonWithTitle(kCustomizeLabel));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_DENY));
+  EXPECT_FALSE(FindButtonWithTitle(IDS_OK));
+  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_CUSTOMIZE));
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissions) {
@@ -133,10 +138,10 @@ TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissions) {
   EXPECT_TRUE(FindTextFieldWithString(kPermissionB));
   EXPECT_TRUE(FindTextFieldWithString(kPermissionC));
 
-  EXPECT_TRUE(FindButtonWithTitle(kAllowButtonLabel));
-  EXPECT_TRUE(FindButtonWithTitle(kBlockButtonLabel));
-  EXPECT_TRUE(FindButtonWithTitle(kCustomizeLabel));
-  EXPECT_FALSE(FindButtonWithTitle(kOKButtonLabel));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_DENY));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_CUSTOMIZE));
+  EXPECT_FALSE(FindButtonWithTitle(IDS_OK));
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowCustomizationMode) {
@@ -160,10 +165,10 @@ TEST_F(PermissionBubbleControllerTest, ShowCustomizationMode) {
   EXPECT_EQ(NSOnState, [checkbox_a state]);
   EXPECT_EQ(NSOffState, [checkbox_b state]);
 
-  EXPECT_TRUE(FindButtonWithTitle(kOKButtonLabel));
-  EXPECT_FALSE(FindButtonWithTitle(kAllowButtonLabel));
-  EXPECT_FALSE(FindButtonWithTitle(kBlockButtonLabel));
-  EXPECT_FALSE(FindButtonWithTitle(kCustomizeLabel));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_OK));
+  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
+  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_DENY));
+  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_CUSTOMIZE));
 }
 
 TEST_F(PermissionBubbleControllerTest, OK) {
@@ -174,7 +179,7 @@ TEST_F(PermissionBubbleControllerTest, OK) {
          customizationMode:YES];
 
   EXPECT_CALL(*this, Closing()).Times(1);
-  [FindButtonWithTitle(kOKButtonLabel) performClick:nil];
+  [FindButtonWithTitle(IDS_OK) performClick:nil];
 }
 
 TEST_F(PermissionBubbleControllerTest, Allow) {
@@ -185,7 +190,7 @@ TEST_F(PermissionBubbleControllerTest, Allow) {
          customizationMode:NO];
 
   EXPECT_CALL(*this, Accept()).Times(1);
-  [FindButtonWithTitle(kAllowButtonLabel) performClick:nil];
+  [FindButtonWithTitle(IDS_PERMISSION_ALLOW) performClick:nil];
 }
 
 TEST_F(PermissionBubbleControllerTest, Deny) {
@@ -196,7 +201,7 @@ TEST_F(PermissionBubbleControllerTest, Deny) {
          customizationMode:NO];
 
   EXPECT_CALL(*this, Deny()).Times(1);
-  [FindButtonWithTitle(kBlockButtonLabel) performClick:nil];
+  [FindButtonWithTitle(IDS_PERMISSION_DENY) performClick:nil];
 }
 
 TEST_F(PermissionBubbleControllerTest, ToggleCheckbox) {
@@ -226,5 +231,5 @@ TEST_F(PermissionBubbleControllerTest, ClickCustomize) {
          customizationMode:NO];
 
   EXPECT_CALL(*this, SetCustomizationMode()).Times(1);
-  [FindButtonWithTitle(kCustomizeLabel) performClick:nil];
+  [FindButtonWithTitle(IDS_PERMISSION_CUSTOMIZE) performClick:nil];
 }

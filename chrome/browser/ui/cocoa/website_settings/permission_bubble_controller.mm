@@ -100,11 +100,13 @@ const base::char16 kBulletPoint = 0x2022;
   // Create one button to use as a guide for the permissions' y-offsets.
   base::scoped_nsobject<NSView> allowOrOkButton;
   if (customizationMode) {
-    allowOrOkButton.reset([[self buttonWithTitle:@"OK"
+    NSString* okTitle = l10n_util::GetNSString(IDS_OK);
+    allowOrOkButton.reset([[self buttonWithTitle:okTitle
                                           action:@selector(ok:)
                                       pairedWith:nil] retain]);
   } else {
-    allowOrOkButton.reset([[self buttonWithTitle:@"Allow"
+    NSString* allowTitle = l10n_util::GetNSString(IDS_PERMISSION_ALLOW);
+    allowOrOkButton.reset([[self buttonWithTitle:allowTitle
                                           action:@selector(onAllow:)
                                       pairedWith:nil] retain]);
   }
@@ -150,8 +152,9 @@ const base::char16 kBulletPoint = 0x2022;
   [contentView addSubview:allowOrOkButton];
 
   if (!customizationMode) {
+    NSString* blockTitle = l10n_util::GetNSString(IDS_PERMISSION_DENY);
     base::scoped_nsobject<NSView> blockButton(
-        [[self buttonWithTitle:@"Block"
+        [[self buttonWithTitle:blockTitle
                         action:@selector(onBlock:)
                     pairedWith:allowOrOkButton] retain]);
     xOrigin = NSMinX([allowOrOkButton frame]) - NSWidth([blockButton frame]) -
@@ -222,7 +225,8 @@ const base::char16 kBulletPoint = 0x2022;
   [titleView setBezeled:NO];
   [titleView setEditable:NO];
   [titleView setSelectable:NO];
-  [titleView setStringValue:@"This site would like to:"];
+  [titleView setStringValue:
+      l10n_util::GetNSString(IDS_PERMISSIONS_BUBBLE_PROMPT)];
   [titleView setFont:[NSFont systemFontOfSize:kFontSize]];
   [titleView sizeToFit];
   return titleView.autorelease();
@@ -251,7 +255,7 @@ const base::char16 kBulletPoint = 0x2022;
       [[NSButton alloc] initWithFrame:NSZeroRect]);
   [customizeButton setButtonType:NSMomentaryChangeButton];
   [customizeButton setAttributedTitle:[[NSAttributedString alloc]
-      initWithString:@"Customize"
+      initWithString:l10n_util::GetNSString(IDS_PERMISSION_CUSTOMIZE)
           attributes:@{ NSForegroundColorAttributeName : linkColor }]];
   [customizeButton setTarget:self];
   [customizeButton setAction:@selector(onCustomize:)];
