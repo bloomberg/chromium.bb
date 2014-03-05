@@ -12,8 +12,13 @@ class ContentSettings(dict):
 
   def __init__(self, table, adb):
     super(ContentSettings, self).__init__()
-    assert adb.system_properties['ro.build.version.sdk'] >= 16, (
-        'ContentSettings supported only on SDK 16 and later')
+    try:
+      sdk_version = int(adb.system_properties['ro.build.version.sdk'])
+      assert sdk_version >= 16, (
+          'ContentSettings supported only on SDK 16 and later')
+    except ValueError:
+      assert False, ('Unknown SDK version %s' %
+          adb.system_properties['ro.build.version.sdk'])
     self._table = table
     self._adb = adb
 
