@@ -204,7 +204,8 @@ class Dispatcher : public content::RenderProcessObserver {
   void UpdateActiveExtensions();
 
   // Sets up the host permissions for |extension|.
-  void InitOriginPermissions(const Extension* extension);
+  void InitOriginPermissions(const Extension* extension,
+                             Feature::Context context_type);
   void AddOrRemoveOriginPermissions(
       UpdatedExtensionPermissionsInfo::Reason reason,
       const Extension* extension,

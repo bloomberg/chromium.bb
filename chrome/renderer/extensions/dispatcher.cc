@@ -530,7 +530,6 @@ void Dispatcher::WebKitInitialized() {
        iter != active_extension_ids_.end(); ++iter) {
     const Extension* extension = extensions_.GetByID(*iter);
     CHECK(extension);
-    InitOriginPermissions(extension);
   }
 
   EnableCustomElementWhiteList();
@@ -1135,6 +1134,9 @@ void Dispatcher::DidCreateScriptContext(
       new ChromeV8Context(v8_context, frame, extension, context_type);
   v8_context_set_.Add(context);
 
+  if (extension)
+    InitOriginPermissions(extension, context_type);
+
   {
     scoped_ptr<ModuleSystem> module_system(new ModuleSystem(context,
                                                             &source_map_));
@@ -1345,17 +1347,18 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   UpdateActiveExtensions();
 
   if (is_webkit_initialized_) {
-    InitOriginPermissions(extension);
     DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
                                      extension_id);
   }
 }
 
-void Dispatcher::InitOriginPermissions(const Extension* extension) {
+void Dispatcher::InitOriginPermissions(const Extension* extension,
+                                       Feature::Context context_type) {
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
-  if (extension->HasAPIPermission(APIPermission::kManagement)) {
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
+      extension->HasAPIPermission(APIPermission::kManagement)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
         WebString::fromUTF8(content::kChromeUIScheme),
@@ -1366,7 +1369,7 @@ void Dispatcher::InitOriginPermissions(const Extension* extension) {
   AddOrRemoveOriginPermissions(
       UpdatedExtensionPermissionsInfo::ADDED,
       extension,
-      extension->GetActivePermissions()->explicit_hosts());
+      PermissionsData::GetEffectiveHostPermissions(extension));
 }
 
 void Dispatcher::AddOrRemoveOriginPermissions(

@@ -76,7 +76,6 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
   // This map will tend to pile up over time, but realistically, you're never
   // going to have enough extensions for it to matter.
   isolated_world_ids_[extension->id()] = new_id;
-  InitializeIsolatedWorld(new_id, extension);
   frame->setIsolatedWorldSecurityOrigin(
       new_id,
       WebSecurityOrigin::create(extension->url()));
@@ -94,31 +93,6 @@ std::string UserScriptSlave::GetExtensionIdForIsolatedWorld(
       return iter->first;
   }
   return std::string();
-}
-
-// static
-void UserScriptSlave::InitializeIsolatedWorld(int isolated_world_id,
-                                              const Extension* extension) {
-  const URLPatternSet& permissions =
-      PermissionsData::GetEffectiveHostPermissions(extension);
-  for (URLPatternSet::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i) {
-    const char* schemes[] = {
-      content::kHttpScheme,
-      content::kHttpsScheme,
-      content::kFileScheme,
-      content::kChromeUIScheme,
-    };
-    for (size_t j = 0; j < arraysize(schemes); ++j) {
-      if (i->MatchesScheme(schemes[j])) {
-        WebSecurityPolicy::addOriginAccessWhitelistEntry(
-            extension->url(),
-            WebString::fromUTF8(schemes[j]),
-            WebString::fromUTF8(i->host()),
-            i->match_subdomains());
-      }
-    }
-  }
 }
 
 void UserScriptSlave::RemoveIsolatedWorld(const std::string& extension_id) {

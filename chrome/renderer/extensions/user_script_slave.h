@@ -64,9 +64,6 @@ class UserScriptSlave {
   void RemoveIsolatedWorld(const std::string& extension_id);
 
  private:
-  static void InitializeIsolatedWorld(int isolated_world_id,
-                                      const Extension* extension);
-
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;
 
