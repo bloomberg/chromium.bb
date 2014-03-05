@@ -349,7 +349,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
   // There is only 1 active tab at a time.
   // It has a different fill color which draws over the separator line.
-  if ([controller_ active]) {
+  if (state_ == NSOnState) {
     [self drawFillForActiveTab:dirtyRect];
     return;
   }
@@ -362,7 +362,7 @@ const CGFloat kRapidCloseDist = 2.5;
   // There can be multiple selected tabs.
   // They have the same fill color as the active tab, but do not draw over
   // the separator.
-  if ([controller_ selected]) {
+  if (state_ == NSMixedState) {
     [self drawFillForActiveTab:dirtyRect];
     return;
   }
@@ -432,7 +432,7 @@ const CGFloat kRapidCloseDist = 2.5;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   float height =
       [rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT).ToNSImage() size].height;
-  if ([controller_ active]) {
+  if (state_ == NSOnState) {
     NSDrawThreePartImage(NSMakeRect(0, 0, NSWidth([self bounds]), height),
         rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT).ToNSImage(),
         rb.GetNativeImageNamed(IDR_TAB_ACTIVE_CENTER).ToNSImage(),

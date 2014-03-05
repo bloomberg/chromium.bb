@@ -140,10 +140,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // a re-draw.
 - (void)internalSetSelected:(BOOL)selected {
   TabView* tabView = [self tabView];
-  DCHECK([tabView isKindOfClass:[TabView class]]);
-  [tabView setState:selected];
-  if ([self active])
+  if ([self active]) {
+    [tabView setState:NSOnState];
     [tabView cancelAlert];
+  } else {
+    [tabView setState:selected ? NSMixedState : NSOffState];
+  }
   [self updateVisibility];
   [self updateTitleColor];
 }

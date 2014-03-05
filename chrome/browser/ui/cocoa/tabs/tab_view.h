@@ -87,7 +87,12 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 @property(retain, nonatomic) NSColor* titleColor;
 @property(assign, nonatomic) BOOL titleHidden;
 
+// The state affects how the tab will be drawn.
+// NSOnState    -> active
+// NSMixedState -> selected
+// NSOffState   -> none
 @property(assign, nonatomic) NSCellStateValue state;
+
 @property(assign, nonatomic) CGFloat hoverAlpha;
 @property(assign, nonatomic) CGFloat alertAlpha;
 
