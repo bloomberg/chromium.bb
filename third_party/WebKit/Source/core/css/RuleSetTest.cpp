@@ -42,9 +42,9 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements)
     helper.addCSSRules("summary::-webkit-details-marker { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("-webkit-details-marker");
-    const RuleData* ruleData = ruleSet.shadowPseudoElementRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
-    ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().value());
+    const TerminatedArray<RuleData>* rules = ruleSet.shadowPseudoElementRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).selector().value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Id)
@@ -54,9 +54,9 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_Id)
     helper.addCSSRules("#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
-    ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().value());
+    const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).selector().value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild)
@@ -66,9 +66,9 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild)
     helper.addCSSRules("div:nth-child(2) { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("div");
-    const RuleData* ruleData = ruleSet.tagRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
-    ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().tagQName().localName());
+    const TerminatedArray<RuleData>* rules = ruleSet.tagRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).selector().tagQName().localName());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId)
@@ -79,10 +79,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId)
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
     // id is prefered over class even if class preceeds it in the selector.
-    const RuleData* ruleData = ruleSet.idRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
+    const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+    ASSERT_EQ(1u, rules->size());
     AtomicString classStr("class");
-    ASSERT_EQ(classStr, CSSTestHelper::getRule(ruleData, 0).selector().value());
+    ASSERT_EQ(classStr, rules->at(0).selector().value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass)
@@ -92,9 +92,9 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass)
     helper.addCSSRules("#id.class { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
-    ASSERT_EQ(str, CSSTestHelper::getRule(ruleData, 0).selector().value());
+    const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+    ASSERT_EQ(1u, rules->size());
+    ASSERT_EQ(str, rules->at(0).selector().value());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId)
@@ -104,10 +104,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId)
     helper.addCSSRules("[attr]#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
+    const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+    ASSERT_EQ(1u, rules->size());
     AtomicString attrStr("attr");
-    ASSERT_EQ(attrStr, CSSTestHelper::getRule(ruleData, 0).selector().attribute().localName());
+    ASSERT_EQ(attrStr, rules->at(0).selector().attribute().localName());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId)
@@ -117,10 +117,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId)
     helper.addCSSRules("div[attr]#id { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("id");
-    const RuleData* ruleData = ruleSet.idRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
+    const TerminatedArray<RuleData>* rules = ruleSet.idRules(str);
+    ASSERT_EQ(1u, rules->size());
     AtomicString tagStr("div");
-    ASSERT_EQ(tagStr, CSSTestHelper::getRule(ruleData, 0).selector().tagQName().localName());
+    ASSERT_EQ(tagStr, rules->at(0).selector().tagQName().localName());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
@@ -130,10 +130,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
     helper.addCSSRules("div::content { }");
     RuleSet& ruleSet = helper.ruleSet();
     AtomicString str("div");
-    const RuleData* ruleData = ruleSet.tagRules(str);
-    ASSERT_EQ(1, CSSTestHelper::numRules(ruleData));
+    const TerminatedArray<RuleData>* rules = ruleSet.tagRules(str);
+    ASSERT_EQ(1u, rules->size());
     AtomicString valueStr("content");
-    ASSERT_EQ(valueStr, CSSTestHelper::getRule(ruleData, 0).selector().value());
+    ASSERT_EQ(valueStr, rules->at(0).selector().value());
 }
 
 } // namespace WebCore

@@ -43,6 +43,8 @@
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
+#include "wtf/TerminatedArrayBuilder.h"
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -117,76 +119,6 @@ static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRule
             return PropertyWhitelistCue;
     }
     return PropertyWhitelistNone;
-}
-
-namespace {
-
-// FIXME: Should we move this class to WTF?
-template<typename T>
-class TerminatedArrayBuilder {
-public:
-    explicit TerminatedArrayBuilder(PassOwnPtr<T> array)
-        : m_array(array)
-        , m_count(0)
-        , m_capacity(0)
-    {
-        if (!m_array)
-            return;
-        for (T* item = m_array.get(); !item->isLastInArray(); ++item)
-            ++m_count;
-        ++m_count; // To count the last item itself.
-        m_capacity = m_count;
-    }
-
-    void grow(size_t count)
-    {
-        ASSERT(count);
-        if (!m_array) {
-            ASSERT(!m_count);
-            ASSERT(!m_capacity);
-            m_capacity = count;
-            m_array = adoptPtr(static_cast<T*>(fastMalloc(m_capacity * sizeof(T))));
-            return;
-        }
-        m_capacity += count;
-        m_array = adoptPtr(static_cast<T*>(fastRealloc(m_array.leakPtr(), m_capacity * sizeof(T))));
-        m_array.get()[m_count - 1].setLastInArray(false);
-    }
-
-    void append(const T& item)
-    {
-        RELEASE_ASSERT(m_count < m_capacity);
-        ASSERT(!item.isLastInArray());
-        m_array.get()[m_count++] = item;
-    }
-
-    PassOwnPtr<T> release()
-    {
-        RELEASE_ASSERT(m_count == m_capacity);
-        if (m_array)
-            m_array.get()[m_count - 1].setLastInArray(true);
-        assertValid();
-        return m_array.release();
-    }
-
-private:
-#ifndef NDEBUG
-    void assertValid()
-    {
-        for (size_t i = 0; i < m_count; ++i) {
-            bool isLastInArray = (i + 1 == m_count);
-            ASSERT(m_array.get()[i].isLastInArray() == isLastInArray);
-        }
-    }
-#else
-    void assertValid() { }
-#endif
-
-    OwnPtr<T> m_array;
-    size_t m_count;
-    size_t m_capacity;
-};
-
 }
 
 RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, AddRuleFlags addRuleFlags)

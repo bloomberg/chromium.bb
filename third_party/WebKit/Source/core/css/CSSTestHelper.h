@@ -53,10 +53,6 @@ public:
     void addCSSRules(const char* ruleText);
     RuleSet& ruleSet();
 
-    // Returns the number of rules in the given RuleData array.
-    static int numRules(const RuleData*);
-    // Returns the data at index i (must be less than numNules())
-    static const RuleData& getRule(const RuleData*, int index);
 private:
     RefPtr<Document> m_document;
     RefPtr<CSSStyleSheet> m_styleSheet;

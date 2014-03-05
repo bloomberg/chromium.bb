@@ -67,26 +67,4 @@ void CSSTestHelper::addCSSRules(const char* cssText)
     ASSERT_TRUE(m_styleSheet->length() > sheetLength);
 }
 
-int CSSTestHelper::numRules(const RuleData* ruleData)
-{
-    if (!ruleData)
-        return 0;
-    int count = 1;
-    while (!ruleData->isLastInArray()) {
-        ruleData++;
-        count++;
-    }
-    return count;
-}
-
-const RuleData& CSSTestHelper::getRule(const RuleData* ruleData, int index)
-{
-    int count = 0;
-    while (!ruleData->isLastInArray() && count < index) {
-        ruleData++;
-        count++;
-    }
-    return *ruleData;
-}
-
 } // namespace WebCore
