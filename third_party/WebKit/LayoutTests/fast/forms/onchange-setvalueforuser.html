@@ -15,8 +15,8 @@
         }
 
         tf.focus();
-        if (window.testRunner) {
-            testRunner.setValueForUser(tf, 'Hello!');
+        if (window.internals) {
+            internals.setValueForUser(tf, 'Hello!');
         }
 
         // Should not fire the event until focus is lost.

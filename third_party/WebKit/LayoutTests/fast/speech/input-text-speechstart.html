@@ -14,7 +14,7 @@ function startSpeechInput(id) {
     // will be set in input during the generated TextInput event.
     var input = document.getElementById(id);
     input.select();
-    testRunner.startSpeechInput(input);
+    internals.startSpeechInput(input);
 }
 
 function onWebkitSpeechChange() {

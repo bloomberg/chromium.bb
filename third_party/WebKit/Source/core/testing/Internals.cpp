@@ -89,6 +89,8 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/HTMLContentElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
+#include "core/html/shadow/TextControlInnerElements.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorController.h"
@@ -2385,6 +2387,22 @@ void Internals::trace(Visitor* visitor)
 {
     visitor->trace(m_runtimeFlags);
     visitor->trace(m_profilers);
+}
+
+void Internals::startSpeechInput(Element* element)
+{
+    HTMLInputElement* input = toHTMLInputElement(element);
+    if (!input->isSpeechEnabled())
+        return;
+
+    InputFieldSpeechButtonElement* speechButton = toInputFieldSpeechButtonElement(input->userAgentShadowRoot()->getElementById(ShadowElementNames::speechButton()));
+    if (speechButton)
+        speechButton->startSpeechInput();
+}
+
+void Internals::setValueForUser(Element* element, const String& value)
+{
+    toHTMLInputElement(element)->setValueForUser(value);
 }
 
 }
