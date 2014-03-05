@@ -28,7 +28,8 @@ class ImageSkia;
 class AppListService {
  public:
   // Source that triggers the app launcher being enabled. This is used for UMA
-  // to track discoverability of the app lancher shortcut after install.
+  // to track discoverability of the app lancher shortcut after install. Also
+  // used to provide custom install behavior (e.g. "always" enable).
   enum AppListEnableSource {
     ENABLE_NOT_RECORDED,        // Indicates app launcher not recently enabled.
     ENABLE_FOR_APP_INSTALL,     // Triggered by a webstore packaged app install.

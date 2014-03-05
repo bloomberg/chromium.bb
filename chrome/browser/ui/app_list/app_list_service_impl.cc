@@ -328,8 +328,11 @@ void AppListServiceImpl::AutoShowForProfile(Profile* requested_profile) {
 void AppListServiceImpl::EnableAppList(Profile* initial_profile,
                                        AppListEnableSource enable_source) {
   SetProfilePath(initial_profile->GetPath());
-  if (local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled))
+  // Always allow the webstore "enable" button to re-run the install flow.
+  if (enable_source != AppListService::ENABLE_VIA_WEBSTORE_LINK &&
+      local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled)) {
     return;
+  }
 
   local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, true);
   CreateShortcut();
