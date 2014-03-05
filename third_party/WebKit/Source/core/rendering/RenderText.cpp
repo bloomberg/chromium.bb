@@ -692,18 +692,22 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
     rightEdge = max<float>(cb->logicalWidth(), rootRight);
 
     bool rightAligned = false;
-    switch (simplifiedTextAlign(cbStyle->textAlign())) {
+    switch (cbStyle->textAlign()) {
     case RIGHT:
+    case WEBKIT_RIGHT:
         rightAligned = true;
         break;
     case LEFT:
+    case WEBKIT_LEFT:
     case CENTER:
+    case WEBKIT_CENTER:
         break;
     case JUSTIFY:
+    case TASTART:
         rightAligned = !cbStyle->isLeftToRightDirection();
         break;
-    default:
-        ASSERT_NOT_REACHED();
+    case TAEND:
+        rightAligned = cbStyle->isLeftToRightDirection();
         break;
     }
 
