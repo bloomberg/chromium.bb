@@ -16,6 +16,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -64,7 +65,8 @@ void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   wm::WindowState* window_state = wm::GetWindowState(child);
-  window_state->OnWMEvent(wm::WM_EVENT_ADDED_TO_WORKSPACE);
+  wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
+  window_state->OnWMEvent(&event);
   windows_.insert(child);
   child->AddObserver(this);
   window_state->AddObserver(this);
@@ -106,7 +108,8 @@ void WorkspaceLayoutManager::SetChildBounds(
     Window* child,
     const gfx::Rect& requested_bounds) {
   wm::WindowState* window_state = wm::GetWindowState(child);
-  window_state->RequestBounds(requested_bounds);
+  wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, requested_bounds);
+  window_state->OnWMEvent(&event);
   UpdateShelfVisibility();
 }
 
@@ -118,8 +121,8 @@ void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
       window_,
       Shell::GetScreen()->GetDisplayNearestWindow(window_).work_area()));
   if (work_area != work_area_in_parent_) {
-    AdjustAllWindowsBoundsForWorkAreaChange(
-        wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+    const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+    AdjustAllWindowsBoundsForWorkAreaChange(&event);
   }
 }
 
@@ -172,8 +175,8 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {
   if (root_window_ == window) {
-    AdjustAllWindowsBoundsForWorkAreaChange(
-        wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const wm::WMEvent wm_event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    AdjustAllWindowsBoundsForWorkAreaChange(&wm_event);
   }
 }
 
@@ -213,9 +216,9 @@ void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
 // WorkspaceLayoutManager, private:
 
 void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
-    wm::WMEvent event) {
-  DCHECK(event == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
-         event == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+    const wm::WMEvent* event) {
+  DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
+         event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
   work_area_in_parent_ = ScreenUtil::ConvertRectFromScreen(
       window_,
@@ -224,7 +227,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   // Don't do any adjustments of the insets while we are in screen locked mode.
   // This would happen if the launcher was auto hidden before the login screen
   // was shown and then gets shown when the login screen gets presented.
-  if (event == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED &&
+  if (event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED &&
       Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
     return;
 

@@ -620,6 +620,8 @@
         'wm/window_resizer.h',
         'wm/window_util.cc',
         'wm/window_util.h',
+        'wm/wm_event.cc',
+        'wm/wm_event.h',
         'wm/wm_types.cc',
         'wm/wm_types.h',
         'wm/workspace_controller.cc',

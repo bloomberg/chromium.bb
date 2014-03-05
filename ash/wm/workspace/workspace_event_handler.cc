@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -46,7 +47,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
           HTCAPTION) {
         ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
             ash::UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK);
-        target_state->OnWMEvent(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
+        const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
+        target_state->OnWMEvent(&wm_event);
         event->StopPropagation();
       }
       multi_window_resize_controller_.Hide();
@@ -72,8 +74,8 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       // TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP is counted once.
       TouchUMA::GetInstance()->RecordGestureAction(
           TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP);
-      wm::GetWindowState(target)->OnWMEvent(
-          wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
+      const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
+      wm::GetWindowState(target)->OnWMEvent(&wm_event);
       event->StopPropagation();
       return;
     } else {
@@ -94,12 +96,14 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     if (component == HTBOTTOM || component == HTTOP) {
       Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
-      target_state->OnWMEvent(wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE);
+      const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE);
+      target_state->OnWMEvent(&wm_event);
       event->StopPropagation();
     } else if (component == HTLEFT || component == HTRIGHT) {
       Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
-      target_state->OnWMEvent(wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE);
+      const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE);
+      target_state->OnWMEvent(&wm_event);
       event->StopPropagation();
     }
   }

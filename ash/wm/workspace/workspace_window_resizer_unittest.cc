@@ -15,6 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
@@ -677,8 +678,8 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
   window_->SetBounds(kInitialBounds);
   window_->Show();
-
-  window_state->SnapLeftWithDefaultWidth();
+  const wm::WMEvent snap_event(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_event);
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
   EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());
@@ -703,7 +704,8 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
   window_->SetBounds(kInitialBounds);
   window_->Show();
 
-  window_state->SnapLeftWithDefaultWidth();
+  const wm::WMEvent snap_event(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_event);
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
   EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());

@@ -9,6 +9,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
 
 namespace ash {
@@ -35,13 +36,16 @@ void ToggleMaximized() {
   if (!window_state)
     return;
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Maximized"));
-  window_state->OnWMEvent(wm::WM_EVENT_TOGGLE_MAXIMIZE);
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
+  window_state->OnWMEvent(&event);
 }
 
 void ToggleFullscreen() {
   wm::WindowState* window_state = wm::GetActiveWindowState();
-  if (window_state)
-    window_state->ToggleFullscreen();
+  if (window_state) {
+    const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+    window_state->OnWMEvent(&event);
+  }
 }
 
 }  // namespace accelerators

@@ -24,6 +24,7 @@
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "base/command_line.h"
@@ -434,13 +435,14 @@ void WorkspaceWindowResizer::CompleteDrag() {
     }
     if (!dock_layout_->is_dragged_window_docked()) {
       UserMetricsRecorder* metrics = Shell::GetInstance()->metrics();
-      if (snap_type_ == SNAP_LEFT) {
-        metrics->RecordUserMetricsAction(UMA_DRAG_MAXIMIZE_LEFT);
-        window_state()->SnapLeftWithDefaultWidth();
-      } else {
-        metrics->RecordUserMetricsAction(UMA_DRAG_MAXIMIZE_RIGHT);
-        window_state()->SnapRightWithDefaultWidth();
-      }
+      // TODO(oshima): Add event source type to WMEvent and move
+      // metrics recording inside WindowState::OnWMEvent.
+      const wm::WMEvent event(snap_type_ == SNAP_LEFT ?
+                              wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+      window_state()->OnWMEvent(&event);
+      metrics->RecordUserMetricsAction(
+          snap_type_ == SNAP_LEFT ?
+          UMA_DRAG_MAXIMIZE_LEFT : UMA_DRAG_MAXIMIZE_RIGHT);
       snapped = true;
     }
   }

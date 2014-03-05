@@ -14,6 +14,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -422,7 +423,8 @@ void ScreenLocker::Show() {
   if (active_window_state &&
       active_window_state->IsFullscreen() &&
       active_window_state->hide_shelf_when_fullscreen()) {
-    active_window_state->ToggleFullscreen();
+    const ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
+    active_window_state->OnWMEvent(&event);
   }
 
   if (!screen_locker_) {

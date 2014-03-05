@@ -10,6 +10,7 @@
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/i18n/rtl.h"
 #include "ui/gfx/vector2d.h"
@@ -257,15 +258,14 @@ bool AlternateFrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
     wm::WindowState* window_state =
         wm::GetWindowState(frame_->GetNativeWindow());
     UserMetricsRecorder* metrics = Shell::GetInstance()->metrics();
-    if (snap_type_ == SNAP_LEFT) {
-      window_state->SnapLeftWithDefaultWidth();
-      metrics->RecordUserMetricsAction(
-          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT);
-    } else {
-      window_state->SnapRightWithDefaultWidth();
-      metrics->RecordUserMetricsAction(
-          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
-    }
+    const wm::WMEvent snap_event(
+        snap_type_ == SNAP_LEFT ?
+        wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+    window_state->OnWMEvent(&snap_event);
+    metrics->RecordUserMetricsAction(
+        snap_type_ == SNAP_LEFT ?
+        UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
+        UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
     SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_NO);
     return true;
   }

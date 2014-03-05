@@ -30,6 +30,7 @@ class Layer;
 namespace ash {
 namespace wm {
 class WindowState;
+class WMEvent;
 }
 
 namespace internal {
@@ -93,7 +94,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   // windows are readjusted to make sure the window is completely within the
   // display region. Otherwise, it makes sure at least some parts of the window
   // is on display.
-  void AdjustAllWindowsBoundsForWorkAreaChange(wm::WMEvent event);
+  void AdjustAllWindowsBoundsForWorkAreaChange(const wm::WMEvent* event);
 
   // Updates the visibility state of the shelf.
   void UpdateShelfVisibility();

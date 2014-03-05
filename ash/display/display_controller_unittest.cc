@@ -16,6 +16,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
@@ -481,7 +482,8 @@ TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
 
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
-  window_state->ToggleFullscreen();
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&toggle_fullscreen_event);
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_EQ("0,0 250x250", w1->bounds().ToString());
   // Dock mode.

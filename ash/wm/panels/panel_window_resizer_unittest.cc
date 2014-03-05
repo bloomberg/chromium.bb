@@ -20,6 +20,7 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -411,7 +412,8 @@ TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
   scoped_ptr<aura::Window> fullscreen(
       CreateTestWindowInShellWithBounds(gfx::Rect(600, 0, 101, 101)));
   wm::GetWindowState(fullscreen.get())->Activate();
-  wm::GetWindowState(fullscreen.get())->ToggleFullscreen();
+  const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(fullscreen.get())->OnWMEvent(&event);
   EXPECT_TRUE(wm::GetWindowState(fullscreen.get())->IsFullscreen());
 
   gfx::Rect initial_bounds = window->GetBoundsInScreen();

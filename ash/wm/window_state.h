@@ -31,6 +31,7 @@ class WorkspaceLayoutManager;
 namespace wm {
 class WindowStateDelegate;
 class WindowStateObserver;
+class WMEvent;
 
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls
@@ -56,11 +57,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     virtual ~State() {}
 
     // Update WindowState based on |event|.
-    virtual void OnWMEvent(WindowState* state, WMEvent event) = 0;
-
-    // See WindowState::RequestBounds.
-    virtual void RequestBounds(WindowState* state,
-                               const gfx::Rect& requested_bounds)  = 0;
+    virtual void OnWMEvent(WindowState* state, const WMEvent* event) = 0;
 
     virtual WindowStateType GetType() const = 0;
 
@@ -108,28 +105,27 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns true if the window has restore bounds.
   bool HasRestoreBounds() const;
 
+  // These methods use aura::WindowProperty to change the window's state
+  // instead of using WMEvent directly. This is to use the same mechanism as
+  // what views::Widget is using.
   void Maximize();
   void Minimize();
   void Unminimize();
+
   void Activate();
   void Deactivate();
-  void Restore();
-  void ToggleFullscreen();
-  void SnapLeftWithDefaultWidth();
-  void SnapRightWithDefaultWidth();
 
-  // A window is requested to be the given bounds. The request may or
-  // may not be fulfilled depending on the requested bounds and window's
-  // state.
-  // TODO(oshima): Convert this to a WMEvent.
-  void RequestBounds(const gfx::Rect& bounds);
+  // Set the window state to normal.
+  // TODO(oshima): Change to use RESTORE event.
+  void Restore();
 
   // Invoked when a WMevent occurs, which drives the internal
   // state machine.
-  void OnWMEvent(WMEvent event);
+  void OnWMEvent(const WMEvent* event);
 
-  // Sets the window's bounds in screen coordinates.
-  void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
+  // TODO(oshima): Try hiding these methods and making them accessible only to
+  // state impl. State changes should happen through events (as much
+  // as possible).
 
   // Saves the current bounds to be used as a restore bounds.
   void SaveCurrentBoundsForRestore();
@@ -289,12 +285,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
 
+  // Sets the window's bounds in screen coordinates.
+  void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
+
   // Adjusts the |bounds| so that they are flush with the edge of the
   // workspace if the window represented by |window_state| is side snapped.
   void AdjustSnappedBounds(gfx::Rect* bounds);
-
-  // Snaps the window left or right with the default width.
-  void SnapWindowWithDefaultWidth(WindowStateType left_or_right);
 
   // Updates the window show state according to the current window state type.
   // Note that this does not update the window bounds.

@@ -11,6 +11,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_types.h"
@@ -82,10 +83,11 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
       pinch_factor_ = 1.0;
       phantom_state_ = PHANTOM_WINDOW_NORMAL;
 
-      if (event.details().swipe_left()) {
-        window_state->SnapLeftWithDefaultWidth();
-      } else if (event.details().swipe_right()) {
-        window_state->SnapRightWithDefaultWidth();
+      if (event.details().swipe_left() || event.details().swipe_right()) {
+        const wm::WMEvent snap_event(
+            event.details().swipe_left() ?
+            wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+        window_state->OnWMEvent(&snap_event);
       } else if (event.details().swipe_up()) {
         if (!window_state->IsMaximizedOrFullscreen())
           window_state->Maximize();

@@ -18,6 +18,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
@@ -291,7 +292,8 @@ TEST_F(WindowSelectorTest, FullscreenWindow) {
   scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
   wm::ActivateWindow(window1.get());
 
-  wm::GetWindowState(window1.get())->ToggleFullscreen();
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  wm::GetWindowState(window1.get())->OnWMEvent(&toggle_fullscreen_event);
   // The panel is hidden in fullscreen mode.
   EXPECT_FALSE(panel1->IsVisible());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());

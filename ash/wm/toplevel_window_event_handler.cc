@@ -10,6 +10,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
@@ -562,6 +563,9 @@ void ToplevelWindowEventHandler::SetWindowStateTypeFromGesture(
     aura::Window* window,
     wm::WindowStateType new_state_type) {
   wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  // TODO(oshima): Move extra logic (set_unminimize_to_restore_bounds,
+  // SetRestoreBoundsInParent) that modifies the window state
+  // into WindowState.
   switch (new_state_type) {
     case wm::WINDOW_STATE_TYPE_MINIMIZED:
       if (window_state->CanMinimize()) {
@@ -579,13 +583,15 @@ void ToplevelWindowEventHandler::SetWindowStateTypeFromGesture(
     case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
-        window_state->SnapLeftWithDefaultWidth();
+        const wm::WMEvent event(wm::WM_EVENT_SNAP_LEFT);
+        window_state->OnWMEvent(&event);
       }
       break;
     case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
-        window_state->SnapRightWithDefaultWidth();
+        const wm::WMEvent event(wm::WM_EVENT_SNAP_RIGHT);
+        window_state->OnWMEvent(&event);
       }
       break;
     default:

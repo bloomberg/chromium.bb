@@ -14,7 +14,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/wm_types.h"
+#include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -56,7 +56,7 @@ class BoundsSetter : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(BoundsSetter);
 };
 
-WMEvent WMEventFromShowState(ui::WindowShowState requested_show_state) {
+WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   switch (requested_show_state) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL:
@@ -190,6 +190,7 @@ bool WindowState::CanSnap() const {
       views::corewm::GetTransientParent(window_))
     return false;
   // If a window has a maximum size defined, snapping may make it too big.
+  // TODO(oshima): We probably should snap if possible.
   return window_->delegate() ? window_->delegate()->GetMaximumSize().IsEmpty() :
                               true;
 }
@@ -200,18 +201,6 @@ bool WindowState::HasRestoreBounds() const {
 
 void WindowState::Maximize() {
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-}
-
-void WindowState::SnapLeftWithDefaultWidth() {
-  SnapWindowWithDefaultWidth(WINDOW_STATE_TYPE_LEFT_SNAPPED);
-}
-
-void WindowState::SnapRightWithDefaultWidth() {
-  SnapWindowWithDefaultWidth(WINDOW_STATE_TYPE_RIGHT_SNAPPED);
-}
-
-void WindowState::RequestBounds(const gfx::Rect& requested_bounds) {
-  current_state_->RequestBounds(this, requested_bounds);
 }
 
 void WindowState::Minimize() {
@@ -234,24 +223,14 @@ void WindowState::Deactivate() {
 }
 
 void WindowState::Restore() {
-  if (!IsNormalStateType())
-    OnWMEvent(WM_EVENT_NORMAL);
+  if (!IsNormalStateType()) {
+    const WMEvent event(WM_EVENT_NORMAL);
+    OnWMEvent(&event);
+  }
 }
 
-void WindowState::ToggleFullscreen() {
-  OnWMEvent(WM_EVENT_TOGGLE_FULLSCREEN);
-}
-
-void WindowState::OnWMEvent(WMEvent event) {
+void WindowState::OnWMEvent(const WMEvent* event) {
   current_state_->OnWMEvent(this, event);
-}
-
-void WindowState::SetBoundsInScreen(
-    const gfx::Rect& bounds_in_screen) {
-  gfx::Rect bounds_in_parent =
-      ScreenUtil::ConvertRectFromScreen(window_->parent(),
-                                       bounds_in_screen);
-  window_->SetBounds(bounds_in_parent);
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
@@ -318,8 +297,18 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
                                           const void* key,
                                           intptr_t old) {
   DCHECK_EQ(window, window_);
-  if (key == aura::client::kShowStateKey && !ignore_property_change_)
-    OnWMEvent(WMEventFromShowState(GetShowState()));
+  if (key == aura::client::kShowStateKey && !ignore_property_change_) {
+    WMEvent event(WMEventTypeFromShowState(GetShowState()));
+    OnWMEvent(&event);
+  }
+}
+
+void WindowState::SetBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  gfx::Rect bounds_in_parent =
+      ScreenUtil::ConvertRectFromScreen(window_->parent(),
+                                       bounds_in_screen);
+  window_->SetBounds(bounds_in_parent);
 }
 
 ui::WindowShowState WindowState::GetShowState() const {
@@ -337,42 +326,6 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     bounds->set_x(maximized_bounds.right() - bounds->width());
   bounds->set_y(maximized_bounds.y());
   bounds->set_height(maximized_bounds.height());
-}
-
-void WindowState::SnapWindowWithDefaultWidth(WindowStateType left_or_right) {
-  DCHECK(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ||
-         left_or_right == WINDOW_STATE_TYPE_RIGHT_SNAPPED);
-  gfx::Rect bounds_in_parent(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ?
-      GetDefaultLeftSnappedWindowBoundsInParent(window()) :
-      GetDefaultRightSnappedWindowBoundsInParent(window()));
-
-  if (GetStateType() == left_or_right) {
-    window_->SetBounds(bounds_in_parent);
-    return;
-  }
-
-  // Compute the bounds that the window will restore to. If the window does not
-  // already have restore bounds, it will be restored (when un-snapped) to the
-  // last bounds that it had before getting snapped.
-  gfx::Rect restore_bounds_in_screen(HasRestoreBounds() ?
-      GetRestoreBoundsInScreen() : window_->GetBoundsInScreen());
-  // Set the window's restore bounds so that WorkspaceLayoutManager knows
-  // which width to use when the snapped window is moved to the edge.
-  SetRestoreBoundsInParent(bounds_in_parent);
-
-  OnWMEvent(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ?
-            WM_EVENT_SNAP_LEFT : WM_EVENT_SNAP_RIGHT);
-
-  // TODO(varkha): Ideally the bounds should be changed in a LayoutManager upon
-  // observing the WindowStateType change.
-  // If the window is a child of kShellWindowId_DockedContainer such as during
-  // a drag, the window's bounds are not set in
-  // WorkspaceLayoutManager::OnWindowStateTypeChanged(). Set them here. Skip
-  // setting the bounds otherwise to avoid stopping the slide animation which
-  // was started as a result of OnWindowStateTypeChanged().
-  if (IsDocked())
-    window_->SetBounds(bounds_in_parent);
-  SetRestoreBoundsInScreen(restore_bounds_in_screen);
 }
 
 void WindowState::UpdateWindowShowStateFromStateType() {

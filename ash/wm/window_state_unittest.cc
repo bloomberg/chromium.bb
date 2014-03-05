@@ -7,6 +7,8 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 
@@ -30,7 +32,8 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->SnapLeftWithDefaultWidth();
+  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_left);
   gfx::Rect expected = gfx::Rect(
       kPrimaryDisplayWorkAreaBounds.x(),
       kPrimaryDisplayWorkAreaBounds.y(),
@@ -38,7 +41,8 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
       kPrimaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  window_state->SnapRightWithDefaultWidth();
+  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  window_state->OnWMEvent(&snap_right);
   expected.set_x(kPrimaryDisplayWorkAreaBounds.right() - expected.width());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
@@ -46,7 +50,7 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
                             ScreenUtil::GetSecondaryDisplay());
 
-  window_state->SnapRightWithDefaultWidth();
+  window_state->OnWMEvent(&snap_right);
   expected = gfx::Rect(
       kSecondaryDisplayWorkAreaBounds.x() +
           kSecondaryDisplayWorkAreaBounds.width() / 2,
@@ -55,7 +59,7 @@ TEST_F(WindowStateTest, SnapWindowBasic) {
       kSecondaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  window_state->SnapLeftWithDefaultWidth();
+  window_state->OnWMEvent(&snap_left);
   expected.set_x(kSecondaryDisplayWorkAreaBounds.x());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 }
@@ -78,7 +82,8 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   delegate.set_minimum_size(gfx::Size(kWorkAreaBounds.width() - 1, 0));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_TRUE(window_state->CanSnap());
-  window_state->SnapRightWithDefaultWidth();
+  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  window_state->OnWMEvent(&snap_right);
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x() + 1,
                                  kWorkAreaBounds.y(),
                                  kWorkAreaBounds.width() - 1,
@@ -103,7 +108,8 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->SnapLeftWithDefaultWidth();
+  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
                                  kWorkAreaBounds.y(),
@@ -130,8 +136,10 @@ TEST_F(WindowStateTest, RestoreBounds) {
   gfx::Rect restore_bounds = window->GetBoundsInScreen();
   restore_bounds.set_width(restore_bounds.width() + 1);
   window_state->SetRestoreBoundsInScreen(restore_bounds);
-  window_state->SnapLeftWithDefaultWidth();
-  window_state->SnapRightWithDefaultWidth();
+  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_left);
+  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  window_state->OnWMEvent(&snap_right);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_EQ(restore_bounds.ToString(),
             window_state->GetRestoreBoundsInScreen().ToString());
@@ -145,7 +153,7 @@ TEST_F(WindowStateTest, RestoreBounds) {
   EXPECT_EQ(restore_bounds.ToString(),
             window_state->GetRestoreBoundsInScreen().ToString());
 
-  window_state->SnapLeftWithDefaultWidth();
+  window_state->OnWMEvent(&snap_left);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_NE(maximized_bounds.ToString(),
             window->GetBoundsInScreen().ToString());
@@ -167,7 +175,8 @@ TEST_F(WindowStateTest, AutoManaged) {
   window->Show();
 
   window_state->Maximize();
-  window_state->SnapRightWithDefaultWidth();
+  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  window_state->OnWMEvent(&snap_right);
 
   const gfx::Rect kWorkAreaBounds =
       ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();

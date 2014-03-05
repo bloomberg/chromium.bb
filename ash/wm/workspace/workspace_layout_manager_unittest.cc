@@ -16,6 +16,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -474,7 +475,8 @@ TEST_F(WorkspaceLayoutManagerTest, NotifyFullscreenChanges) {
   wm::WindowState* window_state2 = wm::GetWindowState(window2.get());
   window_state2->Activate();
 
-  window_state2->ToggleFullscreen();
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state2->OnWMEvent(&toggle_fullscreen_event);
   EXPECT_EQ(1, observer.call_count());
   EXPECT_TRUE(observer.is_fullscreen());
 
@@ -488,11 +490,11 @@ TEST_F(WorkspaceLayoutManagerTest, NotifyFullscreenChanges) {
   EXPECT_EQ(3, observer.call_count());
   EXPECT_TRUE(observer.is_fullscreen());
 
-  window_state2->ToggleFullscreen();
+  window_state2->OnWMEvent(&toggle_fullscreen_event);
   EXPECT_EQ(4, observer.call_count());
   EXPECT_FALSE(observer.is_fullscreen());
 
-  window_state2->ToggleFullscreen();
+  window_state2->OnWMEvent(&toggle_fullscreen_event);
   EXPECT_EQ(5, observer.call_count());
   EXPECT_TRUE(observer.is_fullscreen());
 

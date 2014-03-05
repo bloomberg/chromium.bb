@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -284,7 +285,8 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorRED, 12345, kLeftBounds));
   wm::WindowState window_state(window.get());
-  window_state.ToggleFullscreen();
+  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state.OnWMEvent(&toggle_fullscreen_event);
   ASSERT_TRUE(window_state.IsFullscreen());
   window->Focus();
   const gfx::Rect kUpdateRegion(
@@ -299,13 +301,13 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
 
   // Make the first window non-fullscreen and open a second fullscreen window on
   // a different desktop.
-  window_state.ToggleFullscreen();
+  window_state.OnWMEvent(&toggle_fullscreen_event);
   ASSERT_FALSE(window_state.IsFullscreen());
   const gfx::Rect kRightBounds(gfx::Point(1024, 0), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> other_window(
       CreateTestWindowInShell(SK_ColorBLUE, 6789, kRightBounds));
   wm::WindowState other_window_state(other_window.get());
-  other_window_state.ToggleFullscreen();
+  other_window_state.OnWMEvent(&toggle_fullscreen_event);
   ASSERT_TRUE(other_window_state.IsFullscreen());
 
   // When video is detected in the first (now non-fullscreen) window, fullscreen
@@ -322,7 +324,7 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
 
   // Make the second window non-fullscreen and check that the next video report
   // is non-fullscreen.
-  other_window_state.ToggleFullscreen();
+  other_window_state.OnWMEvent(&toggle_fullscreen_event);
   ASSERT_FALSE(other_window_state.IsFullscreen());
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(2));

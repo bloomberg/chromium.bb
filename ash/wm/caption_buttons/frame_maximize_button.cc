@@ -14,6 +14,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
@@ -477,16 +478,20 @@ void FrameMaximizeButton::Snap() {
   Shell* shell = Shell::GetInstance();
   wm::WindowState* window_state = wm::GetWindowState(frame_->GetNativeWindow());
   switch (snap_type_) {
-    case SNAP_LEFT:
-      window_state->SnapLeftWithDefaultWidth();
+    case SNAP_LEFT: {
+      const wm::WMEvent event(wm::WM_EVENT_SNAP_LEFT);
+      window_state->OnWMEvent(&event);
       shell->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT);
       break;
-    case SNAP_RIGHT:
-      window_state->SnapRightWithDefaultWidth();
+    }
+    case SNAP_RIGHT: {
+      const wm::WMEvent event(wm::WM_EVENT_SNAP_RIGHT);
+      window_state->OnWMEvent(&event);
       shell->metrics()->RecordUserMetricsAction(
           UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
       break;
+    }
     case SNAP_MAXIMIZE:
       frame_->Maximize();
       shell->metrics()->RecordUserMetricsAction(
