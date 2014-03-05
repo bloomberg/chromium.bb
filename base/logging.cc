@@ -67,10 +67,6 @@ namespace logging {
 
 DcheckState g_dcheck_state = DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
 
-DcheckState get_dcheck_state() {
-  return g_dcheck_state;
-}
-
 void set_dcheck_state(DcheckState state) {
   g_dcheck_state = state;
 }

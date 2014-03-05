@@ -171,7 +171,7 @@ enum LoggingDestination {
 // Indicates that the log file should be locked when being written to.
 // Unless there is only one single-threaded process that is logging to
 // the log file, the file should be locked during writes to make each
-// log outut atomic. Other writers will block.
+// log output atomic. Other writers will block.
 //
 // All processes writing to the log file must have their locking set for it to
 // work properly. Defaults to LOCK_LOG_FILE.
@@ -674,7 +674,7 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 
 #if defined(NDEBUG)
 
-BASE_EXPORT DcheckState get_dcheck_state();
+BASE_EXPORT extern DcheckState g_dcheck_state;
 BASE_EXPORT void set_dcheck_state(DcheckState state);
 
 #if defined(DCHECK_ALWAYS_ON)
@@ -691,10 +691,11 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
   COMPACT_GOOGLE_LOG_EX_ERROR_REPORT(ClassName , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_ERROR_REPORT
 const LogSeverity LOG_DCHECK = LOG_ERROR_REPORT;
-#define DCHECK_IS_ON()                                                  \
-  ((::logging::get_dcheck_state() ==                                        \
-    ::logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS) &&        \
-   LOG_IS_ON(DCHECK))
+
+#define DCHECK_IS_ON() \
+    UNLIKELY(::logging::g_dcheck_state == \
+             ::logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS) && \
+    LOG_IS_ON(DCHECK)
 
 #endif  // defined(DCHECK_ALWAYS_ON)
 
