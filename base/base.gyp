@@ -1189,6 +1189,9 @@
           'cflags!': [
             '-Wextra',
           ],
+          'defines': [
+            'GLOG_BUILD_CONFIG_INCLUDE="build/build_config.h"',
+          ],
           'sources': [
             'third_party/symbolize/config.h',
             'third_party/symbolize/demangle.cc',
