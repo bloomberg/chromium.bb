@@ -18,6 +18,10 @@ const char kDisableFolderUI[] = "disable-app-list-folder-ui";
 // If set, the voice search is disabled in app list UI.
 const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
 
+// If set, it will always listen to the audio locally and open the app-list
+// when the hotword is recognized.
+const char kEnableHotwordAlwaysOn[] = "enable-app-list-hotword-always-on";
+
 // If set, the app info context menu item is available in the app list UI.
 const char kEnableAppInfo[] = "enable-app-list-app-info";
 
@@ -30,6 +34,15 @@ bool IsVoiceSearchEnabled() {
   // Speech recognition in AppList is only for ChromeOS right now.
 #if defined(OS_CHROMEOS)
   return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableVoiceSearch);
+#else
+  return false;
+#endif
+}
+
+bool IsHotwordAlwaysOnEnabled() {
+#if defined(OS_CHROMEOS)
+  return IsVoiceSearchEnabled() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(kEnableHotwordAlwaysOn);
 #else
   return false;
 #endif
