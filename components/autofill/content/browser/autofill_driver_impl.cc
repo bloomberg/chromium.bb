@@ -112,9 +112,9 @@ void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
       switches::kShowAutofillTypePredictions))
     return;
 
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  if (!host)
+  if (!RendererIsAvailable())
     return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
 
   std::vector<FormDataPredictions> type_predictions;
   FormStructure::GetFieldTypePredictions(forms, &type_predictions);
