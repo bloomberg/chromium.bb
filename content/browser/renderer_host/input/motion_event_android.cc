@@ -78,22 +78,17 @@ MotionEventAndroid::MotionEventAndroid(JNIEnv* env, jobject event, bool recycle)
   DCHECK(event_.obj());
 }
 
-MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& other,
-                                       bool clone)
-    : cached_time_(other.cached_time_),
+MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& other)
+    : event_(Obtain(other)),
+      cached_time_(other.cached_time_),
       cached_action_(other.cached_action_),
       cached_pointer_count_(other.cached_pointer_count_),
       cached_history_size_(other.cached_history_size_),
       cached_action_index_(other.cached_action_index_),
       cached_x_(other.cached_x_),
       cached_y_(other.cached_y_),
-      should_recycle_(clone) {
-  // An event with a pending recycle should never be copied (only cloned).
-  DCHECK(clone || !other.should_recycle_);
-  if (clone)
-    event_.Reset(Obtain(other));
-  else
-    event_.Reset(other.event_);
+      should_recycle_(true) {
+  DCHECK(event_.obj());
 }
 
 MotionEventAndroid::~MotionEventAndroid() {
@@ -141,6 +136,12 @@ float MotionEventAndroid::GetTouchMajor(size_t pointer_index) const {
       AttachCurrentThread(), event_.obj(), pointer_index);
 }
 
+float MotionEventAndroid::GetPressure(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, cached_pointer_count_);
+  return Java_MotionEvent_getPressureF_I(
+      AttachCurrentThread(), event_.obj(), pointer_index);
+}
+
 base::TimeTicks MotionEventAndroid::GetEventTime() const {
   return cached_time_;
 }
@@ -175,7 +176,7 @@ float MotionEventAndroid::GetHistoricalY(size_t pointer_index,
 }
 
 scoped_ptr<ui::MotionEvent> MotionEventAndroid::Clone() const {
-  return scoped_ptr<MotionEvent>(new MotionEventAndroid(*this, true));
+  return scoped_ptr<MotionEvent>(new MotionEventAndroid(*this));
 }
 
 scoped_ptr<ui::MotionEvent> MotionEventAndroid::Cancel() const {
@@ -187,11 +188,6 @@ scoped_ptr<ui::MotionEvent> MotionEventAndroid::Cancel() const {
              GetX(0),
              GetY(0)).obj(),
       true));
-}
-
-float MotionEventAndroid::GetPressure(size_t pointer_index) const {
-  return Java_MotionEvent_getPressureF_I(
-      AttachCurrentThread(), event_.obj(), pointer_index);
 }
 
 float MotionEventAndroid::GetTouchMinor(size_t pointer_index) const {

@@ -345,6 +345,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Send device_orientation_ to renderer.
   void SendOrientationChangeEventInternal();
 
+  // Utility method for synthesizing a touch cancel event and dispatching it
+  // through the touch pipeline.
+  void CancelActiveTouchSequenceIfNecessary();
+
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
 

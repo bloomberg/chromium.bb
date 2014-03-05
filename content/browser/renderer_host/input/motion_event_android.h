@@ -28,6 +28,7 @@ class MotionEventAndroid : public ui::MotionEvent {
   virtual float GetX(size_t pointer_index) const OVERRIDE;
   virtual float GetY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
+  virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
   virtual size_t GetHistorySize() const OVERRIDE;
   virtual base::TimeTicks GetHistoricalEventTime(
@@ -45,8 +46,6 @@ class MotionEventAndroid : public ui::MotionEvent {
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 
   // Additional Android MotionEvent methods.
-  float GetPressure() const { return GetPressure(0); }
-  float GetPressure(size_t pointer_index) const;
   float GetTouchMinor() const { return GetTouchMinor(0); }
   float GetTouchMinor(size_t pointer_index) const;
   float GetOrientation() const;
@@ -64,7 +63,9 @@ class MotionEventAndroid : public ui::MotionEvent {
       float y);
 
  private:
-  MotionEventAndroid(const MotionEventAndroid& other, bool clone);
+  MotionEventAndroid();
+  MotionEventAndroid(const MotionEventAndroid&);
+  MotionEventAndroid& operator=(const MotionEventAndroid&);
 
   // The Java reference to the underlying MotionEvent.
   base::android::ScopedJavaGlobalRef<jobject> event_;
@@ -80,8 +81,6 @@ class MotionEventAndroid : public ui::MotionEvent {
   // Whether |event_| should be recycled on destruction. This will only be true
   // for those events generated via |Obtain(...)|.
   bool should_recycle_;
-
-  DISALLOW_COPY_AND_ASSIGN(MotionEventAndroid);
 };
 
 }  // namespace content

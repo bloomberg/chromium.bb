@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -994,6 +995,26 @@ void ContentViewCoreImpl::SendOrientationChangeEvent(JNIEnv* env,
   }
 }
 
+void ContentViewCoreImpl::CancelActiveTouchSequenceIfNecessary() {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  // Avoid synthesizing a touch cancel event if it cannot be forwarded.
+  if (!rwhv)
+    return;
+
+  const ui::MotionEvent* current_down_event =
+      gesture_provider_.GetCurrentDownEvent();
+  if (!current_down_event)
+    return;
+
+  scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
+  DCHECK(cancel_event);
+  if (!gesture_provider_.OnTouchEvent(*cancel_event))
+    return;
+
+  rwhv->SendTouchEvent(
+      CreateWebTouchEventFromMotionEvent(*cancel_event, 1.f / GetDpiScale()));
+}
+
 jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                            jobject obj,
                                            jobject motion_event) {
@@ -1006,7 +1027,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
   if (!gesture_provider_.OnTouchEvent(event))
     return false;
 
-  rwhv->SendTouchEvent(WebTouchEventBuilder::Build(event, GetDpiScale()));
+  rwhv->SendTouchEvent(WebTouchEventBuilder::Build(event, 1.f / GetDpiScale()));
   return true;
 }
 
@@ -1187,11 +1208,11 @@ void ContentViewCoreImpl::ResetGestureDetectors(JNIEnv* env, jobject obj) {
 }
 
 void ContentViewCoreImpl::IgnoreRemainingTouchEvents(JNIEnv* env, jobject obj) {
-  gesture_provider_.CancelActiveTouchSequence();
+  CancelActiveTouchSequenceIfNecessary();
 }
 
 void ContentViewCoreImpl::OnWindowFocusLost(JNIEnv* env, jobject obj) {
-  gesture_provider_.CancelActiveTouchSequence();
+  CancelActiveTouchSequenceIfNecessary();
 }
 
 void ContentViewCoreImpl::SetDoubleTapSupportForPageEnabled(JNIEnv* env,

@@ -647,13 +647,6 @@ void GestureProvider::ResetGestureDetectors() {
   scale_gesture_listener_->OnTouchEvent(*cancel_event);
 }
 
-void GestureProvider::CancelActiveTouchSequence() {
-  if (!current_down_event_)
-    return;
-  OnTouchEvent(*current_down_event_->Cancel());
-  current_down_event_.reset();
-}
-
 void GestureProvider::SetMultiTouchSupportEnabled(bool enabled) {
   scale_gesture_listener_->set_ignore_detector_events(!enabled);
 }

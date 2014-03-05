@@ -181,10 +181,6 @@ void ContentGestureProvider::ResetGestureDetectors() {
   gesture_provider_.ResetGestureDetectors();
 }
 
-void ContentGestureProvider::CancelActiveTouchSequence() {
-  gesture_provider_.CancelActiveTouchSequence();
-}
-
 void ContentGestureProvider::SetMultiTouchSupportEnabled(bool enabled) {
   gesture_provider_.SetMultiTouchSupportEnabled(enabled);
 }
@@ -196,6 +192,10 @@ void ContentGestureProvider::SetDoubleTapSupportForPlatformEnabled(
 
 void ContentGestureProvider::SetDoubleTapSupportForPageEnabled(bool enabled) {
   gesture_provider_.SetDoubleTapSupportForPageEnabled(enabled);
+}
+
+const ui::MotionEvent* ContentGestureProvider::GetCurrentDownEvent() const {
+  return gesture_provider_.current_down_event();
 }
 
 void ContentGestureProvider::OnGestureEvent(

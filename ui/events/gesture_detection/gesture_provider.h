@@ -45,12 +45,6 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // Resets all gesture detectors; called on DidStartLoading().
   void ResetGestureDetectors();
 
-  // Cancel the current touch event sequence by sending ACTION_CANCEL, and
-  // ignore all the subsequent events until the next ACTION_DOWN.
-  // One example usecase is to stop processing the touch events when showing
-  // a context popup menu.
-  void CancelActiveTouchSequence();
-
   // Update whether multi-touch gestures are supported.
   void SetMultiTouchSupportEnabled(bool enabled);
 
@@ -78,6 +72,11 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // Whether the tap gesture delay is explicitly disabled (independent of
   // whether double-tap is supported), see |Config.disable_click_delay|.
   bool IsClickDelayDisabled() const;
+
+  // May be NULL if there is no currently active touch sequence.
+  const ui::MotionEvent* current_down_event() const {
+    return current_down_event_.get();
+  }
 
  private:
   void InitGestureDetectors(const Config& config);

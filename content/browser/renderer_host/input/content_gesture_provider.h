@@ -44,10 +44,10 @@ class ContentGestureProvider : public ui::TouchDispositionGestureFilterClient,
 
   // Methods delegated to |gesture_provider_|.
   void ResetGestureDetectors();
-  void CancelActiveTouchSequence();
   void SetMultiTouchSupportEnabled(bool enabled);
   void SetDoubleTapSupportForPlatformEnabled(bool enabled);
   void SetDoubleTapSupportForPageEnabled(bool enabled);
+  const ui::MotionEvent* GetCurrentDownEvent() const;
 
  private:
   // ui::GestureProviderClient

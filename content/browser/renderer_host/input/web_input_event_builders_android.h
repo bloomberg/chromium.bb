@@ -60,7 +60,7 @@ class WebGestureEventBuilder {
 class WebTouchEventBuilder {
  public:
   static blink::WebTouchEvent Build(const MotionEventAndroid& event,
-                                    float device_scale_factor);
+                                    float scale);
 };
 
 }  // namespace content

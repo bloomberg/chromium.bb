@@ -99,6 +99,10 @@ float MotionEventWeb::GetTouchMajor(size_t pointer_index) const {
                         event_.touches[pointer_index].radiusY);
 }
 
+float MotionEventWeb::GetPressure(size_t pointer_index) const {
+  return 0.f;
+}
+
 base::TimeTicks MotionEventWeb::GetEventTime() const {
   return base::TimeTicks() +
          base::TimeDelta::FromMicroseconds(event_.timeStampSeconds *

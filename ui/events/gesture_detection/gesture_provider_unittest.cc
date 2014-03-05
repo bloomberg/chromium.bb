@@ -72,6 +72,13 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     gestures_.push_back(gesture);
   }
 
+  bool CancelActiveTouchSequence() {
+    if (!gesture_provider_->current_down_event())
+      return false;
+    return gesture_provider_->OnTouchEvent(
+        *gesture_provider_->current_down_event()->Cancel());
+  }
+
   bool HasReceivedGesture(EventType type) const {
     for (size_t i = 0; i < gestures_.size(); ++i) {
       if (gestures_[i].type == type)
@@ -302,7 +309,7 @@ TEST_F(GestureProviderTest, TapCancelledWhenWindowFocusLost) {
   EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
 
   // The long press triggers window focus loss by opening a context menu
-  gesture_provider_->CancelActiveTouchSequence();
+  EXPECT_TRUE(CancelActiveTouchSequence());
   EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetMostRecentGestureEventType());
 }
 
@@ -971,7 +978,7 @@ TEST_F(GestureProviderTest, GesturesCancelledAfterLongPressCausesLostFocus) {
   Wait(long_press_timeout);
   EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
 
-  gesture_provider_->CancelActiveTouchSequence();
+  EXPECT_TRUE(CancelActiveTouchSequence());
   EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetMostRecentGestureEventType());
 
   event = ObtainMotionEvent(event_time + long_press_timeout,
@@ -980,12 +987,12 @@ TEST_F(GestureProviderTest, GesturesCancelledAfterLongPressCausesLostFocus) {
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_LONG_TAP));
 }
 
-// Verify that ignoring the remaining touch sequence triggers proper touch and
-// gesture cancellation.
+// Verify that inserting a touch cancel event will trigger proper touch and
+// gesture sequence cancellation.
 TEST_F(GestureProviderTest, CancelActiveTouchSequence) {
   base::TimeTicks event_time = base::TimeTicks::Now();
 
-  gesture_provider_->CancelActiveTouchSequence();
+  EXPECT_FALSE(CancelActiveTouchSequence());
   EXPECT_EQ(0U, GetReceivedGestureCount());
 
   MockMotionEvent event =
@@ -993,7 +1000,7 @@ TEST_F(GestureProviderTest, CancelActiveTouchSequence) {
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
 
-  gesture_provider_->CancelActiveTouchSequence();
+  ASSERT_TRUE(CancelActiveTouchSequence());
   EXPECT_EQ(ET_GESTURE_TAP_CANCEL, GetMostRecentGestureEventType());
 
   // Subsequent MotionEvent's are dropped until ACTION_DOWN.

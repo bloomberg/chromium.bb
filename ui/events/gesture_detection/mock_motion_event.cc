@@ -72,6 +72,10 @@ float MockMotionEvent::GetTouchMajor(size_t pointer_index) const {
   return kTouchMajor;
 }
 
+float MockMotionEvent::GetPressure(size_t pointer_index) const {
+  return 0;
+}
+
 TimeTicks MockMotionEvent::GetEventTime() const { return time; }
 
 size_t MockMotionEvent::GetHistorySize() const { return 0; }

@@ -5,7 +5,12 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 
 #include "base/strings/string_util.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/gesture_detection/motion_event.h"
+
+using blink::WebInputEvent;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
+using ui::MotionEvent;
 
 namespace {
 
@@ -125,6 +130,69 @@ const char* GetKeyIdentifier(ui::KeyboardCode key_code) {
   };
 }
 
+WebInputEvent::Type ToWebInputEventType(MotionEvent::Action action) {
+  switch (action) {
+    case MotionEvent::ACTION_DOWN:
+      return WebInputEvent::TouchStart;
+    case MotionEvent::ACTION_MOVE:
+      return WebInputEvent::TouchMove;
+    case MotionEvent::ACTION_UP:
+      return WebInputEvent::TouchEnd;
+    case MotionEvent::ACTION_CANCEL:
+      return WebInputEvent::TouchCancel;
+    case MotionEvent::ACTION_POINTER_DOWN:
+      return WebInputEvent::TouchStart;
+    case MotionEvent::ACTION_POINTER_UP:
+      return WebInputEvent::TouchEnd;
+  }
+  NOTREACHED() << "Invalid MotionEvent::Action.";
+  return WebInputEvent::Undefined;
+}
+
+// Note that |is_action_pointer| is meaningful only in the context of
+// |ACTION_POINTER_UP| and |ACTION_POINTER_DOWN|; other actions map directly to
+// WebTouchPoint::State.
+WebTouchPoint::State ToWebTouchPointState(MotionEvent::Action action,
+                                          bool is_action_pointer) {
+  switch (action) {
+    case MotionEvent::ACTION_DOWN:
+      return WebTouchPoint::StatePressed;
+    case MotionEvent::ACTION_MOVE:
+      return WebTouchPoint::StateMoved;
+    case MotionEvent::ACTION_UP:
+      return WebTouchPoint::StateReleased;
+    case MotionEvent::ACTION_CANCEL:
+      return WebTouchPoint::StateCancelled;
+    case MotionEvent::ACTION_POINTER_DOWN:
+      return is_action_pointer ? WebTouchPoint::StatePressed
+                               : WebTouchPoint::StateStationary;
+    case MotionEvent::ACTION_POINTER_UP:
+      return is_action_pointer ? WebTouchPoint::StateReleased
+                               : WebTouchPoint::StateStationary;
+  }
+  NOTREACHED() << "Invalid MotionEvent::Action.";
+  return WebTouchPoint::StateUndefined;
+}
+
+WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
+                                 size_t pointer_index,
+                                 float scale) {
+  WebTouchPoint touch;
+  touch.id = event.GetPointerId(pointer_index);
+  touch.state = ToWebTouchPointState(
+      event.GetAction(),
+      static_cast<int>(pointer_index) == event.GetActionIndex());
+  touch.position.x = event.GetX(pointer_index) * scale;
+  touch.position.y = event.GetY(pointer_index) * scale;
+  // TODO(joth): Raw event co-ordinates.
+  touch.screenPosition = touch.position;
+  touch.radiusX = touch.radiusY =
+      event.GetTouchMajor(pointer_index) * 0.5f * scale;
+  touch.force = event.GetPressure(pointer_index);
+
+  return touch;
+}
+
 }  // namespace
 
 namespace content {
@@ -140,6 +208,28 @@ void UpdateWindowsKeyCodeAndKeyIdentifier(blink::WebKeyboardEvent* event,
     base::snprintf(event->keyIdentifier, sizeof(event->keyIdentifier), "U+%04X",
                    base::ToUpperASCII(static_cast<int>(windows_key_code)));
   }
+}
+
+blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
+    const ui::MotionEvent& event,
+    float scale) {
+  blink::WebTouchEvent result;
+
+  result.type = ToWebInputEventType(event.GetAction());
+  DCHECK(WebInputEvent::isTouchEventType(result.type));
+
+  result.timeStampSeconds =
+      (event.GetEventTime() - base::TimeTicks()).InSecondsF();
+
+  result.touchesLength =
+      std::min(event.GetPointerCount(),
+               static_cast<size_t>(WebTouchEvent::touchesLengthCap));
+  DCHECK_GT(result.touchesLength, 0U);
+
+  for (size_t i = 0; i < result.touchesLength; ++i)
+    result.touches[i] = CreateWebTouchPoint(event, i, scale);
+
+  return result;
 }
 
 }  // namespace content

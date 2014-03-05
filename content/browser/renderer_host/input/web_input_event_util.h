@@ -6,10 +6,11 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_
 
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-namespace blink {
-class WebKeyboardEvent;
+namespace ui {
+class MotionEvent;
 }
 
 namespace content {
@@ -19,6 +20,11 @@ namespace content {
 CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
     blink::WebKeyboardEvent* event,
     ui::KeyboardCode windows_key_code);
+
+// Creates a WebTouchEvent from |event|, scaling all size components from
+// |event| by |scale|.
+CONTENT_EXPORT blink::WebTouchEvent
+CreateWebTouchEventFromMotionEvent(const ui::MotionEvent& event, float scale);
 
 }
 

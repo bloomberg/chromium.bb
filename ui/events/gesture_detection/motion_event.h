@@ -36,6 +36,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetX(size_t pointer_index) const = 0;
   virtual float GetY(size_t pointer_index) const = 0;
   virtual float GetTouchMajor(size_t pointer_index) const = 0;
+  virtual float GetPressure(size_t pointer_index) const = 0;
   virtual base::TimeTicks GetEventTime() const = 0;
 
   virtual size_t GetHistorySize() const = 0;
@@ -57,6 +58,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   float GetRawX() const { return GetX(); }
   float GetRawY() const { return GetY(); }
   float GetTouchMajor() const { return GetTouchMajor(0); }
+  float GetPressure() const { return GetPressure(0); }
 };
 
 }  // namespace ui
