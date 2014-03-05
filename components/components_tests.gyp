@@ -70,6 +70,7 @@
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'password_manager/core/browser/login_database_unittest.cc',
             'password_manager/core/browser/psl_matching_helper_unittest.cc',
+            'password_manager/core/browser/password_generation_manager_unittest.cc',
             'password_manager/core/browser/password_store_default_unittest.cc',
             'password_manager/core/browser/password_store_unittest.cc',
             'password_manager/core/browser/password_syncable_service_unittest.cc',

@@ -1,14 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <vector>
 
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -18,7 +17,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -28,8 +26,7 @@ namespace {
 
 class TestPasswordManagerDriver : public PasswordManagerDriver {
  public:
-  TestPasswordManagerDriver(content::WebContents* web_contents,
-                            PasswordManagerClient* client)
+  TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
         password_generation_manager_(client),
         is_off_the_record_(false) {}
@@ -73,16 +70,13 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
 
 class TestPasswordManagerClient : public PasswordManagerClient {
  public:
-  explicit TestPasswordManagerClient(content::WebContents* web_contents,
-                                     Profile* profile)
-      : profile_(profile),
-        driver_(web_contents, this),
-        is_sync_enabled_(false) {}
+  TestPasswordManagerClient(scoped_ptr<PrefService> prefs)
+      : prefs_(prefs.Pass()), driver_(this), is_sync_enabled_(false) {}
 
   virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save)
       OVERRIDE {}
   virtual PasswordStore* GetPasswordStore() OVERRIDE { return NULL; }
-  virtual PrefService* GetPrefs() OVERRIDE { return profile_->GetPrefs(); }
+  virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {}
@@ -93,7 +87,7 @@ class TestPasswordManagerClient : public PasswordManagerClient {
   }
 
  private:
-  Profile* profile_;
+  scoped_ptr<PrefService> prefs_;
   TestPasswordManagerDriver driver_;
   bool is_sync_enabled_;
 };
@@ -109,19 +103,19 @@ class TestAutofillMetrics : public autofill::AutofillMetrics {
 
 }  // anonymous namespace
 
-class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
+class PasswordGenerationManagerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
-    ChromeRenderViewHostTestHarness::SetUp();
-
-    client_.reset(new TestPasswordManagerClient(web_contents(), profile()));
+    // Construct a PrefService and register all necessary prefs before handing
+    // it off to |client_|, as the initialization flow of |client_| will
+    // indirectly cause those prefs to be immediately accessed.
+    scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
+    prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
+                                           true);
+    client_.reset(new TestPasswordManagerClient(prefs.PassAs<PrefService>()));
   }
 
-  virtual void TearDown() OVERRIDE {
-    client_.reset();
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
+  virtual void TearDown() OVERRIDE { client_.reset(); }
 
   PasswordGenerationManager* GetGenerationManager() {
     return client_->GetDriver()->GetPasswordGenerationManager();
@@ -198,16 +192,14 @@ TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   // Simulate the server response to set the field types.
   const char* const kServerResponse =
       "<autofillqueryresponse>"
-        "<field autofilltype=\"9\" />"
-        "<field autofilltype=\"75\" />"
-        "<field autofilltype=\"9\" />"
-        "<field autofilltype=\"76\" />"
-        "<field autofilltype=\"75\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"75\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"76\" />"
+      "<field autofilltype=\"75\" />"
       "</autofillqueryresponse>";
   autofill::FormStructure::ParseQueryResponse(
-      kServerResponse,
-      forms,
-      TestAutofillMetrics());
+      kServerResponse, forms, TestAutofillMetrics());
 
   DetectAccountCreationForms(forms);
   EXPECT_EQ(1u, GetTestDriver()->GetFoundAccountCreationForms().size());
