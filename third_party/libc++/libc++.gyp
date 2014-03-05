@@ -8,7 +8,9 @@
       'target_name': 'libc++',
       'type': 'shared_library',
       'variables': {
-         'prune_self_dependency': 1,
+        'prune_self_dependency': 1,
+        # Don't add this target to the dependencies of targets with type=none.
+        'link_dependency': 1,
       },
       'dependencies=': [],
       'sources': [
