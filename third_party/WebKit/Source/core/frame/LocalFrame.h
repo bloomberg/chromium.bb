@@ -28,85 +28,39 @@
 #ifndef LocalFrame_h
 #define LocalFrame_h
 
+#include "core/frame/Frame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
-#include "platform/geometry/IntSize.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-
-namespace blink {
-class WebLayer;
-}
 
 namespace WebCore {
 
-    class ChromeClient;
     class Color;
-    class DOMWindow;
-    class Document;
     class DragImage;
     class Editor;
-    class Element;
     class EventHandler;
     class FetchContext;
     class FloatSize;
-    class FrameDestructionObserver;
-    class FrameHost;
     class FrameSelection;
     class FrameView;
-    class HTMLFrameOwnerElement;
-    class HTMLTableCellElement;
     class InputMethodController;
     class IntPoint;
+    class IntSize;
     class Node;
-    class Page;
     class Range;
     class RenderPart;
-    class RenderView;
     class TreeScope;
     class ScriptController;
-    class Settings;
     class SpellChecker;
     class TreeScope;
     class VisiblePosition;
-    class Widget;
 
-    class FrameInit : public RefCounted<FrameInit> {
-    public:
-        // For creating a dummy LocalFrame
-        static PassRefPtr<FrameInit> create(FrameHost* host, FrameLoaderClient* client)
-        {
-            return adoptRef(new FrameInit(host, client));
-        }
-
-        void setFrameHost(FrameHost* host) { m_frameHost = host; }
-        FrameHost* frameHost() const { return m_frameHost; }
-
-        void setFrameLoaderClient(FrameLoaderClient* client) { m_client = client; }
-        FrameLoaderClient* frameLoaderClient() const { return m_client; }
-
-        void setOwnerElement(HTMLFrameOwnerElement* ownerElement) { m_ownerElement = ownerElement; }
-        HTMLFrameOwnerElement* ownerElement() const { return m_ownerElement; }
-
-    protected:
-        FrameInit(FrameHost* host = 0, FrameLoaderClient* client = 0)
-            : m_client(client)
-            , m_frameHost(host)
-            , m_ownerElement(0)
-        {
-        }
-
-    private:
-        FrameLoaderClient* m_client;
-        FrameHost* m_frameHost;
-        HTMLFrameOwnerElement* m_ownerElement;
-    };
-
-    class LocalFrame : public RefCounted<LocalFrame> {
+    class LocalFrame : public Frame {
     public:
         static PassRefPtr<LocalFrame> create(PassRefPtr<FrameInit>);
+
+        virtual bool isLocalFrame() const OVERRIDE { return true; }
 
         void init();
         void setView(PassRefPtr<FrameView>);
@@ -114,52 +68,31 @@ namespace WebCore {
             ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 
-        ~LocalFrame();
+        virtual ~LocalFrame();
 
-        void addDestructionObserver(FrameDestructionObserver*);
-        void removeDestructionObserver(FrameDestructionObserver*);
-
-        void willDetachFrameHost();
-        void detachFromFrameHost();
+        virtual void willDetachFrameHost() OVERRIDE;
+        virtual void detachFromFrameHost() OVERRIDE;
         void disconnectOwnerElement();
 
-        // NOTE: Page is moving out of Blink up into the browser process as
-        // part of the site-isolation (out of process iframes) work.
-        // FrameHost should be used instead where possible.
-        Page* page() const;
-        FrameHost* host() const; // Null when the frame is detached.
-
         HTMLFrameOwnerElement* ownerElement() const;
-        bool isMainFrame() const;
 
-        void setDOMWindow(PassRefPtr<DOMWindow>);
-        DOMWindow* domWindow() const;
-        Document* document() const;
+        virtual void setDOMWindow(PassRefPtr<DOMWindow>) OVERRIDE;
         FrameView* view() const;
 
-        ChromeClient& chromeClient() const;
         Editor& editor() const;
         EventHandler& eventHandler() const;
         FrameLoader& loader() const;
+        FrameTree& tree() const;
         NavigationScheduler& navigationScheduler() const;
         FrameSelection& selection() const;
-        FrameTree& tree() const;
         InputMethodController& inputMethodController() const;
         FetchContext& fetchContext() const { return loader().fetchContext(); }
         ScriptController& script();
         SpellChecker& spellChecker() const;
 
-        RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
         RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
         void didChangeVisibilityState();
-
-        int64_t frameID() const { return m_frameID; }
-
-        // FIXME: These should move to RemoteFrame once that exists.
-        // RemotePlatformLayer is only ever set for Frames which exist in another process.
-        void setRemotePlatformLayer(blink::WebLayer* remotePlatformLayer) { m_remotePlatformLayer = remotePlatformLayer; }
-        blink::WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
@@ -170,8 +103,6 @@ namespace WebCore {
         // See GraphicsLayerClient.h for accepted flags.
         String layerTreeAsText(unsigned flags = 0) const;
         String trackedRepaintRectsAsText() const;
-
-        Settings* settings() const; // can be NULL
 
         void setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio);
         bool shouldUsePrintingLayout() const;
@@ -217,17 +148,11 @@ namespace WebCore {
     private:
         LocalFrame(PassRefPtr<FrameInit>);
 
-        HashSet<FrameDestructionObserver*> m_destructionObservers;
-
-        // Temporary hack for history.
-        int64_t m_frameID;
-        FrameHost* m_host;
         mutable FrameTree m_treeNode;
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 
         RefPtr<FrameView> m_view;
-        RefPtr<DOMWindow> m_domWindow;
 
         OwnPtr<ScriptController> m_script;
         const OwnPtr<Editor> m_editor;
@@ -236,16 +161,12 @@ namespace WebCore {
         const OwnPtr<EventHandler> m_eventHandler;
         OwnPtr<InputMethodController> m_inputMethodController;
 
-        RefPtr<FrameInit> m_frameInit;
-
         float m_pageZoomFactor;
         float m_textZoomFactor;
 
         int m_orientation;
 
         bool m_inViewSourceMode;
-
-        blink::WebLayer* m_remotePlatformLayer;
     };
 
     inline void LocalFrame::init()
@@ -271,11 +192,6 @@ namespace WebCore {
     inline ScriptController& LocalFrame::script()
     {
         return *m_script;
-    }
-
-    inline DOMWindow* LocalFrame::domWindow() const
-    {
-        return m_domWindow.get();
     }
 
     inline FrameSelection& LocalFrame::selection() const
@@ -323,6 +239,8 @@ namespace WebCore {
         ASSERT(m_eventHandler);
         return *m_eventHandler;
     }
+
+    DEFINE_TYPE_CASTS(LocalFrame, Frame, localFrame, localFrame->isLocalFrame(), localFrame.isLocalFrame());
 
 } // namespace WebCore
 

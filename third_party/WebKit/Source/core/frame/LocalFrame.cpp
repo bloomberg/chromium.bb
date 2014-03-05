@@ -43,19 +43,15 @@
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
@@ -66,9 +62,7 @@
 #include "platform/DragImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "public/platform/WebLayer.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace std;
@@ -76,20 +70,6 @@ using namespace std;
 namespace WebCore {
 
 using namespace HTMLNames;
-
-namespace {
-
-int64_t generateFrameID()
-{
-    // Initialize to the current time to reduce the likelihood of generating
-    // identifiers that overlap with those from past/future browser sessions.
-    static int64_t next = static_cast<int64_t>(currentTime() * 1000000.0);
-    return ++next;
-}
-
-} // namespace
-
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("LocalFrame"));
 
 static inline float parentPageZoomFactor(LocalFrame* frame)
 {
@@ -108,10 +88,9 @@ static inline float parentTextZoomFactor(LocalFrame* frame)
 }
 
 inline LocalFrame::LocalFrame(PassRefPtr<FrameInit> frameInit)
-    : m_frameID(generateFrameID())
-    , m_host(frameInit->frameHost())
+    : Frame(frameInit)
     , m_treeNode(this)
-    , m_loader(this, frameInit->frameLoaderClient())
+    , m_loader(this, m_frameInit->frameLoaderClient())
     , m_navigationScheduler(this)
     , m_script(adoptPtr(new ScriptController(this)))
     , m_editor(Editor::create(*this))
@@ -119,23 +98,15 @@ inline LocalFrame::LocalFrame(PassRefPtr<FrameInit> frameInit)
     , m_selection(adoptPtr(new FrameSelection(this)))
     , m_eventHandler(adoptPtr(new EventHandler(this)))
     , m_inputMethodController(InputMethodController::create(*this))
-    , m_frameInit(frameInit)
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_orientation(0)
     , m_inViewSourceMode(false)
-    , m_remotePlatformLayer(0)
 {
-    ASSERT(page());
-
     if (ownerElement()) {
         page()->incrementSubframeCount();
         ownerElement()->setContentFrame(*this);
     }
-
-#ifndef NDEBUG
-    frameCounter.increment();
-#endif
 }
 
 PassRefPtr<LocalFrame> LocalFrame::create(PassRefPtr<FrameInit> frameInit)
@@ -153,17 +124,7 @@ LocalFrame::~LocalFrame()
     loader().clear();
     setDOMWindow(nullptr);
 
-    // FIXME: We should not be doing all this work inside the destructor
-
-#ifndef NDEBUG
-    frameCounter.decrement();
-#endif
-
     disconnectOwnerElement();
-
-    HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
-    for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
-        (*it)->frameDestroyed();
 }
 
 bool LocalFrame::inScope(TreeScope* scope) const
@@ -176,16 +137,6 @@ bool LocalFrame::inScope(TreeScope* scope) const
     if (!owner)
         return false;
     return owner->treeScope() == scope;
-}
-
-void LocalFrame::addDestructionObserver(FrameDestructionObserver* observer)
-{
-    m_destructionObservers.add(observer);
-}
-
-void LocalFrame::removeDestructionObserver(FrameDestructionObserver* observer)
-{
-    m_destructionObservers.remove(observer);
 }
 
 void LocalFrame::setView(PassRefPtr<FrameView> view)
@@ -220,25 +171,6 @@ void LocalFrame::sendOrientationChangeEvent(int orientation)
     m_orientation = orientation;
     if (DOMWindow* window = domWindow())
         window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
-}
-
-FrameHost* LocalFrame::host() const
-{
-    return m_host;
-}
-
-Page* LocalFrame::page() const
-{
-    if (m_host)
-        return &m_host->page();
-    return 0;
-}
-
-Settings* LocalFrame::settings() const
-{
-    if (m_host)
-        return &m_host->settings();
-    return 0;
 }
 
 void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)
@@ -293,34 +225,9 @@ FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize,
 void LocalFrame::setDOMWindow(PassRefPtr<DOMWindow> domWindow)
 {
     InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
-    if (m_domWindow)
-        m_domWindow->reset();
     if (domWindow)
         script().clearWindowShell();
-    m_domWindow = domWindow;
-}
-
-static ChromeClient& emptyChromeClient()
-{
-    DEFINE_STATIC_LOCAL(EmptyChromeClient, client, ());
-    return client;
-}
-
-ChromeClient& LocalFrame::chromeClient() const
-{
-    if (Page* page = this->page())
-        return page->chrome().client();
-    return emptyChromeClient();
-}
-
-Document* LocalFrame::document() const
-{
-    return m_domWindow ? m_domWindow->document() : 0;
-}
-
-RenderView* LocalFrame::contentRenderer() const
-{
-    return document() ? document()->renderView() : 0;
+    Frame::setDOMWindow(domWindow);
 }
 
 RenderPart* LocalFrame::ownerRenderer() const
@@ -360,27 +267,18 @@ void LocalFrame::willDetachFrameHost()
     if (LocalFrame* parent = tree().parent())
         parent->loader().checkLoadComplete();
 
-    HashSet<FrameDestructionObserver*>::iterator stop = m_destructionObservers.end();
-    for (HashSet<FrameDestructionObserver*>::iterator it = m_destructionObservers.begin(); it != stop; ++it)
-        (*it)->willDetachFrameHost();
-
-    // FIXME: Page should take care of updating focus/scrolling instead of LocalFrame.
-    // FIXME: It's unclear as to why this is called more than once, but it is,
-    // so page() could be NULL.
-    if (page() && page()->focusController().focusedFrame() == this)
-        page()->focusController().setFocusedFrame(nullptr);
+    Frame::willDetachFrameHost();
+    script().clearScriptObjects();
 
     if (page() && page()->scrollingCoordinator() && m_view)
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
-
-    script().clearScriptObjects();
 }
 
 void LocalFrame::detachFromFrameHost()
 {
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
-    m_host = 0;
+    Frame::detachFromFrameHost();
 }
 
 void LocalFrame::disconnectOwnerElement()
@@ -393,12 +291,6 @@ void LocalFrame::disconnectOwnerElement()
             page()->decrementSubframeCount();
     }
     m_frameInit->setOwnerElement(0);
-}
-
-bool LocalFrame::isMainFrame() const
-{
-    Page* page = this->page();
-    return page && this == page->mainFrame();
 }
 
 String LocalFrame::documentTypeString() const
