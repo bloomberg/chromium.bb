@@ -26,7 +26,7 @@ const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 #else
 const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
-#endif  // USE_AURA
+#endif  // OS_CHROMEOS
 const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
 const SkColor kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);

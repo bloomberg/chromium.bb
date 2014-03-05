@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/new_avatar_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
@@ -904,7 +905,10 @@ gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameImage() const {
 
   // Otherwise, never theme app and popup windows.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageSkiaNamed(resource_id);
+  return rb.GetImageSkiaNamed(chrome::MapThemeImage(
+      chrome::GetHostDesktopTypeForNativeWindow(
+          browser_view()->GetNativeWindow()),
+      resource_id));
 }
 
 gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameOverlayImage() const {
