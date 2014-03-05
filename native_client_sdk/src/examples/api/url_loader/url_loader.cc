@@ -17,11 +17,6 @@
 namespace {
 const char* const kLoadUrlMethodId = "getUrl";
 static const char kMessageArgumentSeparator = ':';
-
-// Exception strings.  These are passed back to the browser when errors
-// happen during property accesses or method calls.
-const char* const kExceptionStartFailed = "URLLoaderHandler::Start() failed";
-const char* const kExceptionURLNotAString = "URL is not a string";
 }  // namespace
 
 class URLLoaderInstance : public pp::Instance {
