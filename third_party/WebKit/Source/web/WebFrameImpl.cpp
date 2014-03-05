@@ -774,7 +774,7 @@ WebPerformance WebFrameImpl::performance() const
 {
     if (!frame())
         return WebPerformance();
-    return WebPerformance(frame()->domWindow()->performance());
+    return WebPerformance(&frame()->domWindow()->performance());
 }
 
 NPObject* WebFrameImpl::windowObject() const

@@ -94,7 +94,7 @@ enum PageshowEventPersistence {
         REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
         static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
-        static PassRefPtr<DOMWindow> create(LocalFrame* frame) { return adoptRef(new DOMWindow(frame)); }
+        static PassRefPtr<DOMWindow> create(LocalFrame& frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
 
         PassRefPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
@@ -113,25 +113,25 @@ enum PageshowEventPersistence {
 
         unsigned pendingUnloadEventListeners() const;
 
-        static FloatRect adjustWindowRect(LocalFrame*, const FloatRect& pendingChanges);
+        static FloatRect adjustWindowRect(LocalFrame&, const FloatRect& pendingChanges);
 
         bool allowPopUp(); // Call on first window, not target window.
-        static bool allowPopUp(LocalFrame* firstFrame);
+        static bool allowPopUp(LocalFrame& firstFrame);
 
         // DOM Level 0
 
-        Screen* screen() const;
-        History* history() const;
-        BarProp* locationbar() const;
-        BarProp* menubar() const;
-        BarProp* personalbar() const;
-        BarProp* scrollbars() const;
-        BarProp* statusbar() const;
-        BarProp* toolbar() const;
-        Navigator* navigator() const;
-        Navigator* clientInformation() const { return navigator(); }
+        Screen& screen() const;
+        History& history() const;
+        BarProp& locationbar() const;
+        BarProp& menubar() const;
+        BarProp& personalbar() const;
+        BarProp& scrollbars() const;
+        BarProp& statusbar() const;
+        BarProp& toolbar() const;
+        Navigator& navigator() const;
+        Navigator& clientInformation() const { return navigator(); }
 
-        Location* location() const;
+        Location& location() const;
         void setLocation(const String& location, DOMWindow* callingWindow, DOMWindow* enteredWindow,
             SetLocationLocking = LockHistoryBasedOnGestureState);
 
@@ -197,7 +197,7 @@ enum PageshowEventPersistence {
 
         // CSSOM View Module
 
-        PassRefPtr<StyleMedia> styleMedia() const;
+        StyleMedia& styleMedia() const;
 
         // DOM Level 2 Style Interface
 
@@ -211,7 +211,7 @@ enum PageshowEventPersistence {
         PassRefPtr<DOMPoint> webkitConvertPointFromPageToNode(Node*, const DOMPoint*) const;
         PassRefPtr<DOMPoint> webkitConvertPointFromNodeToPage(Node*, const DOMPoint*) const;
 
-        Console* console() const;
+        Console& console() const;
         PageConsole* pageConsole() const;
 
         void printErrorMessage(const String&);
@@ -237,7 +237,7 @@ enum PageshowEventPersistence {
         int webkitRequestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback>);
         void cancelAnimationFrame(int id);
 
-        DOMWindowCSS* css();
+        DOMWindowCSS& css() const;
 
         // Events
         // EventTarget API
@@ -290,7 +290,7 @@ enum PageshowEventPersistence {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 
-        Performance* performance() const;
+        Performance& performance() const;
 
         // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
         // when its document is no longer the document that is displayed in its
@@ -301,7 +301,7 @@ enum PageshowEventPersistence {
         void willDetachDocumentFromFrame();
         DOMWindow* anonymousIndexedGetter(uint32_t);
 
-        bool isInsecureScriptAccess(DOMWindow* callingWindow, const String& urlString);
+        bool isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString);
 
         PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier();
 
@@ -322,7 +322,7 @@ enum PageshowEventPersistence {
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 
     private:
-        explicit DOMWindow(LocalFrame*);
+        explicit DOMWindow(LocalFrame&);
 
         Page* page();
 

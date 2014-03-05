@@ -58,7 +58,7 @@ INTERFACE_CPP_INCLUDES = frozenset([
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'platform/TraceEvent.h',
-    'wtf/GetPtr.h',  # FIXME: remove if can eliminate WTF::getPtr
+    'wtf/GetPtr.h',
     'wtf/RefPtr.h',
 ])
 

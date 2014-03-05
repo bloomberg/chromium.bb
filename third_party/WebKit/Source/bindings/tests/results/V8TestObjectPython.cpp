@@ -129,7 +129,7 @@ static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>
 static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    RefPtr<TestInterfaceEmpty> result = imp->readonlyTestInterfaceEmptyAttribute();
+    RefPtr<TestInterfaceEmpty> result(imp->readonlyTestInterfaceEmptyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -2214,7 +2214,7 @@ static void perWorldBindingsReadonlyLongAttributeAttributeGetterCallbackForMainW
 static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    RefPtr<TestInterfaceEmpty> result = imp->perWorldBindingsReadonlyTestInterfaceEmptyAttribute();
+    RefPtr<TestInterfaceEmpty> result(imp->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -2234,7 +2234,7 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCa
 static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    RefPtr<TestInterfaceEmpty> result = imp->perWorldBindingsReadonlyTestInterfaceEmptyAttribute();
+    RefPtr<TestInterfaceEmpty> result(imp->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -2524,7 +2524,7 @@ static void locationAttributeGetterCallback(v8::Local<v8::String>, const v8::Pro
 static void locationAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
-    TestNode* imp = proxyImp->location();
+    TestNode* imp = WTF::getPtr(proxyImp->location());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
@@ -2554,7 +2554,7 @@ static void locationWithExceptionAttributeGetterCallback(v8::Local<v8::String>, 
 static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
-    TestNode* imp = proxyImp->locationWithException();
+    TestNode* imp = WTF::getPtr(proxyImp->locationWithException());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
@@ -2584,7 +2584,7 @@ static void locationWithCallWithAttributeGetterCallback(v8::Local<v8::String>, c
 static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
-    TestNode* imp = proxyImp->locationWithCallWith();
+    TestNode* imp = WTF::getPtr(proxyImp->locationWithCallWith());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
@@ -2614,7 +2614,7 @@ static void locationWithPerWorldBindingsAttributeGetterCallback(v8::Local<v8::St
 static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
-    TestNode* imp = proxyImp->locationWithPerWorldBindings();
+    TestNode* imp = WTF::getPtr(proxyImp->locationWithPerWorldBindings());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
@@ -2644,7 +2644,7 @@ static void locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld(v8::
 static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
-    TestNode* imp = proxyImp->locationWithPerWorldBindings();
+    TestNode* imp = WTF::getPtr(proxyImp->locationWithPerWorldBindings());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
@@ -3459,7 +3459,7 @@ static void locationReplaceableAttributeGetterCallback(v8::Local<v8::String>, co
 static void locationReplaceableAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* proxyImp = V8TestObjectPython::toNative(info.Holder());
-    TestNode* imp = proxyImp->locationReplaceable();
+    TestNode* imp = WTF::getPtr(proxyImp->locationReplaceable());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);

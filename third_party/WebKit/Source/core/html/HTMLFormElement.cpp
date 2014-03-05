@@ -423,7 +423,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
 
     LocalFrame* targetFrame = document().frame()->loader().findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
     if (!targetFrame) {
-        if (!DOMWindow::allowPopUp(document().frame()) && !UserGestureIndicator::processingUserGesture())
+        if (!DOMWindow::allowPopUp(*document().frame()) && !UserGestureIndicator::processingUserGesture())
             return;
         targetFrame = document().frame();
     } else {

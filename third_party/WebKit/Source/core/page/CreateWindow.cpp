@@ -44,12 +44,12 @@
 
 namespace WebCore {
 
-static LocalFrame* createWindow(LocalFrame* openerFrame, LocalFrame* lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
+static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
 
     if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
-        if (LocalFrame* frame = lookupFrame->loader().findFrameForNavigation(request.frameName(), openerFrame->document())) {
+        if (LocalFrame* frame = lookupFrame.loader().findFrameForNavigation(request.frameName(), openerFrame.document())) {
             if (request.frameName() != "_self")
                 frame->page()->focusController().setFocusedFrame(frame);
             created = false;
@@ -58,32 +58,33 @@ static LocalFrame* createWindow(LocalFrame* openerFrame, LocalFrame* lookupFrame
     }
 
     // Sandboxed frames cannot open new auxiliary browsing contexts.
-    if (openerFrame->document()->isSandboxed(SandboxPopups)) {
+    if (openerFrame.document()->isSandboxed(SandboxPopups)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        openerFrame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set.");
+        openerFrame.document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set.");
         return 0;
     }
 
-    if (openerFrame->settings() && !openerFrame->settings()->supportsMultipleWindows()) {
+    if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows()) {
         created = false;
-        return openerFrame->tree().top();
+        return openerFrame.tree().top();
     }
 
-    Page* oldPage = openerFrame->page();
+    Page* oldPage = openerFrame.page();
     if (!oldPage)
         return 0;
 
-    Page* page = oldPage->chrome().client().createWindow(openerFrame, request, features, policy, shouldSendReferrer);
+    Page* page = oldPage->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
     if (!page)
         return 0;
     FrameHost* host = &page->frameHost();
 
-    LocalFrame* frame = page->mainFrame();
+    ASSERT(page->mainFrame());
+    LocalFrame& frame = *page->mainFrame();
 
-    frame->loader().forceSandboxFlags(openerFrame->document()->sandboxFlags());
+    frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
 
     if (request.frameName() != "_blank")
-        frame->tree().setName(request.frameName());
+        frame.tree().setName(request.frameName());
 
     host->chrome().setWindowFeatures(features);
 
@@ -110,56 +111,57 @@ static LocalFrame* createWindow(LocalFrame* openerFrame, LocalFrame* lookupFrame
     host->chrome().show(policy);
 
     created = true;
-    return frame;
+    return &frame;
 }
 
 LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
-    DOMWindow* callingWindow, LocalFrame* firstFrame, LocalFrame* openerFrame)
+    DOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame)
 {
-    LocalFrame* activeFrame = callingWindow->frame();
+    LocalFrame* activeFrame = callingWindow.frame();
+    ASSERT(activeFrame);
 
-    KURL completedURL = urlString.isEmpty() ? KURL(ParsedURLString, emptyString()) : firstFrame->document()->completeURL(urlString);
+    KURL completedURL = urlString.isEmpty() ? KURL(ParsedURLString, emptyString()) : firstFrame.document()->completeURL(urlString);
     if (!completedURL.isEmpty() && !completedURL.isValid()) {
         // Don't expose client code to invalid URLs.
-        callingWindow->printErrorMessage("Unable to open a window with invalid URL '" + completedURL.string() + "'.\n");
+        callingWindow.printErrorMessage("Unable to open a window with invalid URL '" + completedURL.string() + "'.\n");
         return 0;
     }
 
     // For whatever reason, Firefox uses the first frame to determine the outgoingReferrer. We replicate that behavior here.
-    Referrer referrer(SecurityPolicy::generateReferrerHeader(firstFrame->document()->referrerPolicy(), completedURL, firstFrame->document()->outgoingReferrer()), firstFrame->document()->referrerPolicy());
+    Referrer referrer(SecurityPolicy::generateReferrerHeader(firstFrame.document()->referrerPolicy(), completedURL, firstFrame.document()->outgoingReferrer()), firstFrame.document()->referrerPolicy());
 
     ResourceRequest request(completedURL, referrer);
-    FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(firstFrame->document()->outgoingOrigin()));
-    FrameLoadRequest frameRequest(callingWindow->document(), request, frameName);
+    FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(firstFrame.document()->outgoingOrigin()));
+    FrameLoadRequest frameRequest(callingWindow.document(), request, frameName);
 
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
-    LocalFrame* newFrame = createWindow(activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
+    LocalFrame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
     if (!newFrame)
         return 0;
 
-    newFrame->loader().setOpener(openerFrame);
+    newFrame->loader().setOpener(&openerFrame);
     newFrame->page()->setOpenedByDOM();
 
     if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
 
     if (created) {
-        FrameLoadRequest request(callingWindow->document(), ResourceRequest(completedURL, referrer));
+        FrameLoadRequest request(callingWindow.document(), ResourceRequest(completedURL, referrer));
         newFrame->loader().load(request);
     } else if (!urlString.isEmpty()) {
-        newFrame->navigationScheduler().scheduleLocationChange(callingWindow->document(), completedURL.string(), referrer, false);
+        newFrame->navigationScheduler().scheduleLocationChange(callingWindow.document(), completedURL.string(), referrer, false);
     }
     return newFrame;
 }
 
-void createWindowForRequest(const FrameLoadRequest& request, LocalFrame* openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
+void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
 {
-    if (openerFrame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
+    if (openerFrame.document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
-    if (openerFrame->document() && openerFrame->document()->isSandboxed(SandboxPopups))
+    if (openerFrame.document() && openerFrame.document()->isSandboxed(SandboxPopups))
         return;
 
     if (!DOMWindow::allowPopUp(openerFrame))
@@ -175,8 +177,8 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame* openerF
         return;
     newFrame->page()->setOpenedByDOM();
     if (shouldSendReferrer == MaybeSendReferrer) {
-        newFrame->loader().setOpener(openerFrame);
-        newFrame->document()->setReferrerPolicy(openerFrame->document()->referrerPolicy());
+        newFrame->loader().setOpener(&openerFrame);
+        newFrame->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
     }
     FrameLoadRequest newRequest(0, request.resourceRequest());
     newRequest.setFormState(request.formState());

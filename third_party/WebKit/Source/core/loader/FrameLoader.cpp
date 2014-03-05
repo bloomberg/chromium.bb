@@ -752,7 +752,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         if (action.policy() == NavigationPolicyDownload)
             m_client->loadURLExternally(action.resourceRequest(), NavigationPolicyDownload);
         else
-            createWindowForRequest(request, m_frame, action.policy(), request.shouldSendReferrer());
+            createWindowForRequest(request, *m_frame, action.policy(), request.shouldSendReferrer());
         return;
     }
 

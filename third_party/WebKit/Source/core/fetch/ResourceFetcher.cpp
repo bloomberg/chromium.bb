@@ -180,10 +180,8 @@ static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDo
         initiatorDocument = initiatorDocument->parentDocument();
     if (!initiatorDocument || !initiatorDocument->loader())
         return;
-    if (DOMWindow* initiatorWindow = initiatorDocument->domWindow()) {
-        if (Performance* performance = initiatorWindow->performance())
-            performance->addResourceTiming(*info, initiatorDocument);
-    }
+    if (DOMWindow* initiatorWindow = initiatorDocument->domWindow())
+        initiatorWindow->performance().addResourceTiming(*info, initiatorDocument);
 }
 
 static ResourceRequest::TargetType requestTargetType(const ResourceFetcher* fetcher, const ResourceRequest& request, Resource::Type type)

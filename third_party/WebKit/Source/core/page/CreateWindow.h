@@ -38,9 +38,9 @@ struct FrameLoadRequest;
 struct WindowFeatures;
 
 LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
-    DOMWindow* callingWindow, LocalFrame* firstFrame, LocalFrame* openerFrame);
+    DOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame);
 
-void createWindowForRequest(const FrameLoadRequest&, LocalFrame* openerFrame, NavigationPolicy, ShouldSendReferrer);
+void createWindowForRequest(const FrameLoadRequest&, LocalFrame& openerFrame, NavigationPolicy, ShouldSendReferrer);
 
 } // namespace WebCore
 

@@ -98,7 +98,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
     {# FIXME: merge local variable assignment with above #}
-    {{attribute.cpp_type}} result = {{attribute.cpp_value}};
+    {{attribute.cpp_type}} result({{attribute.cpp_value}});
     if (result && DOMDataStore::setReturnValueFromWrapper{{world_suffix}}<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -213,7 +213,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {% if attribute.put_forwards %}
     {{cpp_class}}* proxyImp = {{v8_class}}::toNative(info.Holder());
-    {{attribute.idl_type}}* imp = proxyImp->{{attribute.name}}();
+    {{attribute.idl_type}}* imp = WTF::getPtr(proxyImp->{{attribute.name}}());
     if (!imp)
         return;
     {% elif not attribute.is_static %}

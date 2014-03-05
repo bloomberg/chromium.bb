@@ -112,8 +112,8 @@ namespace WebCore {
 
 class PostMessageTimer FINAL : public SuspendableTimer {
 public:
-    PostMessageTimer(DOMWindow* window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
-        : SuspendableTimer(window->document())
+    PostMessageTimer(DOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
+        : SuspendableTimer(window.document())
         , m_window(window)
         , m_message(message)
         , m_origin(sourceOrigin)
@@ -252,13 +252,12 @@ unsigned DOMWindow::pendingUnloadEventListeners() const
 // 3) Constrains the window rect to within the top and left boundaries of the available screen rect.
 // 4) Constrains the window rect to within the bottom and right boundaries of the available screen rect.
 // 5) Translate the window rect coordinates to be within the coordinate space of the screen.
-FloatRect DOMWindow::adjustWindowRect(LocalFrame* frame, const FloatRect& pendingChanges)
+FloatRect DOMWindow::adjustWindowRect(LocalFrame& frame, const FloatRect& pendingChanges)
 {
-    ASSERT(frame);
-    FrameHost* host = frame->host();
+    FrameHost* host = frame.host();
     ASSERT(host);
 
-    FloatRect screen = screenAvailableRect(frame->view());
+    FloatRect screen = screenAvailableRect(frame.view());
     FloatRect window = host->chrome().windowRect();
 
     // Make sure we're in a valid state before adjusting dimensions.
@@ -295,27 +294,24 @@ FloatRect DOMWindow::adjustWindowRect(LocalFrame* frame, const FloatRect& pendin
     return window;
 }
 
-bool DOMWindow::allowPopUp(LocalFrame* firstFrame)
+bool DOMWindow::allowPopUp(LocalFrame& firstFrame)
 {
-    ASSERT(firstFrame);
-
     if (UserGestureIndicator::processingUserGesture())
         return true;
 
-    Settings* settings = firstFrame->settings();
+    Settings* settings = firstFrame.settings();
     return settings && settings->javaScriptCanOpenWindowsAutomatically();
 }
 
 bool DOMWindow::allowPopUp()
 {
-    return m_frame && allowPopUp(m_frame);
+    return m_frame && allowPopUp(*m_frame);
 }
 
-DOMWindow::DOMWindow(LocalFrame* frame)
-    : FrameDestructionObserver(frame)
+DOMWindow::DOMWindow(LocalFrame& frame)
+    : FrameDestructionObserver(&frame)
     , m_shouldPrintWhenFinishedLoading(false)
 {
-    ASSERT(frame);
     ScriptWrappable::init(this);
 }
 
@@ -451,7 +447,7 @@ void DOMWindow::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObje
         return;
 
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
-    dispatchEvent(PopStateEvent::create(stateObject, history()));
+    dispatchEvent(PopStateEvent::create(stateObject, &history()));
 }
 
 void DOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
@@ -603,73 +599,73 @@ int DOMWindow::orientation() const
     return m_frame->orientation();
 }
 
-Screen* DOMWindow::screen() const
+Screen& DOMWindow::screen() const
 {
     if (!m_screen)
         m_screen = Screen::create(m_frame);
-    return m_screen.get();
+    return *m_screen;
 }
 
-History* DOMWindow::history() const
+History& DOMWindow::history() const
 {
     if (!m_history)
         m_history = History::create(m_frame);
-    return m_history.get();
+    return *m_history;
 }
 
-BarProp* DOMWindow::locationbar() const
+BarProp& DOMWindow::locationbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropLocationbar);
     if (!m_locationbar)
         m_locationbar = BarProp::create(m_frame, BarProp::Locationbar);
-    return m_locationbar.get();
+    return *m_locationbar;
 }
 
-BarProp* DOMWindow::menubar() const
+BarProp& DOMWindow::menubar() const
 {
     UseCounter::count(document(), UseCounter::BarPropMenubar);
     if (!m_menubar)
         m_menubar = BarProp::create(m_frame, BarProp::Menubar);
-    return m_menubar.get();
+    return *m_menubar;
 }
 
-BarProp* DOMWindow::personalbar() const
+BarProp& DOMWindow::personalbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropPersonalbar);
     if (!m_personalbar)
         m_personalbar = BarProp::create(m_frame, BarProp::Personalbar);
-    return m_personalbar.get();
+    return *m_personalbar;
 }
 
-BarProp* DOMWindow::scrollbars() const
+BarProp& DOMWindow::scrollbars() const
 {
     UseCounter::count(document(), UseCounter::BarPropScrollbars);
     if (!m_scrollbars)
         m_scrollbars = BarProp::create(m_frame, BarProp::Scrollbars);
-    return m_scrollbars.get();
+    return *m_scrollbars;
 }
 
-BarProp* DOMWindow::statusbar() const
+BarProp& DOMWindow::statusbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropStatusbar);
     if (!m_statusbar)
         m_statusbar = BarProp::create(m_frame, BarProp::Statusbar);
-    return m_statusbar.get();
+    return *m_statusbar;
 }
 
-BarProp* DOMWindow::toolbar() const
+BarProp& DOMWindow::toolbar() const
 {
     UseCounter::count(document(), UseCounter::BarPropToolbar);
     if (!m_toolbar)
         m_toolbar = BarProp::create(m_frame, BarProp::Toolbar);
-    return m_toolbar.get();
+    return *m_toolbar;
 }
 
-Console* DOMWindow::console() const
+Console& DOMWindow::console() const
 {
     if (!m_console)
         m_console = Console::create(m_frame);
-    return m_console.get();
+    return *m_console;
 }
 
 PageConsole* DOMWindow::pageConsole() const
@@ -688,25 +684,25 @@ ApplicationCache* DOMWindow::applicationCache() const
     return m_applicationCache.get();
 }
 
-Navigator* DOMWindow::navigator() const
+Navigator& DOMWindow::navigator() const
 {
     if (!m_navigator)
         m_navigator = Navigator::create(m_frame);
-    return m_navigator.get();
+    return *m_navigator;
 }
 
-Performance* DOMWindow::performance() const
+Performance& DOMWindow::performance() const
 {
     if (!m_performance)
         m_performance = Performance::create(m_frame);
-    return m_performance.get();
+    return *m_performance;
 }
 
-Location* DOMWindow::location() const
+Location& DOMWindow::location() const
 {
     if (!m_location)
         m_location = Location::create(m_frame);
-    return m_location.get();
+    return *m_location;
 }
 
 Storage* DOMWindow::sessionStorage(ExceptionState& exceptionState) const
@@ -834,7 +830,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
 
     // Schedule the message.
-    PostMessageTimer* timer = new PostMessageTimer(this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release());
+    PostMessageTimer* timer = new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release());
     timer->startOneShot(0);
     timer->suspendIfNeeded();
 }
@@ -1265,11 +1261,11 @@ Document* DOMWindow::document() const
     return m_document.get();
 }
 
-PassRefPtr<StyleMedia> DOMWindow::styleMedia() const
+StyleMedia& DOMWindow::styleMedia() const
 {
     if (!m_media)
         m_media = StyleMedia::create(m_frame);
-    return m_media.get();
+    return *m_media;
 }
 
 PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const String& pseudoElt) const
@@ -1404,7 +1400,7 @@ void DOMWindow::moveBy(float x, float y) const
     FloatRect windowRect = host->chrome().windowRect();
     windowRect.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chrome().setWindowRect(adjustWindowRect(m_frame, windowRect));
+    host->chrome().setWindowRect(adjustWindowRect(*m_frame, windowRect));
 }
 
 void DOMWindow::moveTo(float x, float y) const
@@ -1419,7 +1415,7 @@ void DOMWindow::moveTo(float x, float y) const
     FloatRect windowRect = host->chrome().windowRect();
     windowRect.setLocation(FloatPoint(x, y));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chrome().setWindowRect(adjustWindowRect(m_frame, windowRect));
+    host->chrome().setWindowRect(adjustWindowRect(*m_frame, windowRect));
 }
 
 void DOMWindow::resizeBy(float x, float y) const
@@ -1434,7 +1430,7 @@ void DOMWindow::resizeBy(float x, float y) const
     FloatRect fr = host->chrome().windowRect();
     FloatSize dest = fr.size() + FloatSize(x, y);
     FloatRect update(fr.location(), dest);
-    host->chrome().setWindowRect(adjustWindowRect(m_frame, update));
+    host->chrome().setWindowRect(adjustWindowRect(*m_frame, update));
 }
 
 void DOMWindow::resizeTo(float width, float height) const
@@ -1449,7 +1445,7 @@ void DOMWindow::resizeTo(float width, float height) const
     FloatRect fr = host->chrome().windowRect();
     FloatSize dest = FloatSize(width, height);
     FloatRect update(fr.location(), dest);
-    host->chrome().setWindowRect(adjustWindowRect(m_frame, update));
+    host->chrome().setWindowRect(adjustWindowRect(*m_frame, update));
 }
 
 int DOMWindow::requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback> callback)
@@ -1474,11 +1470,11 @@ void DOMWindow::cancelAnimationFrame(int id)
         d->cancelAnimationFrame(id);
 }
 
-DOMWindowCSS* DOMWindow::css()
+DOMWindowCSS& DOMWindow::css() const
 {
     if (!m_css)
         m_css = DOMWindowCSS::create();
-    return m_css.get();
+    return *m_css;
 }
 
 static void didAddStorageEventListener(DOMWindow* window)
@@ -1631,7 +1627,7 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow* callingWindow, D
     if (completedURL.isNull())
         return;
 
-    if (isInsecureScriptAccess(callingWindow, completedURL))
+    if (isInsecureScriptAccess(*callingWindow, completedURL))
         return;
 
     // We want a new history item if we are processing a user gesture.
@@ -1717,7 +1713,7 @@ String DOMWindow::crossDomainAccessErrorMessage(DOMWindow* callingWindow)
     return message + "Protocols, domains, and ports must match.";
 }
 
-bool DOMWindow::isInsecureScriptAccess(DOMWindow* callingWindow, const String& urlString)
+bool DOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString)
 {
     if (!protocolIsJavaScript(urlString))
         return false;
@@ -1728,16 +1724,16 @@ bool DOMWindow::isInsecureScriptAccess(DOMWindow* callingWindow, const String& u
     // LocalFrame on navigation: https://bugs.webkit.org/show_bug.cgi?id=62054
     if (isCurrentlyDisplayedInFrame()) {
         // FIXME: Is there some way to eliminate the need for a separate "callingWindow == this" check?
-        if (callingWindow == this)
+        if (&callingWindow == this)
             return false;
 
         // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
         // Can we name the SecurityOrigin function better to make this more clear?
-        if (callingWindow->document()->securityOrigin()->canAccess(document()->securityOrigin()))
+        if (callingWindow.document()->securityOrigin()->canAccess(document()->securityOrigin()))
             return false;
     }
 
-    printErrorMessage(crossDomainAccessErrorMessage(callingWindow));
+    printErrorMessage(crossDomainAccessErrorMessage(&callingWindow));
     return true;
 }
 
@@ -1777,7 +1773,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
 
         KURL completedURL = firstFrame->document()->completeURL(urlString);
 
-        if (targetFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
+        if (targetFrame->domWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
             return targetFrame->domWindow();
 
         if (urlString.isEmpty())
@@ -1794,7 +1790,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     }
 
     WindowFeatures windowFeatures(windowFeaturesString);
-    LocalFrame* result = createWindow(urlString, frameName, windowFeatures, callingWindow, firstFrame, m_frame);
+    LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *m_frame);
     return result ? result->domWindow() : 0;
 }
 

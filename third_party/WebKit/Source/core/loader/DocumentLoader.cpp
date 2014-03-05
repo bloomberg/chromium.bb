@@ -314,7 +314,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         return true;
     if (policy == NavigationPolicyIgnore)
         return false;
-    if (!DOMWindow::allowPopUp(m_frame) && !UserGestureIndicator::processingUserGesture())
+    if (!DOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
         return false;
     frameLoader()->client()->loadURLExternally(request, policy);
     return false;
@@ -809,7 +809,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFrame* frame, co
         frame->document()->prepareForDestruction();
 
     if (!shouldReuseDefaultView)
-        frame->setDOMWindow(DOMWindow::create(frame));
+        frame->setDOMWindow(DOMWindow::create(*frame));
 
     RefPtr<Document> document = frame->domWindow()->installNewDocument(mimeType, init);
     if (ownerDocument) {

@@ -125,7 +125,7 @@ static void readOnlyStringAttrAttributeGetterCallback(v8::Local<v8::String>, con
 static void readOnlyTestObjectAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    RefPtr<TestObject> result = imp->readOnlyTestObjectAttr();
+    RefPtr<TestObject> result(imp->readOnlyTestObjectAttr());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -2444,7 +2444,7 @@ static void nullableLongSettableAttributeAttributeSetterCallback(v8::Local<v8::S
 static void perWorldReadOnlyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    RefPtr<TestObject> result = imp->perWorldReadOnlyAttribute();
+    RefPtr<TestObject> result(imp->perWorldReadOnlyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -2464,7 +2464,7 @@ static void perWorldReadOnlyAttributeAttributeGetterCallback(v8::Local<v8::Strin
 static void perWorldReadOnlyAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    RefPtr<TestObject> result = imp->perWorldReadOnlyAttribute();
+    RefPtr<TestObject> result(imp->perWorldReadOnlyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
@@ -3120,7 +3120,7 @@ static void locationAttributeGetterCallback(v8::Local<v8::String>, const v8::Pro
 static void locationAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObject* proxyImp = V8TestObject::toNative(info.Holder());
-    TestNode* imp = proxyImp->location();
+    TestNode* imp = WTF::getPtr(proxyImp->location());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
@@ -3150,7 +3150,7 @@ static void locationWithExceptionAttributeGetterCallback(v8::Local<v8::String>, 
 static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObject* proxyImp = V8TestObject::toNative(info.Holder());
-    TestNode* imp = proxyImp->locationWithException();
+    TestNode* imp = WTF::getPtr(proxyImp->locationWithException());
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);

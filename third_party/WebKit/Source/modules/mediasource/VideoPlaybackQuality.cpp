@@ -50,8 +50,8 @@ VideoPlaybackQuality::VideoPlaybackQuality(
     , m_droppedVideoFrames(droppedVideoFrames)
     , m_corruptedVideoFrames(corruptedVideoFrames)
 {
-    if (document.domWindow() && document.domWindow()->performance())
-        m_creationTime = document.domWindow()->performance()->now();
+    if (document.domWindow())
+        m_creationTime = document.domWindow()->performance().now();
 }
 
 }
