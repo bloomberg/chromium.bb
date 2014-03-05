@@ -1093,6 +1093,7 @@
             'frame/SuspendableTimer.cpp',
             'frame/SuspendableTimer.h',
             'frame/UseCounter.cpp',
+            'frame/csp/CSPDirectiveList.cpp',
             'frame/csp/CSPSource.cpp',
             'frame/csp/CSPSourceList.cpp',
             'frame/csp/MediaListDirective.cpp',

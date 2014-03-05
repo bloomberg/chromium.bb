@@ -60,6 +60,28 @@ typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
 class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+    // CSP 1.0 Directives
+    static const char ConnectSrc[];
+    static const char DefaultSrc[];
+    static const char FontSrc[];
+    static const char FrameSrc[];
+    static const char ImgSrc[];
+    static const char MediaSrc[];
+    static const char ObjectSrc[];
+    static const char ReportURI[];
+    static const char Sandbox[];
+    static const char ScriptSrc[];
+    static const char StyleSrc[];
+
+    // CSP 1.1 Directives
+    static const char BaseURI[];
+    static const char ChildSrc[];
+    static const char FormAction[];
+    static const char FrameAncestors[];
+    static const char PluginTypes[];
+    static const char ReflectedXSS[];
+    static const char Referrer[];
+
     static PassRefPtr<ContentSecurityPolicy> create(ExecutionContextClient* client)
     {
         return adoptRef(new ContentSecurityPolicy(client));
