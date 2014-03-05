@@ -809,7 +809,8 @@ void ContainerNode::focusStateChanged()
     if (!renderer())
         return;
 
-    if (isElementNode() && toElement(this)->childrenAffectedByFocus())
+    if ((isElementNode() && toElement(this)->childrenAffectedByFocus())
+        || (renderStyle()->affectedByFocus() && renderStyle()->hasPseudoStyle(FIRST_LETTER)))
         setNeedsStyleRecalc(SubtreeStyleChange);
     else if (renderStyle()->affectedByFocus())
         setNeedsStyleRecalc(LocalStyleChange);
@@ -846,7 +847,8 @@ void ContainerNode::setActive(bool down)
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
-        if (isElementNode() && toElement(this)->childrenAffectedByActive())
+        if ((isElementNode() && toElement(this)->childrenAffectedByActive())
+            || (renderStyle()->affectedByActive() && renderStyle()->hasPseudoStyle(FIRST_LETTER)))
             setNeedsStyleRecalc(SubtreeStyleChange);
         else if (renderStyle()->affectedByActive())
             setNeedsStyleRecalc(LocalStyleChange);
@@ -874,7 +876,8 @@ void ContainerNode::setHovered(bool over)
         return;
     }
 
-    if (isElementNode() && toElement(this)->childrenAffectedByHover())
+    if ((isElementNode() && toElement(this)->childrenAffectedByHover())
+        || (renderStyle()->affectedByHover() && renderStyle()->hasPseudoStyle(FIRST_LETTER)))
         setNeedsStyleRecalc(SubtreeStyleChange);
     else if (renderStyle()->affectedByHover())
         setNeedsStyleRecalc(LocalStyleChange);
