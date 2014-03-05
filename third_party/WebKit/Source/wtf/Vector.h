@@ -162,7 +162,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T>
     struct VectorCopier<false, T>
     {
-        static void uninitializedCopy(const T* src, const T* srcEnd, T* dst)
+        template<typename U>
+        static void uninitializedCopy(const U* src, const U* srcEnd, T* dst)
         {
             while (src != srcEnd) {
                 new (NotNull, dst) T(*src);
@@ -178,6 +179,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         static void uninitializedCopy(const T* src, const T* srcEnd, T* dst)
         {
             memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
+        }
+        template<typename U>
+        static void uninitializedCopy(const U* src, const U* srcEnd, T* dst)
+        {
+            VectorCopier<false, T>::uninitializedCopy(src, srcEnd, dst);
         }
     };
 
@@ -962,8 +968,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
         RELEASE_ASSERT(newSize >= m_size);
         T* dest = end();
-        for (size_t i = 0; i < dataSize; ++i)
-            new (NotNull, &dest[i]) T(data[i]);
+        VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(data, &data[dataSize], dest);
         m_size = newSize;
     }
 
@@ -1022,8 +1027,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         RELEASE_ASSERT(newSize >= m_size);
         T* spot = begin() + position;
         TypeOperations::moveOverlapping(spot, end(), spot + dataSize);
-        for (size_t i = 0; i < dataSize; ++i)
-            new (NotNull, &spot[i]) T(data[i]);
+        VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(data, &data[dataSize], spot);
         m_size = newSize;
     }
 
