@@ -917,6 +917,9 @@ crbug.com/309197 [ Win ] webaudio/oscillator-sine.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ Win ] webaudio/oscillator-square.html [ NeedsManualRebaseline ]
 crbug.com/309197 [ XP ] svg/transforms/text-with-mask-with-svg-transform.svg [ NeedsManualRebaseline ]
 
+crbug.com/349523 [ Win ] webaudio/dynamicscompressor-simple.html [ Failure ]
+crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
+
 # Failing on Mac since r168339
 crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 
