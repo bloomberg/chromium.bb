@@ -43,4 +43,8 @@
       },
     }],
   ],
+  # Required on Android to copy icudtl.dat to a device.
+  'includes': [
+    "../../../../third_party/icu/icu.isolate",
+  ],
 }
