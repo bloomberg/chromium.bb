@@ -17,6 +17,7 @@ URL: http://bgoffice.sourceforge.net/
      https://dsso.googlecode.com/files/sv-2.12.zip
      http://sourceforge.net/projects/magyarispell/
      https://spellcheck-ko.googlecode.com/files/ko-aff-dic-0.5.6.zip
+     http://tajlingvo.tj/project/TajikHunSpellDictionary/tg_TG.zip
      https://tr-spell.googlecode.com/files/firefox-tr-dict-v0.3.2.xpi
      http://wiki.services.openoffice.org/wiki/Dictionaries
      http://wordlist.sourceforge.net/
@@ -52,7 +53,7 @@ individual dictionaries, including copyright information.
 
 The .bdic files are versioned to force clients to download new versions when
 necessary. Use the same version for all the dictionaries that you add at the
-same time. Increment the major version number (3) if you're updating either dic
+same time. Increment the major version number (5) if you're updating either dic
 or aff files. Increment the minor version number (0) if you're updating only
 dic_delta files. If you add or update dictionaries, make sure to update the
 constants in chrome\common\spellcheck_common.cc.
@@ -162,6 +163,10 @@ The following dictionary has a BSD-like license in README_ru_RU.txt:
 
 ru_RU:  Added words
 
+The following dictionary has an Apache license in COPYING.Apache:
+
+tg_TG:  No changes
+
 On Jan 20, 2011, en_US.dic_delta was copied to en_AU.dic_delta and
 en_GB.dic_delta so these locales would get the same additional words.
 
@@ -178,3 +183,6 @@ to a Google code website. The only difference between the two locations is that
 the tr_TR affix file from the Google code website includes a "FLAG num"
 directive, which prevents Chrome's heapcheck tests from crashing. Given that aff
 file changed, we used version 4-0.
+
+On Mar 4, 2014, we added tg_TG dictionaries for Tajik language. We used 5-0
+version to denote a new batch of dictionaries.
