@@ -292,6 +292,8 @@ class RenderWidgetHostViewAndroid
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       const SkBitmap::Config config);
 
+  bool IsReadbackConfigSupported(SkBitmap::Config bitmap_config);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 

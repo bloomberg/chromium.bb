@@ -192,6 +192,8 @@
     'common/gpu/client/context_provider_command_buffer.h',
     'common/gpu/client/gl_helper.cc',
     'common/gpu/client/gl_helper.h',
+    'common/gpu/client/gl_helper_readback_support.cc',
+    'common/gpu/client/gl_helper_readback_support.h',
     'common/gpu/client/gl_helper_scaling.cc',
     'common/gpu/client/gl_helper_scaling.h',
     'common/gpu/client/gpu_channel_host.cc',

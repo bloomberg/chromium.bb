@@ -593,28 +593,12 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkBitmap::Config bitmap_config) {
-  // Only ARGB888 and RGB565 supported as of now.
-  bool format_support = ((bitmap_config == SkBitmap::kRGB_565_Config) ||
-                         (bitmap_config == SkBitmap::kARGB_8888_Config));
-  if (!format_support) {
-    DCHECK(format_support);
+  if (!IsReadbackConfigSupported(bitmap_config)) {
     callback.Run(false, SkBitmap());
     return;
   }
   base::TimeTicks start_time = base::TimeTicks::Now();
   if (!using_synchronous_compositor_ && !IsSurfaceAvailableForCopy()) {
-    callback.Run(false, SkBitmap());
-    return;
-  }
-  ImageTransportFactoryAndroid* factory =
-      ImageTransportFactoryAndroid::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return;
-  bool check_rgb565_support = gl_helper->CanUseRgb565Readback();
-  if ((bitmap_config == SkBitmap::kRGB_565_Config) &&
-      !check_rgb565_support) {
-    LOG(ERROR) << "Readbackformat rgb565  not supported";
     callback.Run(false, SkBitmap());
     return;
   }
@@ -1325,6 +1309,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();
+
   if (!gl_helper)
     return;
 
@@ -1389,6 +1374,16 @@ void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
                       base::TimeTicks::Now() - start_time);
 
   callback.Run(true, *source);
+}
+
+bool RenderWidgetHostViewAndroid::IsReadbackConfigSupported(
+    SkBitmap::Config bitmap_config) {
+  ImageTransportFactoryAndroid* factory =
+      ImageTransportFactoryAndroid::GetInstance();
+  GLHelper* gl_helper = factory->GetGLHelper();
+  if (!gl_helper)
+    return false;
+  return gl_helper->IsReadbackConfigSupported(bitmap_config);
 }
 
 // static

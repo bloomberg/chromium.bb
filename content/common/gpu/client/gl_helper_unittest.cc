@@ -23,6 +23,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "content/common/gpu/client/gl_helper.h"
+#include "content/common/gpu/client/gl_helper_readback_support.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"
@@ -1001,12 +1002,8 @@ class GLHelperTest : public testing::Test {
   bool TestTextureFormatReadback(const gfx::Size& src_size,
                          SkBitmap::Config bitmap_config,
                          bool async) {
-    DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
-           (bitmap_config == SkBitmap::kARGB_8888_Config));
-    bool rgb565_format = (bitmap_config == SkBitmap::kRGB_565_Config);
-    if (rgb565_format && !helper_->CanUseRgb565Readback()) {
-      LOG(INFO) << "RGB565 Format Not supported on this platform";
-      LOG(INFO) << "Skipping RGB565ReadBackTest";
+    if (!helper_->IsReadbackConfigSupported(bitmap_config)) {
+      LOG(INFO) << "Skipping test format not supported" << bitmap_config;
       return true;
     }
     WebGLId src_texture = context_->createTexture();

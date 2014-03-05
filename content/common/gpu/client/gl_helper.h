@@ -144,6 +144,7 @@ class ScopedFlush {
 };
 
 class ReadbackYUVInterface;
+class GLHelperReadbackSupport;
 
 // Provides higher level operations on top of the gpu::gles2::GLES2Interface
 // interfaces.
@@ -277,9 +278,6 @@ class CONTENT_EXPORT GLHelper {
   // size of the framebuffer.
   void CopyTextureFullImage(GLuint texture, const gfx::Size& size);
 
-  // Check whether rgb565 readback is supported or not.
-  bool CanUseRgb565Readback();
-
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.
   // If the source or destination sizes changes, you must create
@@ -328,6 +326,10 @@ class CONTENT_EXPORT GLHelper {
   // 0 if GL_EXT_draw_buffers is not available.
   GLint MaxDrawBuffers();
 
+  // Checks whether the readbback is supported for texture with the
+  // matching config. This doesnt check for cross format readbacks.
+  bool IsReadbackConfigSupported(SkBitmap::Config texture_format);
+
  protected:
   class CopyTextureToImpl;
 
@@ -340,8 +342,7 @@ class CONTENT_EXPORT GLHelper {
   gpu::ContextSupport* context_support_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   scoped_ptr<GLHelperScaling> scaler_impl_;
-  bool initialized_565_format_check_;
-  bool support_565_format_;
+  scoped_ptr<GLHelperReadbackSupport> readback_support_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };
