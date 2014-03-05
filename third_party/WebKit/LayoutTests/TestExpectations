@@ -783,6 +783,8 @@ crbug.com/337735 [ Linux ] compositing/overflow/iframe-scroll-children.html [ Pa
 crbug.com/337735 [ Linux ] virtual/gpu/compositedscrolling/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/337735 [ Linux ] virtual/softwarecompositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 
+crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hidden.html [ Pass Timeout ]
+
 crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
 crbug.com/333882 [ Win7 ] inspector/elements/styles/styles-change-node-while-editing.html [ Pass Failure ]
