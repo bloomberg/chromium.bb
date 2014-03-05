@@ -1329,8 +1329,12 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
   log_cmd.append(archive_url)
   cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
 
-  return pushimage.PushImage(archive_url, board, profile=profile,
-                             sign_types=sign_types, dry_run=dryrun)
+  try:
+    return pushimage.PushImage(archive_url, board, profile=profile,
+                               sign_types=sign_types, dry_run=dryrun)
+  except pushimage.PushError as e:
+    cros_build_lib.PrintBuildbotStepFailure()
+    return e.args[1]
 
 
 def BuildFactoryTestImage(buildroot, board, extra_env):

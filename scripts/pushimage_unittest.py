@@ -16,9 +16,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
-from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import signing
 from chromite.scripts import pushimage
 
@@ -113,14 +113,10 @@ config_board = test.board
     self.assertEqual(content.rstrip(), exp_content.rstrip())
 
 
-class MarkImageToBeSignedTest(cros_test_lib.MockTestCase):
+class MarkImageToBeSignedTest(gs_unittest.AbstractGSContextTest):
   """Tests for MarkImageToBeSigned()"""
 
   def setUp(self):
-    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
-    self.gs_mock.SetDefaultCmdResult()
-    self.ctx = gs.GSContext()
-
     # Minor optimization -- we call this for logging purposes in the main
     # code, but don't really care about it for testing.  It just slows us.
     self.PatchObject(git, 'RunGit',
@@ -170,14 +166,10 @@ class MarkImageToBeSignedTest(cros_test_lib.MockTestCase):
     self.gs_mock.assertCommandContains(['cp', '--'])
 
 
-class PushImageTests(cros_test_lib.MockTestCase):
+class PushImageTests(gs_unittest.AbstractGSContextTest):
   """Tests for PushImage()"""
 
   def setUp(self):
-    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
-    self.gs_mock.SetDefaultCmdResult()
-    self.ctx = gs.GSContext()
-
     self.mark_mock = self.PatchObject(pushimage, 'MarkImageToBeSigned')
 
   def testBasic(self):
@@ -234,6 +226,14 @@ class PushImageTests(cros_test_lib.MockTestCase):
     self.assertEqual(self.gs_mock.call_count, 16)
     self.assertFalse(self.mark_mock.called)
     self.assertEqual(urls, {})
+
+  def testGsError(self):
+    """Verify random GS errors don't make us blow up entirely"""
+    self.gs_mock.AddCmdResult(partial_mock.In('stat'), returncode=1,
+                              output='gobblety gook\n')
+    with cros_test_lib.LoggingCapturer('chromite'):
+      self.assertRaises(pushimage.PushError, pushimage.PushImage, '/src',
+                        'test.board', 'R34-5126.0.0')
 
 
 class MainTests(cros_test_lib.MockTestCase):

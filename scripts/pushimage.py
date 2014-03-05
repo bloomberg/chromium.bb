@@ -40,6 +40,10 @@ TEST_SIGN_BUCKET_BASE = 'gs://chromeos-throw-away-bucket/signer-tests'
 TEST_KEYSETS = set(('test-keys-mp', 'test-keys-premp'))
 
 
+class PushError(Exception):
+  """When an (unknown) error happened while trying to push artifacts."""
+
+
 class MissingBoardInstructions(Exception):
   """Raised when a board lacks any signer instructions."""
 
@@ -179,6 +183,7 @@ def MarkImageToBeSigned(ctx, tbs_base, insns_path, priority):
                                   ['rev-parse', 'HEAD']).output.rstrip(),
     ]
     osutils.WriteFile(temp_tbs_file.name, '\n'.join(lines) + '\n')
+    # The caller will catch gs.GSContextException for us.
     ctx.Copy(temp_tbs_file.name, tbs_path)
 
   return tbs_path
@@ -206,6 +211,10 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
                                          'gs://signer_instruction_uri2',
                                          ...]
   """
+  # Whether we hit an unknown error.  If so, we'll throw an error, but only
+  # at the end (so that we still upload as many files as possible).
+  unknown_error = False
+
   if versionrev is None:
     # Extract milestone/version from the directory name.
     versionrev = os.path.basename(src_path)
@@ -317,6 +326,11 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
       except gs.GSNoSuchKey:
         cros_build_lib.Warning('Skipping %s as it does not exist', src)
         continue
+      except gs.GSContextException:
+        unknown_error = True
+        cros_build_lib.Error('Skipping %s due to unknown GS error', src,
+                             exc_info=True)
+        continue
 
       if image_type:
         dst_base = dst[:-(len(sfx) + 1)]
@@ -342,7 +356,14 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
           # In the default/automatic mode, only flag files for signing if the
           # archives were actually uploaded in a previous stage.
           gs_artifact_path = os.path.join(dst_path, dst_archive)
-          if not ctx.Exists(gs_artifact_path):
+          try:
+            exists = ctx.Exists(gs_artifact_path)
+          except gs.GSContextException:
+            unknown_error = True
+            exists = False
+            cros_build_lib.Error('Unknown error while checking %s',
+                                 gs_artifact_path, exc_info=True)
+          if not exists:
             cros_build_lib.Info('%s does not exist.  Nothing to sign.',
                                 gs_artifact_path)
             continue
@@ -365,10 +386,26 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
             gs_insns_path += '-%s' % keyset
           gs_insns_path += '.instructions'
 
-          ctx.Copy(insns_path.name, gs_insns_path)
-          MarkImageToBeSigned(ctx, tbs_base, gs_insns_path, priority)
+          try:
+            ctx.Copy(insns_path.name, gs_insns_path)
+          except gs.GSContextException:
+            unknown_error = True
+            cros_build_lib.Error('Unknown error while uploading insns %s',
+                                 gs_insns_path, exc_info=True)
+            continue
+
+          try:
+            MarkImageToBeSigned(ctx, tbs_base, gs_insns_path, priority)
+          except gs.GSContextException:
+            unknown_error = True
+            cros_build_lib.Error('Unknown error while marking for signing %s',
+                                 gs_insns_path, exc_info=True)
+            continue
           cros_build_lib.Info('Signing %s image %s', image_type, gs_insns_path)
           instruction_urls.setdefault(channel, []).append(gs_insns_path)
+
+  if unknown_error:
+    raise PushError('hit some unknown error(s)', instruction_urls)
 
   return instruction_urls
 
