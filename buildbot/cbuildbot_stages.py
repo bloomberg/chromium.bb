@@ -8,7 +8,6 @@ import contextlib
 import datetime
 import functools
 import glob
-import itertools
 import json
 import logging
 import math
@@ -3307,7 +3306,6 @@ class ArchiveStage(ArchivingStage):
     self._upload_queue = multiprocessing.Queue()
     self._push_image_status_queue = multiprocessing.Queue()
     self._wait_for_channel_signing = multiprocessing.Queue()
-    self.artifacts = []
 
   def WaitForRecoveryImage(self):
     """Wait until artifacts needed by SignerTest stage are created.
@@ -3410,51 +3408,6 @@ class ArchiveStage(ArchivingStage):
                               extra_env=extra_env)
     self._upload_queue.put([constants.DELTA_SYSROOT_TAR])
 
-  def LoadArtifactsList(self, board, image_dir):
-    """Load the list of artifacts to upload for this board.
-
-    It attempts to load a JSON file, scripts/artifacts.json, from the
-    overlay directories for this board. This file specifies the artifacts
-    to generate, if it can't be found, it will use a default set that
-    uploads every .bin file as a .tar.xz file except for
-    chromiumos_qemu_image.bin.
-
-    See BuildStandaloneArchive in cbuildbot_commands.py for format docs.
-    """
-    custom_artifacts_file = portage_utilities.ReadOverlayFile(
-        'scripts/artifacts.json', board=board)
-    if custom_artifacts_file is None:
-      artifacts = []
-      for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
-        basename = os.path.basename(image_file)
-        if basename != constants.VM_IMAGE_BIN:
-          info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
-          artifacts.append(info)
-    else:
-      artifacts = json.loads(custom_artifacts_file)['artifacts']
-
-    for artifact in artifacts:
-      # Resolve the (possible) globs in the input list, and store
-      # the actual set of files to use in 'paths'
-      paths = []
-      for s in artifact['input']:
-        glob_paths = glob.glob(os.path.join(image_dir, s))
-        if not glob_paths:
-          logging.warning('No artifacts generated for input: %s', s)
-        else:
-          for path in glob_paths:
-            paths.append(os.path.relpath(path, image_dir))
-      artifact['paths'] = paths
-    self.artifacts = artifacts
-
-  def IsArchivedFile(self, filename):
-    """Return True if filename is the name of a file being archived."""
-    for artifact in self.artifacts:
-      for path in itertools.chain(artifact['paths'], artifact['input']):
-        if os.path.basename(path) == filename:
-          return True
-    return False
-
   def PerformStage(self):
     buildroot = self._build_root
     config = self._run.config
@@ -3479,8 +3432,8 @@ class ArchiveStage(ArchivingStage):
     #       \- BuildAndArchiveAllImages
     #          (builds recovery image first, then launches functions below)
     #          \- BuildAndArchiveFactoryImages
-    #          \- ArchiveStandaloneArtifacts
-    #             \- ArchiveStandaloneArtifact
+    #          \- ArchiveStandaloneTarballs
+    #             \- ArchiveStandaloneTarball
     #          \- ArchiveZipFiles
     #          \- ArchiveHWQual
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
@@ -3526,18 +3479,19 @@ class ArchiveStage(ArchivingStage):
             self._run.attrs.release_tag)
         self._release_upload_queue.put([filename])
 
-    def ArchiveStandaloneArtifact(artifact_info):
-      """Build and upload a single archive."""
-      if artifact_info['paths']:
-        for path in commands.BuildStandaloneArchive(archive_path, image_dir,
-                                                    artifact_info):
-          self._release_upload_queue.put([path])
+    def ArchiveStandaloneTarball(image_file):
+      """Build and upload a single tarball."""
+      self._release_upload_queue.put([commands.BuildStandaloneImageTarball(
+          archive_path, image_file)])
 
-    def ArchiveStandaloneArtifacts():
-      """Build and upload standalone archives for each image."""
+    def ArchiveStandaloneTarballs():
+      """Build and upload standalone tarballs for each image."""
       if config['upload_standalone_images']:
-        parallel.RunTasksInProcessPool(ArchiveStandaloneArtifact,
-                                       [[x] for x in self.artifacts])
+        inputs = []
+        for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
+          if os.path.basename(image_file) != 'chromiumos_qemu_image.bin':
+            inputs.append([image_file])
+        parallel.RunTasksInProcessPool(ArchiveStandaloneTarball, inputs)
 
     def ArchiveZipFiles():
       """Build and archive zip files.
@@ -3588,18 +3542,17 @@ class ArchiveStage(ArchivingStage):
       # Generate the recovery image. To conserve loop devices, we try to only
       # run one instance of build_image at a time. TODO(davidjames): Move the
       # image generation out of the archive stage.
-      self.LoadArtifactsList(self._current_board, image_dir)
 
       # For recovery image to be generated correctly, BuildRecoveryImage must
       # run before BuildAndArchiveFactoryImages.
-      if self.IsArchivedFile(constants.BASE_IMAGE_BIN):
+      if 'base' in config['images']:
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
         self._recovery_image_status_queue.put(True)
 
       if config['images']:
         parallel.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveHWQual,
-                                   ArchiveStandaloneArtifacts,
+                                   ArchiveStandaloneTarballs,
                                    ArchiveZipFiles])
 
     def ArchiveImageScripts():

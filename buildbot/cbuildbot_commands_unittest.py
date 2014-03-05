@@ -553,38 +553,6 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
       # TODO(build): Use assertIn w/python-2.7.
       self.assertTrue('>%s</a>' % f in html)
 
-  def testArchiveGeneration(self):
-    """Verifies BuildStandaloneImageArchive produces correct archives"""
-    image_dir = os.path.join(self.tempdir, 'inputs')
-    archive_dir = os.path.join(self.tempdir, 'outputs')
-    files = ('a.bin', 'aa', 'b b b', 'c', 'dalsdkjfasdlkf',)
-    osutils.SafeMakedirs(image_dir)
-    osutils.SafeMakedirs(archive_dir)
-    for f in files:
-      osutils.Touch(os.path.join(image_dir, f))
-
-    # Check specifying tar functionality.
-    artifact = {'paths': ['a.bin'], 'output': 'a.tar.gz', 'archive': 'tar',
-                'compress':'gz'}
-    path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['a.tar.gz'])
-    cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
-                                ['a.bin'])
-
-    # Check multiple input files.
-    artifact = {'paths': ['a.bin', 'aa'], 'output': 'aa.tar.gz',
-                'archive': 'tar', 'compress': 'gz'}
-    path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['aa.tar.gz'])
-    cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
-                                ['a.bin', 'aa'])
-
-    # Check zip functionality.
-    artifact = {'paths': ['a.bin'], 'archive': 'zip'}
-    path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['a.zip'])
-    self.assertExists(os.path.join(archive_dir, path[0]))
-
 
 if __name__ == '__main__':
   cros_test_lib.main()

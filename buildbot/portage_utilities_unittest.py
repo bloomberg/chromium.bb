@@ -513,18 +513,6 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     self.assertEqual(self.overlays[self.MARIO][self.PUBLIC][:-1],
                      self.overlays[self.FAKE][self.PUBLIC])
 
-  def testReadOverlayFile(self):
-    """Verify that the boards are examined in the right order"""
-    overlays = self.overlays[self.MARIO][self.PUBLIC]
-    self.mox.StubOutWithMock(osutils, 'ReadFile')
-    for overlay in overlays:
-      osutils.ReadFile(os.path.join(overlay, 'test')).AndRaise(
-          IOError(os.errno.ENOENT, 'ENOENT'))
-    self.mox.ReplayAll()
-    portage_utilities.ReadOverlayFile('test', self.PUBLIC, self.MARIO,
-                                      constants.SOURCE_ROOT)
-    self.mox.VerifyAll()
-
 
 class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
   """Tests of the EBuild Dictionary."""
