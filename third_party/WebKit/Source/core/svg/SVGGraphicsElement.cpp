@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006 Rob Buis <buis@kde.org>
+ * Copyright (C) 2014 Google, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -66,24 +67,43 @@ PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElemen
     return SVGMatrixTearOff::create(ctm);
 }
 
-static AffineTransform computeCTM(SVGGraphicsElement* element, SVGElement::CTMScope mode, SVGGraphicsElement::StyleUpdateStrategy styleUpdateStrategy)
+static bool isViewportElement(const Element* element)
 {
-    ASSERT(element);
-    if (styleUpdateStrategy == SVGGraphicsElement::AllowStyleUpdate)
-        element->document().updateLayoutIgnorePendingStylesheets();
+    return (element->hasTagName(SVGNames::svgTag)
+        || element->hasTagName(SVGNames::symbolTag)
+        || element->hasTagName(SVGNames::foreignObjectTag)
+        || element->hasTagName(SVGNames::imageTag));
+}
+
+AffineTransform SVGGraphicsElement::computeCTM(SVGElement::CTMScope mode,
+    SVGGraphicsElement::StyleUpdateStrategy styleUpdateStrategy, const SVGGraphicsElement* ancestor) const
+{
+    if (styleUpdateStrategy == AllowStyleUpdate)
+        document().updateLayoutIgnorePendingStylesheets();
 
     AffineTransform ctm;
+    bool done = false;
 
-    SVGElement* stopAtElement = mode == SVGGraphicsElement::NearestViewportScope ? element->nearestViewportElement() : 0;
-    for (Element* currentElement = element; currentElement; currentElement = currentElement->parentOrShadowHostElement()) {
+    for (const Element* currentElement = this; currentElement && !done;
+        currentElement = currentElement->parentOrShadowHostElement()) {
         if (!currentElement->isSVGElement())
             break;
 
         ctm = toSVGElement(currentElement)->localCoordinateSpaceTransform(mode).multiply(ctm);
 
-        // For getCTM() computation, stop at the nearest viewport element
-        if (currentElement == stopAtElement)
+        switch (mode) {
+        case NearestViewportScope:
+            // Stop at the nearest viewport ancestor.
+            done = currentElement != this && isViewportElement(currentElement);
             break;
+        case AncestorScope:
+            // Stop at the designated ancestor.
+            done = currentElement == ancestor;
+            break;
+        default:
+            ASSERT(mode == ScreenScope);
+            break;
+        }
     }
 
     return ctm;
@@ -91,12 +111,12 @@ static AffineTransform computeCTM(SVGGraphicsElement* element, SVGElement::CTMSc
 
 AffineTransform SVGGraphicsElement::getCTM(StyleUpdateStrategy styleUpdateStrategy)
 {
-    return computeCTM(this, NearestViewportScope, styleUpdateStrategy);
+    return computeCTM(NearestViewportScope, styleUpdateStrategy);
 }
 
 AffineTransform SVGGraphicsElement::getScreenCTM(StyleUpdateStrategy styleUpdateStrategy)
 {
-    return computeCTM(this, ScreenScope, styleUpdateStrategy);
+    return computeCTM(ScreenScope, styleUpdateStrategy);
 }
 
 PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getCTMFromJavascript()
@@ -202,14 +222,6 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     ASSERT_NOT_REACHED();
-}
-
-static bool isViewportElement(Node* node)
-{
-    return (node->hasTagName(SVGNames::svgTag)
-        || node->hasTagName(SVGNames::symbolTag)
-        || node->hasTagName(SVGNames::foreignObjectTag)
-        || node->hasTagName(SVGNames::imageTag));
 }
 
 SVGElement* SVGGraphicsElement::nearestViewportElement() const

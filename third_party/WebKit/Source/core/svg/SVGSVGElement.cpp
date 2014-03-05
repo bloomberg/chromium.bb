@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 Rob Buis <buis@kde.org>
  * Copyright (C) 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Google, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -329,49 +330,114 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
+// FloatRect::intersects does not consider horizontal or vertical lines (because of isEmpty()).
+static bool intersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2)
+{
+    if (r1.width() < 0 || r1.height() < 0 || r2.width() < 0 || r2.height() < 0)
+        return false;
+
+    return r1.x() < r2.maxX() && r2.x() < r1.maxX()
+        && r1.y() < r2.maxY() && r2.y() < r1.maxY();
+}
+
+// One of the element types that can cause graphics to be drawn onto the target canvas.
+// Specifically: circle, ellipse, image, line, path, polygon, polyline, rect, text and use.
+static bool isIntersectionOrEnclosureTarget(RenderObject* renderer)
+{
+    return renderer->isSVGShape()
+        || renderer->isSVGText()
+        || renderer->isSVGImage()
+        || renderer->node()->hasTagName(SVGNames::useTag);
+}
+
+bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, const FloatRect& rect,
+    CheckIntersectionOrEnclosure mode) const
+{
+    RenderObject* renderer = element.renderer();
+    ASSERT(!renderer || renderer->style());
+    if (!renderer || renderer->style()->pointerEvents() == PE_NONE)
+        return false;
+
+    if (!isIntersectionOrEnclosureTarget(renderer))
+        return false;
+
+    AffineTransform ctm = toSVGGraphicsElement(element).computeCTM(AncestorScope, DisallowStyleUpdate, this);
+    FloatRect mappedRepaintRect = ctm.mapRect(renderer->repaintRectInLocalCoordinates());
+
+    bool result = false;
+    switch (mode) {
+    case CheckIntersection:
+        result = intersectsAllowingEmpty(rect, mappedRepaintRect);
+        break;
+    case CheckEnclosure:
+        result = rect.contains(mappedRepaintRect);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+
+    return result;
+}
+
+PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
+    SVGElement* referenceElement, CheckIntersectionOrEnclosure mode) const
 {
     Vector<RefPtr<Node> > nodes;
-    Element* element = ElementTraversal::next(*(referenceElement ? referenceElement : this));
-    while (element) {
-        if (element->isSVGElement()) {
-            SVGElement* svgElement = toSVGElement(element);
-            if (collect == CollectIntersectionList) {
-                if (RenderSVGModelObject::checkIntersection(svgElement->renderer(), rect))
-                    nodes.append(element);
-            } else {
-                if (RenderSVGModelObject::checkEnclosure(svgElement->renderer(), rect))
-                    nodes.append(element);
-            }
-        }
 
-        element = ElementTraversal::next(*element, referenceElement ? referenceElement : this);
+    const SVGElement* root = this;
+    if (referenceElement) {
+        // Only the common subtree needs to be traversed.
+        if (contains(referenceElement)) {
+            root = referenceElement;
+        } else if (!isDescendantOf(referenceElement)) {
+            // No common subtree.
+            return StaticNodeList::adopt(nodes);
+        }
     }
+
+    for (Element* element = ElementTraversal::firstWithin(*root); element;
+        element = ElementTraversal::next(*element, root)) {
+
+        if (!WebCore::isSVGGraphicsElement(*element))
+            continue;
+
+        SVGElement* svgElement = toSVGElement(element);
+        if (checkIntersectionOrEnclosure(*svgElement, rect, mode))
+            nodes.append(element);
+    }
+
     return StaticNodeList::adopt(nodes);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::getIntersectionList(PassRefPtr<SVGRectTearOff> passRect, SVGElement* referenceElement) const
+PassRefPtr<NodeList> SVGSVGElement::getIntersectionList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
-    RefPtr<SVGRectTearOff> rect = passRect;
-    return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CollectIntersectionList);
+    document().updateLayoutIgnorePendingStylesheets();
+
+    return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckIntersection);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> passRect, SVGElement* referenceElement) const
+PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
-    RefPtr<SVGRectTearOff> rect = passRect;
-    return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CollectEnclosureList);
+    document().updateLayoutIgnorePendingStylesheets();
+
+    return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckEnclosure);
 }
 
-bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtr<SVGRectTearOff> passRect) const
+bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtr<SVGRectTearOff> rect) const
 {
-    RefPtr<SVGRectTearOff> rect = passRect;
-    return RenderSVGModelObject::checkIntersection(element->renderer(), rect->target()->value());
+    ASSERT(element);
+    document().updateLayoutIgnorePendingStylesheets();
+
+    return checkIntersectionOrEnclosure(*element, rect->target()->value(), CheckIntersection);
 }
 
-bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtr<SVGRectTearOff> passRect) const
+bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtr<SVGRectTearOff> rect) const
 {
-    RefPtr<SVGRectTearOff> rect = passRect;
-    return RenderSVGModelObject::checkEnclosure(element->renderer(), rect->target()->value());
+    ASSERT(element);
+    document().updateLayoutIgnorePendingStylesheets();
+
+    return checkIntersectionOrEnclosure(*element, rect->target()->value(), CheckEnclosure);
 }
 
 void SVGSVGElement::deselectAll()

@@ -128,82 +128,11 @@ bool RenderSVGModelObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, co
     return false;
 }
 
-static void getElementCTM(SVGGraphicsElement* element, AffineTransform& transform)
-{
-    ASSERT(element);
-    element->document().updateLayoutIgnorePendingStylesheets();
-
-    SVGElement* stopAtElement = element->nearestViewportElement();
-    ASSERT(stopAtElement);
-
-    AffineTransform localTransform;
-    Node* current = element;
-
-    while (current && current->isSVGElement()) {
-        SVGElement* currentElement = toSVGElement(current);
-        localTransform = currentElement->renderer()->localToParentTransform();
-        transform = localTransform.multiply(transform);
-        // For getCTM() computation, stop at the nearest viewport element
-        if (currentElement == stopAtElement)
-            break;
-
-        current = current->parentOrShadowHostNode();
-    }
-}
-
-// FloatRect::intersects does not consider horizontal or vertical lines (because of isEmpty()).
-// So special-case handling of such lines.
-static bool intersectsAllowingEmpty(const FloatRect& r, const FloatRect& other)
-{
-    if (r.isEmpty() && other.isEmpty())
-        return false;
-    if (r.isEmpty() && !other.isEmpty()) {
-        return (other.contains(r.x(), r.y()) && !other.contains(r.maxX(), r.maxY()))
-               || (!other.contains(r.x(), r.y()) && other.contains(r.maxX(), r.maxY()));
-    }
-    if (other.isEmpty() && !r.isEmpty())
-        return intersectsAllowingEmpty(other, r);
-    return r.intersects(other);
-}
-
-// One of the element types that can cause graphics to be drawn onto the target canvas. Specifically: circle, ellipse,
-// image, line, path, polygon, polyline, rect, text and use.
-static bool isGraphicsElement(RenderObject* renderer)
-{
-    return renderer->isSVGShape() || renderer->isSVGText() || renderer->isSVGImage() || renderer->node()->hasTagName(SVGNames::useTag);
-}
-
 // The SVG addFocusRingRects() method adds rects in local coordinates so the default absoluteFocusRingQuads
 // returns incorrect values for SVG objects. Overriding this method provides access to the absolute bounds.
 void RenderSVGModelObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
 {
     quads.append(localToAbsoluteQuad(FloatQuad(repaintRectInLocalCoordinates())));
-}
-
-bool RenderSVGModelObject::checkIntersection(RenderObject* renderer, const FloatRect& rect)
-{
-    if (!renderer || renderer->style()->pointerEvents() == PE_NONE)
-        return false;
-    if (!isGraphicsElement(renderer))
-        return false;
-    AffineTransform ctm;
-    SVGGraphicsElement* svgElement = toSVGGraphicsElement(renderer->node());
-    getElementCTM(svgElement, ctm);
-    ASSERT(svgElement->renderer());
-    return intersectsAllowingEmpty(rect, ctm.mapRect(svgElement->renderer()->repaintRectInLocalCoordinates()));
-}
-
-bool RenderSVGModelObject::checkEnclosure(RenderObject* renderer, const FloatRect& rect)
-{
-    if (!renderer || renderer->style()->pointerEvents() == PE_NONE)
-        return false;
-    if (!isGraphicsElement(renderer))
-        return false;
-    AffineTransform ctm;
-    SVGGraphicsElement* svgElement = toSVGGraphicsElement(renderer->node());
-    getElementCTM(svgElement, ctm);
-    ASSERT(svgElement->renderer());
-    return rect.contains(ctm.mapRect(svgElement->renderer()->repaintRectInLocalCoordinates()));
 }
 
 } // namespace WebCore

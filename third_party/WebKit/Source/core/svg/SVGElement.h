@@ -61,7 +61,8 @@ public:
     static bool isAnimatableCSSProperty(const QualifiedName&);
     enum CTMScope {
         NearestViewportScope, // Used by SVGGraphicsElement::getCTM()
-        ScreenScope // Used by SVGGraphicsElement::getScreenCTM()
+        ScreenScope, // Used by SVGGraphicsElement::getScreenCTM()
+        AncestorScope // Used by SVGSVGElement::get{Enclosure|Intersection}List()
     };
     virtual AffineTransform localCoordinateSpaceTransform(CTMScope) const;
     virtual bool needsPendingResourceHandling() const { return true; }

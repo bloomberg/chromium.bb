@@ -63,9 +63,6 @@ public:
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE FINAL;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
-    static bool checkIntersection(RenderObject*, const FloatRect&);
-    static bool checkEnclosure(RenderObject*, const FloatRect&);
-
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE FINAL;
 
     SVGElement* element() const { return toSVGElement(RenderObject::node()); }
