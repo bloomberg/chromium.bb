@@ -31,7 +31,7 @@ base::subtle::AtomicWord g_native_tls_key =
 base::subtle::Atomic32 g_last_used_tls_key = 0;
 
 // The maximum number of 'slots' in our thread local storage stack.
-const int kThreadLocalStorageSize = 256;
+const int kThreadLocalStorageSize = 64;
 
 // The maximum number of times to try to clear slots by calling destructors.
 // Use pthread naming convention for clarity.

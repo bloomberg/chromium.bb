@@ -50,27 +50,55 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/threading/thread_local_storage.h"
+
+#if defined(OS_POSIX)
+#include <pthread.h>
+#endif
 
 namespace base {
+namespace internal {
+
+// Helper functions that abstract the cross-platform APIs.  Do not use directly.
+struct BASE_EXPORT ThreadLocalPlatform {
+#if defined(OS_WIN)
+  typedef unsigned long SlotType;
+#elif defined(OS_POSIX)
+  typedef pthread_key_t SlotType;
+#endif
+
+  static void AllocateSlot(SlotType* slot);
+  static void FreeSlot(SlotType slot);
+  static void* GetValueFromSlot(SlotType slot);
+  static void SetValueInSlot(SlotType slot, void* value);
+};
+
+}  // namespace internal
 
 template <typename Type>
 class ThreadLocalPointer {
  public:
-  ThreadLocalPointer() {}
+  ThreadLocalPointer() : slot_() {
+    internal::ThreadLocalPlatform::AllocateSlot(&slot_);
+  }
 
-  ~ThreadLocalPointer() {}
+  ~ThreadLocalPointer() {
+    internal::ThreadLocalPlatform::FreeSlot(slot_);
+  }
 
   Type* Get() {
-    return static_cast<Type*>(slot_.Get());
+    return static_cast<Type*>(
+        internal::ThreadLocalPlatform::GetValueFromSlot(slot_));
   }
 
   void Set(Type* ptr) {
-    slot_.Set(const_cast<void*>(static_cast<const void*>(ptr)));
+    internal::ThreadLocalPlatform::SetValueInSlot(
+        slot_, const_cast<void*>(static_cast<const void*>(ptr)));
   }
 
  private:
-  ThreadLocalStorage::Slot slot_;
+  typedef internal::ThreadLocalPlatform::SlotType SlotType;
+
+  SlotType slot_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalPointer<Type>);
 };
