@@ -373,32 +373,34 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     StoragePartitionImpl* storage_partition_impl,
     bool supports_browser_plugin,
     bool is_guest)
-        : fast_shutdown_started_(false),
-          deleting_soon_(false),
+    : fast_shutdown_started_(false),
+      deleting_soon_(false),
 #ifndef NDEBUG
-          is_self_deleted_(false),
+      is_self_deleted_(false),
 #endif
-          pending_views_(0),
-          visible_widgets_(0),
-          backgrounded_(true),
-          cached_dibs_cleaner_(
-              FROM_HERE, base::TimeDelta::FromSeconds(5),
-              this, &RenderProcessHostImpl::ClearTransportDIBCache),
-          is_initialized_(false),
-          id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
-          browser_context_(browser_context),
-          storage_partition_impl_(storage_partition_impl),
-          sudden_termination_allowed_(true),
-          ignore_input_events_(false),
-          supports_browser_plugin_(supports_browser_plugin),
-          is_guest_(is_guest),
-          gpu_observer_registered_(false),
-          delayed_cleanup_needed_(false),
-          within_process_died_observer_(false),
-          power_monitor_broadcaster_(this),
-          geolocation_dispatcher_host_(NULL),
-          weak_factory_(this),
-          screen_orientation_dispatcher_host_(NULL) {
+      pending_views_(0),
+      visible_widgets_(0),
+      backgrounded_(true),
+      cached_dibs_cleaner_(FROM_HERE,
+                           base::TimeDelta::FromSeconds(5),
+                           this,
+                           &RenderProcessHostImpl::ClearTransportDIBCache),
+      is_initialized_(false),
+      id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
+      browser_context_(browser_context),
+      storage_partition_impl_(storage_partition_impl),
+      sudden_termination_allowed_(true),
+      ignore_input_events_(false),
+      supports_browser_plugin_(supports_browser_plugin),
+      is_guest_(is_guest),
+      gpu_observer_registered_(false),
+      delayed_cleanup_needed_(false),
+      within_process_died_observer_(false),
+      power_monitor_broadcaster_(this),
+      geolocation_dispatcher_host_(NULL),
+      weak_factory_(this),
+      screen_orientation_dispatcher_host_(NULL),
+      worker_ref_count_(0) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -1227,6 +1229,9 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (!SuddenTerminationAllowed())
     return false;
 
+  if (worker_ref_count_ != 0)
+    return false;
+
   // Set this before ProcessDied() so observers can tell if the render process
   // died due to fast shutdown versus another cause.
   fast_shutdown_started_ = true;
@@ -1452,7 +1457,7 @@ void RenderProcessHostImpl::Cleanup() {
   delayed_cleanup_needed_ = false;
 
   // When there are no other owners of this object, we can delete ourselves.
-  if (listeners_.IsEmpty()) {
+  if (listeners_.IsEmpty() && worker_ref_count_ == 0) {
     // We cannot clean up twice; if this fails, there is an issue with our
     // control flow.
     DCHECK(!deleting_soon_);
@@ -2082,5 +2087,18 @@ void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
   Send(new MediaStreamMsg_DisableAecDump());
 }
 #endif
+
+void RenderProcessHostImpl::IncrementWorkerRefCount() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ++worker_ref_count_;
+}
+
+void RenderProcessHostImpl::DecrementWorkerRefCount() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GT(worker_ref_count_, 0);
+  --worker_ref_count_;
+  if (worker_ref_count_ == 0)
+    Cleanup();
+}
 
 }  // namespace content

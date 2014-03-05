@@ -226,6 +226,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
     is_guest_ = is_guest;
   }
 
+  // Called when the existence of the other renderer process which is connected
+  // to the Worker in this renderer process has changed.
+  // It is only called when "enable-embedded-shared-worker" flag is set.
+  void IncrementWorkerRefCount();
+  void DecrementWorkerRefCount();
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
@@ -414,6 +420,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Message filter and dispatcher for screen orientation.
   ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host_;
+
+  int worker_ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };
