@@ -12,7 +12,8 @@
 namespace mojo {
 
 Message::Message()
-    : data_(NULL) {
+    : data_num_bytes_(0),
+      data_(NULL) {
 }
 
 Message::~Message() {
@@ -25,17 +26,20 @@ Message::~Message() {
   }
 }
 
-void Message::AllocData(uint32_t num_bytes) {
+void Message::AllocUninitializedData(uint32_t num_bytes) {
   assert(!data_);
-  data_ = static_cast<MessageData*>(malloc(num_bytes));
+  data_num_bytes_ = num_bytes;
+  data_ = static_cast<internal::MessageData*>(malloc(num_bytes));
 }
 
-void Message::AdoptData(MessageData* data) {
+void Message::AdoptData(uint32_t num_bytes, internal::MessageData* data) {
   assert(!data_);
+  data_num_bytes_ = num_bytes;
   data_ = data;
 }
 
 void Message::Swap(Message* other) {
+  std::swap(data_num_bytes_, other->data_num_bytes_);
   std::swap(data_, other->data_);
   std::swap(handles_, other->handles_);
 }

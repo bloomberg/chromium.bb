@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "mojo/public/bindings/lib/connector.h"
+#include "mojo/public/bindings/lib/message_builder.h"
 #include "mojo/public/bindings/lib/message_queue.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/system/macros.h"
@@ -23,6 +24,11 @@ class MessageAccumulator : public MessageReceiver {
   virtual bool Accept(Message* message) MOJO_OVERRIDE {
     queue_.Push(message);
     return true;
+  }
+
+  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
+      MOJO_OVERRIDE {
+    return false;
   }
 
   bool IsEmpty() const {
@@ -51,12 +57,9 @@ class ConnectorTest : public testing::Test {
 
   void AllocMessage(const char* text, Message* message) {
     size_t payload_size = strlen(text) + 1;  // Plus null terminator.
-    size_t num_bytes = sizeof(MessageHeader) + payload_size;
-    message->AllocData(static_cast<uint32_t>(num_bytes));
-    message->mutable_data()->header.num_bytes =
-        static_cast<uint32_t>(num_bytes);
-    message->mutable_data()->header.name = 1;
-    memcpy(message->mutable_data()->payload, text, payload_size);
+    internal::MessageBuilder builder(1, payload_size);
+    memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
+    builder.Finish(message);
   }
 
   void PumpMessages() {
@@ -95,8 +98,7 @@ TEST_F(ConnectorTest, Basic) {
 
   EXPECT_EQ(
       std::string(kText),
-      std::string(
-          reinterpret_cast<const char*>(message_received.data()->payload)));
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
 }
 
 TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
@@ -122,8 +124,7 @@ TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
 
   EXPECT_EQ(
       std::string(kText),
-      std::string(
-          reinterpret_cast<const char*>(message_received.data()->payload)));
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
 }
 
 TEST_F(ConnectorTest, Basic_TwoMessages) {
@@ -152,8 +153,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
 
     EXPECT_EQ(
         std::string(kText[i]),
-        std::string(
-            reinterpret_cast<const char*>(message_received.data()->payload)));
+        std::string(reinterpret_cast<const char*>(message_received.payload())));
   }
 }
 
@@ -215,8 +215,7 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 
   EXPECT_EQ(
       std::string(kText),
-      std::string(
-          reinterpret_cast<const char*>(message_received.data()->payload)));
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
   ASSERT_EQ(1U, message_received.handles()->size());
 
   // Now send a message to the transferred handle and confirm it's sent through
@@ -243,8 +242,7 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 
   EXPECT_EQ(
       std::string(kText),
-      std::string(
-          reinterpret_cast<const char*>(message_received.data()->payload)));
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
 }
 
 }  // namespace test
