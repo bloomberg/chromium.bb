@@ -98,7 +98,6 @@ cr.define('options', function() {
       };
 
       $('import-existing-managed-user-link').onclick = function(event) {
-        self.hideErrorBubble_('create');
         OptionsPage.navigateToPage('managedUserImport');
       };
     },
@@ -339,10 +338,10 @@ cr.define('options', function() {
           var self = this;
           function getImportHandler(managedUser, nameIsUnique) {
             return function() {
-              self.hideErrorBubble_('create');
               if (managedUser.needAvatar || !nameIsUnique) {
                 OptionsPage.navigateToPage('managedUserImport');
               } else {
+                self.hideErrorBubble_('create');
                 chrome.send('createProfile',
                     [managedUser.name, managedUser.iconURL, false, true,
                         managedUser.id]);
