@@ -29,10 +29,9 @@
 
 namespace WebCore {
 
-ChildNodeList::ChildNodeList(PassRefPtr<ContainerNode> parent)
+ChildNodeList::ChildNodeList(ContainerNode& parent)
     : m_parent(parent)
 {
-    ASSERT(m_parent);
 }
 
 Node* ChildNodeList::virtualOwnerNode() const

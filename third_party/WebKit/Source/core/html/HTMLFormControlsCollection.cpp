@@ -38,16 +38,16 @@ using namespace HTMLNames;
 // Since the collections are to be "live", we have to do the
 // calculation every time if anything has changed.
 
-HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode* ownerNode)
+HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     : HTMLCollection(ownerNode, FormControls, OverridesItemAfter)
     , m_cachedElement(0)
     , m_cachedElementOffsetInArray(0)
 {
-    ASSERT(ownerNode->hasTagName(formTag) || ownerNode->hasTagName(fieldsetTag));
+    ASSERT(ownerNode.hasTagName(formTag) || ownerNode.hasTagName(fieldsetTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode* ownerNode, CollectionType)
+PassRefPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType)
 {
     return adoptRef(new HTMLFormControlsCollection(ownerNode));
 }

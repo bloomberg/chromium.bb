@@ -4365,7 +4365,7 @@ bool Document::hasSVGRootNode() const
 
 PassRefPtr<HTMLCollection> Document::ensureCachedCollection(CollectionType type)
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(this, type);
+    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
 }
 
 PassRefPtr<HTMLCollection> Document::images()
@@ -4411,17 +4411,17 @@ PassRefPtr<HTMLCollection> Document::allForBinding()
 
 PassRefPtr<HTMLCollection> Document::all()
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLAllCollection>(this, DocAll);
+    return ensureRareData().ensureNodeLists().addCache<HTMLAllCollection>(*this, DocAll);
 }
 
 PassRefPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(this, WindowNamedItems, name);
+    return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(*this, WindowNamedItems, name);
 }
 
 PassRefPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name)
 {
-    return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(this, DocumentNamedItems, name);
+    return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(*this, DocumentNamedItems, name);
 }
 
 void Document::finishedParsing()

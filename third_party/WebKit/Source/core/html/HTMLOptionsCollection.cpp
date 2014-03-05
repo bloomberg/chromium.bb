@@ -31,10 +31,10 @@
 
 namespace WebCore {
 
-HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode* select)
+HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
     : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter)
 {
-    ASSERT(select->hasTagName(HTMLNames::selectTag));
+    ASSERT(select.hasTagName(HTMLNames::selectTag));
     ScriptWrappable::init(this);
 }
 
@@ -64,7 +64,7 @@ void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)
     }
 }
 
-PassRefPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(ContainerNode* select, CollectionType)
+PassRefPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(ContainerNode& select, CollectionType)
 {
     return adoptRef(new HTMLOptionsCollection(select));
 }

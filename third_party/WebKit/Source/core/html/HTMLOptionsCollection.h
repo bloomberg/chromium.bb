@@ -34,7 +34,7 @@ class HTMLSelectElement;
 
 class HTMLOptionsCollection FINAL : public HTMLCollection {
 public:
-    static PassRefPtr<HTMLOptionsCollection> create(ContainerNode*, CollectionType);
+    static PassRefPtr<HTMLOptionsCollection> create(ContainerNode&, CollectionType);
 
     void add(PassRefPtr<HTMLOptionElement>, ExceptionState&);
     void add(PassRefPtr<HTMLOptionElement>, int index, ExceptionState&);
@@ -49,7 +49,7 @@ public:
     bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionState&);
 
 private:
-    explicit HTMLOptionsCollection(ContainerNode*);
+    explicit HTMLOptionsCollection(ContainerNode&);
 
     virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
 };

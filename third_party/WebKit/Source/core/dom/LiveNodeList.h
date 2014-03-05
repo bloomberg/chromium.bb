@@ -36,8 +36,8 @@ class Element;
 
 class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:
-    LiveNodeList(PassRefPtr<ContainerNode> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
-        : LiveNodeListBase(ownerNode.get(), rootType, invalidationType,
+    LiveNodeList(ContainerNode& ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
+        : LiveNodeListBase(ownerNode, rootType, invalidationType,
         collectionType)
     { }
 

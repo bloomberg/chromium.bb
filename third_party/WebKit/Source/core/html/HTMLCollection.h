@@ -40,7 +40,7 @@ public:
         DoesNotOverrideItemAfter,
     };
 
-    static PassRefPtr<HTMLCollection> create(ContainerNode* base, CollectionType);
+    static PassRefPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
 
@@ -63,7 +63,7 @@ public:
     Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
 
 protected:
-    HTMLCollection(ContainerNode* base, CollectionType, ItemAfterOverrideType);
+    HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
 
     bool overridesItemAfter() const { return m_overridesItemAfter; }
     virtual Element* virtualItemAfter(Element*) const;

@@ -3129,15 +3129,15 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
 
     if (type == TableRows) {
         ASSERT(hasTagName(tableTag));
-        return ensureRareData().ensureNodeLists().addCache<HTMLTableRowsCollection>(this, type);
+        return ensureRareData().ensureNodeLists().addCache<HTMLTableRowsCollection>(*this, type);
     } else if (type == SelectOptions) {
         ASSERT(hasTagName(selectTag));
-        return ensureRareData().ensureNodeLists().addCache<HTMLOptionsCollection>(this, type);
+        return ensureRareData().ensureNodeLists().addCache<HTMLOptionsCollection>(*this, type);
     } else if (type == FormControls) {
         ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
-        return ensureRareData().ensureNodeLists().addCache<HTMLFormControlsCollection>(this, type);
+        return ensureRareData().ensureNodeLists().addCache<HTMLFormControlsCollection>(*this, type);
     }
-    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(this, type);
+    return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
 }
 
 static void scheduleLayerUpdateCallback(Node* node)

@@ -358,8 +358,8 @@ void Node::setNodeValue(const String&)
 PassRefPtr<NodeList> Node::childNodes()
 {
     if (isContainerNode())
-        return ensureRareData().ensureNodeLists().ensureChildNodeList(toContainerNode(this));
-    return ensureRareData().ensureNodeLists().ensureEmptyChildNodeList(this);
+        return ensureRareData().ensureNodeLists().ensureChildNodeList(toContainerNode(*this));
+    return ensureRareData().ensureNodeLists().ensureEmptyChildNodeList(*this);
 }
 
 Node& Node::lastDescendant() const

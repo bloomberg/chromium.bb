@@ -158,7 +158,7 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
     return DoNotInvalidateOnAttributeChanges;
 }
 
-HTMLCollection::HTMLCollection(ContainerNode* ownerNode, CollectionType type, ItemAfterOverrideType itemAfterOverrideType)
+HTMLCollection::HTMLCollection(ContainerNode& ownerNode, CollectionType type, ItemAfterOverrideType itemAfterOverrideType)
     : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type), type)
     , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     , m_shouldOnlyIncludeDirectChildren(shouldTypeOnlyIncludeDirectChildren(type))
@@ -167,7 +167,7 @@ HTMLCollection::HTMLCollection(ContainerNode* ownerNode, CollectionType type, It
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLCollection> HTMLCollection::create(ContainerNode* base, CollectionType type)
+PassRefPtr<HTMLCollection> HTMLCollection::create(ContainerNode& base, CollectionType type)
 {
     return adoptRef(new HTMLCollection(base, type, DoesNotOverrideItemAfter));
 }

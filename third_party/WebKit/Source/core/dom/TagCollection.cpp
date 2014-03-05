@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-TagCollection::TagCollection(ContainerNode* rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
+TagCollection::TagCollection(ContainerNode& rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
     : HTMLCollection(rootNode, type, DoesNotOverrideItemAfter)
     , m_namespaceURI(namespaceURI)
     , m_localName(localName)
@@ -54,7 +54,7 @@ bool TagCollection::elementMatches(const Element& testNode) const
     return m_namespaceURI == starAtom || m_namespaceURI == testNode.namespaceURI();
 }
 
-HTMLTagCollection::HTMLTagCollection(ContainerNode* rootNode, const AtomicString& localName)
+HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode, const AtomicString& localName)
     : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName)
     , m_loweredLocalName(localName.lower())
 {

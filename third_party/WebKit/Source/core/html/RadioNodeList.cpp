@@ -37,8 +37,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RadioNodeList::RadioNodeList(ContainerNode* rootNode, const AtomicString& name, CollectionType type)
-    : LiveNodeList(rootNode, type, InvalidateForFormControls, rootNode->hasTagName(formTag) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
+RadioNodeList::RadioNodeList(ContainerNode& rootNode, const AtomicString& name, CollectionType type)
+    : LiveNodeList(rootNode, type, InvalidateForFormControls, rootNode.hasTagName(formTag) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
     , m_name(name)
     , m_onlyMatchImgElements(type == RadioImgNodeListType)
 {

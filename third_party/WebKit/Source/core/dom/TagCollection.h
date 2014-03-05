@@ -33,13 +33,13 @@ namespace WebCore {
 // Collection that limits to a particular tag.
 class TagCollection : public HTMLCollection {
 public:
-    static PassRefPtr<TagCollection> create(ContainerNode* rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
+    static PassRefPtr<TagCollection> create(ContainerNode& rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         ASSERT(namespaceURI != starAtom);
         return adoptRef(new TagCollection(rootNode, TagCollectionType, namespaceURI, localName));
     }
 
-    static PassRefPtr<TagCollection> create(ContainerNode* rootNode, CollectionType type, const AtomicString& localName)
+    static PassRefPtr<TagCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
     {
         ASSERT_UNUSED(type, type == TagCollectionType);
         return adoptRef(new TagCollection(rootNode, TagCollectionType, starAtom, localName));
@@ -50,7 +50,7 @@ public:
     bool elementMatches(const Element&) const;
 
 protected:
-    TagCollection(ContainerNode* rootNode, CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
+    TagCollection(ContainerNode& rootNode, CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
 
     AtomicString m_namespaceURI;
     AtomicString m_localName;
@@ -58,7 +58,7 @@ protected:
 
 class HTMLTagCollection FINAL : public TagCollection {
 public:
-    static PassRefPtr<HTMLTagCollection> create(ContainerNode* rootNode, CollectionType type, const AtomicString& localName)
+    static PassRefPtr<HTMLTagCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
     {
         ASSERT_UNUSED(type, type == HTMLTagCollectionType);
         return adoptRef(new HTMLTagCollection(rootNode, localName));
@@ -67,7 +67,7 @@ public:
     bool elementMatches(const Element&) const;
 
 private:
-    HTMLTagCollection(ContainerNode* rootNode, const AtomicString& localName);
+    HTMLTagCollection(ContainerNode& rootNode, const AtomicString& localName);
 
     AtomicString m_loweredLocalName;
 };

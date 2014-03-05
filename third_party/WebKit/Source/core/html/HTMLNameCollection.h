@@ -33,7 +33,7 @@ class Document;
 
 class HTMLNameCollection FINAL : public HTMLCollection {
 public:
-    static PassRefPtr<HTMLNameCollection> create(ContainerNode* document, CollectionType type, const AtomicString& name)
+    static PassRefPtr<HTMLNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
         return adoptRef(new HTMLNameCollection(document, type, name));
     }
@@ -41,7 +41,7 @@ public:
     ~HTMLNameCollection();
 
 private:
-    HTMLNameCollection(ContainerNode*, CollectionType, const AtomicString& name);
+    HTMLNameCollection(ContainerNode&, CollectionType, const AtomicString& name);
 
     virtual Element* virtualItemAfter(Element*) const OVERRIDE;
 

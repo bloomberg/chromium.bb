@@ -33,7 +33,7 @@ namespace WebCore {
 
 class ChildNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<ChildNodeList> create(PassRefPtr<ContainerNode> rootNode)
+    static PassRefPtr<ChildNodeList> create(ContainerNode& rootNode)
     {
         return adoptRef(new ChildNodeList(rootNode));
     }
@@ -56,7 +56,7 @@ public:
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 
 private:
-    explicit ChildNodeList(PassRefPtr<ContainerNode> rootNode);
+    explicit ChildNodeList(ContainerNode& rootNode);
 
     virtual bool isChildNodeList() const OVERRIDE { return true; }
     virtual Node* virtualOwnerNode() const OVERRIDE;

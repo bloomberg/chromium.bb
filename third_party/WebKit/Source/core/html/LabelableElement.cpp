@@ -44,7 +44,7 @@ PassRefPtr<NodeList> LabelableElement::labels()
     if (!supportLabels())
         return nullptr;
 
-    return ensureRareData().ensureNodeLists().addCache<LabelsNodeList>(this, LabelsNodeListType);
+    return ensureRareData().ensureNodeLists().addCache<LabelsNodeList>(*this, LabelsNodeListType);
 }
 
 } // namespace Webcore

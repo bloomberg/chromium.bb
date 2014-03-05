@@ -39,9 +39,8 @@ namespace WebCore {
 
 class EmptyNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<EmptyNodeList> create(Node* rootNode)
+    static PassRefPtr<EmptyNodeList> create(Node& rootNode)
     {
-        ASSERT(rootNode);
         return adoptRef(new EmptyNodeList(rootNode));
     }
     virtual ~EmptyNodeList();
@@ -49,7 +48,7 @@ public:
     Node& ownerNode() const { return *m_owner; }
 
 private:
-    explicit EmptyNodeList(Node* rootNode) : m_owner(rootNode) { }
+    explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) { }
 
     virtual unsigned length() const OVERRIDE { return 0; }
     virtual Node* item(unsigned) const OVERRIDE { return 0; }

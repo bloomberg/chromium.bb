@@ -41,14 +41,13 @@ enum NodeListRootType {
 
 class LiveNodeListBase {
 public:
-    LiveNodeListBase(ContainerNode* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
+    LiveNodeListBase(ContainerNode& ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
         CollectionType collectionType)
         : m_ownerNode(ownerNode)
         , m_rootType(rootType)
         , m_invalidationType(invalidationType)
         , m_collectionType(collectionType)
     {
-        ASSERT(m_ownerNode);
         ASSERT(m_rootType == static_cast<unsigned>(rootType));
         ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
         ASSERT(m_collectionType == static_cast<unsigned>(collectionType));
