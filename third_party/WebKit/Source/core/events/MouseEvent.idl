@@ -57,6 +57,6 @@
     readonly attribute Node             fromElement;
     readonly attribute Node             toElement;
 
-    readonly attribute Clipboard        dataTransfer;
+    readonly attribute DataTransfer     dataTransfer;
 };
 

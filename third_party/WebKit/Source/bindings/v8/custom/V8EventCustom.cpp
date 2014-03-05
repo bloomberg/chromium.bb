@@ -33,7 +33,7 @@
 
 #include "EventHeaders.h"
 #include "EventInterfaces.h"
-#include "V8Clipboard.h"
+#include "V8DataTransfer.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/events/ClipboardEvent.h"

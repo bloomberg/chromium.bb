@@ -52,7 +52,6 @@ ChannelSplitterNode
 CharacterData
 ClientRect
 ClientRectList
-Clipboard
 CloseEvent
 Comment
 CompositionEvent
@@ -66,6 +65,7 @@ DOMSettableTokenList
 DOMStringList
 DOMStringMap
 DOMTokenList
+DataTransfer
 DataTransferItemList
 DataView
 Date

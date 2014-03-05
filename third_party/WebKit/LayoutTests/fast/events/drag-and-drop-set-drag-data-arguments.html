@@ -10,8 +10,8 @@ var event;
 var dragger = document.getElementById('dragger');
 dragger.addEventListener('dragstart', function(e) {
     event = e;
-    shouldThrow('event.dataTransfer.setData()', '"TypeError: Failed to execute \'setData\' on \'Clipboard\': 2 arguments required, but only 0 present."');
-    shouldThrow('event.dataTransfer.setData("Text")', '"TypeError: Failed to execute \'setData\' on \'Clipboard\': 2 arguments required, but only 1 present."');
+    shouldThrow('event.dataTransfer.setData()', '"TypeError: Failed to execute \'setData\' on \'DataTransfer\': 2 arguments required, but only 0 present."');
+    shouldThrow('event.dataTransfer.setData("Text")', '"TypeError: Failed to execute \'setData\' on \'DataTransfer\': 2 arguments required, but only 1 present."');
 }, false);
 
 if (window.eventSender) {

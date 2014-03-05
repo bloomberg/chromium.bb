@@ -27,8 +27,9 @@
  */
 
 [
+    ImplementedAs=Clipboard,
     WillBeGarbageCollected
-] interface Clipboard {
+] interface DataTransfer {
              [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
              [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;
     readonly attribute DOMString[] types;

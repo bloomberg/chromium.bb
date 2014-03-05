@@ -7,7 +7,7 @@
             'animation/TimedItem.idl',
             'animation/Timeline.idl',
             'animation/Timing.idl',
-            'clipboard/Clipboard.idl',
+            'clipboard/DataTransfer.idl',
             'clipboard/DataTransferItem.idl',
             'clipboard/DataTransferItemList.idl',
             'css/CSS.idl',

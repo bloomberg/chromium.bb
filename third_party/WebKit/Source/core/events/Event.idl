@@ -73,5 +73,5 @@
 
     [RuntimeEnabled=ShadowDOM] readonly attribute NodeList path;
 
-    [Custom=Getter] readonly attribute Clipboard clipboardData;
+    [Custom=Getter] readonly attribute DataTransfer clipboardData;
 };
