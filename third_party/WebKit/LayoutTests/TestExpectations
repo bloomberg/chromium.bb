@@ -673,6 +673,7 @@ crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
 crbug.com/312910 [ Linux Mac ] webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pass ]
+crbug.com/349518 [ Win Debug ] webaudio/audiobuffersource-playbackrate.html [ Pass Slow ]
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
