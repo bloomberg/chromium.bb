@@ -4,6 +4,8 @@
 
 #include "content/browser/shared_worker/shared_worker_host.h"
 
+#include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
@@ -12,6 +14,17 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
+namespace {
+
+// Notifies RenderViewHost that one or more worker objects crashed.
+void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
+  RenderFrameHostImpl* host =
+      RenderFrameHostImpl::FromID(render_process_unique_id, render_frame_id);
+  if (host)
+    host->delegate()->WorkerCrashed(host);
+}
+
+}  // namespace
 
 SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance)
     : instance_(instance),
@@ -22,6 +35,21 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance)
 
 SharedWorkerHost::~SharedWorkerHost() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // If we crashed, tell the RenderViewHosts.
+  if (instance_ && !instance_->load_failed()) {
+    const WorkerDocumentSet::DocumentInfoSet& parents =
+        instance_->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
+             parents.begin();
+         parent_iter != parents.end();
+         ++parent_iter) {
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(&WorkerCrashCallback,
+                                         parent_iter->render_process_id(),
+                                         parent_iter->render_frame_id()));
+    }
+  }
 }
 
 bool SharedWorkerHost::Send(IPC::Message* message) {
