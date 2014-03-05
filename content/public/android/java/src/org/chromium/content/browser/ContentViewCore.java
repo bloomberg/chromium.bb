@@ -431,7 +431,6 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
     public ContentViewCore(Context context) {
         mContext = context;
 
-        HeapStatsLogger.init(mContext.getApplicationContext());
         mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
         mInputMethodManagerWrapper = new InputMethodManagerWrapper(mContext);
 
