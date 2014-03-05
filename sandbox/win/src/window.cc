@@ -51,13 +51,13 @@ ResultCode CreateAltWindowStation(HWINSTA* winsta) {
   if (*winsta) {
     // Replace the DACL on the new Winstation with a reduced privilege version.
     // We can soft fail on this for now, as it's just an extra mitigation.
-    static const ACCESS_MASK  kWinstaDenyMask = DELETE | WRITE_DAC |
-                                                WRITE_OWNER |
-                                                WINSTA_ACCESSCLIPBOARD  |
-                                                WINSTA_CREATEDESKTOP  |
-                                                WINSTA_ENUMDESKTOPS  |
-                                                WINSTA_ENUMERATE |
-                                                WINSTA_EXITWINDOWS;
+    static const ACCESS_MASK kWinstaDenyMask = DELETE | WRITE_DAC |
+                                               WRITE_OWNER |
+                                               WINSTA_ACCESSCLIPBOARD |
+                                               WINSTA_CREATEDESKTOP |
+                                               WINSTA_ENUMDESKTOPS |
+                                               WINSTA_ENUMERATE |
+                                               WINSTA_EXITWINDOWS;
     AddKnownSidToObject(*winsta, SE_WINDOW_OBJECT, Sid(WinRestrictedCodeSid),
                         DENY_ACCESS, kWinstaDenyMask);
     return SBOX_ALL_OK;
@@ -111,11 +111,13 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
   if (*desktop) {
     // Replace the DACL on the new Desktop with a reduced privilege version.
     // We can soft fail on this for now, as it's just an extra mitigation.
-    static const ACCESS_MASK  kDesktopDenyMask = WRITE_DAC | WRITE_OWNER |
-                                                 DESKTOP_HOOKCONTROL |
-                                                 DESKTOP_JOURNALPLAYBACK |
-                                                 DESKTOP_JOURNALRECORD |
-                                                 DESKTOP_SWITCHDESKTOP;
+    static const ACCESS_MASK kDesktopDenyMask = WRITE_DAC | WRITE_OWNER |
+                                                DESKTOP_CREATEMENU |
+                                                DESKTOP_CREATEWINDOW |
+                                                DESKTOP_HOOKCONTROL |
+                                                DESKTOP_JOURNALPLAYBACK |
+                                                DESKTOP_JOURNALRECORD |
+                                                DESKTOP_SWITCHDESKTOP;
     AddKnownSidToObject(*desktop, SE_WINDOW_OBJECT, Sid(WinRestrictedCodeSid),
                         DENY_ACCESS, kDesktopDenyMask);
     return SBOX_ALL_OK;

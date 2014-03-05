@@ -44,14 +44,6 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
   }
 }
 
-#if !defined(NDEBUG)
-LRESULT CALLBACK WindowsHookCBT(int code, WPARAM w_param, LPARAM l_param) {
-  CHECK_NE(code, HCBT_CREATEWND)
-      << "Should not be creating windows in the renderer!";
-  return CallNextHookEx(NULL, code, w_param, l_param);
-}
-#endif  // !NDEBUG
-
 }  // namespace
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
@@ -64,15 +56,6 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
-#if !defined(NDEBUG)
-  // Install a check that we're not creating windows in the renderer. See
-  // http://crbug.com/230122 for background. TODO(scottmg): Ideally this would
-  // check all threads in the renderer, but it currently only checks the main
-  // thread.
-  PCHECK(
-      SetWindowsHookEx(WH_CBT, WindowsHookCBT, NULL, ::GetCurrentThreadId()));
-#endif  // !NDEBUG
-
   const CommandLine& command_line = parameters_.command_line;
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
