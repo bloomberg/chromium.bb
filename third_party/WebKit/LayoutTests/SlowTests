@@ -135,3 +135,5 @@ crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
 crbug.com/248969 [ Debug ] printing/page-count-with-one-word.html [ Slow ]
 
 crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
+
+crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
