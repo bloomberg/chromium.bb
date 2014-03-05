@@ -27,15 +27,9 @@ ASH_EXPORT extern const char kAshDefaultWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
 ASH_EXPORT extern const char kAshDisableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshDisableAlternateShelfLayout[];
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
-#endif
 ASH_EXPORT extern const char kAshDisableDockedWindows[];
 ASH_EXPORT extern const char kAshDisableDragOffShelf[];
 ASH_EXPORT extern const char kAshDisableOverviewMode[];
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
-#endif
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
@@ -81,9 +75,6 @@ ASH_EXPORT bool UseOverviewMode();
 
 // Returns true if docked windows feature is enabled.
 ASH_EXPORT bool UseDockedWindows();
-
-// Returns true if we should show the audio device switching UI.
-ASH_EXPORT bool ShowAudioDeviceMenu();
 
 #if defined(OS_CHROMEOS)
 // Returns true if a notification should appear when a low-power USB charger

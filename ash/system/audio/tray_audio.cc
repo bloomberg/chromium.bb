@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/audio/tray_audio_delegate.h"
@@ -56,6 +55,15 @@ TrayAudio::~TrayAudio() {
   Shell::GetInstance()->system_tray_notifier()->RemoveAudioObserver(this);
 }
 
+// static
+bool TrayAudio::ShowAudioDeviceMenu() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool TrayAudio::GetInitialVisibility() {
   return audio_delegate_->IsOutputAudioMuted();
 }
@@ -86,7 +94,7 @@ bool TrayAudio::ShouldHideArrow() const {
 }
 
 bool TrayAudio::ShouldShowShelf() const {
-  return ash::switches::ShowAudioDeviceMenu() && !pop_up_volume_view_;
+  return TrayAudio::ShowAudioDeviceMenu() && !pop_up_volume_view_;
 }
 
 void TrayAudio::OnOutputVolumeChanged() {

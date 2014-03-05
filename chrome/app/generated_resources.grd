@@ -6315,12 +6315,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_FULL_MULTI_PROFILE_MODE_DESCRIPTION" desc="Title for the full multi profile mode flag.">
         Enable side-by-side multi profile mode in which all browser and app windows share the same workspace.
       </message>
-      <message name="IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME" desc="Title for a flag for audio switching.">
-        Audio input/output menu
-      </message>
-      <message name="IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_DESCRIPTION" desc="Description for a flag for audio switching.">
-        Modifies the volume item in the status tray to add a menu allowing choosing a specific audio input and output device. Requires "Enable new audio handler" flag.
-      </message>
       <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable supervised users.">
         Enable supervised users
       </message>

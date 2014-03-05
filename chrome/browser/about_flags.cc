@@ -1163,14 +1163,6 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(OS_CHROMEOS)
   {
-    "ash-audio-device-menu",
-    IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME,
-    IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_DESCRIPTION,
-    kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshEnableAudioDeviceMenu,
-                              ash::switches::kAshDisableAudioDeviceMenu)
-  },
-  {
     "enable-carrier-switching",
     IDS_FLAGS_ENABLE_CARRIER_SWITCHING,
     IDS_FLAGS_ENABLE_CARRIER_SWITCHING_DESCRIPTION,

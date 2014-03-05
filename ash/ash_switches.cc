@@ -51,13 +51,6 @@ const char kAshDisableAlternateFrameCaptionButtonStyle[] =
 const char kAshDisableAlternateShelfLayout[] =
     "ash-disable-alternate-shelf-layout";
 
-#if defined(OS_CHROMEOS)
-// Disable the status tray volume menu for allowing the user to choose an audio
-// input and output device.
-const char kAshDisableAudioDeviceMenu[] =
-    "ash-disable-audio-device-menu";
-#endif
-
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
@@ -66,13 +59,6 @@ const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 
 // Disables overview mode for window switching.
 const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
-
-#if defined(OS_CHROMEOS)
-// TODO(jamescook): Remove this unused flag. It exists only to allow the
-// "Enable audio device menu" about:flags item to have the tri-state
-// default/enabled/disabled UI.
-const char kAshEnableAudioDeviceMenu[] = "ash-enable-audio-device-menu";
-#endif  // defined(OS_CHROMEOS)
 
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
@@ -193,15 +179,6 @@ bool UseOverviewMode() {
 
 bool UseDockedWindows() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableDockedWindows);
-}
-
-bool ShowAudioDeviceMenu() {
-#if defined(OS_CHROMEOS)
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshDisableAudioDeviceMenu);
-#else
-  return false;
-#endif
 }
 
 }  // namespace switches

@@ -28,6 +28,8 @@ class TrayAudio : public TrayImageItem,
             scoped_ptr<system::TrayAudioDelegate> audio_delegate);
   virtual ~TrayAudio();
 
+  static bool ShowAudioDeviceMenu();
+
  protected:
   virtual void Update();
 

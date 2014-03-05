@@ -5,8 +5,8 @@
 #include "ash/system/audio/volume_view.h"
 
 #include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/system/audio/tray_audio.h"
 #include "ash/system/audio/tray_audio_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
@@ -198,7 +198,7 @@ void VolumeView::SetVolumeLevel(float percent) {
 }
 
 void VolumeView::UpdateDeviceTypeAndMore() {
-  if (!ash::switches::ShowAudioDeviceMenu() || !is_default_view_) {
+  if (!TrayAudio::ShowAudioDeviceMenu() || !is_default_view_) {
     more_->SetVisible(false);
     bar_->SetVisible(false);
     device_type_->SetVisible(false);
