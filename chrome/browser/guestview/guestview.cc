@@ -45,10 +45,10 @@ scoped_ptr<base::DictionaryValue> GuestView::Event::GetArguments() {
 }
 
 GuestView::GuestView(WebContents* guest_web_contents,
-                     const std::string& extension_id)
+                     const std::string& embedder_extension_id)
     : guest_web_contents_(guest_web_contents),
       embedder_web_contents_(NULL),
-      extension_id_(extension_id),
+      embedder_extension_id_(embedder_extension_id),
       embedder_render_process_id_(0),
       browser_context_(guest_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()),
@@ -70,13 +70,13 @@ GuestView::Type GuestView::GetViewTypeFromString(const std::string& api_type) {
 
 // static
 GuestView* GuestView::Create(WebContents* guest_web_contents,
-                             const std::string& extension_id,
+                             const std::string& embedder_extension_id,
                              GuestView::Type view_type) {
   switch (view_type) {
     case GuestView::WEBVIEW:
-      return new WebViewGuest(guest_web_contents, extension_id);
+      return new WebViewGuest(guest_web_contents, embedder_extension_id);
     case GuestView::ADVIEW:
-      return new AdViewGuest(guest_web_contents, extension_id);
+      return new AdViewGuest(guest_web_contents, embedder_extension_id);
     default:
       NOTREACHED();
       return NULL;
@@ -155,6 +155,9 @@ void GuestView::Attach(content::WebContents* embedder_web_contents,
   // requests during navigation. However, queued events should be fired after
   // content layer initialization in order to ensure that load events (such as
   // 'loadstop') fire in embedder after the contentWindow is available.
+  if (!in_extension())
+    return;
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GuestView::SendQueuedEvents,
@@ -186,6 +189,9 @@ GuestView::~GuestView() {
 }
 
 void GuestView::DispatchEvent(Event* event) {
+  if (!in_extension())
+      return;
+
   if (!attached()) {
     pending_events_.push(event);
     return;
@@ -200,7 +206,7 @@ void GuestView::DispatchEvent(Event* event) {
   args->Append(event->GetArguments().release());
 
   extensions::EventRouter::DispatchEvent(
-      embedder_web_contents_, profile, extension_id_,
+      embedder_web_contents_, profile, embedder_extension_id_,
       event->name(), args.Pass(),
       extensions::EventRouter::USER_GESTURE_UNKNOWN, info);
 

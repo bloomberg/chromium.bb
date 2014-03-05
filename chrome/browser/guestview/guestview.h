@@ -45,7 +45,7 @@ class GuestView : public content::BrowserPluginGuestDelegate {
   static Type GetViewTypeFromString(const std::string& api_type);
 
   static GuestView* Create(content::WebContents* guest_web_contents,
-                           const std::string& extension_id,
+                           const std::string& embedder_extension_id,
                            Type view_type);
 
   static GuestView* FromWebContents(content::WebContents* web_contents);
@@ -98,7 +98,14 @@ class GuestView : public content::BrowserPluginGuestDelegate {
   int guest_instance_id() const { return guest_instance_id_; }
 
   // Returns the extension ID of the embedder.
-  const std::string& extension_id() const { return extension_id_; }
+  const std::string& embedder_extension_id() const {
+    return embedder_extension_id_;
+  }
+
+  // Returns whether this GuestView is embedded in an extension/app.
+  bool in_extension() const {
+    return !embedder_extension_id_.empty();
+  }
 
   // Returns the user browser context of the embedder.
   content::BrowserContext* browser_context() const { return browser_context_; }
@@ -108,7 +115,7 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
  protected:
   GuestView(content::WebContents* guest_web_contents,
-            const std::string& extension_id);
+            const std::string& embedder_extension_id);
   virtual ~GuestView();
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
@@ -119,7 +126,7 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
   content::WebContents* const guest_web_contents_;
   content::WebContents* embedder_web_contents_;
-  const std::string extension_id_;
+  const std::string embedder_extension_id_;
   int embedder_render_process_id_;
   content::BrowserContext* const browser_context_;
   // |guest_instance_id_| is a profile-wide unique identifier for a guest

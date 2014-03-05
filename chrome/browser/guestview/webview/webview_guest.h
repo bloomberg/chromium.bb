@@ -34,7 +34,7 @@ class WebViewGuest : public GuestView,
                      public content::WebContentsObserver {
  public:
   WebViewGuest(content::WebContents* guest_web_contents,
-               const std::string& extension_id);
+               const std::string& embedder_extension_id);
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
   static WebViewGuest* FromWebContents(content::WebContents* contents);

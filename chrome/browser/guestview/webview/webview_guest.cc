@@ -327,7 +327,7 @@ void WebViewGuest::EmbedderDestroyed() {
       FROM_HERE,
       base::Bind(
           &RemoveWebViewEventListenersOnIOThread,
-          browser_context(), extension_id(),
+          browser_context(), embedder_extension_id(),
           embedder_render_process_id(),
           view_instance_id()));
 }
@@ -726,13 +726,13 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
     NOTREACHED();
     return;
   }
-  DCHECK(extension_id() == partition_domain);
+  DCHECK(embedder_extension_id() == partition_domain);
 
   ExtensionRendererState::WebViewInfo webview_info;
   webview_info.embedder_process_id = embedder_render_process_id();
   webview_info.instance_id = view_instance_id();
   webview_info.partition_id =  partition_id;
-  webview_info.extension_id = extension_id();
+  webview_info.embedder_extension_id = embedder_extension_id();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -757,14 +757,14 @@ void WebViewGuest::RemoveWebViewFromExtensionRendererState(
 }
 
 GURL WebViewGuest::ResolveURL(const std::string& src) {
-  if (extension_id().empty()) {
+  if (!in_extension()) {
     NOTREACHED();
     return GURL(src);
   }
 
   GURL default_url(base::StringPrintf("%s://%s/",
                                       extensions::kExtensionScheme,
-                                      extension_id().c_str()));
+                                      embedder_extension_id().c_str()));
   return default_url.Resolve(src);
 }
 

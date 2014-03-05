@@ -27,7 +27,7 @@ class ExtensionRendererState {
     int embedder_process_id;
     int instance_id;
     std::string partition_id;
-    std::string extension_id;
+    std::string embedder_extension_id;
   };
 
   static ExtensionRendererState* GetInstance();

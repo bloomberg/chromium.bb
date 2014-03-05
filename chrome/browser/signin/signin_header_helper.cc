@@ -90,7 +90,7 @@ void AppendMirrorRequestHeaderIfPossible(
   ExtensionRendererState::WebViewInfo webview_info;
   bool is_guest = renderer_state->GetWebViewInfo(
       child_id, route_id, &webview_info);
-  if (is_guest && webview_info.extension_id == kGaiaAuthExtensionID){
+  if (is_guest && webview_info.embedder_extension_id == kGaiaAuthExtensionID){
     return;
   }
 
