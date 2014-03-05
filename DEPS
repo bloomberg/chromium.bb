@@ -50,6 +50,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
+  "v8_branch": "trunk",
   "v8_revision": "19644",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
@@ -142,7 +143,8 @@ deps = {
         Var("swarming_revision"),
 
   "src/v8":
-    (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
+    (Var("googlecode_url") % "v8") + "/" + Var("v8_branch") + "@" +
+    Var("v8_revision"),
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
