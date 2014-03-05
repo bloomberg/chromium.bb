@@ -82,6 +82,7 @@ class DriveBackendSyncTest : public testing::Test,
         NULL, NULL, NULL, in_memory_env_.get()));
     remote_sync_service_->AddServiceObserver(this);
     remote_sync_service_->Initialize();
+    remote_sync_service_->SetSyncEnabled(true);
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service(), drive_uploader(),

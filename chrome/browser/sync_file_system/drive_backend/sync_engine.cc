@@ -225,6 +225,8 @@ bool SyncEngine::IsConflicting(const fileapi::FileSystemURL& url) {
 }
 
 RemoteServiceState SyncEngine::GetCurrentState() const {
+  if (!sync_enabled_)
+    return REMOTE_SERVICE_DISABLED;
   return service_state_;
 }
 
@@ -279,8 +281,7 @@ SyncStatusCode SyncEngine::SetConflictResolutionPolicy(
   return SYNC_STATUS_OK;
 }
 
-ConflictResolutionPolicy
-SyncEngine::GetConflictResolutionPolicy() const {
+ConflictResolutionPolicy SyncEngine::GetConflictResolutionPolicy() const {
   return conflict_resolution_policy_;
 }
 

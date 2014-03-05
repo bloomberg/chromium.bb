@@ -123,6 +123,7 @@ class SyncEngineTest
         NULL /* auth_token_service */,
         in_memory_env_.get()));
     sync_engine_->Initialize();
+    sync_engine_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();
   }
 
