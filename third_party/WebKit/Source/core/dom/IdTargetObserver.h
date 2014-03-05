@@ -41,7 +41,7 @@ protected:
     IdTargetObserver(IdTargetObserverRegistry&, const AtomicString& id);
 
 private:
-    IdTargetObserverRegistry* m_registry;
+    IdTargetObserverRegistry& m_registry;
     AtomicString m_id;
 };
 
