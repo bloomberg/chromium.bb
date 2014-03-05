@@ -10,7 +10,6 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
-#include "ui/views/widget/drop_target_win.h"
 
 namespace views {
 

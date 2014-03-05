@@ -1854,12 +1854,6 @@ freebl3.dll!FREEBL_GetVector
 ...
 softokn3.dll!NSC_ModuleDBFunc
 
-LEAK
-name=http://crbug.com/92166
-...
-*!replace_operator_new
-*!views::NativeWidgetWin::OnCreate
-
 # Possible real Chromium issue in DoCrossfade.
 UNINITIALIZED READ
 name=http://crbug.com/110049

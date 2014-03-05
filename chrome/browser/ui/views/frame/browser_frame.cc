@@ -34,11 +34,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
-#include "ui/views/widget/native_widget_win.h"
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/shell_integration_linux.h"
 #endif
@@ -72,12 +67,7 @@ BrowserFrame::~BrowserFrame() {
 
 // static
 const gfx::FontList& BrowserFrame::GetTitleFontList() {
-#if !defined(OS_WIN) || defined(USE_AURA)
   static const gfx::FontList* title_font_list = new gfx::FontList();
-#else
-  static const gfx::FontList* title_font_list =
-      new gfx::FontList(views::NativeWidgetWin::GetWindowTitleFontList());
-#endif
   ANNOTATE_LEAKING_OBJECT_PTR(title_font_list);
   return *title_font_list;
 }
@@ -225,10 +215,10 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
   if (active) {
     // When running under remote desktop, if the remote desktop client is not
     // active on the users desktop, then none of the windows contained in the
-    // remote desktop will be activated.  However, NativeWidgetWin::Activate()
-    // will still bring this browser window to the foreground.  We explicitly
-    // set ourselves as the last active browser window to ensure that we get
-    // treated as such by the rest of Chrome.
+    // remote desktop will be activated.  However, NativeWidget::Activate() will
+    // still bring this browser window to the foreground.  We explicitly set
+    // ourselves as the last active browser window to ensure that we get treated
+    // as such by the rest of Chrome.
     BrowserList::SetLastActive(browser_view_->browser());
   }
   Widget::OnNativeWidgetActivationChanged(active);

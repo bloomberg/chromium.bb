@@ -25,7 +25,6 @@ class TouchEvent;
 namespace views {
 
 class InputMethod;
-class NativeWidgetWin;
 
 // Implemented by the object that uses the HWNDMessageHandler to handle
 // notifications from the underlying HWND and service requests for data.

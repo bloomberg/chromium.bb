@@ -2217,20 +2217,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     if (location_bar->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
   }
-#if defined(OS_WIN) && !defined(USE_AURA)
-  views::ScopedFullscreenVisibility visibility(frame_->GetNativeView());
-#endif
 
-  if (type == FOR_METRO) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-    // Enter metro snap mode.
-    static_cast<views::NativeWidgetWin*>(
-        frame_->native_widget())->SetMetroSnapFullscreen(fullscreen);
-#endif
-  } else {
-    // Toggle fullscreen mode.
-    frame_->SetFullscreen(fullscreen);
-  }
+  // Toggle fullscreen mode.
+  frame_->SetFullscreen(fullscreen);
 
   // Enable immersive before the browser refreshes its list of enabled commands.
   if (ShouldUseImmersiveFullscreenForUrl(url))

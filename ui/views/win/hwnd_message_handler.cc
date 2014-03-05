@@ -2319,7 +2319,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
         TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
   } else if (event.type() == ui::ET_MOUSE_EXITED) {
     // Reset our tracking flags so future mouse movement over this
-    // NativeWidgetWin results in a new tracking session. Fall through for
+    // NativeWidget results in a new tracking session. Fall through for
     // OnMouseEvent.
     active_mouse_tracking_flags_ = 0;
   } else if (event.type() == ui::ET_MOUSEWHEEL) {

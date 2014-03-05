@@ -10,8 +10,6 @@
 
 #if defined(USE_AURA)
 #include "ui/views/widget/native_widget_aura.h"
-#elif defined(OS_WIN)
-#include "ui/views/widget/native_widget_win.h"
 #endif
 
 namespace views {
@@ -51,9 +49,6 @@ class NativeWidgetCapture : public NativeWidgetPlatform {
 
 // A generic typedef to pick up relevant NativeWidget implementations.
 typedef NativeWidgetCapture NativeWidgetPlatformForTest;
-#elif defined(OS_WIN)
-typedef NativeWidgetWin NativeWidgetPlatform;
-typedef NativeWidgetWin NativeWidgetPlatformForTest;
 #endif
 
 class WidgetTest : public ViewsTestBase {
@@ -69,12 +64,6 @@ class WidgetTest : public ViewsTestBase {
   Widget* CreateTopLevelFramelessPlatformWidget();
 
   Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view);
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // On Windows, it is possible for us to have a child window that is
-  // TYPE_POPUP.
-  Widget* CreateChildPopupPlatformWidget(gfx::NativeView parent_native_view);
-#endif
 
   Widget* CreateTopLevelNativeWidget();
 

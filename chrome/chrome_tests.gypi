@@ -208,7 +208,6 @@
         'browser/ui/views/menu_test_base.h',
         'browser/ui/views/menu_model_adapter_test.cc',
         'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
-        'browser/ui/views/native_widget_win_interactive_uitest.cc',
         'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
@@ -462,7 +461,6 @@
             ['use_aura==1', {
               'sources!': [
                 'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
-                'browser/ui/views/native_widget_win_interactive_uitest.cc',
               ],
             }],
           ],
@@ -477,10 +475,6 @@
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
-        }, { # else: OS != "win"
-          'sources!': [
-            'browser/ui/views/native_widget_win_interactive_uitest.cc',
-          ],
         }],  # OS != "win"
         ['enable_app_list==0', {
           'sources/': [

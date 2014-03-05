@@ -786,66 +786,6 @@ void CheckRect(const SkRect& check_rect, const SkRect& target_rect) {
   EXPECT_EQ(target_rect.fBottom, check_rect.fBottom);
 }
 
-/* This test is disabled because it is flakey on some systems.
-TEST_F(ViewTest, DISABLED_Painting) {
-  // Determine if InvalidateRect generates an empty paint rectangle.
-  EmptyWindow paint_window(CRect(50, 50, 650, 650));
-  paint_window.RedrawWindow(CRect(0, 0, 600, 600), NULL,
-                            RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN);
-  bool empty_paint = paint_window.empty_paint();
-
-  NativeWidgetWin window;
-  window.set_delete_on_destroy(false);
-  window.set_window_style(WS_OVERLAPPEDWINDOW);
-  window.Init(NULL, gfx::Rect(50, 50, 650, 650), NULL);
-  View* root = window.GetRootView();
-
-  TestView* v1 = new TestView();
-  v1->SetBoundsRect(gfx::Rect(0, 0, 650, 650));
-  root->AddChildView(v1);
-
-  TestView* v2 = new TestView();
-  v2->SetBoundsRect(gfx::Rect(10, 10, 80, 80));
-  v1->AddChildView(v2);
-
-  TestView* v3 = new TestView();
-  v3->SetBoundsRect(gfx::Rect(10, 10, 60, 60));
-  v2->AddChildView(v3);
-
-  TestView* v4 = new TestView();
-  v4->SetBoundsRect(gfx::Rect(10, 200, 100, 100));
-  v1->AddChildView(v4);
-
-  // Make sure to paint current rects
-  PaintRootView(root, empty_paint);
-
-
-  v1->Reset();
-  v2->Reset();
-  v3->Reset();
-  v4->Reset();
-  v3->SchedulePaintInRect(gfx::Rect(10, 10, 10, 10));
-  PaintRootView(root, empty_paint);
-
-  SkRect tmp_rect;
-
-  tmp_rect.iset(10, 10, 20, 20);
-  CheckRect(v3->last_clip_, tmp_rect);
-
-  tmp_rect.iset(20, 20, 30, 30);
-  CheckRect(v2->last_clip_, tmp_rect);
-
-  tmp_rect.iset(30, 30, 40, 40);
-  CheckRect(v1->last_clip_, tmp_rect);
-
-  // Make sure v4 was not painted
-  tmp_rect.setEmpty();
-  CheckRect(v4->last_clip_, tmp_rect);
-
-  window.DestroyWindow();
-}
-*/
-
 TEST_F(ViewTest, RemoveNotification) {
   ViewStorage* vs = ViewStorage::GetInstance();
   Widget* widget = new Widget;

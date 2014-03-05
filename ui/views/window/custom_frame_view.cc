@@ -28,8 +28,6 @@
 
 #if defined(USE_AURA)
 #include "ui/views/widget/native_widget_aura.h"
-#elif defined(OS_WIN)
-#include "ui/views/widget/native_widget_win.h"
 #endif
 
 namespace views {
@@ -70,8 +68,6 @@ const gfx::FontList& GetTitleFontList() {
   static const gfx::FontList title_font_list =
 #if defined(USE_AURA)
       NativeWidgetAura::GetWindowTitleFontList();
-#elif defined(OS_WIN)
-      NativeWidgetWin::GetWindowTitleFontList();
 #elif defined(OS_LINUX)
     // TODO(ben): need to resolve what font this is.
       gfx::FontList();

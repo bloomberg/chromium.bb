@@ -414,8 +414,6 @@
         'widget/desktop_aura/x11_window_event_filter.h',
         'widget/drop_helper.cc',
         'widget/drop_helper.h',
-        'widget/drop_target_win.cc',
-        'widget/drop_target_win.h',
         'widget/root_view.cc',
         'widget/root_view.h',
         'widget/monitor_win.cc',
@@ -783,7 +781,6 @@
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
-        'widget/native_widget_win_unittest.cc',
         'widget/root_view_unittest.cc',
         'widget/widget_unittest.cc',
         'widget/window_reorderer_unittest.cc',
@@ -834,9 +831,6 @@
         [ 'use_aura==1', {
           'dependencies': [
             '../aura/aura.gyp:aura_test_support',
-          ],
-          'sources!': [
-            'widget/native_widget_win_unittest.cc',
           ],
         }, {  # use_aura==0
           'sources!': [

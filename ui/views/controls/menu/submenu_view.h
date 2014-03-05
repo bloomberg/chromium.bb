@@ -28,7 +28,7 @@ class MenuScrollViewContainer;
 // . Forwards the appropriate events to the MenuController. This allows the
 //   MenuController to update the selection as the user moves the mouse around.
 // . Renders the drop indicator during a drop operation.
-// . Shows and hides the window (a NativeWidgetWin) when the menu is shown on
+// . Shows and hides the window (a NativeWidget) when the menu is shown on
 //   screen.
 //
 // SubmenuView is itself contained in a MenuScrollViewContainer.
