@@ -163,7 +163,7 @@
     transformSdp = removeCrypto;
     onLocalDescriptionError = function(error) {
       var expectedMsg = 'Failed to set local offer sdp:' +
-          ' Called with a SDP without crypto enabled.';
+          ' Called with SDP without DTLS fingerprint.';
       expectEquals(expectedMsg, error);
 
       // Got the right message, test succeeded.
