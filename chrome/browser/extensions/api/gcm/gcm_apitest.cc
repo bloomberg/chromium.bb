@@ -103,22 +103,12 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
   StartCollecting();
   ASSERT_TRUE(RunExtensionTest("gcm/functions/register"));
 
-  // SHA1 of the public key provided in manifest.json.
-  EXPECT_EQ("26469186F238EE08FA71C38311C6990F61D40DCA",
-            service()->last_registered_cert());
   const std::vector<std::string>& sender_ids =
       service()->last_registered_sender_ids();
   EXPECT_TRUE(std::find(sender_ids.begin(), sender_ids.end(), "Sender1") !=
                   sender_ids.end());
   EXPECT_TRUE(std::find(sender_ids.begin(), sender_ids.end(), "Sender2") !=
                   sender_ids.end());
-}
-
-IN_PROC_BROWSER_TEST_F(GcmApiTest, RegisterWithoutKey) {
-  if (ShouldSkipTest())
-    return;
-
-  ASSERT_TRUE(RunExtensionTest("gcm/functions/register_without_key"));
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendValidation) {

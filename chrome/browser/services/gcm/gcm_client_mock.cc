@@ -64,7 +64,6 @@ void GCMClientMock::CheckOut() {
 }
 
 void GCMClientMock::Register(const std::string& app_id,
-                             const std::string& cert,
                              const std::vector<std::string>& sender_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 

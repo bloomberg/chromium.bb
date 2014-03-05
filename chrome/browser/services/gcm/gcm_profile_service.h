@@ -81,14 +81,12 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.
   // |app_id|: application ID.
-  // |cert|: SHA-1 of public key of the application, in base16 format.
   // |sender_ids|: list of IDs of the servers that are allowed to send the
   //               messages to the application. These IDs are assigned by the
   //               Google API Console.
   // |callback|: to be called once the asynchronous operation is done.
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
-                        const std::string& cert,
                         RegisterCallback callback);
 
   // Sends a message to a given receiver.
@@ -151,8 +149,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   void Unregister(const std::string& app_id);
 
   void DoRegister(const std::string& app_id,
-                  const std::vector<std::string>& sender_ids,
-                  const std::string& cert);
+                  const std::vector<std::string>& sender_ids);
   void DoSend(const std::string& app_id,
               const std::string& receiver_id,
               const GCMClient::OutgoingMessage& message);

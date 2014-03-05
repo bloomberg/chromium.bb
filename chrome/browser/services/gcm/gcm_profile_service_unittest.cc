@@ -51,7 +51,6 @@ const char kTestingUsername2[] = "user2@example.com";
 const char kTestingUsername3[] = "user3@example.com";
 const char kTestingAppId[] = "TestApp1";
 const char kTestingAppId2[] = "TestApp2";
-const char kTestingSha1Cert[] = "testing_cert1";
 const char kUserId[] = "user1";
 const char kUserId2[] = "user2";
 
@@ -364,7 +363,6 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
     GetGCMProfileService()->Register(
         app_id,
         sender_ids,
-        kTestingSha1Cert,
         base::Bind(&GCMProfileServiceTestConsumer::RegisterCompleted,
                    base::Unretained(this)));
   }

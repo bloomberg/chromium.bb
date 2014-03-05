@@ -366,7 +366,7 @@ TEST_F(GCMClientImplTest, CheckOut) {
 TEST_F(GCMClientImplTest, RegisterApp) {
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register("app_id", "cert", senders);
+  gcm_client()->Register("app_id", senders);
   CompleteRegistration("reg_id");
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());

@@ -40,8 +40,6 @@ class GCM_EXPORT GCMClient {
     INVALID_PARAMETER,
     // Profile not signed in.
     NOT_SIGNED_IN,
-    // Certificate was missing. Certain operation, like register, requires it.
-    CERTIFICATE_MISSING,
     // Previous asynchronous operation is still pending to finish. Certain
     // operation, like register, is only allowed one at a time.
     ASYNC_OPERATION_PENDING,
@@ -166,12 +164,10 @@ class GCM_EXPORT GCMClient {
   // Registers the application for GCM. Delegate::OnRegisterFinished will be
   // called asynchronously upon completion.
   // |app_id|: application ID.
-  // |cert|: SHA-1 of public key of the application, in base16 format.
   // |sender_ids|: list of IDs of the servers that are allowed to send the
   //               messages to the application. These IDs are assigned by the
   //               Google API Console.
   virtual void Register(const std::string& app_id,
-                        const std::string& cert,
                         const std::vector<std::string>& sender_ids) = 0;
 
   // Unregisters the application from GCM when it is uninstalled.

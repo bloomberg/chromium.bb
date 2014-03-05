@@ -62,7 +62,6 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     RequestInfo(uint64 android_id,
                 uint64 security_token,
                 const std::string& app_id,
-                const std::string& cert,
                 const std::vector<std::string>& sender_ids);
     ~RequestInfo();
 

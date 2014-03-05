@@ -30,11 +30,10 @@ namespace {
 // legacy format where gmail account can be specificed. Below value is copied
 // from Android.
 const char kInvalidationsSenderId[] = "ipc.invalidation@gmail.com";
-// In Android world AppId and Cert are provided by operating system and should
+// In Android world AppId is provided by operating system and should
 // match package name and hash of application. In desktop world these values
 // are arbitrary and not verified/enforced by registration service (yet).
 const char kInvalidationsAppId[] = "com.google.chrome.invalidations";
-const char kInvalidationsCert[] = "ABC";
 
 // In each call to Register object of RegisterCall will be created.
 // Its purpose is to pass context (profile and callback) around between threads
@@ -87,7 +86,6 @@ void RegisterCall::RegisterOnUIThread() {
   gcm_profile_service->Register(
       kInvalidationsAppId,
       sender_ids,
-      kInvalidationsCert,
       base::Bind(&RegisterCall::RegisterFinishedOnUIThread, this));
 }
 

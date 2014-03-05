@@ -268,8 +268,7 @@ class GCMProfileService::IOWorker
   void Stop();
   void CheckOut();
   void Register(const std::string& app_id,
-                const std::vector<std::string>& sender_ids,
-                const std::string& cert);
+                const std::vector<std::string>& sender_ids);
   void Unregister(const std::string& app_id);
   void Send(const std::string& app_id,
             const std::string& receiver_id,
@@ -444,11 +443,10 @@ void GCMProfileService::IOWorker::CheckOut() {
 
 void GCMProfileService::IOWorker::Register(
     const std::string& app_id,
-    const std::vector<std::string>& sender_ids,
-    const std::string& cert) {
+    const std::vector<std::string>& sender_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  gcm_client_->Register(app_id, cert, sender_ids);
+  gcm_client_->Register(app_id, sender_ids);
 }
 
 void GCMProfileService::IOWorker::Unregister(const std::string& app_id) {
@@ -589,7 +587,6 @@ void GCMProfileService::Stop() {
 
 void GCMProfileService::Register(const std::string& app_id,
                                  const std::vector<std::string>& sender_ids,
-                                 const std::string& cert,
                                  RegisterCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty() && !sender_ids.empty() && !callback.is_null());
@@ -620,17 +617,15 @@ void GCMProfileService::Register(const std::string& app_id,
         base::Bind(&GCMProfileService::DoRegister,
                    weak_ptr_factory_.GetWeakPtr(),
                    app_id,
-                   sender_ids,
-                   cert));
+                   sender_ids));
     return;
   }
 
-  DoRegister(app_id, sender_ids, cert);
+  DoRegister(app_id, sender_ids);
 }
 
 void GCMProfileService::DoRegister(const std::string& app_id,
-                                   const std::vector<std::string>& sender_ids,
-                                   const std::string& cert) {
+                                   const std::vector<std::string>& sender_ids) {
   std::map<std::string, RegisterCallback>::iterator callback_iter =
       register_callbacks_.find(app_id);
   if (callback_iter == register_callbacks_.end()) {
@@ -671,8 +666,7 @@ void GCMProfileService::DoRegister(const std::string& app_id,
       base::Bind(&GCMProfileService::IOWorker::Register,
                  io_worker_,
                  app_id,
-                 normalized_sender_ids,
-                 cert));
+                 normalized_sender_ids));
 }
 
 void GCMProfileService::Send(const std::string& app_id,

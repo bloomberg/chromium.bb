@@ -19,7 +19,6 @@ namespace gcm {
 namespace {
 const uint64 kAndroidId = 42UL;
 const char kAppId[] = "TestAppId";
-const char kCert[] = "0DEADBEEF420";
 const char kDeveloperId[] = "Project1";
 const char kLoginHeader[] = "AidLogin";
 const uint64 kSecurityToken = 77UL;
@@ -110,7 +109,6 @@ void RegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
       RegistrationRequest::RequestInfo(kAndroidId,
                                        kSecurityToken,
                                        kAppId,
-                                       kCert,
                                        senders),
       kDefaultBackoffPolicy,
       base::Bind(&RegistrationRequestTest::RegistrationCallback,
@@ -175,7 +173,6 @@ TEST_F(RegistrationRequestTest, RequestDataPassedToFetcher) {
   std::map<std::string, std::string> expected_pairs;
   expected_pairs["app"] = kAppId;
   expected_pairs["sender"] = kDeveloperId;
-  expected_pairs["cert"] = kCert;
   expected_pairs["device"] = base::Uint64ToString(kAndroidId);
 
   // Verify data was formatted properly.

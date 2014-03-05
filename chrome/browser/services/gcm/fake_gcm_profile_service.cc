@@ -27,7 +27,6 @@ FakeGCMProfileService::~FakeGCMProfileService() {}
 
 void FakeGCMProfileService::Register(const std::string& app_id,
                                      const std::vector<std::string>& sender_ids,
-                                     const std::string& cert,
                                      RegisterCallback callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -35,19 +34,16 @@ void FakeGCMProfileService::Register(const std::string& app_id,
                  base::Unretained(this),
                  app_id,
                  sender_ids,
-                 cert,
                  callback));
 }
 
 void FakeGCMProfileService::RegisterFinished(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
-    const std::string& cert,
     RegisterCallback callback) {
   if (collect_) {
     last_registered_app_id_ = app_id;
     last_registered_sender_ids_ = sender_ids;
-    last_registered_cert_ = cert;
   }
 
   callback.Run(base::UintToString(sender_ids.size()), GCMClient::SUCCESS);

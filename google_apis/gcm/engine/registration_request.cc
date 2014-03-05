@@ -28,7 +28,6 @@ const char kRegistrationRequestContentType[] =
 
 // Request constants.
 const char kAppIdKey[] = "app";
-const char kCertKey[] = "cert";
 const char kDeviceIdKey[] = "device";
 const char kLoginHeader[] = "AidLogin";
 const char kSenderKey[] = "sender";
@@ -89,12 +88,10 @@ RegistrationRequest::RequestInfo::RequestInfo(
     uint64 android_id,
     uint64 security_token,
     const std::string& app_id,
-    const std::string& cert,
     const std::vector<std::string>& sender_ids)
     : android_id(android_id),
       security_token(security_token),
       app_id(app_id),
-      cert(cert),
       sender_ids(sender_ids) {
 }
 
@@ -121,7 +118,6 @@ void RegistrationRequest::Start() {
   DCHECK(!callback_.is_null());
   DCHECK(request_info_.android_id != 0UL);
   DCHECK(request_info_.security_token != 0UL);
-  DCHECK(!request_info_.cert.empty());
   DCHECK(0 < request_info_.sender_ids.size() &&
          request_info_.sender_ids.size() <= kMaxSenders);
 
@@ -139,7 +135,6 @@ void RegistrationRequest::Start() {
 
   std::string body;
   BuildFormEncoding(kAppIdKey, request_info_.app_id, &body);
-  BuildFormEncoding(kCertKey, request_info_.cert, &body);
   BuildFormEncoding(kDeviceIdKey, android_id, &body);
 
   std::string senders;

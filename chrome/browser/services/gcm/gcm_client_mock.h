@@ -49,7 +49,6 @@ class GCMClientMock : public GCMClient {
   virtual void Stop() OVERRIDE;
   virtual void CheckOut() OVERRIDE;
   virtual void Register(const std::string& app_id,
-                        const std::string& cert,
                         const std::vector<std::string>& sender_ids) OVERRIDE;
   virtual void Unregister(const std::string& app_id) OVERRIDE;
   virtual void Send(const std::string& app_id,

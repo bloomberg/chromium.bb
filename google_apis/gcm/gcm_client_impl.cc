@@ -302,14 +302,12 @@ void GCMClientImpl::CheckOut() {
 }
 
 void GCMClientImpl::Register(const std::string& app_id,
-                             const std::string& cert,
                              const std::vector<std::string>& sender_ids) {
   DCHECK_EQ(state_, READY);
   RegistrationRequest::RequestInfo request_info(
       device_checkin_info_.android_id,
       device_checkin_info_.secret,
       app_id,
-      cert,
       sender_ids);
   DCHECK_EQ(0u, pending_registrations_.count(app_id));
 

@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,18 +30,12 @@ const char kGoogleRestrictedPrefix[] = "google";
 const char kInvalidParameter[] =
     "Function was called with invalid parameters.";
 const char kNotSignedIn[] = "Profile was not signed in.";
-const char kCertificateMissing[] = "Manifest key was missing.";
 const char kAsyncOperationPending[] =
     "Asynchronous operation is pending.";
 const char kNetworkError[] = "Network error occurred.";
 const char kServerError[] = "Server error occurred.";
 const char kTtlExceeded[] = "Time-to-live exceeded.";
 const char kUnknownError[] = "Unknown error occurred.";
-
-std::string SHA1HashHexString(const std::string& str) {
-  std::string hash = base::SHA1HashString(str);
-  return base::HexEncode(hash.data(), hash.size());
-}
 
 const char* GcmResultToError(gcm::GCMClient::Result result) {
   switch (result) {
@@ -52,8 +45,6 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
       return kInvalidParameter;
     case gcm::GCMClient::NOT_SIGNED_IN:
       return kNotSignedIn;
-    case gcm::GCMClient::CERTIFICATE_MISSING:
-      return kCertificateMissing;
     case gcm::GCMClient::ASYNC_OPERATION_PENDING:
       return kAsyncOperationPending;
     case gcm::GCMClient::NETWORK_ERROR:
@@ -121,16 +112,9 @@ bool GcmRegisterFunction::DoWork() {
       api::gcm::Register::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (GetExtension()->public_key().empty()) {
-    CompleteFunctionWithResult(std::string(),
-                               gcm::GCMClient::CERTIFICATE_MISSING);
-    return false;
-  }
-
   GCMProfileService()->Register(
       GetExtension()->id(),
       params->sender_ids,
-      SHA1HashHexString(GetExtension()->public_key()),
       base::Bind(&GcmRegisterFunction::CompleteFunctionWithResult, this));
 
   return true;
