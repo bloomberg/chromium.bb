@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_logger.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -39,8 +40,8 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       driver_(web_contents, this),
       observer_(NULL),
-      weak_factory_(this) {
-}
+      weak_factory_(this),
+      logger_(NULL) {}
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
 
@@ -139,6 +140,23 @@ bool ChromePasswordManagerClient::IsPasswordSyncEnabled() {
   if (sync_service && sync_service->HasSyncSetupCompleted())
     return sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS);
   return false;
+}
+
+void ChromePasswordManagerClient::SetLogger(
+    PasswordManagerLogger* logger) {
+  // We should never be replacing one logger with a different one, because that
+  // will leave the first without further updates, and the user likely confused.
+  // TODO(vabr): For the reason above, before moving the internals page from
+  // behind the flag, make sure to restrict the number of internals page
+  // instances to 1 in normal profiles, and 0 in incognito.
+  DCHECK(!logger || !logger_);
+  logger_ = logger;
+}
+
+void ChromePasswordManagerClient::LogSavePasswordProgress(
+    const std::string& text) {
+  if (logger_)
+    logger_->LogSavePasswordProgress(text);
 }
 
 // static

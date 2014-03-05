@@ -13,6 +13,7 @@ class PasswordFormManager;
 class PasswordManagerDriver;
 class PasswordStore;
 class PrefService;
+class PasswordManagerLogger;
 
 // An abstraction of operations that depend on the embedders (e.g. Chrome)
 // environment.
@@ -52,6 +53,12 @@ class PasswordManagerClient {
   // Returns true if password sync is enabled in the embedder. The default
   // implementation returns false.
   virtual bool IsPasswordSyncEnabled();
+
+  // Attach or detach (setting NULL) a logger for this client.
+  virtual void SetLogger(PasswordManagerLogger* logger);
+
+  // Send |text| to the logger.
+  virtual void LogSavePasswordProgress(const std::string& text);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

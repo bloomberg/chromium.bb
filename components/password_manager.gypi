@@ -35,6 +35,7 @@
         'password_manager/core/browser/password_manager_client.cc',
         'password_manager/core/browser/password_manager_client.h',
         'password_manager/core/browser/password_manager_driver.h',
+        'password_manager/core/browser/password_manager_logger.h',
         'password_manager/core/browser/password_manager_metrics_util.cc',
         'password_manager/core/browser/password_manager_metrics_util.h',
         'password_manager/core/browser/password_store.cc',

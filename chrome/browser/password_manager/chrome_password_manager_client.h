@@ -47,6 +47,8 @@ class ChromePasswordManagerClient
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
       const std::string& experiment_name) OVERRIDE;
   virtual bool IsPasswordSyncEnabled() OVERRIDE;
+  virtual void SetLogger(PasswordManagerLogger* logger) OVERRIDE;
+  virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();
@@ -104,6 +106,11 @@ class ChromePasswordManagerClient
 
   // Allows authentication callbacks to be destroyed when this client is gone.
   base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;
+
+  // Points to an active logger instance to use for, e.g., reporting progress on
+  // saving passwords. If there is no active logger (most of the time), the
+  // pointer will be NULL.
+  PasswordManagerLogger* logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };
