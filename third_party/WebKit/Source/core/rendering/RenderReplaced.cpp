@@ -225,7 +225,9 @@ static inline RenderBlock* firstContainingBlockWithLogicalWidth(const RenderRepl
         return 0;
 
     for (; !containingBlock->isRenderView() && !containingBlock->isBody(); containingBlock = containingBlock->containingBlock()) {
-        if (containingBlock->style()->logicalWidth().isSpecified())
+        if (containingBlock->style()->logicalWidth().isSpecified()
+            && containingBlock->style()->logicalMinWidth().isSpecified()
+            && (containingBlock->style()->logicalMaxWidth().isSpecified() || containingBlock->style()->logicalMaxWidth().isUndefined()))
             return containingBlock;
     }
 
@@ -418,10 +420,19 @@ LayoutUnit RenderReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
                 // The aforementioned 'constraint equation' used for block-level, non-replaced elements in normal flow:
                 // 'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width' + 'margin-right' = width of containing block
                 LayoutUnit logicalWidth;
-                if (RenderBlock* blockWithWidth = firstContainingBlockWithLogicalWidth(this))
+                // FIXME: This walking up the containgBlock chain to find the first one with a specified width is bonkers.
+                // If nothing else, it requires making sure that computeReplacedLogicalWidthRespectingMinMaxWidth cannot
+                // depend on the width of the replaced element or we infinite loop. Right now we do that in
+                // firstContainingBlockWithLogicalWidth by checking that width/min-width/max-width are all specified.
+                //
+                // Firefox 27 seems to only do this if the <svg> has a viewbox.
+                if (RenderBlock* blockWithWidth = firstContainingBlockWithLogicalWidth(this)) {
                     logicalWidth = blockWithWidth->computeReplacedLogicalWidthRespectingMinMaxWidth(blockWithWidth->computeReplacedLogicalWidthUsing(blockWithWidth->style()->logicalWidth()), shouldComputePreferred);
-                else
+                } else {
+                    // FIXME: If shouldComputePreferred == ComputePreferred, then we're reading this during preferred width
+                    // computation, at which point this is reading stale data from a previous layout.
                     logicalWidth = containingBlock()->availableLogicalWidth();
+                }
 
                 // This solves above equation for 'width' (== logicalWidth).
                 LayoutUnit marginStart = minimumValueForLength(style()->marginStart(), logicalWidth);
