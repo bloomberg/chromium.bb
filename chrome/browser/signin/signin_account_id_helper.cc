@@ -5,13 +5,10 @@
 #include "chrome/browser/signin/signin_account_id_helper.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 // TODO(guohui): this class should be moved to a more generic place for reuse.
@@ -107,9 +104,7 @@ void SigninAccountIdHelper::GaiaIdFetcher::OnNetworkError(
 SigninAccountIdHelper::SigninAccountIdHelper(SigninManagerBase* signin_manager)
     : signin_manager_(signin_manager) {
   DCHECK(signin_manager_);
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(signin_manager_->profile()));
-
+  signin_manager_->AddObserver(this);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(
           signin_manager_->profile());
@@ -123,18 +118,14 @@ SigninAccountIdHelper::SigninAccountIdHelper(SigninManagerBase* signin_manager)
 }
 
 SigninAccountIdHelper::~SigninAccountIdHelper() {
+  signin_manager_->RemoveObserver(this);
   ProfileOAuth2TokenServiceFactory::GetForProfile(signin_manager_->profile())->
       RemoveObserver(this);
 }
 
-void SigninAccountIdHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_GOOGLE_SIGNED_OUT) {
-    signin_manager_->profile()->GetPrefs()->
-        ClearPref(prefs::kGoogleServicesUserAccountId);
-  }
+void SigninAccountIdHelper::GoogleSignedOut(const std::string& username) {
+  signin_manager_->profile()->GetPrefs()->ClearPref(
+      prefs::kGoogleServicesUserAccountId);
 }
 
 void SigninAccountIdHelper::OnRefreshTokenAvailable(

@@ -5,30 +5,25 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_ACCOUNT_ID_HELPER_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_ACCOUNT_ID_HELPER_H_
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class CookieSettings;
 class GaiaAuthFetcher;
-class SigninManagerBase;
 
 // The helper class for managing the obfuscated GAIA ID of the primary
 // account. It fetches the ID when user first signs into Chrome or when user
 // opens a connected Chrome profile without an obfuscated GAIA ID, and stores
 // the ID in the profile preference.
-class SigninAccountIdHelper
-    : public content::NotificationObserver,
-      public OAuth2TokenService::Observer {
+class SigninAccountIdHelper : public SigninManagerBase::Observer,
+                              public OAuth2TokenService::Observer {
  public:
   explicit SigninAccountIdHelper(SigninManagerBase* signin_manager);
   virtual ~SigninAccountIdHelper();
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // SigninManagerBase::Observer:
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   // OAuth2TokenService::Observer:
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
@@ -48,7 +43,6 @@ class SigninAccountIdHelper
   static bool disable_for_test_;
 
   SigninManagerBase* signin_manager_;
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninAccountIdHelper);
 };
