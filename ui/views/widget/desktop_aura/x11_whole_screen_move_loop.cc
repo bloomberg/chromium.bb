@@ -30,7 +30,7 @@ namespace {
 
 // The minimum alpha before we declare a pixel transparent when searching in
 // our source image.
-const int kMinAlpha = 32;
+const uint32 kMinAlpha = 32;
 
 class ScopedCapturer {
  public:
@@ -119,7 +119,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 
     grab_input_window_ = CreateDragInputWindow(display);
     if (!drag_image_.isNull() && CheckIfIconValid())
-        CreateDragImageWindow();
+      CreateDragImageWindow();
     base::MessagePumpX11::Current()->AddDispatcherForWindow(
         this, grab_input_window_);
     // Releasing ScopedCapturer ensures that any other instance of
@@ -297,8 +297,7 @@ bool X11WholeScreenMoveLoop::CheckIfIconValid() {
     uint32* in_row = in_bitmap->getAddr32(0, y);
 
     for (int x = 0; x < in_bitmap->width(); ++x) {
-      char value = SkColorGetA(in_row[x]) > kMinAlpha;
-      if (value)
+      if (SkColorGetA(in_row[x]) > kMinAlpha)
         return true;
     }
   }
