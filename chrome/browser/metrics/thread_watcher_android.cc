@@ -39,7 +39,9 @@ void OnApplicationStateChange(
 
 struct LeakyApplicationStatusListenerTraits {
   static const bool kRegisterOnExit = false;
+#ifndef NDEBUG
   static const bool kAllowedToAccessOnNonjoinableThread = true;
+#endif
 
   static base::android::ApplicationStatusListener* New(void* instance) {
     ANNOTATE_SCOPED_MEMORY_LEAK;

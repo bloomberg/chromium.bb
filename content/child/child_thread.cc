@@ -166,7 +166,10 @@ base::LazyInstance<base::Lock> g_lazy_child_thread_lock =
 // doesn't handle the case. Thus, we need our own class here.
 struct CondVarLazyInstanceTraits {
   static const bool kRegisterOnExit = true;
-  static const bool kAllowedToAccessOnNonjoinableThread ALLOW_UNUSED = false;
+#ifndef NDEBUG
+  static const bool kAllowedToAccessOnNonjoinableThread = false;
+#endif
+
   static base::ConditionVariable* New(void* instance) {
     return new (instance) base::ConditionVariable(
         g_lazy_child_thread_lock.Pointer());
