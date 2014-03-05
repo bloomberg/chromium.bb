@@ -4434,40 +4434,43 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseShapeProperty(CSSProper
         return imageValue.release();
     }
 
-    if (value->unit == CSSParserValue::Function) {
-        shapeValue = parseBasicShape();
-        if (!shapeValue)
-            return nullptr;
-    } else if (isBoxValue(valueId)) {
-        boxValue = parseValidPrimitive(valueId, value);
-        m_valueList->next();
-    } else {
-        return nullptr;
-    }
+    return parseBasicShapeAndOrBox();
+}
 
-    ASSERT(shapeValue || boxValue);
-    value = m_valueList->current();
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBasicShapeAndOrBox()
+{
+    CSSParserValue* value = m_valueList->current();
 
-    if (value) {
+    bool shapeFound = false;
+    bool boxFound = false;
+    CSSValueID valueId;
+
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    for (unsigned i = 0; i < 2; ++i) {
+        if (!value)
+            break;
         valueId = value->id;
-        if (boxValue && value->unit == CSSParserValue::Function) {
-            shapeValue = parseBasicShape();
+        if (value->unit == CSSParserValue::Function && !shapeFound) {
+            // parseBasicShape already asks for the next value list item.
+            RefPtr<CSSPrimitiveValue> shapeValue = parseBasicShape();
             if (!shapeValue)
                 return nullptr;
-        } else if (shapeValue && isBoxValue(valueId)) {
-            boxValue = parseValidPrimitive(valueId, value);
+            list->append(shapeValue.release());
+            shapeFound = true;
+        } else if (isBoxValue(valueId) && !boxFound) {
+            list->append(parseValidPrimitive(valueId, value));
+            boxFound = true;
             m_valueList->next();
         } else {
             return nullptr;
         }
 
-        ASSERT(shapeValue && boxValue);
-        shapeValue->getShapeValue()->setLayoutBox(boxValue.release());
+        value = m_valueList->current();
     }
 
-    if (shapeValue)
-        return shapeValue.release();
-    return boxValue.release();
+    if (m_valueList->current())
+        return nullptr;
+    return list.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBasicShape()

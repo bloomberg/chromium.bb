@@ -132,7 +132,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableSVGPaint::create(SVGPaint::SVG_PAINTTYPE_URI, Color(0xFFFF0000), "abc")));
 
     EXPECT_THAT(
-        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get()).get())),
+        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox).get())),
         testing::StartsWith("AnimatableShapeValue@"));
 
     RefPtr<SVGLengthList> l2 = SVGLengthList::create();

@@ -69,17 +69,11 @@ public:
 
     virtual Type type() const = 0;
 
-    LayoutBox layoutBox() const { return m_layoutBox; }
-    void setLayoutBox(LayoutBox layoutBox) { m_layoutBox = layoutBox; }
-
 protected:
     BasicShape()
-        : m_layoutBox(BoxMissing)
     {
     }
 
-private:
-    LayoutBox m_layoutBox;
 };
 
 #define DEFINE_BASICSHAPE_TYPE_CASTS(thisType) \

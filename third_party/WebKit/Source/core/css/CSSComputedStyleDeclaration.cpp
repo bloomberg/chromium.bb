@@ -1430,6 +1430,26 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(RenderStyle&
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, ShapeValue* shapeValue)
+{
+    if (!shapeValue)
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+    if (shapeValue->type() == ShapeValue::Outside)
+        return cssValuePool().createIdentifierValue(CSSValueOutsideShape);
+    if (shapeValue->type() == ShapeValue::Box)
+        return cssValuePool().createValue(shapeValue->layoutBox());
+    if (shapeValue->type() == ShapeValue::Image)
+        return shapeValue->image() ? shapeValue->image()->cssValue() : cssValuePool().createIdentifierValue(CSSValueNone);
+
+    ASSERT(shapeValue->type() == ShapeValue::Shape);
+
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(valueForBasicShape(style, shapeValue->shape()));
+    if (shapeValue->layoutBox() != BoxMissing)
+        list->append(cssValuePool().createValue(shapeValue->layoutBox()));
+    return list.release();
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> touchActionFlagsToCSSValue(TouchAction touchAction)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -2617,31 +2637,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyShapeImageThreshold:
             return cssValuePool().createValue(style->shapeImageThreshold(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyShapeInside:
-            if (!style->shapeInside())
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            if (style->shapeInside()->type() == ShapeValue::Box)
-                return cssValuePool().createValue(style->shapeInside()->layoutBox());
-            if (style->shapeInside()->type() == ShapeValue::Outside)
-                return cssValuePool().createIdentifierValue(CSSValueOutsideShape);
-            if (style->shapeInside()->type() == ShapeValue::Image) {
-                if (style->shapeInside()->image())
-                    return style->shapeInside()->image()->cssValue();
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            }
-            ASSERT(style->shapeInside()->type() == ShapeValue::Shape);
-            return valueForBasicShape(*style, style->shapeInside()->shape());
+            return valueForShape(*style, style->shapeInside());
         case CSSPropertyShapeOutside:
-            if (!style->shapeOutside())
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            if (style->shapeOutside()->type() == ShapeValue::Box)
-                return cssValuePool().createValue(style->shapeOutside()->layoutBox());
-            if (style->shapeOutside()->type() == ShapeValue::Image) {
-                if (style->shapeOutside()->image())
-                    return style->shapeOutside()->image()->cssValue();
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            }
-            ASSERT(style->shapeOutside()->type() == ShapeValue::Shape);
-            return valueForBasicShape(*style, style->shapeOutside()->shape());
+            return valueForShape(*style, style->shapeOutside());
         case CSSPropertyWebkitWrapThrough:
             return cssValuePool().createValue(style->wrapThrough());
         case CSSPropertyWebkitFilter:

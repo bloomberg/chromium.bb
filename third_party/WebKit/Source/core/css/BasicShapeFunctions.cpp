@@ -176,9 +176,6 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
         break;
     }
 
-    if (basicShape->layoutBox() != BoxMissing)
-        basicShapeValue->setLayoutBox(pool.createValue(basicShape->layoutBox()));
-
     return pool.createValue(basicShapeValue.release());
 }
 
@@ -384,9 +381,6 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
     default:
         break;
     }
-
-    if (basicShapeValue->layoutBox())
-        basicShape->setLayoutBox(LayoutBox(*basicShapeValue->layoutBox()));
 
     return basicShape.release();
 }

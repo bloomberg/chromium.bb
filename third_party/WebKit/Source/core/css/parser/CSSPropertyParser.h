@@ -164,6 +164,7 @@ private:
     bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);
+    PassRefPtrWillBeRawPtr<CSSValue> parseBasicShapeAndOrBox();
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseBasicShape();
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
 

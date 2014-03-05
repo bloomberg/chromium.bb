@@ -48,9 +48,9 @@ public:
         Image
     };
 
-    static PassRefPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape)
+    static PassRefPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, LayoutBox layoutBox)
     {
-        return adoptRef(new ShapeValue(shape));
+        return adoptRef(new ShapeValue(shape, layoutBox));
     }
 
     static PassRefPtr<ShapeValue> createOutsideValue()
@@ -85,10 +85,10 @@ public:
     bool operator==(const ShapeValue& other) const;
 
 private:
-    ShapeValue(PassRefPtr<BasicShape> shape)
+    ShapeValue(PassRefPtr<BasicShape> shape, LayoutBox layoutBox)
         : m_type(Shape)
         , m_shape(shape)
-        , m_layoutBox(m_shape->layoutBox())
+        , m_layoutBox(layoutBox)
     {
     }
     ShapeValue(ShapeValueType type)
