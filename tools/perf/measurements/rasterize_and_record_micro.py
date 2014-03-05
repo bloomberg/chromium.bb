@@ -12,6 +12,7 @@ from telemetry.page import page_measurement
 class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
     super(RasterizeAndRecordMicro, self).__init__('', True)
+    self._compositing_features_enabled = False
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--start-wait-time', dest='start_wait_time',
@@ -43,24 +44,25 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     ])
 
   def DidStartBrowser(self, browser):
-    # Check if the we actually have threaded forced compositing enabled.
-    system_info = browser.GetSystemInfo()
-    if not (system_info.gpu.feature_status and
-            system_info.gpu.feature_status.get(
-                'compositing', None) == 'enabled_force_threaded'):
-      logging.warning('Warning: compositing feature status unknown or not '+
-                      'forced and threaded. Skipping measurement.')
-      sys.exit(0)
-
-  def MeasurePage(self, page, tab, results):
     # TODO(vmpstr): Remove this temporary workaround when reference build has
     # been updated to branch 1713 or later.
-    backend = tab.browser._browser_backend # pylint: disable=W0212
+    backend = browser._browser_backend # pylint: disable=W0212
     if (not hasattr(backend, 'chrome_branch_number') or
         (sys.platform != 'android' and backend.chrome_branch_number < 1713)):
-      print ('Warning: rasterize_and_record_micro requires Chrome branch 1713 '
-             'or later. Skipping measurement.')
-      sys.exit(0)
+      return
+
+    # Check if the we actually have threaded forced compositing enabled.
+    system_info = browser.GetSystemInfo()
+    if (system_info.gpu.feature_status
+        and system_info.gpu.feature_status.get(
+            'compositing', None) == 'enabled_force_threaded'):
+      self._compositing_features_enabled = True
+
+  def MeasurePage(self, page, tab, results):
+    if not self._compositing_features_enabled:
+      logging.warning('Warning: RasterizeAndRecordMicro requires forced, '
+                      'threaded compositing and Chrome branch 1713 or newer.')
+      return
 
     try:
       tab.WaitForJavaScriptExpression("document.readyState == 'complete'", 10)

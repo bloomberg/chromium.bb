@@ -48,11 +48,6 @@ class FakeTab(object):
 
 class PageCyclerUnitTest(unittest.TestCase):
 
-  # TODO(tonyg): Remove this backfill when we can assume python 2.7 everywhere.
-  def assertIn(self, first, second, _=None):
-    self.assertTrue(first in second,
-                    msg="'%s' not found in '%s'" % (first, second))
-
   def setupCycler(self, args, setup_memory_module=False):
     cycler = page_cycler.PageCycler()
     options = browser_options.BrowserFinderOptions()

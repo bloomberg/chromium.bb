@@ -81,6 +81,7 @@ class SmoothnessGpuRasterizationKeySilkCases(test.Test):
     options.AppendExtraBrowserArgs('--enable-gpu-rasterization')
 
 
+@test.Enabled('android')
 class SmoothnessToughPinchZoomCases(test.Test):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import logging
-import sys
 import time
 
 from metrics import rendering_stats
@@ -62,11 +61,10 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
       self._compositing_features_enabled = True
 
   def MeasurePage(self, page, tab, results):
-    # Exit if threaded forced compositing is not enabled.
-    if (not self._compositing_features_enabled):
+    if not self._compositing_features_enabled:
       logging.warning('Warning: compositing feature status unknown or not '+
                       'forced and threaded. Skipping measurement.')
-      sys.exit(0)
+      return
 
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(

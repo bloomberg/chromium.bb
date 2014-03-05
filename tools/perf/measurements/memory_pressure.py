@@ -41,9 +41,7 @@ class MemoryPressure(page_measurement.PageMeasurement):
     # After navigating to each page, check if it triggered tab discards or
     # kills.
     (discard_count, kill_count) = self.GetTabsHistogramCounts(tab)
-    # Done with this tab.  Disconnect cleanly from it to avoid a possible
-    # TabCrashException if the tab is discarded or killed.
-    tab.Disconnect()
+
     # Sanity check for first page
     if self._is_first_page:
       self._is_first_page = False

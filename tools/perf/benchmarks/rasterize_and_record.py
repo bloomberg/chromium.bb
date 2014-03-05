@@ -1,11 +1,16 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 from telemetry import test
 
 from measurements import rasterize_and_record
 
 
+# RasterizeAndRecord disabled on linux because no raster times are reported.
+# TODO: re-enable when unittests are happy on linux.
+
+@test.Disabled('linux')
 class RasterizeAndRecordTop25(test.Test):
   """Measures rasterize and record performance on the top 25 web pages.
 
@@ -14,6 +19,7 @@ class RasterizeAndRecordTop25(test.Test):
   page_set = 'page_sets/top_25.json'
 
 
+@test.Disabled('linux')
 class RasterizeAndRecordKeyMobileSites(test.Test):
   """Measures rasterize and record performance on the key mobile sites.
 
@@ -22,6 +28,7 @@ class RasterizeAndRecordKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.json'
 
 
+@test.Disabled('linux')
 class RasterizeAndRecordSilk(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
