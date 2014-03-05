@@ -495,9 +495,7 @@ SkCanvas* ResourceProvider::BitmapRasterBuffer::DoLockForWrite() {
       NOTREACHED();
       break;
   }
-  skia::RefPtr<SkBitmapDevice> device =
-      skia::AdoptRef(new SkBitmapDevice(raster_bitmap_));
-  raster_canvas_ = skia::AdoptRef(new SkCanvas(device.get()));
+  raster_canvas_ = skia::AdoptRef(new SkCanvas(raster_bitmap_));
   raster_bitmap_generation_id_ = raster_bitmap_.getGenerationID();
   return raster_canvas_.get();
 }

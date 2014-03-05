@@ -19,7 +19,6 @@
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -263,10 +262,9 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
   gfx::Rect bounds = picture->LayerRect();
 
   // Measure the total time by drawing straight into a bitmap-backed canvas.
-  skia::RefPtr<SkBaseDevice> device = skia::AdoptRef(SkNEW_ARGS(
-      SkBitmapDevice,
-      (SkBitmap::kARGB_8888_Config, bounds.width(), bounds.height())));
-  SkCanvas bitmap_canvas(device.get());
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(bounds.width(), bounds.height());
+  SkCanvas bitmap_canvas(bitmap);
   bitmap_canvas.clear(SK_ColorTRANSPARENT);
   base::TimeTicks t0 = base::TimeTicks::HighResNow();
   picture->Replay(&bitmap_canvas);
