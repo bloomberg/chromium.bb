@@ -525,14 +525,17 @@ bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info, DWORD length,
   if (file_info->RootDirectory)
     return false;
 
+  static const wchar_t kPathPrefix[] = { L'\\', L'?', L'?', L'\\'};
+
   // Check if it starts with \\??\\. We don't support relative paths.
-  if (file_info->FileNameLength < 4 || file_info->FileNameLength > kuint16max)
+  if (file_info->FileNameLength < sizeof(kPathPrefix) ||
+      file_info->FileNameLength > kuint16max)
     return false;
 
-  if (file_info->FileName[0] != L'\\' ||
-      file_info->FileName[1] != L'?' ||
-      file_info->FileName[2] != L'?' ||
-      file_info->FileName[3] != L'\\')
+  if (file_info->FileName[0] != kPathPrefix[0] ||
+      file_info->FileName[1] != kPathPrefix[1] ||
+      file_info->FileName[2] != kPathPrefix[2] ||
+      file_info->FileName[3] != kPathPrefix[3])
     return false;
 
   return true;
