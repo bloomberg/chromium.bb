@@ -19,7 +19,13 @@ namespace media {
 namespace cast {
 namespace {
 
+// Max delta is 4095 milliseconds because we need to be able to encode it in
+// 12 bits.
+const int64 kMaxWireFormatTimeDeltaMs = GG_INT64_C(0xfff);
+
 // Converts a log event type to an integer value.
+// NOTE: We have only allocated 4 bits to represent the type of event over the
+// wire. Therefore, this function can only return values from 0 to 15.
 int ConvertEventTypeToWireFormat(const CastLoggingEvent& event) {
   switch (event) {
     case kAudioAckSent:
@@ -51,16 +57,22 @@ uint16 MergeEventTypeAndTimestampForWireFormat(
     const CastLoggingEvent& event,
     const base::TimeDelta& time_delta) {
   int64 time_delta_ms = time_delta.InMilliseconds();
-  // Max delta is 4096 milliseconds.
-  DCHECK_GE(GG_INT64_C(0xfff), time_delta_ms);
 
-  uint16 event_type_and_timestamp_delta =
-      static_cast<uint16>(time_delta_ms & 0xfff);
+  DCHECK_GE(time_delta_ms, 0);
+  DCHECK_LE(time_delta_ms, kMaxWireFormatTimeDeltaMs);
 
-  uint16 event_type = ConvertEventTypeToWireFormat(event);
-  DCHECK(event_type);
-  DCHECK(!(event_type & 0xfff0));
-  return (event_type << 12) + event_type_and_timestamp_delta;
+  uint16 time_delta_12_bits =
+      static_cast<uint16>(time_delta_ms & kMaxWireFormatTimeDeltaMs);
+
+  uint16 event_type_4_bits = ConvertEventTypeToWireFormat(event);
+  DCHECK(event_type_4_bits);
+  DCHECK(~(event_type_4_bits & 0xfff0));
+  return (event_type_4_bits << 12) | time_delta_12_bits;
+}
+
+bool EventTimestampLessThan(const RtcpReceiverEventLogMessage& lhs,
+                            const RtcpReceiverEventLogMessage& rhs) {
+  return lhs.event_timestamp < rhs.event_timestamp;
 }
 
 bool BuildRtcpReceiverLogMessage(
@@ -76,36 +88,61 @@ bool BuildRtcpReceiverLogMessage(
     return false;
   }
 
+  // We use this to do event timestamp sorting and truncating for events of
+  // a single frame.
+  std::vector<RtcpReceiverEventLogMessage> sorted_log_messages;
+
   // Account for the RTCP header for an application-defined packet.
   remaining_space -= kRtcpCastLogHeaderSize;
 
-  ReceiverRtcpEventSubscriber::RtcpEventMultiMap::const_reverse_iterator it =
+  ReceiverRtcpEventSubscriber::RtcpEventMultiMap::const_reverse_iterator rit =
       rtcp_events.rbegin();
 
-  while (it != rtcp_events.rend() &&
+  while (rit != rtcp_events.rend() &&
          remaining_space >=
              kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize) {
-    const RtpTimestamp rtp_timestamp = it->first;
+    const RtpTimestamp rtp_timestamp = rit->first;
     RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
     remaining_space -= kRtcpReceiverFrameLogSize;
     ++*number_of_frames;
 
-    int events_in_frame = 0;
+    // Get all events of a single frame.
+    sorted_log_messages.clear();
     do {
-      if (++events_in_frame <= kRtcpMaxReceiverLogMessages) {
-        remaining_space -= kRtcpReceiverEventLogSize;
-        ++*total_number_of_messages_to_send;
+      RtcpReceiverEventLogMessage event_log_message;
+      event_log_message.type = rit->second.type;
+      event_log_message.event_timestamp = rit->second.timestamp;
+      event_log_message.delay_delta = rit->second.delay_delta;
+      event_log_message.packet_id = rit->second.packet_id;
+      sorted_log_messages.push_back(event_log_message);
+      ++rit;
+    } while (rit != rtcp_events.rend() && rit->first == rtp_timestamp);
 
-        RtcpReceiverEventLogMessage event_log_message;
-        event_log_message.type = it->second.type;
-        event_log_message.event_timestamp = it->second.timestamp;
-        event_log_message.delay_delta = it->second.delay_delta;
-        event_log_message.packet_id = it->second.packet_id;
-        frame_log.event_log_messages_.push_front(event_log_message);
-      }
-      ++it;
-    } while (it != rtcp_events.rend() && it->first == rtp_timestamp &&
-             remaining_space >= kRtcpReceiverEventLogSize);
+    std::sort(sorted_log_messages.begin(),
+              sorted_log_messages.end(),
+              &EventTimestampLessThan);
+
+    // From |sorted_log_messages|, only take events that are no greater than
+    // |kMaxWireFormatTimeDeltaMs| seconds away from the latest event. Events
+    // older than that cannot be encoded over the wire.
+    std::vector<RtcpReceiverEventLogMessage>::reverse_iterator sorted_rit =
+        sorted_log_messages.rbegin();
+    base::TimeTicks first_event_timestamp = sorted_rit->event_timestamp;
+    int events_in_frame = 0;
+    while (sorted_rit != sorted_log_messages.rend() &&
+           events_in_frame < kRtcpMaxReceiverLogMessages &&
+           remaining_space >= kRtcpReceiverEventLogSize) {
+      base::TimeDelta delta(first_event_timestamp -
+                            sorted_rit->event_timestamp);
+      if (delta.InMilliseconds() > kMaxWireFormatTimeDeltaMs)
+        break;
+      frame_log.event_log_messages_.push_front(*sorted_rit);
+      ++events_in_frame;
+      ++*total_number_of_messages_to_send;
+      remaining_space -= kRtcpReceiverEventLogSize;
+      ++sorted_rit;
+    }
+
     receiver_log_message->push_front(frame_log);
   }
 
