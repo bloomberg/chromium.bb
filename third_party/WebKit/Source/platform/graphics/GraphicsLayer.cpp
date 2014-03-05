@@ -725,6 +725,19 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         }
     }
 
+    if (flags & LayerTreeIncludesDebugInfo) {
+        writeIndent(ts, indent + 1);
+        ts << "(compositingReasons\n";
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
+            if (m_debugInfo.compositingReasons() & compositingReasonStringMap[i].reason) {
+                writeIndent(ts, indent + 2);
+                ts << compositingReasonStringMap[i].description << "\n";
+            }
+        }
+        writeIndent(ts, indent + 1);
+        ts << ")\n";
+    }
+
     if (m_children.size()) {
         writeIndent(ts, indent + 1);
         ts << "(children " << m_children.size() << "\n";
