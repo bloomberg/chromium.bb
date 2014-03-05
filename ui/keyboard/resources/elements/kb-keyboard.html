@@ -593,6 +593,10 @@
        *     kb-keyboard.
        */
       down: function(event) {
+        var layout = getKeysetLayout(this.activeKeysetId);
+        var key = layout.findClosestKey(event.clientX, event.clientY);
+        if (key)
+          key.down(event);
         if (event.isPrimary) {
           swipeTracker.pre_x = event.screenX;
           swipeTracker.pre_y = event.screenY;
@@ -606,9 +610,15 @@
        *     kb-keyboard.
        */
       up: function(event) {
+        var layout = getKeysetLayout(this.activeKeysetId);
+        var key = layout.findClosestKey(event.clientX, event.clientY);
+        if (key)
+          key.up(event);
         // When touch typing, it is very possible that finger moves slightly out
         // of the key area before releases. The key should not be dropped in
         // this case.
+        // TODO(rsadam@) Change behaviour such that the key drops and the second
+        // key gets pressed.
         if (this.lastPressedKey &&
             this.lastPressedKey.pointerId == event.pointerId) {
           this.lastPressedKey.autoRelease();

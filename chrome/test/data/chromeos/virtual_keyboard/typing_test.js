@@ -283,7 +283,11 @@ function testFingerOutType(testDoneCallback) {
       keyCode: 0x41,
       modifiers: Modifier.NONE
     });
-    var mockEvent = { pointerId:2 };
+    var mockEvent = {
+      pointerId:2,
+      clientX: parseFloat(key.style.left),
+      clientY: parseFloat(key.style.top),
+    };
     key.down(mockEvent);
     key.out(mockEvent);
     // Mocks finger releases after moved out of the 'a' key.
@@ -309,6 +313,99 @@ function testFingerOutType(testDoneCallback) {
     mockTypeCharacter('s', 0x53, Modifier.NONE);
   };
   onKeyboardReady('testFingerOutType', runTest, testDoneCallback);
+}
+
+/**
+ * Tests that touching around a key causes the key to be pressed.
+ * @param {Function} testDoneCallback The callback function on completion.
+ */
+function testTouchFuzzing(testDoneCallback) {
+  /**
+   * Fuzzy types the specified key.
+   * @param {string} label The character being typed.
+   * @param {number} keyCode The legacy key code for the character.
+   * @param {number} modifiers Indicates which if any of the shift, control and
+   *     alt keys are being virtually pressed.
+   * @param {number=} opt_unicode Optional unicode value for the character. Only
+   *     required if it cannot be directly calculated from the label.
+   */
+  var fuzzyType = function(label, keyCode, modifiers, heightRatio, widthRatio,
+      xOffset, yOffset, opt_unicode) {
+    var key = findKey(label);
+    assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
+    var unicodeValue = opt_unicode | label.charCodeAt(0);
+    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
+    send.addExpectation({
+      type: 'keydown',
+      charValue: unicodeValue,
+      keyCode: keyCode,
+      modifiers: modifiers
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: unicodeValue,
+      keyCode: keyCode,
+      modifiers: modifiers
+    });
+    var x = parseFloat(key.style.left) +
+      widthRatio * parseFloat(key.style.width);
+    var y = parseFloat(key.style.top) +
+      heightRatio * parseFloat(key.style.height);
+    var mockEvent = {
+      pointerId: 1,
+      clientX: x + xOffset,
+      clientY: y + yOffset,
+    };
+    // Fake typing the key.
+    var keyboard = $('keyboard');
+    keyboard.down(mockEvent);
+    keyboard.up(mockEvent);
+  };
+  /**
+   * Fuzz types a set of keys.
+   * @param {number} heightRatio Number in [0,1] indicating where to
+   *    press on the key. 0 is the top of the key, 1 the bottom.
+   * @param {number} widthRatio Number in [0,1] indicating where to
+   *    press on the key. 0 is the left of the key, 1 the right.
+   * @param {number} xOffset The offset to the touch position in the x-axis.
+   * @param {number} yOffset The offset to the touch position in the y-axis.
+   */
+  var runFuzzTest = function(heightRatio, widthRatio, xOffset, yOffset) {
+    // Test pressing characters.
+    fuzzyType('a', 0x41, Modifier.NONE, heightRatio, widthRatio, xOffset,
+        yOffset);
+    fuzzyType('.', 0xBE, Modifier.NONE, heightRatio, widthRatio, xOffset,
+        yOffset);
+    fuzzyType('s', 0x53, Modifier.NONE, heightRatio, widthRatio, xOffset,
+        yOffset);
+    fuzzyType(' ', 0x20, Modifier.NONE, heightRatio, widthRatio, xOffset,
+        yOffset);
+    fuzzyType('\b', 0x08, Modifier.NONE, heightRatio, widthRatio, xOffset,
+        yOffset, 0x08);
+    fuzzyType('\n', 0x0D, Modifier.NONE, heightRatio, widthRatio, xOffset,
+        yOffset, 0x0A);
+  };
+
+  /**
+   * Tests various presses around the key. Assumes that the pitch is greater
+   * than 2 px.
+   */
+  var runTest = function() {
+    // Test a center press.
+    runFuzzTest(0.5, 0.5, 0, 0);
+    // Test corner.
+    runFuzzTest(0, 0, 0, 0);
+    runFuzzTest(0, 0, -1, -1);
+    // Test left.
+    runFuzzTest(0.5, 0, -1, 0);
+    // Test right.
+    runFuzzTest(0.5, 1, 1, 0);
+    // Test top.
+    runFuzzTest(0, 0.5, 0, -1);
+    // Test bottom.
+    runFuzzTest(1, 0.5, 0, 1);
+  };
+  onKeyboardReady('testTouchFuzzing', runTest, testDoneCallback);
 }
 
 /**
