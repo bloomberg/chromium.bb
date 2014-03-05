@@ -314,9 +314,6 @@ public:
 
     void trace(Visitor*);
 
-    void startSpeechInput(Element*);
-    void setValueForUser(Element*, const String&);
-
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

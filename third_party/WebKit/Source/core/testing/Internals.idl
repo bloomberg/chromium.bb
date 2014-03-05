@@ -279,7 +279,4 @@
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
     [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
-
-    void startSpeechInput(Element element);
-    void setValueForUser(Element element, DOMString value);
 };
