@@ -4445,14 +4445,14 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBasicShapeAndOrBox()
     bool boxFound = false;
     CSSValueID valueId;
 
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (unsigned i = 0; i < 2; ++i) {
         if (!value)
             break;
         valueId = value->id;
         if (value->unit == CSSParserValue::Function && !shapeFound) {
             // parseBasicShape already asks for the next value list item.
-            RefPtr<CSSPrimitiveValue> shapeValue = parseBasicShape();
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> shapeValue = parseBasicShape();
             if (!shapeValue)
                 return nullptr;
             list->append(shapeValue.release());
