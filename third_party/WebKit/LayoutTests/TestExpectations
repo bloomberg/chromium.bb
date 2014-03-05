@@ -837,8 +837,6 @@ crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-nega
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 
-crbug.com/313447 [ Mac ] fast/repaint/block-layout-inline-children-replaced.html [ NeedsRebaseline ]
-
 # Disable failing tests for the new WebSocket implementation
 crbug.com/339373 http/tests/security/contentSecurityPolicy/connect-src-websocket-allowed.html [ Skip ]
 crbug.com/339373 http/tests/websocket/FIXME-handshake-fail-by-null-subprotocol-selection-whitelist.html [ Skip ]
