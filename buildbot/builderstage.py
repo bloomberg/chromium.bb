@@ -21,7 +21,6 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
-from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 
 

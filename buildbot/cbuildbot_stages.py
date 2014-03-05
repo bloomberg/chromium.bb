@@ -10,7 +10,6 @@ import functools
 import glob
 import json
 import logging
-import math
 import multiprocessing
 import os
 import platform
@@ -37,7 +36,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
-from chromite.lib import toolchain
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
