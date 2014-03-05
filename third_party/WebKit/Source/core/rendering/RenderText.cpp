@@ -781,7 +781,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         stripFrontSpaces = false;
 
     if (m_hasTab || preferredLogicalWidthsDirty())
-        computePreferredLogicalWidths(leadWidth, direction);
+        computePreferredLogicalWidths(leadWidth);
 
     hasBreakableStart = !stripFrontSpaces && m_hasBreakableStart;
     hasBreakableEnd = m_hasBreakableEnd;
@@ -860,27 +860,27 @@ void RenderText::trimmedPrefWidths(float leadWidth,
     }
 }
 
-float RenderText::minLogicalWidth(TextDirection textDirection) const
+float RenderText::minLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty())
-        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, textDirection);
+        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0);
 
     return m_minWidth;
 }
 
-float RenderText::maxLogicalWidth(TextDirection textDirection) const
+float RenderText::maxLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty())
-        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, textDirection);
+        const_cast<RenderText*>(this)->computePreferredLogicalWidths(0);
 
     return m_maxWidth;
 }
 
-void RenderText::computePreferredLogicalWidths(float leadWidth, TextDirection textDirection)
+void RenderText::computePreferredLogicalWidths(float leadWidth)
 {
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
-    computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphOverflow, textDirection);
+    computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphOverflow);
     if (fallbackFonts.isEmpty() && !glyphOverflow.left && !glyphOverflow.right && !glyphOverflow.top && !glyphOverflow.bottom)
         m_knownToHaveNoOverflowAndNoFallbackFonts = true;
 }
@@ -891,7 +891,7 @@ static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDire
     return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style, direction));
 }
 
-void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow, TextDirection textDirection)
+void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow)
 {
     ASSERT(m_hasTab || preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts);
 
@@ -924,10 +924,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     bool firstLine = true;
     int nextBreakable = -1;
     int lastWordBoundary = 0;
-
-    // Non-zero only when kerning is enabled, in which case we measure words with their trailing
-    // space, then subtract its width.
-    float wordTrailingSpaceWidth = f.fontDescription().typesettingFeatures() & Kerning ? f.width(RenderBlockFlow::constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing : 0;
+    float cachedWordTrailingSpaceWidth[2] = { 0, 0 }; // LTR, RTL
 
     // If automatic hyphenation is allowed, we keep track of the width of the widest word (or word
     // fragment) encountered so far, and only try hyphenating words that are wider.
@@ -1027,6 +1024,17 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         int wordLen = j - i;
         if (wordLen) {
             bool isSpace = (j < len) && c == ' ';
+
+            // Non-zero only when kerning is enabled, in which case we measure words with their trailing
+            // space, then subtract its width.
+            float wordTrailingSpaceWidth = 0;
+            if (isSpace && (f.fontDescription().typesettingFeatures() & Kerning)) {
+                ASSERT(textDirection >=0 && textDirection <= 1);
+                if (!cachedWordTrailingSpaceWidth[textDirection])
+                    cachedWordTrailingSpaceWidth[textDirection] = f.width(RenderBlockFlow::constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing;
+                wordTrailingSpaceWidth = cachedWordTrailingSpaceWidth[textDirection];
+            }
+
             float w;
             if (wordTrailingSpaceWidth && isSpace)
                 w = widthFromCache(f, i, wordLen + 1, leadWidth + currMaxWidth, textDirection, &fallbackFonts, &glyphOverflow) - wordTrailingSpaceWidth;
@@ -1491,13 +1499,13 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
             if (fallbackFonts) {
                 ASSERT(glyphOverflow);
                 if (preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts) {
-                    const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, *fallbackFonts, *glyphOverflow, textDirection);
+                    const_cast<RenderText*>(this)->computePreferredLogicalWidths(0, *fallbackFonts, *glyphOverflow);
                     if (fallbackFonts->isEmpty() && !glyphOverflow->left && !glyphOverflow->right && !glyphOverflow->top && !glyphOverflow->bottom)
                         m_knownToHaveNoOverflowAndNoFallbackFonts = true;
                 }
                 w = m_maxWidth;
             } else {
-                w = maxLogicalWidth(textDirection);
+                w = maxLogicalWidth();
             }
         } else {
             w = widthFromCache(f, from, len, xPos, textDirection, fallbackFonts, glyphOverflow);

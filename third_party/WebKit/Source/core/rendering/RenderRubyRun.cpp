@@ -312,9 +312,9 @@ void RenderRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, Ren
     // and no more than half the font size.
     int halfWidthOfFontSize = rubyText->style(firstLine)->fontSize() / 2;
     if (startOverhang)
-        startOverhang = min<int>(startOverhang, min<int>(toRenderText(startRenderer)->minLogicalWidth(style()->direction()), halfWidthOfFontSize));
+        startOverhang = min<int>(startOverhang, min<int>(toRenderText(startRenderer)->minLogicalWidth(), halfWidthOfFontSize));
     if (endOverhang)
-        endOverhang = min<int>(endOverhang, min<int>(toRenderText(endRenderer)->minLogicalWidth(style()->direction()), halfWidthOfFontSize));
+        endOverhang = min<int>(endOverhang, min<int>(toRenderText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
 }
 
 } // namespace WebCore
