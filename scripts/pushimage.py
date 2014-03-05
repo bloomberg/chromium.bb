@@ -175,9 +175,10 @@ def MarkImageToBeSigned(ctx, tbs_base, insns_path, priority):
         'PROG=%s' % __file__,
         'USER=%s' % getpass.getuser(),
         'HOSTNAME=%s' % cros_build_lib.GetHostName(fully_qualified=True),
-        'GIT_REV=%s' % git.RunGit(constants.CHROMITE_DIR, ['rev-parse', 'HEAD'])
+        'GIT_REV=%s' % git.RunGit(constants.CHROMITE_DIR,
+                                  ['rev-parse', 'HEAD']).output.rstrip(),
     ]
-    osutils.WriteFile(temp_tbs_file.name, '\n'.join(lines))
+    osutils.WriteFile(temp_tbs_file.name, '\n'.join(lines) + '\n')
     ctx.Copy(temp_tbs_file.name, tbs_path)
 
   return tbs_path

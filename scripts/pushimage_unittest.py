@@ -5,12 +5,15 @@
 
 """Unittests for pushimage.py"""
 
+from __future__ import print_function
+
 import logging
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -120,7 +123,8 @@ class MarkImageToBeSignedTest(cros_test_lib.MockTestCase):
 
     # Minor optimization -- we call this for logging purposes in the main
     # code, but don't really care about it for testing.  It just slows us.
-    self.PatchObject(git, 'RunGit')
+    self.PatchObject(git, 'RunGit',
+                     return_value=cros_build_lib.CommandResult(output='1234\n'))
 
   def testBasic(self):
     """Simple smoke test"""
@@ -157,6 +161,7 @@ class MarkImageToBeSignedTest(cros_test_lib.MockTestCase):
     content = m.call_args_list[0][0][1]
     self.assertIn('USER=', content)
     self.assertIn('HOSTNAME=', content)
+    self.assertIn('GIT_REV=1234', content)
     self.assertIn('\n', content)
 
   def testTbsUpload(self):
