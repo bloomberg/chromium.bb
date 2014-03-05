@@ -366,19 +366,6 @@ static int windowsKeyCodeForKeyEvent(NSEvent* event)
     return windowsKeyCodeForKeyCode([event keyCode]);
 }
 
-static WebInputEvent::Type gestureEventTypeForEvent(NSEvent *event)
-{
-    switch ([event type]) {
-    case NSEventTypeBeginGesture:
-        return WebInputEvent::GestureScrollBegin;
-    case NSEventTypeEndGesture:
-        return WebInputEvent::GestureScrollEnd;
-    default:
-        ASSERT_NOT_REACHED();
-        return WebInputEvent::GestureScrollEnd;
-    }
-}
-
 static inline NSString* textFromEvent(NSEvent* event)
 {
     if ([event type] == NSFlagsChanged)
@@ -1138,9 +1125,20 @@ WebGestureEvent WebInputEventFactory::gestureEvent(NSEvent *event, NSView *view)
     result.globalX = temp.globalX;
     result.globalY = temp.globalY;
 
-    result.type = gestureEventTypeForEvent(event);
     result.modifiers = modifiersFromEvent(event);
     result.timeStampSeconds = [event timestamp];
+
+    // MacOS X gestures are used only for pinch support.
+    result.sourceDevice = WebGestureEvent::Touchpad;
+    switch ([event type]) {
+    case NSEventTypeMagnify:
+        result.type = WebInputEvent::GesturePinchUpdate;
+        result.data.pinchUpdate.scale = [event magnification];
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        result.type = WebInputEvent::Undefined;
+    }
 
     return result;
 }
