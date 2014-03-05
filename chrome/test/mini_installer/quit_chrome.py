@@ -9,6 +9,7 @@ the process terminates.
 """
 
 import optparse
+import os
 import pywintypes
 import sys
 import time
@@ -20,17 +21,18 @@ import chrome_helper
 
 
 def CloseWindows(process_path):
-  """Closes all windows owned by processes whose path is |process_path|.
+  """Closes all windows owned by processes whose exe path is |process_path|.
 
   Args:
-    process_path: The path to the process.
+    process_path: The path to the executable whose processes will have their
+        windows closed.
 
   Returns:
-    A boolean indicating whether the processes successfully terminate within
-    30 seconds.
+    A boolean indicating whether the processes successfully terminated within
+    25 seconds.
   """
   start_time = time.time()
-  while time.time() - start_time < 30:
+  while time.time() - start_time < 25:
     process_ids = chrome_helper.GetProcessIDs(process_path)
     if not process_ids:
       return True
@@ -46,6 +48,18 @@ def CloseWindows(process_path):
   return False
 
 
+def KillNamedProcess(process_path):
+  """ Kills all running exes with the same name as the exe at |process_path|.
+
+  Args:
+    process_path: The path to an executable.
+
+  Returns:
+    True if running executables were successfully killed. False otherwise.
+  """
+  return os.system('taskkill /f /im %s' % os.path.basename(process_path)) == 0
+
+
 def main():
   usage = 'usage: %prog chrome_path'
   parser = optparse.OptionParser(usage, description='Quit Chrome.')
@@ -55,7 +69,9 @@ def main():
   chrome_path = args[0]
 
   if not CloseWindows(chrome_path):
-    raise Exception('Could not quit Chrome.')
+    # TODO(robertshield): Investigate why Chrome occasionally doesn't shut down.
+    print 'Warning: Chrome not responding to window closure. Killing process...'
+    KillNamedProcess(chrome_path):
   return 0
 
 
