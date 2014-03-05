@@ -18,7 +18,9 @@ void BoundBoolSetFromScopedPtr(bool* var, scoped_ptr<bool> val) {
   *var = *val;
 }
 
-void BoundBoolSetFromScopedPtrMalloc(bool* var, scoped_ptr_malloc<bool> val) {
+void BoundBoolSetFromScopedPtrFreeDeleter(
+    bool* var,
+    scoped_ptr<bool, base::FreeDeleter> val) {
   *var = val;
 }
 
@@ -110,28 +112,29 @@ TEST_F(BindToCurrentLoopTest, PassedScopedArrayBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToCurrentLoopTest, BoundScopedPtrMallocBool) {
+TEST_F(BindToCurrentLoopTest, BoundScopedPtrFreeDeleterBool) {
   bool bool_val = false;
-  scoped_ptr_malloc<bool> scoped_ptr_malloc_bool(
+  scoped_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
-  *scoped_ptr_malloc_bool = true;
+  *scoped_ptr_free_deleter_bool = true;
   base::Closure cb = BindToCurrentLoop(base::Bind(
-      &BoundBoolSetFromScopedPtrMalloc, &bool_val,
-      base::Passed(&scoped_ptr_malloc_bool)));
+      &BoundBoolSetFromScopedPtrFreeDeleter, &bool_val,
+      base::Passed(&scoped_ptr_free_deleter_bool)));
   cb.Run();
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToCurrentLoopTest, PassedScopedPtrMallocBool) {
+TEST_F(BindToCurrentLoopTest, PassedScopedPtrFreeDeleterBool) {
   bool bool_val = false;
-  scoped_ptr_malloc<bool> scoped_ptr_malloc_bool(
+  scoped_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
-  *scoped_ptr_malloc_bool = true;
-  base::Callback<void(scoped_ptr_malloc<bool>)> cb = BindToCurrentLoop(
-      base::Bind(&BoundBoolSetFromScopedPtrMalloc, &bool_val));
-  cb.Run(scoped_ptr_malloc_bool.Pass());
+  *scoped_ptr_free_deleter_bool = true;
+  base::Callback<void(scoped_ptr<bool, base::FreeDeleter>)> cb =
+      BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter,
+      &bool_val));
+  cb.Run(scoped_ptr_free_deleter_bool.Pass());
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
   EXPECT_TRUE(bool_val);

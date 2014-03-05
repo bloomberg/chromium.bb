@@ -382,8 +382,8 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
   AVPacketQueue audio_packets_;
   AVPacketQueue video_packets_;
 
-  scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFreeFrame> audio_buffer_;
-  scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFreeFrame> video_buffer_;
+  scoped_ptr<AVFrame, media::ScopedPtrAVFreeFrame> audio_buffer_;
+  scoped_ptr<AVFrame, media::ScopedPtrAVFreeFrame> video_buffer_;
 
   int64 decoded_audio_time_;
   int64 decoded_audio_duration_;
