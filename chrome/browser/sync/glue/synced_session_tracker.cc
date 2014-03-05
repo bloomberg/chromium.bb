@@ -320,21 +320,26 @@ SessionTab* SyncedSessionTracker::GetTabImpl(
     tab_ptr = iter->second.tab_ptr;
     if (tab_node_id != TabNodePool::kInvalidTabNodeID &&
         tab_id != TabNodePool::kInvalidTabID) {
-      // We likely created this tab as an out-of-order update to the header
-      // node for this session before actually associating the tab itself, so
-      // the tab node id wasn't available at the time.  Update it.
-
-      if (iter->second.tab_node_id != tab_node_id &&
-          iter->second.tab_node_id != TabNodePool::kInvalidTabNodeID) {
-        // We are updating tab_node_id for a valid tab_id, ideally this should
-        // never happen, but there are a few existing foreign sessions that
-        // may violate this constraint.
-        // TODO(shashishekhar): Introduce a DCHECK here to enforce this
-        // constraint in future.
-        DLOG(ERROR)
-            << "Updating tab_node_id for " << session_tag << " tab: " << tab_id
-            << " from: " << iter->second.tab_node_id << " to: " << tab_node_id;
-      }
+      // TabIDs are not stable across restarts of a client. Consider this
+      // example with two tabs:
+      //
+      // http://a.com  TabID1 --> NodeIDA
+      // http://b.com  TabID2 --> NodeIDB
+      //
+      // After restart, tab ids are reallocated. e.g, one possibility:
+      // http://a.com TabID2 --> NodeIDA
+      // http://b.com TabID1 --> NodeIDB
+      //
+      // If that happend on a remote client, here we will see an update to
+      // TabID1 with tab_node_id changing from NodeIDA to NodeIDB, and TabID2
+      // with tab_node_id changing from NodeIDB to NodeIDA.
+      //
+      // We can also wind up here if we created this tab as an out-of-order
+      // update to the header node for this session before actually associating
+      // the tab itself, so the tab node id wasn't available at the time and
+      // is currenlty kInvalidTabNodeID.
+      //
+      // In both cases, we update the tab_node_id.
       iter->second.tab_node_id = tab_node_id;
     }
 
