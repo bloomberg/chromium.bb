@@ -347,7 +347,7 @@ bool HitTestResult::isLiveLink() const
 
 bool HitTestResult::isMisspelled() const
 {
-    if (!targetNode())
+    if (!targetNode() || !targetNode()->renderer())
         return false;
     VisiblePosition pos(targetNode()->renderer()->positionForPoint(localPoint()));
     if (pos.isNull())
