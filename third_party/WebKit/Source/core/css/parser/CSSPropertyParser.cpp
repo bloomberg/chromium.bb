@@ -168,7 +168,7 @@ private:
 
 CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
     const CSSParserContext& context, bool inViewport, bool savedImportant,
-    WillBeHeapVector<CSSProperty, 256>& parsedProperties, bool& hasFontFaceOnlyValues)
+    ParsedPropertyVector& parsedProperties, bool& hasFontFaceOnlyValues)
     : m_valueList(valueList)
     , m_context(context)
     , m_inViewport(inViewport)

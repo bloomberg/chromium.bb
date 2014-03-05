@@ -42,7 +42,7 @@ class StyleImage;
 class TextLinkColors;
 
 typedef WillBePersistentHeapHashMap<FilterOperation*, RefPtrWillBeMember<CSSSVGDocumentValue> > PendingSVGDocumentMap;
-typedef WillBePersistentHeapHashMap<CSSPropertyID, RefPtrWillBeMember<CSSValue> > PendingImagePropertyMap;
+typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.

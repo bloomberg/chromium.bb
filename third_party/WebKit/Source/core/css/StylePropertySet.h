@@ -182,7 +182,7 @@ public:
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
 
-    void addParsedProperties(const WillBeHeapVector<CSSProperty, 256>&);
+    void addParsedProperties(const Vector<CSSProperty, 256>&);
     void addParsedProperty(const CSSProperty&);
 
     // These expand shorthand properties into multiple properties.
@@ -222,7 +222,7 @@ private:
 
     friend class StylePropertySet;
 
-    WillBePersistentHeapVector<CSSProperty, 4> m_propertyVector;
+    Vector<CSSProperty, 4> m_propertyVector;
 };
 
 DEFINE_TYPE_CASTS(MutableStylePropertySet, StylePropertySet, set, set->isMutable(), set.isMutable());

@@ -703,8 +703,8 @@ String StylePropertySerializer::borderPropertyValue(CommonValueMode valueMode) c
 
 String StylePropertySerializer::backgroundRepeatPropertyValue() const
 {
-    RefPtrWillBeRawPtr<CSSValue> repeatX = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatX);
-    RefPtrWillBeRawPtr<CSSValue> repeatY = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatY);
+    RefPtr<CSSValue> repeatX = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatX);
+    RefPtr<CSSValue> repeatY = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatY);
     if (!repeatX || !repeatY)
         return String();
     if (repeatX->cssValueType() != repeatY->cssValueType())
@@ -755,7 +755,7 @@ void StylePropertySerializer::appendBackgroundPropertyAsText(StringBuilder& resu
         return;
     }
     if (shorthandHasOnlyInitialOrInheritedValue(backgroundShorthand())) {
-        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundImage);
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundImage);
         bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundImage);
         result.append(getPropertyText(CSSPropertyBackground, value->cssText(), isImportant, numDecls++));
         return;
@@ -773,7 +773,7 @@ void StylePropertySerializer::appendBackgroundPropertyAsText(StringBuilder& resu
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(backgroundPropertyIds); ++i) {
         CSSPropertyID propertyID = backgroundPropertyIds[i];
-        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(propertyID);
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(propertyID);
         if (!value)
             continue;
         result.append(getPropertyText(propertyID, value->cssText(), m_propertySet.propertyIsImportant(propertyID), numDecls++));
@@ -784,7 +784,7 @@ void StylePropertySerializer::appendBackgroundPropertyAsText(StringBuilder& resu
     // would not work in Firefox (<rdar://problem/5143183>)
     // It would be a better solution if background-position was CSS_PAIR.
     if (shorthandHasOnlyInitialOrInheritedValue(backgroundPositionShorthand())) {
-        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX);
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX);
         bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionX);
         result.append(getPropertyText(CSSPropertyBackgroundPosition, value->cssText(), isImportant, numDecls++));
     } else if (isPropertyShorthandAvailable(backgroundPositionShorthand())) {
@@ -794,13 +794,13 @@ void StylePropertySerializer::appendBackgroundPropertyAsText(StringBuilder& resu
             result.append(getPropertyText(CSSPropertyBackgroundPosition, positionValue, isImportant, numDecls++));
     } else {
         // should check background-position-x or background-position-y.
-        if (RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX)) {
+        if (RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX)) {
             if (!value->isImplicitInitialValue()) {
                 bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionX);
                 result.append(getPropertyText(CSSPropertyBackgroundPositionX, value->cssText(), isImportant, numDecls++));
             }
         }
-        if (RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionY)) {
+        if (RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionY)) {
             if (!value->isImplicitInitialValue()) {
                 bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionY);
                 result.append(getPropertyText(CSSPropertyBackgroundPositionY, value->cssText(), isImportant, numDecls++));
@@ -819,7 +819,7 @@ bool StylePropertySerializer::isPropertyShorthandAvailable(const StylePropertySh
 
     bool isImportant = m_propertySet.propertyIsImportant(shorthand.properties()[0]);
     for (unsigned i = 0; i < shorthand.length(); ++i) {
-        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
         if (!value || (value->isInitialValue() && !value->isImplicitInitialValue()) || value->isInheritedValue())
             return false;
         if (isImportant != m_propertySet.propertyIsImportant(shorthand.properties()[i]))
@@ -835,7 +835,7 @@ bool StylePropertySerializer::shorthandHasOnlyInitialOrInheritedValue(const Styl
     bool isInitialValue = true;
     bool isInheritedValue = true;
     for (unsigned i = 0; i < shorthand.length(); ++i) {
-        RefPtrWillBeRawPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
         if (!value)
             return false;
         if (!value->isInitialValue())

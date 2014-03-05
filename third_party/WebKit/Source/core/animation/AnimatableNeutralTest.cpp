@@ -47,7 +47,7 @@ TEST(AnimationAnimatableNeutralTest, Create)
 
 TEST(AnimationAnimatableNeutralTest, Add)
 {
-    RefPtrWillBeRawPtr<CSSValue> cssValue = CSSArrayFunctionValue::create();
+    RefPtr<CSSValue> cssValue = CSSArrayFunctionValue::create();
     RefPtr<AnimatableValue> animatableUnknown = AnimatableUnknown::create(cssValue);
 
     EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::add(animatableUnknown.get(), AnimatableValue::neutralValue()).get())->toCSSValue());
