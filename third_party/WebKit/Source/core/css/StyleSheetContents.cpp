@@ -97,8 +97,8 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
 
 StyleSheetContents::~StyleSheetContents()
 {
-    StyleEngine::removeSheet(this);
 #if !ENABLE(OILPAN)
+    StyleEngine::removeSheet(this);
     clearRules();
 #endif
 }
