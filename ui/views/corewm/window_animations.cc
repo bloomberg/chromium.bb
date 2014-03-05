@@ -35,8 +35,6 @@
 #include "ui/gfx/vector3d_f.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/window_util.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(views::corewm::WindowVisibilityAnimationType)
@@ -150,38 +148,20 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
     DCHECK_EQ(window, window_);
     DCHECK(layers_.empty());
-    AcquireAllLayers(window_);
-
-    // If the Widget has views with layers, then it is necessary to take
-    // ownership of those layers too.
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
-    const views::Widget* const_widget = widget;
-    if (widget && const_widget->GetRootView() && widget->GetContentsView())
-      AcquireAllViewLayers(widget->GetContentsView());
+    AcquireAllLayers(window_->layer());
     window_->RemoveObserver(this);
     window_ = NULL;
   }
 
-  void AcquireAllLayers(aura::Window* window) {
-    ui::Layer* layer = window->AcquireLayer();
-    DCHECK(layer);
-    layers_.push_back(layer);
-    for (aura::Window::Windows::const_iterator it = window->children().begin();
-         it != window->children().end();
-         ++it)
-      AcquireAllLayers(*it);
-  }
-
-  void AcquireAllViewLayers(views::View* view) {
-    for (int i = 0; i < view->child_count(); ++i)
-      AcquireAllViewLayers(view->child_at(i));
-    if (view->layer()) {
-      ui::Layer* layer = view->RecreateLayer();
-      if (layer) {
-        layer->SuppressPaint();
-        layers_.push_back(layer);
-      }
+  void AcquireAllLayers(ui::Layer* layer) {
+    if (layer->owner()) {
+      ui::Layer* released = layer->owner()->AcquireLayer();
+      DCHECK_EQ(layer, released);
+      layers_.push_back(released);
     }
+    std::vector<Layer*>::const_iterator it = layer->children().begin();
+    for (; it != layer->children().end(); ++it)
+      AcquireAllLayers(*it);
   }
 
   aura::Window* window_;

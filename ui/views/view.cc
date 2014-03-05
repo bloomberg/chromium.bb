@@ -519,13 +519,13 @@ void View::SetPaintToLayer(bool paint_to_layer) {
 }
 
 ui::Layer* View::RecreateLayer() {
-  ui::Layer* layer = AcquireLayer();
-  if (!layer)
+  ui::Layer* acquired = AcquireLayer();
+  if (!acquired)
     return NULL;
 
   CreateLayer();
-  layer_->set_scale_content(layer->scale_content());
-  return layer;
+  layer()->set_scale_content(acquired->scale_content());
+  return acquired;
 }
 
 // RTL positioning -------------------------------------------------------------
@@ -2098,11 +2098,10 @@ void View::CreateLayer() {
   for (int i = 0, count = child_count(); i < count; ++i)
     child_at(i)->UpdateChildLayerVisibility(true);
 
-  layer_ = new ui::Layer();
-  layer_owner_.reset(layer_);
-  layer_->set_delegate(this);
+  SetLayer(new ui::Layer());
+  layer()->set_delegate(this);
 #if !defined(NDEBUG)
-  layer_->set_name(GetClassName());
+  layer()->set_name(GetClassName());
 #endif
 
   UpdateParentLayers();
@@ -2143,11 +2142,11 @@ void View::OrphanLayers() {
 }
 
 void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
-  layer_->SetBounds(GetLocalBounds() + offset);
+  layer()->SetBounds(GetLocalBounds() + offset);
   DCHECK_NE(layer(), parent_layer);
   if (parent_layer)
     parent_layer->Add(layer());
-  layer_->SchedulePaint(GetLocalBounds());
+  layer()->SchedulePaint(GetLocalBounds());
   MoveLayerToParent(layer(), gfx::Point());
 }
 
@@ -2160,8 +2159,7 @@ void View::DestroyLayer() {
       new_parent->Add(children[i]);
   }
 
-  layer_ = NULL;
-  layer_owner_.reset();
+  LayerOwner::DestroyLayer();
 
   if (new_parent)
     ReorderLayers();

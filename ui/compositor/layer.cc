@@ -61,6 +61,7 @@ Layer::Layer()
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
+      owner_(NULL),
       cc_layer_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
@@ -84,6 +85,7 @@ Layer::Layer(LayerType type)
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
+      owner_(NULL),
       cc_layer_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {

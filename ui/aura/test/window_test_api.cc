@@ -13,7 +13,7 @@ WindowTestApi::WindowTestApi(Window* window) : window_(window) {
 }
 
 bool WindowTestApi::OwnsLayer() const {
-  return window_->layer_owner_.get() != NULL;
+  return window_->OwnsLayer();
 }
 
 bool WindowTestApi::ContainsMouse() const {

@@ -22,11 +22,6 @@ specific_include_rules = {
     "+ui/views/widget/widget.h",
   ],
 
-  "window_animations.cc": [
-    "+ui/views/view.h",
-    "+ui/views/widget/widget.h",
-  ],
-
   "tooltip_aura.cc": [
     "+ui/views/background.h",
     "+ui/views/border.h",

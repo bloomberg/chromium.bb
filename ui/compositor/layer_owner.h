@@ -17,6 +17,8 @@ class COMPOSITOR_EXPORT LayerOwner {
   LayerOwner();
   virtual ~LayerOwner();
 
+  void SetLayer(Layer* layer);
+
   // Releases the owning reference to its layer, and returns it.
   // This is used when you need to animate the presentation of the owner just
   // prior to destroying it. The Owner can be destroyed soon after calling this
@@ -29,6 +31,11 @@ class COMPOSITOR_EXPORT LayerOwner {
   const ui::Layer* layer() const { return layer_; }
 
  protected:
+  void DestroyLayer();
+
+  bool OwnsLayer() const;
+
+ private:
   // The LayerOwner owns its layer unless ownership is relinquished via a call
   // to AcquireLayer(). After that moment |layer_| will still be valid but
   // |layer_owner_| will be NULL. The reason for releasing ownership is that
@@ -37,7 +44,6 @@ class COMPOSITOR_EXPORT LayerOwner {
   scoped_ptr<Layer> layer_owner_;
   Layer* layer_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(LayerOwner);
 };
 

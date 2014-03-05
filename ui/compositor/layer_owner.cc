@@ -6,15 +6,30 @@
 
 namespace ui {
 
-LayerOwner::LayerOwner()
-    : layer_(NULL) {
+LayerOwner::LayerOwner() : layer_(NULL) {
 }
 
 LayerOwner::~LayerOwner() {
 }
 
+void LayerOwner::SetLayer(Layer* layer) {
+  DCHECK(!OwnsLayer());
+  layer_owner_.reset(layer);
+  layer_ = layer;
+  layer_->owner_ = this;
+}
+
 Layer* LayerOwner::AcquireLayer() {
   return layer_owner_.release();
+}
+
+void LayerOwner::DestroyLayer() {
+  layer_ = NULL;
+  layer_owner_.reset();
+}
+
+bool LayerOwner::OwnsLayer() const {
+  return !!layer_owner_;
 }
 
 }  // namespace ui

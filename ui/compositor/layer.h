@@ -47,6 +47,7 @@ namespace ui {
 
 class Compositor;
 class LayerAnimator;
+class LayerOwner;
 class Texture;
 
 // Layer manages a texture, transform and a set of child Layers. Any View that
@@ -80,6 +81,8 @@ class COMPOSITOR_EXPORT Layer
 
   LayerDelegate* delegate() { return delegate_; }
   void set_delegate(LayerDelegate* delegate) { delegate_ = delegate; }
+
+  LayerOwner* owner() { return owner_; }
 
   // Adds a new Layer to this Layer.
   void Add(Layer* child);
@@ -346,6 +349,8 @@ class COMPOSITOR_EXPORT Layer
   void SwitchCCLayerForTest();
 
  private:
+  friend class LayerOwner;
+
   // Stacks |child| above or below |other|.  Helper method for StackAbove() and
   // StackBelow().
   void StackRelativeTo(Layer* child, Layer* other, bool above);
@@ -448,6 +453,8 @@ class COMPOSITOR_EXPORT Layer
   std::string name_;
 
   LayerDelegate* delegate_;
+
+  LayerOwner* owner_;
 
   scoped_refptr<LayerAnimator> animator_;
 
