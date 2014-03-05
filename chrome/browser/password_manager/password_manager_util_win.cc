@@ -19,6 +19,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -159,6 +160,12 @@ bool AuthenticateUser(gfx::NativeWindow window) {
   bool use_displayname = false;
   bool use_principalname = false;
   DWORD logon_result = 0;
+
+  // Disable password manager reauthentication before Windows 7.
+  // This is because of an interaction between LogonUser() and the sandbox.
+  // http://crbug.com/345916
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return true;
 
   // On a domain, we obtain the User Principal Name
   // for domain authentication.
