@@ -99,8 +99,16 @@ const int kShellWindowId_OverlayContainer = 22;
 // ID of the window created by PhantomWindowController or DragWindowController.
 const int kShellWindowId_PhantomWindow = 23;
 
+// A parent container that holds the virtual keyboard container. This is to
+// ensure that the virtual keyboard is stacked above most containers but below
+// the mouse cursor and the power off animation.
+const int kShellWindowId_VirtualKeyboardParentContainer = 24;
+
+// The container for mouse cursor.
+const int kShellWindowId_MouseCursorContainer = 25;
+
 // The topmost container, used for power off animation.
-const int kShellWindowId_PowerButtonAnimationContainer = 24;
+const int kShellWindowId_PowerButtonAnimationContainer = 26;
 
 }  // namespace internal
 

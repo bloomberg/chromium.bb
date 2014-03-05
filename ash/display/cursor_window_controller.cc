@@ -137,7 +137,7 @@ void CursorWindowController::SetDisplay(const gfx::Display& display) {
     return;
 
   SetContainer(GetRootWindowController(root_window)->GetContainer(
-      kShellWindowId_OverlayContainer));
+      kShellWindowId_MouseCursorContainer));
   SetBoundsInScreen(display.bounds());
 }
 

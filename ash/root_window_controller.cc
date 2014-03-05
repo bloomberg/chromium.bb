@@ -617,7 +617,9 @@ void RootWindowController::ActivateKeyboard(
     keyboard_controller->AddObserver(panel_layout_manager_);
     keyboard_controller->AddObserver(docked_layout_manager_);
   }
-  aura::Window* parent = root_window();
+  aura::Window* parent = GetContainer(
+      kShellWindowId_VirtualKeyboardParentContainer);
+  DCHECK(parent);
   aura::Window* keyboard_container =
       keyboard_controller->GetContainerWindow();
   keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
@@ -636,7 +638,10 @@ void RootWindowController::DeactivateKeyboard(
   aura::Window* keyboard_container =
       keyboard_controller->GetContainerWindow();
   if (keyboard_container->GetRootWindow() == root_window()) {
-    root_window()->RemoveChild(keyboard_container);
+    aura::Window* parent = GetContainer(
+        kShellWindowId_VirtualKeyboardParentContainer);
+    DCHECK(parent);
+    parent->RemoveChild(keyboard_container);
     if (!keyboard::IsKeyboardUsabilityExperimentEnabled()) {
       // Virtual keyboard may be deactivated while still showing, notify all
       // observers that keyboard bounds changed to 0 before remove them.
@@ -966,8 +971,22 @@ void RootWindowController::CreateContainersInRootWindow(
       lock_screen_related_containers);
   SetUsesScreenCoordinates(overlay_container);
 
+  aura::Window* virtual_keyboard_parent_container = CreateContainer(
+      kShellWindowId_VirtualKeyboardParentContainer,
+      "VirtualKeyboardParentContainer",
+      root_window);
+  SetUsesScreenCoordinates(virtual_keyboard_parent_container);
+
+#if defined(OS_CHROMEOS)
+  aura::Window* mouse_cursor_container = CreateContainer(
+      kShellWindowId_MouseCursorContainer,
+      "MouseCursorContainer",
+      root_window);
+  SetUsesScreenCoordinates(mouse_cursor_container);
+#endif
+
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
-                  "PowerButtonAnimationContainer", root_window) ;
+                  "PowerButtonAnimationContainer", root_window);
 }
 
 void RootWindowController::EnableTouchHudProjection() {

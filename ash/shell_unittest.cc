@@ -87,6 +87,12 @@ void ExpectAllContainers() {
       root_window, internal::kShellWindowId_SettingBubbleContainer));
   EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_OverlayContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_VirtualKeyboardParentContainer));
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_MouseCursorContainer));
+#endif
 }
 
 class ModalWindow : public views::WidgetDelegateView {
