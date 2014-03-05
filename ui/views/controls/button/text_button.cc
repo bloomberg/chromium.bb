@@ -195,10 +195,6 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
                                const base::string16& text)
     : CustomButton(listener),
       alignment_(ALIGN_LEFT),
-      has_text_shadow_(false),
-      active_text_shadow_color_(0),
-      inactive_text_shadow_color_(0),
-      text_shadow_offset_(gfx::Point(1, 1)),
       min_width_(0),
       min_height_(0),
       max_width_(0),
@@ -263,21 +259,6 @@ void TextButtonBase::SetHighlightColor(SkColor color) {
 void TextButtonBase::SetHoverColor(SkColor color) {
   color_hover_ = color;
   use_hover_color_from_theme_ = false;
-}
-
-void TextButtonBase::SetTextShadowColors(SkColor active_color,
-                                         SkColor inactive_color) {
-  active_text_shadow_color_ = active_color;
-  inactive_text_shadow_color_ = inactive_color;
-  has_text_shadow_ = true;
-}
-
-void TextButtonBase::SetTextShadowOffset(int x, int y) {
-  text_shadow_offset_.SetPoint(x, y);
-}
-
-void TextButtonBase::ClearEmbellishing() {
-  has_text_shadow_ = false;
 }
 
 void TextButtonBase::ClearMaxTextSize() {
@@ -492,15 +473,8 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                      SK_ColorBLACK, SK_ColorWHITE,
                                      text_bounds, draw_string_flags);
     } else {
-      gfx::ShadowValues shadows;
-      if (has_text_shadow_) {
-        SkColor color = GetWidget()->IsActive() ? active_text_shadow_color_ :
-                                                  inactive_text_shadow_color_;
-        shadows.push_back(gfx::ShadowValue(text_shadow_offset_, 0, color));
-      }
-      canvas->DrawStringRectWithShadows(text_, font_list_, text_color,
-                                        text_bounds, 0, draw_string_flags,
-                                        shadows);
+      canvas->DrawStringRectWithFlags(text_, font_list_, text_color,
+                                      text_bounds, draw_string_flags);
     }
   }
 }
