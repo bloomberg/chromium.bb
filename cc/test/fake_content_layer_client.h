@@ -39,7 +39,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   }
 
   void add_draw_bitmap(const SkBitmap& bitmap,
-                       gfx::Point point,
+                       const gfx::Point& point,
                        const SkPaint& paint) {
     BitmapData data;
     data.bitmap = bitmap;

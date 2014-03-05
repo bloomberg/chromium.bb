@@ -113,11 +113,11 @@ class CC_EXPORT LayerTreeHostImpl
   // InputHandler implementation
   virtual void BindToClient(InputHandlerClient* client) OVERRIDE;
   virtual InputHandler::ScrollStatus ScrollBegin(
-      gfx::Point viewport_point,
+      const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) OVERRIDE;
-  virtual bool ScrollBy(gfx::Point viewport_point,
+  virtual bool ScrollBy(const gfx::Point& viewport_point,
                         const gfx::Vector2dF& scroll_delta) OVERRIDE;
-  virtual bool ScrollVerticallyByPage(gfx::Point viewport_point,
+  virtual bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                                       ScrollDirection direction) OVERRIDE;
   virtual void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) OVERRIDE;
@@ -126,17 +126,18 @@ class CC_EXPORT LayerTreeHostImpl
   virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
   virtual void NotifyCurrentFlingVelocity(
       const gfx::Vector2dF& velocity) OVERRIDE;
-  virtual void MouseMoveAt(gfx::Point viewport_point) OVERRIDE;
+  virtual void MouseMoveAt(const gfx::Point& viewport_point) OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
-                                  gfx::Point anchor) OVERRIDE;
+                                  const gfx::Point& anchor) OVERRIDE;
   virtual void PinchGestureEnd() OVERRIDE;
   virtual void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                        bool anchor_point,
                                        float page_scale,
                                        base::TimeDelta duration) OVERRIDE;
   virtual void ScheduleAnimation() OVERRIDE;
-  virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_port) OVERRIDE;
+  virtual bool HaveTouchEventHandlersAt(const gfx::Point& viewport_port)
+      OVERRIDE;
   virtual scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) OVERRIDE;
 

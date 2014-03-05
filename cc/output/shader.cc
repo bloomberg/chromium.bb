@@ -135,9 +135,9 @@ static std::string SetFragmentSamplerType(
 }  // namespace
 
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
-                                            int *highp_threshold_cache,
+                                            int* highp_threshold_cache,
                                             int highp_threshold_min,
-                                            gfx::Point max_coordinate) {
+                                            const gfx::Point& max_coordinate) {
   return TexCoordPrecisionRequired(context,
                                    highp_threshold_cache, highp_threshold_min,
                                    max_coordinate.x(), max_coordinate.y());

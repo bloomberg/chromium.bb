@@ -40,7 +40,7 @@ FilterOperation::FilterOperation(FilterType type, float amount)
 }
 
 FilterOperation::FilterOperation(FilterType type,
-                                 gfx::Point offset,
+                                 const gfx::Point& offset,
                                  float stdDeviation,
                                  SkColor color)
     : type_(type),

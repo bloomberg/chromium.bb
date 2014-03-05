@@ -30,7 +30,7 @@ class FakeScrollbar : public Scrollbar {
                          ScrollbarPart part,
                          const gfx::Rect& content_rect) OVERRIDE;
 
-  void set_location(gfx::Point location) { location_ = location; }
+  void set_location(const gfx::Point& location) { location_ = location; }
   void set_track_rect(const gfx::Rect& track_rect) { track_rect_ = track_rect; }
   void set_thumb_thickness(int thumb_thickness) {
       thumb_thickness_ = thumb_thickness;

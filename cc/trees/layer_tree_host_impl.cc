@@ -477,7 +477,8 @@ void LayerTreeHostImpl::ScheduleAnimation() {
   SetNeedsRedraw();
 }
 
-bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
+bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
+    const gfx::Point& viewport_point) {
   if (!settings_.touch_hit_testing)
     return true;
   if (!EnsureRenderSurfaceLayerList())
@@ -2073,7 +2074,8 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
-    gfx::Point viewport_point, InputHandler::ScrollInputType type) {
+    const gfx::Point& viewport_point,
+    InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
   if (top_controls_manager_)
@@ -2201,7 +2203,7 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(LayerImpl* layer_impl,
   return layer_impl->ScrollDelta() - previous_delta;
 }
 
-bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
+bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
                                  const gfx::Vector2dF& scroll_delta) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
   if (!CurrentlyScrollingLayer())
@@ -2330,7 +2332,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
 // This implements scrolling by page as described here:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms645601(v=vs.85).aspx#_win32_The_Mouse_Wheel
 // for events with WHEEL_PAGESCROLL set.
-bool LayerTreeHostImpl::ScrollVerticallyByPage(gfx::Point viewport_point,
+bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
                                                ScrollDirection direction) {
   DCHECK(wheel_scrolling_);
 
@@ -2437,7 +2439,7 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
       device_viewport_point);
 }
 
-void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
+void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   if (!EnsureRenderSurfaceLayerList())
     return;
 
@@ -2535,7 +2537,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
-                                           gfx::Point anchor) {
+                                           const gfx::Point& anchor) {
   if (!InnerViewportScrollLayer())
     return;
 

@@ -38,7 +38,7 @@ class FakePicturePileImpl : public PicturePileImpl {
     client_.add_draw_rect(rect, default_paint_);
   }
 
-  void add_draw_bitmap(const SkBitmap& bitmap, gfx::Point point) {
+  void add_draw_bitmap(const SkBitmap& bitmap, const gfx::Point& point) {
     client_.add_draw_bitmap(bitmap, point, default_paint_);
   }
 
@@ -47,7 +47,7 @@ class FakePicturePileImpl : public PicturePileImpl {
   }
 
   void add_draw_bitmap_with_paint(const SkBitmap& bitmap,
-                                  gfx::Point point,
+                                  const gfx::Point& point,
                                   const SkPaint& paint) {
     client_.add_draw_bitmap(bitmap, point, paint);
   }

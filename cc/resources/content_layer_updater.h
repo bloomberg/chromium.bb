@@ -22,7 +22,7 @@ class RenderingStatsInstrumentation;
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
  public:
   void set_rendering_stats_instrumentation(RenderingStatsInstrumentation* rsi);
-  virtual void SetOpaque(bool) OVERRIDE;
+  virtual void SetOpaque(bool opaque) OVERRIDE;
 
  protected:
   ContentLayerUpdater(scoped_ptr<LayerPainter> painter,
@@ -31,7 +31,7 @@ class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
   virtual ~ContentLayerUpdater();
 
   void PaintContents(SkCanvas* canvas,
-                     gfx::Point origin,
+                     const gfx::Point& origin,
                      float contents_width_scale,
                      float contents_height_scale,
                      gfx::Rect* resulting_opaque_rect);
@@ -42,13 +42,12 @@ class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   int layer_id_;
 
+  // True when it is known that all output pixels will be opaque.
+  bool layer_is_opaque_;
+
  private:
   gfx::Rect content_rect_;
   scoped_ptr<LayerPainter> painter_;
-
- protected:
-  // True when it is known that all output pixels will be opaque.
-  bool layer_is_opaque_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentLayerUpdater);
 };

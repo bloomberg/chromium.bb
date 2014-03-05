@@ -23,8 +23,8 @@ ContentLayerUpdater::ContentLayerUpdater(
     int layer_id)
     : rendering_stats_instrumentation_(stats_instrumentation),
       layer_id_(layer_id),
-      painter_(painter.Pass()),
-      layer_is_opaque_(false) {}
+      layer_is_opaque_(false),
+      painter_(painter.Pass()) {}
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
 
@@ -34,7 +34,7 @@ void ContentLayerUpdater::set_rendering_stats_instrumentation(
 }
 
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
-                                        gfx::Point origin,
+                                        const gfx::Point& origin,
                                         float contents_width_scale,
                                         float contents_height_scale,
                                         gfx::Rect* resulting_opaque_rect) {

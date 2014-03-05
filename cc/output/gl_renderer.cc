@@ -484,7 +484,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
 
 static SkBitmap ApplyImageFilter(GLRenderer* renderer,
                                  ContextProvider* offscreen_contexts,
-                                 gfx::Point origin,
+                                 const gfx::Point& origin,
                                  SkImageFilter* filter,
                                  ScopedResource* source_texture_resource) {
   if (!filter)

@@ -38,19 +38,19 @@ class MockInputHandler : public cc::InputHandler {
 
   MOCK_METHOD0(PinchGestureBegin, void());
   MOCK_METHOD2(PinchGestureUpdate,
-               void(float magnify_delta, gfx::Point anchor));
+               void(float magnify_delta, const gfx::Point& anchor));
   MOCK_METHOD0(PinchGestureEnd, void());
 
   MOCK_METHOD0(ScheduleAnimation, void());
 
   MOCK_METHOD2(ScrollBegin,
-               ScrollStatus(gfx::Point viewport_point,
+               ScrollStatus(const gfx::Point& viewport_point,
                             cc::InputHandler::ScrollInputType type));
   MOCK_METHOD2(ScrollBy,
-               bool(gfx::Point viewport_point,
+               bool(const gfx::Point& viewport_point,
                     const gfx::Vector2dF& scroll_delta));
   MOCK_METHOD2(ScrollVerticallyByPage,
-               bool(gfx::Point viewport_point,
+               bool(const gfx::Point& viewport_point,
                     cc::ScrollDirection direction));
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
@@ -69,10 +69,9 @@ class MockInputHandler : public cc::InputHandler {
 
   virtual void NotifyCurrentFlingVelocity(
       const gfx::Vector2dF& velocity) OVERRIDE {}
-  virtual void MouseMoveAt(gfx::Point mouse_position) OVERRIDE {}
+  virtual void MouseMoveAt(const gfx::Point& mouse_position) OVERRIDE {}
 
-  MOCK_METHOD1(HaveTouchEventHandlersAt,
-               bool(gfx::Point point));
+  MOCK_METHOD1(HaveTouchEventHandlersAt, bool(const gfx::Point& point));
 
   virtual void SetRootLayerScrollOffsetDelegate(
       cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)

@@ -35,7 +35,7 @@ class CC_EXPORT Region {
   bool IsEmpty() const;
   int GetRegionComplexity() const;
 
-  bool Contains(gfx::Point point) const;
+  bool Contains(const gfx::Point& point) const;
   bool Contains(const gfx::Rect& rect) const;
   bool Contains(const Region& region) const;
 
