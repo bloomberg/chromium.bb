@@ -50,7 +50,7 @@ blink::WebGraphicsContext3D* WebGLContextGroup::getAWebGraphicsContext3D()
 {
     ASSERT(!m_contexts.isEmpty());
     HashSet<WebGLRenderingContextBase*>::iterator it = m_contexts.begin();
-    return (*it)->webContext();
+    return (*it)->webGraphicsContext3D();
 }
 
 void WebGLContextGroup::addContext(WebGLRenderingContextBase* context)

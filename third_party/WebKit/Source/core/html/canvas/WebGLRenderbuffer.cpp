@@ -49,7 +49,7 @@ WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
     , m_hasEverBeenBound(false)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->webContext()->createRenderbuffer());
+    setObject(ctx->webGraphicsContext3D()->createRenderbuffer());
 }
 
 void WebGLRenderbuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)

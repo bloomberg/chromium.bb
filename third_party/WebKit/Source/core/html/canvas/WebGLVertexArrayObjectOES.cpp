@@ -49,7 +49,7 @@ WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContextBase* 
     case VaoTypeDefault:
         break;
     default:
-        setObject(context()->webContext()->createVertexArrayOES());
+        setObject(context()->webGraphicsContext3D()->createVertexArrayOES());
         break;
     }
 }
@@ -65,7 +65,7 @@ void WebGLVertexArrayObjectOES::deleteObjectImpl(blink::WebGraphicsContext3D* co
     case VaoTypeDefault:
         break;
     default:
-        context()->webContext()->deleteVertexArrayOES(object);
+        context()->webGraphicsContext3D()->deleteVertexArrayOES(object);
         break;
     }
 
@@ -84,7 +84,7 @@ void WebGLVertexArrayObjectOES::setElementArrayBuffer(PassRefPtr<WebGLBuffer> bu
     if (buffer)
         buffer->onAttached();
     if (m_boundElementArrayBuffer)
-        m_boundElementArrayBuffer->onDetached(context()->webContext());
+        m_boundElementArrayBuffer->onDetached(context()->webGraphicsContext3D());
     m_boundElementArrayBuffer = buffer;
 
 }
@@ -99,7 +99,7 @@ void WebGLVertexArrayObjectOES::setVertexAttribState(
     if (buffer)
         buffer->onAttached();
     if (state.bufferBinding)
-        state.bufferBinding->onDetached(context()->webContext());
+        state.bufferBinding->onDetached(context()->webGraphicsContext3D());
 
     state.bufferBinding = buffer;
     state.bytesPerElement = bytesPerElement;
@@ -114,14 +114,14 @@ void WebGLVertexArrayObjectOES::setVertexAttribState(
 void WebGLVertexArrayObjectOES::unbindBuffer(PassRefPtr<WebGLBuffer> buffer)
 {
     if (m_boundElementArrayBuffer == buffer) {
-        m_boundElementArrayBuffer->onDetached(context()->webContext());
+        m_boundElementArrayBuffer->onDetached(context()->webGraphicsContext3D());
         m_boundElementArrayBuffer = nullptr;
     }
 
     for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
         VertexAttribState& state = m_vertexAttribState[i];
         if (state.bufferBinding == buffer) {
-            buffer->onDetached(context()->webContext());
+            buffer->onDetached(context()->webGraphicsContext3D());
             state.bufferBinding = nullptr;
         }
     }

@@ -34,7 +34,6 @@
 #include "platform/Timer.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 #include "public/platform/WebGraphicsContext3D.h"
@@ -50,6 +49,7 @@ class WebLayer;
 namespace WebCore {
 
 class ANGLEInstancedArrays;
+class DrawingBuffer;
 class EXTFragDepth;
 class EXTTextureFilterAnisotropic;
 class ExceptionState;
@@ -204,7 +204,7 @@ public:
 
     void hint(GLenum target, GLenum mode);
     GLboolean isBuffer(WebGLBuffer*);
-    bool isContextLost() const;
+    bool isContextLost();
     GLboolean isEnabled(GLenum cap);
     GLboolean isFramebuffer(WebGLFramebuffer*);
     GLboolean isProgram(WebGLProgram*);
@@ -323,7 +323,7 @@ public:
     void forceRestoreContext();
     void loseContextImpl(LostContextMode);
 
-    blink::WebGraphicsContext3D* webContext() const { return m_drawingBuffer->context(); }
+    blink::WebGraphicsContext3D* webGraphicsContext3D() const { return m_context.get(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
     Extensions3DUtil* extensionsUtil();
@@ -390,10 +390,12 @@ protected:
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
 
+    OwnPtr<blink::WebGraphicsContext3D> m_context;
+    RefPtr<WebGLContextGroup> m_contextGroup;
+
     // Structure for rendering to a DrawingBuffer, instead of directly
     // to the back-buffer of m_context.
     RefPtr<DrawingBuffer> m_drawingBuffer;
-    RefPtr<WebGLContextGroup> m_contextGroup;
 
     // Dispatches a context lost event once it is determined that one is needed.
     // This is used both for synthetic and real context losses. For real ones, it's

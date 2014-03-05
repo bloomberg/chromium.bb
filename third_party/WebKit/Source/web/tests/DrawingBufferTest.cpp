@@ -112,17 +112,16 @@ protected:
     virtual void SetUp()
     {
         RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
-        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
-        m_context = context.get();
-        m_drawingBuffer = DrawingBuffer::create(context.release(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
+        m_context = adoptPtr(new WebGraphicsContext3DForTests);
+        m_drawingBuffer = DrawingBuffer::create(m_context.get(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
     }
 
     WebGraphicsContext3DForTests* webContext()
     {
-        return m_context;
+        return m_context.get();
     }
 
-    WebGraphicsContext3DForTests* m_context;
+    OwnPtr<WebGraphicsContext3DForTests> m_context;
     RefPtr<DrawingBuffer> m_drawingBuffer;
 };
 
@@ -140,6 +139,16 @@ TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
     m_drawingBuffer->paintRenderingResultsToCanvas(imageBuffer.get());
     EXPECT_FALSE(imageBuffer->isAccelerated());
     EXPECT_FALSE(imageBuffer->bitmap().isNull());
+}
+
+TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithMailboxes)
+{
+    // Tell the buffer its contents changed and context was lost.
+    m_drawingBuffer->markContentsChanged();
+    m_drawingBuffer->releaseResources();
+
+    blink::WebExternalTextureMailbox mailbox;
+    EXPECT_FALSE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 }
 
 TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)

@@ -42,7 +42,7 @@ WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
     , m_source("")
 {
     ScriptWrappable::init(this);
-    setObject(ctx->webContext()->createShader(type));
+    setObject(ctx->webGraphicsContext3D()->createShader(type));
 }
 
 WebGLShader::~WebGLShader()

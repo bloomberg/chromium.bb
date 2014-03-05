@@ -263,7 +263,7 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     , m_hasEverBeenBound(false)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->webContext()->createFramebuffer());
+    setObject(ctx->webGraphicsContext3D()->createFramebuffer());
 }
 
 WebGLFramebuffer::~WebGLFramebuffer()
@@ -302,7 +302,7 @@ void WebGLFramebuffer::attach(GLenum attachment, GLenum attachmentPoint)
     ASSERT(isBound());
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     if (attachmentObject)
-        attachmentObject->attach(context()->webContext(), attachmentPoint);
+        attachmentObject->attach(context()->webGraphicsContext3D(), attachmentPoint);
 }
 
 WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GLenum attachment) const
@@ -413,7 +413,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum attachment)
 
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     if (attachmentObject) {
-        attachmentObject->onDetached(context()->webContext());
+        attachmentObject->onDetached(context()->webGraphicsContext3D());
         m_attachments.remove(attachment);
         drawBuffersIfNecessary(false);
         switch (attachment) {
@@ -446,7 +446,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(WebGLSharedObject* a
             WebGLAttachment* attachmentObject = it->value.get();
             if (attachmentObject->isSharedObject(attachment)) {
                 GLenum attachmentType = it->key;
-                attachmentObject->unattach(context()->webContext(), attachmentType);
+                attachmentObject->unattach(context()->webGraphicsContext3D(), attachmentType);
                 removeAttachmentFromBoundFramebuffer(attachmentType);
                 checkMore = true;
                 break;
@@ -601,7 +601,7 @@ void WebGLFramebuffer::drawBuffersIfNecessary(bool force)
         }
     }
     if (reset) {
-        context()->webContext()->drawBuffersEXT(
+        context()->webGraphicsContext3D()->drawBuffersEXT(
             m_filteredDrawBuffers.size(), m_filteredDrawBuffers.data());
     }
 }
