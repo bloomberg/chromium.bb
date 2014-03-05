@@ -11,6 +11,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 
@@ -26,10 +27,9 @@ void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 }  // namespace
 
-
 ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
     BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context), api_client_(new ExtensionsAPIClient) {
   // Set up the preferences service.
   base::PrefServiceFactory factory;
   factory.set_user_prefs(new TestingPrefStore);

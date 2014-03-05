@@ -7,9 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/value_store/value_store.h"
 
 namespace extensions {
