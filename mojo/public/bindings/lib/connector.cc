@@ -107,44 +107,18 @@ void Connector::WaitToReadMore() {
 }
 
 void Connector::ReadMore() {
-  for (;;) {
+  while (true) {
     MojoResult rv;
 
-    uint32_t num_bytes = 0, num_handles = 0;
-    rv = ReadMessageRaw(message_pipe_.get(),
-                        NULL,
-                        &num_bytes,
-                        NULL,
-                        &num_handles,
-                        MOJO_READ_MESSAGE_FLAG_NONE);
+    rv = ReadAndDispatchMessage(message_pipe_.get(), incoming_receiver_, NULL);
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();
       break;
     }
-    if (rv != MOJO_RESULT_RESOURCE_EXHAUSTED) {
-      error_ = true;
-      break;
-    }
-
-    Message message;
-    message.AllocUninitializedData(num_bytes);
-    message.mutable_handles()->resize(num_handles);
-
-    rv = ReadMessageRaw(
-        message_pipe_.get(),
-        message.mutable_data(),
-        &num_bytes,
-        message.mutable_handles()->empty() ? NULL :
-            reinterpret_cast<MojoHandle*>(&message.mutable_handles()->front()),
-        &num_handles,
-        MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv != MOJO_RESULT_OK) {
       error_ = true;
       break;
     }
-
-    if (incoming_receiver_)
-      incoming_receiver_->Accept(&message);
   }
 }
 

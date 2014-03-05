@@ -44,4 +44,41 @@ void Message::Swap(Message* other) {
   std::swap(handles_, other->handles_);
 }
 
+MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
+                                  MessageReceiver* receiver,
+                                  bool* receiver_result) {
+  MojoResult rv;
+
+  uint32_t num_bytes = 0, num_handles = 0;
+  rv = ReadMessageRaw(handle,
+                      NULL,
+                      &num_bytes,
+                      NULL,
+                      &num_handles,
+                      MOJO_READ_MESSAGE_FLAG_NONE);
+  if (rv != MOJO_RESULT_RESOURCE_EXHAUSTED)
+    return rv;
+
+  Message message;
+  message.AllocUninitializedData(num_bytes);
+  message.mutable_handles()->resize(num_handles);
+
+  rv = ReadMessageRaw(handle,
+                      message.mutable_data(),
+                      &num_bytes,
+                      message.mutable_handles()->empty()
+                          ? NULL
+                          : reinterpret_cast<MojoHandle*>(
+                                &message.mutable_handles()->front()),
+                      &num_handles,
+                      MOJO_READ_MESSAGE_FLAG_NONE);
+  if (receiver && rv == MOJO_RESULT_OK) {
+    bool result = receiver->Accept(&message);
+    if (receiver_result)
+      *receiver_result = result;
+  }
+
+  return rv;
+}
+
 }  // namespace mojo
