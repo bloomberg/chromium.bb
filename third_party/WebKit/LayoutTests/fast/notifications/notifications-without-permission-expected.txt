@@ -1,4 +1,0 @@
-Sending notifications without permission...
-
-FAIL: Should have thrown security exception.
-

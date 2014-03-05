@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2009, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,9 +31,14 @@
 #ifndef Notification_h
 #define Notification_h
 
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/events/EventTarget.h"
 #include "heap/Handle.h"
-#include "modules/notifications/NotificationBase.h"
+#include "modules/notifications/NotificationClient.h"
 #include "platform/AsyncMethodRunner.h"
+#include "platform/text/TextDirection.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -43,10 +47,9 @@ namespace WebCore {
 
 class Dictionary;
 class ExecutionContext;
-class NotificationClient;
 class NotificationPermissionCallback;
 
-class Notification FINAL : public RefCountedWillBeRefCountedGarbageCollected<Notification>, public NotificationBase {
+class Notification : public RefCountedWillBeRefCountedGarbageCollected<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<Notification>);
 
 public:
@@ -54,26 +57,84 @@ public:
 
     virtual ~Notification();
 
+    // Calling show() may start asynchronous operation. If this object has
+    // a V8 wrapper, hasPendingActivity() prevents the wrapper from being
+    // collected while m_state is Showing, and so this instance stays alive
+    // until the operation completes. Otherwise, you need to hold a ref on this
+    // instance until the operation completes.
+    void show();
+
+    void close();
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(show);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+
+    void dispatchShowEvent();
+    void dispatchClickEvent();
+    void dispatchErrorEvent();
+    void dispatchCloseEvent();
+
+    String title() const { return m_title; }
+    String dir() const { return m_dir; }
+    String lang() const { return m_lang; }
+    String body() const { return m_body; }
+    String tag() const { return m_tag; }
+    String icon() const { return m_iconUrl; }
+
+    TextDirection direction() const;
+    KURL iconURL() const { return m_iconUrl; }
+
+    static const String& permissionString(NotificationClient::Permission);
     static const String& permission(ExecutionContext*);
     static void requestPermission(ExecutionContext*, PassOwnPtr<NotificationPermissionCallback> = nullptr);
 
-    // EventTarget interface
+    // EventTarget interface.
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
+    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE FINAL;
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    // ActiveDOMObject interface
+    // ActiveDOMObject interface.
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
 
+    // RefCountedWillBeRefCountedGarbageCollected<Notification> interface.
     void trace(Visitor*) { }
 
 private:
-    Notification(ExecutionContext*, const String& title, NotificationClient*);
+    Notification(const String& title, ExecutionContext*, NotificationClient*);
+
+    void setDir(const String& dir) { m_dir = dir; }
+    void setLang(const String& lang) { m_lang = lang; }
+    void setBody(const String& body) { m_body = body; }
+    void setIconUrl(KURL iconUrl) { m_iconUrl = iconUrl; }
+    void setTag(const String& tag) { m_tag = tag; }
 
     void showSoon();
+
+private:
+    String m_title;
+    String m_dir;
+    String m_lang;
+    String m_body;
+    String m_tag;
+
+    KURL m_iconUrl;
+
+    enum NotificationState {
+        Idle = 0,
+        Showing = 1,
+        Closed = 2,
+    };
+
+    NotificationState m_state;
+
+    NotificationClient* m_client;
 
     OwnPtr<AsyncMethodRunner<Notification> > m_asyncRunner;
 };
 
 } // namespace WebCore
 
-#endif // Notifications_h
+#endif // Notification_h

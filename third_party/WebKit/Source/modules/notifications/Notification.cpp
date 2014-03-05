@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2009, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -35,7 +34,8 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/page/WindowFocusAllowedIndicator.h"
+#include "modules/notifications/NotificationClient.h"
 #include "modules/notifications/NotificationController.h"
 
 namespace WebCore {
@@ -43,7 +43,7 @@ namespace WebCore {
 PassRefPtrWillBeRawPtr<Notification> Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
     NotificationClient* client = NotificationController::clientFrom(toDocument(context)->page());
-    RefPtrWillBeRawPtr<Notification> notification = adoptRefWillBeRefCountedGarbageCollected(new Notification(context, title, client));
+    RefPtrWillBeRawPtr<Notification> notification = adoptRefWillBeRefCountedGarbageCollected(new Notification(title, context, client));
 
     String argument;
     if (options.get("body", argument))
@@ -64,10 +64,15 @@ PassRefPtrWillBeRawPtr<Notification> Notification::create(ExecutionContext* cont
     return notification.release();
 }
 
-Notification::Notification(ExecutionContext* context, const String& title, NotificationClient* client)
-    : NotificationBase(title, context, client)
+Notification::Notification(const String& title, ExecutionContext* context, NotificationClient* client)
+    : ActiveDOMObject(context)
+    , m_title(title)
+    , m_dir("auto")
+    , m_state(Idle)
+    , m_client(client)
     , m_asyncRunner(adoptPtr(new AsyncMethodRunner<Notification>(this, &Notification::showSoon)))
 {
+    ASSERT(m_client);
     ScriptWrappable::init(this);
 
     m_asyncRunner->runAsync();
@@ -75,6 +80,83 @@ Notification::Notification(ExecutionContext* context, const String& title, Notif
 
 Notification::~Notification()
 {
+}
+
+void Notification::show()
+{
+    // prevent double-showing
+    if (m_state == Idle) {
+        if (!toDocument(executionContext())->page())
+            return;
+        if (NotificationController::from(toDocument(executionContext())->page())->client()->checkPermission(executionContext()) != NotificationClient::PermissionAllowed) {
+            dispatchErrorEvent();
+            return;
+        }
+        if (m_client->show(this)) {
+            m_state = Showing;
+        }
+    }
+}
+
+void Notification::close()
+{
+    switch (m_state) {
+    case Idle:
+        break;
+    case Showing:
+        m_client->cancel(this);
+        break;
+    case Closed:
+        break;
+    }
+}
+
+void Notification::dispatchShowEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::show));
+}
+
+void Notification::dispatchClickEvent()
+{
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    WindowFocusAllowedIndicator windowFocusAllowed;
+    dispatchEvent(Event::create(EventTypeNames::click));
+}
+
+void Notification::dispatchErrorEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::error));
+}
+
+void Notification::dispatchCloseEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::close));
+    m_state = Closed;
+}
+
+TextDirection Notification::direction() const
+{
+    // FIXME: Resolve dir()=="auto" against the document.
+    return dir() == "rtl" ? RTL : LTR;
+}
+
+const String& Notification::permissionString(NotificationClient::Permission permission)
+{
+    DEFINE_STATIC_LOCAL(const String, allowedPermission, ("granted"));
+    DEFINE_STATIC_LOCAL(const String, deniedPermission, ("denied"));
+    DEFINE_STATIC_LOCAL(const String, defaultPermission, ("default"));
+
+    switch (permission) {
+    case NotificationClient::PermissionAllowed:
+        return allowedPermission;
+    case NotificationClient::PermissionDenied:
+        return deniedPermission;
+    case NotificationClient::PermissionNotAllowed:
+        return defaultPermission;
+    }
+
+    ASSERT_NOT_REACHED();
+    return deniedPermission;
 }
 
 const String& Notification::permission(ExecutionContext* context)
@@ -89,6 +171,15 @@ void Notification::requestPermission(ExecutionContext* context, PassOwnPtr<Notif
     NotificationController::from(toDocument(context)->page())->client()->requestPermission(context, callback);
 }
 
+bool Notification::dispatchEvent(PassRefPtr<Event> event)
+{
+    // Do not dispatch if the context is gone.
+    if (!executionContext())
+        return false;
+
+    return EventTarget::dispatchEvent(event);
+}
+
 const AtomicString& Notification::interfaceName() const
 {
     return EventTargetNames::Notification;
@@ -96,14 +187,19 @@ const AtomicString& Notification::interfaceName() const
 
 void Notification::stop()
 {
-    NotificationBase::stop();
+    if (m_client)
+        m_client->notificationObjectDestroyed(this);
+
     if (m_asyncRunner)
         m_asyncRunner->stop();
+
+    m_client = 0;
+    m_state = Closed;
 }
 
 bool Notification::hasPendingActivity() const
 {
-    return NotificationBase::hasPendingActivity() || (m_asyncRunner && m_asyncRunner->isActive());
+    return m_state == Showing || (m_asyncRunner && m_asyncRunner->isActive());
 }
 
 void Notification::showSoon()

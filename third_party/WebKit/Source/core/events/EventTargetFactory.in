@@ -38,7 +38,6 @@ modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
 modules/notifications/Notification
-modules/notifications/WebKitNotification Conditional=LEGACY_NOTIFICATIONS
 modules/serviceworkers/ServiceWorkerGlobalScope
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance

@@ -1,4 +1,0 @@
-CONSOLE ERROR: line 16: Uncaught TypeError: Object [object Object] has no method 'ignoreLegacyWebNotificationPermissionRequests'
-Requesting and cancelling notification permission...
-
-Pass if notification is cancelled

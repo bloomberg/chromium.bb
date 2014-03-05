@@ -74,7 +74,6 @@ webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Google/resource-ti
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ WontFix ]
 
 webkit.org/b/78830 [ Mac ] svg/custom/mask-invalidation.svg [ WontFix ]
-webkit.org/b/42798 [ XP ] fast/notifications/notifications-cancel-request-permission.html [ WontFix ]
 webkit.org/b/91183 [ Win ] http/tests/w3c/webperf/approved/HighResolutionTime/test_cross_frame_start.html [ WontFix ]
 
 # IETC imported test suites
