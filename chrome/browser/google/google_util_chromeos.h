@@ -20,9 +20,10 @@ std::string GetBrand();
 // restart). Future calls to GetBrand() will return an empty string.
 void ClearBrandForCurrentSession();
 
-// Reads the brand code from a board-specific file and stores it to Local State.
+// Reads the brand code from a board-specific data file and stores it to
+// Local State.
 // |callback| is invoked on the calling thread after that.
-void SetBrandFromFile(const base::Closure& callback);
+void InitBrand(const base::Closure& callback);
 
 }  // namespace chromeos
 }  // namespace google_util

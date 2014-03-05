@@ -13,6 +13,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace google_util {
@@ -62,7 +63,17 @@ std::string GetBrand() {
   return g_browser_process->local_state()->GetString(prefs::kRLZBrand);
 }
 
-void SetBrandFromFile(const base::Closure& callback) {
+void InitBrand(const base::Closure& callback) {
+  ::chromeos::system::StatisticsProvider* provider =
+      ::chromeos::system::StatisticsProvider::GetInstance();
+  std::string brand;
+  const bool found = provider->GetMachineStatistic(
+      ::chromeos::system::kRlzBrandCodeKey, &brand);
+  if (found && !brand.empty()) {
+    SetBrand(callback, brand);
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(false /* task_is_slow */).get(),
       FROM_HERE,

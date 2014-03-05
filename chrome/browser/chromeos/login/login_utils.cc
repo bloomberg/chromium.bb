@@ -666,8 +666,8 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
 void LoginUtilsImpl::InitRlzDelayed(Profile* user_profile) {
 #if defined(ENABLE_RLZ)
   if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand)) {
-    // Read brand code asynchronously from an OEM file and repost ourselves.
-    google_util::chromeos::SetBrandFromFile(
+    // Read brand code asynchronously from an OEM data and repost ourselves.
+    google_util::chromeos::InitBrand(
         base::Bind(&LoginUtilsImpl::InitRlzDelayed, AsWeakPtr(), user_profile));
     return;
   }
