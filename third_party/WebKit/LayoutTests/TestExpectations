@@ -920,6 +920,8 @@ crbug.com/309197 [ XP ] svg/transforms/text-with-mask-with-svg-transform.svg [ N
 crbug.com/349523 [ Win ] webaudio/dynamicscompressor-simple.html [ Failure ]
 crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
 
+crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Crash Pass ]
+
 # Failing on Mac since r168339
 crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 
