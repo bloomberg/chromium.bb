@@ -1,0 +1,13 @@
+destructor_access_finalized_field.cpp:11:18: warning: [blink-gc] Finalizer '~HeapObject' accesses potentially finalized field 'm_obj'.
+    if (m_ref && m_obj)
+                 ^
+./destructor_access_finalized_field.h:20:5: note: [blink-gc] Potentially finalized field 'm_obj' declared here:
+    Member<HeapObject> m_obj;
+    ^
+destructor_access_finalized_field.cpp:12:15: warning: [blink-gc] Finalizer '~HeapObject' accesses potentially finalized field 'm_objs'.
+        (void)m_objs;
+              ^
+./destructor_access_finalized_field.h:21:5: note: [blink-gc] Potentially finalized field 'm_objs' declared here:
+    Vector<Member<HeapObject> > m_objs;
+    ^
+2 warnings generated.

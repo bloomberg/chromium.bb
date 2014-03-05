@@ -67,10 +67,6 @@ void RecursiveEdgeVisitor::VisitPersistent(Persistent* e) {
 void RecursiveEdgeVisitor::VisitCollection(Collection* e) {
   AtCollection(e);
   Enter(e);
-  for (Collection::Members::iterator it = e->members().begin();
-       it != e->members().end();
-       ++it) {
-    (*it)->Accept(this);
-  }
+  e->AcceptMembers(this);
   Leave();
 }

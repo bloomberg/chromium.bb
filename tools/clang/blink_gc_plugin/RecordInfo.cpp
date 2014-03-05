@@ -19,11 +19,14 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       fields_(0),
       determined_trace_methods_(false),
       trace_method_(0),
-      trace_dispatch_method_(0) {}
+      trace_dispatch_method_(0),
+      is_gc_derived_(false),
+      base_paths_(0) {}
 
 RecordInfo::~RecordInfo() {
   delete fields_;
   delete bases_;
+  delete base_paths_;
 }
 
 // Get |count| number of template arguments. Returns false if there
@@ -77,7 +80,13 @@ static bool IsGCBaseCallback(const CXXBaseSpecifier* specifier,
 }
 
 // Test if a record is derived from a garbage collected base.
-bool RecordInfo::IsGCDerived(CXXBasePaths* paths) {
+bool RecordInfo::IsGCDerived() {
+  // If already computed, return the known result.
+  if (base_paths_)
+    return is_gc_derived_;
+
+  base_paths_ = new CXXBasePaths(true, true, false);
+
   if (!record_->hasDefinition())
     return false;
 
@@ -86,10 +95,22 @@ bool RecordInfo::IsGCDerived(CXXBasePaths* paths) {
     return false;
 
   // Walk the inheritance tree to find GC base classes.
-  CXXBasePaths localPaths(false, false, false);
-  if (!paths)
-    paths = &localPaths;
-  return record_->lookupInBases(IsGCBaseCallback, 0, *paths);
+  is_gc_derived_ = record_->lookupInBases(IsGCBaseCallback, 0, *base_paths_);
+  return is_gc_derived_;
+}
+
+bool RecordInfo::IsGCFinalized() {
+  if (!IsGCDerived())
+    return false;
+  for (CXXBasePaths::paths_iterator it = base_paths_->begin();
+       it != base_paths_->end();
+       ++it) {
+    const CXXBasePathElement& elem = (*it)[it->size() - 1];
+    CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
+    if (Config::IsGCFinalizedBase(base->getName()))
+      return true;
+  }
+  return false;
 }
 
 // Test if a record is allocated on the managed heap.

@@ -76,8 +76,9 @@ class RecordInfo {
   bool GetTemplateArgs(size_t count, TemplateArgs* output_args);
 
   bool IsHeapAllocatedCollection();
-  bool IsGCDerived(clang::CXXBasePaths* paths = 0);
+  bool IsGCDerived();
   bool IsGCAllocated();
+  bool IsGCFinalized();
 
   bool IsStackAllocated();
   bool RequiresTraceMethod();
@@ -103,6 +104,9 @@ class RecordInfo {
   clang::CXXMethodDecl* trace_method_;
   clang::CXXMethodDecl* trace_dispatch_method_;
 
+  bool is_gc_derived_;
+  clang::CXXBasePaths* base_paths_;
+
   friend class RecordCache;
 };
 
@@ -120,6 +124,10 @@ class RecordCache {
 
   RecordInfo* Lookup(const clang::CXXRecordDecl* record) {
     return Lookup(const_cast<clang::CXXRecordDecl*>(record));
+  }
+
+  RecordInfo* Lookup(clang::Decl* decl) {
+    return Lookup(clang::dyn_cast<clang::CXXRecordDecl>(decl));
   }
 
   ~RecordCache() {

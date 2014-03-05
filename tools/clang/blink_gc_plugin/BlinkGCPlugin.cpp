@@ -41,6 +41,12 @@ const char kClassContainsInvalidFields[] =
 const char kClassContainsGCRoot[] =
     "[blink-gc] Class %0 contains GC root in field %1.";
 
+const char kFinalizerInNonFinalizedClass[] =
+    "[blink-gc] Non-finalized class %0 has a user-declared finalizer %1.";
+
+const char kFinalizerAccessesFinalizedField[] =
+    "[blink-gc] Finalizer %0 accesses potentially finalized field %1.";
+
 const char kRawPtrToGCManagedClassNote[] =
     "[blink-gc] Raw pointer field %0 to a GC managed class declared here:";
 
@@ -55,6 +61,9 @@ const char kPartObjectContainsGCRoot[] =
 
 const char kFieldContainsGCRoot[] =
     "[blink-gc] Field %0 defining a GC root declared here:";
+
+const char kFinalizedFieldNote[] =
+    "[blink-gc] Potentially finalized field %0 declared here:";
 
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false) {}
@@ -115,6 +124,67 @@ class CollectVisitor : public RecursiveASTVisitor<CollectVisitor> {
  private:
   RecordVector record_decls_;
   MethodVector trace_decls_;
+};
+
+// This visitor checks that a finalizer method does not access fields that are
+// potentially finalized. A potentially finalized field is either a Member, a
+// heap-allocated collection or an off-heap collection that contains Members.
+class CheckFinalizerVisitor
+    : public RecursiveASTVisitor<CheckFinalizerVisitor> {
+ private:
+  // Simple visitor to determine if the content of a field might be collected
+  // during finalization.
+  class MightBeCollectedVisitor : public EdgeVisitor {
+   public:
+    MightBeCollectedVisitor() : might_be_collected_(false) {}
+    bool might_be_collected() { return might_be_collected_; }
+    void VisitMember(Member* edge) { might_be_collected_ = true; }
+    void VisitCollection(Collection* edge) {
+      if (edge->on_heap()) {
+        might_be_collected_ = !edge->is_root();
+      } else {
+        edge->AcceptMembers(this);
+      }
+    }
+
+   private:
+    bool might_be_collected_;
+  };
+
+ public:
+  typedef std::vector<std::pair<MemberExpr*, FieldPoint*> > Errors;
+
+  CheckFinalizerVisitor(RecordCache* cache) : cache_(cache) {}
+
+  Errors& finalized_fields() { return finalized_fields_; }
+
+  bool VisitMemberExpr(MemberExpr* member) {
+    FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl());
+    if (!field)
+      return true;
+
+    RecordInfo* info = cache_->Lookup(field->getParent());
+    if (!info)
+      return true;
+
+    RecordInfo::Fields::iterator it = info->GetFields().find(field);
+    if (it == info->GetFields().end())
+      return true;
+
+    if (MightBeCollected(&it->second))
+      finalized_fields_.push_back(std::make_pair(member, &it->second));
+    return true;
+  }
+
+  bool MightBeCollected(FieldPoint* point) {
+    MightBeCollectedVisitor visitor;
+    point->edge()->Accept(&visitor);
+    return visitor.might_be_collected();
+  }
+
+ private:
+  Errors finalized_fields_;
+  RecordCache* cache_;
 };
 
 // This visitor checks a tracing method by traversing its body.
@@ -339,6 +409,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
                                     kClassContainsInvalidFields);
     diag_class_contains_gc_root_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
+    diag_finalizer_in_nonfinalized_class_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kFinalizerInNonFinalizedClass);
+    diag_finalizer_accesses_finalized_field_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kFinalizerAccessesFinalizedField);
 
     // Register note messages.
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -353,6 +427,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kPartObjectContainsGCRoot);
     diag_field_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kFieldContainsGCRoot);
+    diag_finalized_field_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kFinalizedFieldNote);
   }
 
   virtual void HandleTranslationUnit(ASTContext& context) {
@@ -414,9 +490,37 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
 
     if (info->IsGCDerived()) {
-      CheckGCRootsVisitor visitor;
-      if (visitor.ContainsGCRoots(info))
-        ReportClassContainsGCRoots(info, &visitor.gc_roots());
+      {
+        CheckGCRootsVisitor visitor;
+        if (visitor.ContainsGCRoots(info))
+          ReportClassContainsGCRoots(info, &visitor.gc_roots());
+      }
+
+      // TODO: check for non-user defined and non-trivial destructors too.
+      // TODO: support overridden finalize().
+      if (CXXDestructorDecl* dtor = info->record()->getDestructor()) {
+        if (dtor->isUserProvided() && !info->IsGCFinalized()) {
+          // Don't report if using transition types and the body is empty.
+          if (!options_.enable_oilpan) {
+            ReportFinalizerInNonFinalizedClass(info, dtor);
+          } else {
+            if (dtor->hasBody()) {
+              CompoundStmt* stmt = cast<CompoundStmt>(dtor->getBody());
+              if (stmt && !stmt->body_empty())
+                ReportFinalizerInNonFinalizedClass(info, dtor);
+            }
+          }
+        }
+
+        if (dtor->hasBody()) {
+          CheckFinalizerVisitor visitor(&cache_);
+          visitor.TraverseCXXMethodDecl(dtor);
+          if (!visitor.finalized_fields().empty()) {
+            ReportFinalizerAccessesFinalizedFields(dtor,
+                                                   &visitor.finalized_fields());
+          }
+        }
+      }
     }
   }
 
@@ -603,11 +707,11 @@ class BlinkGCPluginConsumer : public ASTConsumer {
          it != errors->end();
          ++it) {
       if (it->second->IsRawPtr()) {
-        NoteInvalidField(it->first, diag_raw_ptr_to_gc_managed_class_note_);
+        NoteField(it->first, diag_raw_ptr_to_gc_managed_class_note_);
       } else if (it->second->IsRefPtr()) {
-        NoteInvalidField(it->first, diag_ref_ptr_to_gc_managed_class_note_);
+        NoteField(it->first, diag_ref_ptr_to_gc_managed_class_note_);
       } else if (it->second->IsOwnPtr()) {
-        NoteInvalidField(it->first, diag_own_ptr_to_gc_managed_class_note_);
+        NoteField(it->first, diag_own_ptr_to_gc_managed_class_note_);
       }
     }
   }
@@ -632,18 +736,32 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
   }
 
-  void NoteFieldRequiresTracing(RecordInfo* holder, FieldDecl* field) {
-    SourceLocation loc = field->getLocStart();
+  void ReportFinalizerInNonFinalizedClass(RecordInfo* info,
+                                          CXXMethodDecl* dtor) {
+    SourceLocation loc = dtor->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, diag_field_requires_tracing_note_) << field;
+    diagnostic_.Report(full_loc, diag_finalizer_in_nonfinalized_class_)
+        << info->record() << dtor;
   }
 
-  void NoteInvalidField(FieldPoint* point, unsigned note) {
-    SourceLocation loc = point->field()->getLocStart();
-    SourceManager& manager = instance_.getSourceManager();
-    FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, note) << point->field();
+  void ReportFinalizerAccessesFinalizedFields(
+      CXXMethodDecl* dtor,
+      CheckFinalizerVisitor::Errors* fields) {
+    for (CheckFinalizerVisitor::Errors::iterator it = fields->begin();
+         it != fields->end();
+         ++it) {
+      SourceLocation loc = it->first->getLocStart();
+      SourceManager& manager = instance_.getSourceManager();
+      FullSourceLoc full_loc(loc, manager);
+      diagnostic_.Report(full_loc, diag_finalizer_accesses_finalized_field_)
+          << dtor << it->second->field();
+      NoteField(it->second, diag_finalized_field_note_);
+    }
+  }
+
+  void NoteFieldRequiresTracing(RecordInfo* holder, FieldDecl* field) {
+    NoteField(field, diag_field_requires_tracing_note_);
   }
 
   void NotePartObjectContainsGCRoot(FieldPoint* point) {
@@ -656,12 +774,18 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   }
 
   void NoteFieldContainsGCRoot(FieldPoint* point) {
-    FieldDecl* field = point->field();
+    NoteField(point, diag_field_contains_gc_root_note_);
+  }
+
+  void NoteField(FieldPoint* point, unsigned note) {
+    NoteField(point->field(), note);
+  }
+
+  void NoteField(FieldDecl* field, unsigned note) {
     SourceLocation loc = field->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
     FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, diag_field_contains_gc_root_note_)
-        << field;
+    diagnostic_.Report(full_loc, note) << field;
   }
 
   unsigned diag_class_requires_trace_method_;
@@ -669,6 +793,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_fields_require_tracing_;
   unsigned diag_class_contains_invalid_fields_;
   unsigned diag_class_contains_gc_root_;
+  unsigned diag_finalizer_in_nonfinalized_class_;
+  unsigned diag_finalizer_accesses_finalized_field_;
 
   unsigned diag_field_requires_tracing_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
@@ -676,6 +802,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_own_ptr_to_gc_managed_class_note_;
   unsigned diag_part_object_contains_gc_root_note_;
   unsigned diag_field_contains_gc_root_note_;
+  unsigned diag_finalized_field_note_;
 
   CompilerInstance& instance_;
   DiagnosticsEngine& diagnostic_;

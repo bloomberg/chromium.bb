@@ -10,9 +10,21 @@
 namespace WTF {
 
 template<typename T> class RefCounted { };
-template<typename T> class RawPtr { };
-template<typename T> class RefPtr { };
-template<typename T> class OwnPtr { };
+
+template<typename T> class RawPtr {
+public:
+    operator T*() const { return 0; }
+};
+
+template<typename T> class RefPtr {
+public:
+    operator T*() const { return 0; }
+};
+
+template<typename T> class OwnPtr {
+public:
+    operator T*() const { return 0; }
+};
 
 class DefaultAllocator { };
 
@@ -45,8 +57,19 @@ using namespace WTF;
     virtual bool isAlive(Visitor*) const { return 0; }
 
 template<typename T> class GarbageCollected { };
-template<typename T> class Member { };
-template<typename T> class Persistent { };
+
+template<typename T>
+class GarbageCollectedFinalized : public GarbageCollected<T> { };
+
+template<typename T> class Member {
+public:
+    operator T*() const { return 0; }
+};
+
+template<typename T> class Persistent {
+public:
+    operator T*() const { return 0; }
+};
 
 class HeapAllocator { };
 

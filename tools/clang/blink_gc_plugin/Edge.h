@@ -190,6 +190,10 @@ class Collection : public Edge {
   bool is_root() { return is_root_; }
   Members& members() { return members_; }
   void Accept(EdgeVisitor* visitor) { visitor->VisitCollection(this); }
+  void AcceptMembers(EdgeVisitor* visitor) {
+    for (Members::iterator it = members_.begin(); it != members_.end(); ++it)
+      (*it)->Accept(visitor);
+  }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     if (is_root_)
       return TracingStatus::Unneeded();

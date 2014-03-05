@@ -1,0 +1,4 @@
+destructor_in_nonfinalized_class.cpp:9:1: warning: [blink-gc] Non-finalized class 'HeapObject' has a user-declared finalizer '~HeapObject'.
+HeapObject::~HeapObject()
+^
+1 warning generated.
