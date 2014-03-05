@@ -11,15 +11,15 @@
 #include "base/logging.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/renderer_host/cross_site_transferring_request.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
@@ -37,31 +37,28 @@ bool leak_requests_for_testing_ = false;
 // base::Bind supports.
 struct CrossSiteResponseParams {
   CrossSiteResponseParams(
-      int render_view_id,
+      int render_frame_id,
       const GlobalRequestID& global_request_id,
       bool is_transfer,
       const std::vector<GURL>& transfer_url_chain,
       const Referrer& referrer,
       PageTransition page_transition,
-      int render_frame_id,
       bool should_replace_current_entry)
-      : render_view_id(render_view_id),
+      : render_frame_id(render_frame_id),
         global_request_id(global_request_id),
         is_transfer(is_transfer),
         transfer_url_chain(transfer_url_chain),
         referrer(referrer),
         page_transition(page_transition),
-        render_frame_id(render_frame_id),
         should_replace_current_entry(should_replace_current_entry) {
   }
 
-  int render_view_id;
+  int render_frame_id;
   GlobalRequestID global_request_id;
   bool is_transfer;
   std::vector<GURL> transfer_url_chain;
   Referrer referrer;
   PageTransition page_transition;
-  int render_frame_id;
   bool should_replace_current_entry;
 };
 
@@ -72,15 +69,14 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
         params.global_request_id));
   }
 
-  RenderViewHostImpl* rvh =
-      RenderViewHostImpl::FromID(params.global_request_id.child_id,
-                                 params.render_view_id);
-  if (rvh) {
-    rvh->OnCrossSiteResponse(
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(params.global_request_id.child_id,
+                                  params.render_frame_id);
+  if (rfh) {
+    rfh->OnCrossSiteResponse(
         params.global_request_id, cross_site_transferring_request.Pass(),
         params.transfer_url_chain, params.referrer,
-        params.page_transition, params.render_frame_id,
-        params.should_replace_current_entry);
+        params.page_transition, params.should_replace_current_entry);
   } else if (leak_requests_for_testing_ && cross_site_transferring_request) {
     // Some unit tests expect requests to be leaked in this case, so they can
     // pass them along manually.
@@ -168,9 +164,9 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   //
   // Similarly, HTTP 204 (No Content) responses leave us showing the previous
   // page.  We should allow the navigation to finish without running the unload
-  // handler or swapping in the pending RenderViewHost.
+  // handler or swapping in the pending RenderFrameHost.
   //
-  // In both cases, any pending RenderViewHost (if one was created for this
+  // In both cases, any pending RenderFrameHost (if one was created for this
   // navigation) will stick around until the next cross-site navigation, since
   // we are unable to tell when to destroy it.
   // See RenderFrameHostManager::RendererAbortedProvisionalLoad.
@@ -282,8 +278,8 @@ void CrossSiteResourceHandler::SetLeakRequestsForTesting(
   leak_requests_for_testing_ = leak_requests_for_testing;
 }
 
-// Prepare to render the cross-site response in a new RenderViewHost, by
-// telling the old RenderViewHost to run its onunload handler.
+// Prepare to render the cross-site response in a new RenderFrameHost, by
+// telling the old RenderFrameHost to run its onunload handler.
 void CrossSiteResourceHandler::StartCrossSiteTransition(
     int request_id,
     ResourceResponse* response,
@@ -307,11 +303,10 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // occurred, plus the destination URL at the end.
   std::vector<GURL> transfer_url_chain;
   Referrer referrer;
-  int render_frame_id = -1;
+  int render_frame_id = info->GetRenderFrameID();
   if (should_transfer) {
     transfer_url_chain = request()->url_chain();
     referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
-    render_frame_id = info->GetRenderFrameID();
 
     appcache::AppCacheInterceptor::PrepareForCrossSiteTransfer(
         request(), global_id.child_id);
@@ -322,13 +317,12 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
       FROM_HERE,
       base::Bind(
           &OnCrossSiteResponseHelper,
-          CrossSiteResponseParams(info->GetRouteID(),
+          CrossSiteResponseParams(render_frame_id,
                                   global_id,
                                   should_transfer,
                                   transfer_url_chain,
                                   referrer,
                                   info->GetPageTransition(),
-                                  render_frame_id,
                                   info->should_replace_current_entry())));
 }
 

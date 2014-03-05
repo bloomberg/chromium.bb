@@ -132,6 +132,7 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
 
   // Expose the render manager for testing.
+  // TODO(creis): Remove this now that we can get to it via FrameTreeNode.
   RenderFrameHostManager* GetRenderManagerForTesting();
 
   // Returns guest browser plugin object, or NULL if this WebContents is not a

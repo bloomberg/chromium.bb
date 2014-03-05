@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_CROSS_SITE_TRANSFERRING_REQUEST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_CROSS_SITE_TRANSFERRING_REQUEST_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_CROSS_SITE_TRANSFERRING_REQUEST_H_
+#define CONTENT_BROWSER_FRAME_HOST_CROSS_SITE_TRANSFERRING_REQUEST_H_
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
@@ -37,4 +37,4 @@ class CONTENT_EXPORT CrossSiteTransferringRequest {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_CROSS_SITE_TRANSFERRING_REQUEST_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_CROSS_SITE_TRANSFERRING_REQUEST_H_

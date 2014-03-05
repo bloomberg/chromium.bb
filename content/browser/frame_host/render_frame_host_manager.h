@@ -196,6 +196,20 @@ class CONTENT_EXPORT RenderFrameHostManager
   // with the navigation instead of closing the tab.
   bool ShouldCloseTabOnUnresponsiveRenderer();
 
+  // The |pending_render_frame_host| is ready to commit a page.  We should
+  // ensure that the old RenderFrameHost runs its unload handler first and
+  // determine whether a RenderFrameHost transfer is needed.
+  // |cross_site_transferring_request| is NULL if a request is not being
+  // transferred between renderers.
+  void OnCrossSiteResponse(
+      RenderFrameHostImpl* pending_render_frame_host,
+      const GlobalRequestID& global_request_id,
+      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
+      const std::vector<GURL>& transfer_url_chain,
+      const Referrer& referrer,
+      PageTransition page_transition,
+      bool should_replace_current_entry);
+
   // The RenderViewHost has been swapped out, so we should resume the pending
   // network response and allow the pending RenderViewHost to commit.
   void SwappedOut(RenderViewHost* render_view_host);
@@ -242,15 +256,6 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool for_cross_site_transition,
       bool proceed,
       const base::TimeTicks& proceed_time) OVERRIDE;
-  virtual void OnCrossSiteResponse(
-      RenderViewHost* pending_render_view_host,
-      const GlobalRequestID& global_request_id,
-      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
-      const std::vector<GURL>& transfer_url_chain,
-      const Referrer& referrer,
-      PageTransition page_transition,
-      int64 frame_id,
-      bool should_replace_current_entry) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -297,7 +302,7 @@ class CONTENT_EXPORT RenderFrameHostManager
         const std::vector<GURL>& transfer_url,
         Referrer referrer,
         PageTransition page_transition,
-        int64 frame_id,
+        int render_frame_id,
         bool should_replace_current_entry);
     ~PendingNavigationParams();
 
@@ -322,8 +327,8 @@ class CONTENT_EXPORT RenderFrameHostManager
     // This is the transition type for the original navigation.
     PageTransition page_transition;
 
-    // This is the frame ID to use in RequestTransferURL.
-    int64 frame_id;
+    // This is the frame routing ID to use in RequestTransferURL.
+    int render_frame_id;
 
     // This is whether the navigation should replace the current history entry.
     bool should_replace_current_entry;

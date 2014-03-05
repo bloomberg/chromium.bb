@@ -34,7 +34,6 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
@@ -611,31 +610,6 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
     send_should_close_start_time_ = base::TimeTicks::Now();
     Send(new ViewMsg_ShouldClose(GetRoutingID()));
   }
-}
-
-void RenderViewHostImpl::OnCrossSiteResponse(
-    const GlobalRequestID& global_request_id,
-    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
-    const std::vector<GURL>& transfer_url_chain,
-    const Referrer& referrer,
-    PageTransition page_transition,
-    int64 frame_id,
-    bool should_replace_current_entry) {
-  FrameTreeNode* node = NULL;
-  if (frame_id != -1 &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    node = delegate_->GetFrameTree()->FindByRoutingID(frame_id,
-                                                      GetProcess()->GetID());
-  }
-
-  // TODO(creis): We should always be able to get the RFHM for a frame_id,
-  // but today the frame_id is -1 for the main frame.
-  RenderViewHostDelegate::RendererManagement* manager = node ?
-      node->render_manager() : delegate_->GetRendererManagementDelegate();
-  manager->OnCrossSiteResponse(this, global_request_id,
-                               cross_site_transferring_request.Pass(),
-                               transfer_url_chain, referrer, page_transition,
-                               frame_id, should_replace_current_entry);
 }
 
 void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {

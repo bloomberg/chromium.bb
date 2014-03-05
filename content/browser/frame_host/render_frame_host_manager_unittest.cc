@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
-#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
@@ -1395,8 +1395,9 @@ TEST_F(RenderFrameHostManagerTest,
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL());
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      rvh2, GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, 1, false);
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(RenderViewHostImpl::STATE_WAITING_FOR_UNLOAD_ACK,
             rvh1->rvh_state());
@@ -1448,8 +1449,9 @@ TEST_F(RenderFrameHostManagerTest,
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL());
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      rvh2, GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, 1, false);
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(RenderViewHostImpl::STATE_WAITING_FOR_UNLOAD_ACK,
             rvh1->rvh_state());
@@ -1496,8 +1498,9 @@ TEST_F(RenderFrameHostManagerTest,
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL());
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      rvh2, GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, 1, false);
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(RenderViewHostImpl::STATE_WAITING_FOR_UNLOAD_ACK,
             rvh1->rvh_state());
@@ -1549,8 +1552,9 @@ TEST_F(RenderFrameHostManagerTest,
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL());
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      rvh2, GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, 1, false);
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(RenderViewHostImpl::STATE_WAITING_FOR_UNLOAD_ACK,
             rvh1->rvh_state());

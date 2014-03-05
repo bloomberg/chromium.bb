@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/cross_site_transferring_request.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
 
 #include "base/logging.h"
 #include "content/browser/loader/cross_site_resource_handler.h"

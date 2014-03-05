@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/page_transition_types.h"
 
 class GURL;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -25,12 +27,15 @@ class FilePath;
 namespace content {
 
 class CrossProcessFrameConnector;
+class CrossSiteTransferringRequest;
 class FrameTree;
 class FrameTreeNode;
 class RenderFrameHostDelegate;
 class RenderProcessHost;
 class RenderViewHostImpl;
 struct ContextMenuParams;
+struct GlobalRequestID;
+struct Referrer;
 
 class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
  public:
@@ -83,6 +88,18 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // RenderFrameHostImpl's RenderView. See BindingsPolicy for details.
   // TODO(creis): Make bindings frame-specific, to support cases like <webview>.
   int GetEnabledBindings();
+
+  // Called on the pending RenderFrameHost when the network response is ready to
+  // commit.  We should ensure that the old RenderFrameHost runs its unload
+  // handler and determine whether a transfer to a different RenderFrameHost is
+  // needed.
+  void OnCrossSiteResponse(
+      const GlobalRequestID& global_request_id,
+      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
+      const std::vector<GURL>& transfer_url_chain,
+      const Referrer& referrer,
+      PageTransition page_transition,
+      bool should_replace_current_entry);
 
   // Hack to get this subframe to swap out, without yet moving over all the
   // SwapOut state and machinery from RenderViewHost.

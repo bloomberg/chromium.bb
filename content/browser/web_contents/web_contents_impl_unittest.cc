@@ -4,9 +4,9 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -1091,9 +1091,9 @@ TEST_F(WebContentsImplTest, CrossSiteCantPreemptAfterUnload) {
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL());
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      pending_rvh, GlobalRequestID(0, 0),
-      scoped_ptr<CrossSiteTransferringRequest>(), url_chain,
-      Referrer(), PAGE_TRANSITION_TYPED, 1, false);
+      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
+      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
 
   // Suppose the original renderer navigates now, while the unload request is in
   // flight.  We should ignore it, wait for the unload ack, and let the pending

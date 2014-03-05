@@ -12,6 +12,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -19,7 +20,6 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -45,14 +45,14 @@ RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams(
     const std::vector<GURL>& transfer_url_chain,
     Referrer referrer,
     PageTransition page_transition,
-    int64 frame_id,
+    int render_frame_id,
     bool should_replace_current_entry)
     : global_request_id(global_request_id),
       cross_site_transferring_request(cross_site_transferring_request.Pass()),
       transfer_url_chain(transfer_url_chain),
       referrer(referrer),
       page_transition(page_transition),
-      frame_id(frame_id),
+      render_frame_id(render_frame_id),
       should_replace_current_entry(should_replace_current_entry) {
 }
 
@@ -274,6 +274,35 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   return false;
 }
 
+void RenderFrameHostManager::OnCrossSiteResponse(
+    RenderFrameHostImpl* pending_render_frame_host,
+    const GlobalRequestID& global_request_id,
+    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
+    const std::vector<GURL>& transfer_url_chain,
+    const Referrer& referrer,
+    PageTransition page_transition,
+    bool should_replace_current_entry) {
+  // This should be called either when the pending RFH is ready to commit or
+  // when we realize that the current RFH's request requires a transfer.
+  DCHECK(pending_render_frame_host == pending_render_frame_host_ ||
+         pending_render_frame_host == render_frame_host_);
+
+  // TODO(creis): Eventually we will want to check all navigation responses
+  // here, but currently we pass information for a transfer if
+  // ShouldSwapProcessesForRedirect returned true in the network stack.
+  // In that case, we should set up a transfer after the unload handler runs.
+  // If |cross_site_transferring_request| is NULL, we will just run the unload
+  // handler and resume.
+  pending_nav_params_.reset(new PendingNavigationParams(
+      global_request_id, cross_site_transferring_request.Pass(),
+      transfer_url_chain, referrer, page_transition,
+      pending_render_frame_host->GetRoutingID(),
+      should_replace_current_entry));
+
+  // Run the unload handler of the current page.
+  SwapOutOldPage();
+}
+
 // TODO(creis): Remove this in favor of SwappedOutFrame.
 void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
   // Make sure this is from our current RVH, and that we have a pending
@@ -311,7 +340,7 @@ void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
         pending_nav_params_->referrer,
         pending_nav_params_->page_transition,
         CURRENT_TAB,
-        pending_nav_params_->frame_id,
+        pending_nav_params_->render_frame_id,
         pending_nav_params_->global_request_id,
         pending_nav_params_->should_replace_current_entry,
         true);
@@ -337,9 +366,9 @@ void RenderFrameHostManager::SwappedOutFrame(
   }
 
   // Sanity check that this is for the correct frame.
-  DCHECK_EQ(frame_tree_node_->current_frame_host()->GetRoutingID(),
-            pending_nav_params_->frame_id);
-  DCHECK_EQ(frame_tree_node_->current_frame_host()->GetProcess()->GetID(),
+  DCHECK_EQ(render_frame_host_->GetRoutingID(),
+            pending_nav_params_->render_frame_id);
+  DCHECK_EQ(render_frame_host_->GetProcess()->GetID(),
             pending_nav_params_->global_request_id.child_id);
 
   // Now that the unload handler has run, we need to either initiate the
@@ -357,14 +386,14 @@ void RenderFrameHostManager::SwappedOutFrame(
     // We don't know whether the original request had |user_action| set to true.
     // However, since we force the navigation to be in the current tab, it
     // doesn't matter.
-    render_frame_host->frame_tree_node()->navigator()->RequestTransferURL(
+    render_frame_host_->frame_tree_node()->navigator()->RequestTransferURL(
         render_frame_host,
         transfer_url,
         pending_nav_params_->transfer_url_chain,
         pending_nav_params_->referrer,
         pending_nav_params_->page_transition,
         CURRENT_TAB,
-        pending_nav_params_->frame_id,
+        pending_nav_params_->render_frame_id,
         pending_nav_params_->global_request_id,
         false,
         true);
@@ -493,37 +522,6 @@ void RenderFrameHostManager::ShouldClosePage(
       render_frame_host_->render_view_host()->ClosePage();
     }
   }
-}
-
-// TODO(creis): Take in a RenderFrameHost from CSRH.
-void RenderFrameHostManager::OnCrossSiteResponse(
-    RenderViewHost* pending_render_view_host,
-    const GlobalRequestID& global_request_id,
-    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
-    const std::vector<GURL>& transfer_url_chain,
-    const Referrer& referrer,
-    PageTransition page_transition,
-    int64 frame_id,
-    bool should_replace_current_entry) {
-  // This should be called either when the pending RVH is ready to commit or
-  // when we realize that the current RVH's request requires a transfer.
-  DCHECK(pending_render_view_host == render_frame_host_->render_view_host() ||
-         pending_render_view_host ==
-             pending_render_frame_host_->render_view_host());
-
-  // TODO(creis): Eventually we will want to check all navigation responses
-  // here, but currently we pass information for a transfer if
-  // ShouldSwapProcessesForRedirect returned true in the network stack.
-  // In that case, we should set up a transfer after the unload handler runs.
-  // If |cross_site_transferring_request| is NULL, we will just run the unload
-  // handler and resume.
-  pending_nav_params_.reset(new PendingNavigationParams(
-      global_request_id, cross_site_transferring_request.Pass(),
-      transfer_url_chain, referrer, page_transition, frame_id,
-      should_replace_current_entry));
-
-  // Run the unload handler of the current page.
-  SwapOutOldPage();
 }
 
 void RenderFrameHostManager::SwapOutOldPage() {

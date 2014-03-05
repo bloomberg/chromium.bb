@@ -20,7 +20,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/javascript_message_type.h"
-#include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
@@ -59,7 +58,6 @@ namespace content {
 
 class BrowserMediaPlayerManager;
 class ChildProcessSecurityPolicyImpl;
-class CrossSiteTransferringRequest;
 class PageState;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
@@ -67,7 +65,6 @@ class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
 class TimeoutMonitor;
 struct FileChooserParams;
-struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
 
 #if defined(COMPILER_MSVC)
@@ -322,20 +319,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // The current state of this RVH.
   RenderViewHostImplState rvh_state() const { return rvh_state_; }
-
-  // Called on the pending RenderViewHost when the network response is ready to
-  // commit.  We should ensure that the old RenderViewHost runs its unload
-  // handler and determine whether a transfer to a different RenderViewHost is
-  // needed.
-  // TODO(creis): Change to render_frame_id, then move this to RenderFrameHost.
-  void OnCrossSiteResponse(
-      const GlobalRequestID& global_request_id,
-      scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
-      const std::vector<GURL>& transfer_url_chain,
-      const Referrer& referrer,
-      PageTransition page_transition,
-      int64 frame_id,
-      bool should_replace_current_entry);
 
   // Tells the renderer that this RenderView will soon be swapped out, and thus
   // not to create any new modal dialogs until it happens.  This must be done

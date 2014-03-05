@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
@@ -322,6 +323,19 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
 
 int RenderFrameHostImpl::GetEnabledBindings() {
   return render_view_host_->GetEnabledBindings();
+}
+
+void RenderFrameHostImpl::OnCrossSiteResponse(
+    const GlobalRequestID& global_request_id,
+    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request,
+    const std::vector<GURL>& transfer_url_chain,
+    const Referrer& referrer,
+    PageTransition page_transition,
+    bool should_replace_current_entry) {
+  frame_tree_node_->render_manager()->OnCrossSiteResponse(
+      this, global_request_id, cross_site_transferring_request.Pass(),
+      transfer_url_chain, referrer, page_transition,
+      should_replace_current_entry);
 }
 
 void RenderFrameHostImpl::SwapOut() {
