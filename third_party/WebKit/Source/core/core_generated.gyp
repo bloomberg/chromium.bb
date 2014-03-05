@@ -180,6 +180,80 @@
           ],
         },
         {
+          'action_name': 'MediaFeatureNames',
+          'variables': {
+            'in_files': [
+              'css/MediaFeatureNames.in',
+            ],
+          },
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_media_feature_names.py',
+            '<@(in_files)'
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MediaFeatureNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MediaFeatureNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_media_feature_names.py',
+            '<@(in_files)',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--defines', '<(feature_defines)',
+          ],
+        },
+        {
+          'action_name': 'MediaFeatures',
+          'variables': {
+            'in_files': [
+              'css/MediaFeatureNames.in',
+            ],
+          },
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_media_features.py',
+            '<@(in_files)'
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MediaFeatures.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_media_features.py',
+            '<@(in_files)',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--defines', '<(feature_defines)',
+          ],
+        },
+        {
+          'action_name': 'MediaTypeNames',
+          'variables': {
+            'in_files': [
+              'css/MediaTypeNames.in',
+            ],
+          },
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_names.py',
+            '<@(in_files)'
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MediaTypeNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/MediaTypeNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
+            '<@(in_files)',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--defines', '<(feature_defines)',
+          ],
+        },
+        {
           'action_name': 'StylePropertyShorthand',
           'inputs': [
             '<@(scripts_for_in_files)',

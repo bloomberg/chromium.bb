@@ -31,11 +31,12 @@
 #include "core/css/MediaQueryEvaluator.h"
 
 #include "CSSValueKeywords.h"
+#include "MediaFeatureNames.h"
+#include "MediaFeatures.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/MediaFeatureNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/resolver/MediaQueryResult.h"
@@ -673,7 +674,7 @@ static void createFunctionMap()
 {
     // Create the table.
     gFunctionMap = new FunctionMap;
-#define ADD_TO_FUNCTIONMAP(name, str)  \
+#define ADD_TO_FUNCTIONMAP(name)  \
     gFunctionMap->set(name##MediaFeature.impl(), name##MediaFeatureEval);
     CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(ADD_TO_FUNCTIONMAP);
 #undef ADD_TO_FUNCTIONMAP

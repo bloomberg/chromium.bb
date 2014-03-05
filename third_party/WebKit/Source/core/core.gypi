@@ -775,8 +775,6 @@
             'css/FontSize.cpp',
             'css/FontSize.h',
             'css/HashTools.h',
-            'css/MediaFeatureNames.cpp',
-            'css/MediaFeatureNames.h',
             'css/MediaList.cpp',
             'css/MediaList.h',
             'css/MediaQuery.cpp',

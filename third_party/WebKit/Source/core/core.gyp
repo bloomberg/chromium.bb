@@ -284,6 +284,12 @@
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLEntityTable.cpp',
 
+        # Generated from MediaFeatureNames.in
+        '<(SHARED_INTERMEDIATE_DIR)/blink/MediaFeatureNames.cpp',
+
+        # Generated from MediaTypeNames.in
+        '<(SHARED_INTERMEDIATE_DIR)/blink/MediaTypeNames.cpp',
+
         # Generated from CSSTokenizer-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSTokenizer.cpp',
 

@@ -39,11 +39,12 @@
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
 #include "MathMLNames.h"
+#include "MediaFeatureNames.h"
+#include "MediaTypeNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
-#include "core/css/MediaFeatureNames.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "heap/Heap.h"
 #include "platform/EventTracer.h"
@@ -76,6 +77,7 @@ void init()
     FontFamilyNames::init();
     InputTypeNames::init();
     MediaFeatureNames::init();
+    MediaTypeNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();
     Partitions::init();
