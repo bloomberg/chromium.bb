@@ -676,11 +676,11 @@ void Document::setDoctype(PassRefPtr<DocumentType> docType)
     clearStyleResolver();
 }
 
-DOMImplementation* Document::implementation()
+DOMImplementation& Document::implementation()
 {
     if (!m_implementation)
         m_implementation = DOMImplementation::create(*this);
-    return m_implementation.get();
+    return *m_implementation;
 }
 
 bool Document::hasManifest() const
@@ -1150,7 +1150,7 @@ void Document::setContentLanguage(const AtomicString& language)
 
 void Document::setXMLVersion(const String& version, ExceptionState& exceptionState)
 {
-    if (!implementation()->hasFeature("XML", String())) {
+    if (!implementation().hasFeature("XML", String())) {
         exceptionState.throwDOMException(NotSupportedError, "This document does not support XML.");
         return;
     }
@@ -1165,7 +1165,7 @@ void Document::setXMLVersion(const String& version, ExceptionState& exceptionSta
 
 void Document::setXMLStandalone(bool standalone, ExceptionState& exceptionState)
 {
-    if (!implementation()->hasFeature("XML", String())) {
+    if (!implementation().hasFeature("XML", String())) {
         exceptionState.throwDOMException(NotSupportedError, "This document does not support XML.");
         return;
     }

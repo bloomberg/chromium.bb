@@ -295,7 +295,7 @@ public:
     void setDoctype(PassRefPtr<DocumentType>);
     DocumentType* doctype() const { return m_docType.get(); }
 
-    DOMImplementation* implementation();
+    DOMImplementation& implementation();
 
     Element* documentElement() const
     {
