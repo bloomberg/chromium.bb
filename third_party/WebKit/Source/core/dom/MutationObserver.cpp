@@ -137,7 +137,7 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
         return;
     }
 
-    node->registerMutationObserver(this, options, attributeFilter);
+    node->registerMutationObserver(*this, options, attributeFilter);
 }
 
 Vector<RefPtr<MutationRecord> > MutationObserver::takeRecords()

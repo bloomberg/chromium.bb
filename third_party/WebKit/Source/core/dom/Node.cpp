@@ -2076,7 +2076,7 @@ HashSet<MutationObserverRegistration*>* Node::transientMutationObserverRegistry(
 }
 
 template<typename Registry>
-static inline void collectMatchingObserversForMutation(HashMap<MutationObserver*, MutationRecordDeliveryOptions>& observers, Registry* registry, Node* target, MutationObserver::MutationType type, const QualifiedName* attributeName)
+static inline void collectMatchingObserversForMutation(HashMap<MutationObserver*, MutationRecordDeliveryOptions>& observers, Registry* registry, Node& target, MutationObserver::MutationType type, const QualifiedName* attributeName)
 {
     if (!registry)
         return;
@@ -2084,7 +2084,7 @@ static inline void collectMatchingObserversForMutation(HashMap<MutationObserver*
         const MutationObserverRegistration& registration = **iter;
         if (registration.shouldReceiveMutationFrom(target, type, attributeName)) {
             MutationRecordDeliveryOptions deliveryOptions = registration.deliveryOptions();
-            HashMap<MutationObserver*, MutationRecordDeliveryOptions>::AddResult result = observers.add(registration.observer(), deliveryOptions);
+            HashMap<MutationObserver*, MutationRecordDeliveryOptions>::AddResult result = observers.add(&registration.observer(), deliveryOptions);
             if (!result.isNewEntry)
                 result.storedValue->value |= deliveryOptions;
         }
@@ -2094,27 +2094,27 @@ static inline void collectMatchingObserversForMutation(HashMap<MutationObserver*
 void Node::getRegisteredMutationObserversOfType(HashMap<MutationObserver*, MutationRecordDeliveryOptions>& observers, MutationObserver::MutationType type, const QualifiedName* attributeName)
 {
     ASSERT((type == MutationObserver::Attributes && attributeName) || !attributeName);
-    collectMatchingObserversForMutation(observers, mutationObserverRegistry(), this, type, attributeName);
-    collectMatchingObserversForMutation(observers, transientMutationObserverRegistry(), this, type, attributeName);
+    collectMatchingObserversForMutation(observers, mutationObserverRegistry(), *this, type, attributeName);
+    collectMatchingObserversForMutation(observers, transientMutationObserverRegistry(), *this, type, attributeName);
     for (Node* node = parentNode(); node; node = node->parentNode()) {
-        collectMatchingObserversForMutation(observers, node->mutationObserverRegistry(), this, type, attributeName);
-        collectMatchingObserversForMutation(observers, node->transientMutationObserverRegistry(), this, type, attributeName);
+        collectMatchingObserversForMutation(observers, node->mutationObserverRegistry(), *this, type, attributeName);
+        collectMatchingObserversForMutation(observers, node->transientMutationObserverRegistry(), *this, type, attributeName);
     }
 }
 
-void Node::registerMutationObserver(MutationObserver* observer, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
+void Node::registerMutationObserver(MutationObserver& observer, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
 {
     MutationObserverRegistration* registration = 0;
     Vector<OwnPtr<MutationObserverRegistration> >& registry = ensureRareData().ensureMutationObserverData().registry;
     for (size_t i = 0; i < registry.size(); ++i) {
-        if (registry[i]->observer() == observer) {
+        if (&registry[i]->observer() == &observer) {
             registration = registry[i].get();
             registration->resetObservation(options, attributeFilter);
         }
     }
 
     if (!registration) {
-        registry.append(MutationObserverRegistration::create(observer, this, options, attributeFilter));
+        registry.append(MutationObserverRegistration::create(observer, *this, options, attributeFilter));
         registration = registry.last().get();
     }
 
@@ -2165,12 +2165,12 @@ void Node::notifyMutationObserversNodeWillDetach()
         if (Vector<OwnPtr<MutationObserverRegistration> >* registry = node->mutationObserverRegistry()) {
             const size_t size = registry->size();
             for (size_t i = 0; i < size; ++i)
-                registry->at(i)->observedSubtreeNodeWillDetach(this);
+                registry->at(i)->observedSubtreeNodeWillDetach(*this);
         }
 
         if (HashSet<MutationObserverRegistration*>* transientRegistry = node->transientMutationObserverRegistry()) {
             for (HashSet<MutationObserverRegistration*>::iterator iter = transientRegistry->begin(); iter != transientRegistry->end(); ++iter)
-                (*iter)->observedSubtreeNodeWillDetach(this);
+                (*iter)->observedSubtreeNodeWillDetach(*this);
         }
     }
 }

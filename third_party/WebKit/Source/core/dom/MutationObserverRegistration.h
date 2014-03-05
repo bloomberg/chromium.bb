@@ -42,29 +42,29 @@ class QualifiedName;
 
 class MutationObserverRegistration {
 public:
-    static PassOwnPtr<MutationObserverRegistration> create(PassRefPtr<MutationObserver>, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
+    static PassOwnPtr<MutationObserverRegistration> create(MutationObserver&, Node&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
     ~MutationObserverRegistration();
 
     void resetObservation(MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
-    void observedSubtreeNodeWillDetach(Node*);
+    void observedSubtreeNodeWillDetach(Node&);
     void clearTransientRegistrations();
     bool hasTransientRegistrations() const { return m_transientRegistrationNodes && !m_transientRegistrationNodes->isEmpty(); }
     void unregister();
 
-    bool shouldReceiveMutationFrom(Node*, MutationObserver::MutationType, const QualifiedName* attributeName) const;
+    bool shouldReceiveMutationFrom(Node&, MutationObserver::MutationType, const QualifiedName* attributeName) const;
     bool isSubtree() const { return m_options & MutationObserver::Subtree; }
 
-    MutationObserver* observer() const { return m_observer.get(); }
+    MutationObserver& observer() const { return *m_observer; }
     MutationRecordDeliveryOptions deliveryOptions() const { return m_options & (MutationObserver::AttributeOldValue | MutationObserver::CharacterDataOldValue); }
     MutationObserverOptions mutationTypes() const { return m_options & MutationObserver::AllMutationTypes; }
 
     void addRegistrationNodesToSet(HashSet<Node*>&) const;
 
 private:
-    MutationObserverRegistration(PassRefPtr<MutationObserver>, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
+    MutationObserverRegistration(MutationObserver&, Node&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
 
     RefPtr<MutationObserver> m_observer;
-    Node* m_registrationNode;
+    Node& m_registrationNode;
     RefPtr<Node> m_registrationNodeKeepAlive;
     typedef HashSet<RefPtr<Node> > NodeHashSet;
     OwnPtr<NodeHashSet> m_transientRegistrationNodes;
