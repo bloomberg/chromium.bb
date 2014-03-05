@@ -356,6 +356,11 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
+// Notifies the browser that a frame finished loading.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidFinishLoad,
+                    GURL /* validated_url */,
+                    bool /* is_main_frame */)
+
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can

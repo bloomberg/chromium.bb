@@ -666,8 +666,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);
   void OnDocumentLoadedInFrame();
-  void OnDidFinishLoad(int64 frame_id,
-                       const GURL& url,
+  void OnDidFinishLoad(const GURL& url,
                        bool is_main_frame);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,

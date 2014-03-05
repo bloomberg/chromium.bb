@@ -207,11 +207,10 @@ void TestWebContents::SetHistoryLengthAndPrune(
   EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }
 
-void TestWebContents::TestDidFinishLoad(int64 frame_id,
-                                        const GURL& url,
+void TestWebContents::TestDidFinishLoad(const GURL& url,
                                         bool is_main_frame) {
-  ViewHostMsg_DidFinishLoad msg(0, frame_id, url, is_main_frame);
-  OnMessageReceived(GetRenderViewHost(), msg);
+  FrameHostMsg_DidFinishLoad msg(0, url, is_main_frame);
+  frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 
 void TestWebContents::TestDidFailLoadWithError(

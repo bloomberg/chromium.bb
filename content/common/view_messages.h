@@ -1274,12 +1274,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
                     int32 /* page_id */,
                     content::PageState /* state */)
 
-// Notifies the browser that a frame finished loading.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DidFinishLoad,
-                    int64 /* frame_id */,
-                    GURL /* validated_url */,
-                    bool /* is_main_frame */)
-
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateTitle,

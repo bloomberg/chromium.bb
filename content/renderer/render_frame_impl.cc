@@ -1597,11 +1597,26 @@ void RenderFrameImpl::didFailLoad(blink::WebFrame* frame,
 
 void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(nasko): Move implementation here. No state needed, just observers
-  // notification before sending message to the browser process.
+  WebDataSource* ds = frame->dataSource();
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  if (document_state->finish_load_time().is_null()) {
+    if (!frame->parent()) {
+      TRACE_EVENT_INSTANT0("WebCore", "LoadFinished",
+                           TRACE_EVENT_SCOPE_PROCESS);
+    }
+    document_state->set_finish_load_time(Time::Now());
+  }
+
   render_view_->didFinishLoad(frame);
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidFinishLoad());
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishLoad());
+
+  // Don't send this message while the frame is swapped out.
+  if (is_swapped_out())
+    return;
+
+  Send(new FrameHostMsg_DidFinishLoad(routing_id_,
+                                      ds->request().url(),
+                                      !frame->parent()));
 }
 
 void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,

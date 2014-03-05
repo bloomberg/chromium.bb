@@ -2248,7 +2248,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   contents()->NavigateAndCommit(url_normalized);
 
   // Check that an IPC with about:whatever is correctly normalized.
-  contents()->TestDidFinishLoad(1, url_from_ipc, true);
+  contents()->TestDidFinishLoad(url_from_ipc, true);
 
   EXPECT_EQ(url_normalized, observer.last_url());
 

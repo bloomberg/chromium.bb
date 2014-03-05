@@ -464,7 +464,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad, OnDidFinishLoad)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
@@ -2273,29 +2273,33 @@ void WebContentsImpl::OnDocumentLoadedInFrame() {
 }
 
 void WebContentsImpl::OnDidFinishLoad(
-    int64 frame_id,
     const GURL& url,
     bool is_main_frame) {
-  if (!render_view_message_source_) {
+  if (!render_frame_message_source_) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD2"));
     GetRenderProcessHost()->ReceivedBadMessage();
     return;
   }
 
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+
   // --site-per-process mode has a short-term hack allowing cross-process
   // subframe pages to commit thinking they are top-level.  Correct it here to
   // avoid confusing the observers.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
-      render_view_message_source_ != GetRenderViewHost())
+      rfh != GetMainFrame()) {
     is_main_frame = false;
+  }
 
   GURL validated_url(url);
   RenderProcessHost* render_process_host =
-      render_view_message_source_->GetProcess();
+      render_frame_message_source_->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
+
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFinishLoad(frame_id, validated_url, is_main_frame,
-                                  render_view_message_source_));
+                    DidFinishLoad(rfh->GetRoutingID(), validated_url,
+                                  is_main_frame, rfh->render_view_host()));
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
