@@ -11,7 +11,7 @@ namespace ui {
 namespace {
 
 // A BitSet32 is used for tracking dropped gesture types.
-COMPILE_ASSERT(ET_GESTURE_TYPE_LAST - ET_GESTURE_TYPE_FIRST < 32,
+COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
                gesture_type_count_too_large);
 
 GestureEventData CreateGesture(EventType type) {
@@ -91,7 +91,7 @@ DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
 }
 
 int GetGestureTypeIndex(EventType type) {
-  return type - ET_GESTURE_TYPE_FIRST;
+  return type - ET_GESTURE_TYPE_START;
 }
 
 }  // namespace
@@ -180,8 +180,8 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
     TouchEventAck ack_result) {
   for (size_t i = 0; i < packet.gesture_count(); ++i) {
     const GestureEventData& gesture = packet.gesture(i);
-    DCHECK(ET_GESTURE_TYPE_FIRST <= gesture.type &&
-           gesture.type <= ET_GESTURE_TYPE_LAST);
+    DCHECK(ET_GESTURE_TYPE_START <= gesture.type &&
+           gesture.type <= ET_GESTURE_TYPE_END);
     if (IsGesturePrevented(gesture.type, ack_result, sequence_state)) {
       last_event_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture.type));
       CancelTapIfNecessary();

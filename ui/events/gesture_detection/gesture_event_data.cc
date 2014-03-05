@@ -17,7 +17,7 @@ GestureEventData::GestureEventData(EventType type,
                                    float y,
                                    const Details& details)
     : type(type), time(time), x(x), y(y), details(details) {
-  DCHECK(ET_GESTURE_TYPE_FIRST <= type && type <= ET_GESTURE_TYPE_LAST);
+  DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
 }
 
 GestureEventData::Details::Details() { memset(this, 0, sizeof(Details)); }
