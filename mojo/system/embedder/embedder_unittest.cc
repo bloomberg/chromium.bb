@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-// TODO(vtl): Remove build_config.h include when fully implemented on Windows.
-#include "build/build_config.h"
 #include "mojo/public/system/core.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
 #include "mojo/system/embedder/test_embedder.h"
@@ -32,8 +30,6 @@ void StoreChannelInfo(ChannelInfo** store_channel_info_here,
 TEST_F(EmbedderTest, ChannelsBasic) {
   Init();
 
-// TODO(vtl): |PlatformChannelPair| not implemented on Windows yet.
-#if !defined(OS_WIN)
   PlatformChannelPair channel_pair;
   ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
   ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
@@ -89,7 +85,6 @@ TEST_F(EmbedderTest, ChannelsBasic) {
                                 FROM_HERE,
                                 base::Bind(&DestroyChannelOnIOThread,
                                            client_channel_info));
-#endif  // !defined(OS_WIN)
 
   EXPECT_TRUE(test::Shutdown());
 }
