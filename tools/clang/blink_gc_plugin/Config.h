@@ -39,6 +39,10 @@ class Config {
            IsPersistentGCCollection(name);
   }
 
+  static bool IsRawPtr(const std::string& name) {
+    return name == "RawPtr";
+  }
+
   static bool IsRefPtr(const std::string& name) {
     return name == "RefPtr";
   }

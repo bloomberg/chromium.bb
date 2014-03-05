@@ -42,14 +42,16 @@ class BasePoint : public GraphPoint {
 
 class FieldPoint : public GraphPoint {
  public:
-  explicit FieldPoint(Edge* edge) : edge_(edge) {
+  FieldPoint(clang::FieldDecl* field, Edge* edge) : field_(field), edge_(edge) {
     assert(edge && "FieldPoint edge must be non-null");
   }
   const TracingStatus NeedsTracing() {
     return edge_->NeedsTracing(Edge::kRecursive);
   }
+  clang::FieldDecl* field() { return field_; }
   Edge* edge() { return edge_; }
  private:
+  clang::FieldDecl* field_;
   Edge* edge_;
   friend class RecordCache;
   void deleteEdge() { delete edge_; }

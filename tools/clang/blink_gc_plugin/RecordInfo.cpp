@@ -165,7 +165,7 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
     if (IsAnnotated(field, "blink_no_trace_checking"))
       continue;
     if (Edge* edge = CreateEdge(field->getType().getTypePtrOrNull())) {
-      fields->insert(std::make_pair(field, FieldPoint(edge)));
+      fields->insert(std::make_pair(field, FieldPoint(field, edge)));
       fields_status = fields_status.LUB(edge->NeedsTracing(Edge::kRecursive));
     }
   }
@@ -232,6 +232,12 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
   RecordInfo* info = cache_->Lookup(record);
 
   TemplateArgs args;
+
+  if (Config::IsRawPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
+    if (Edge* ptr = CreateEdge(args[0]))
+      return new RawPtr(ptr);
+    return 0;
+  }
 
   if (Config::IsRefPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
     if (Edge* ptr = CreateEdge(args[0]))

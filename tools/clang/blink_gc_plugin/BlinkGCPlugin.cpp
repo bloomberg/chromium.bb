@@ -35,8 +35,30 @@ const char kFieldsRequireTracing[] =
 const char kFieldRequiresTracingNote[] =
     "[blink-gc] Untraced field %0 declared here:";
 
+const char kClassContainsInvalidFields[] =
+    "[blink-gc] Class %0 contains invalid fields.";
+
+const char kClassContainsGCRoot[] =
+    "[blink-gc] Class %0 contains GC root in field %1.";
+
+const char kRawPtrToGCManagedClassNote[] =
+    "[blink-gc] Raw pointer field %0 to a GC managed class declared here:";
+
+const char kRefPtrToGCManagedClassNote[] =
+    "[blink-gc] RefPtr field %0 to a GC managed class declared here:";
+
+const char kOwnPtrToGCManagedClassNote[] =
+    "[blink-gc] OwnPtr field %0 to a GC managed class declared here:";
+
+const char kPartObjectContainsGCRoot[] =
+    "[blink-gc] Field %0 with embedded GC root in %1 declared here:";
+
+const char kFieldContainsGCRoot[] =
+    "[blink-gc] Field %0 defining a GC root declared here:";
+
 struct BlinkGCPluginOptions {
-  BlinkGCPluginOptions() {}
+  BlinkGCPluginOptions() : enable_oilpan(false) {}
+  bool enable_oilpan;
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
   std::vector<std::string> ignored_directories;
@@ -188,6 +210,105 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
   RecordInfo* info_;
 };
 
+// This visitor checks that the fields of a class and the fields of
+// its part objects don't define GC roots.
+class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
+ public:
+  typedef std::vector<FieldPoint*> RootPath;
+  typedef std::vector<RootPath> Errors;
+
+  CheckGCRootsVisitor() {}
+
+  Errors& gc_roots() { return gc_roots_; }
+
+  bool ContainsGCRoots(RecordInfo* info) {
+    for (RecordInfo::Fields::iterator it = info->GetFields().begin();
+         it != info->GetFields().end();
+         ++it) {
+      current_.push_back(&it->second);
+      it->second.edge()->Accept(this);
+      current_.pop_back();
+    }
+    return !gc_roots_.empty();
+  }
+
+  void VisitValue(Value* edge) {
+    // TODO: what should we do to check unions?
+    if (edge->value()->record()->isUnion())
+      return;
+
+    // If the value is a part object, then continue checking for roots.
+    for (Context::iterator it = context().begin();
+         it != context().end();
+         ++it) {
+      if (!(*it)->IsCollection())
+        return;
+    }
+    ContainsGCRoots(edge->value());
+  }
+
+  void VisitPersistent(Persistent* edge) {
+    gc_roots_.push_back(current_);
+  }
+
+  void AtCollection(Collection* edge) {
+    if (edge->is_root())
+      gc_roots_.push_back(current_);
+  }
+
+ protected:
+  RootPath current_;
+  Errors gc_roots_;
+};
+
+// This visitor checks that the fields of a class are "well formed".
+// - OwnPtr, RefPtr and RawPtr must not point to a GC derived types.
+// - An on-heap class must never contain GC roots.
+class CheckFieldsVisitor : public RecursiveEdgeVisitor {
+ public:
+  typedef std::vector<std::pair<FieldPoint*, Edge*> > Errors;
+
+  CheckFieldsVisitor(const BlinkGCPluginOptions& options)
+      : options_(options), current_(0) {}
+
+  Errors& invalid_fields() { return invalid_fields_; }
+
+  bool ContainsInvalidFields(RecordInfo* info) {
+    for (RecordInfo::Fields::iterator it = info->GetFields().begin();
+         it != info->GetFields().end();
+         ++it) {
+      context().clear();
+      current_ = &it->second;
+      current_->edge()->Accept(this);
+    }
+    return !invalid_fields_.empty();
+  }
+
+  void VisitValue(Value* edge) {
+    // TODO: what should we do to check unions?
+    if (edge->value()->record()->isUnion())
+      return;
+
+    if (!Parent() || !edge->value()->IsGCDerived())
+      return;
+
+    if (Parent()->IsOwnPtr())
+      invalid_fields_.push_back(std::make_pair(current_, Parent()));
+
+    // Don't check raw and ref pointers in transition mode.
+    if (options_.enable_oilpan)
+      return;
+
+    if (Parent()->IsRawPtr() || Parent()->IsRefPtr())
+      invalid_fields_.push_back(std::make_pair(current_, Parent()));
+  }
+
+ private:
+  const BlinkGCPluginOptions& options_;
+  FieldPoint* current_;
+  Errors invalid_fields_;
+};
+
 // Main class containing checks for various invariants of the Blink
 // garbage collection infrastructure.
 class BlinkGCPluginConsumer : public ASTConsumer {
@@ -213,10 +334,25 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresTracing);
     diag_fields_require_tracing_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
+    diag_class_contains_invalid_fields_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(),
+                                    kClassContainsInvalidFields);
+    diag_class_contains_gc_root_ =
+        diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
 
     // Register note messages.
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kFieldRequiresTracingNote);
+    diag_raw_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kRawPtrToGCManagedClassNote);
+    diag_ref_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
+    diag_own_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
+    diag_part_object_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kPartObjectContainsGCRoot);
+    diag_field_contains_gc_root_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kFieldContainsGCRoot);
   }
 
   virtual void HandleTranslationUnit(ASTContext& context) {
@@ -270,6 +406,18 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
     if (info->RequiresTraceMethod() && !info->GetTraceMethod())
       ReportClassRequiresTraceMethod(info);
+
+    {
+      CheckFieldsVisitor visitor(options_);
+      if (visitor.ContainsInvalidFields(info))
+        ReportClassContainsInvalidFields(info, &visitor.invalid_fields());
+    }
+
+    if (info->IsGCDerived()) {
+      CheckGCRootsVisitor visitor;
+      if (visitor.ContainsGCRoots(info))
+        ReportClassContainsGCRoots(info, &visitor.gc_roots());
+    }
   }
 
   // This is the main entry for tracing method definitions.
@@ -444,6 +592,46 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
   }
 
+  void ReportClassContainsInvalidFields(RecordInfo* info,
+                                        CheckFieldsVisitor::Errors* errors) {
+    SourceLocation loc = info->record()->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_class_contains_invalid_fields_)
+        << info->record();
+    for (CheckFieldsVisitor::Errors::iterator it = errors->begin();
+         it != errors->end();
+         ++it) {
+      if (it->second->IsRawPtr()) {
+        NoteInvalidField(it->first, diag_raw_ptr_to_gc_managed_class_note_);
+      } else if (it->second->IsRefPtr()) {
+        NoteInvalidField(it->first, diag_ref_ptr_to_gc_managed_class_note_);
+      } else if (it->second->IsOwnPtr()) {
+        NoteInvalidField(it->first, diag_own_ptr_to_gc_managed_class_note_);
+      }
+    }
+  }
+
+  void ReportClassContainsGCRoots(RecordInfo* info,
+                                  CheckGCRootsVisitor::Errors* errors) {
+    SourceLocation loc = info->record()->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    for (CheckGCRootsVisitor::Errors::iterator it = errors->begin();
+         it != errors->end();
+         ++it) {
+      CheckGCRootsVisitor::RootPath::iterator path = it->begin();
+      FieldPoint* point = *path;
+      diagnostic_.Report(full_loc, diag_class_contains_gc_root_)
+          << info->record() << point->field();
+      while (++path != it->end()) {
+        NotePartObjectContainsGCRoot(point);
+        point = *path;
+      }
+      NoteFieldContainsGCRoot(point);
+    }
+  }
+
   void NoteFieldRequiresTracing(RecordInfo* holder, FieldDecl* field) {
     SourceLocation loc = field->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
@@ -451,11 +639,43 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     diagnostic_.Report(full_loc, diag_field_requires_tracing_note_) << field;
   }
 
+  void NoteInvalidField(FieldPoint* point, unsigned note) {
+    SourceLocation loc = point->field()->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, note) << point->field();
+  }
+
+  void NotePartObjectContainsGCRoot(FieldPoint* point) {
+    FieldDecl* field = point->field();
+    SourceLocation loc = field->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_part_object_contains_gc_root_note_)
+        << field << field->getParent();
+  }
+
+  void NoteFieldContainsGCRoot(FieldPoint* point) {
+    FieldDecl* field = point->field();
+    SourceLocation loc = field->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_field_contains_gc_root_note_)
+        << field;
+  }
+
   unsigned diag_class_requires_trace_method_;
   unsigned diag_base_requires_tracing_;
   unsigned diag_fields_require_tracing_;
+  unsigned diag_class_contains_invalid_fields_;
+  unsigned diag_class_contains_gc_root_;
 
   unsigned diag_field_requires_tracing_note_;
+  unsigned diag_raw_ptr_to_gc_managed_class_note_;
+  unsigned diag_ref_ptr_to_gc_managed_class_note_;
+  unsigned diag_own_ptr_to_gc_managed_class_note_;
+  unsigned diag_part_object_contains_gc_root_note_;
+  unsigned diag_field_contains_gc_root_note_;
 
   CompilerInstance& instance_;
   DiagnosticsEngine& diagnostic_;
@@ -480,7 +700,7 @@ class BlinkGCPluginAction : public PluginASTAction {
 
     for (size_t i = 0; i < args.size() && parsed; ++i) {
       if (args[i] == "enable-oilpan") {
-        // TODO: Remove this flag.
+        options_.enable_oilpan = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";

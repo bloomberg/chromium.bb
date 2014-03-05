@@ -1,0 +1,14 @@
+In file included from own_ptr_to_gc_managed_class.cpp:5:
+./own_ptr_to_gc_managed_class.h:14:1: warning: [blink-gc] Class 'PartObject' contains invalid fields.
+class PartObject {
+^
+./own_ptr_to_gc_managed_class.h:17:5: note: [blink-gc] OwnPtr field 'm_obj' to a GC managed class declared here:
+    OwnPtr<HeapObject> m_obj;
+    ^
+./own_ptr_to_gc_managed_class.h:20:1: warning: [blink-gc] Class 'HeapObject' contains invalid fields.
+class HeapObject : public GarbageCollected<HeapObject> {
+^
+./own_ptr_to_gc_managed_class.h:24:5: note: [blink-gc] OwnPtr field 'm_objs' to a GC managed class declared here:
+    Vector<OwnPtr<HeapObject> > m_objs;
+    ^
+2 warnings generated.
