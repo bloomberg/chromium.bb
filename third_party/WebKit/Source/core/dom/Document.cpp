@@ -135,6 +135,9 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLDocumentParser.h"
@@ -4722,11 +4725,21 @@ void Document::detachRange(Range* range)
     m_ranges.remove(range);
 }
 
-CanvasRenderingContext* Document::getCSSCanvasContext(const String& type, const String& name, int width, int height)
+void Document::getCSSCanvasContext(const String& type, const String& name, int width, int height, bool& is2d, RefPtr<CanvasRenderingContext2D>& context2d, bool& is3d, RefPtr<WebGLRenderingContext>& context3d)
 {
     HTMLCanvasElement& element = getCSSCanvasElement(name);
     element.setSize(IntSize(width, height));
-    return element.getContext(type);
+    CanvasRenderingContext* context = element.getContext(type);
+    if (!context)
+        return;
+
+    if (context->is2d()) {
+        is2d = true;
+        context2d = toCanvasRenderingContext2D(context);
+    } else if (context->is3d()) {
+        is3d = true;
+        context3d = toWebGLRenderingContext(context);
+    }
 }
 
 HTMLCanvasElement& Document::getCSSCanvasElement(const String& name)

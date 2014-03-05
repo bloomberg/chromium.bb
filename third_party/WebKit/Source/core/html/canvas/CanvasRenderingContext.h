@@ -26,7 +26,6 @@
 #ifndef CanvasRenderingContext_h
 #define CanvasRenderingContext_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -43,7 +42,7 @@ class HTMLVideoElement;
 class KURL;
 class WebGLObject;
 
-class CanvasRenderingContext : public ScriptWrappable {
+class CanvasRenderingContext {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext); WTF_MAKE_FAST_ALLOCATED;
 public:
     virtual ~CanvasRenderingContext() { }

@@ -141,7 +141,7 @@ callback CustomElementConstructor = Element ();
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString preferredStylesheetSet;
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString selectedStylesheetSet;
 
-    CanvasRenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
+    (CanvasRenderingContext2D or WebGLRenderingContext) getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
     // HTML 5
     HTMLCollection getElementsByClassName(DOMString classNames);

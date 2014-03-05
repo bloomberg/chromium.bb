@@ -26,6 +26,7 @@
 #ifndef CanvasRenderingContext2D_h
 #define CanvasRenderingContext2D_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
@@ -63,7 +64,7 @@ class TextMetrics;
 
 typedef HashMap<String, RefPtr<MutableStylePropertySet> > MutableStylePropertyMap;
 
-class CanvasRenderingContext2D FINAL : public CanvasRenderingContext, public CanvasPathMethods {
+class CanvasRenderingContext2D FINAL: public ScriptWrappable, public CanvasRenderingContext, public CanvasPathMethods {
 public:
     static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     {

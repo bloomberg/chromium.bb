@@ -42,7 +42,9 @@ typedef /*unrestricted*/ float GLclampf;
     DoNotCheckConstants,
     StrictTypeChecking,
     NoInterfaceObject
-] interface WebGLRenderingContextBase : CanvasRenderingContext {
+] interface WebGLRenderingContextBase {
+
+    readonly attribute HTMLCanvasElement canvas;
 
     /* ClearBufferMask */
     const GLenum DEPTH_BUFFER_BIT               = 0x00000100;

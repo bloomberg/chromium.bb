@@ -25,7 +25,9 @@
 
 enum CanvasWindingRule { "nonzero", "evenodd" };
 
-interface CanvasRenderingContext2D : CanvasRenderingContext {
+interface CanvasRenderingContext2D {
+
+    readonly attribute HTMLCanvasElement canvas;
 
     void save();
     void restore();

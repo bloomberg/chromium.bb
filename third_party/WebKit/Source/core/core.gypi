@@ -218,7 +218,6 @@
             'html/canvas/Canvas2DContextAttributes.idl',
             'html/canvas/CanvasGradient.idl',
             'html/canvas/CanvasPattern.idl',
-            'html/canvas/CanvasRenderingContext.idl',
             'html/canvas/CanvasRenderingContext2D.idl',
             'html/canvas/EXTFragDepth.idl',
             'html/canvas/EXTTextureFilterAnisotropic.idl',

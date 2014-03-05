@@ -69,7 +69,7 @@ class CSSFontSelector;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CSSStyleSheetResource;
-class CanvasRenderingContext;
+class CanvasRenderingContext2D;
 class CharacterData;
 class Chrome;
 class Comment;
@@ -162,6 +162,7 @@ class TouchList;
 class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
+class WebGLRenderingContext;
 class XMLHttpRequest;
 
 struct AnnotatedRegionValue;
@@ -843,7 +844,7 @@ public:
     void cancelFocusAppearanceUpdate();
 
     // Extension for manipulating canvas drawing contexts for use in CSS
-    CanvasRenderingContext* getCSSCanvasContext(const String& type, const String& name, int width, int height);
+    void getCSSCanvasContext(const String& type, const String& name, int width, int height, bool&, RefPtr<CanvasRenderingContext2D>&, bool&, RefPtr<WebGLRenderingContext>&);
     HTMLCanvasElement& getCSSCanvasElement(const String& name);
 
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
