@@ -75,7 +75,7 @@ class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
  public:
   LayerTreeHostImplTest()
-      : proxy_(),
+      : proxy_(base::MessageLoopProxy::current()),
         always_impl_thread_(&proxy_),
         always_main_thread_blocked_(&proxy_),
         on_can_draw_state_changed_called_(false),

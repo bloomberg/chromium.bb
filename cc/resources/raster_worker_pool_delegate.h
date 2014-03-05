@@ -18,6 +18,7 @@ class RasterWorkerPoolDelegate : public RasterWorkerPoolClient {
 
   static scoped_ptr<RasterWorkerPoolDelegate> Create(
       RasterWorkerPoolClient* client,
+      base::SequencedTaskRunner* task_runner,
       RasterWorkerPool** raster_worker_pools,
       size_t num_raster_worker_pools);
 
@@ -33,6 +34,7 @@ class RasterWorkerPoolDelegate : public RasterWorkerPoolClient {
 
  private:
   RasterWorkerPoolDelegate(RasterWorkerPoolClient* client,
+                           base::SequencedTaskRunner* task_runner,
                            RasterWorkerPool** raster_worker_pools,
                            size_t num_raster_worker_pools);
 
@@ -41,6 +43,7 @@ class RasterWorkerPoolDelegate : public RasterWorkerPoolClient {
   void RunDidFinishRunningTasks();
 
   RasterWorkerPoolClient* client_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   typedef std::vector<RasterWorkerPool*> RasterWorkerPoolVector;
   RasterWorkerPoolVector raster_worker_pools_;
   std::vector<bool> did_finish_running_tasks_pending_;

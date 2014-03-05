@@ -15,7 +15,7 @@ namespace {
 
 class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
-  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
+  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL, NULL) {}
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTaskQueue* queue) OVERRIDE {
@@ -72,6 +72,7 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
+                  base::MessageLoopProxy::current().get(),
                   NULL,
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
@@ -83,6 +84,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
     : TileManager(client,
+                  base::MessageLoopProxy::current().get(),
                   resource_provider,
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
@@ -95,6 +97,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider,
                                  bool allow_on_demand_raster)
     : TileManager(client,
+                  base::MessageLoopProxy::current().get(),
                   resource_provider,
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
@@ -107,6 +110,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider,
                                  size_t raster_task_limit_bytes)
     : TileManager(client,
+                  base::MessageLoopProxy::current().get(),
                   resource_provider,
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),

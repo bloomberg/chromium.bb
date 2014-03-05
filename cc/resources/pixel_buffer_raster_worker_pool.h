@@ -28,6 +28,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   virtual ~PixelBufferRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
+      base::SequencedTaskRunner* task_runner,
       ResourceProvider* resource_provider,
       size_t max_transfer_buffer_usage_bytes);
 
@@ -45,7 +46,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
                                       const Resource* resource) OVERRIDE;
 
  protected:
-  PixelBufferRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+  PixelBufferRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                              internal::TaskGraphRunner* task_graph_runner,
                               ResourceProvider* resource_provider,
                               size_t max_transfer_buffer_usage_bytes);
 

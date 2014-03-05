@@ -104,7 +104,8 @@ class PerfPixelBufferRasterWorkerPoolImpl : public PixelBufferRasterWorkerPool {
   PerfPixelBufferRasterWorkerPoolImpl(
       internal::TaskGraphRunner* task_graph_runner,
       ResourceProvider* resource_provider)
-      : PixelBufferRasterWorkerPool(task_graph_runner,
+      : PixelBufferRasterWorkerPool(base::MessageLoopProxy::current().get(),
+                                    task_graph_runner,
                                     resource_provider,
                                     std::numeric_limits<size_t>::max()) {}
 };
@@ -113,7 +114,8 @@ class PerfImageRasterWorkerPoolImpl : public ImageRasterWorkerPool {
  public:
   PerfImageRasterWorkerPoolImpl(internal::TaskGraphRunner* task_graph_runner,
                                 ResourceProvider* resource_provider)
-      : ImageRasterWorkerPool(task_graph_runner,
+      : ImageRasterWorkerPool(base::MessageLoopProxy::current().get(),
+                              task_graph_runner,
                               resource_provider,
                               GL_TEXTURE_2D) {}
 };
@@ -122,7 +124,9 @@ class PerfDirectRasterWorkerPoolImpl : public DirectRasterWorkerPool {
  public:
   PerfDirectRasterWorkerPoolImpl(ResourceProvider* resource_provider,
                                  ContextProvider* context_provider)
-      : DirectRasterWorkerPool(resource_provider, context_provider) {}
+      : DirectRasterWorkerPool(base::MessageLoopProxy::current().get(),
+                               resource_provider,
+                               context_provider) {}
 };
 
 class RasterWorkerPoolPerfTestBase {

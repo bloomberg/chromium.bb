@@ -40,10 +40,9 @@ class MockCanvas : public SkCanvas {
 class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
-      : host_impl_(ImplSidePaintingSettings(), &proxy_), id_(7) {}
-
-  explicit PictureLayerImplTest(const LayerTreeSettings& settings)
-      : host_impl_(settings, &proxy_), id_(7) {}
+      : proxy_(base::MessageLoopProxy::current()),
+        host_impl_(ImplSidePaintingSettings(), &proxy_),
+        id_(7) {}
 
   virtual ~PictureLayerImplTest() {
   }
@@ -1509,9 +1508,6 @@ TEST_F(PictureLayerImplTest, PinchingTooSmall) {
 
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
-  DeferredInitPictureLayerImplTest()
-      : PictureLayerImplTest(ImplSidePaintingSettings()) {}
-
   virtual void InitializeRenderer() OVERRIDE {
     host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
         scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice))

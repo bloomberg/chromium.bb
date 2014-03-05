@@ -192,7 +192,8 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   typedef std::vector<scoped_refptr<internal::RasterWorkerPoolTask> >
       RasterTaskVector;
 
-  RasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+  RasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                   internal::TaskGraphRunner* task_graph_runner,
                    ResourceProvider* resource_provider);
 
   virtual void OnRasterTasksFinished() = 0;
@@ -201,6 +202,7 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   void SetTaskGraph(internal::TaskGraph* graph);
   void CollectCompletedWorkerPoolTasks(internal::Task::Vector* completed_tasks);
 
+  base::SequencedTaskRunner* task_runner() const { return task_runner_; }
   RasterWorkerPoolClient* client() const { return client_; }
   ResourceProvider* resource_provider() const { return resource_provider_; }
 
@@ -244,6 +246,7 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
   void OnRasterRequiredForActivationFinished(
       const internal::WorkerPoolTask* source);
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   internal::TaskGraphRunner* task_graph_runner_;
   internal::NamespaceToken namespace_token_;
   RasterWorkerPoolClient* client_;

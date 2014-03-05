@@ -24,19 +24,22 @@ typedef base::StackVector<internal::WorkerPoolTask*, kMaxScheduledRasterTasks>
 
 // static
 scoped_ptr<RasterWorkerPool> PixelBufferRasterWorkerPool::Create(
+    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     size_t max_transfer_buffer_usage_bytes) {
   return make_scoped_ptr<RasterWorkerPool>(
-      new PixelBufferRasterWorkerPool(GetTaskGraphRunner(),
+      new PixelBufferRasterWorkerPool(task_runner,
+                                      GetTaskGraphRunner(),
                                       resource_provider,
                                       max_transfer_buffer_usage_bytes));
 }
 
 PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
+    base::SequencedTaskRunner* task_runner,
     internal::TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
     size_t max_transfer_buffer_usage_bytes)
-    : RasterWorkerPool(task_graph_runner, resource_provider),
+    : RasterWorkerPool(task_runner, task_graph_runner, resource_provider),
       shutdown_(false),
       scheduled_raster_task_count_(0u),
       raster_tasks_required_for_activation_count_(0u),
@@ -373,7 +376,7 @@ void PixelBufferRasterWorkerPool::ScheduleCheckForCompletedRasterTasks() {
   if (check_for_completed_raster_tasks_pending_)
     return;
 
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks,
                  weak_factory_.GetWeakPtr()),
@@ -393,7 +396,7 @@ void PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks() {
   // Post another delayed task if it is not yet time to check for completed
   // raster tasks.
   if (delay > base::TimeDelta()) {
-    base::MessageLoopProxy::current()->PostDelayedTask(
+    task_runner()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PixelBufferRasterWorkerPool::OnCheckForCompletedRasterTasks,
                    weak_factory_.GetWeakPtr()),

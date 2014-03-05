@@ -4,15 +4,15 @@
 
 #include "cc/resources/raster_worker_pool_delegate.h"
 
-#include "base/message_loop/message_loop_proxy.h"
-
 namespace cc {
 
 RasterWorkerPoolDelegate::RasterWorkerPoolDelegate(
     RasterWorkerPoolClient* client,
+    base::SequencedTaskRunner* task_runner,
     RasterWorkerPool** raster_worker_pools,
     size_t num_raster_worker_pools)
     : client_(client),
+      task_runner_(task_runner),
       raster_worker_pools_(raster_worker_pools,
                            raster_worker_pools + num_raster_worker_pools),
       did_finish_running_tasks_pending_(num_raster_worker_pools, false),
@@ -32,10 +32,11 @@ RasterWorkerPoolDelegate::~RasterWorkerPoolDelegate() {}
 // static
 scoped_ptr<RasterWorkerPoolDelegate> RasterWorkerPoolDelegate::Create(
     RasterWorkerPoolClient* client,
+    base::SequencedTaskRunner* task_runner,
     RasterWorkerPool** raster_worker_pools,
     size_t num_raster_worker_pools) {
   return make_scoped_ptr(new RasterWorkerPoolDelegate(
-      client, raster_worker_pools, num_raster_worker_pools));
+      client, task_runner, raster_worker_pools, num_raster_worker_pools));
 }
 
 void RasterWorkerPoolDelegate::Shutdown() {
@@ -99,7 +100,7 @@ void RasterWorkerPoolDelegate::ScheduleRunDidFinishRunningTasks() {
   if (run_did_finish_running_tasks_pending_)
     return;
 
-  base::MessageLoopProxy::current()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RasterWorkerPoolDelegate::OnRunDidFinishRunningTasks,
                  weak_ptr_factory_.GetWeakPtr()));

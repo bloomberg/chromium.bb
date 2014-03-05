@@ -16,6 +16,7 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
   virtual ~DirectRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
+      base::SequencedTaskRunner* task_runner,
       ResourceProvider* resource_provider,
       ContextProvider* context_provider);
 
@@ -32,7 +33,8 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
                                       const Resource* resource) OVERRIDE;
 
  protected:
-  DirectRasterWorkerPool(ResourceProvider* resource_provider,
+  DirectRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                         ResourceProvider* resource_provider,
                          ContextProvider* context_provider);
 
  private:

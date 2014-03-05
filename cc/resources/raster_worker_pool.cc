@@ -297,8 +297,9 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   typedef base::Callback<void(const internal::WorkerPoolTask* source)> Callback;
 
   explicit RasterFinishedWorkerPoolTaskImpl(
+      base::SequencedTaskRunner* task_runner,
       const Callback& on_raster_finished_callback)
-      : origin_loop_(base::MessageLoopProxy::current().get()),
+      : task_runner_(task_runner),
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
   // Overridden from internal::Task:
@@ -322,7 +323,7 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   virtual ~RasterFinishedWorkerPoolTaskImpl() {}
 
   void RasterFinished() {
-    origin_loop_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
             &RasterFinishedWorkerPoolTaskImpl::OnRasterFinishedOnOriginThread,
@@ -334,7 +335,7 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     on_raster_finished_callback_.Run(this);
   }
 
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const Callback on_raster_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterFinishedWorkerPoolTaskImpl);
@@ -344,9 +345,11 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
     : public RasterFinishedWorkerPoolTaskImpl {
  public:
   RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
+      base::SequencedTaskRunner* task_runner,
       const Callback& on_raster_finished_callback,
       size_t tasks_required_for_activation_count)
-      : RasterFinishedWorkerPoolTaskImpl(on_raster_finished_callback),
+      : RasterFinishedWorkerPoolTaskImpl(task_runner,
+                                         on_raster_finished_callback),
         tasks_required_for_activation_count_(
             tasks_required_for_activation_count) {
     if (tasks_required_for_activation_count_) {
@@ -475,9 +478,11 @@ unsigned RasterWorkerPool::kRasterRequiredForActivationFinishedTaskPriority =
     1u;
 unsigned RasterWorkerPool::kRasterTaskPriorityBase = 3u;
 
-RasterWorkerPool::RasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+RasterWorkerPool::RasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                                   internal::TaskGraphRunner* task_graph_runner,
                                    ResourceProvider* resource_provider)
-    : task_graph_runner_(task_graph_runner),
+    : task_runner_(task_runner),
+      task_graph_runner_(task_graph_runner),
       client_(NULL),
       resource_provider_(resource_provider),
       weak_ptr_factory_(this) {
@@ -594,8 +599,10 @@ void RasterWorkerPool::CollectCompletedWorkerPoolTasks(
 
 scoped_refptr<internal::WorkerPoolTask>
 RasterWorkerPool::CreateRasterFinishedTask() {
-  return make_scoped_refptr(new RasterFinishedWorkerPoolTaskImpl(base::Bind(
-      &RasterWorkerPool::OnRasterFinished, weak_ptr_factory_.GetWeakPtr())));
+  return make_scoped_refptr(new RasterFinishedWorkerPoolTaskImpl(
+      task_runner_,
+      base::Bind(&RasterWorkerPool::OnRasterFinished,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 scoped_refptr<internal::WorkerPoolTask>
@@ -603,6 +610,7 @@ RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
     size_t tasks_required_for_activation_count) {
   return make_scoped_refptr(
       new RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
+          task_runner_,
           base::Bind(&RasterWorkerPool::OnRasterRequiredForActivationFinished,
                      weak_ptr_factory_.GetWeakPtr()),
           tasks_required_for_activation_count));

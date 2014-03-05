@@ -135,16 +135,21 @@ class RasterWorkerPoolTest
     switch (GetParam()) {
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
         raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+            base::MessageLoopProxy::current().get(),
             resource_provider_.get(),
             std::numeric_limits<size_t>::max());
         break;
       case RASTER_WORKER_POOL_TYPE_IMAGE:
         raster_worker_pool_ = ImageRasterWorkerPool::Create(
-            resource_provider_.get(), GL_TEXTURE_2D);
+            base::MessageLoopProxy::current().get(),
+            resource_provider_.get(),
+            GL_TEXTURE_2D);
         break;
       case RASTER_WORKER_POOL_TYPE_DIRECT:
         raster_worker_pool_ = DirectRasterWorkerPool::Create(
-            resource_provider_.get(), context_provider_.get());
+            base::MessageLoopProxy::current().get(),
+            resource_provider_.get(),
+            context_provider_.get());
         break;
     }
 

@@ -1772,8 +1772,10 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
     bool allow_rasterize_on_demand) {
   DCHECK(settings_.impl_side_painting);
   DCHECK(resource_provider);
+  DCHECK(proxy_->ImplThreadTaskRunner());
   tile_manager_ =
       TileManager::Create(this,
+                          proxy_->ImplThreadTaskRunner(),
                           resource_provider,
                           context_provider,
                           rendering_stats_instrumentation_,

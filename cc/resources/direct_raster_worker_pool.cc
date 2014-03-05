@@ -14,16 +14,18 @@ namespace cc {
 
 // static
 scoped_ptr<RasterWorkerPool> DirectRasterWorkerPool::Create(
+    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider) {
-  return make_scoped_ptr<RasterWorkerPool>(
-      new DirectRasterWorkerPool(resource_provider, context_provider));
+  return make_scoped_ptr<RasterWorkerPool>(new DirectRasterWorkerPool(
+      task_runner, resource_provider, context_provider));
 }
 
 DirectRasterWorkerPool::DirectRasterWorkerPool(
+    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider)
-    : RasterWorkerPool(NULL, resource_provider),
+    : RasterWorkerPool(task_runner, NULL, resource_provider),
       context_provider_(context_provider),
       run_tasks_on_origin_thread_pending_(false),
       raster_tasks_pending_(false),
@@ -131,7 +133,7 @@ void DirectRasterWorkerPool::ScheduleRunTasksOnOriginThread() {
   if (run_tasks_on_origin_thread_pending_)
     return;
 
-  base::MessageLoopProxy::current()->PostTask(
+  task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DirectRasterWorkerPool::RunTasksOnOriginThread,
                  weak_factory_.GetWeakPtr()));

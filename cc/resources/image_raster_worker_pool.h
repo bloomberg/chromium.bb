@@ -14,6 +14,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   virtual ~ImageRasterWorkerPool();
 
   static scoped_ptr<RasterWorkerPool> Create(
+      base::SequencedTaskRunner* task_runner,
       ResourceProvider* resource_provider,
       unsigned texture_target);
 
@@ -30,7 +31,8 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
                                       const Resource* resource) OVERRIDE;
 
  protected:
-  ImageRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
+  ImageRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                        internal::TaskGraphRunner* task_graph_runner,
                         ResourceProvider* resource_provider,
                         unsigned texture_target);
 

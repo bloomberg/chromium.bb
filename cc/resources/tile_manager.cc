@@ -148,6 +148,7 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 // static
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
+    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
@@ -158,13 +159,18 @@ scoped_ptr<TileManager> TileManager::Create(
     unsigned map_image_texture_target) {
   return make_scoped_ptr(new TileManager(
       client,
+      task_runner,
       resource_provider,
       context_provider,
-      use_map_image ? ImageRasterWorkerPool::Create(resource_provider,
-                                                    map_image_texture_target)
-                    : PixelBufferRasterWorkerPool::Create(
-                          resource_provider, max_transfer_buffer_usage_bytes),
-      DirectRasterWorkerPool::Create(resource_provider, context_provider),
+      use_map_image
+          ? ImageRasterWorkerPool::Create(
+                task_runner, resource_provider, map_image_texture_target)
+          : PixelBufferRasterWorkerPool::Create(
+                task_runner,
+                resource_provider,
+                max_transfer_buffer_usage_bytes),
+      DirectRasterWorkerPool::Create(
+          task_runner, resource_provider, context_provider),
       max_raster_usage_bytes,
       rendering_stats_instrumentation,
       use_rasterize_on_demand));
@@ -172,6 +178,7 @@ scoped_ptr<TileManager> TileManager::Create(
 
 TileManager::TileManager(
     TileManagerClient* client,
+    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
@@ -205,7 +212,7 @@ TileManager::TileManager(
       direct_raster_worker_pool_.get()  // RASTER_WORKER_POOL_TYPE_DIRECT
   };
   raster_worker_pool_delegate_ = RasterWorkerPoolDelegate::Create(
-      this, raster_worker_pools, arraysize(raster_worker_pools));
+      this, task_runner, raster_worker_pools, arraysize(raster_worker_pools));
 }
 
 TileManager::~TileManager() {

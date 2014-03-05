@@ -52,6 +52,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
  public:
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
+      base::SequencedTaskRunner* task_runner,
       ResourceProvider* resource_provider,
       ContextProvider* context_provider,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
@@ -118,6 +119,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
  protected:
   TileManager(TileManagerClient* client,
+              base::SequencedTaskRunner* task_runner,
               ResourceProvider* resource_provider,
               ContextProvider* context_provider,
               scoped_ptr<RasterWorkerPool> raster_worker_pool,

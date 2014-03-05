@@ -13,19 +13,19 @@ namespace cc {
 
 // static
 scoped_ptr<RasterWorkerPool> ImageRasterWorkerPool::Create(
+    base::SequencedTaskRunner* task_runner,
     ResourceProvider* resource_provider,
     unsigned texture_target) {
-  return make_scoped_ptr<RasterWorkerPool>(
-      new ImageRasterWorkerPool(GetTaskGraphRunner(),
-                                resource_provider,
-                                texture_target));
+  return make_scoped_ptr<RasterWorkerPool>(new ImageRasterWorkerPool(
+      task_runner, GetTaskGraphRunner(), resource_provider, texture_target));
 }
 
 ImageRasterWorkerPool::ImageRasterWorkerPool(
+    base::SequencedTaskRunner* task_runner,
     internal::TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
     unsigned texture_target)
-    : RasterWorkerPool(task_graph_runner, resource_provider),
+    : RasterWorkerPool(task_runner, task_graph_runner, resource_provider),
       texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false) {}

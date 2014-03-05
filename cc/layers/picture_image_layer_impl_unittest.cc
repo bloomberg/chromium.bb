@@ -32,7 +32,8 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
 class PictureImageLayerImplTest : public testing::Test {
  public:
   PictureImageLayerImplTest()
-      : host_impl_(ImplSidePaintingSettings(), &proxy_) {
+      : proxy_(base::MessageLoopProxy::current()),
+        host_impl_(ImplSidePaintingSettings(), &proxy_) {
     tiling_client_.SetTileSize(ImplSidePaintingSettings().default_tile_size);
     host_impl_.CreatePendingTree();
     host_impl_.InitializeRenderer(
