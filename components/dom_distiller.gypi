@@ -48,8 +48,6 @@
             'distilled_page_proto',
           ],
           'sources': [
-            'dom_distiller/android/component_jni_registrar.cc',
-            'dom_distiller/android/component_jni_registrar.h',
             'dom_distiller/core/article_entry.cc',
             'dom_distiller/core/article_entry.h',
             'dom_distiller/core/distiller.cc',
@@ -75,17 +73,8 @@
             'dom_distiller/core/task_tracker.h',
             'dom_distiller/core/url_constants.cc',
             'dom_distiller/core/url_constants.h',
-            'dom_distiller/core/url_utils_android.cc',
-            'dom_distiller/core/url_utils_android.h',
             'dom_distiller/core/url_utils.cc',
             'dom_distiller/core/url_utils.h',
-          ],
-          'conditions': [
-            ['OS == "android"', {
-              'dependencies': [
-                'dom_distiller_core_jni_headers',
-              ],
-            }],
           ],
         },
         {
@@ -145,32 +134,6 @@
                 'dom_distiller/content/dom_distiller_viewer_source.cc',
                 'dom_distiller/content/dom_distiller_viewer_source.h',
               ],
-            },
-          ],
-        }],
-        ['OS=="android"', {
-          'targets': [
-            {
-              'target_name': 'dom_distiller_core_java',
-              'type': 'none',
-              'dependencies': [
-                '../base/base.gyp:base',
-              ],
-              'variables': {
-                'java_in_dir': 'dom_distiller/android/java',
-              },
-              'includes': [ '../build/java.gypi' ],
-            },
-            {
-              'target_name': 'dom_distiller_core_jni_headers',
-              'type': 'none',
-              'sources': [
-                'dom_distiller/android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java',
-              ],
-              'variables': {
-                'jni_gen_package': 'dom_distiller_core',
-              },
-              'includes': [ '../build/jni_generator.gypi' ],
             },
           ],
         }],

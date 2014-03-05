@@ -49,11 +49,10 @@
       'target_name': 'chromium_testshell',
       'type': 'none',
       'dependencies': [
-        'chrome_java',
+        '../media/media.gyp:media_java',
+        'chrome.gyp:chrome_java',
         'chromium_testshell_paks',
         'libchromiumtestshell',
-        '../components/components.gyp:dom_distiller_core_java',
-        '../media/media.gyp:media_java',
       ],
       'variables': {
         'apk_name': 'ChromiumTestShell',

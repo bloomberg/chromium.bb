@@ -15,6 +15,5 @@
     <string name="signout_title">Do you want to sign out?</string>
     <string name="signout_sign_out">Sign out</string>
     <string name="signout_cancel">Cancel</string>
-    <string name="distill_page_menu">Distill page</string>
     <string name="browser_process_initialization_failed">Initialization failed.</string>
 </resources>
