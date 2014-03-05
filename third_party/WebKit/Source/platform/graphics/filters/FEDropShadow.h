@@ -49,8 +49,6 @@ public:
     float shadowOpacity() const { return m_shadowOpacity; }
     void setShadowOpacity(float shadowOpacity) { m_shadowOpacity = shadowOpacity; }
 
-    static float calculateStdDeviation(float);
-
     virtual FloatRect mapRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
