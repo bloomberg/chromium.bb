@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_
 #define COMPONENTS_NACL_BROWSER_NACL_HOST_MESSAGE_FILTER_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
@@ -64,7 +64,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
                             const GURL& file_url,
                             IPC::Message* reply_msg);
   void SyncReturnTemporaryFile(IPC::Message* reply_msg,
-                               base::PlatformFile fd);
+                               base::File file);
   void AsyncReturnTemporaryFile(int pp_instance,
                                 base::PlatformFile fd,
                                 bool is_hit);

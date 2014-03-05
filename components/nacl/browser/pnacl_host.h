@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -30,7 +31,7 @@ class PnaclTranslationCache;
 // called on the IO thread.
 class PnaclHost {
  public:
-  typedef base::Callback<void(base::PlatformFile)> TempFileCallback;
+  typedef base::Callback<void(base::File)> TempFileCallback;
   typedef base::Callback<void(base::PlatformFile, bool is_hit)> NexeFdCallback;
 
   static PnaclHost* GetInstance();
@@ -142,7 +143,7 @@ class PnaclHost {
   void OnCacheQueryReturn(const TranslationID& id,
                           int net_error,
                           scoped_refptr<net::DrainableIOBuffer> buffer);
-  void OnTempFileReturn(const TranslationID& id, base::PlatformFile fd);
+  void OnTempFileReturn(const TranslationID& id, base::File file);
   void CheckCacheQueryReady(const PendingTranslationMap::iterator& entry);
 
   // GetNexeFd miss path

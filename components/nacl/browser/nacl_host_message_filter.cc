@@ -107,13 +107,13 @@ void NaClHostMessageFilter::OnGetReadonlyPnaclFd(
 // NaClHostMsg_NaClCreateTemporaryFile sync message.
 void NaClHostMessageFilter::SyncReturnTemporaryFile(
     IPC::Message* reply_msg,
-    base::PlatformFile fd) {
-  if (fd == base::kInvalidPlatformFileValue) {
-    reply_msg->set_reply_error();
-  } else {
+    base::File file) {
+  if (file.IsValid()) {
     NaClHostMsg_NaClCreateTemporaryFile::WriteReplyParams(
         reply_msg,
-        IPC::GetFileHandleForProcess(fd, PeerHandle(), true));
+        IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle()));
+  } else {
+    reply_msg->set_reply_error();
   }
   Send(reply_msg);
 }

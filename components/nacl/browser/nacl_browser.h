@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/containers/mru_cache.h"
+#include "base/files/file.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -24,7 +25,7 @@ namespace nacl {
 
 // Open an immutable executable file that can be mmapped.
 // This function should only be called on a thread that can perform file IO.
-base::PlatformFile OpenNaClExecutableImpl(const base::FilePath& file_path);
+base::File OpenNaClExecutableImpl(const base::FilePath& file_path);
 
 // Represents shared state for all NaClProcessHost objects in the browser.
 class NaClBrowser {

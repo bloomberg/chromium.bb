@@ -116,32 +116,26 @@ const int64 kCrashesIntervalInSeconds = 120;
 
 namespace nacl {
 
-base::PlatformFile OpenNaClExecutableImpl(const base::FilePath& file_path) {
+base::File OpenNaClExecutableImpl(const base::FilePath& file_path) {
   // Get a file descriptor. On Windows, we need 'GENERIC_EXECUTE' in order to
   // memory map the executable.
   // IMPORTANT: This file descriptor must not have write access - that could
   // allow a NaCl inner sandbox escape.
-  base::PlatformFile file;
-  base::PlatformFileError error_code;
-  file = base::CreatePlatformFile(
-      file_path,
-      (base::PLATFORM_FILE_OPEN |
-       base::PLATFORM_FILE_READ |
-       base::PLATFORM_FILE_EXECUTE),  // Windows only flag.
-      NULL,
-      &error_code);
-  if (error_code != base::PLATFORM_FILE_OK)
-    return base::kInvalidPlatformFileValue;
+  base::File file(file_path,
+                  (base::File::FLAG_OPEN |
+                   base::File::FLAG_READ |
+                   base::File::FLAG_EXECUTE));  // Windows only flag.
+  if (!file.IsValid())
+    return file.Pass();
 
   // Check that the file does not reference a directory. Returning a descriptor
   // to an extension directory could allow an outer sandbox escape. openat(...)
   // could be used to traverse into the file system.
-  base::PlatformFileInfo file_info;
-  if (!base::GetPlatformFileInfo(file, &file_info) || file_info.is_directory) {
-    base::ClosePlatformFile(file);
-    return base::kInvalidPlatformFileValue;
-  }
-  return file;
+  base::File::Info file_info;
+  if (!file.GetInfo(&file_info) || file_info.is_directory)
+    return base::File();
+
+  return file.Pass();
 }
 
 NaClBrowser::NaClBrowser()

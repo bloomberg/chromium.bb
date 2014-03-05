@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -38,18 +38,9 @@ void NotifyRendererOfError(
   nacl_host_message_filter->Send(reply_msg);
 }
 
-bool PnaclDoOpenFile(const base::FilePath& file_to_open,
-                     base::PlatformFile* out_file) {
-  base::PlatformFileError error_code;
-  *out_file = base::CreatePlatformFile(file_to_open,
-                                       base::PLATFORM_FILE_OPEN |
-                                       base::PLATFORM_FILE_READ,
-                                       NULL,
-                                       &error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
-    return false;
-  }
-  return true;
+base::File PnaclDoOpenFile(const base::FilePath& file_to_open) {
+  return base::File(file_to_open,
+                    base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 
 void DoOpenPnaclFile(
@@ -73,8 +64,8 @@ void DoOpenPnaclFile(
     return;
   }
 
-  base::PlatformFile file_to_open;
-  if (!PnaclDoOpenFile(full_filepath, &file_to_open)) {
+  base::File file_to_open = PnaclDoOpenFile(full_filepath);
+  if (!file_to_open.IsValid()) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }
@@ -82,9 +73,8 @@ void DoOpenPnaclFile(
   // Send the reply!
   // Do any DuplicateHandle magic that is necessary first.
   IPC::PlatformFileForTransit target_desc =
-      IPC::GetFileHandleForProcess(file_to_open,
-                                   nacl_host_message_filter->PeerHandle(),
-                                   true /* Close source */);
+      IPC::TakeFileHandleForProcess(file_to_open.Pass(),
+                                    nacl_host_message_filter->PeerHandle());
   if (target_desc == IPC::InvalidPlatformFileForTransit()) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
@@ -96,7 +86,7 @@ void DoOpenPnaclFile(
 
 void DoRegisterOpenedNaClExecutableFile(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
-    base::PlatformFile file,
+    base::File file,
     base::FilePath file_path,
     IPC::Message* reply_msg) {
   // IO thread owns the NaClBrowser singleton.
@@ -107,10 +97,9 @@ void DoRegisterOpenedNaClExecutableFile(
   uint64 file_token_hi = 0;
   nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
 
-  IPC::PlatformFileForTransit file_desc = IPC::GetFileHandleForProcess(
-      file,
-      nacl_host_message_filter->PeerHandle(),
-      true /* close_source */);
+  IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
+      file.Pass(),
+      nacl_host_message_filter->PeerHandle());
 
   NaClHostMsg_OpenNaClExecutable::WriteReplyParams(
       reply_msg, file_desc, file_token_lo, file_token_hi);
@@ -133,8 +122,8 @@ void DoOpenNaClExecutableOnThreadPool(
     return;
   }
 
-  base::PlatformFile file = nacl::OpenNaClExecutableImpl(file_path);
-  if (file != base::kInvalidPlatformFileValue) {
+  base::File file = nacl::OpenNaClExecutableImpl(file_path);
+  if (file.IsValid()) {
     // This function is running on the blocking pool, but the path needs to be
     // registered in a structure owned by the IO thread.
     BrowserThread::PostTask(
@@ -142,7 +131,7 @@ void DoOpenNaClExecutableOnThreadPool(
         base::Bind(
             &DoRegisterOpenedNaClExecutableFile,
             nacl_host_message_filter,
-            file, file_path, reply_msg));
+            Passed(file.Pass()), file_path, reply_msg));
   } else {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;

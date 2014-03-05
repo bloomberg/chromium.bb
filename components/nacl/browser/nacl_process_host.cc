@@ -910,12 +910,11 @@ void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
 void NaClProcessHost::FileResolved(
     const base::FilePath& file_path,
     IPC::Message* reply_msg,
-    const base::PlatformFile& file) {
-  if (file != base::kInvalidPlatformFileValue) {
-    IPC::PlatformFileForTransit handle = IPC::GetFileHandleForProcess(
-        file,
-        process_->GetData().handle,
-        true /* close_source */);
+    base::File file) {
+  if (file.IsValid()) {
+    IPC::PlatformFileForTransit handle = IPC::TakeFileHandleForProcess(
+        file.Pass(),
+        process_->GetData().handle);
     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
         reply_msg,
         handle,

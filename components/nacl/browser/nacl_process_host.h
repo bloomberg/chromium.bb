@@ -150,7 +150,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                           IPC::Message* reply_msg);
   void FileResolved(const base::FilePath& file_path,
                     IPC::Message* reply_msg,
-                    const base::PlatformFile& file);
+                    base::File file);
 
 #if defined(OS_WIN)
   // Message handler for Windows hardware exception handling.

@@ -20,10 +20,17 @@
 using content::BrowserThread;
 
 namespace {
+
 static const base::FilePath::CharType kTranslationCacheDirectoryName[] =
     FILE_PATH_LITERAL("PnaclTranslationCache");
 // Delay to wait for initialization of the cache backend
 static const int kTranslationCacheInitializationDelayMs = 20;
+
+void CloseBaseFile(base::File file) {
+  // Not really needed because the file will go out of scope here.
+  file.Close();
+}
+
 }
 
 namespace pnacl {
@@ -141,29 +148,24 @@ void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::FilePath file_path;
-  base::PlatformFile file_handle(base::kInvalidPlatformFileValue);
+  base::File file;
   bool rv = temp_dir.empty()
                 ? base::CreateTemporaryFile(&file_path)
                 : base::CreateTemporaryFileInDir(temp_dir, &file_path);
   if (!rv) {
     PLOG(ERROR) << "Temp file creation failed.";
   } else {
-    base::PlatformFileError error;
-    file_handle = base::CreatePlatformFile(
+    file.Initialize(
         file_path,
-        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
-            base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
-            base::PLATFORM_FILE_DELETE_ON_CLOSE,
-        NULL,
-        &error);
+        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+            base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |
+            base::File::FLAG_DELETE_ON_CLOSE);
 
-    if (error != base::PLATFORM_FILE_OK) {
-      PLOG(ERROR) << "Temp file open failed: " << error;
-      file_handle = base::kInvalidPlatformFileValue;
-    }
+    if (!file.IsValid())
+      PLOG(ERROR) << "Temp file open failed: " << file.error_details();
   }
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(cb, file_handle));
+      BrowserThread::IO, FROM_HERE, base::Bind(cb, Passed(file.Pass())));
 }
 
 void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
@@ -172,7 +174,7 @@ void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
            FROM_HERE,
            base::Bind(&PnaclHost::DoCreateTemporaryFile, temp_dir_, cb))) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    cb.Run(base::kInvalidPlatformFileValue);
+    cb.Run(base::File());
   }
 }
 
@@ -273,12 +275,12 @@ void PnaclHost::OnCacheQueryReturn(
 }
 
 // Callback from temp file creation. |id| is bound from
-// SendCacheQueryAndTempFileRequest, and fd is the created file descriptor.
+// SendCacheQueryAndTempFileRequest, and |file| is the created file.
 // If there was an error, fd is kInvalidPlatformFileValue.
 // (Bound callbacks must re-lookup the TranslationID because the translation
 // could be cancelled before they get called).
 void PnaclHost::OnTempFileReturn(const TranslationID& id,
-                                 base::PlatformFile fd) {
+                                 base::File file) {
   DCHECK(thread_checker_.CalledOnValidThread());
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
@@ -286,15 +288,15 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
     // file was being created.
     LOG(ERROR) << "OnTempFileReturn: id not found";
     BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(base::IgnoreResult(base::ClosePlatformFile), fd));
+        FROM_HERE, base::Bind(CloseBaseFile, Passed(file.Pass())));
     return;
   }
-  if (fd == base::kInvalidPlatformFileValue) {
+  if (!file.IsValid()) {
     // This translation will fail, but we need to retry any translation
     // waiting for its result.
     LOG(ERROR) << "OnTempFileReturn: temp file creation failed";
     std::string key(entry->second.cache_key);
-    entry->second.callback.Run(fd, false);
+    entry->second.callback.Run(base::kInvalidPlatformFileValue, false);
     bool may_be_cached = TranslationMayBeCached(entry);
     pending_translations_.erase(entry);
     // No translations will be waiting for entries that will not be stored.
@@ -304,7 +306,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
   }
   PendingTranslation* pt = &entry->second;
   pt->got_nexe_fd = true;
-  pt->nexe_fd = fd;
+  pt->nexe_fd = file.TakePlatformFile();
   CheckCacheQueryReady(entry);
 }
 

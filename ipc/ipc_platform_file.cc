@@ -45,4 +45,9 @@ PlatformFileForTransit GetFileHandleForProcess(base::PlatformFile handle,
   return out_handle;
 }
 
+PlatformFileForTransit TakeFileHandleForProcess(base::File file,
+                                                base::ProcessHandle process) {
+  return GetFileHandleForProcess(file.TakePlatformFile(), process, true);
+}
+
 }  // namespace IPC
