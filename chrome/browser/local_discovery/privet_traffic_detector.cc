@@ -39,7 +39,8 @@ void GetNetworkListOnFileThread(
 
   net::IPAddressNumber localhost_prefix(4, 0);
   localhost_prefix[0] = 127;
-  ip4_networks.push_back(net::NetworkInterface("lo", 0, localhost_prefix, 8));
+  ip4_networks.push_back(
+      net::NetworkInterface("lo", "lo", 0, localhost_prefix, 8));
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    base::Bind(callback, ip4_networks));
 }

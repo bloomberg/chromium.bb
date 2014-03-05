@@ -515,12 +515,14 @@ NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 struct NET_EXPORT NetworkInterface {
   NetworkInterface();
   NetworkInterface(const std::string& name,
+                   const std::string& friendly_name,
                    uint32 interface_index,
                    const IPAddressNumber& address,
                    size_t network_prefix);
   ~NetworkInterface();
 
   std::string name;
+  std::string friendly_name;  // Same as |name| on non-Windows.
   uint32 interface_index;  // Always 0 on Android.
   IPAddressNumber address;
   size_t network_prefix;

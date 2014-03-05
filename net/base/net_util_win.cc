@@ -211,8 +211,9 @@ bool GetNetworkList(NetworkInterfaceList* networks,
           uint32 index =
               (family == AF_INET) ? adapter->IfIndex : adapter->Ipv6IfIndex;
           networks->push_back(
-              NetworkInterface(adapter->AdapterName, index, endpoint.address(),
-                               net_prefix));
+              NetworkInterface(adapter->AdapterName,
+                               base::SysWideToNativeMB(adapter->FriendlyName),
+                               index, endpoint.address(), net_prefix));
         }
       }
     }

@@ -369,7 +369,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfoOnIOThread(
                       " network interfaces:");
   for (net::NetworkInterfaceList::const_iterator it = network_list.begin();
        it != network_list.end(); ++it) {
-    LogToCircularBuffer("Name: " + it->name + ", Address: " +
+    LogToCircularBuffer("Name: " + it->friendly_name + ", Address: " +
                         IPAddressToSensitiveString(it->address));
   }
 

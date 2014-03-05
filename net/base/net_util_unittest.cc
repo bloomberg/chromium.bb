@@ -3309,8 +3309,9 @@ TEST(NetUtilTest, GetNetworkList) {
   ASSERT_TRUE(GetNetworkList(&list, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES));
   for (NetworkInterfaceList::iterator it = list.begin();
        it != list.end(); ++it) {
-    // Verify that the name is not empty.
+    // Verify that the names are not empty.
     EXPECT_FALSE(it->name.empty());
+    EXPECT_FALSE(it->friendly_name.empty());
 
     // Verify that the address is correct.
     EXPECT_TRUE(it->address.size() == kIPv4AddressSize ||

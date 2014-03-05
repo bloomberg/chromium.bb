@@ -87,7 +87,7 @@ bool GetNetworkList(NetworkInterfaceList* networks,
     CHECK(base::StringToUint(network_tokenizer.token(), &index));
 
     networks->push_back(
-        NetworkInterface(name, index, address, network_prefix));
+        NetworkInterface(name, name, index, address, network_prefix));
   }
   return true;
 #else
@@ -161,7 +161,7 @@ bool GetNetworkList(NetworkInterfaceList* networks,
       }
 
       networks->push_back(
-          NetworkInterface(name, if_nametoindex(name.c_str()),
+          NetworkInterface(name, name, if_nametoindex(name.c_str()),
                            address.address(), net_mask));
     }
   }
