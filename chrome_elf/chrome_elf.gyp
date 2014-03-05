@@ -97,6 +97,8 @@
       ],
       'dependencies': [
         'chrome_elf_common',
+        '../base/base.gyp:base_static',
+        '../sandbox/sandbox.gyp:sandbox',
       ],
     },
     {
@@ -123,6 +125,8 @@
         'chrome_elf_types.h',
         'chrome_elf_util.cc',
         'chrome_elf_util.h',
+        'thunk_getter.cc',
+        'thunk_getter.h',
       ],
     },
     {

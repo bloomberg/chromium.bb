@@ -377,9 +377,7 @@ TEST_F(ChromeCreateFileTest, BypassTest) {
 }
 
 TEST_F(ChromeCreateFileTest, NtCreateFileAddressCheck) {
-  HMODULE ntdll_handle = ::GetModuleHandle(L"ntdll.dll");
-  EXPECT_EQ(::GetProcAddress(ntdll_handle, "NtCreateFile"),
-            g_ntdll_lookup["NtCreateFile"]);
+  EXPECT_EQ(&g_nt_thunk_storage, g_ntdll_lookup["NtCreateFile"]);
 }
 
 TEST_F(ChromeCreateFileTest, ReadWriteFromNtDll) {
