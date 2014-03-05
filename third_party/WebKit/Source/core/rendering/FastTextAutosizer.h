@@ -177,6 +177,9 @@ private:
 
         FingerprintMap m_fingerprints;
         ReverseFingerprintMap m_blocksForFingerprint;
+#ifndef NDEBUG
+        void assertMapsAreConsistent();
+#endif
     };
 
     explicit FastTextAutosizer(const Document*);

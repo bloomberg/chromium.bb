@@ -659,9 +659,31 @@ FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
     return m_clusterStack.last().get();
 }
 
+#ifndef NDEBUG
+void FastTextAutosizer::FingerprintMapper::assertMapsAreConsistent()
+{
+    // For each fingerprint -> block mapping in m_blocksForFingerprint we should have an associated
+    // map from block -> fingerprint in m_fingerprints.
+    ReverseFingerprintMap::iterator end = m_blocksForFingerprint.end();
+    for (ReverseFingerprintMap::iterator fingerprintIt = m_blocksForFingerprint.begin(); fingerprintIt != end; ++fingerprintIt) {
+        Fingerprint fingerprint = fingerprintIt->key;
+        BlockSet* blocks = fingerprintIt->value.get();
+        for (BlockSet::iterator blockIt = blocks->begin(); blockIt != blocks->end(); ++blockIt) {
+            const RenderBlock* block = (*blockIt);
+            ASSERT(m_fingerprints.get(block) == fingerprint);
+        }
+    }
+}
+#endif
+
 void FastTextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fingerprint fingerprint)
 {
+    remove(renderer);
+
     m_fingerprints.set(renderer, fingerprint);
+#ifndef NDEBUG
+    assertMapsAreConsistent();
+#endif
 }
 
 void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderBlock* block, Fingerprint fingerprint)
@@ -672,6 +694,9 @@ void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderB
     if (addResult.isNewEntry)
         addResult.storedValue->value = adoptPtr(new BlockSet);
     addResult.storedValue->value->add(block);
+#ifndef NDEBUG
+    assertMapsAreConsistent();
+#endif
 }
 
 void FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
@@ -688,6 +713,9 @@ void FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
     blocks.remove(toRenderBlock(renderer));
     if (blocks.isEmpty())
         m_blocksForFingerprint.remove(blocksIter);
+#ifndef NDEBUG
+    assertMapsAreConsistent();
+#endif
 }
 
 FastTextAutosizer::Fingerprint FastTextAutosizer::FingerprintMapper::get(const RenderObject* renderer)
