@@ -245,6 +245,8 @@
         'ozone/impl/file_surface_factory.h',
         'ozone/surface_factory_ozone.cc',
         'ozone/surface_factory_ozone.h',
+        'ozone/overlay_candidates_ozone.cc',
+        'ozone/overlay_candidates_ozone.h',
         'pango_util.cc',
         'pango_util.h',
         'path.cc',

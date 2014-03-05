@@ -52,4 +52,24 @@ void SurfaceFactoryOzone::SetCursorImage(const SkBitmap& image) {
 void SurfaceFactoryOzone::MoveCursorTo(const gfx::Point& location) {
 }
 
+gfx::OverlayCandidatesOzone* SurfaceFactoryOzone::GetOverlayCandidates(
+    gfx::AcceleratedWidget w) {
+  return NULL;
+}
+
+void SurfaceFactoryOzone::ScheduleOverlayPlane(gfx::AcceleratedWidget w,
+                                               int plane_z_order,
+                                               OverlayTransform plane_transform,
+                                               gfx::NativeBufferOzone buffer,
+                                               const gfx::Rect& display_bounds,
+                                               gfx::RectF crop_rect) {
+  NOTREACHED();
+}
+
+gfx::NativeBufferOzone SurfaceFactoryOzone::CreateNativeBuffer(
+    gfx::Size size,
+    BufferFormat format) {
+  return 0;
+}
+
 }  // namespace gfx
