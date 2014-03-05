@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/win/pe_image.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
@@ -299,26 +300,22 @@ bool WriteProtectedChildMemory(HANDLE child_process, void* address,
 
 };  // namespace sandbox
 
-// TODO(jschuh): http://crbug.com/11789
-// I'm guessing we have a race where some "security" software is messing
-// with ntdll/imports underneath us. So, we retry a few times, and in the
-// worst case we sleep briefly before a few more attempts. (Normally sleeping
-// would be very bad, but it's better than crashing in this case.)
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
-  const int max_tries = 5;
-  const int sleep_threshold = 2;
+  static volatile HMODULE ntdll = NULL;
 
-  static HMODULE ntdll = ::GetModuleHandle(sandbox::kNtdllName);
+  if (!ntdll) {
+    HMODULE ntdll_local = ::GetModuleHandle(sandbox::kNtdllName);
+    // Use PEImage to sanity-check that we have a valid ntdll handle.
+    base::win::PEImage ntdll_peimage(ntdll_local);
+    CHECK_NT(ntdll_peimage.VerifyMagic());
+    // Race-safe way to set static ntdll.
+    ::InterlockedCompareExchangePointer(
+        reinterpret_cast<PVOID volatile*>(&ntdll), ntdll_local, NULL);
 
-  FARPROC* function_ptr = reinterpret_cast<FARPROC*>(ptr);
-  *function_ptr = ::GetProcAddress(ntdll, name);
-
-  for (int tries = 1; !(*function_ptr) && tries < max_tries; ++tries) {
-    if (tries >= sleep_threshold)
-      ::Sleep(1);
-    ntdll = ::GetModuleHandle(sandbox::kNtdllName);
-    *function_ptr = ::GetProcAddress(ntdll, name);
   }
 
+  CHECK_NT(ntdll);
+  FARPROC* function_ptr = reinterpret_cast<FARPROC*>(ptr);
+  *function_ptr = ::GetProcAddress(ntdll, name);
   CHECK_NT(*function_ptr);
 }
