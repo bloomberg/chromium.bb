@@ -201,8 +201,8 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       audio_delay_milliseconds_(0),
       fifo_delay_milliseconds_(0),
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                   media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
-                   frames_per_buffer) {
+                   media::CHANNEL_LAYOUT_STEREO, 0, sample_rate, 16,
+                   frames_per_buffer, media::AudioParameters::DUCKING) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_view_id=%d"
       ", session_id=%d, sample_rate=%d, frames_per_buffer=%d",

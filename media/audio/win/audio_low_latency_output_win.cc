@@ -130,7 +130,8 @@ bool WASAPIAudioOutputStream::Open() {
 
   // Create an IAudioClient interface for the default rendering IMMDevice.
   ScopedComPtr<IAudioClient> audio_client;
-  if (device_id_.empty()) {
+  if (device_id_.empty() ||
+      CoreAudioUtil::DeviceIsDefault(eRender, device_role_, device_id_)) {
     audio_client = CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
   } else {
     ScopedComPtr<IMMDevice> device(CoreAudioUtil::CreateDevice(device_id_));

@@ -672,7 +672,20 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
     // actual error code. The exact value is not important here.
     return AUDCLNT_E_ENDPOINT_CREATE_FAILED;
   }
-  return GetPreferredAudioParameters(client, params);
+
+  HRESULT hr = GetPreferredAudioParameters(client, params);
+  if (FAILED(hr))
+    return hr;
+
+  if (role == eCommunications) {
+    // Raise the 'DUCKING' flag for default communication devices.
+    *params = AudioParameters(params->format(), params->channel_layout(),
+        params->channels(), params->input_channels(), params->sample_rate(),
+        params->bits_per_sample(), params->frames_per_buffer(),
+        params->effects() | AudioParameters::DUCKING);
+  }
+
+  return hr;
 }
 
 HRESULT CoreAudioUtil::GetPreferredAudioParameters(
