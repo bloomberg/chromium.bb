@@ -150,12 +150,16 @@ DesktopScreenX11::~DesktopScreenX11() {
 
 void DesktopScreenX11::ProcessDisplayChange(
     const std::vector<gfx::Display>& incoming) {
-  std::vector<gfx::Display>::const_iterator cur_it = displays_.begin();
-  for (; cur_it != displays_.end(); ++cur_it) {
+  std::vector<gfx::Display> old_displays = displays_;
+  displays_ = incoming;
+
+  typedef std::vector<gfx::Display>::const_iterator DisplayIt;
+  std::vector<gfx::Display>::const_iterator old_it = old_displays.begin();
+  for (; old_it != old_displays.end(); ++old_it) {
     bool found = false;
-    for (std::vector<gfx::Display>::const_iterator incoming_it =
-             incoming.begin(); incoming_it != incoming.end(); ++incoming_it) {
-      if (cur_it->id() == incoming_it->id()) {
+    for (std::vector<gfx::Display>::const_iterator new_it =
+             displays_.begin(); new_it != displays_.end(); ++new_it) {
+      if (old_it->id() == new_it->id()) {
         found = true;
         break;
       }
@@ -163,19 +167,19 @@ void DesktopScreenX11::ProcessDisplayChange(
 
     if (!found) {
       FOR_EACH_OBSERVER(gfx::DisplayObserver, observer_list_,
-                        OnDisplayRemoved(*cur_it));
+                        OnDisplayRemoved(*old_it));
     }
   }
 
-  std::vector<gfx::Display>::const_iterator incoming_it = incoming.begin();
-  for (; incoming_it != incoming.end(); ++incoming_it) {
+  std::vector<gfx::Display>::const_iterator new_it = displays_.begin();
+  for (; new_it != displays_.end(); ++new_it) {
     bool found = false;
-    for (std::vector<gfx::Display>::const_iterator cur_it = displays_.begin();
-         cur_it != displays_.end(); ++cur_it) {
-      if (incoming_it->id() == cur_it->id()) {
-        if (incoming_it->bounds() != cur_it->bounds()) {
+    for (std::vector<gfx::Display>::const_iterator old_it =
+         old_displays.begin(); old_it != old_displays.end(); ++old_it) {
+      if (new_it->id() == old_it->id()) {
+        if (new_it->bounds() != old_it->bounds()) {
           FOR_EACH_OBSERVER(gfx::DisplayObserver, observer_list_,
-                            OnDisplayBoundsChanged(*incoming_it));
+                            OnDisplayBoundsChanged(*new_it));
         }
 
         found = true;
@@ -185,11 +189,9 @@ void DesktopScreenX11::ProcessDisplayChange(
 
     if (!found) {
       FOR_EACH_OBSERVER(gfx::DisplayObserver, observer_list_,
-                        OnDisplayAdded(*incoming_it));
+                        OnDisplayAdded(*new_it));
     }
   }
-
-  displays_ = incoming;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

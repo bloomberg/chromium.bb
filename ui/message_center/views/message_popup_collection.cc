@@ -570,6 +570,11 @@ void MessagePopupCollection::OnDisplayAdded(const gfx::Display& new_display) {
 }
 
 void MessagePopupCollection::OnDisplayRemoved(const gfx::Display& old_display) {
+  if (display_id_ == old_display.id() && !parent_) {
+    gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+    display_id_ = display.id();
+    SetDisplayInfo(display.work_area(), display.bounds());
+  }
 }
 
 views::Widget* MessagePopupCollection::GetWidgetForTest(const std::string& id)
