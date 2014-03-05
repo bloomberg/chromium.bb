@@ -210,7 +210,7 @@ class ServiceRuntime {
   // Start method below.
   ServiceRuntime(Plugin* plugin,
                  const Manifest* manifest,
-                 bool should_report_uma,
+                 bool main_service_runtime,
                  pp::CompletionCallback init_done_cb,
                  pp::CompletionCallback crash_cb);
   // The destructor terminates the sel_ldr process.
