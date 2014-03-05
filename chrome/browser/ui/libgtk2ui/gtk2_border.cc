@@ -120,11 +120,7 @@ void Gtk2Border::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets Gtk2Border::GetInsets() const {
-  ui::ThemeProvider* provider = owning_button_->GetThemeProvider();
-  if (!provider || !provider->UsingNativeTheme())
-    return border_->GetInsets();
-
-  return gtk2_ui_->GetButtonInsets();
+  return border_->GetInsets();
 }
 
 gfx::Size Gtk2Border::GetMinimumSize() const {
