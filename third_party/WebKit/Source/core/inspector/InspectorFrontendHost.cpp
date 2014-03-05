@@ -160,16 +160,33 @@ void InspectorFrontendHost::copyText(const String& text)
     Pasteboard::generalPasteboard()->writePlainText(text, Pasteboard::CannotSmartReplace);
 }
 
+static String escapeUnicodeNonCharacters(const String& str)
+{
+    StringBuilder dst;
+    for (unsigned i = 0; i < str.length(); ++i) {
+        UChar c = str[i];
+        if (c > 126) {
+            unsigned symbol = static_cast<unsigned>(c);
+            String symbolCode = String::format("\\u%04X", symbol);
+            dst.append(symbolCode);
+        } else {
+            dst.append(c);
+        }
+
+    }
+    return dst.toString();
+}
+
 void InspectorFrontendHost::sendMessageToBackend(const String& message)
 {
     if (m_client)
-        m_client->sendMessageToBackend(message);
+        m_client->sendMessageToBackend(escapeUnicodeNonCharacters(message));
 }
 
 void InspectorFrontendHost::sendMessageToEmbedder(const String& message)
 {
     if (m_client)
-        m_client->sendMessageToEmbedder(message);
+        m_client->sendMessageToEmbedder(escapeUnicodeNonCharacters(message));
 }
 
 void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)
