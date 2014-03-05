@@ -39,6 +39,11 @@ using namespace WTF;
 #define NO_TRACE_CHECKING(bug)                      \
     __attribute__((annotate("blink_no_trace_checking")))
 
+#define USING_GARBAGE_COLLECTED_MIXIN(type)             \
+    public:                                             \
+    virtual void adjustAndMark(Visitor*) const {}       \
+    virtual bool isAlive(Visitor*) const { return 0; }
+
 template<typename T> class GarbageCollected { };
 template<typename T> class Member { };
 template<typename T> class Persistent { };
@@ -54,6 +59,11 @@ class PersistentHeapVector : public Vector<T, 0, HeapAllocator> { };
 class Visitor {
 public:
     template<typename T> void trace(const T&);
+};
+
+class GarbageCollectedMixin {
+    virtual void adjustAndMark(Visitor*) const = 0;
+    virtual bool isAlive(Visitor*) const = 0;
 };
 
 }

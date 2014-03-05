@@ -84,6 +84,10 @@ class Config {
     return (IsHashMap(name) || name == "pair") ? 2 : 1;
   }
 
+  static bool IsGCMixinBase(const std::string& name) {
+    return name == "GarbageCollectedMixin";
+  }
+
   static bool IsGCFinalizedBase(const std::string& name) {
     return name == "GarbageCollectedFinalized" ||
            name == "RefCountedGarbageCollected";
@@ -91,7 +95,8 @@ class Config {
 
   static bool IsGCBase(const std::string& name) {
     return name == "GarbageCollected" ||
-           IsGCFinalizedBase(name);
+           IsGCFinalizedBase(name) ||
+           IsGCMixinBase(name);
   }
 
   static bool IsTraceMethod(clang::CXXMethodDecl* method,

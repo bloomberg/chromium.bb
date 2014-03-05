@@ -289,7 +289,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     if (edge->value()->record()->isUnion())
       return;
 
-    if (!Parent() || !edge->value()->IsGCDerived())
+    if (!Parent() || !edge->value()->IsGCAllocated())
       return;
 
     if (Parent()->IsOwnPtr())

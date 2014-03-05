@@ -92,6 +92,11 @@ bool RecordInfo::IsGCDerived(CXXBasePaths* paths) {
   return record_->lookupInBases(IsGCBaseCallback, 0, *paths);
 }
 
+// Test if a record is allocated on the managed heap.
+bool RecordInfo::IsGCAllocated() {
+  return IsGCDerived() || IsHeapAllocatedCollection();
+}
+
 static bool IsAnnotated(Decl* decl, const string& anno) {
   AnnotateAttr* attr = decl->getAttr<AnnotateAttr>();
   return attr && (attr->getAnnotation() == anno);
@@ -184,10 +189,12 @@ void RecordInfo::DetermineTracingMethods() {
        it != record_->method_end();
        ++it) {
     if (Config::IsTraceMethod(*it, &isTraceAfterDispatch)) {
-      if (isTraceAfterDispatch)
+      // TODO: Test that the formal parameter is of type Visitor*.
+      if (isTraceAfterDispatch) {
         traceAfterDispatch = *it;
-      else
+      } else {
         trace = *it;
+      }
     }
   }
   if (traceAfterDispatch) {
@@ -201,8 +208,12 @@ void RecordInfo::DetermineTracingMethods() {
   }
 }
 
+// A class needs tracing if:
+// - it is allocated on the managed heap,
+// - it defines a trace method (of the proper signature), or
+// - it contains fields that need tracing.
 TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
-  if (IsGCDerived() || GetTraceMethod())
+  if (IsGCAllocated() || GetTraceMethod())
     return TracingStatus::Needed();
 
   if (option == Edge::kRecursive)

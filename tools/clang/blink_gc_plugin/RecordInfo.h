@@ -77,6 +77,7 @@ class RecordInfo {
 
   bool IsHeapAllocatedCollection();
   bool IsGCDerived(clang::CXXBasePaths* paths = 0);
+  bool IsGCAllocated();
 
   bool IsStackAllocated();
   bool RequiresTraceMethod();
