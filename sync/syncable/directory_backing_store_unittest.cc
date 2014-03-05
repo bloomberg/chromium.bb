@@ -2446,67 +2446,83 @@ void MigrationTest::SetUpVersion86Database(sql::Connection* connection) {
          "is_unsynced bit default 0,is_unapplied_update bit default 0,is_del bi"
          "t default 0,is_dir bit default 0,server_is_dir bit default 0,server_i"
          "s_del bit default 0,non_unique_name varchar,server_non_unique_name va"
-         "rchar(255),unique_server_tag varchar,unique_client_tag varchar,specif"
-         "ics blob,server_specifics blob,base_server_specifics blob,server_uniq"
-         "ue_position blob,unique_position blob,unique_bookmark_tag blob);"
+         "rchar(255),unique_server_tag varchar,unique_client_tag varchar,unique"
+         "_bookmark_tag varchar,specifics blob,server_specifics blob,base_serve"
+         "r_specifics blob,server_unique_position blob,unique_position blob);"
       "INSERT INTO 'metas' VALUES(1,-1,0,0,0,"
          META_PROTO_TIMES_VALS(1)
          ",'r','r','r',0,0,0,1,0,0,NULL,NULL,NULL,NULL,"
-         "X'',X'',NULL,X'',X'',X'');"
+         "X'',X'',X'',NULL,X'2200',X'2200');"
       "INSERT INTO 'metas' VALUES(6,694,694,6,0,"
-         META_PROTO_TIMES_VALS(6) ",'s_ID_6','s_ID_9','s_ID_9',0,0,0,1,1,0,'T"
-         "he Internet','The Internet',NULL,NULL,X'C2881000',X'C2881000',NULL,X'"
-         "',X'',X'');"
+         META_PROTO_TIMES_VALS(6) ",'s_ID_6','s_ID_9','s_ID_9',0,0,0,1,1,0,'The"
+         " Internet','The Internet',NULL,NULL,X'6754307476346749735A5734654D653"
+         "273625336557753582F77673D',X'C2881000',X'C2881000',NULL,X'22247FFFFFF"
+         "FFFC000006754307476346749735A5734654D653273625336557753582F77673D',X'"
+         "22247FFFFFFFFFC000006754307476346749735A5734654D653273625336557753582"
+         "F77673D');"
       "INSERT INTO 'metas' VALUES(7,663,663,0,0,"
-         META_PROTO_TIMES_VALS(7) ",'s_ID_7','r','r',0,0,0,1,1,0,'Google Chro"
-         "me','Google Chrome','google_chrome',NULL,NULL,NULL,NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(7) ",'s_ID_7','r','r',0,0,0,1,1,0,'Google Chrome"
+         "','Google Chrome','google_chrome',NULL,X'',NULL,NULL,NULL,X'2200',X'2"
+         "200');"
       "INSERT INTO 'metas' VALUES(8,664,664,0,0,"
-         META_PROTO_TIMES_VALS(8) ",'s_ID_8','s_ID_7','s_ID_7',0,0,0,1,1,0,'B"
-         "ookmarks','Bookmarks','google_chrome_bookmarks',NULL,X'C2881000',X'C2"
-         "881000',NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(8) ",'s_ID_8','s_ID_7','s_ID_7',0,0,0,1,1,0,'Boo"
+         "kmarks','Bookmarks','google_chrome_bookmarks',NULL,X'',X'C2881000',X'"
+         "C2881000',NULL,X'2200',X'2200');"
       "INSERT INTO 'metas' VALUES(9,665,665,1,0,"
-         META_PROTO_TIMES_VALS(9) ",'s_ID_9','s_ID_8','s_ID_8',0,0,0,1,1,0,'B"
-         "ookmark Bar','Bookmark Bar','bookmark_bar',NULL,X'C2881000',X'C288100"
-         "0',NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(9) ",'s_ID_9','s_ID_8','s_ID_8',0,0,0,1,1,0,'Boo"
+         "kmark Bar','Bookmark Bar','bookmark_bar',NULL,X'',X'C2881000',X'C2881"
+         "000',NULL,X'2200',X'2200');"
       "INSERT INTO 'metas' VALUES(10,666,666,2,0,"
-         META_PROTO_TIMES_VALS(10) ",'s_ID_10','s_ID_8','s_ID_8',0,0,0,1,1,0,"
-         "'Other Bookmarks','Other Bookmarks','other_bookmarks',NULL,X'C2881000"
-         "',X'C2881000',NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(10) ",'s_ID_10','s_ID_8','s_ID_8',0,0,0,1,1,0,'O"
+         "ther Bookmarks','Other Bookmarks','other_bookmarks',NULL,X'',X'C28810"
+         "00',X'C2881000',NULL,X'2200',X'2200');"
       "INSERT INTO 'metas' VALUES(11,683,683,8,0,"
-         META_PROTO_TIMES_VALS(11) ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,"
-         "'Home (The Chromium Projects)','Home (The Chromium Projects)',NULL,NU"
-         "LL,X'C28810220A18687474703A2F2F6465762E6368726F6D69756D2E6F72672F1206"
-         "414741545741',X'C28810290A1D687474703A2F2F6465762E6368726F6D69756D2E6"
-         "F72672F6F7468657212084146414756415346',NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(11) ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,'H"
+         "ome (The Chromium Projects)','Home (The Chromium Projects)',NULL,NULL"
+         ",X'50514C784A456D623579366267644237646A7A2B62314130346E493D',X'C28810"
+         "220A18687474703A2F2F6465762E6368726F6D69756D2E6F72672F120641474154574"
+         "1',X'C28810290A1D687474703A2F2F6465762E6368726F6D69756D2E6F72672F6F74"
+         "68657212084146414756415346',NULL,X'22247FFFFFFFFFF0000050514C784A456D"
+         "623579366267644237646A7A2B62314130346E493D',X'22247FFFFFFFFFF00000505"
+         "14C784A456D623579366267644237646A7A2B62314130346E493D');"
       "INSERT INTO 'metas' VALUES(12,685,685,9,0,"
-         META_PROTO_TIMES_VALS(12) ",'s_ID_12','s_ID_6','s_ID_6',0,0,0,1,1,0,"
-         "'Extra Bookmarks','Extra Bookmarks',NULL,NULL,X'C2881000',X'C2881000'"
-         ",NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(12) ",'s_ID_12','s_ID_6','s_ID_6',0,0,0,1,1,0,'E"
+         "xtra Bookmarks','Extra Bookmarks',NULL,NULL,X'7867626A704A646134635A6"
+         "F616C376A49513338734B46324837773D',X'C2881000',X'C2881000',NULL,X'222"
+         "480000000000000007867626A704A646134635A6F616C376A49513338734B46324837"
+         "773D',X'222480000000000000007867626A704A646134635A6F616C376A495133387"
+         "34B46324837773D');"
       "INSERT INTO 'metas' VALUES(13,687,687,10,0,"
-         META_PROTO_TIMES_VALS(13) ",'s_ID_13','s_ID_6','s_ID_6',0,0,0,0,0,0"
-         ",'ICANN | Internet Corporation for Assigned Names and Numbers','ICANN"
-         " | Internet Corporation for Assigned Names and Numbers',NULL,NULL,X'C"
-         "28810240A15687474703A2F2F7777772E6963616E6E2E636F6D2F120B504E47415846"
-         "3041414646',X'C28810200A15687474703A2F2F7777772E6963616E6E2E636F6D2F1"
-         "20744414146415346',NULL,X'',X'',X'');"
+         META_PROTO_TIMES_VALS(13) ",'s_ID_13','s_ID_6','s_ID_6',0,0,0,0,0,0,'I"
+         "CANN | Internet Corporation for Assigned Names and Numbers','ICANN | "
+         "Internet Corporation for Assigned Names and Numbers',NULL,NULL,X'3142"
+         "756B572F7741766956504179672B304A614A514B3452384A413D',X'C28810240A156"
+         "87474703A2F2F7777772E6963616E6E2E636F6D2F120B504E474158463041414646',"
+         "X'C28810200A15687474703A2F2F7777772E6963616E6E2E636F6D2F1207444141464"
+         "15346',NULL,X'22247FFFFFFFFFF200003142756B572F7741766956504179672B304"
+         "A614A514B3452384A413D',X'22247FFFFFFFFFF200003142756B572F774176695650"
+         "4179672B304A614A514B3452384A413D');"
       "INSERT INTO 'metas' VALUES(14,692,692,11,0,"
-         META_PROTO_TIMES_VALS(14) ",'s_ID_14','s_ID_6','s_ID_6',0,0,0,0,0,0"
-         ",'The WebKit Open Source Project','The WebKit Open Source Project',NU"
-         "LL,NULL,X'C288101A0A12687474703A2F2F7765626B69742E6F72672F1204504E475"
-         "8',X'C288101C0A13687474703A2F2F7765626B69742E6F72672F781205504E473259"
-         "',NULL,X'',X'',X'');"
-      "CREATE TABLE deleted_metas (metahandle bigint primary key ON CONFLICT"
-         " FAIL,base_version bigint default -1,server_version bigint default 0,"
-         "local_external_id bigint default 0,transaction_version bigint default"
-         " 0,mtime bigint default 0,server_mtime bigint default 0,ctime bigint "
-         "default 0,server_ctime bigint default 0,id varchar(255) default 'r',p"
-         "arent_id varchar(255) default 'r',server_parent_id varchar(255) defau"
-         "lt 'r',is_unsynced bit default 0,is_unapplied_update bit default 0,is"
-         "_del bit default 0,is_dir bit default 0,server_is_dir bit default 0,s"
-         "erver_is_del bit default 0,non_unique_name varchar,server_non_unique_"
-         "name varchar(255),unique_server_tag varchar,unique_client_tag varchar"
-         ",specifics blob,server_specifics blob,base_server_specifics blob,serv"
-         "er_unique_position blob,unique_position blob,unique_bookmark_tag blob"
+         META_PROTO_TIMES_VALS(14) ",'s_ID_14','s_ID_6','s_ID_6',0,0,0,0,0,0,'T"
+         "he WebKit Open Source Project','The WebKit Open Source Project',NULL,"
+         "NULL,X'5A5678314E7976364579524D3177494F7236563159552F6E644C553D',X'C2"
+         "88101A0A12687474703A2F2F7765626B69742E6F72672F1204504E4758',X'C288101"
+         "C0A13687474703A2F2F7765626B69742E6F72672F781205504E473259',NULL,X'222"
+         "480000000001000005A5678314E7976364579524D3177494F7236563159552F6E644C"
+         "553D',X'222480000000001000005A5678314E7976364579524D3177494F723656315"
+         "9552F6E644C553D');"
+      "CREATE TABLE deleted_metas (metahandle bigint primary key ON CONFLICT FA"
+         "IL,base_version bigint default -1,server_version bigint default 0,loc"
+         "al_external_id bigint default 0,transaction_version bigint default 0,"
+         "mtime bigint default 0,server_mtime bigint default 0,ctime bigint def"
+         "ault 0,server_ctime bigint default 0,id varchar(255) default 'r',pare"
+         "nt_id varchar(255) default 'r',server_parent_id varchar(255) default "
+         "'r',is_unsynced bit default 0,is_unapplied_update bit default 0,is_de"
+         "l bit default 0,is_dir bit default 0,server_is_dir bit default 0,serv"
+         "er_is_del bit default 0,non_unique_name varchar,server_non_unique_nam"
+         "e varchar(255),unique_server_tag varchar,unique_client_tag varchar,un"
+         "ique_bookmark_tag varchar,specifics blob,server_specifics blob,base_s"
+         "erver_specifics blob,server_unique_position blob,unique_position blob"
          ");"
       "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birt"
          "hday TEXT, db_create_version TEXT, db_create_time INT, next_id INT de"
@@ -2980,74 +2996,6 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   EXPECT_TRUE(connection.DoesColumnExist("metas", "server_unique_position"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
   ASSERT_TRUE(dbs->needs_column_refresh_);
-
-  {
-    Directory::MetahandlesMap handles_map;
-    STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
-    dbs->LoadEntries(&handles_map);
-
-    // Grab a bookmark and examine it.
-    Directory::MetahandlesMap::iterator i = handles_map.find(5);
-    ASSERT_FALSE(i == handles_map.end());
-    EntryKernel* bm = i->second;
-    ASSERT_EQ(bm->ref(ID).value(), "s_ID_5");
-
-    EXPECT_TRUE(bm->ref(UNIQUE_POSITION).IsValid());
-    EXPECT_TRUE(bm->ref(SERVER_UNIQUE_POSITION).IsValid());
-    EXPECT_EQ(UniquePosition::kSuffixLength,
-              bm->ref(UNIQUE_BOOKMARK_TAG).length());
-
-    // Grab a non-bookmark and examine it.
-    Directory::MetahandlesMap::iterator j = handles_map.find(1);
-
-    ASSERT_FALSE(j == handles_map.end());
-    EntryKernel* root = j->second;
-    ASSERT_EQ(root->ref(ID).value(), "r");
-
-    EXPECT_FALSE(root->ref(UNIQUE_POSITION).IsValid());
-    EXPECT_FALSE(root->ref(SERVER_UNIQUE_POSITION).IsValid());
-    EXPECT_TRUE(root->ref(UNIQUE_BOOKMARK_TAG).empty());
-
-    // Make sure we didn't mistake the bookmark root node for a real bookmark.
-    Directory::MetahandlesMap::iterator k = handles_map.find(8);
-    ASSERT_FALSE(k == handles_map.end());
-    EntryKernel* bm_root = k->second;
-    ASSERT_EQ(bm_root->ref(ID).value(), "s_ID_8");
-    ASSERT_EQ(bm_root->ref(UNIQUE_SERVER_TAG), "google_chrome_bookmarks");
-
-    EXPECT_FALSE(bm_root->ref(UNIQUE_POSITION).IsValid());
-    EXPECT_FALSE(bm_root->ref(SERVER_UNIQUE_POSITION).IsValid());
-    EXPECT_TRUE(bm_root->ref(UNIQUE_BOOKMARK_TAG).empty());
-
-    // Make sure we didn't assign positions to server-created folders, either.
-    Directory::MetahandlesMap::iterator l = handles_map.find(10);
-    ASSERT_FALSE(l == handles_map.end());
-    EntryKernel* perm_folder = l->second;
-    ASSERT_EQ(perm_folder->ref(ID).value(), "s_ID_10");
-    ASSERT_EQ(perm_folder->ref(UNIQUE_SERVER_TAG), "other_bookmarks");
-
-    EXPECT_FALSE(perm_folder->ref(UNIQUE_POSITION).IsValid());
-    EXPECT_FALSE(perm_folder->ref(SERVER_UNIQUE_POSITION).IsValid());
-    EXPECT_TRUE(perm_folder->ref(UNIQUE_BOOKMARK_TAG).empty());
-
-    // Make sure that the syncable::Directory and the migration code agree on
-    // which items should or should not have unique position values.  This test
-    // may become obsolete if the directory's definition of that function
-    // changes, but, until then, this is a useful test.
-    for (Directory::MetahandlesMap::iterator it = handles_map.begin();
-         it != handles_map.end(); it++) {
-      SCOPED_TRACE(it->second->ref(ID));
-      if (it->second->ShouldMaintainPosition()) {
-        EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
-        EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
-        EXPECT_FALSE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-      } else {
-        EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
-        EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
-        EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-      }
-    }
-  }
 }
 
 // The purpose of this test case is to make it easier to get a dump of the
@@ -3291,36 +3239,61 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   ASSERT_TRUE(it != handles_map.end());
   ASSERT_EQ(1, it->second->ref(META_HANDLE));
   EXPECT_TRUE(it->second->ref(ID).IsRoot());
+  EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+
+  // Items 2, 4, and 5 were deleted.
+  it = handles_map.find(2);
+  ASSERT_TRUE(it == handles_map.end());
+  it = handles_map.find(4);
+  ASSERT_TRUE(it == handles_map.end());
+  it = handles_map.find(5);
+  ASSERT_TRUE(it == handles_map.end());
 
   it = handles_map.find(6);
   ASSERT_EQ(6, it->second->ref(META_HANDLE));
   EXPECT_TRUE(it->second->ref(IS_DIR));
   EXPECT_TRUE(it->second->ref(SERVER_IS_DIR));
-  EXPECT_FALSE(
-      it->second->ref(SPECIFICS).bookmark().has_url());
-  EXPECT_FALSE(
-      it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
-  EXPECT_FALSE(
-      it->second->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_favicon());
   EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_favicon());
+  EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_EQ(UniquePosition::kSuffixLength,
+            it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(7);
   ASSERT_EQ(7, it->second->ref(META_HANDLE));
   EXPECT_EQ("google_chrome", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_FALSE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
+  // Make sure we didn't assign positions to google_chrome.
+  EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(8);
   ASSERT_EQ(8, it->second->ref(META_HANDLE));
   EXPECT_EQ("google_chrome_bookmarks", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
+  ASSERT_EQ(it->second->ref(ID).value(), "s_ID_8");
+  // Make sure we didn't mistake the bookmark root node for a real bookmark.
+  EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(9);
   ASSERT_EQ(9, it->second->ref(META_HANDLE));
   EXPECT_EQ("bookmark_bar", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
+  // Make sure we didn't assign positions to bookmark_bar.
+  EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(10);
   ASSERT_EQ(10, it->second->ref(META_HANDLE));
@@ -3328,14 +3301,17 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
   EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_url());
-  EXPECT_FALSE(
-      it->second->ref(SPECIFICS).bookmark().has_favicon());
-  EXPECT_FALSE(
-      it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_favicon());
   EXPECT_EQ("other_bookmarks", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_EQ("Other Bookmarks", it->second->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Other Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
+  ASSERT_EQ(it->second->ref(ID).value(), "s_ID_10");
+  // Make sure we didn't assign positions to server-created folders, either.
+  EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(11);
   ASSERT_EQ(11, it->second->ref(META_HANDLE));
@@ -3344,17 +3320,19 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
   EXPECT_EQ("http://dev.chromium.org/",
-      it->second->ref(SPECIFICS).bookmark().url());
-  EXPECT_EQ("AGATWA",
-      it->second->ref(SPECIFICS).bookmark().favicon());
+            it->second->ref(SPECIFICS).bookmark().url());
+  EXPECT_EQ("AGATWA", it->second->ref(SPECIFICS).bookmark().favicon());
   EXPECT_EQ("http://dev.chromium.org/other",
-      it->second->ref(SERVER_SPECIFICS).bookmark().url());
-  EXPECT_EQ("AFAGVASF",
-      it->second->ref(SERVER_SPECIFICS).bookmark().favicon());
+            it->second->ref(SERVER_SPECIFICS).bookmark().url());
+  EXPECT_EQ("AFAGVASF", it->second->ref(SERVER_SPECIFICS).bookmark().favicon());
   EXPECT_EQ("", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_EQ("Home (The Chromium Projects)", it->second->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Home (The Chromium Projects)",
             it->second->ref(SERVER_NON_UNIQUE_NAME));
+  EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_EQ(UniquePosition::kSuffixLength,
+            it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(12);
   ASSERT_EQ(12, it->second->ref(META_HANDLE));
@@ -3364,21 +3342,47 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_EQ("Extra Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
-  EXPECT_FALSE(
-      it->second->ref(SPECIFICS).bookmark().has_url());
-  EXPECT_FALSE(
-      it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
-  EXPECT_FALSE(
-      it->second->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_favicon());
   EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_favicon());
+  EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_EQ(UniquePosition::kSuffixLength,
+            it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(13);
   ASSERT_EQ(13, it->second->ref(META_HANDLE));
+  EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_EQ(UniquePosition::kSuffixLength,
+            it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(14);
   ASSERT_EQ(14, it->second->ref(META_HANDLE));
+  EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+  EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+  EXPECT_EQ(UniquePosition::kSuffixLength,
+            it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   ASSERT_EQ(static_cast<size_t>(10), handles_map.size());
+
+  // Make sure that the syncable::Directory and the migration code agree on
+  // which items should or should not have unique position values.  This test
+  // may become obsolete if the directory's definition of that function
+  // changes, but, until then, this is a useful test.
+  for (it = handles_map.begin(); it != handles_map.end(); it++) {
+    SCOPED_TRACE(it->second->ref(ID));
+    if (it->second->ShouldMaintainPosition()) {
+      EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+      EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+      EXPECT_FALSE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+    } else {
+      EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+      EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+      EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+    }
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
