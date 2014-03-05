@@ -29,6 +29,10 @@ using message_center::Notification;
 
 namespace {
 
+// Identifier for the discoverable notification.
+const char kBluetoothDeviceDiscoverableNotificationId[] =
+    "chrome://settings/bluetooth/discoverable";
+
 // Identifier for the pairing notification; the Bluetooth code ensures we
 // only receive one pairing request at a time, so a single id is sufficient and
 // means we "update" one notification if not handled rather than continually
@@ -157,6 +161,18 @@ BluetoothNotificationController::~BluetoothNotificationController() {
 }
 
 
+void BluetoothNotificationController::AdapterDiscoverableChanged(
+    BluetoothAdapter* adapter,
+    bool discoverable) {
+  if (discoverable) {
+    NotifyAdapterDiscoverable();
+  } else {
+    // Clear any previous discoverable notification.
+    message_center::MessageCenter::Get()->RemoveNotification(
+        kBluetoothDeviceDiscoverableNotificationId, false /* by_user */);
+  }
+}
+
 void BluetoothNotificationController::DeviceAdded(BluetoothAdapter* adapter,
                                                   BluetoothDevice* device) {
   // Add the new device to the list of currently paired devices; it doesn't
@@ -253,6 +269,10 @@ void BluetoothNotificationController::OnGetAdapter(
   adapter_->AddPairingDelegate(this,
                                BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_LOW);
 
+  // Notify a user if the adapter is already in the discoverable state.
+  if (adapter_->IsDiscoverable())
+    NotifyAdapterDiscoverable();
+
   // Build a list of the currently paired devices; these don't receive
   // notifications since it's assumed they were previously notified.
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
@@ -264,6 +284,29 @@ void BluetoothNotificationController::OnGetAdapter(
   }
 }
 
+
+void BluetoothNotificationController::NotifyAdapterDiscoverable() {
+  message_center::RichNotificationData optional;
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kBluetoothDeviceDiscoverableNotificationId,
+      base::string16() /* title */,
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
+          base::UTF8ToUTF16(adapter_->GetName()),
+          base::UTF8ToUTF16(adapter_->GetAddress())),
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH),
+      base::string16() /* display source */,
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          system_notifier::kNotifierBluetooth),
+      optional,
+      NULL));
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
 
 void BluetoothNotificationController::NotifyPairing(
     BluetoothDevice* device,

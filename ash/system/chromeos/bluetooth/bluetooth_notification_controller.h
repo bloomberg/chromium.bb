@@ -31,6 +31,8 @@ class ASH_EXPORT BluetoothNotificationController
   virtual ~BluetoothNotificationController();
 
   // device::BluetoothAdapter::Observer override.
+  virtual void AdapterDiscoverableChanged(device::BluetoothAdapter* adapter,
+                                          bool discoverable) OVERRIDE;
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
                            device::BluetoothDevice* device) OVERRIDE;
   virtual void DeviceChanged(device::BluetoothAdapter* adapter,
@@ -55,6 +57,10 @@ class ASH_EXPORT BluetoothNotificationController
   // Internal method called by BluetoothAdapterFactory to provide the adapter
   // object.
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
+  // Presents a notification to the user when the adapter becomes discoverable
+  // to other nearby devices.
+  void NotifyAdapterDiscoverable();
 
   // Presents a notification to the user that a device |device| is making a
   // pairing request. The exact message to display is given in |message| and
