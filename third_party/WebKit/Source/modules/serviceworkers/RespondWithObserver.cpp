@@ -81,7 +81,7 @@ void RespondWithObserver::respondWith(const ScriptValue& value)
         return;
 
     m_state = Pending;
-    ScriptPromise(value).then(
+    ScriptPromise::cast(value).then(
         ThenFunction::create(this, ThenFunction::Fulfilled),
         ThenFunction::create(this, ThenFunction::Rejected));
 }

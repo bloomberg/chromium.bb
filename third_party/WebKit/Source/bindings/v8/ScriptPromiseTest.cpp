@@ -43,21 +43,20 @@ namespace WebCore {
 
 namespace {
 
+void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
+
 class ScriptPromiseTest : public testing::Test {
 public:
     ScriptPromiseTest()
         : m_isolate(v8::Isolate::GetCurrent())
     {
-    }
-
-    void SetUp()
-    {
         m_scope = V8BindingTestScope::create(m_isolate);
     }
 
-    void TearDown()
+    ~ScriptPromiseTest()
     {
-        m_scope.clear();
+        // FIXME: We put this statement here to clear an exception from the isolate.
+        createClosure(callback, v8::Undefined(m_isolate), m_isolate);
     }
 
     V8PromiseCustom::PromiseState state(ScriptPromise promise)
@@ -72,10 +71,18 @@ private:
     OwnPtr<V8BindingTestScope> m_scope;
 };
 
+TEST_F(ScriptPromiseTest, constructFromNonPromise)
+{
+    v8::TryCatch trycatch;
+    ScriptPromise promise(v8::Undefined(m_isolate), m_isolate);
+    ASSERT_TRUE(trycatch.HasCaught());
+    ASSERT_TRUE(promise.hasNoValue());
+}
+
 TEST_F(ScriptPromiseTest, castPromise)
 {
     ScriptPromise promise = ScriptPromise::createPending();
-    ScriptPromise newPromise(ScriptValue(promise.v8Value(), m_isolate));
+    ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(promise.v8Value(), m_isolate));
 
     ASSERT_FALSE(promise.hasNoValue());
     EXPECT_EQ(V8PromiseCustom::Pending, state(promise));
@@ -85,8 +92,8 @@ TEST_F(ScriptPromiseTest, castPromise)
 TEST_F(ScriptPromiseTest, castNonPromise)
 {
     ScriptValue value = ScriptValue(v8String(m_isolate, "hello"), m_isolate);
-    ScriptPromise promise1(ScriptValue(value.v8Value(), m_isolate));
-    ScriptPromise promise2(ScriptValue(value.v8Value(), m_isolate));
+    ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
+    ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value.v8Value(), m_isolate));
 
     ASSERT_FALSE(promise1.hasNoValue());
     ASSERT_FALSE(promise2.hasNoValue());

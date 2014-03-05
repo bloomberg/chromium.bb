@@ -75,7 +75,7 @@ void WaitUntilObserver::didDispatchEvent()
 void WaitUntilObserver::waitUntil(const ScriptValue& value)
 {
     incrementPendingActivity();
-    ScriptPromise(value).then(
+    ScriptPromise::cast(value).then(
         ThenFunction::create(this, ThenFunction::Fulfilled),
         ThenFunction::create(this, ThenFunction::Rejected));
 }

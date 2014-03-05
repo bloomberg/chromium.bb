@@ -39,6 +39,16 @@
 
 namespace WebCore {
 
+ScriptPromise::ScriptPromise(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    if (value.IsEmpty() || !V8PromiseCustom::isPromise(value, isolate)) {
+        m_promise = ScriptValue(v8::Handle<v8::Value>(), isolate);
+        V8ThrowException::throwTypeError("the given value is not a Promise", isolate);
+        return;
+    }
+    m_promise = ScriptValue(value, isolate);
+}
+
 ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected)
 {
     if (m_promise.hasNoValue() || !m_promise.isObject())
@@ -47,17 +57,12 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     return ScriptPromise(V8PromiseCustom::then(promise, adoptByGarbageCollector(onFulfilled), adoptByGarbageCollector(onRejected), isolate()), isolate());
 }
 
-ScriptPromise::ScriptPromise(const ScriptValue& value)
+ScriptPromise ScriptPromise::createPending()
 {
-    if (value.hasNoValue())
-        return;
-    v8::Local<v8::Value> v8Value(value.v8Value());
-    v8::Isolate* isolate = value.isolate();
-    if (V8PromiseCustom::isPromise(v8Value, isolate)) {
-        m_promise = value;
-        return;
-    }
-    m_promise = ScriptValue(V8PromiseCustom::toPromise(v8Value, isolate), isolate);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    ASSERT(isolate->InContext());
+    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(isolate), isolate);
+    return ScriptPromise(promise, isolate);
 }
 
 ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
@@ -71,12 +76,16 @@ ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
     return ScriptPromise(promise, isolate);
 }
 
-ScriptPromise ScriptPromise::createPending()
+ScriptPromise ScriptPromise::cast(const ScriptValue& value)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
-    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(isolate), isolate);
-    return ScriptPromise(promise, isolate);
+    if (value.hasNoValue())
+        return ScriptPromise();
+    v8::Local<v8::Value> v8Value(value.v8Value());
+    v8::Isolate* isolate = value.isolate();
+    if (V8PromiseCustom::isPromise(v8Value, isolate)) {
+        return ScriptPromise(v8Value, isolate);
+    }
+    return ScriptPromise(V8PromiseCustom::toPromise(v8Value, isolate), isolate);
 }
 
 } // namespace WebCore

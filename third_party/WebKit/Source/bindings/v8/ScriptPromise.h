@@ -52,17 +52,9 @@ public:
     // Constructs an empty promise.
     ScriptPromise() { }
 
-    // Constructs a ScriptPromise from |value|.
-    // i.e. the constructed ScriptPromise holds |Promise.cast(value)|.
-    // Note: if |value| is a non-Promise value, two ScriptPromises constructed
-    // with it hold different Promises each other.
-    explicit ScriptPromise(const ScriptValue& /* value */);
-
-    ScriptPromise(v8::Handle<v8::Value> promise, v8::Isolate* isolate)
-        : m_promise(promise, isolate)
-    {
-        ASSERT(!m_promise.hasNoValue());
-    }
+    // Constructs a ScriptPromise from |promise|.
+    // If |promise| is not a Promise object, throws a v8 TypeError.
+    ScriptPromise(v8::Handle<v8::Value> promise, v8::Isolate*);
 
     ScriptPromise then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected = PassOwnPtr<ScriptFunction>());
 
@@ -103,6 +95,10 @@ public:
 
     static ScriptPromise createPending();
     static ScriptPromise createPending(ExecutionContext*);
+    // Constructs and returns a ScriptPromise from |value|.
+    // if |value| is not a Promise object, returns a Promise object
+    // resolved with |value|.
+    static ScriptPromise cast(const ScriptValue& /*value*/);
 
 private:
     ScriptValue m_promise;
