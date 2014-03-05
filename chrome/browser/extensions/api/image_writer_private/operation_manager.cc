@@ -239,14 +239,14 @@ void OperationManager::Observe(int type,
 }
 
 OperationManager* OperationManager::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<OperationManager>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<OperationManager>::Get(context);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<OperationManager> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<OperationManager> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
-ProfileKeyedAPIFactory<OperationManager>*
-    OperationManager::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<OperationManager>*
+OperationManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

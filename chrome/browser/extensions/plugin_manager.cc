@@ -38,11 +38,12 @@ PluginManager::PluginManager(content::BrowserContext* context)
 PluginManager::~PluginManager() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<PluginManager> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<PluginManager> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<PluginManager>* PluginManager::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<PluginManager>*
+PluginManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,7 +27,7 @@ namespace extensions {
 class ExtensionPrefs;
 class TabHelper;
 
-class ExtensionActionAPI : public ProfileKeyedAPI {
+class ExtensionActionAPI : public BrowserContextKeyedAPI {
  public:
   explicit ExtensionActionAPI(content::BrowserContext* context);
   virtual ~ExtensionActionAPI();
@@ -53,11 +53,12 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
                                     const ExtensionAction& browser_action,
                                     content::WebContents* web_contents);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ExtensionActionAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ExtensionActionAPI>*
+      GetFactoryInstance();
 
  private:
-  friend class ProfileKeyedAPIFactory<ExtensionActionAPI>;
+  friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
   static void DispatchEventToExtension(content::BrowserContext* context,
@@ -81,7 +82,7 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
                                       const ExtensionAction& extension_action,
                                       content::WebContents* web_contents);
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionActionAPI"; }
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionAPI);

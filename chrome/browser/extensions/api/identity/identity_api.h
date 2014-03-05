@@ -19,9 +19,9 @@
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/signin/signin_global_error.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -245,7 +245,7 @@ class IdentityTokenCacheValue {
   base::Time expiration_time_;
 };
 
-class IdentityAPI : public ProfileKeyedAPI,
+class IdentityAPI : public BrowserContextKeyedAPI,
                     public AccountTracker::Observer {
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
@@ -269,9 +269,9 @@ class IdentityAPI : public ProfileKeyedAPI,
   void ReportAuthError(const GoogleServiceAuthError& error);
   GoogleServiceAuthError GetAuthStatusForTest() const;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
-  static ProfileKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
 
   // AccountTracker::Observer implementation:
   virtual void OnAccountAdded(const AccountIds& ids) OVERRIDE;
@@ -280,9 +280,9 @@ class IdentityAPI : public ProfileKeyedAPI,
       OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<IdentityAPI>;
+  friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "IdentityAPI";
   }
@@ -295,7 +295,7 @@ class IdentityAPI : public ProfileKeyedAPI,
 };
 
 template <>
-void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies();
+void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

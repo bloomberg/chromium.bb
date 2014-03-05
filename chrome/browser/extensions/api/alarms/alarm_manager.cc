@@ -216,17 +216,18 @@ void AlarmManager::SetClockForTesting(base::Clock* clock) {
   clock_.reset(clock);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<AlarmManager> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<AlarmManager> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<AlarmManager>* AlarmManager::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<AlarmManager>*
+AlarmManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 AlarmManager* AlarmManager::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<AlarmManager>::GetForProfile(profile);
+  return BrowserContextKeyedAPIFactory<AlarmManager>::Get(profile);
 }
 
 void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {

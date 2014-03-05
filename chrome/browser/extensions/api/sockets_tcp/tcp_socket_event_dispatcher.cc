@@ -19,12 +19,13 @@ namespace api {
 
 using content::BrowserThread;
 
-static base::LazyInstance<ProfileKeyedAPIFactory<TCPSocketEventDispatcher> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<TCPSocketEventDispatcher>*
-    TCPSocketEventDispatcher::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher>*
+TCPSocketEventDispatcher::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -33,8 +34,7 @@ TCPSocketEventDispatcher* TCPSocketEventDispatcher::Get(
     content::BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return ProfileKeyedAPIFactory<TCPSocketEventDispatcher>::GetForProfile(
-      context);
+  return BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher>::Get(context);
 }
 
 TCPSocketEventDispatcher::TCPSocketEventDispatcher(

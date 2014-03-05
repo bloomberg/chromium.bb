@@ -24,7 +24,7 @@
 namespace extensions {
 
 namespace {
-base::LazyInstance<ProfileKeyedAPIFactory<SettingsOverridesAPI> >
+base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsOverridesAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 const char kManyStartupPagesWarning[] = "* specifies more than 1 startup URL. "
@@ -85,8 +85,8 @@ SettingsOverridesAPI::SettingsOverridesAPI(content::BrowserContext* context)
 SettingsOverridesAPI::~SettingsOverridesAPI() {
 }
 
-ProfileKeyedAPIFactory<SettingsOverridesAPI>*
-    SettingsOverridesAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<SettingsOverridesAPI>*
+SettingsOverridesAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -221,8 +221,8 @@ void SettingsOverridesAPI::RegisterSearchProvider(
 }
 
 template <>
-void ProfileKeyedAPIFactory<SettingsOverridesAPI>::
-    DeclareFactoryDependencies() {
+void BrowserContextKeyedAPIFactory<
+    SettingsOverridesAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(PreferenceAPI::GetFactoryInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());

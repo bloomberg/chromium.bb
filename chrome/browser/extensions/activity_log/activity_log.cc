@@ -338,16 +338,16 @@ namespace extensions {
 
 // SET THINGS UP. --------------------------------------------------------------
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLog> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ActivityLog> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
-ProfileKeyedAPIFactory<ActivityLog>* ActivityLog::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<ActivityLog>* ActivityLog::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 ActivityLog* ActivityLog::GetInstance(content::BrowserContext* context) {
-  return ActivityLog::GetFactoryInstance()->GetForProfile(
+  return ActivityLog::GetFactoryInstance()->Get(
       Profile::FromBrowserContext(context));
 }
 
@@ -696,7 +696,7 @@ void ActivityLog::DeleteDatabase() {
 }
 
 template <>
-void ProfileKeyedAPIFactory<ActivityLog>::DeclareFactoryDependencies() {
+void BrowserContextKeyedAPIFactory<ActivityLog>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(InstallTrackerFactory::GetInstance());
 }

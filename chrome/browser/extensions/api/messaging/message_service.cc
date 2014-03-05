@@ -177,17 +177,18 @@ MessageService::~MessageService() {
   channels_.clear();
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<MessageService> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<MessageService> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<MessageService>* MessageService::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<MessageService>*
+MessageService::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 MessageService* MessageService::Get(BrowserContext* context) {
-  return ProfileKeyedAPIFactory<MessageService>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<MessageService>::Get(context);
 }
 
 void MessageService::OpenChannelToExtension(

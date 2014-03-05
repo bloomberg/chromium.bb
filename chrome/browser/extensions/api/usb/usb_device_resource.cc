@@ -19,13 +19,13 @@ using content::BrowserThread;
 
 namespace extensions {
 
-static base::LazyInstance<ProfileKeyedAPIFactory<
-        ApiResourceManager<UsbDeviceResource> > >
-            g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ApiResourceManager<UsbDeviceResource> > >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<UsbDeviceResource> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<UsbDeviceResource> >*
 ApiResourceManager<UsbDeviceResource>::GetFactoryInstance() {
   return g_factory.Pointer();
 }

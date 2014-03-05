@@ -48,13 +48,14 @@ const int kTcpKeepAliveDelaySecs = 10;
 
 namespace extensions {
 
-static base::LazyInstance<
-  ProfileKeyedAPIFactory<ApiResourceManager<api::cast_channel::CastSocket> > >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<api::cast_channel::CastSocket> > > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<api::cast_channel::CastSocket> >*
+BrowserContextKeyedAPIFactory<
+    ApiResourceManager<api::cast_channel::CastSocket> >*
 ApiResourceManager<api::cast_channel::CastSocket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }

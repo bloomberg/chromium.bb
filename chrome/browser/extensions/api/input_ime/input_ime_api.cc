@@ -791,11 +791,11 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
 InputImeAPI::~InputImeAPI() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<InputImeAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

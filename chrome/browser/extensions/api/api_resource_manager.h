@@ -13,13 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -59,18 +59,18 @@ namespace extensions {
 //
 // In the cc file:
 //
-// static base::LazyInstance<ProfileKeyedAPIFactory<
+// static base::LazyInstance<BrowserContextKeyedAPIFactory<
 //     ApiResourceManager<Resource> > >
 //         g_factory = LAZY_INSTANCE_INITIALIZER;
 //
 //
 // template <>
-// ProfileKeyedAPIFactory<ApiResourceManager<Resource> >*
+// BrowserContextKeyedAPIFactory<ApiResourceManager<Resource> >*
 // ApiResourceManager<Resource>::GetFactoryInstance() {
 //   return g_factory.Pointer();
 // }
 template <class T>
-class ApiResourceManager : public ProfileKeyedAPI,
+class ApiResourceManager : public BrowserContextKeyedAPI,
                            public base::NonThreadSafe,
                            public content::NotificationObserver {
  public:
@@ -106,13 +106,13 @@ class ApiResourceManager : public ProfileKeyedAPI,
     data_->InititateCleanup();
   }
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ApiResourceManager<T> >* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ApiResourceManager<T> >*
+      GetFactoryInstance();
 
   // Convenience method to get the ApiResourceManager for a profile.
   static ApiResourceManager<T>* Get(content::BrowserContext* context) {
-    return ProfileKeyedAPIFactory<ApiResourceManager<T> >::GetForProfile(
-        context);
+    return BrowserContextKeyedAPIFactory<ApiResourceManager<T> >::Get(context);
   }
 
   // Takes ownership.
@@ -158,8 +158,8 @@ class ApiResourceManager : public ProfileKeyedAPI,
   friend class api::TCPServerSocketEventDispatcher;
   friend class api::TCPSocketEventDispatcher;
   friend class api::UDPSocketEventDispatcher;
-  friend class ProfileKeyedAPIFactory<ApiResourceManager<T> >;
-  // ProfileKeyedAPI implementation.
+  friend class BrowserContextKeyedAPIFactory<ApiResourceManager<T> >;
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return T::service_name();
   }

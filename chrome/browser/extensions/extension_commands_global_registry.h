@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace content {
@@ -29,13 +29,13 @@ class Extension;
 // accelerators on behalf of the extensions and routes the commands to them via
 // the BrowserEventRouter.
 class ExtensionCommandsGlobalRegistry
-    : public ProfileKeyedAPI,
+    : public BrowserContextKeyedAPI,
       public ExtensionKeybindingRegistry,
       public GlobalShortcutListener::Observer {
  public:
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<
-      ExtensionCommandsGlobalRegistry>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry>*
+      GetFactoryInstance();
 
   // Convenience method to get the ExtensionCommandsGlobalRegistry for a
   // profile.
@@ -45,9 +45,9 @@ class ExtensionCommandsGlobalRegistry
   virtual ~ExtensionCommandsGlobalRegistry();
 
  private:
-  friend class ProfileKeyedAPIFactory<ExtensionCommandsGlobalRegistry>;
+  friend class BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "ExtensionCommandsGlobalRegistry";
   }

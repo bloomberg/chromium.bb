@@ -14,10 +14,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_private_api.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "url/gurl.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
@@ -35,10 +35,9 @@ class Operation;
 
 // Manages image writer operations for the current profile.  Including clean-up
 // and message routing.
-class OperationManager
-    : public ProfileKeyedAPI,
-      public content::NotificationObserver,
-      public base::SupportsWeakPtr<OperationManager> {
+class OperationManager : public BrowserContextKeyedAPI,
+                         public content::NotificationObserver,
+                         public base::SupportsWeakPtr<OperationManager> {
  public:
   typedef std::string ExtensionId;
 
@@ -82,9 +81,8 @@ class OperationManager
                        int progress,
                        const std::string& error_message);
 
-  // ProfileKeyedAPI
-  static ProfileKeyedAPIFactory<OperationManager>*
-      GetFactoryInstance();
+  // BrowserContextKeyedAPI
+  static BrowserContextKeyedAPIFactory<OperationManager>* GetFactoryInstance();
   static OperationManager* Get(content::BrowserContext* context);
 
   Profile* profile() { return profile_; }
@@ -103,7 +101,7 @@ class OperationManager
   Operation* GetOperation(const ExtensionId& extension_id);
   void DeleteOperation(const ExtensionId& extension_id);
 
-  friend class ProfileKeyedAPIFactory<OperationManager>;
+  friend class BrowserContextKeyedAPIFactory<OperationManager>;
   typedef std::map<ExtensionId, scoped_refptr<Operation> > OperationMap;
 
   Profile* profile_;

@@ -50,14 +50,15 @@ CastChannelAPI::CastChannelAPI(content::BrowserContext* context)
 
 // static
 CastChannelAPI* CastChannelAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<CastChannelAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<CastChannelAPI>::Get(context);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<CastChannelAPI> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<CastChannelAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<CastChannelAPI>* CastChannelAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<CastChannelAPI>*
+CastChannelAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

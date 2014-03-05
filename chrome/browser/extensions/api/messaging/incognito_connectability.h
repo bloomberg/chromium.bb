@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class Extension;
 // able to send messages to them, with user constent. For apps, it's essential
 // we have this functionality because there is no way for them to be enabled in
 // incognito.
-class IncognitoConnectability : public ProfileKeyedAPI {
+class IncognitoConnectability : public BrowserContextKeyedAPI {
  public:
   // While in scope, immediately either accepts or denies the alerts that show
   // up, and counts the number of times it was invoked.
@@ -61,7 +61,7 @@ class IncognitoConnectability : public ProfileKeyedAPI {
              const GURL& url);
 
  private:
-  friend class ProfileKeyedAPIFactory<IncognitoConnectability>;
+  friend class BrowserContextKeyedAPIFactory<IncognitoConnectability>;
 
   explicit IncognitoConnectability(content::BrowserContext* context);
   virtual ~IncognitoConnectability();
@@ -73,8 +73,9 @@ class IncognitoConnectability : public ProfileKeyedAPI {
                const GURL& origin,
                const ExtensionToOriginsMap& map);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<IncognitoConnectability>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<IncognitoConnectability>*
+      GetFactoryInstance();
   static const char* service_name() {
     return "Messaging.IncognitoConnectability";
   }

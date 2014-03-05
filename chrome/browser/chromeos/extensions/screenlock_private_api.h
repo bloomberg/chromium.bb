@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_SCREENLOCK_PRIVATE_API_H_
 
 #include "chrome/browser/chromeos/login/login_display.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace gfx {
 class Image;
@@ -117,7 +117,7 @@ class ScreenlockPrivateAcceptAuthAttemptFunction
 };
 
 class ScreenlockPrivateEventRouter
-    : public extensions::ProfileKeyedAPI,
+    : public extensions::BrowserContextKeyedAPI,
       public chromeos::SessionManagerClient::Observer {
  public:
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
@@ -128,9 +128,10 @@ class ScreenlockPrivateEventRouter
   void OnAuthAttempted(chromeos::LoginDisplay::AuthType auth_type,
                        const std::string& value);
 
-  // ProfileKeyedAPI
-  static extensions::ProfileKeyedAPIFactory<ScreenlockPrivateEventRouter>*
-    GetFactoryInstance();
+  // BrowserContextKeyedAPI
+  static extensions::BrowserContextKeyedAPIFactory<
+      ScreenlockPrivateEventRouter>*
+      GetFactoryInstance();
   virtual void Shutdown() OVERRIDE;
 
   // chromeos::SessionManagerClient::Observer
@@ -138,9 +139,10 @@ class ScreenlockPrivateEventRouter
   virtual void ScreenIsUnlocked() OVERRIDE;
 
  private:
-  friend class extensions::ProfileKeyedAPIFactory<ScreenlockPrivateEventRouter>;
+  friend class extensions::BrowserContextKeyedAPIFactory<
+      ScreenlockPrivateEventRouter>;
 
-  // ProfileKeyedAPI
+  // BrowserContextKeyedAPI
   static const char* service_name() {
     return "ScreenlockPrivateEventRouter";
   }

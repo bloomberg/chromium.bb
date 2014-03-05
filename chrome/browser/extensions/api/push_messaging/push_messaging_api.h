@@ -11,13 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -111,7 +111,7 @@ class PushMessagingGetChannelIdFunction
   DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
 };
 
-class PushMessagingAPI : public ProfileKeyedAPI,
+class PushMessagingAPI : public BrowserContextKeyedAPI,
                          public content::NotificationObserver {
  public:
   explicit PushMessagingAPI(content::BrowserContext* context);
@@ -123,8 +123,8 @@ class PushMessagingAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<PushMessagingAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<PushMessagingAPI>* GetFactoryInstance();
 
   // For testing purposes.
   PushMessagingEventRouter* GetEventRouterForTest() const {
@@ -136,9 +136,9 @@ class PushMessagingAPI : public ProfileKeyedAPI,
   void SetMapperForTest(scoped_ptr<PushMessagingInvalidationMapper> mapper);
 
  private:
-  friend class ProfileKeyedAPIFactory<PushMessagingAPI>;
+  friend class BrowserContextKeyedAPIFactory<PushMessagingAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "PushMessagingAPI";
   }
@@ -162,7 +162,8 @@ class PushMessagingAPI : public ProfileKeyedAPI,
 };
 
 template <>
-void ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies();
+void BrowserContextKeyedAPIFactory<
+    PushMessagingAPI>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

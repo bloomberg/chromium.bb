@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_PLUGIN_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_PLUGIN_MANAGER_H_
 
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class GURL;
 class Profile;
@@ -19,14 +19,14 @@ class BrowserContext;
 
 namespace extensions {
 
-class PluginManager : public ProfileKeyedAPI,
+class PluginManager : public BrowserContextKeyedAPI,
                       public content::NotificationObserver {
  public:
   explicit PluginManager(content::BrowserContext* context);
   virtual ~PluginManager();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<PluginManager>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<PluginManager>* GetFactoryInstance();
 
   // content::NotificationObserver impelmentation.
   virtual void Observe(int type,
@@ -34,7 +34,7 @@ class PluginManager : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<PluginManager>;
+  friend class BrowserContextKeyedAPIFactory<PluginManager>;
 
   // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
   // strong sandbox. Typically, these NaCl modules are stored in extensions
@@ -51,7 +51,7 @@ class PluginManager : public ProfileKeyedAPI,
 
   extensions::NaClModuleInfo::List::iterator FindNaClModule(const GURL& url);
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "PluginManager"; }
   static const bool kServiceIsNULLWhileTesting = true;
 

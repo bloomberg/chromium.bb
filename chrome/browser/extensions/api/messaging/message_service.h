@@ -15,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/messaging/message.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class GURL;
 class Profile;
@@ -59,7 +59,7 @@ class LazyBackgroundTaskQueue;
 // port: an IPC::Message::Process interface and an optional routing_id (in the
 // case that the port is a tab).  The Process is usually either a
 // RenderProcessHost or a RenderViewHost.
-class MessageService : public ProfileKeyedAPI,
+class MessageService : public BrowserContextKeyedAPI,
                        public content::NotificationObserver,
                        public NativeMessageProcessHost::Client {
  public:
@@ -112,8 +112,8 @@ class MessageService : public ProfileKeyedAPI,
   explicit MessageService(content::BrowserContext* context);
   virtual ~MessageService();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<MessageService>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<MessageService>* GetFactoryInstance();
 
   // Convenience method to get the MessageService for a browser context.
   static MessageService* Get(content::BrowserContext* context);
@@ -160,7 +160,7 @@ class MessageService : public ProfileKeyedAPI,
 
  private:
   friend class MockMessageService;
-  friend class ProfileKeyedAPIFactory<MessageService>;
+  friend class BrowserContextKeyedAPIFactory<MessageService>;
   struct OpenChannelParams;
 
   // A map of channel ID to its channel object.
@@ -250,7 +250,7 @@ class MessageService : public ProfileKeyedAPI,
                             int port_id,
                             const std::string& error_message);
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "MessageService";
   }

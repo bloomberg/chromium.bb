@@ -10,9 +10,9 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 #include "extensions/browser/api/async_api_function.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class GURL;
 class CastChannelAPITest;
@@ -25,7 +25,7 @@ namespace extensions {
 
 namespace cast_channel = api::cast_channel;
 
-class CastChannelAPI : public ProfileKeyedAPI,
+class CastChannelAPI : public BrowserContextKeyedAPI,
                        public cast_channel::CastSocket::Delegate {
 
  public:
@@ -33,8 +33,8 @@ class CastChannelAPI : public ProfileKeyedAPI,
 
   static CastChannelAPI* Get(content::BrowserContext* context);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
 
   // Returns a new CastSocket that connects to |url| and is to be owned by
   // |extension_id|.
@@ -46,7 +46,7 @@ class CastChannelAPI : public ProfileKeyedAPI,
   void SetSocketForTest(scoped_ptr<cast_channel::CastSocket> socket_for_test);
 
  private:
-  friend class ProfileKeyedAPIFactory<CastChannelAPI>;
+  friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
   friend class ::CastChannelAPITest;
 
   virtual ~CastChannelAPI();
@@ -57,7 +57,7 @@ class CastChannelAPI : public ProfileKeyedAPI,
   virtual void OnMessage(const cast_channel::CastSocket* socket,
                          const cast_channel::MessageInfo& message) OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "CastChannelAPI";
   }

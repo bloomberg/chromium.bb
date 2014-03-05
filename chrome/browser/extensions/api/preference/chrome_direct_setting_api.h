@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_CHROME_DIRECT_SETTING_API_H__
 
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 class Profile;
@@ -18,7 +18,7 @@ class BrowserContext;
 namespace extensions {
 namespace chromedirectsetting {
 
-class ChromeDirectSettingAPI : public ProfileKeyedAPI,
+class ChromeDirectSettingAPI : public BrowserContextKeyedAPI,
                                public EventRouter::Observer {
  public:
   explicit ChromeDirectSettingAPI(content::BrowserContext* context);
@@ -28,8 +28,9 @@ class ChromeDirectSettingAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ChromeDirectSettingAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ChromeDirectSettingAPI>*
+      GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
@@ -41,9 +42,9 @@ class ChromeDirectSettingAPI : public ProfileKeyedAPI,
   static ChromeDirectSettingAPI* Get(content::BrowserContext* context);
 
  private:
-  friend class ProfileKeyedAPIFactory<ChromeDirectSettingAPI>;
+  friend class BrowserContextKeyedAPIFactory<ChromeDirectSettingAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name();
 
   void OnPrefChanged(PrefService* pref_service, const std::string& pref_key);

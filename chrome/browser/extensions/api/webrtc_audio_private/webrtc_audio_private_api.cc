@@ -30,8 +30,8 @@ using media::AudioManager;
 namespace wap = api::webrtc_audio_private;
 
 static base::LazyInstance<
-    ProfileKeyedAPIFactory<WebrtcAudioPrivateEventService> > g_factory =
-        LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<WebrtcAudioPrivateEventService> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 WebrtcAudioPrivateEventService::WebrtcAudioPrivateEventService(
     content::BrowserContext* context)
@@ -53,7 +53,7 @@ void WebrtcAudioPrivateEventService::Shutdown() {
 }
 
 // static
-ProfileKeyedAPIFactory<WebrtcAudioPrivateEventService>*
+BrowserContextKeyedAPIFactory<WebrtcAudioPrivateEventService>*
 WebrtcAudioPrivateEventService::GetFactoryInstance() {
   return g_factory.Pointer();
 }

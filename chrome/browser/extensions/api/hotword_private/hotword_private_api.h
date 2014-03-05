@@ -7,9 +7,9 @@
 
 #include "base/prefs/pref_change_registrar.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/hotword_private.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class Profile;
 
@@ -17,21 +17,21 @@ namespace extensions {
 
 // Listens for changes in disable/enabled state and forwards as an extension
 // event.
-class HotwordPrivateEventService : public ProfileKeyedAPI  {
+class HotwordPrivateEventService : public BrowserContextKeyedAPI {
  public:
   explicit HotwordPrivateEventService(content::BrowserContext* context);
   virtual ~HotwordPrivateEventService();
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
-  static ProfileKeyedAPIFactory<HotwordPrivateEventService>*
+  static BrowserContextKeyedAPIFactory<HotwordPrivateEventService>*
       GetFactoryInstance();
   static const char* service_name();
 
   void OnEnabledChanged(const std::string& pref_name);
 
  private:
-  friend class ProfileKeyedAPIFactory<HotwordPrivateEventService>;
+  friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 
   void SignalEvent();
 

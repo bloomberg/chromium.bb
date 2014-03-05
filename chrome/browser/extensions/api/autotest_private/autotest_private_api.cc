@@ -61,9 +61,7 @@ base::ListValue* GetAPIPermissions(const Extension* ext) {
 }
 
 bool IsTestMode(Profile* profile) {
-  return AutotestPrivateAPI::GetFactoryInstance()
-      ->GetForProfile(profile)
-      ->test_mode();
+  return AutotestPrivateAPI::GetFactoryInstance()->Get(profile)->test_mode();
 }
 
 }  // namespace
@@ -227,18 +225,18 @@ bool AutotestPrivateSimulateAsanMemoryBugFunction::RunImpl() {
   return true;
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<AutotestPrivateAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<AutotestPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<AutotestPrivateAPI>*
+BrowserContextKeyedAPIFactory<AutotestPrivateAPI>*
 AutotestPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 template <>
 BrowserContextKeyedService*
-ProfileKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
+BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new AutotestPrivateAPI();
 }

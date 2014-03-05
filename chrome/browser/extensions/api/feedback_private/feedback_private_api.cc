@@ -42,12 +42,12 @@ using feedback_private::FeedbackInfo;
 
 char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
 
-static base::LazyInstance<ProfileKeyedAPIFactory<FeedbackPrivateAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<FeedbackPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<FeedbackPrivateAPI>*
-    FeedbackPrivateAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>*
+FeedbackPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -138,9 +138,8 @@ bool FeedbackPrivateGetStringsFunction::RunImpl() {
 bool FeedbackPrivateGetUserEmailFunction::RunImpl() {
   // TODO(rkc): Remove logging once crbug.com/284662 is closed.
   LOG(WARNING) << "FEEDBACK_DEBUG: User e-mail requested.";
-  FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()
-                                 ->GetForProfile(GetProfile())
-                                 ->GetService();
+  FeedbackService* service =
+      FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
   SetResult(new base::StringValue(service->GetUserEmail()));
   return true;
@@ -149,9 +148,8 @@ bool FeedbackPrivateGetUserEmailFunction::RunImpl() {
 bool FeedbackPrivateGetSystemInformationFunction::RunImpl() {
   // TODO(rkc): Remove logging once crbug.com/284662 is closed.
   LOG(WARNING) << "FEEDBACK_DEBUG: System information requested.";
-  FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()
-                                 ->GetForProfile(GetProfile())
-                                 ->GetService();
+  FeedbackService* service =
+      FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
   service->GetSystemInformation(
       base::Bind(
@@ -218,9 +216,8 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
   }
   feedback_data->SetAndCompressSystemInfo(sys_logs.Pass());
 
-  FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()
-                                 ->GetForProfile(GetProfile())
-                                 ->GetService();
+  FeedbackService* service =
+      FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
 
   if (feedback_info.send_histograms) {

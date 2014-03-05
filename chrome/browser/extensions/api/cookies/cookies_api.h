@@ -13,12 +13,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
@@ -193,7 +193,7 @@ class CookiesGetAllCookieStoresFunction : public CookiesFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CookiesAPI : public ProfileKeyedAPI,
+class CookiesAPI : public BrowserContextKeyedAPI,
                    public extensions::EventRouter::Observer {
  public:
   explicit CookiesAPI(content::BrowserContext* context);
@@ -202,19 +202,19 @@ class CookiesAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<CookiesAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<CookiesAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<CookiesAPI>;
+  friend class BrowserContextKeyedAPIFactory<CookiesAPI>;
 
   content::BrowserContext* browser_context_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "CookiesAPI";
   }

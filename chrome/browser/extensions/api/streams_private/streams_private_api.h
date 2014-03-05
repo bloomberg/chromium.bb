@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 
@@ -26,7 +26,7 @@ class StreamHandle;
 
 namespace extensions {
 
-class StreamsPrivateAPI : public ProfileKeyedAPI,
+class StreamsPrivateAPI : public BrowserContextKeyedAPI,
                           public content::NotificationObserver {
  public:
   // Convenience method to get the StreamsPrivateAPI for a profile.
@@ -40,8 +40,8 @@ class StreamsPrivateAPI : public ProfileKeyedAPI,
                               scoped_ptr<content::StreamHandle> stream,
                               int64 expected_content_size);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<StreamsPrivateAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<StreamsPrivateAPI>* GetFactoryInstance();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -49,12 +49,12 @@ class StreamsPrivateAPI : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<StreamsPrivateAPI>;
+  friend class BrowserContextKeyedAPIFactory<StreamsPrivateAPI>;
   typedef std::map<std::string,
                    std::map<GURL,
                             linked_ptr<content::StreamHandle> > > StreamMap;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "StreamsPrivateAPI";
   }

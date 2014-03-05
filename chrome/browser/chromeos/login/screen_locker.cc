@@ -279,9 +279,9 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     LOG_ASSERT(unlock_user);
 
     Profile* profile = UserManager::Get()->GetProfileByUser(unlock_user);
-         extensions::ScreenlockPrivateEventRouter* router =
-             extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()
-                 ->GetForProfile(profile);
+    extensions::ScreenlockPrivateEventRouter* router =
+        extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
+            profile);
     router->OnAuthAttempted(auth_type, user_context.password);
     return;
   }

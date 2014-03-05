@@ -12,7 +12,6 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "url/gurl.h"
 
@@ -223,7 +223,7 @@ class WebNavigationGetAllFramesFunction : public ChromeSyncExtensionFunction {
                              WEBNAVIGATION_GETALLFRAMES)
 };
 
-class WebNavigationAPI : public ProfileKeyedAPI,
+class WebNavigationAPI : public BrowserContextKeyedAPI,
                          public extensions::EventRouter::Observer {
  public:
   explicit WebNavigationAPI(content::BrowserContext* context);
@@ -232,19 +232,19 @@ class WebNavigationAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<WebNavigationAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<WebNavigationAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<WebNavigationAPI>;
+  friend class BrowserContextKeyedAPIFactory<WebNavigationAPI>;
 
   content::BrowserContext* browser_context_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "WebNavigationAPI";
   }

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_OVERRIDE_REGISTRAR_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class Profile;
 
@@ -18,14 +18,14 @@ class BrowserContext;
 
 namespace extensions {
 
-class ExtensionWebUIOverrideRegistrar : public ProfileKeyedAPI,
-                             public content::NotificationObserver {
+class ExtensionWebUIOverrideRegistrar : public BrowserContextKeyedAPI,
+                                        public content::NotificationObserver {
  public:
   explicit ExtensionWebUIOverrideRegistrar(content::BrowserContext* context);
   virtual ~ExtensionWebUIOverrideRegistrar();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
       GetFactoryInstance();
 
   // content::NotificationObserver implementation.
@@ -34,9 +34,9 @@ class ExtensionWebUIOverrideRegistrar : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>;
+  friend class BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "ExtensionWebUIOverrideRegistrar";
   }

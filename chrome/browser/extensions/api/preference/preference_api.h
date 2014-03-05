@@ -9,9 +9,9 @@
 
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "content/public/browser/notification_observer.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs_scope.h"
 
@@ -89,7 +89,7 @@ class PreferenceAPIBase {
 };
 
 class PreferenceAPI : public PreferenceAPIBase,
-                      public ProfileKeyedAPI,
+                      public BrowserContextKeyedAPI,
                       public EventRouter::Observer,
                       public ContentSettingsStore::Observer {
  public:
@@ -99,8 +99,8 @@ class PreferenceAPI : public PreferenceAPIBase,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<PreferenceAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<PreferenceAPI>* GetFactoryInstance();
 
   // Convenience method to get the PreferenceAPI for a profile.
   static PreferenceAPI* Get(content::BrowserContext* context);
@@ -122,7 +122,7 @@ class PreferenceAPI : public PreferenceAPIBase,
                                            ExtensionPrefValueMap* value_map);
 
  private:
-  friend class ProfileKeyedAPIFactory<PreferenceAPI>;
+  friend class BrowserContextKeyedAPIFactory<PreferenceAPI>;
 
   // ContentSettingsStore::Observer implementation.
   virtual void OnContentSettingChanged(const std::string& extension_id,
@@ -137,7 +137,7 @@ class PreferenceAPI : public PreferenceAPIBase,
 
   Profile* profile_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "PreferenceAPI";
   }

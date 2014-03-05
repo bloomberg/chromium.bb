@@ -15,11 +15,11 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/dom_action_types.h"
 #include "extensions/browser/api_activity_monitor.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class Profile;
 
@@ -39,7 +39,7 @@ class InstallTracker;
 // It writes to an ActivityDatabase on a separate thread to record the activity.
 // Each profile has different extensions, so we keep a different database for
 // each profile.
-class ActivityLog : public ProfileKeyedAPI,
+class ActivityLog : public BrowserContextKeyedAPI,
                     public ApiActivityMonitor,
                     public TabHelper::ScriptExecutionObserver,
                     public InstallObserver {
@@ -51,7 +51,7 @@ class ActivityLog : public ProfileKeyedAPI,
     virtual void OnExtensionActivity(scoped_refptr<Action> activity) = 0;
   };
 
-  static ProfileKeyedAPIFactory<ActivityLog>* GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<ActivityLog>* GetFactoryInstance();
 
   // ActivityLog is a BrowserContextKeyedService, so don't instantiate it with
   // the constructor; use GetInstance instead.
@@ -119,7 +119,7 @@ class ActivityLog : public ProfileKeyedAPI,
 
  private:
   friend class ActivityLogTest;
-  friend class ProfileKeyedAPIFactory<ActivityLog>;
+  friend class BrowserContextKeyedAPIFactory<ActivityLog>;
   friend class RenderViewActivityLogTest;
 
   explicit ActivityLog(content::BrowserContext* context);
@@ -156,7 +156,7 @@ class ActivityLog : public ProfileKeyedAPI,
   void ChooseDatabasePolicy();
   void SetDatabasePolicy(ActivityLogPolicy::PolicyType policy_type);
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ActivityLog"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsCreatedWithBrowserContext = false;
@@ -212,7 +212,7 @@ class ActivityLog : public ProfileKeyedAPI,
 };
 
 template <>
-void ProfileKeyedAPIFactory<ActivityLog>::DeclareFactoryDependencies();
+void BrowserContextKeyedAPIFactory<ActivityLog>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

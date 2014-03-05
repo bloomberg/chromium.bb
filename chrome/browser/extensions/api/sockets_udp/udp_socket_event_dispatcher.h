@@ -23,7 +23,7 @@ namespace api {
 // Dispatch events related to "sockets.udp" sockets from callback on native
 // socket instances. There is one instance per profile.
 class UDPSocketEventDispatcher
-    : public ProfileKeyedAPI,
+    : public BrowserContextKeyedAPI,
       public base::SupportsWeakPtr<UDPSocketEventDispatcher> {
  public:
   explicit UDPSocketEventDispatcher(content::BrowserContext* context);
@@ -35,16 +35,17 @@ class UDPSocketEventDispatcher
   // Socket is active again, start receiving data from it.
   void OnSocketResume(const std::string& extension_id, int socket_id);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<UDPSocketEventDispatcher>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>*
+      GetFactoryInstance();
 
   // Convenience method to get the SocketEventDispatcher for a profile.
   static UDPSocketEventDispatcher* Get(content::BrowserContext* context);
 
  private:
   typedef ApiResourceManager<ResumableUDPSocket>::ApiResourceData SocketData;
-  friend class ProfileKeyedAPIFactory<UDPSocketEventDispatcher>;
-  // ProfileKeyedAPI implementation.
+  friend class BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>;
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "UDPSocketEventDispatcher";
   }

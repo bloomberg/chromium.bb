@@ -21,13 +21,13 @@ const int kDefaultBufferSize = 4096;
 
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<
-    ApiResourceManager<SerialConnection> > >
-        g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ApiResourceManager<SerialConnection> > >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<SerialConnection> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<SerialConnection> >*
 ApiResourceManager<SerialConnection>::GetFactoryInstance() {
   return g_factory.Pointer();
 }

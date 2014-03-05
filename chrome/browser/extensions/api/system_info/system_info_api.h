@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_SYSTEM_INFO_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_SYSTEM_INFO_API_H_
 
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 namespace extensions {
 
 // A Profile-scoped object which is registered as an observer of EventRouter
 // to observe the systemInfo event listener arrival/removal.
-class SystemInfoAPI : public ProfileKeyedAPI,
+class SystemInfoAPI : public BrowserContextKeyedAPI,
                       public EventRouter::Observer {
  public:
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<SystemInfoAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<SystemInfoAPI>* GetFactoryInstance();
 
   explicit SystemInfoAPI(content::BrowserContext* context);
   virtual ~SystemInfoAPI();
@@ -29,9 +29,9 @@ class SystemInfoAPI : public ProfileKeyedAPI,
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<SystemInfoAPI>;
+  friend class BrowserContextKeyedAPIFactory<SystemInfoAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "SystemInfoAPI";
   }

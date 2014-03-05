@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_SIGNIN_GAIA_AUTH_EXTENSION_LOADER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -15,7 +15,7 @@ class BrowserContext;
 namespace extensions {
 
 // Manages and registers the gaia auth extension with the extension system.
-class GaiaAuthExtensionLoader : public ProfileKeyedAPI {
+class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
  public:
   explicit GaiaAuthExtensionLoader(content::BrowserContext* context);
   virtual ~GaiaAuthExtensionLoader();
@@ -27,16 +27,17 @@ class GaiaAuthExtensionLoader : public ProfileKeyedAPI {
 
   static GaiaAuthExtensionLoader* Get(content::BrowserContext* context);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>*
+      GetFactoryInstance();
 
  private:
-  friend class ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>;
+  friend class BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>;
 
   // BrowserContextKeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "GaiaAuthExtensionLoader";
   }

@@ -28,16 +28,18 @@ using api::activity_log_private::ActivityResultSet;
 using api::activity_log_private::ExtensionActivity;
 using api::activity_log_private::Filter;
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLogAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ActivityLogAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<ActivityLogAPI>* ActivityLogAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<ActivityLogAPI>*
+ActivityLogAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-template<>
-void ProfileKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
+template <>
+void
+BrowserContextKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ActivityLog::GetFactoryInstance());
 }

@@ -48,7 +48,7 @@ TabsWindowsAPI::~TabsWindowsAPI() {
 
 // static
 TabsWindowsAPI* TabsWindowsAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<TabsWindowsAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<TabsWindowsAPI>::Get(context);
 }
 
 TabsEventRouter* TabsWindowsAPI::tabs_event_router() {
@@ -70,10 +70,11 @@ void TabsWindowsAPI::Shutdown() {
       this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<TabsWindowsAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<TabsWindowsAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
-ProfileKeyedAPIFactory<TabsWindowsAPI>* TabsWindowsAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<TabsWindowsAPI>*
+TabsWindowsAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

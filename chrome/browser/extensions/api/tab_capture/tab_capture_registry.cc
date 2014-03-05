@@ -122,14 +122,14 @@ TabCaptureRegistry::~TabCaptureRegistry() {
 
 // static
 TabCaptureRegistry* TabCaptureRegistry::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<TabCaptureRegistry>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<TabCaptureRegistry>::Get(context);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<TabCaptureRegistry> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<TabCaptureRegistry> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<TabCaptureRegistry>*
+BrowserContextKeyedAPIFactory<TabCaptureRegistry>*
 TabCaptureRegistry::GetFactoryInstance() {
   return g_factory.Pointer();
 }

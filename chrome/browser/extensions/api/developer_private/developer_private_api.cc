@@ -150,11 +150,11 @@ namespace Inspect = api::developer_private::Inspect;
 namespace PackDirectory = api::developer_private::PackDirectory;
 namespace Reload = api::developer_private::Reload;
 
-static base::LazyInstance<ProfileKeyedAPIFactory<DeveloperPrivateAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<DeveloperPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<DeveloperPrivateAPI>*
+BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
 DeveloperPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -162,7 +162,7 @@ DeveloperPrivateAPI::GetFactoryInstance() {
 // static
 DeveloperPrivateAPI* DeveloperPrivateAPI::Get(
     content::BrowserContext* context) {
-  return GetFactoryInstance()->GetForProfile(context);
+  return GetFactoryInstance()->Get(context);
 }
 
 DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)

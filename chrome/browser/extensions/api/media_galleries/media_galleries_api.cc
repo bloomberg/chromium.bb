@@ -277,11 +277,12 @@ void MediaGalleriesEventRouter::Shutdown() {
   media_scan_manager()->CancelScansForProfile(profile_);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<MediaGalleriesEventRouter> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<MediaGalleriesEventRouter>*
+BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
 MediaGalleriesEventRouter::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -292,8 +293,7 @@ MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(
   DCHECK(media_file_system_registry()
              ->GetPreferences(Profile::FromBrowserContext(context))
              ->IsInitialized());
-  return ProfileKeyedAPIFactory<MediaGalleriesEventRouter>::GetForProfile(
-      context);
+  return BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>::Get(context);
 }
 
 bool MediaGalleriesEventRouter::ExtensionHasScanProgressListener(

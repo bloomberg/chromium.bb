@@ -68,7 +68,7 @@ void CollectLogInfo(
 
 // static
 LogPrivateAPI* LogPrivateAPI::Get(content::BrowserContext* context) {
-  return GetFactoryInstance()->GetForProfile(context);
+  return GetFactoryInstance()->Get(context);
 }
 
 LogPrivateAPI::LogPrivateAPI(content::BrowserContext* context)
@@ -95,11 +95,11 @@ void LogPrivateAPI::StopNetInternalsWatch(const std::string& extension_id) {
   MaybeStopNetInternalLogging();
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<LogPrivateAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<LogPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<LogPrivateAPI>*
+BrowserContextKeyedAPIFactory<LogPrivateAPI>*
 LogPrivateAPI::GetFactoryInstance() {
   return &g_factory.Get();
 }

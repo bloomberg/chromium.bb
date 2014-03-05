@@ -92,12 +92,13 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
       extension_id_, event.Pass());
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<SignedInDevicesManager> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<SignedInDevicesManager> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<SignedInDevicesManager>*
-    SignedInDevicesManager::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<SignedInDevicesManager>*
+SignedInDevicesManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

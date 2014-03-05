@@ -10,12 +10,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/common/extensions/api/history.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 namespace base {
@@ -53,8 +53,7 @@ class HistoryEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(HistoryEventRouter);
 };
 
-class HistoryAPI : public ProfileKeyedAPI,
-                   public EventRouter::Observer {
+class HistoryAPI : public BrowserContextKeyedAPI, public EventRouter::Observer {
  public:
   explicit HistoryAPI(content::BrowserContext* context);
   virtual ~HistoryAPI();
@@ -62,18 +61,18 @@ class HistoryAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<HistoryAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<HistoryAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<HistoryAPI>;
+  friend class BrowserContextKeyedAPIFactory<HistoryAPI>;
 
   content::BrowserContext* browser_context_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "HistoryAPI";
   }
@@ -83,8 +82,8 @@ class HistoryAPI : public ProfileKeyedAPI,
   scoped_ptr<HistoryEventRouter> history_event_router_;
 };
 
-template<>
-void ProfileKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies();
+template <>
+void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies();
 
 // Base class for history function APIs.
 class HistoryFunction : public ChromeAsyncExtensionFunction {

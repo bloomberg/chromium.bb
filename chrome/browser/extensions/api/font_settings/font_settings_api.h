@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 class Profile;
@@ -74,18 +74,18 @@ class FontSettingsEventRouter {
 // The profile-keyed service that manages the font_settings extension API.
 // This is not an EventRouter::Observer (and does not lazily initialize) because
 // doing so caused a regression in perf tests. See crbug.com/163466.
-class FontSettingsAPI : public ProfileKeyedAPI {
+class FontSettingsAPI : public BrowserContextKeyedAPI {
  public:
   explicit FontSettingsAPI(content::BrowserContext* context);
   virtual ~FontSettingsAPI();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<FontSettingsAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<FontSettingsAPI>* GetFactoryInstance();
 
  private:
-  friend class ProfileKeyedAPIFactory<FontSettingsAPI>;
+  friend class BrowserContextKeyedAPIFactory<FontSettingsAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "FontSettingsAPI";
   }

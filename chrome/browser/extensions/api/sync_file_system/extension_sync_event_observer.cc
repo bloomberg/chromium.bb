@@ -25,11 +25,12 @@ using sync_file_system::SyncEventObserver;
 
 namespace extensions {
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionSyncEventObserver> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<ExtensionSyncEventObserver>*
+BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>*
 ExtensionSyncEventObserver::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -141,7 +142,7 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
 }
 
 template <>
-void ProfileKeyedAPIFactory<
+void BrowserContextKeyedAPIFactory<
     ExtensionSyncEventObserver>::DeclareFactoryDependencies() {
   DependsOn(sync_file_system::SyncFileSystemServiceFactory::GetInstance());
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());

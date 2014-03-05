@@ -7,9 +7,9 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/braille_display_private.h"
 #include "extensions/browser/api/async_api_function.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 class Profile;
@@ -22,10 +22,9 @@ class BrailleDisplayPrivateAPIUserTest;
 }  // namespace api
 
 // Implementation of the chrome.brailleDisplayPrivate API.
-class BrailleDisplayPrivateAPI
-    : public ProfileKeyedAPI,
-      api::braille_display_private::BrailleObserver,
-      EventRouter::Observer {
+class BrailleDisplayPrivateAPI : public BrowserContextKeyedAPI,
+                                 api::braille_display_private::BrailleObserver,
+                                 EventRouter::Observer {
  public:
   explicit BrailleDisplayPrivateAPI(content::BrowserContext* context);
   virtual ~BrailleDisplayPrivateAPI();
@@ -33,8 +32,9 @@ class BrailleDisplayPrivateAPI
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI>*
+      GetFactoryInstance();
 
   // BrailleObserver implementation.
   virtual void OnDisplayStateChanged(
@@ -48,7 +48,7 @@ class BrailleDisplayPrivateAPI
 
 
  private:
-  friend class ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>;
+  friend class BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI>;
   friend class api::braille_display_private::BrailleDisplayPrivateAPIUserTest;
 
   class EventDelegate {
@@ -71,7 +71,7 @@ class BrailleDisplayPrivateAPI
                  BrailleObserver> scoped_observer_;
   scoped_ptr<EventDelegate> event_delegate_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "BrailleDisplayPrivateAPI";
   }

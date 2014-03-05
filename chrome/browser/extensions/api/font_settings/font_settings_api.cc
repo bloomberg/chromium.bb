@@ -211,11 +211,12 @@ FontSettingsAPI::FontSettingsAPI(content::BrowserContext* context)
 FontSettingsAPI::~FontSettingsAPI() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<FontSettingsAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<FontSettingsAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<FontSettingsAPI>* FontSettingsAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<FontSettingsAPI>*
+FontSettingsAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

@@ -15,12 +15,13 @@ namespace api {
 
 using content::BrowserThread;
 
-static base::LazyInstance<ProfileKeyedAPIFactory<UDPSocketEventDispatcher> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<UDPSocketEventDispatcher>*
-    UDPSocketEventDispatcher::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>*
+UDPSocketEventDispatcher::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -29,8 +30,7 @@ UDPSocketEventDispatcher* UDPSocketEventDispatcher::Get(
     content::BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return ProfileKeyedAPIFactory<UDPSocketEventDispatcher>::GetForProfile(
-      context);
+  return BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>::Get(context);
 }
 
 UDPSocketEventDispatcher::UDPSocketEventDispatcher(

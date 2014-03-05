@@ -400,17 +400,18 @@ void PreferenceAPI::Shutdown() {
   extension_prefs()->content_settings_store()->RemoveObserver(this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<PreferenceAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<PreferenceAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<PreferenceAPI>* PreferenceAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<PreferenceAPI>*
+PreferenceAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 PreferenceAPI* PreferenceAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<PreferenceAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<PreferenceAPI>::Get(context);
 }
 
 void PreferenceAPI::OnListenerAdded(const EventListenerInfo& details) {
@@ -530,7 +531,8 @@ ExtensionPrefValueMap* PreferenceAPI::extension_pref_value_map() {
 }
 
 template <>
-void ProfileKeyedAPIFactory<PreferenceAPI>::DeclareFactoryDependencies() {
+void
+BrowserContextKeyedAPIFactory<PreferenceAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(ExtensionPrefValueMapFactory::GetInstance());
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());

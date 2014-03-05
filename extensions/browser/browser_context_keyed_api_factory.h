@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
+#ifndef EXTENSIONS_BROWSER_BROWSER_CONTEXT_KEYED_API_FACTORY_H_
+#define EXTENSIONS_BROWSER_BROWSER_CONTEXT_KEYED_API_FACTORY_H_
 
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -14,19 +14,19 @@
 namespace extensions {
 
 template <typename T>
-class ProfileKeyedAPIFactory;
+class BrowserContextKeyedAPIFactory;
 
-// Instantiations of ProfileKeyedAPIFactory should use this base class
+// Instantiations of BrowserContextKeyedAPIFactory should use this base class
 // and also define a static const char* service_name() function (used in the
 // BrowserContextKeyedBaseFactory constructor). These fields should
-// be accessible to the ProfileKeyedAPIFactory for the service.
-class ProfileKeyedAPI : public BrowserContextKeyedService {
+// be accessible to the BrowserContextKeyedAPIFactory for the service.
+class BrowserContextKeyedAPI : public BrowserContextKeyedService {
  protected:
-  // Defaults for flags that control ProfileKeyedAPIFactory behavior.
+  // Defaults for flags that control BrowserContextKeyedAPIFactory behavior.
   // These can be overridden by subclasses to change that behavior.
   // See BrowserContextKeyedBaseFactory for usage.
 
-  // These flags affect what instance is returned when GetForProfile is called
+  // These flags affect what instance is returned when Get() is called
   // on an incognito profile. By default, it returns NULL. If
   // kServiceRedirectedInIncognito is true, it returns the instance for the
   // corresponding regular profile. If kServiceHasOwnInstanceInIncognito
@@ -36,7 +36,7 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
 
   // If set to false, don't start the service at BrowserContext creation time.
   // (The default differs from the BrowserContextKeyedBaseFactory default,
-  // because historically, ProfileKeyedAPIs often do tasks at startup.)
+  // because historically, BrowserContextKeyedAPIs often do tasks at startup.)
   static const bool kServiceIsCreatedWithBrowserContext = true;
 
   // If set to true, GetForProfile returns NULL for TestingBrowserContexts.
@@ -48,19 +48,19 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
   // translation unit (and thus cannot be initialized in a header file).
   //
   // In the header file, declare GetFactoryInstance(), e.g.:
-  //   class ProcessesAPI {
+  //   class HistoryAPI {
   //   ...
   //    public:
-  //     static ProfileKeyedAPIFactory<ProcessesAPI>* GetFactoryInstance();
+  //     static BrowserContextKeyedAPIFactory<HistoryAPI>* GetFactoryInstance();
   //   };
   //
   // In the cc file, provide the implementation, e.g.:
-  //   static base::LazyInstance<ProfileKeyedAPIFactory<ProcessesAPI> >
+  //   static base::LazyInstance<BrowserContextKeyedAPIFactory<HistoryAPI> >
   //   g_factory = LAZY_INSTANCE_INITIALIZER;
   //
   //   // static
-  //   ProfileKeyedAPIFactory<ProcessesAPI>*
-  //   ProcessesAPI::GetFactoryInstance() {
+  //   BrowserContextKeyedAPIFactory<HistoryAPI>*
+  //   HistoryAPI::GetFactoryInstance() {
   //     return g_factory.Pointer();
   //   }
 };
@@ -70,10 +70,9 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
 // template instead of its own separate factory definition to manage its
 // per-profile instances.
 template <typename T>
-class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
+class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // TODO(yoz): Rename to Get().
-  static T* GetForProfile(content::BrowserContext* context) {
+  static T* Get(content::BrowserContext* context) {
     return static_cast<T*>(
         T::GetFactoryInstance()->GetServiceForBrowserContext(context, true));
   }
@@ -81,26 +80,26 @@ class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
   // Declare dependencies on other factories.
   // By default, ExtensionSystemFactory is the only dependency; however,
   // specializations can override this. Declare your specialization in
-  // your header file after the ProfileKeyedAPI class definition.
+  // your header file after the BrowserContextKeyedAPI class definition.
   // Then in the cc file (or inline in the header), define it, e.g.:
   //   template <>
-  //   ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
+  //   void BrowserContextKeyedAPIFactory<
+  //       PushMessagingAPI>::DeclareFactoryDependencies() {
   //     DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   //     DependsOn(ProfileSyncServiceFactory::GetInstance());
-  // }
+  //   }
   void DeclareFactoryDependencies() {
     DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   }
 
-  ProfileKeyedAPIFactory()
+  BrowserContextKeyedAPIFactory()
       : BrowserContextKeyedServiceFactory(
-          T::service_name(),
-          BrowserContextDependencyManager::GetInstance()) {
+            T::service_name(),
+            BrowserContextDependencyManager::GetInstance()) {
     DeclareFactoryDependencies();
   }
 
-  virtual ~ProfileKeyedAPIFactory() {
-  }
+  virtual ~BrowserContextKeyedAPIFactory() {}
 
  private:
   // BrowserContextKeyedServiceFactory implementation.
@@ -130,9 +129,9 @@ class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
     return T::kServiceIsNULLWhileTesting;
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileKeyedAPIFactory);
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextKeyedAPIFactory);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
+#endif  // EXTENSIONS_BROWSER_BROWSER_CONTEXT_KEYED_API_FACTORY_H_

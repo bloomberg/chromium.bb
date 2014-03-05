@@ -115,15 +115,15 @@ void GaiaAuthExtensionLoader::Shutdown() {
 
 // static
 GaiaAuthExtensionLoader* GaiaAuthExtensionLoader::Get(BrowserContext* context) {
-  return ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>::GetForProfile(
-      context);
+  return BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>::Get(context);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<GaiaAuthExtensionLoader> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>*
+BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>*
 GaiaAuthExtensionLoader::GetFactoryInstance() {
   return g_factory.Pointer();
 }

@@ -12,24 +12,24 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/hid.h"
 #include "device/hid/hid_device_info.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace extensions {
 
-class HidDeviceManager : public ProfileKeyedAPI {
+class HidDeviceManager : public BrowserContextKeyedAPI {
  public:
   explicit HidDeviceManager(content::BrowserContext* context);
   virtual ~HidDeviceManager();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<HidDeviceManager>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<HidDeviceManager>* GetFactoryInstance();
 
   // Convenience method to get the HidDeviceManager for a profile.
   static HidDeviceManager* Get(content::BrowserContext* context) {
-    return ProfileKeyedAPIFactory<HidDeviceManager>::GetForProfile(context);
+    return BrowserContextKeyedAPIFactory<HidDeviceManager>::Get(context);
   }
 
   scoped_ptr<base::ListValue> GetApiDevices(uint16_t vendor_id,
@@ -38,7 +38,7 @@ class HidDeviceManager : public ProfileKeyedAPI {
   bool GetDeviceInfo(int resource_id, device::HidDeviceInfo* device_info);
 
  private:
-  friend class ProfileKeyedAPIFactory<HidDeviceManager>;
+  friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
 
   static const char* service_name() { return "HidDeviceManager"; }
 

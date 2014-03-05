@@ -13,10 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class Profile;
 
@@ -35,7 +35,7 @@ namespace extensions {
 
 // This class owns all RulesRegistries implementations of an ExtensionService.
 // This class lives on the UI thread.
-class RulesRegistryService : public ProfileKeyedAPI,
+class RulesRegistryService : public BrowserContextKeyedAPI,
                              public content::NotificationObserver {
  public:
   typedef RulesRegistry::WebViewKey WebViewKey;
@@ -60,8 +60,9 @@ class RulesRegistryService : public ProfileKeyedAPI,
   // created by us so that the RulesRegistries can be released.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<RulesRegistryService>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<RulesRegistryService>*
+      GetFactoryInstance();
 
   // Convenience method to get the RulesRegistryService for a profile.
   static RulesRegistryService* Get(content::BrowserContext* context);
@@ -92,7 +93,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
   void SimulateExtensionUninstalled(const std::string& extension_id);
 
  private:
-  friend class ProfileKeyedAPIFactory<RulesRegistryService>;
+  friend class BrowserContextKeyedAPIFactory<RulesRegistryService>;
 
   // Maps <event name, webview key> to RuleRegistries that handle these
   // events.
@@ -112,7 +113,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
       void (RulesRegistry::*notification_callback)(const std::string&),
       const std::string& extension_id);
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "RulesRegistryService";
   }

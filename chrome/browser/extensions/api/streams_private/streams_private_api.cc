@@ -26,7 +26,7 @@ namespace streams_private = api::streams_private;
 
 // static
 StreamsPrivateAPI* StreamsPrivateAPI::Get(content::BrowserContext* context) {
-  return GetFactoryInstance()->GetForProfile(context);
+  return GetFactoryInstance()->Get(context);
 }
 
 StreamsPrivateAPI::StreamsPrivateAPI(content::BrowserContext* context)
@@ -67,12 +67,12 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   streams_[extension_id][url] = make_linked_ptr(stream.release());
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<StreamsPrivateAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<StreamsPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<StreamsPrivateAPI>*
-    StreamsPrivateAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<StreamsPrivateAPI>*
+StreamsPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

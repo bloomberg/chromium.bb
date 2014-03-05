@@ -430,17 +430,18 @@ void LocationManager::Observe(int type,
   }
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<LocationManager> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<LocationManager> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<LocationManager>* LocationManager::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<LocationManager>*
+LocationManager::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
  // static
 LocationManager* LocationManager::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<LocationManager>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<LocationManager>::Get(context);
 }
 
 }  // namespace extensions

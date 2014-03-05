@@ -25,19 +25,19 @@ bool ShouldPauseOnReceiveError(serial::ReceiveError error) {
 
 }  // namespace
 
-static base::LazyInstance<ProfileKeyedAPIFactory<SerialEventDispatcher> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<SerialEventDispatcher> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<SerialEventDispatcher>*
-    SerialEventDispatcher::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<SerialEventDispatcher>*
+SerialEventDispatcher::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 SerialEventDispatcher* SerialEventDispatcher::Get(
     content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<SerialEventDispatcher>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<SerialEventDispatcher>::Get(context);
 }
 
 SerialEventDispatcher::SerialEventDispatcher(content::BrowserContext* context)

@@ -357,10 +357,10 @@ TtsAPI::TtsAPI(content::BrowserContext* context) {
 TtsAPI::~TtsAPI() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<TtsAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<TtsAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
-ProfileKeyedAPIFactory<TtsAPI>* TtsAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<TtsAPI>* TtsAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

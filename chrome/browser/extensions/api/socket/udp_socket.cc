@@ -14,13 +14,13 @@
 
 namespace extensions {
 
-static base::LazyInstance<ProfileKeyedAPIFactory<
-      ApiResourceManager<ResumableUDPSocket> > >
-          g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ApiResourceManager<ResumableUDPSocket> > >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<ResumableUDPSocket> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<ResumableUDPSocket> >*
 ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }

@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class Profile;
 
@@ -34,10 +34,9 @@ struct Coordinates;
 
 // Profile's manager of all location watch requests created by chrome.location
 // API. Lives in the UI thread.
-class LocationManager
-    : public ProfileKeyedAPI,
-      public content::NotificationObserver,
-      public base::SupportsWeakPtr<LocationManager> {
+class LocationManager : public BrowserContextKeyedAPI,
+                        public content::NotificationObserver,
+                        public base::SupportsWeakPtr<LocationManager> {
  public:
   explicit LocationManager(content::BrowserContext* context);
   virtual ~LocationManager();
@@ -55,15 +54,15 @@ class LocationManager
   void RemoveLocationRequest(const std::string& extension_id,
                              const std::string& name);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<LocationManager>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<LocationManager>* GetFactoryInstance();
 
   // Convenience method to get the LocationManager for a profile.
   static LocationManager* Get(content::BrowserContext* context);
 
  private:
   friend class LocationRequest;
-  friend class ProfileKeyedAPIFactory<LocationManager>;
+  friend class BrowserContextKeyedAPIFactory<LocationManager>;
 
   typedef std::string ExtensionId;
   typedef scoped_refptr<LocationRequest> LocationRequestPointer;
@@ -86,7 +85,7 @@ class LocationManager
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "LocationManager"; }
 
   // Profile for this location manager.

@@ -132,8 +132,7 @@ void ShowFeedbackPage(Browser* browser,
   }
 
   extensions::FeedbackPrivateAPI* api =
-      extensions::FeedbackPrivateAPI::GetFactoryInstance()->GetForProfile(
-          profile);
+      extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
 
   api->RequestFeedback(description_template,
                        category_tag,

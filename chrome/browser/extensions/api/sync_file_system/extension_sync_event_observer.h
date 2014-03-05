@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -24,9 +24,9 @@ namespace extensions {
 
 // Observes changes in SyncFileSystem and relays events to JS Extension API.
 class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
-                                   public ProfileKeyedAPI {
+                                   public BrowserContextKeyedAPI {
  public:
-  static ProfileKeyedAPIFactory<ExtensionSyncEventObserver>*
+  static BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>*
       GetFactoryInstance();
 
   explicit ExtensionSyncEventObserver(content::BrowserContext* context);
@@ -51,13 +51,13 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
       sync_file_system::SyncDirection direction) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<ExtensionSyncEventObserver>;
+  friend class BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>;
 
   // Returns an empty string if the extension |app_origin| cannot be found
   // in the installed extension list.
   std::string GetExtensionId(const GURL& app_origin);
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionSyncEventObserver"; }
   static const bool kServiceIsCreatedWithBrowserContext = false;
 
@@ -74,7 +74,7 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
 };
 
 template <>
-void ProfileKeyedAPIFactory<
+void BrowserContextKeyedAPIFactory<
     ExtensionSyncEventObserver>::DeclareFactoryDependencies();
 
 }  // namespace extensions

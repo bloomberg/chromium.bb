@@ -728,11 +728,12 @@ void ManagementAPI::Shutdown() {
       this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ManagementAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ManagementAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<ManagementAPI>* ManagementAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<ManagementAPI>*
+ManagementAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

@@ -421,11 +421,12 @@ WebRequestAPI::~WebRequestAPI() {
       ->UnregisterObserver(this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<WebRequestAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<WebRequestAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<WebRequestAPI>* WebRequestAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<WebRequestAPI>*
+WebRequestAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

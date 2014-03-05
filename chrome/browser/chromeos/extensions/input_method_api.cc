@@ -95,11 +95,12 @@ void InputMethodAPI::OnListenerAdded(
   ExtensionSystem::Get(context_)->event_router()->UnregisterObserver(this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<InputMethodAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<InputMethodAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<InputMethodAPI>* InputMethodAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<InputMethodAPI>*
+InputMethodAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

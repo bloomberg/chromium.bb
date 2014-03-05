@@ -9,7 +9,7 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AutotestPrivate) {
   // Turn on testing mode so we don't kill the browser.
   extensions::AutotestPrivateAPI::GetFactoryInstance()
-      ->GetForProfile(browser()->profile())
+      ->Get(browser()->profile())
       ->set_test_mode(true);
   ASSERT_TRUE(RunComponentExtensionTest("autotest_private")) << message_;
 }

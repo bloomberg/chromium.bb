@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 class ExtensionService;
@@ -190,7 +190,7 @@ class ManagementEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ManagementEventRouter);
 };
 
-class ManagementAPI : public ProfileKeyedAPI,
+class ManagementAPI : public BrowserContextKeyedAPI,
                       public extensions::EventRouter::Observer {
  public:
   explicit ManagementAPI(content::BrowserContext* context);
@@ -199,19 +199,19 @@ class ManagementAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<ManagementAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<ManagementAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<ManagementAPI>;
+  friend class BrowserContextKeyedAPIFactory<ManagementAPI>;
 
   content::BrowserContext* browser_context_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "ManagementAPI";
   }

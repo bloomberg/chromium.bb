@@ -122,11 +122,11 @@ void RulesRegistryService::Shutdown() {
           scoped_refptr<WebRequestRulesRegistry>(NULL)));
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<RulesRegistryService> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<RulesRegistryService> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<RulesRegistryService>*
+BrowserContextKeyedAPIFactory<RulesRegistryService>*
 RulesRegistryService::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -134,7 +134,7 @@ RulesRegistryService::GetFactoryInstance() {
 // static
 RulesRegistryService* RulesRegistryService::Get(
     content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<RulesRegistryService>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(context);
 }
 
 void RulesRegistryService::RegisterRulesRegistry(

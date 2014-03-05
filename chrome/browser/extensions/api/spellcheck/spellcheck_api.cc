@@ -51,11 +51,12 @@ SpellcheckAPI::SpellcheckAPI(content::BrowserContext* context) {
 SpellcheckAPI::~SpellcheckAPI() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<SpellcheckAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<SpellcheckAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<SpellcheckAPI>* SpellcheckAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<SpellcheckAPI>*
+SpellcheckAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -98,7 +99,8 @@ void SpellcheckAPI::Observe(int type,
 }
 
 template <>
-void ProfileKeyedAPIFactory<SpellcheckAPI>::DeclareFactoryDependencies() {
+void
+BrowserContextKeyedAPIFactory<SpellcheckAPI>::DeclareFactoryDependencies() {
   DependsOn(SpellcheckServiceFactory::GetInstance());
 }
 

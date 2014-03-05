@@ -26,11 +26,11 @@ ExtensionCommandsGlobalRegistry::~ExtensionCommandsGlobalRegistry() {
 }
 
 static base::LazyInstance<
-    ProfileKeyedAPIFactory<ExtensionCommandsGlobalRegistry> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<ExtensionCommandsGlobalRegistry>*
+BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry>*
 ExtensionCommandsGlobalRegistry::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -38,7 +38,7 @@ ExtensionCommandsGlobalRegistry::GetFactoryInstance() {
 // static
 ExtensionCommandsGlobalRegistry* ExtensionCommandsGlobalRegistry::Get(
     content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<ExtensionCommandsGlobalRegistry>::GetForProfile(
+  return BrowserContextKeyedAPIFactory<ExtensionCommandsGlobalRegistry>::Get(
       context);
 }
 

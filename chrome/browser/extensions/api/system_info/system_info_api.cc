@@ -217,11 +217,12 @@ void RemoveEventListener(const std::string& event_name) {
 
 }  // namespace
 
-static base::LazyInstance<ProfileKeyedAPIFactory<SystemInfoAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<SystemInfoAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<SystemInfoAPI>* SystemInfoAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<SystemInfoAPI>*
+SystemInfoAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

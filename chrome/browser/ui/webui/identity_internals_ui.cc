@@ -141,9 +141,10 @@ IdentityInternalsUIMessageHandler::~IdentityInternalsUIMessageHandler() {}
 void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
     IdentityInternalsTokenRevoker* token_revoker) {
   // Remove token from the cache.
-  extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-      Profile::FromWebUI(web_ui()))->EraseCachedToken(
-          token_revoker->extension_id(), token_revoker->access_token());
+  extensions::IdentityAPI::GetFactoryInstance()
+      ->Get(Profile::FromWebUI(web_ui()))
+      ->EraseCachedToken(token_revoker->extension_id(),
+                         token_revoker->access_token());
 
   // Update view about the token being removed.
   base::ListValue result;
@@ -220,8 +221,9 @@ void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
     const base::ListValue* args) {
   base::ListValue results;
   extensions::IdentityAPI::CachedTokens tokens =
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          Profile::FromWebUI(web_ui()))->GetAllCachedTokens();
+      extensions::IdentityAPI::GetFactoryInstance()
+          ->Get(Profile::FromWebUI(web_ui()))
+          ->GetAllCachedTokens();
   for (extensions::IdentityAPI::CachedTokens::const_iterator
            iter = tokens.begin(); iter != tokens.end(); ++iter) {
     results.Append(GetInfoForToken(iter->first, iter->second));

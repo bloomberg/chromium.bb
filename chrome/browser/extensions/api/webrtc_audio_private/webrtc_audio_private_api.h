@@ -7,10 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/webrtc_audio_private.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "media/audio/audio_device_name.h"
 #include "url/gurl.h"
 
@@ -22,15 +22,15 @@ namespace extensions {
 
 // Listens for device changes and forwards as an extension event.
 class WebrtcAudioPrivateEventService
-    : public ProfileKeyedAPI,
+    : public BrowserContextKeyedAPI,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
   explicit WebrtcAudioPrivateEventService(content::BrowserContext* context);
   virtual ~WebrtcAudioPrivateEventService();
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
-  static ProfileKeyedAPIFactory<WebrtcAudioPrivateEventService>*
+  static BrowserContextKeyedAPIFactory<WebrtcAudioPrivateEventService>*
       GetFactoryInstance();
   static const char* service_name();
 
@@ -39,7 +39,7 @@ class WebrtcAudioPrivateEventService
       base::SystemMonitor::DeviceType device_type) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<WebrtcAudioPrivateEventService>;
+  friend class BrowserContextKeyedAPIFactory<WebrtcAudioPrivateEventService>;
 
   void SignalEvent();
 

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class DnsSdRegistry;
 // register listeners for the chrome.mdns extension API. It will use a registry
 // class to start the mDNS listener process (if necessary) and observe new
 // service events to dispatch them to registered extensions.
-class MDnsAPI : public ProfileKeyedAPI,
+class MDnsAPI : public BrowserContextKeyedAPI,
                 public EventRouter::Observer,
                 public DnsSdRegistry::DnsSdObserver {
  public:
@@ -35,8 +35,8 @@ class MDnsAPI : public ProfileKeyedAPI,
 
   static MDnsAPI* Get(content::BrowserContext* context);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<MDnsAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<MDnsAPI>* GetFactoryInstance();
 
   // Used to mock out the DnsSdRegistry for testing.
   void SetDnsSdRegistryForTesting(scoped_ptr<DnsSdRegistry> registry);
@@ -46,7 +46,7 @@ class MDnsAPI : public ProfileKeyedAPI,
   virtual DnsSdRegistry* dns_sd_registry();
 
  private:
-  friend class ProfileKeyedAPIFactory<MDnsAPI>;
+  friend class BrowserContextKeyedAPIFactory<MDnsAPI>;
 
   // EventRouter::Observer:
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
@@ -57,7 +57,7 @@ class MDnsAPI : public ProfileKeyedAPI,
       const std::string& service_type,
       const DnsSdRegistry::DnsSdServiceList& services) OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "MDnsAPI";
   }

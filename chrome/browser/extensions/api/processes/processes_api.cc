@@ -508,17 +508,18 @@ void ProcessesAPI::Shutdown() {
       this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ProcessesAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ProcessesAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<ProcessesAPI>* ProcessesAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<ProcessesAPI>*
+ProcessesAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 ProcessesAPI* ProcessesAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<ProcessesAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<ProcessesAPI>::Get(context);
 }
 
 ProcessesEventRouter* ProcessesAPI::processes_event_router() {

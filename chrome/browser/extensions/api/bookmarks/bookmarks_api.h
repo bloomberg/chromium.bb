@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -72,7 +72,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkEventRouter);
 };
 
-class BookmarksAPI : public ProfileKeyedAPI,
+class BookmarksAPI : public BrowserContextKeyedAPI,
                      public EventRouter::Observer {
  public:
   explicit BookmarksAPI(content::BrowserContext* context);
@@ -81,19 +81,19 @@ class BookmarksAPI : public ProfileKeyedAPI,
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<BookmarksAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<BookmarksAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(
       const EventListenerInfo& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<BookmarksAPI>;
+  friend class BrowserContextKeyedAPIFactory<BookmarksAPI>;
 
   content::BrowserContext* browser_context_;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "BookmarksAPI";
   }

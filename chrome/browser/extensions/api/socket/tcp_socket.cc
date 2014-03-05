@@ -17,24 +17,24 @@ const char kTCPSocketTypeInvalidError[] =
     "Cannot call both connect and listen on the same socket.";
 const char kSocketListenError[] = "Could not listen on the specified port.";
 
-static base::LazyInstance<ProfileKeyedAPIFactory<
-      ApiResourceManager<ResumableTCPSocket> > >
-          g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ApiResourceManager<ResumableTCPSocket> > >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<ResumableTCPSocket> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<ResumableTCPSocket> >*
 ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<
-      ApiResourceManager<ResumableTCPServerSocket> > >
-          g_server_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<
+    ApiResourceManager<ResumableTCPServerSocket> > > g_server_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<ResumableTCPServerSocket> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<ResumableTCPServerSocket> >*
 ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance() {
   return g_server_factory.Pointer();
 }

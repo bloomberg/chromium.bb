@@ -18,7 +18,7 @@ class SerialConnection;
 namespace api {
 
 // Per-profile dispatcher for events on serial connections.
-class SerialEventDispatcher : public ProfileKeyedAPI {
+class SerialEventDispatcher : public BrowserContextKeyedAPI {
  public:
   explicit SerialEventDispatcher(content::BrowserContext* context);
   virtual ~SerialEventDispatcher();
@@ -28,14 +28,15 @@ class SerialEventDispatcher : public ProfileKeyedAPI {
 
   static SerialEventDispatcher* Get(content::BrowserContext* context);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<SerialEventDispatcher>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<SerialEventDispatcher>*
+      GetFactoryInstance();
 
  private:
   typedef ApiResourceManager<SerialConnection>::ApiResourceData ConnectionData;
-  friend class ProfileKeyedAPIFactory<SerialEventDispatcher>;
+  friend class BrowserContextKeyedAPIFactory<SerialEventDispatcher>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char *service_name() {
     return "SerialEventDispatcher";
   }

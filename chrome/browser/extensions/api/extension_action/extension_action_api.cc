@@ -216,7 +216,7 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
 // ExtensionActionAPI
 //
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context) {
@@ -253,14 +253,14 @@ ExtensionActionAPI::~ExtensionActionAPI() {
 }
 
 // static
-ProfileKeyedAPIFactory<ExtensionActionAPI>*
+BrowserContextKeyedAPIFactory<ExtensionActionAPI>*
 ExtensionActionAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 ExtensionActionAPI* ExtensionActionAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<ExtensionActionAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<ExtensionActionAPI>::Get(context);
 }
 
 // static

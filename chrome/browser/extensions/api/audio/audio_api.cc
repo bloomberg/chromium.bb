@@ -15,11 +15,11 @@ namespace extensions {
 
 namespace audio = api::audio;
 
-static base::LazyInstance<ProfileKeyedAPIFactory<AudioAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<AudioAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<AudioAPI>* AudioAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<AudioAPI>* AudioAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -51,7 +51,7 @@ void AudioAPI::OnDeviceChanged() {
 
 bool AudioGetInfoFunction::RunImpl() {
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(GetProfile())->GetService();
+      AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
   service->StartGetInfo(base::Bind(&AudioGetInfoFunction::OnGetInfoCompleted,
                                    this));
@@ -74,7 +74,7 @@ bool AudioSetActiveDevicesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(GetProfile())->GetService();
+      AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
 
   service->SetActiveDevices(params->ids);
@@ -87,7 +87,7 @@ bool AudioSetPropertiesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   AudioService* service =
-      AudioAPI::GetFactoryInstance()->GetForProfile(GetProfile())->GetService();
+      AudioAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
 
   int volume_value = params->properties.volume.get() ?

@@ -431,7 +431,6 @@
         'browser/extensions/api/processes/processes_api.h',
         'browser/extensions/api/processes/processes_api_constants.cc',
         'browser/extensions/api/processes/processes_api_constants.h',
-        'browser/extensions/api/profile_keyed_api_factory.h',
         'browser/extensions/api/proxy/proxy_api.cc',
         'browser/extensions/api/proxy/proxy_api.h',
         'browser/extensions/api/proxy/proxy_api_constants.cc',

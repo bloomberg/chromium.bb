@@ -12,13 +12,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/extensions/api/omnibox.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/window_open_disposition.h"
 
 class Profile;
@@ -83,14 +83,14 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class OmniboxAPI : public ProfileKeyedAPI,
+class OmniboxAPI : public BrowserContextKeyedAPI,
                    public content::NotificationObserver {
  public:
   explicit OmniboxAPI(content::BrowserContext* context);
   virtual ~OmniboxAPI();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<OmniboxAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<OmniboxAPI>* GetFactoryInstance();
 
   // Convenience method to get the OmniboxAPI for a profile.
   static OmniboxAPI* Get(content::BrowserContext* context);
@@ -111,13 +111,13 @@ class OmniboxAPI : public ProfileKeyedAPI,
   gfx::Image GetOmniboxPopupIcon(const std::string& extension_id);
 
  private:
-  friend class ProfileKeyedAPIFactory<OmniboxAPI>;
+  friend class BrowserContextKeyedAPIFactory<OmniboxAPI>;
 
   typedef std::set<const Extension*> PendingExtensions;
 
   void OnTemplateURLsLoaded();
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "OmniboxAPI";
   }
@@ -143,7 +143,7 @@ class OmniboxAPI : public ProfileKeyedAPI,
 };
 
 template <>
-void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies();
+void BrowserContextKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies();
 
 class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
  public:

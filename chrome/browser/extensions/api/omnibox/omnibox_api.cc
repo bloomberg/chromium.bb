@@ -204,17 +204,17 @@ void OmniboxAPI::Shutdown() {
 OmniboxAPI::~OmniboxAPI() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<OmniboxAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<OmniboxAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 OmniboxAPI* OmniboxAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<OmniboxAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<OmniboxAPI>::Get(context);
 }
 
 void OmniboxAPI::Observe(int type,
@@ -279,7 +279,7 @@ void OmniboxAPI::OnTemplateURLsLoaded() {
 }
 
 template <>
-void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
+void BrowserContextKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());

@@ -296,7 +296,7 @@ PushMessagingAPI::~PushMessagingAPI() {
 
 // static
 PushMessagingAPI* PushMessagingAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<PushMessagingAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<PushMessagingAPI>::Get(context);
 }
 
 void PushMessagingAPI::Shutdown() {
@@ -304,11 +304,11 @@ void PushMessagingAPI::Shutdown() {
   handler_.reset();
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<PushMessagingAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<PushMessagingAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<PushMessagingAPI>*
+BrowserContextKeyedAPIFactory<PushMessagingAPI>*
 PushMessagingAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -364,7 +364,8 @@ void PushMessagingAPI::SetMapperForTest(
 }
 
 template <>
-void ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
+void
+BrowserContextKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
 }

@@ -46,11 +46,11 @@ void ExtensionWebUIOverrideRegistrar::Observe(
 }
 
 static base::LazyInstance<
-  ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
+BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
 ExtensionWebUIOverrideRegistrar::GetFactoryInstance() {
   return g_factory.Pointer();
 }

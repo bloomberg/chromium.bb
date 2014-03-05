@@ -162,8 +162,7 @@ void IdentityGetAuthTokenFunction::CompleteFunctionWithError(
 void IdentityGetAuthTokenFunction::StartSigninFlow() {
   // All cached tokens are invalid because the user is not signed in.
   IdentityAPI* id_api =
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          GetProfile());
+      extensions::IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   id_api->EraseAllCachedTokens();
   // Display a login prompt. If the subsequent mint fails, don't display the
   // login prompt again.
@@ -178,8 +177,7 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
   // Flows are serialized to prevent excessive traffic to GAIA, and
   // to consolidate UI pop-ups.
   IdentityAPI* id_api =
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          GetProfile());
+      extensions::IdentityAPI::GetFactoryInstance()->Get(GetProfile());
 
   if (!should_prompt_for_scopes_) {
     // Caller requested no interaction.
@@ -207,7 +205,7 @@ void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
                                oauth2_info.scopes.end());
 
   extensions::IdentityAPI::GetFactoryInstance()
-      ->GetForProfile(GetProfile())
+      ->Get(GetProfile())
       ->mint_queue()
       ->RequestComplete(type, *token_key_, this);
 }
@@ -215,8 +213,7 @@ void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
 void IdentityGetAuthTokenFunction::StartMintToken(
     IdentityMintRequestQueue::MintType type) {
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
-  IdentityAPI* id_api =
-      IdentityAPI::GetFactoryInstance()->GetForProfile(GetProfile());
+  IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(*token_key_);
   IdentityTokenCacheValue::CacheValueStatus cache_status =
       cache_entry.status();
@@ -278,9 +275,8 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
     const std::string& access_token, int time_to_live) {
   IdentityTokenCacheValue token(access_token,
                                 base::TimeDelta::FromSeconds(time_to_live));
-  IdentityAPI::GetFactoryInstance()
-      ->GetForProfile(GetProfile())
-      ->SetCachedToken(*token_key_, token);
+  IdentityAPI::GetFactoryInstance()->Get(GetProfile())->SetCachedToken(
+      *token_key_, token);
 
   CompleteMintTokenFlow();
   CompleteFunctionWithResult(access_token);
@@ -295,7 +291,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       extensions::IdentityAPI::GetFactoryInstance()
-          ->GetForProfile(GetProfile())
+          ->Get(GetProfile())
           ->ReportAuthError(error);
       if (should_prompt_for_signin_) {
         // Display a login prompt and try again (once).
@@ -314,10 +310,8 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
-  IdentityAPI::GetFactoryInstance()
-      ->GetForProfile(GetProfile())
-      ->SetCachedToken(*token_key_,
-                       IdentityTokenCacheValue(issue_advice));
+  IdentityAPI::GetFactoryInstance()->Get(GetProfile())->SetCachedToken(
+      *token_key_, IdentityTokenCacheValue(issue_advice));
   CompleteMintTokenFlow();
 
   should_prompt_for_signin_ = false;
@@ -381,9 +375,8 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
   if (!expiration.empty() && base::StringToInt(expiration, &time_to_live)) {
     IdentityTokenCacheValue token_value(
         access_token, base::TimeDelta::FromSeconds(time_to_live));
-    IdentityAPI::GetFactoryInstance()
-        ->GetForProfile(GetProfile())
-        ->SetCachedToken(*token_key_, token_value);
+    IdentityAPI::GetFactoryInstance()->Get(GetProfile())->SetCachedToken(
+        *token_key_, token_value);
   }
 
   CompleteMintTokenFlow();
@@ -531,9 +524,8 @@ bool IdentityRemoveCachedAuthTokenFunction::RunImpl() {
   scoped_ptr<identity::RemoveCachedAuthToken::Params> params(
       identity::RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  IdentityAPI::GetFactoryInstance()
-      ->GetForProfile(GetProfile())
-      ->EraseCachedToken(GetExtension()->id(), params->details.token);
+  IdentityAPI::GetFactoryInstance()->Get(GetProfile())->EraseCachedToken(
+      GetExtension()->id(), params->details.token);
   return true;
 }
 
@@ -728,11 +720,11 @@ void IdentityAPI::Shutdown() {
   account_tracker_.Shutdown();
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
@@ -756,7 +748,7 @@ void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
 }
 
 template <>
-void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
+void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }

@@ -18,7 +18,7 @@ MediaPlayerAPI::~MediaPlayerAPI() {
 
 // static
 MediaPlayerAPI* MediaPlayerAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<MediaPlayerAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<MediaPlayerAPI>::Get(context);
 }
 
 MediaPlayerEventRouter* MediaPlayerAPI::media_player_event_router() {
@@ -28,11 +28,12 @@ MediaPlayerEventRouter* MediaPlayerAPI::media_player_event_router() {
   return media_player_event_router_.get();
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<MediaPlayerAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<MediaPlayerAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<MediaPlayerAPI>* MediaPlayerAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<MediaPlayerAPI>*
+MediaPlayerAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

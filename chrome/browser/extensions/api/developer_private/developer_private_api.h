@@ -10,7 +10,6 @@
 #include "base/files/file.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -91,10 +91,11 @@ class DeveloperPrivateEventRouter : public content::NotificationObserver,
 };
 
 // The profile-keyed service that manages the DeveloperPrivate API.
-class DeveloperPrivateAPI : public ProfileKeyedAPI,
+class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
                             public EventRouter::Observer {
  public:
-  static ProfileKeyedAPIFactory<DeveloperPrivateAPI>* GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
+      GetFactoryInstance();
 
   // Convenience method to get the DeveloperPrivateAPI for a profile.
   static DeveloperPrivateAPI* Get(content::BrowserContext* context);
@@ -116,9 +117,9 @@ class DeveloperPrivateAPI : public ProfileKeyedAPI,
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<DeveloperPrivateAPI>;
+  friend class BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "DeveloperPrivateAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;

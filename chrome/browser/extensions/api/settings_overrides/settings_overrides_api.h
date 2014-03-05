@@ -9,26 +9,27 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 class TemplateURL;
 
 namespace extensions {
 
-class SettingsOverridesAPI : public ProfileKeyedAPI,
+class SettingsOverridesAPI : public BrowserContextKeyedAPI,
                              public content::NotificationObserver {
  public:
   explicit SettingsOverridesAPI(content::BrowserContext* context);
   virtual ~SettingsOverridesAPI();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<SettingsOverridesAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<SettingsOverridesAPI>*
+      GetFactoryInstance();
 
  private:
-  friend class ProfileKeyedAPIFactory<SettingsOverridesAPI>;
+  friend class BrowserContextKeyedAPIFactory<SettingsOverridesAPI>;
 
   typedef std::set<scoped_refptr<const Extension> > PendingExtensions;
 
@@ -48,7 +49,7 @@ class SettingsOverridesAPI : public ProfileKeyedAPI,
   void OnTemplateURLsLoaded();
 
   void RegisterSearchProvider(const Extension* extension) const;
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "SettingsOverridesAPI"; }
 
   Profile* profile_;
@@ -65,7 +66,8 @@ class SettingsOverridesAPI : public ProfileKeyedAPI,
 };
 
 template <>
-void ProfileKeyedAPIFactory<SettingsOverridesAPI>::DeclareFactoryDependencies();
+void BrowserContextKeyedAPIFactory<
+    SettingsOverridesAPI>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

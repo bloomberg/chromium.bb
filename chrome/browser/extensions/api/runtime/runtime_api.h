@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/runtime.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/update_observer.h"
 
 class Profile;
@@ -31,11 +31,11 @@ class ExtensionHost;
 // Runtime API dispatches onStartup, onInstalled, and similar events to
 // extensions. There is one instance shared between a browser context and
 // its related incognito instance.
-class RuntimeAPI : public ProfileKeyedAPI,
+class RuntimeAPI : public BrowserContextKeyedAPI,
                    public content::NotificationObserver,
                    public extensions::UpdateObserver {
  public:
-  static ProfileKeyedAPIFactory<RuntimeAPI>* GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<RuntimeAPI>* GetFactoryInstance();
 
   explicit RuntimeAPI(content::BrowserContext* context);
   virtual ~RuntimeAPI();
@@ -46,14 +46,14 @@ class RuntimeAPI : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<RuntimeAPI>;
+  friend class BrowserContextKeyedAPIFactory<RuntimeAPI>;
 
   void OnExtensionsReady();
   void OnExtensionLoaded(const Extension* extension);
   void OnExtensionInstalled(const Extension* extension);
   void OnExtensionUninstalled(const Extension* extension);
 
-  // ProfileKeyedAPI implementation:
+  // BrowserContextKeyedAPI implementation:
   static const char* service_name() { return "RuntimeAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;

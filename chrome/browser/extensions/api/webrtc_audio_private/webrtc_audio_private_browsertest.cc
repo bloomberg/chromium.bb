@@ -348,8 +348,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {
   WebrtcAudioPrivateEventService* service =
-      WebrtcAudioPrivateEventService::GetFactoryInstance()->GetForProfile(
-          profile());
+      WebrtcAudioPrivateEventService::GetFactoryInstance()->Get(profile());
 
   // Just trigger, without any extension listening.
   service->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);

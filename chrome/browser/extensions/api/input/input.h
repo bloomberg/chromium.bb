@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
 namespace content {
@@ -109,18 +109,18 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-class InputAPI : public ProfileKeyedAPI {
+class InputAPI : public BrowserContextKeyedAPI {
  public:
   explicit InputAPI(content::BrowserContext* context);
   virtual ~InputAPI();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<InputAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<InputAPI>* GetFactoryInstance();
 
  private:
-  friend class ProfileKeyedAPIFactory<InputAPI>;
+  friend class BrowserContextKeyedAPIFactory<InputAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "InputAPI";
   }

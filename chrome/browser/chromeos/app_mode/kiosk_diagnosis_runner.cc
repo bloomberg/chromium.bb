@@ -82,7 +82,7 @@ void KioskDiagnosisRunner::Start(const std::string& app_id) {
 void KioskDiagnosisRunner::StartSystemLogCollection() {
   extensions::FeedbackService* service =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()
-          ->GetForProfile(profile_)
+          ->Get(profile_)
           ->GetService();
   DCHECK(service);
 
@@ -111,7 +111,7 @@ void KioskDiagnosisRunner::SendSysLogFeedback(
 
   extensions::FeedbackService* service =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()
-          ->GetForProfile(profile_)
+          ->Get(profile_)
           ->GetService();
   DCHECK(service);
   service->SendFeedback(profile_,

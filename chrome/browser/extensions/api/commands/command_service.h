@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -39,7 +39,7 @@ namespace extensions {
 // This service keeps track of preferences related to extension commands
 // (assigning initial keybindings on install and removing them on deletion
 // and answers questions related to which commands are active.
-class CommandService : public ProfileKeyedAPI,
+class CommandService : public BrowserContextKeyedAPI,
                        public content::NotificationObserver {
  public:
   // An enum specifying whether to fetch all extension commands or only active
@@ -72,8 +72,8 @@ class CommandService : public ProfileKeyedAPI,
   explicit CommandService(content::BrowserContext* context);
   virtual ~CommandService();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<CommandService>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<CommandService>* GetFactoryInstance();
 
   // Convenience method to get the CommandService for a profile.
   static CommandService* Get(content::BrowserContext* context);
@@ -172,9 +172,9 @@ class CommandService : public ProfileKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<CommandService>;
+  friend class BrowserContextKeyedAPIFactory<CommandService>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "CommandService";
   }
@@ -203,7 +203,8 @@ class CommandService : public ProfileKeyedAPI,
 };
 
 template <>
-void ProfileKeyedAPIFactory<CommandService>::DeclareFactoryDependencies();
+void
+    BrowserContextKeyedAPIFactory<CommandService>::DeclareFactoryDependencies();
 
 }  //  namespace extensions
 

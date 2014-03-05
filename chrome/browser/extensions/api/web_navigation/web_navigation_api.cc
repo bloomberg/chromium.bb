@@ -829,11 +829,11 @@ void WebNavigationAPI::Shutdown() {
       this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<WebNavigationAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<WebNavigationAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<WebNavigationAPI>*
+BrowserContextKeyedAPIFactory<WebNavigationAPI>*
 WebNavigationAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }

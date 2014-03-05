@@ -44,14 +44,14 @@ MDnsAPI::~MDnsAPI() {
 
 // static
 MDnsAPI* MDnsAPI::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<MDnsAPI>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<MDnsAPI>::Get(context);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<MDnsAPI> > g_factory =
+static base::LazyInstance<BrowserContextKeyedAPIFactory<MDnsAPI> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

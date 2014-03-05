@@ -53,8 +53,7 @@ IncognitoConnectability::~IncognitoConnectability() {
 // static
 IncognitoConnectability* IncognitoConnectability::Get(
     content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<IncognitoConnectability>::GetForProfile(
-      context);
+  return BrowserContextKeyedAPIFactory<IncognitoConnectability>::Get(context);
 }
 
 bool IncognitoConnectability::Query(const Extension* extension,
@@ -115,11 +114,12 @@ bool IncognitoConnectability::IsInMap(const Extension* extension,
   return it != map.end() && it->second.count(origin) > 0;
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<IncognitoConnectability> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<IncognitoConnectability> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<IncognitoConnectability>*
+BrowserContextKeyedAPIFactory<IncognitoConnectability>*
 IncognitoConnectability::GetFactoryInstance() {
   return g_factory.Pointer();
 }

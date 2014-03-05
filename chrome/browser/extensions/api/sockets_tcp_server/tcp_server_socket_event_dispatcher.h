@@ -24,7 +24,7 @@ namespace api {
 // Dispatch events related to "sockets.tcp" sockets from callback on native
 // socket instances. There is one instance per profile.
 class TCPServerSocketEventDispatcher
-    : public ProfileKeyedAPI,
+    : public BrowserContextKeyedAPI,
       public base::SupportsWeakPtr<TCPServerSocketEventDispatcher> {
  public:
   explicit TCPServerSocketEventDispatcher(content::BrowserContext* context);
@@ -36,8 +36,8 @@ class TCPServerSocketEventDispatcher
   // Server socket is active again, start accepting connections from it.
   void OnServerSocketResume(const std::string& extension_id, int socket_id);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<TCPServerSocketEventDispatcher>*
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<TCPServerSocketEventDispatcher>*
       GetFactoryInstance();
 
   // Convenience method to get the SocketEventDispatcher for a profile.
@@ -48,8 +48,8 @@ class TCPServerSocketEventDispatcher
       ServerSocketData;
   typedef ApiResourceManager<ResumableTCPSocket>::ApiResourceData
       ClientSocketData;
-  friend class ProfileKeyedAPIFactory<TCPServerSocketEventDispatcher>;
-  // ProfileKeyedAPI implementation.
+  friend class BrowserContextKeyedAPIFactory<TCPServerSocketEventDispatcher>;
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "TCPServerSocketEventDispatcher";
   }

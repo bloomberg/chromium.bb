@@ -78,17 +78,18 @@ namespace Write = extensions::api::bluetooth::Write;
 
 namespace extensions {
 
-static base::LazyInstance<ProfileKeyedAPIFactory<BluetoothAPI> > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<BluetoothAPI>* BluetoothAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<BluetoothAPI>*
+BluetoothAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 BluetoothAPI* BluetoothAPI::Get(BrowserContext* context) {
-  return GetFactoryInstance()->GetForProfile(context);
+  return GetFactoryInstance()->Get(context);
 }
 
 BluetoothAPI::BluetoothAPI(BrowserContext* context)

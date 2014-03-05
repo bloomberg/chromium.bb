@@ -34,7 +34,7 @@ namespace storage = api::storage;
 
 namespace {
 
-base::LazyInstance<ProfileKeyedAPIFactory<SettingsFrontend> > g_factory =
+base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsFrontend> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // Settings change Observer which forwards changes on to the extension
@@ -87,7 +87,7 @@ SettingsStorageQuotaEnforcer::Limits GetSyncLimits() {
 
 // static
 SettingsFrontend* SettingsFrontend::Get(BrowserContext* context) {
-  return ProfileKeyedAPIFactory<SettingsFrontend>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<SettingsFrontend>::Get(context);
 }
 
 // static
@@ -218,10 +218,10 @@ void SettingsFrontend::DisableStorageForTesting(
   }
 }
 
-// ProfileKeyedAPI implementation.
+// BrowserContextKeyedAPI implementation.
 
 // static
-ProfileKeyedAPIFactory<SettingsFrontend>*
+BrowserContextKeyedAPIFactory<SettingsFrontend>*
 SettingsFrontend::GetFactoryInstance() {
   return g_factory.Pointer();
 }

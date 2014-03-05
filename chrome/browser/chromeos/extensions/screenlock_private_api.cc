@@ -142,8 +142,7 @@ void ScreenlockPrivateShowButtonFunction::OnImageLoaded(
   chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
   ScreenlockPrivateEventRouter* router =
-    ScreenlockPrivateEventRouter::GetFactoryInstance()->GetForProfile(
-        GetProfile());
+      ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(GetProfile());
   const chromeos::User* user =
       chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
   locker->ShowUserPodButton(
@@ -279,12 +278,11 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
       ->BroadcastEvent(event.Pass());
 }
 
-static base::LazyInstance<extensions::ProfileKeyedAPIFactory<
-    ScreenlockPrivateEventRouter> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<extensions::BrowserContextKeyedAPIFactory<
+    ScreenlockPrivateEventRouter> > g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-extensions::ProfileKeyedAPIFactory<ScreenlockPrivateEventRouter>*
+extensions::BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>*
 ScreenlockPrivateEventRouter::GetFactoryInstance() {
   return g_factory.Pointer();
 }

@@ -50,7 +50,7 @@ sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
       SyncFileSystemServiceFactory::GetForProfile(profile);
   DCHECK(service);
   ExtensionSyncEventObserver* observer =
-      ExtensionSyncEventObserver::GetFactoryInstance()->GetForProfile(profile);
+      ExtensionSyncEventObserver::GetFactoryInstance()->Get(profile);
   DCHECK(observer);
   observer->InitializeForService(service);
   return service;

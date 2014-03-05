@@ -17,12 +17,13 @@ namespace extensions {
 
 const char kSocketTypeNotSupported[] = "Socket type does not support this API";
 
-static base::LazyInstance<ProfileKeyedAPIFactory<ApiResourceManager<Socket> > >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<ApiResourceManager<Socket> > > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
-ProfileKeyedAPIFactory<ApiResourceManager<Socket> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<Socket> >*
 ApiResourceManager<Socket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }

@@ -51,11 +51,12 @@ BrailleDisplayPrivateAPI::~BrailleDisplayPrivateAPI() {
 void BrailleDisplayPrivateAPI::Shutdown() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<BrailleDisplayPrivateAPI>*
+BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI>*
 BrailleDisplayPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }

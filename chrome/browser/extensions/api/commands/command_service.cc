@@ -155,17 +155,18 @@ CommandService::CommandService(content::BrowserContext* context)
 CommandService::~CommandService() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<CommandService> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<CommandService> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<CommandService>* CommandService::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<CommandService>*
+CommandService::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 CommandService* CommandService::Get(content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<CommandService>::GetForProfile(context);
+  return BrowserContextKeyedAPIFactory<CommandService>::Get(context);
 }
 
 // static
@@ -598,7 +599,8 @@ bool CommandService::GetExtensionActionCommand(
 }
 
 template <>
-void ProfileKeyedAPIFactory<CommandService>::DeclareFactoryDependencies() {
+void
+BrowserContextKeyedAPIFactory<CommandService>::DeclareFactoryDependencies() {
   DependsOn(ExtensionCommandsGlobalRegistry::GetFactoryInstance());
 }
 

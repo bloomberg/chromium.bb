@@ -159,11 +159,11 @@ InputAPI::InputAPI(content::BrowserContext* context) {}
 InputAPI::~InputAPI() {
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<InputAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<InputAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<InputAPI>* InputAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<InputAPI>* InputAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

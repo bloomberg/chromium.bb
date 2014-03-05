@@ -373,8 +373,7 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
   }
 
   IdentityAPI* id_api() {
-    return IdentityAPI::GetFactoryInstance()->GetForProfile(
-        browser()->profile());
+    return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
   const std::string GetPrimaryAccountId() {
@@ -1056,8 +1055,7 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   }
 
   IdentityAPI* id_api() {
-    return IdentityAPI::GetFactoryInstance()->GetForProfile(
-        browser()->profile());
+    return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
   void SetCachedToken(IdentityTokenCacheValue& token_data) {

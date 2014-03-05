@@ -10,12 +10,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/value_store_cache.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "sync/api/syncable_service.h"
 
 namespace content {
@@ -28,7 +28,7 @@ namespace extensions {
 // to SettingsBackend which lives on the FILE thread.
 // All public methods, must be called on the UI thread, with the exception of
 // GetBackendForSync(), which must be called on the FILE thread.
-class SettingsFrontend : public ProfileKeyedAPI {
+class SettingsFrontend : public BrowserContextKeyedAPI {
  public:
   // Returns the current instance for |context|.
   static SettingsFrontend* Get(content::BrowserContext* context);
@@ -63,18 +63,18 @@ class SettingsFrontend : public ProfileKeyedAPI {
   void DisableStorageForTesting(
       settings_namespace::Namespace settings_namespace);
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<SettingsFrontend>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<SettingsFrontend>* GetFactoryInstance();
   static const char* service_name();
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
  private:
-  friend class ProfileKeyedAPIFactory<SettingsFrontend>;
+  friend class BrowserContextKeyedAPIFactory<SettingsFrontend>;
 
   typedef std::map<settings_namespace::Namespace, ValueStoreCache*> CacheMap;
 
-  // Constructor for normal ProfileKeyedAPI usage.
+  // Constructor for normal BrowserContextKeyedAPI usage.
   explicit SettingsFrontend(content::BrowserContext* context);
 
   // Constructor for tests.

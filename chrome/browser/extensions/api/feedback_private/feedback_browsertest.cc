@@ -73,7 +73,7 @@ class FeedbackTest : public ExtensionBrowserTest {
  private:
   void InvokeFeedbackUI() {
     extensions::FeedbackPrivateAPI* api =
-        extensions::FeedbackPrivateAPI::GetFactoryInstance()->GetForProfile(
+        extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
     api->RequestFeedback("Test description",
                          "Test tag",

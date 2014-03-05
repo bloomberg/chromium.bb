@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/speech/tts_controller.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -62,18 +62,18 @@ class TtsGetVoicesFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tts.getVoices", TTS_GETVOICES)
 };
 
-class TtsAPI : public ProfileKeyedAPI {
+class TtsAPI : public BrowserContextKeyedAPI {
  public:
   explicit TtsAPI(content::BrowserContext* context);
   virtual ~TtsAPI();
 
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<TtsAPI>* GetFactoryInstance();
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<TtsAPI>* GetFactoryInstance();
 
  private:
-  friend class ProfileKeyedAPIFactory<TtsAPI>;
+  friend class BrowserContextKeyedAPIFactory<TtsAPI>;
 
-  // ProfileKeyedAPI implementation.
+  // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "TtsAPI";
   }

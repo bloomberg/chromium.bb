@@ -323,11 +323,12 @@ void BookmarksAPI::Shutdown() {
       this);
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<BookmarksAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<BookmarksAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<BookmarksAPI>* BookmarksAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<BookmarksAPI>*
+BookmarksAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 

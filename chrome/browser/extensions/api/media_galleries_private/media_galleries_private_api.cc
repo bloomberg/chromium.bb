@@ -105,20 +105,20 @@ void MediaGalleriesPrivateAPI::Shutdown() {
       base::Bind(&HandleProfileShutdownOnFileThread, profile_));
 }
 
-static base::LazyInstance<ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<MediaGalleriesPrivateAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
-ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>*
-    MediaGalleriesPrivateAPI::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<MediaGalleriesPrivateAPI>*
+MediaGalleriesPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
 MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(
     content::BrowserContext* context) {
-  return ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>::GetForProfile(
-      context);
+  return BrowserContextKeyedAPIFactory<MediaGalleriesPrivateAPI>::Get(context);
 }
 
 void MediaGalleriesPrivateAPI::OnListenerAdded(
