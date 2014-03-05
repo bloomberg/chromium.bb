@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
@@ -18,13 +16,6 @@ namespace {
 const size_t kNumberOfAddressLinesUS = 7;
 
 }  // namespace
-
-TEST(AutofillDialogI18nInput, FlagFlipsEnabled) {
-  bool enabled = Enabled();
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kDisableAutofillAddressI18n);
-  EXPECT_NE(enabled, Enabled());
-}
 
 TEST(AutofillDialogI18nInput, USShippingAddress) {
   DetailInputs inputs;

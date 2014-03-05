@@ -23,7 +23,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -60,7 +59,6 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
-#include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
@@ -533,20 +531,12 @@ base::string16 GetInfoFromProfile(const AutofillProfile& profile,
 void CanonicalizeState(const AddressValidator* validator,
                        AutofillProfile* profile) {
   base::string16 administrative_area;
-  DCHECK_EQ(!!validator, !!i18ninput::Enabled());
-  if (validator) {
-    AddressData address_data;
-    i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, *profile),
-                                 &address_data);
-    validator->CanonicalizeAdministrativeArea(&address_data);
-    administrative_area = base::UTF8ToUTF16(address_data.administrative_area);
-  } else {
-    // Temporary crutch for i18n-not-enabled case: works for US only.
-    state_names::GetNameAndAbbreviation(profile->GetRawInfo(ADDRESS_HOME_STATE),
-                                        NULL,
-                                        &administrative_area);
-    StringToUpperASCII(&administrative_area);
-  }
+  AddressData address_data;
+  i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, *profile),
+                               &address_data);
+
+  validator->CanonicalizeAdministrativeArea(&address_data);
+  administrative_area = base::UTF8ToUTF16(address_data.administrative_area);
 
   profile->SetInfo(AutofillType(ADDRESS_HOME_STATE),
                    administrative_area,
@@ -682,16 +672,14 @@ void AutofillDialogControllerImpl::Show() {
   if (account_chooser_model_->WalletIsSelected())
     FetchWalletCookie();
 
-  if (i18ninput::Enabled()) {
-    scoped_ptr< ::i18n::addressinput::Downloader> downloader(
-        new autofill::ChromeDownloaderImpl(profile_->GetRequestContext()));
-    validator_ = AddressValidator::Build(
-        downloader.Pass(),
-        ValidationRulesStorageFactory::CreateStorage(),
-        this);
-    GetValidator()->LoadRules(
-        GetManager()->GetDefaultCountryCodeForNewAddress());
-  }
+  scoped_ptr< ::i18n::addressinput::Downloader> downloader(
+      new autofill::ChromeDownloaderImpl(profile_->GetRequestContext()));
+  validator_ = AddressValidator::Build(
+      downloader.Pass(),
+      ValidationRulesStorageFactory::CreateStorage(),
+      this);
+  GetValidator()->LoadRules(
+      GetManager()->GetDefaultCountryCodeForNewAddress());
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -1153,19 +1141,17 @@ void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
   SetEditingExistingData(section, false);
   needs_validation_.erase(section);
 
-  if (i18ninput::Enabled()) {
-    CountryComboboxModel* model = CountryComboboxModelForSection(section);
-    if (model) {
-      base::string16 country = model->GetItemAt(model->GetDefaultIndex());
-      RebuildInputsForCountry(section, country, false);
-    }
+  CountryComboboxModel* model = CountryComboboxModelForSection(section);
+  if (model) {
+    base::string16 country = model->GetItemAt(model->GetDefaultIndex());
+    RebuildInputsForCountry(section, country, false);
   }
 
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   for (DetailInputs::iterator it = inputs->begin();
        it != inputs->end(); ++it) {
     if (it->length != DetailInput::NONE)
-      it->initial_value = common::GetHardcodedValueForType(it->type);
+      it->initial_value.clear();
   }
 }
 
@@ -1736,11 +1722,8 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
   }
 
   AutofillType autofill_type(type);
-  if (i18ninput::Enabled() &&
-      (autofill_type.group() == ADDRESS_HOME ||
-       autofill_type.group() == ADDRESS_BILLING)) {
-    // TODO(dbeam): delete all US-specific address validation when
-    // --enable-autofill-address-i18n is removed.
+  if (autofill_type.group() == ADDRESS_HOME ||
+      autofill_type.group() == ADDRESS_BILLING) {
     return base::string16();
   }
 
@@ -1782,36 +1765,6 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
       }
       break;
 
-    case ADDRESS_HOME_LINE1:
-      break;
-
-    case ADDRESS_HOME_LINE2:
-    case ADDRESS_HOME_DEPENDENT_LOCALITY:
-    case ADDRESS_HOME_SORTING_CODE:
-      return base::string16();  // Optional until we have better validation.
-
-    case ADDRESS_HOME_CITY:
-    case ADDRESS_HOME_COUNTRY:
-      break;
-
-    case ADDRESS_HOME_STATE:
-      if (!value.empty() &&!autofill::IsValidState(value) &&
-          CountryCodeForSection(section) == "US") {
-        DCHECK(!i18ninput::Enabled());
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_REGION);
-      }
-      break;
-
-    case ADDRESS_HOME_ZIP:
-      if (!value.empty() && !autofill::IsValidZip(value) &&
-          CountryCodeForSection(section) == "US") {
-        DCHECK(!i18ninput::Enabled());
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_ZIP_CODE);
-      }
-      break;
-
     case NAME_FULL:
       // Wallet requires a first and last billing name.
       if (section == SECTION_CC_BILLING && !value.empty() &&
@@ -1847,7 +1800,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     return messages;
 
   AddressValidator::Status status = AddressValidator::SUCCESS;
-  if (i18ninput::Enabled() && section != SECTION_CC) {
+  if (section != SECTION_CC) {
     AutofillProfile profile;
     FillFormGroupFromOutputs(inputs, &profile);
     AddressData address_data;
@@ -1976,8 +1929,6 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   ScopedViewUpdates updates(view_.get());
 
   if (type == ADDRESS_BILLING_COUNTRY || type == ADDRESS_HOME_COUNTRY) {
-    DCHECK(i18ninput::Enabled());
-
     const FieldValueMap snapshot = TakeUserInputSnapshot();
 
     // Clobber the inputs because the view's already been updated.
@@ -2300,35 +2251,33 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
         pair.second));
   }
 
-  if (i18ninput::Enabled()) {
-    // If the user hasn't switched away from the default country and |wrapper|'s
-    // country differs from the |view_|'s, rebuild inputs and restore user data.
-    const FieldValueMap snapshot = TakeUserInputSnapshot();
-    bool billing_rebuilt = false, shipping_rebuilt = false;
+  // If the user hasn't switched away from the default country and |wrapper|'s
+  // country differs from the |view_|'s, rebuild inputs and restore user data.
+  const FieldValueMap snapshot = TakeUserInputSnapshot();
+  bool billing_rebuilt = false, shipping_rebuilt = false;
 
-    base::string16 billing_country =
-        wrapper->GetInfo(AutofillType(ADDRESS_BILLING_COUNTRY));
-    if (!snapshot.count(ADDRESS_BILLING_COUNTRY) &&
-        !billing_country.empty()) {
-      billing_rebuilt = RebuildInputsForCountry(
-          ActiveBillingSection(), billing_country, false);
-    }
+  base::string16 billing_country =
+      wrapper->GetInfo(AutofillType(ADDRESS_BILLING_COUNTRY));
+  if (!snapshot.count(ADDRESS_BILLING_COUNTRY) &&
+      !billing_country.empty()) {
+    billing_rebuilt = RebuildInputsForCountry(
+        ActiveBillingSection(), billing_country, false);
+  }
 
-    base::string16 shipping_country =
-        wrapper->GetInfo(AutofillType(ADDRESS_HOME_COUNTRY));
-    if (!snapshot.count(ADDRESS_HOME_COUNTRY) &&
-        !shipping_country.empty()) {
-      shipping_rebuilt = RebuildInputsForCountry(
-          SECTION_SHIPPING, shipping_country, false);
-    }
+  base::string16 shipping_country =
+      wrapper->GetInfo(AutofillType(ADDRESS_HOME_COUNTRY));
+  if (!snapshot.count(ADDRESS_HOME_COUNTRY) &&
+      !shipping_country.empty()) {
+    shipping_rebuilt = RebuildInputsForCountry(
+        SECTION_SHIPPING, shipping_country, false);
+  }
 
-    if (billing_rebuilt || shipping_rebuilt) {
-      RestoreUserInputFromSnapshot(snapshot);
-      if (billing_rebuilt)
-        UpdateSection(ActiveBillingSection());
-      if (shipping_rebuilt)
-        UpdateSection(SECTION_SHIPPING);
-    }
+  if (billing_rebuilt || shipping_rebuilt) {
+    RestoreUserInputFromSnapshot(snapshot);
+    if (billing_rebuilt)
+      UpdateSection(ActiveBillingSection());
+    if (shipping_rebuilt)
+      UpdateSection(SECTION_SHIPPING);
   }
 
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
@@ -2946,8 +2895,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         const AutofillProfile& profile = *profiles[i];
         if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
             !i18ninput::CountryIsFullySupported(
-                UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))) ||
-            (!i18ninput::Enabled() && HasInvalidAddress(*profiles[i]))) {
+                UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
           continue;
         }
 
@@ -3331,9 +3279,6 @@ bool AutofillDialogControllerImpl::SectionIsValid(
 }
 
 bool AutofillDialogControllerImpl::RulesAreLoaded(DialogSection section) {
-  if (!i18ninput::Enabled())
-    return true;
-
   AddressData address_data;
   address_data.country_code = CountryCodeForSection(section);
   AddressValidator::Status status = GetValidator()->ValidateAddress(
@@ -3372,12 +3317,6 @@ bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
 
 bool AutofillDialogControllerImpl::HasInvalidAddress(
     const AutofillProfile& profile) {
-  if (!i18ninput::Enabled()) {
-    return profile.IsPresentButInvalid(ADDRESS_HOME_STATE) ||
-           profile.IsPresentButInvalid(ADDRESS_HOME_ZIP) ||
-           profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER);
-  }
-
   AddressData address_data;
   i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, profile),
                                &address_data);

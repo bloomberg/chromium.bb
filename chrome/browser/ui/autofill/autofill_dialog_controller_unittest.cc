@@ -1154,9 +1154,6 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
   full_profile.set_origin(kSettingsOrigin);
   full_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-
-  if (!i18ninput::Enabled())
-    EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestIncompleteAddress) {
@@ -3111,12 +3108,7 @@ TEST_F(AutofillDialogControllerTest, NoPartiallySupportedCountriesSuggested) {
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
 }
 
-class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
- private:
-  i18ninput::ScopedEnableForTesting enabled_;
-};
-
-TEST_F(AutofillDialogControllerI18nTest, CountryChangeUpdatesSection) {
+TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
   TestAutofillDialogView* view = controller()->GetView();
   view->ClearSectionUpdates();
 
@@ -3156,7 +3148,7 @@ TEST_F(AutofillDialogControllerI18nTest, CountryChangeUpdatesSection) {
   EXPECT_EQ(1U, updates.size());
 }
 
-TEST_F(AutofillDialogControllerI18nTest, CorrectCountryFromInputs) {
+TEST_F(AutofillDialogControllerTest, CorrectCountryFromInputs) {
   EXPECT_CALL(*controller()->GetMockValidator(),
               ValidateAddress(CountryCodeMatcher("DE"), _, _));
 
@@ -3172,7 +3164,7 @@ TEST_F(AutofillDialogControllerI18nTest, CorrectCountryFromInputs) {
   controller()->InputsAreValid(SECTION_SHIPPING, shipping_inputs);
 }
 
-TEST_F(AutofillDialogControllerI18nTest, ValidationRulesLoadedOnCountryChange) {
+TEST_F(AutofillDialogControllerTest, ValidationRulesLoadedOnCountryChange) {
   ResetControllerWithFormData(DefaultFormData());
   EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("US"));
   controller()->Show();
@@ -3186,7 +3178,7 @@ TEST_F(AutofillDialogControllerI18nTest, ValidationRulesLoadedOnCountryChange) {
                                            true);
 }
 
-TEST_F(AutofillDialogControllerI18nTest, InvalidWhenRulesNotReady) {
+TEST_F(AutofillDialogControllerTest, InvalidWhenRulesNotReady) {
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
@@ -3207,7 +3199,7 @@ TEST_F(AutofillDialogControllerI18nTest, InvalidWhenRulesNotReady) {
   EXPECT_TRUE(messages.GetMessageOrDefault(ADDRESS_HOME_COUNTRY).text.empty());
 }
 
-TEST_F(AutofillDialogControllerI18nTest, ValidButUnverifiedWhenRulesFail) {
+TEST_F(AutofillDialogControllerTest, ValidButUnverifiedWhenRulesFail) {
   SwitchToAutofill();
 
   // Add suggestions so the credit card and billing sections aren't showing

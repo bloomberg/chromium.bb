@@ -87,7 +87,7 @@ bool IsI18nInputEnabled() {
 #if defined(OS_ANDROID)
   return false;
 #else
-  return i18ninput::Enabled();
+  return true;
 #endif
 }
 
@@ -273,19 +273,6 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
 
   NOTREACHED();
   return AutofillMetrics::NUM_DIALOG_UI_EVENTS;
-}
-
-base::string16 GetHardcodedValueForType(ServerFieldType type) {
-  // TODO(dbeam): remove this entire function when i18n inputs are the default.
-  if (IsI18nInputEnabled())
-    return base::string16();
-
-  if (AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY) {
-    AutofillCountry country("US", g_browser_process->GetApplicationLocale());
-    return country.name();
-  }
-
-  return base::string16();
 }
 
 std::vector<ServerFieldType> TypesFromInputs(const DetailInputs& inputs) {

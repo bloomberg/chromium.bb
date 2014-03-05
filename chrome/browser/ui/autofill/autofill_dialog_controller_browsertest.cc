@@ -319,6 +319,17 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     InitializeController();
   }
 
+ protected:
+  bool SectionHasField(DialogSection section, ServerFieldType type) {
+    const DetailInputs& fields =
+        controller()->RequestedFieldsForSection(section);
+    for (size_t i = 0; i < fields.size(); ++i) {
+      if (type == fields[i].type)
+        return true;
+    }
+    return false;
+  }
+
   // A helper function that cycles the MessageLoop, and on Mac, the Cocoa run
   // loop. It also drains the NSAutoreleasePool.
   void CycleRunLoops() {
@@ -1418,27 +1429,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
   EXPECT_FALSE(RunTestPage(https_server));
 }
 
-class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
- public:
-  AutofillDialogControllerI18nTest() {}
-  virtual ~AutofillDialogControllerI18nTest() {}
-
- protected:
-  bool SectionHasField(DialogSection section, ServerFieldType type) {
-    const DetailInputs& fields =
-        controller()->RequestedFieldsForSection(section);
-    for (size_t i = 0; i < fields.size(); ++i) {
-      if (type == fields[i].type)
-        return true;
-    }
-    return false;
-  }
-
- private:
-  i18ninput::ScopedEnableForTesting enabled_;
-};
-
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        CountryChangeRebuildsSection) {
   EXPECT_FALSE(SectionHasField(SECTION_BILLING, ADDRESS_BILLING_SORTING_CODE));
   EXPECT_FALSE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
@@ -1489,7 +1480,7 @@ class TestPersonalDataManagerService
 // Changing the data source to or from Wallet preserves the shipping country,
 // but not the billing country because Wallet only supports US billing
 // addresses.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        ChangingDataSourcePreservesCountry) {
   // Set the default country to Canada.
   static_cast<TestPersonalDataManagerService*>(
@@ -1565,7 +1556,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   ASSERT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewResetsCountry) {
   AutofillProfile verified_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
 
@@ -1595,7 +1586,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        FillingFormRebuildsInputs) {
   AutofillProfile full_profile(test::GetFullProfile());
   full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
@@ -1622,7 +1613,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        FillingFormPreservesChangedCountry) {
   AutofillProfile full_profile(test::GetFullProfile());
   full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
@@ -1649,7 +1640,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, RulesLoaded) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, RulesLoaded) {
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
   controller()->set_use_validation(true);

@@ -263,9 +263,6 @@ const char kDisableAsyncDns[]               = "disable-async-dns";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
-// Disables the i18n address input widget for the requestAutocomplete() dialog.
-const char kDisableAutofillAddressI18n[]    = "disable-autofill-address-i18n";
-
 // Disables background mode (background apps will not keep chrome running in
 // the background).
 const char kDisableBackgroundMode[]         = "disable-background-mode";
