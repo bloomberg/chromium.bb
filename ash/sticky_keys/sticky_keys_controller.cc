@@ -115,6 +115,9 @@ void StickyKeysController::Enable(bool enabled) {
       alt_sticky_key_.reset(
           new StickyKeysHandler(ui::EF_ALT_DOWN,
                                 new StickyKeysHandlerDelegateImpl()));
+      altgr_sticky_key_.reset(
+          new StickyKeysHandler(ui::EF_ALTGR_DOWN,
+                                new StickyKeysHandlerDelegateImpl()));
       ctrl_sticky_key_.reset(
           new StickyKeysHandler(ui::EF_CONTROL_DOWN,
                                 new StickyKeysHandlerDelegateImpl()));
@@ -129,18 +132,21 @@ void StickyKeysController::Enable(bool enabled) {
 bool StickyKeysController::HandleKeyEvent(ui::KeyEvent* event) {
   return shift_sticky_key_->HandleKeyEvent(event) ||
       alt_sticky_key_->HandleKeyEvent(event) ||
+      altgr_sticky_key_->HandleKeyEvent(event) ||
       ctrl_sticky_key_->HandleKeyEvent(event);
 }
 
 bool StickyKeysController::HandleMouseEvent(ui::MouseEvent* event) {
   return shift_sticky_key_->HandleMouseEvent(event) ||
       alt_sticky_key_->HandleMouseEvent(event) ||
+      altgr_sticky_key_->HandleMouseEvent(event) ||
       ctrl_sticky_key_->HandleMouseEvent(event);
 }
 
 bool StickyKeysController::HandleScrollEvent(ui::ScrollEvent* event) {
   return shift_sticky_key_->HandleScrollEvent(event) ||
       alt_sticky_key_->HandleScrollEvent(event) ||
+      altgr_sticky_key_->HandleScrollEvent(event) ||
       ctrl_sticky_key_->HandleScrollEvent(event);
 }
 
@@ -181,10 +187,13 @@ void StickyKeysController::UpdateOverlay() {
       ui::EF_CONTROL_DOWN, ctrl_sticky_key_->current_state());
   overlay_->SetModifierKeyState(
       ui::EF_ALT_DOWN, alt_sticky_key_->current_state());
+  overlay_->SetModifierKeyState(
+      ui::EF_ALTGR_DOWN, altgr_sticky_key_->current_state());
 
   bool key_in_use =
       shift_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       alt_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
+      altgr_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED ||
       ctrl_sticky_key_->current_state() != STICKY_KEY_STATE_DISABLED;
 
   overlay_->Show(enabled_ && key_in_use);
@@ -303,6 +312,8 @@ StickyKeysHandler::KeyEventType
       event->key_code() == ui::VKEY_LMENU ||
       event->key_code() == ui::VKEY_RMENU) {
     is_target_key = (modifier_flag_ == ui::EF_ALT_DOWN);
+  } else if (event->key_code() == ui::VKEY_ALTGR) {
+    is_target_key = (modifier_flag_ == ui::EF_ALTGR_DOWN);
   } else {
     return event->type() == ui::ET_KEY_PRESSED ?
         NORMAL_KEY_DOWN : NORMAL_KEY_UP;
@@ -424,6 +435,9 @@ void StickyKeysHandler::AppendNativeEventMask(unsigned int* state) {
       break;
     case ui::EF_ALT_DOWN:
       state_ref |= Mod1Mask;
+      break;
+    case ui::EF_ALTGR_DOWN:
+      state_ref |= Mod5Mask;
       break;
     case ui::EF_SHIFT_DOWN:
       state_ref |= ShiftMask;
