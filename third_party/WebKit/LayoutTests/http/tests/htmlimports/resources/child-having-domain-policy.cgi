@@ -9,7 +9,7 @@ print <<EOF
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="import" href="having-domain-policy.html">
+<link rel="import" href="having-domain-policy.cgi">
 </head>
 </html>
 EOF
