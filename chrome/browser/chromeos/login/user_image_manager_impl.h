@@ -33,7 +33,6 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 
-class CrosSettings;
 class UserImageSyncObserver;
 class UserManager;
 
@@ -43,7 +42,6 @@ class UserImageManagerImpl
  public:
   // UserImageManager:
   UserImageManagerImpl(const std::string& user_id,
-                       CrosSettings* cros_settings,
                        UserManager* user_manager);
   virtual ~UserImageManagerImpl();
 

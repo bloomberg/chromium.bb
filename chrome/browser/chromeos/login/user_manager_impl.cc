@@ -292,10 +292,7 @@ UserImageManager* UserManagerImpl::GetUserImageManager(
   UserImageManagerMap::iterator ui = user_image_managers_.find(user_id);
   if (ui != user_image_managers_.end())
     return ui->second.get();
-  linked_ptr<UserImageManagerImpl> mgr(new UserImageManagerImpl(
-      user_id,
-      cros_settings_,
-      this));
+  linked_ptr<UserImageManagerImpl> mgr(new UserImageManagerImpl(user_id, this));
   user_image_managers_[user_id] = mgr;
   return mgr.get();
 }
