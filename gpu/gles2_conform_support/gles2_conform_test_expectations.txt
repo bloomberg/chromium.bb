@@ -8,6 +8,7 @@
 //
 // MODIFIERS can be a combination of the below list:
 //  WIN XP VISTA WIN7 MAC LEOPARD SNOWLEOPARD LION LINUX CHROMEOS MOUNTAINLION
+//  MAVERICKS
 //  NVIDIA AMD INTEL
 //  0x**** (this is a gpu's PCI device ID)
 //  DEBUG RELEASE
@@ -25,8 +26,6 @@
 
 253674 LION INTEL : GL2ExtensionTests_dFdy_input_run = FAIL
 253674 LION INTEL : GL2FixedTests_point_sprites_input_run = FAIL
-253674 LION INTEL : GL2Tests_glUniform_input_run = FAIL
-253674 LION INTEL : GL2Tests_three_uniforms_input_run = FAIL
 253674 LION INTEL : GL_control_flow_input_run = FAIL
 253674 LION INTEL : GL_dot_input_run = FAIL
 253674 LION INTEL : GL_faceforward_input_run = FAIL
@@ -37,8 +36,6 @@
 253674 LION INTEL : GL_tan_input_run = FAIL
 
 253674 LION AMD : GL2FixedTests_point_sprites_input_run = FAIL
-253674 LION AMD : GL2Tests_glUniform_input_run = FAIL
-253674 LION AMD : GL2Tests_three_uniforms_input_run = FAIL
 253674 LION AMD : GL_dot_input_run = FAIL
 253674 LION AMD : GL_length_input_run = FAIL
 
@@ -47,22 +44,18 @@
 
 253674 MOUNTAINLION AMD : GL2ExtensionTests_dFdy_input_run = FAIL
 253674 MOUNTAINLION AMD : GL2FixedTests_point_sprites_input_run = FAIL
-253674 MOUNTAINLION AMD : GL2Tests_glUniform_input_run = FAIL
-253674 MOUNTAINLION AMD : GL2Tests_three_uniforms_input_run = FAIL
 253674 MOUNTAINLION AMD : GL_control_flow_input_run = FAIL
 253674 MOUNTAINLION AMD : GL_operators_input_run = FAIL
 
 253674 MOUNTAINLION INTEL : GL2ExtensionTests_dFdy_input_run = FAIL
 253674 MOUNTAINLION INTEL : GL2FixedTests_point_sprites_input_run = FAIL
-253674 MOUNTAINLION INTEL : GL2Tests_glUniform_input_run = FAIL
-253674 MOUNTAINLION INTEL : GL2Tests_three_uniforms_input_run = FAIL
 253674 MOUNTAINLION INTEL : GL_control_flow_input_run = FAIL
 253674 MOUNTAINLION INTEL : GL_operators_input_run = FAIL
 
 339911 MOUNTAINLION INTEL : GL2FixedTests_blend_input_run = FAIL
 
-253674 MAC NVIDIA : GL2Tests_glUniform_input_run = FAIL
-253674 MAC NVIDIA : GL2Tests_three_uniforms_input_run = FAIL
+253674 MAC : GL2Tests_glUniform_input_run = FAIL
+253674 MAC : GL2Tests_three_uniforms_input_run = FAIL
 
 ////////////////////////////////////////////////////////////////////////////////
 //
