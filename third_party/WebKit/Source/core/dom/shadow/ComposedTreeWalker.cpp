@@ -30,7 +30,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/html/shadow/HTMLShadowElement.h"
+#include "core/html/HTMLShadowElement.h"
 
 namespace WebCore {
 

@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "core/html/shadow/HTMLContentElement.h"
+#include "core/html/HTMLContentElement.h"
 
 #include "HTMLNames.h"
-#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -77,8 +77,9 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
             root->owner()->willAffectSelector();
         m_shouldParseSelect = true;
         m_select = value;
-    } else
+    } else {
         InsertionPoint::parseAttribute(name, value);
+    }
 }
 
 bool HTMLContentElement::validateSelect() const

@@ -26,9 +26,9 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
-#include "core/html/shadow/HTMLContentElement.h"
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {

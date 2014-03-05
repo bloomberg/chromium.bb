@@ -47,7 +47,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/shadow/HTMLShadowElement.h"
+#include "core/html/HTMLShadowElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"

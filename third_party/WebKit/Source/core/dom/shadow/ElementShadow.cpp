@@ -33,8 +33,8 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ContentDistribution.h"
-#include "core/html/shadow/HTMLContentElement.h"
-#include "core/html/shadow/HTMLShadowElement.h"
+#include "core/html/HTMLContentElement.h"
+#include "core/html/HTMLShadowElement.h"
 
 namespace WebCore {
 

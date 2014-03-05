@@ -28,27 +28,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLShadowElement_h
-#define HTMLShadowElement_h
+#include "config.h"
+#include "core/html/HTMLShadowElement.h"
 
-#include "core/dom/shadow/InsertionPoint.h"
-#include "wtf/Forward.h"
+#include "HTMLNames.h"
+#include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
 
-class HTMLShadowElement FINAL : public InsertionPoint {
-public:
-    static PassRefPtr<HTMLShadowElement> create(Document&);
+class Document;
 
-    virtual ~HTMLShadowElement();
+inline HTMLShadowElement::HTMLShadowElement(Document& document)
+    : InsertionPoint(HTMLNames::shadowTag, document)
+{
+    ScriptWrappable::init(this);
+}
 
-    ShadowRoot* olderShadowRoot();
+PassRefPtr<HTMLShadowElement> HTMLShadowElement::create(Document& document)
+{
+    return adoptRef(new HTMLShadowElement(document));
+}
 
-private:
-    explicit HTMLShadowElement(Document&);
-    virtual InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint) OVERRIDE;
-};
+HTMLShadowElement::~HTMLShadowElement()
+{
+}
+
+ShadowRoot* HTMLShadowElement::olderShadowRoot()
+{
+    ShadowRoot* containingRoot = containingShadowRoot();
+    if (!containingRoot)
+        return 0;
+
+    document().updateDistributionForNodeIfNeeded(this);
+
+    ShadowRoot* older = containingRoot->olderShadowRoot();
+    if (!older || !older->shouldExposeToBindings() || older->shadowInsertionPointOfYoungerShadowRoot() != this)
+        return 0;
+
+    ASSERT(older->shouldExposeToBindings());
+    return older;
+}
+
+Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode* insertionPoint)
+{
+    if (insertionPoint->inDocument()) {
+        // Warn if trying to reproject between user agent and author shadows.
+        ShadowRoot* root = containingShadowRoot();
+        if (root && root->olderShadowRoot() && root->type() != root->olderShadowRoot()->type()) {
+            String message = String::format("<shadow> doesn't work for %s element host.", root->host()->tagName().utf8().data());
+            document().addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+        }
+    }
+    return InsertionPoint::insertedInto(insertionPoint);
+}
 
 } // namespace WebCore
 
-#endif // HTMLShadowElement_h
