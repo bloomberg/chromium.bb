@@ -526,9 +526,9 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
     case 5:
       return gfx::Vector2d(0, -kWheelScrollAmount);
     case 6:
-      return gfx::Vector2d(-kWheelScrollAmount, 0);
-    case 7:
       return gfx::Vector2d(kWheelScrollAmount, 0);
+    case 7:
+      return gfx::Vector2d(-kWheelScrollAmount, 0);
     default:
       return gfx::Vector2d();
   }

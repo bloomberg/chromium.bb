@@ -89,7 +89,7 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_EQ(0, offset.y());
-  EXPECT_LT(offset.x(), 0);
+  EXPECT_GT(offset.x(), 0);
 
   // Scroll right.
   InitButtonEvent(&event, true, location, 7, 0);
@@ -98,7 +98,7 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   offset = ui::GetMouseWheelOffset(&event);
   EXPECT_EQ(0, offset.y());
-  EXPECT_GT(offset.x(), 0);
+  EXPECT_LT(offset.x(), 0);
 
   // TODO(derat): Test XInput code.
 }
