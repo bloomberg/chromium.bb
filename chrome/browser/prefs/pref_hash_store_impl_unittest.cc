@@ -393,3 +393,53 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
               pref_hash_store.GetCurrentVersion());
   }
 }
+
+TEST_F(PrefHashStoreImplTest, ResetAllPrefHashStores) {
+  {
+    PrefHashStoreImpl pref_hash_store_1(
+        "store_id_1", std::string(32, 0), "device_id", &local_state_);
+    PrefHashStoreImpl pref_hash_store_2(
+        "store_id_2", std::string(32, 0), "device_id", &local_state_);
+
+    // VERSION_UNINITIALIZED when no hashes are stored.
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
+              pref_hash_store_1.GetCurrentVersion());
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
+              pref_hash_store_2.GetCurrentVersion());
+
+    scoped_ptr<PrefHashStoreTransaction> transaction_1(
+        pref_hash_store_1.BeginTransaction());
+    transaction_1->StoreHash("path1", NULL);
+
+    scoped_ptr<PrefHashStoreTransaction> transaction_2(
+        pref_hash_store_2.BeginTransaction());
+    transaction_2->StoreHash("path2", NULL);
+  }
+  {
+    PrefHashStoreImpl pref_hash_store_1(
+        "store_id_1", std::string(32, 0), "device_id", &local_state_);
+    PrefHashStoreImpl pref_hash_store_2(
+        "store_id_2", std::string(32, 0), "device_id", &local_state_);
+
+    // VERSION_LATEST after storing a hash.
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
+              pref_hash_store_1.GetCurrentVersion());
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
+              pref_hash_store_2.GetCurrentVersion());
+  }
+
+  PrefHashStoreImpl::ResetAllPrefHashStores(&local_state_);
+
+  {
+    PrefHashStoreImpl pref_hash_store_1(
+        "store_id_1", std::string(32, 0), "device_id", &local_state_);
+    PrefHashStoreImpl pref_hash_store_2(
+        "store_id_2", std::string(32, 0), "device_id", &local_state_);
+
+    // VERSION_UNINITIALIZED after ResetAllPrefHashStores.
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
+              pref_hash_store_1.GetCurrentVersion());
+    EXPECT_EQ(PrefHashStoreImpl::VERSION_UNINITIALIZED,
+              pref_hash_store_2.GetCurrentVersion());
+  }
+}

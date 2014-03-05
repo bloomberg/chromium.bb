@@ -81,8 +81,9 @@ void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
 // determining the active SettingsEnforcement group. For testing only.
 void DisableDelaysAndDomainCheckForTesting();
 
-// Shedules an update check for all PrefHashStores, stores whose version doesn't
-// match the latest version will then be updated.
+// Schedules an update check for all PrefHashStores, stores whose version
+// doesn't match the latest version will then be updated. Clears all pref hash
+// state on platforms that don't yet support a pref hash store.
 void SchedulePrefHashStoresUpdateCheck(
     const base::FilePath& initial_profile_path);
 

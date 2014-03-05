@@ -80,6 +80,11 @@ void PrefHashStoreImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kProfilePreferenceHashes);
 }
 
+// static
+void PrefHashStoreImpl::ResetAllPrefHashStores(PrefService* local_state) {
+  local_state->ClearPref(prefs::kProfilePreferenceHashes);
+}
+
 void PrefHashStoreImpl::Reset() {
   DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
 

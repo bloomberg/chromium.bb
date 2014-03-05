@@ -72,6 +72,16 @@ using content::BrowserThread;
 
 namespace {
 
+// TODO(erikwright): Enable this on Android when race condition is sorted out.
+// TODO(erikwright): Enable this on Chrome OS once MACs are moved out of Local
+// State.
+const bool kCanUsePrefHashStoreOnPlatform =
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    false;
+#else
+    true;
+#endif
+
 // Whether we are in testing mode; can be enabled via
 // DisableDelaysAndDomainCheckForTesting(). Forces startup checks to occur
 // with no delay and ignores the presence of a domain when determining the
@@ -282,12 +292,11 @@ base::FilePath GetPrefFilePathFromProfilePath(
 // on some platforms.
 scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
     const base::FilePath& profile_path) {
-  // TODO(erikwright): Enable this on Android when race condition is sorted out.
-  // TODO(erikwright): Enable this on Chrome OS once MACs are moved out of Local
-  // State.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  return scoped_ptr<PrefHashStoreImpl>();
-#else
+  // TODO(erikwright): Remove this check and change this method's definition to
+  // never NULL once a pref hash store can be used on every platform.
+  if (!kCanUsePrefHashStoreOnPlatform)
+    return scoped_ptr<PrefHashStoreImpl>();
+
   std::string seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PREF_HASH_SEED_BIN).as_string();
   std::string device_id;
@@ -307,7 +316,6 @@ scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
       seed,
       device_id,
       g_browser_process->local_state()));
-#endif
 }
 
 void HandleResetEvent() {
@@ -445,13 +453,12 @@ void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
 // Initializes/updates the PrefHashStore for the profile preferences file under
 // |profile_path| without actually loading that profile. Also reports the
 // version of that PrefHashStore via UMA, whether it proceeds with initializing
-// it or not.
+// it or not. This should only be called if |kCanUsePrefHashStoreOnPlatform|.
 void UpdatePrefHashStoreIfRequired(
     const base::FilePath& profile_path) {
   scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl(
       GetPrefHashStoreImpl(profile_path));
-  if (!pref_hash_store_impl)
-    return;
+  DCHECK(pref_hash_store_impl);
 
   const PrefHashStoreImpl::StoreVersion current_version =
       pref_hash_store_impl->GetCurrentVersion();
@@ -564,6 +571,11 @@ void DisableDelaysAndDomainCheckForTesting() {
 
 void SchedulePrefHashStoresUpdateCheck(
     const base::FilePath& initial_profile_path) {
+  if (!kCanUsePrefHashStoreOnPlatform) {
+    PrefHashStoreImpl::ResetAllPrefHashStores(g_browser_process->local_state());
+    return;
+  }
+
   const int kDefaultPrefHashStoresUpdateCheckDelaySeconds = 55;
   BrowserThread::PostDelayedTask(
         BrowserThread::UI,

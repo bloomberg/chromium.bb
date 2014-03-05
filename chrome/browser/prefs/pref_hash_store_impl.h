@@ -65,6 +65,9 @@ class PrefHashStoreImpl : public PrefHashStore {
   // Registers required local state preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Deletes stored hashes for all profiles from |local_state|.
+  static void ResetAllPrefHashStores(PrefService* local_state);
+
   // Clears the contents of this PrefHashStore. |IsInitialized()| will return
   // false after this call.
   void Reset();
