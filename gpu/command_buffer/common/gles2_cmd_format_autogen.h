@@ -4,6 +4,8 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
@@ -19,9 +21,7 @@ struct ActiveTexture {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _texture) {
     SetHeader();
@@ -37,8 +37,7 @@ struct ActiveTexture {
   uint32 texture;
 };
 
-COMPILE_ASSERT(sizeof(ActiveTexture) == 8,
-               Sizeof_ActiveTexture_is_not_8);
+COMPILE_ASSERT(sizeof(ActiveTexture) == 8, Sizeof_ActiveTexture_is_not_8);
 COMPILE_ASSERT(offsetof(ActiveTexture, header) == 0,
                OffsetOf_ActiveTexture_header_not_0);
 COMPILE_ASSERT(offsetof(ActiveTexture, texture) == 4,
@@ -54,9 +53,7 @@ struct AttachShader {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program, GLuint _shader) {
     SetHeader();
@@ -74,8 +71,7 @@ struct AttachShader {
   uint32 shader;
 };
 
-COMPILE_ASSERT(sizeof(AttachShader) == 12,
-               Sizeof_AttachShader_is_not_12);
+COMPILE_ASSERT(sizeof(AttachShader) == 12, Sizeof_AttachShader_is_not_12);
 COMPILE_ASSERT(offsetof(AttachShader, header) == 0,
                OffsetOf_AttachShader_header_not_0);
 COMPILE_ASSERT(offsetof(AttachShader, program) == 4,
@@ -93,13 +89,13 @@ struct BindAttribLocation {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLuint _index, uint32 _name_shm_id,
-      uint32 _name_shm_offset, uint32 _data_size) {
+  void Init(GLuint _program,
+            GLuint _index,
+            uint32 _name_shm_id,
+            uint32 _name_shm_offset,
+            uint32 _data_size) {
     SetHeader();
     program = _program;
     index = _index;
@@ -108,12 +104,14 @@ struct BindAttribLocation {
     data_size = _data_size;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLuint _index, uint32 _name_shm_id,
-      uint32 _name_shm_offset, uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _index, _name_shm_id, _name_shm_offset, _data_size);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _index,
+            uint32 _name_shm_id,
+            uint32 _name_shm_offset,
+            uint32 _data_size) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _index, _name_shm_id, _name_shm_offset, _data_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -150,9 +148,7 @@ struct BindAttribLocationBucket {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program, GLuint _index, uint32 _name_bucket_id) {
     SetHeader();
@@ -161,8 +157,7 @@ struct BindAttribLocationBucket {
     name_bucket_id = _name_bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id) {
+  void* Set(void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id) {
     static_cast<ValueType*>(cmd)->Init(_program, _index, _name_bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -194,9 +189,7 @@ struct BindBuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLuint _buffer) {
     SetHeader();
@@ -214,8 +207,7 @@ struct BindBuffer {
   uint32 buffer;
 };
 
-COMPILE_ASSERT(sizeof(BindBuffer) == 12,
-               Sizeof_BindBuffer_is_not_12);
+COMPILE_ASSERT(sizeof(BindBuffer) == 12, Sizeof_BindBuffer_is_not_12);
 COMPILE_ASSERT(offsetof(BindBuffer, header) == 0,
                OffsetOf_BindBuffer_header_not_0);
 COMPILE_ASSERT(offsetof(BindBuffer, target) == 4,
@@ -233,9 +225,7 @@ struct BindFramebuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLuint _framebuffer) {
     SetHeader();
@@ -253,8 +243,7 @@ struct BindFramebuffer {
   uint32 framebuffer;
 };
 
-COMPILE_ASSERT(sizeof(BindFramebuffer) == 12,
-               Sizeof_BindFramebuffer_is_not_12);
+COMPILE_ASSERT(sizeof(BindFramebuffer) == 12, Sizeof_BindFramebuffer_is_not_12);
 COMPILE_ASSERT(offsetof(BindFramebuffer, header) == 0,
                OffsetOf_BindFramebuffer_header_not_0);
 COMPILE_ASSERT(offsetof(BindFramebuffer, target) == 4,
@@ -272,9 +261,7 @@ struct BindRenderbuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLuint _renderbuffer) {
     SetHeader();
@@ -311,9 +298,7 @@ struct BindTexture {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLuint _texture) {
     SetHeader();
@@ -331,8 +316,7 @@ struct BindTexture {
   uint32 texture;
 };
 
-COMPILE_ASSERT(sizeof(BindTexture) == 12,
-               Sizeof_BindTexture_is_not_12);
+COMPILE_ASSERT(sizeof(BindTexture) == 12, Sizeof_BindTexture_is_not_12);
 COMPILE_ASSERT(offsetof(BindTexture, header) == 0,
                OffsetOf_BindTexture_header_not_0);
 COMPILE_ASSERT(offsetof(BindTexture, target) == 4,
@@ -350,9 +334,7 @@ struct BlendColor {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLclampf _red, GLclampf _green, GLclampf _blue, GLclampf _alpha) {
     SetHeader();
@@ -362,9 +344,11 @@ struct BlendColor {
     alpha = _alpha;
   }
 
-  void* Set(
-      void* cmd, GLclampf _red, GLclampf _green, GLclampf _blue,
-      GLclampf _alpha) {
+  void* Set(void* cmd,
+            GLclampf _red,
+            GLclampf _green,
+            GLclampf _blue,
+            GLclampf _alpha) {
     static_cast<ValueType*>(cmd)->Init(_red, _green, _blue, _alpha);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -376,12 +360,10 @@ struct BlendColor {
   float alpha;
 };
 
-COMPILE_ASSERT(sizeof(BlendColor) == 20,
-               Sizeof_BlendColor_is_not_20);
+COMPILE_ASSERT(sizeof(BlendColor) == 20, Sizeof_BlendColor_is_not_20);
 COMPILE_ASSERT(offsetof(BlendColor, header) == 0,
                OffsetOf_BlendColor_header_not_0);
-COMPILE_ASSERT(offsetof(BlendColor, red) == 4,
-               OffsetOf_BlendColor_red_not_4);
+COMPILE_ASSERT(offsetof(BlendColor, red) == 4, OffsetOf_BlendColor_red_not_4);
 COMPILE_ASSERT(offsetof(BlendColor, green) == 8,
                OffsetOf_BlendColor_green_not_8);
 COMPILE_ASSERT(offsetof(BlendColor, blue) == 12,
@@ -399,9 +381,7 @@ struct BlendEquation {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _mode) {
     SetHeader();
@@ -417,8 +397,7 @@ struct BlendEquation {
   uint32 mode;
 };
 
-COMPILE_ASSERT(sizeof(BlendEquation) == 8,
-               Sizeof_BlendEquation_is_not_8);
+COMPILE_ASSERT(sizeof(BlendEquation) == 8, Sizeof_BlendEquation_is_not_8);
 COMPILE_ASSERT(offsetof(BlendEquation, header) == 0,
                OffsetOf_BlendEquation_header_not_0);
 COMPILE_ASSERT(offsetof(BlendEquation, mode) == 4,
@@ -434,9 +413,7 @@ struct BlendEquationSeparate {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _modeRGB, GLenum _modeAlpha) {
     SetHeader();
@@ -473,9 +450,7 @@ struct BlendFunc {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _sfactor, GLenum _dfactor) {
     SetHeader();
@@ -493,8 +468,7 @@ struct BlendFunc {
   uint32 dfactor;
 };
 
-COMPILE_ASSERT(sizeof(BlendFunc) == 12,
-               Sizeof_BlendFunc_is_not_12);
+COMPILE_ASSERT(sizeof(BlendFunc) == 12, Sizeof_BlendFunc_is_not_12);
 COMPILE_ASSERT(offsetof(BlendFunc, header) == 0,
                OffsetOf_BlendFunc_header_not_0);
 COMPILE_ASSERT(offsetof(BlendFunc, sfactor) == 4,
@@ -512,12 +486,12 @@ struct BlendFuncSeparate {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _srcRGB, GLenum _dstRGB, GLenum _srcAlpha, GLenum _dstAlpha) {
+  void Init(GLenum _srcRGB,
+            GLenum _dstRGB,
+            GLenum _srcAlpha,
+            GLenum _dstAlpha) {
     SetHeader();
     srcRGB = _srcRGB;
     dstRGB = _dstRGB;
@@ -525,9 +499,11 @@ struct BlendFuncSeparate {
     dstAlpha = _dstAlpha;
   }
 
-  void* Set(
-      void* cmd, GLenum _srcRGB, GLenum _dstRGB, GLenum _srcAlpha,
-      GLenum _dstAlpha) {
+  void* Set(void* cmd,
+            GLenum _srcRGB,
+            GLenum _dstRGB,
+            GLenum _srcAlpha,
+            GLenum _dstAlpha) {
     static_cast<ValueType*>(cmd)->Init(_srcRGB, _dstRGB, _srcAlpha, _dstAlpha);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -562,13 +538,13 @@ struct BufferData {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLsizeiptr _size, uint32 _data_shm_id,
-      uint32 _data_shm_offset, GLenum _usage) {
+  void Init(GLenum _target,
+            GLsizeiptr _size,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset,
+            GLenum _usage) {
     SetHeader();
     target = _target;
     size = _size;
@@ -577,11 +553,14 @@ struct BufferData {
     usage = _usage;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizeiptr _size, uint32 _data_shm_id,
-      uint32 _data_shm_offset, GLenum _usage) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _size, _data_shm_id, _data_shm_offset, _usage);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizeiptr _size,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset,
+            GLenum _usage) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _size, _data_shm_id, _data_shm_offset, _usage);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -593,14 +572,12 @@ struct BufferData {
   uint32 usage;
 };
 
-COMPILE_ASSERT(sizeof(BufferData) == 24,
-               Sizeof_BufferData_is_not_24);
+COMPILE_ASSERT(sizeof(BufferData) == 24, Sizeof_BufferData_is_not_24);
 COMPILE_ASSERT(offsetof(BufferData, header) == 0,
                OffsetOf_BufferData_header_not_0);
 COMPILE_ASSERT(offsetof(BufferData, target) == 4,
                OffsetOf_BufferData_target_not_4);
-COMPILE_ASSERT(offsetof(BufferData, size) == 8,
-               OffsetOf_BufferData_size_not_8);
+COMPILE_ASSERT(offsetof(BufferData, size) == 8, OffsetOf_BufferData_size_not_8);
 COMPILE_ASSERT(offsetof(BufferData, data_shm_id) == 12,
                OffsetOf_BufferData_data_shm_id_not_12);
 COMPILE_ASSERT(offsetof(BufferData, data_shm_offset) == 16,
@@ -618,13 +595,13 @@ struct BufferSubData {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLintptr _offset, GLsizeiptr _size, uint32 _data_shm_id,
-      uint32 _data_shm_offset) {
+  void Init(GLenum _target,
+            GLintptr _offset,
+            GLsizeiptr _size,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
     SetHeader();
     target = _target;
     offset = _offset;
@@ -633,11 +610,14 @@ struct BufferSubData {
     data_shm_offset = _data_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLintptr _offset, GLsizeiptr _size,
-      uint32 _data_shm_id, uint32 _data_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _offset, _size, _data_shm_id, _data_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLintptr _offset,
+            GLsizeiptr _size,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _offset, _size, _data_shm_id, _data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -649,8 +629,7 @@ struct BufferSubData {
   uint32 data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(BufferSubData) == 24,
-               Sizeof_BufferSubData_is_not_24);
+COMPILE_ASSERT(sizeof(BufferSubData) == 24, Sizeof_BufferSubData_is_not_24);
 COMPILE_ASSERT(offsetof(BufferSubData, header) == 0,
                OffsetOf_BufferSubData_header_not_0);
 COMPILE_ASSERT(offsetof(BufferSubData, target) == 4,
@@ -676,9 +655,7 @@ struct CheckFramebufferStatus {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
@@ -687,11 +664,12 @@ struct CheckFramebufferStatus {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -722,9 +700,7 @@ struct Clear {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLbitfield _mask) {
     SetHeader();
@@ -740,12 +716,9 @@ struct Clear {
   uint32 mask;
 };
 
-COMPILE_ASSERT(sizeof(Clear) == 8,
-               Sizeof_Clear_is_not_8);
-COMPILE_ASSERT(offsetof(Clear, header) == 0,
-               OffsetOf_Clear_header_not_0);
-COMPILE_ASSERT(offsetof(Clear, mask) == 4,
-               OffsetOf_Clear_mask_not_4);
+COMPILE_ASSERT(sizeof(Clear) == 8, Sizeof_Clear_is_not_8);
+COMPILE_ASSERT(offsetof(Clear, header) == 0, OffsetOf_Clear_header_not_0);
+COMPILE_ASSERT(offsetof(Clear, mask) == 4, OffsetOf_Clear_mask_not_4);
 
 struct ClearColor {
   typedef ClearColor ValueType;
@@ -757,9 +730,7 @@ struct ClearColor {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLclampf _red, GLclampf _green, GLclampf _blue, GLclampf _alpha) {
     SetHeader();
@@ -769,9 +740,11 @@ struct ClearColor {
     alpha = _alpha;
   }
 
-  void* Set(
-      void* cmd, GLclampf _red, GLclampf _green, GLclampf _blue,
-      GLclampf _alpha) {
+  void* Set(void* cmd,
+            GLclampf _red,
+            GLclampf _green,
+            GLclampf _blue,
+            GLclampf _alpha) {
     static_cast<ValueType*>(cmd)->Init(_red, _green, _blue, _alpha);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -783,12 +756,10 @@ struct ClearColor {
   float alpha;
 };
 
-COMPILE_ASSERT(sizeof(ClearColor) == 20,
-               Sizeof_ClearColor_is_not_20);
+COMPILE_ASSERT(sizeof(ClearColor) == 20, Sizeof_ClearColor_is_not_20);
 COMPILE_ASSERT(offsetof(ClearColor, header) == 0,
                OffsetOf_ClearColor_header_not_0);
-COMPILE_ASSERT(offsetof(ClearColor, red) == 4,
-               OffsetOf_ClearColor_red_not_4);
+COMPILE_ASSERT(offsetof(ClearColor, red) == 4, OffsetOf_ClearColor_red_not_4);
 COMPILE_ASSERT(offsetof(ClearColor, green) == 8,
                OffsetOf_ClearColor_green_not_8);
 COMPILE_ASSERT(offsetof(ClearColor, blue) == 12,
@@ -806,9 +777,7 @@ struct ClearDepthf {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLclampf _depth) {
     SetHeader();
@@ -824,8 +793,7 @@ struct ClearDepthf {
   float depth;
 };
 
-COMPILE_ASSERT(sizeof(ClearDepthf) == 8,
-               Sizeof_ClearDepthf_is_not_8);
+COMPILE_ASSERT(sizeof(ClearDepthf) == 8, Sizeof_ClearDepthf_is_not_8);
 COMPILE_ASSERT(offsetof(ClearDepthf, header) == 0,
                OffsetOf_ClearDepthf_header_not_0);
 COMPILE_ASSERT(offsetof(ClearDepthf, depth) == 4,
@@ -841,9 +809,7 @@ struct ClearStencil {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _s) {
     SetHeader();
@@ -859,12 +825,10 @@ struct ClearStencil {
   int32 s;
 };
 
-COMPILE_ASSERT(sizeof(ClearStencil) == 8,
-               Sizeof_ClearStencil_is_not_8);
+COMPILE_ASSERT(sizeof(ClearStencil) == 8, Sizeof_ClearStencil_is_not_8);
 COMPILE_ASSERT(offsetof(ClearStencil, header) == 0,
                OffsetOf_ClearStencil_header_not_0);
-COMPILE_ASSERT(offsetof(ClearStencil, s) == 4,
-               OffsetOf_ClearStencil_s_not_4);
+COMPILE_ASSERT(offsetof(ClearStencil, s) == 4, OffsetOf_ClearStencil_s_not_4);
 
 struct ColorMask {
   typedef ColorMask ValueType;
@@ -876,12 +840,12 @@ struct ColorMask {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLboolean _red, GLboolean _green, GLboolean _blue, GLboolean _alpha) {
+  void Init(GLboolean _red,
+            GLboolean _green,
+            GLboolean _blue,
+            GLboolean _alpha) {
     SetHeader();
     red = _red;
     green = _green;
@@ -889,9 +853,11 @@ struct ColorMask {
     alpha = _alpha;
   }
 
-  void* Set(
-      void* cmd, GLboolean _red, GLboolean _green, GLboolean _blue,
-      GLboolean _alpha) {
+  void* Set(void* cmd,
+            GLboolean _red,
+            GLboolean _green,
+            GLboolean _blue,
+            GLboolean _alpha) {
     static_cast<ValueType*>(cmd)->Init(_red, _green, _blue, _alpha);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -903,16 +869,12 @@ struct ColorMask {
   uint32 alpha;
 };
 
-COMPILE_ASSERT(sizeof(ColorMask) == 20,
-               Sizeof_ColorMask_is_not_20);
+COMPILE_ASSERT(sizeof(ColorMask) == 20, Sizeof_ColorMask_is_not_20);
 COMPILE_ASSERT(offsetof(ColorMask, header) == 0,
                OffsetOf_ColorMask_header_not_0);
-COMPILE_ASSERT(offsetof(ColorMask, red) == 4,
-               OffsetOf_ColorMask_red_not_4);
-COMPILE_ASSERT(offsetof(ColorMask, green) == 8,
-               OffsetOf_ColorMask_green_not_8);
-COMPILE_ASSERT(offsetof(ColorMask, blue) == 12,
-               OffsetOf_ColorMask_blue_not_12);
+COMPILE_ASSERT(offsetof(ColorMask, red) == 4, OffsetOf_ColorMask_red_not_4);
+COMPILE_ASSERT(offsetof(ColorMask, green) == 8, OffsetOf_ColorMask_green_not_8);
+COMPILE_ASSERT(offsetof(ColorMask, blue) == 12, OffsetOf_ColorMask_blue_not_12);
 COMPILE_ASSERT(offsetof(ColorMask, alpha) == 16,
                OffsetOf_ColorMask_alpha_not_16);
 
@@ -926,9 +888,7 @@ struct CompileShader {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader) {
     SetHeader();
@@ -944,8 +904,7 @@ struct CompileShader {
   uint32 shader;
 };
 
-COMPILE_ASSERT(sizeof(CompileShader) == 8,
-               Sizeof_CompileShader_is_not_8);
+COMPILE_ASSERT(sizeof(CompileShader) == 8, Sizeof_CompileShader_is_not_8);
 COMPILE_ASSERT(offsetof(CompileShader, header) == 0,
                OffsetOf_CompileShader_header_not_0);
 COMPILE_ASSERT(offsetof(CompileShader, shader) == 4,
@@ -961,14 +920,17 @@ struct CompressedTexImage2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLenum _internalformat, GLsizei _width,
-      GLsizei _height, GLint _border, GLsizei _imageSize, uint32 _data_shm_id,
-      uint32 _data_shm_offset) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLsizei _imageSize,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -981,14 +943,25 @@ struct CompressedTexImage2D {
     data_shm_offset = _data_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLenum _internalformat,
-      GLsizei _width, GLsizei _height, GLint _border, GLsizei _imageSize,
-      uint32 _data_shm_id, uint32 _data_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _internalformat, _width, _height, _border,
-            _imageSize, _data_shm_id, _data_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLsizei _imageSize,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _internalformat,
+                                       _width,
+                                       _height,
+                                       _border,
+                                       _imageSize,
+                                       _data_shm_id,
+                                       _data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1037,13 +1010,15 @@ struct CompressedTexImage2DBucket {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLenum _internalformat, GLsizei _width,
-      GLsizei _height, GLint _border, GLuint _bucket_id) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLuint _bucket_id) {
     SetHeader();
     target = _target;
     level = _level;
@@ -1054,13 +1029,16 @@ struct CompressedTexImage2DBucket {
     bucket_id = _bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLenum _internalformat,
-      GLsizei _width, GLsizei _height, GLint _border, GLuint _bucket_id) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _internalformat, _width, _height, _border,
-            _bucket_id);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(
+        _target, _level, _internalformat, _width, _height, _border, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1103,14 +1081,18 @@ struct CompressedTexSubImage2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLsizei _imageSize,
-      uint32 _data_shm_id, uint32 _data_shm_offset) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLsizei _imageSize,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -1124,14 +1106,27 @@ struct CompressedTexSubImage2D {
     data_shm_offset = _data_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLsizei _imageSize,
-      uint32 _data_shm_id, uint32 _data_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _xoffset, _yoffset, _width, _height, _format,
-            _imageSize, _data_shm_id, _data_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLsizei _imageSize,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _xoffset,
+                                       _yoffset,
+                                       _width,
+                                       _height,
+                                       _format,
+                                       _imageSize,
+                                       _data_shm_id,
+                                       _data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1183,13 +1178,16 @@ struct CompressedTexSubImage2DBucket {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLuint _bucket_id) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLuint _bucket_id) {
     SetHeader();
     target = _target;
     level = _level;
@@ -1201,13 +1199,23 @@ struct CompressedTexSubImage2DBucket {
     bucket_id = _bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLuint _bucket_id) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _xoffset, _yoffset, _width, _height, _format,
-            _bucket_id);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _xoffset,
+                                       _yoffset,
+                                       _width,
+                                       _height,
+                                       _format,
+                                       _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1253,13 +1261,16 @@ struct CopyTexImage2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLenum _internalformat, GLint _x, GLint _y,
-      GLsizei _width, GLsizei _height, GLint _border) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border) {
     SetHeader();
     target = _target;
     level = _level;
@@ -1271,13 +1282,17 @@ struct CopyTexImage2D {
     border = _border;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLenum _internalformat, GLint _x,
-      GLint _y, GLsizei _width, GLsizei _height, GLint _border) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _internalformat, _x, _y, _width, _height,
-            _border);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border) {
+    static_cast<ValueType*>(cmd)->Init(
+        _target, _level, _internalformat, _x, _y, _width, _height, _border);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1292,8 +1307,7 @@ struct CopyTexImage2D {
   int32 border;
 };
 
-COMPILE_ASSERT(sizeof(CopyTexImage2D) == 36,
-               Sizeof_CopyTexImage2D_is_not_36);
+COMPILE_ASSERT(sizeof(CopyTexImage2D) == 36, Sizeof_CopyTexImage2D_is_not_36);
 COMPILE_ASSERT(offsetof(CopyTexImage2D, header) == 0,
                OffsetOf_CopyTexImage2D_header_not_0);
 COMPILE_ASSERT(offsetof(CopyTexImage2D, target) == 4,
@@ -1323,13 +1337,16 @@ struct CopyTexSubImage2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset, GLint _x,
-      GLint _y, GLsizei _width, GLsizei _height) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
     SetHeader();
     target = _target;
     level = _level;
@@ -1341,12 +1358,17 @@ struct CopyTexSubImage2D {
     height = _height;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLint _x, GLint _y, GLsizei _width, GLsizei _height) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _xoffset, _yoffset, _x, _y, _width, _height);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _xoffset, _yoffset, _x, _y, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1392,9 +1414,7 @@ struct CreateProgram {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(uint32 _client_id) {
     SetHeader();
@@ -1410,8 +1430,7 @@ struct CreateProgram {
   uint32 client_id;
 };
 
-COMPILE_ASSERT(sizeof(CreateProgram) == 8,
-               Sizeof_CreateProgram_is_not_8);
+COMPILE_ASSERT(sizeof(CreateProgram) == 8, Sizeof_CreateProgram_is_not_8);
 COMPILE_ASSERT(offsetof(CreateProgram, header) == 0,
                OffsetOf_CreateProgram_header_not_0);
 COMPILE_ASSERT(offsetof(CreateProgram, client_id) == 4,
@@ -1427,9 +1446,7 @@ struct CreateShader {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _type, uint32 _client_id) {
     SetHeader();
@@ -1447,8 +1464,7 @@ struct CreateShader {
   uint32 client_id;
 };
 
-COMPILE_ASSERT(sizeof(CreateShader) == 12,
-               Sizeof_CreateShader_is_not_12);
+COMPILE_ASSERT(sizeof(CreateShader) == 12, Sizeof_CreateShader_is_not_12);
 COMPILE_ASSERT(offsetof(CreateShader, header) == 0,
                OffsetOf_CreateShader_header_not_0);
 COMPILE_ASSERT(offsetof(CreateShader, type) == 4,
@@ -1466,9 +1482,7 @@ struct CullFace {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _mode) {
     SetHeader();
@@ -1484,12 +1498,9 @@ struct CullFace {
   uint32 mode;
 };
 
-COMPILE_ASSERT(sizeof(CullFace) == 8,
-               Sizeof_CullFace_is_not_8);
-COMPILE_ASSERT(offsetof(CullFace, header) == 0,
-               OffsetOf_CullFace_header_not_0);
-COMPILE_ASSERT(offsetof(CullFace, mode) == 4,
-               OffsetOf_CullFace_mode_not_4);
+COMPILE_ASSERT(sizeof(CullFace) == 8, Sizeof_CullFace_is_not_8);
+COMPILE_ASSERT(offsetof(CullFace, header) == 0, OffsetOf_CullFace_header_not_0);
+COMPILE_ASSERT(offsetof(CullFace, mode) == 4, OffsetOf_CullFace_mode_not_4);
 
 struct DeleteBuffers {
   typedef DeleteBuffers ValueType;
@@ -1501,9 +1512,7 @@ struct DeleteBuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _buffers_shm_id, uint32 _buffers_shm_offset) {
     SetHeader();
@@ -1512,11 +1521,12 @@ struct DeleteBuffers {
     buffers_shm_offset = _buffers_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _buffers_shm_id,
-      uint32 _buffers_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _buffers_shm_id, _buffers_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _buffers_shm_id,
+            uint32 _buffers_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _buffers_shm_id, _buffers_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1526,12 +1536,10 @@ struct DeleteBuffers {
   uint32 buffers_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(DeleteBuffers) == 16,
-               Sizeof_DeleteBuffers_is_not_16);
+COMPILE_ASSERT(sizeof(DeleteBuffers) == 16, Sizeof_DeleteBuffers_is_not_16);
 COMPILE_ASSERT(offsetof(DeleteBuffers, header) == 0,
                OffsetOf_DeleteBuffers_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteBuffers, n) == 4,
-               OffsetOf_DeleteBuffers_n_not_4);
+COMPILE_ASSERT(offsetof(DeleteBuffers, n) == 4, OffsetOf_DeleteBuffers_n_not_4);
 COMPILE_ASSERT(offsetof(DeleteBuffers, buffers_shm_id) == 8,
                OffsetOf_DeleteBuffers_buffers_shm_id_not_8);
 COMPILE_ASSERT(offsetof(DeleteBuffers, buffers_shm_offset) == 12,
@@ -1548,8 +1556,8 @@ struct DeleteBuffersImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -1559,8 +1567,7 @@ struct DeleteBuffersImmediate {
   void Init(GLsizei _n, const GLuint* _buffers) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _buffers, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _buffers, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, const GLuint* _buffers) {
@@ -1590,24 +1597,23 @@ struct DeleteFramebuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLsizei _n, uint32 _framebuffers_shm_id,
-      uint32 _framebuffers_shm_offset) {
+  void Init(GLsizei _n,
+            uint32 _framebuffers_shm_id,
+            uint32 _framebuffers_shm_offset) {
     SetHeader();
     n = _n;
     framebuffers_shm_id = _framebuffers_shm_id;
     framebuffers_shm_offset = _framebuffers_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _framebuffers_shm_id,
-      uint32 _framebuffers_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _framebuffers_shm_id, _framebuffers_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _framebuffers_shm_id,
+            uint32 _framebuffers_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _framebuffers_shm_id, _framebuffers_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1639,8 +1645,8 @@ struct DeleteFramebuffersImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -1650,8 +1656,7 @@ struct DeleteFramebuffersImmediate {
   void Init(GLsizei _n, const GLuint* _framebuffers) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _framebuffers, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _framebuffers, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, const GLuint* _framebuffers) {
@@ -1681,9 +1686,7 @@ struct DeleteProgram {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program) {
     SetHeader();
@@ -1699,8 +1702,7 @@ struct DeleteProgram {
   uint32 program;
 };
 
-COMPILE_ASSERT(sizeof(DeleteProgram) == 8,
-               Sizeof_DeleteProgram_is_not_8);
+COMPILE_ASSERT(sizeof(DeleteProgram) == 8, Sizeof_DeleteProgram_is_not_8);
 COMPILE_ASSERT(offsetof(DeleteProgram, header) == 0,
                OffsetOf_DeleteProgram_header_not_0);
 COMPILE_ASSERT(offsetof(DeleteProgram, program) == 4,
@@ -1716,24 +1718,23 @@ struct DeleteRenderbuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLsizei _n, uint32 _renderbuffers_shm_id,
-      uint32 _renderbuffers_shm_offset) {
+  void Init(GLsizei _n,
+            uint32 _renderbuffers_shm_id,
+            uint32 _renderbuffers_shm_offset) {
     SetHeader();
     n = _n;
     renderbuffers_shm_id = _renderbuffers_shm_id;
     renderbuffers_shm_offset = _renderbuffers_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _renderbuffers_shm_id,
-      uint32 _renderbuffers_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _renderbuffers_shm_id, _renderbuffers_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _renderbuffers_shm_id,
+            uint32 _renderbuffers_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _renderbuffers_shm_id, _renderbuffers_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1765,8 +1766,8 @@ struct DeleteRenderbuffersImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -1776,8 +1777,7 @@ struct DeleteRenderbuffersImmediate {
   void Init(GLsizei _n, const GLuint* _renderbuffers) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _renderbuffers, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _renderbuffers, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, const GLuint* _renderbuffers) {
@@ -1807,9 +1807,7 @@ struct DeleteShader {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader) {
     SetHeader();
@@ -1825,8 +1823,7 @@ struct DeleteShader {
   uint32 shader;
 };
 
-COMPILE_ASSERT(sizeof(DeleteShader) == 8,
-               Sizeof_DeleteShader_is_not_8);
+COMPILE_ASSERT(sizeof(DeleteShader) == 8, Sizeof_DeleteShader_is_not_8);
 COMPILE_ASSERT(offsetof(DeleteShader, header) == 0,
                OffsetOf_DeleteShader_header_not_0);
 COMPILE_ASSERT(offsetof(DeleteShader, shader) == 4,
@@ -1842,9 +1839,7 @@ struct DeleteTextures {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _textures_shm_id, uint32 _textures_shm_offset) {
     SetHeader();
@@ -1853,11 +1848,12 @@ struct DeleteTextures {
     textures_shm_offset = _textures_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _textures_shm_id,
-      uint32 _textures_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _textures_shm_id, _textures_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _textures_shm_id,
+            uint32 _textures_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _textures_shm_id, _textures_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1867,8 +1863,7 @@ struct DeleteTextures {
   uint32 textures_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(DeleteTextures) == 16,
-               Sizeof_DeleteTextures_is_not_16);
+COMPILE_ASSERT(sizeof(DeleteTextures) == 16, Sizeof_DeleteTextures_is_not_16);
 COMPILE_ASSERT(offsetof(DeleteTextures, header) == 0,
                OffsetOf_DeleteTextures_header_not_0);
 COMPILE_ASSERT(offsetof(DeleteTextures, n) == 4,
@@ -1889,8 +1884,8 @@ struct DeleteTexturesImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -1900,8 +1895,7 @@ struct DeleteTexturesImmediate {
   void Init(GLsizei _n, const GLuint* _textures) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _textures, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _textures, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, const GLuint* _textures) {
@@ -1931,9 +1925,7 @@ struct DepthFunc {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _func) {
     SetHeader();
@@ -1949,12 +1941,10 @@ struct DepthFunc {
   uint32 func;
 };
 
-COMPILE_ASSERT(sizeof(DepthFunc) == 8,
-               Sizeof_DepthFunc_is_not_8);
+COMPILE_ASSERT(sizeof(DepthFunc) == 8, Sizeof_DepthFunc_is_not_8);
 COMPILE_ASSERT(offsetof(DepthFunc, header) == 0,
                OffsetOf_DepthFunc_header_not_0);
-COMPILE_ASSERT(offsetof(DepthFunc, func) == 4,
-               OffsetOf_DepthFunc_func_not_4);
+COMPILE_ASSERT(offsetof(DepthFunc, func) == 4, OffsetOf_DepthFunc_func_not_4);
 
 struct DepthMask {
   typedef DepthMask ValueType;
@@ -1966,9 +1956,7 @@ struct DepthMask {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLboolean _flag) {
     SetHeader();
@@ -1984,12 +1972,10 @@ struct DepthMask {
   uint32 flag;
 };
 
-COMPILE_ASSERT(sizeof(DepthMask) == 8,
-               Sizeof_DepthMask_is_not_8);
+COMPILE_ASSERT(sizeof(DepthMask) == 8, Sizeof_DepthMask_is_not_8);
 COMPILE_ASSERT(offsetof(DepthMask, header) == 0,
                OffsetOf_DepthMask_header_not_0);
-COMPILE_ASSERT(offsetof(DepthMask, flag) == 4,
-               OffsetOf_DepthMask_flag_not_4);
+COMPILE_ASSERT(offsetof(DepthMask, flag) == 4, OffsetOf_DepthMask_flag_not_4);
 
 struct DepthRangef {
   typedef DepthRangef ValueType;
@@ -2001,9 +1987,7 @@ struct DepthRangef {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLclampf _zNear, GLclampf _zFar) {
     SetHeader();
@@ -2021,8 +2005,7 @@ struct DepthRangef {
   float zFar;
 };
 
-COMPILE_ASSERT(sizeof(DepthRangef) == 12,
-               Sizeof_DepthRangef_is_not_12);
+COMPILE_ASSERT(sizeof(DepthRangef) == 12, Sizeof_DepthRangef_is_not_12);
 COMPILE_ASSERT(offsetof(DepthRangef, header) == 0,
                OffsetOf_DepthRangef_header_not_0);
 COMPILE_ASSERT(offsetof(DepthRangef, zNear) == 4,
@@ -2040,9 +2023,7 @@ struct DetachShader {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program, GLuint _shader) {
     SetHeader();
@@ -2060,8 +2041,7 @@ struct DetachShader {
   uint32 shader;
 };
 
-COMPILE_ASSERT(sizeof(DetachShader) == 12,
-               Sizeof_DetachShader_is_not_12);
+COMPILE_ASSERT(sizeof(DetachShader) == 12, Sizeof_DetachShader_is_not_12);
 COMPILE_ASSERT(offsetof(DetachShader, header) == 0,
                OffsetOf_DetachShader_header_not_0);
 COMPILE_ASSERT(offsetof(DetachShader, program) == 4,
@@ -2079,9 +2059,7 @@ struct Disable {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _cap) {
     SetHeader();
@@ -2097,12 +2075,9 @@ struct Disable {
   uint32 cap;
 };
 
-COMPILE_ASSERT(sizeof(Disable) == 8,
-               Sizeof_Disable_is_not_8);
-COMPILE_ASSERT(offsetof(Disable, header) == 0,
-               OffsetOf_Disable_header_not_0);
-COMPILE_ASSERT(offsetof(Disable, cap) == 4,
-               OffsetOf_Disable_cap_not_4);
+COMPILE_ASSERT(sizeof(Disable) == 8, Sizeof_Disable_is_not_8);
+COMPILE_ASSERT(offsetof(Disable, header) == 0, OffsetOf_Disable_header_not_0);
+COMPILE_ASSERT(offsetof(Disable, cap) == 4, OffsetOf_Disable_cap_not_4);
 
 struct DisableVertexAttribArray {
   typedef DisableVertexAttribArray ValueType;
@@ -2114,9 +2089,7 @@ struct DisableVertexAttribArray {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _index) {
     SetHeader();
@@ -2149,9 +2122,7 @@ struct DrawArrays {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _mode, GLint _first, GLsizei _count) {
     SetHeader();
@@ -2171,12 +2142,10 @@ struct DrawArrays {
   int32 count;
 };
 
-COMPILE_ASSERT(sizeof(DrawArrays) == 16,
-               Sizeof_DrawArrays_is_not_16);
+COMPILE_ASSERT(sizeof(DrawArrays) == 16, Sizeof_DrawArrays_is_not_16);
 COMPILE_ASSERT(offsetof(DrawArrays, header) == 0,
                OffsetOf_DrawArrays_header_not_0);
-COMPILE_ASSERT(offsetof(DrawArrays, mode) == 4,
-               OffsetOf_DrawArrays_mode_not_4);
+COMPILE_ASSERT(offsetof(DrawArrays, mode) == 4, OffsetOf_DrawArrays_mode_not_4);
 COMPILE_ASSERT(offsetof(DrawArrays, first) == 8,
                OffsetOf_DrawArrays_first_not_8);
 COMPILE_ASSERT(offsetof(DrawArrays, count) == 12,
@@ -2192,9 +2161,7 @@ struct DrawElements {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _mode, GLsizei _count, GLenum _type, GLuint _index_offset) {
     SetHeader();
@@ -2204,9 +2171,11 @@ struct DrawElements {
     index_offset = _index_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _mode, GLsizei _count, GLenum _type,
-      GLuint _index_offset) {
+  void* Set(void* cmd,
+            GLenum _mode,
+            GLsizei _count,
+            GLenum _type,
+            GLuint _index_offset) {
     static_cast<ValueType*>(cmd)->Init(_mode, _count, _type, _index_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -2218,8 +2187,7 @@ struct DrawElements {
   uint32 index_offset;
 };
 
-COMPILE_ASSERT(sizeof(DrawElements) == 20,
-               Sizeof_DrawElements_is_not_20);
+COMPILE_ASSERT(sizeof(DrawElements) == 20, Sizeof_DrawElements_is_not_20);
 COMPILE_ASSERT(offsetof(DrawElements, header) == 0,
                OffsetOf_DrawElements_header_not_0);
 COMPILE_ASSERT(offsetof(DrawElements, mode) == 4,
@@ -2241,9 +2209,7 @@ struct Enable {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _cap) {
     SetHeader();
@@ -2259,12 +2225,9 @@ struct Enable {
   uint32 cap;
 };
 
-COMPILE_ASSERT(sizeof(Enable) == 8,
-               Sizeof_Enable_is_not_8);
-COMPILE_ASSERT(offsetof(Enable, header) == 0,
-               OffsetOf_Enable_header_not_0);
-COMPILE_ASSERT(offsetof(Enable, cap) == 4,
-               OffsetOf_Enable_cap_not_4);
+COMPILE_ASSERT(sizeof(Enable) == 8, Sizeof_Enable_is_not_8);
+COMPILE_ASSERT(offsetof(Enable, header) == 0, OffsetOf_Enable_header_not_0);
+COMPILE_ASSERT(offsetof(Enable, cap) == 4, OffsetOf_Enable_cap_not_4);
 
 struct EnableVertexAttribArray {
   typedef EnableVertexAttribArray ValueType;
@@ -2276,9 +2239,7 @@ struct EnableVertexAttribArray {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _index) {
     SetHeader();
@@ -2311,13 +2272,9 @@ struct Finish {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -2327,10 +2284,8 @@ struct Finish {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(Finish) == 4,
-               Sizeof_Finish_is_not_4);
-COMPILE_ASSERT(offsetof(Finish, header) == 0,
-               OffsetOf_Finish_header_not_0);
+COMPILE_ASSERT(sizeof(Finish) == 4, Sizeof_Finish_is_not_4);
+COMPILE_ASSERT(offsetof(Finish, header) == 0, OffsetOf_Finish_header_not_0);
 
 struct Flush {
   typedef Flush ValueType;
@@ -2342,13 +2297,9 @@ struct Flush {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -2358,10 +2309,8 @@ struct Flush {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(Flush) == 4,
-               Sizeof_Flush_is_not_4);
-COMPILE_ASSERT(offsetof(Flush, header) == 0,
-               OffsetOf_Flush_header_not_0);
+COMPILE_ASSERT(sizeof(Flush) == 4, Sizeof_Flush_is_not_4);
+COMPILE_ASSERT(offsetof(Flush, header) == 0, OffsetOf_Flush_header_not_0);
 
 struct FramebufferRenderbuffer {
   typedef FramebufferRenderbuffer ValueType;
@@ -2373,13 +2322,12 @@ struct FramebufferRenderbuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _attachment, GLenum _renderbuffertarget,
-      GLuint _renderbuffer) {
+  void Init(GLenum _target,
+            GLenum _attachment,
+            GLenum _renderbuffertarget,
+            GLuint _renderbuffer) {
     SetHeader();
     target = _target;
     attachment = _attachment;
@@ -2387,11 +2335,13 @@ struct FramebufferRenderbuffer {
     renderbuffer = _renderbuffer;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _attachment, GLenum _renderbuffertarget,
-      GLuint _renderbuffer) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _attachment, _renderbuffertarget, _renderbuffer);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _attachment,
+            GLenum _renderbuffertarget,
+            GLuint _renderbuffer) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _attachment, _renderbuffertarget, _renderbuffer);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2425,13 +2375,13 @@ struct FramebufferTexture2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _attachment, GLenum _textarget, GLuint _texture,
-      GLint _level) {
+  void Init(GLenum _target,
+            GLenum _attachment,
+            GLenum _textarget,
+            GLuint _texture,
+            GLint _level) {
     SetHeader();
     target = _target;
     attachment = _attachment;
@@ -2440,11 +2390,14 @@ struct FramebufferTexture2D {
     level = _level;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _attachment, GLenum _textarget,
-      GLuint _texture, GLint _level) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _attachment, _textarget, _texture, _level);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _attachment,
+            GLenum _textarget,
+            GLuint _texture,
+            GLint _level) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _attachment, _textarget, _texture, _level);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2481,9 +2434,7 @@ struct FrontFace {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _mode) {
     SetHeader();
@@ -2499,12 +2450,10 @@ struct FrontFace {
   uint32 mode;
 };
 
-COMPILE_ASSERT(sizeof(FrontFace) == 8,
-               Sizeof_FrontFace_is_not_8);
+COMPILE_ASSERT(sizeof(FrontFace) == 8, Sizeof_FrontFace_is_not_8);
 COMPILE_ASSERT(offsetof(FrontFace, header) == 0,
                OffsetOf_FrontFace_header_not_0);
-COMPILE_ASSERT(offsetof(FrontFace, mode) == 4,
-               OffsetOf_FrontFace_mode_not_4);
+COMPILE_ASSERT(offsetof(FrontFace, mode) == 4, OffsetOf_FrontFace_mode_not_4);
 
 struct GenBuffers {
   typedef GenBuffers ValueType;
@@ -2516,9 +2465,7 @@ struct GenBuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _buffers_shm_id, uint32 _buffers_shm_offset) {
     SetHeader();
@@ -2527,11 +2474,12 @@ struct GenBuffers {
     buffers_shm_offset = _buffers_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _buffers_shm_id,
-      uint32 _buffers_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _buffers_shm_id, _buffers_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _buffers_shm_id,
+            uint32 _buffers_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _buffers_shm_id, _buffers_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2541,12 +2489,10 @@ struct GenBuffers {
   uint32 buffers_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GenBuffers) == 16,
-               Sizeof_GenBuffers_is_not_16);
+COMPILE_ASSERT(sizeof(GenBuffers) == 16, Sizeof_GenBuffers_is_not_16);
 COMPILE_ASSERT(offsetof(GenBuffers, header) == 0,
                OffsetOf_GenBuffers_header_not_0);
-COMPILE_ASSERT(offsetof(GenBuffers, n) == 4,
-               OffsetOf_GenBuffers_n_not_4);
+COMPILE_ASSERT(offsetof(GenBuffers, n) == 4, OffsetOf_GenBuffers_n_not_4);
 COMPILE_ASSERT(offsetof(GenBuffers, buffers_shm_id) == 8,
                OffsetOf_GenBuffers_buffers_shm_id_not_8);
 COMPILE_ASSERT(offsetof(GenBuffers, buffers_shm_offset) == 12,
@@ -2563,8 +2509,8 @@ struct GenBuffersImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -2574,8 +2520,7 @@ struct GenBuffersImmediate {
   void Init(GLsizei _n, GLuint* _buffers) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _buffers, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _buffers, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, GLuint* _buffers) {
@@ -2605,9 +2550,7 @@ struct GenerateMipmap {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target) {
     SetHeader();
@@ -2623,8 +2566,7 @@ struct GenerateMipmap {
   uint32 target;
 };
 
-COMPILE_ASSERT(sizeof(GenerateMipmap) == 8,
-               Sizeof_GenerateMipmap_is_not_8);
+COMPILE_ASSERT(sizeof(GenerateMipmap) == 8, Sizeof_GenerateMipmap_is_not_8);
 COMPILE_ASSERT(offsetof(GenerateMipmap, header) == 0,
                OffsetOf_GenerateMipmap_header_not_0);
 COMPILE_ASSERT(offsetof(GenerateMipmap, target) == 4,
@@ -2640,24 +2582,23 @@ struct GenFramebuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLsizei _n, uint32 _framebuffers_shm_id,
-      uint32 _framebuffers_shm_offset) {
+  void Init(GLsizei _n,
+            uint32 _framebuffers_shm_id,
+            uint32 _framebuffers_shm_offset) {
     SetHeader();
     n = _n;
     framebuffers_shm_id = _framebuffers_shm_id;
     framebuffers_shm_offset = _framebuffers_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _framebuffers_shm_id,
-      uint32 _framebuffers_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _framebuffers_shm_id, _framebuffers_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _framebuffers_shm_id,
+            uint32 _framebuffers_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _framebuffers_shm_id, _framebuffers_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2667,8 +2608,7 @@ struct GenFramebuffers {
   uint32 framebuffers_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GenFramebuffers) == 16,
-               Sizeof_GenFramebuffers_is_not_16);
+COMPILE_ASSERT(sizeof(GenFramebuffers) == 16, Sizeof_GenFramebuffers_is_not_16);
 COMPILE_ASSERT(offsetof(GenFramebuffers, header) == 0,
                OffsetOf_GenFramebuffers_header_not_0);
 COMPILE_ASSERT(offsetof(GenFramebuffers, n) == 4,
@@ -2689,8 +2629,8 @@ struct GenFramebuffersImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -2700,8 +2640,7 @@ struct GenFramebuffersImmediate {
   void Init(GLsizei _n, GLuint* _framebuffers) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _framebuffers, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _framebuffers, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, GLuint* _framebuffers) {
@@ -2731,24 +2670,23 @@ struct GenRenderbuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLsizei _n, uint32 _renderbuffers_shm_id,
-      uint32 _renderbuffers_shm_offset) {
+  void Init(GLsizei _n,
+            uint32 _renderbuffers_shm_id,
+            uint32 _renderbuffers_shm_offset) {
     SetHeader();
     n = _n;
     renderbuffers_shm_id = _renderbuffers_shm_id;
     renderbuffers_shm_offset = _renderbuffers_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _renderbuffers_shm_id,
-      uint32 _renderbuffers_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _renderbuffers_shm_id, _renderbuffers_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _renderbuffers_shm_id,
+            uint32 _renderbuffers_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _renderbuffers_shm_id, _renderbuffers_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2780,8 +2718,8 @@ struct GenRenderbuffersImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -2791,8 +2729,7 @@ struct GenRenderbuffersImmediate {
   void Init(GLsizei _n, GLuint* _renderbuffers) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _renderbuffers, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _renderbuffers, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, GLuint* _renderbuffers) {
@@ -2822,9 +2759,7 @@ struct GenTextures {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _textures_shm_id, uint32 _textures_shm_offset) {
     SetHeader();
@@ -2833,11 +2768,12 @@ struct GenTextures {
     textures_shm_offset = _textures_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _textures_shm_id,
-      uint32 _textures_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _textures_shm_id, _textures_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _textures_shm_id,
+            uint32 _textures_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _textures_shm_id, _textures_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2847,12 +2783,10 @@ struct GenTextures {
   uint32 textures_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GenTextures) == 16,
-               Sizeof_GenTextures_is_not_16);
+COMPILE_ASSERT(sizeof(GenTextures) == 16, Sizeof_GenTextures_is_not_16);
 COMPILE_ASSERT(offsetof(GenTextures, header) == 0,
                OffsetOf_GenTextures_header_not_0);
-COMPILE_ASSERT(offsetof(GenTextures, n) == 4,
-               OffsetOf_GenTextures_n_not_4);
+COMPILE_ASSERT(offsetof(GenTextures, n) == 4, OffsetOf_GenTextures_n_not_4);
 COMPILE_ASSERT(offsetof(GenTextures, textures_shm_id) == 8,
                OffsetOf_GenTextures_textures_shm_id_not_8);
 COMPILE_ASSERT(offsetof(GenTextures, textures_shm_offset) == 12,
@@ -2869,8 +2803,8 @@ struct GenTexturesImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -2880,8 +2814,7 @@ struct GenTexturesImmediate {
   void Init(GLsizei _n, GLuint* _textures) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _textures, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _textures, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, GLuint* _textures) {
@@ -2917,13 +2850,13 @@ struct GetActiveAttrib {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLuint _index, uint32 _name_bucket_id,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _program,
+            GLuint _index,
+            uint32 _name_bucket_id,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     program = _program;
     index = _index;
@@ -2932,13 +2865,14 @@ struct GetActiveAttrib {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _index, _name_bucket_id, _result_shm_id,
-            _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _index,
+            uint32 _name_bucket_id,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _program, _index, _name_bucket_id, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2950,8 +2884,7 @@ struct GetActiveAttrib {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetActiveAttrib) == 24,
-               Sizeof_GetActiveAttrib_is_not_24);
+COMPILE_ASSERT(sizeof(GetActiveAttrib) == 24, Sizeof_GetActiveAttrib_is_not_24);
 COMPILE_ASSERT(offsetof(GetActiveAttrib, header) == 0,
                OffsetOf_GetActiveAttrib_header_not_0);
 COMPILE_ASSERT(offsetof(GetActiveAttrib, program) == 4,
@@ -2987,13 +2920,13 @@ struct GetActiveUniform {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLuint _index, uint32 _name_bucket_id,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _program,
+            GLuint _index,
+            uint32 _name_bucket_id,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     program = _program;
     index = _index;
@@ -3002,13 +2935,14 @@ struct GetActiveUniform {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _index, _name_bucket_id, _result_shm_id,
-            _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLuint _index,
+            uint32 _name_bucket_id,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _program, _index, _name_bucket_id, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3053,13 +2987,12 @@ struct GetAttachedShaders {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, uint32 _result_shm_id, uint32 _result_shm_offset,
-      uint32 _result_size) {
+  void Init(GLuint _program,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset,
+            uint32 _result_size) {
     SetHeader();
     program = _program;
     result_shm_id = _result_shm_id;
@@ -3067,11 +3000,13 @@ struct GetAttachedShaders {
     result_size = _result_size;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, uint32 _result_shm_id,
-      uint32 _result_shm_offset, uint32 _result_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _result_shm_id, _result_shm_offset, _result_size);
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset,
+            uint32 _result_size) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _result_shm_id, _result_shm_offset, _result_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3107,9 +3042,7 @@ struct GetBooleanv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _pname, uint32 _params_shm_id, uint32 _params_shm_offset) {
     SetHeader();
@@ -3118,11 +3051,12 @@ struct GetBooleanv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3132,8 +3066,7 @@ struct GetBooleanv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetBooleanv) == 16,
-               Sizeof_GetBooleanv_is_not_16);
+COMPILE_ASSERT(sizeof(GetBooleanv) == 16, Sizeof_GetBooleanv_is_not_16);
 COMPILE_ASSERT(offsetof(GetBooleanv, header) == 0,
                OffsetOf_GetBooleanv_header_not_0);
 COMPILE_ASSERT(offsetof(GetBooleanv, pname) == 4,
@@ -3155,13 +3088,12 @@ struct GetBufferParameteriv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     pname = _pname;
@@ -3169,11 +3101,13 @@ struct GetBufferParameteriv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3209,9 +3143,7 @@ struct GetError {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
@@ -3229,10 +3161,8 @@ struct GetError {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetError) == 12,
-               Sizeof_GetError_is_not_12);
-COMPILE_ASSERT(offsetof(GetError, header) == 0,
-               OffsetOf_GetError_header_not_0);
+COMPILE_ASSERT(sizeof(GetError) == 12, Sizeof_GetError_is_not_12);
+COMPILE_ASSERT(offsetof(GetError, header) == 0, OffsetOf_GetError_header_not_0);
 COMPILE_ASSERT(offsetof(GetError, result_shm_id) == 4,
                OffsetOf_GetError_result_shm_id_not_4);
 COMPILE_ASSERT(offsetof(GetError, result_shm_offset) == 8,
@@ -3250,9 +3180,7 @@ struct GetFloatv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _pname, uint32 _params_shm_id, uint32 _params_shm_offset) {
     SetHeader();
@@ -3261,11 +3189,12 @@ struct GetFloatv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3275,12 +3204,10 @@ struct GetFloatv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetFloatv) == 16,
-               Sizeof_GetFloatv_is_not_16);
+COMPILE_ASSERT(sizeof(GetFloatv) == 16, Sizeof_GetFloatv_is_not_16);
 COMPILE_ASSERT(offsetof(GetFloatv, header) == 0,
                OffsetOf_GetFloatv_header_not_0);
-COMPILE_ASSERT(offsetof(GetFloatv, pname) == 4,
-               OffsetOf_GetFloatv_pname_not_4);
+COMPILE_ASSERT(offsetof(GetFloatv, pname) == 4, OffsetOf_GetFloatv_pname_not_4);
 COMPILE_ASSERT(offsetof(GetFloatv, params_shm_id) == 8,
                OffsetOf_GetFloatv_params_shm_id_not_8);
 COMPILE_ASSERT(offsetof(GetFloatv, params_shm_offset) == 12,
@@ -3298,13 +3225,13 @@ struct GetFramebufferAttachmentParameteriv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _attachment, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _attachment,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     attachment = _attachment;
@@ -3313,12 +3240,14 @@ struct GetFramebufferAttachmentParameteriv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _attachment, GLenum _pname,
-      uint32 _params_shm_id, uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _attachment, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _attachment,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _target, _attachment, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3342,10 +3271,10 @@ COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, pname) == 12,
                OffsetOf_GetFramebufferAttachmentParameteriv_pname_not_12);
 COMPILE_ASSERT(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_id) == 16,
-               OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);  // NOLINT
+    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);  // NOLINT
 COMPILE_ASSERT(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_offset) == 20,
-               OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);  // NOLINT
+    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);  // NOLINT
 
 struct GetIntegerv {
   typedef GetIntegerv ValueType;
@@ -3359,9 +3288,7 @@ struct GetIntegerv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _pname, uint32 _params_shm_id, uint32 _params_shm_offset) {
     SetHeader();
@@ -3370,11 +3297,12 @@ struct GetIntegerv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3384,8 +3312,7 @@ struct GetIntegerv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetIntegerv) == 16,
-               Sizeof_GetIntegerv_is_not_16);
+COMPILE_ASSERT(sizeof(GetIntegerv) == 16, Sizeof_GetIntegerv_is_not_16);
 COMPILE_ASSERT(offsetof(GetIntegerv, header) == 0,
                OffsetOf_GetIntegerv_header_not_0);
 COMPILE_ASSERT(offsetof(GetIntegerv, pname) == 4,
@@ -3407,13 +3334,12 @@ struct GetProgramiv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLuint _program,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     program = _program;
     pname = _pname;
@@ -3421,11 +3347,13 @@ struct GetProgramiv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3436,8 +3364,7 @@ struct GetProgramiv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetProgramiv) == 20,
-               Sizeof_GetProgramiv_is_not_20);
+COMPILE_ASSERT(sizeof(GetProgramiv) == 20, Sizeof_GetProgramiv_is_not_20);
 COMPILE_ASSERT(offsetof(GetProgramiv, header) == 0,
                OffsetOf_GetProgramiv_header_not_0);
 COMPILE_ASSERT(offsetof(GetProgramiv, program) == 4,
@@ -3459,9 +3386,7 @@ struct GetProgramInfoLog {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program, uint32 _bucket_id) {
     SetHeader();
@@ -3500,13 +3425,12 @@ struct GetRenderbufferParameteriv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     pname = _pname;
@@ -3514,11 +3438,13 @@ struct GetRenderbufferParameteriv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3554,13 +3480,12 @@ struct GetShaderiv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _shader, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLuint _shader,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     shader = _shader;
     pname = _pname;
@@ -3568,11 +3493,13 @@ struct GetShaderiv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _shader, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_shader, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLuint _shader,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_shader, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3583,8 +3510,7 @@ struct GetShaderiv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderiv) == 20,
-               Sizeof_GetShaderiv_is_not_20);
+COMPILE_ASSERT(sizeof(GetShaderiv) == 20, Sizeof_GetShaderiv_is_not_20);
 COMPILE_ASSERT(offsetof(GetShaderiv, header) == 0,
                OffsetOf_GetShaderiv_header_not_0);
 COMPILE_ASSERT(offsetof(GetShaderiv, shader) == 4,
@@ -3606,9 +3532,7 @@ struct GetShaderInfoLog {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader, uint32 _bucket_id) {
     SetHeader();
@@ -3652,13 +3576,12 @@ struct GetShaderPrecisionFormat {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _shadertype, GLenum _precisiontype, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
+  void Init(GLenum _shadertype,
+            GLenum _precisiontype,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     shadertype = _shadertype;
     precisiontype = _precisiontype;
@@ -3666,12 +3589,13 @@ struct GetShaderPrecisionFormat {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _shadertype, GLenum _precisiontype,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _shadertype, _precisiontype, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLenum _shadertype,
+            GLenum _precisiontype,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_shadertype, _precisiontype, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3713,9 +3637,7 @@ struct GetShaderSource {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader, uint32 _bucket_id) {
     SetHeader();
@@ -3733,8 +3655,7 @@ struct GetShaderSource {
   uint32 bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderSource) == 12,
-               Sizeof_GetShaderSource_is_not_12);
+COMPILE_ASSERT(sizeof(GetShaderSource) == 12, Sizeof_GetShaderSource_is_not_12);
 COMPILE_ASSERT(offsetof(GetShaderSource, header) == 0,
                OffsetOf_GetShaderSource_header_not_0);
 COMPILE_ASSERT(offsetof(GetShaderSource, shader) == 4,
@@ -3752,9 +3673,7 @@ struct GetString {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _name, uint32 _bucket_id) {
     SetHeader();
@@ -3772,12 +3691,10 @@ struct GetString {
   uint32 bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetString) == 12,
-               Sizeof_GetString_is_not_12);
+COMPILE_ASSERT(sizeof(GetString) == 12, Sizeof_GetString_is_not_12);
 COMPILE_ASSERT(offsetof(GetString, header) == 0,
                OffsetOf_GetString_header_not_0);
-COMPILE_ASSERT(offsetof(GetString, name) == 4,
-               OffsetOf_GetString_name_not_4);
+COMPILE_ASSERT(offsetof(GetString, name) == 4, OffsetOf_GetString_name_not_4);
 COMPILE_ASSERT(offsetof(GetString, bucket_id) == 8,
                OffsetOf_GetString_bucket_id_not_8);
 
@@ -3793,13 +3710,12 @@ struct GetTexParameterfv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     pname = _pname;
@@ -3807,11 +3723,13 @@ struct GetTexParameterfv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3847,13 +3765,12 @@ struct GetTexParameteriv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     pname = _pname;
@@ -3861,11 +3778,13 @@ struct GetTexParameteriv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3901,13 +3820,12 @@ struct GetUniformfv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLint _location, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLuint _program,
+            GLint _location,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     program = _program;
     location = _location;
@@ -3915,11 +3833,13 @@ struct GetUniformfv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLint _location, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _location, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _location, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3930,8 +3850,7 @@ struct GetUniformfv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetUniformfv) == 20,
-               Sizeof_GetUniformfv_is_not_20);
+COMPILE_ASSERT(sizeof(GetUniformfv) == 20, Sizeof_GetUniformfv_is_not_20);
 COMPILE_ASSERT(offsetof(GetUniformfv, header) == 0,
                OffsetOf_GetUniformfv_header_not_0);
 COMPILE_ASSERT(offsetof(GetUniformfv, program) == 4,
@@ -3955,13 +3874,12 @@ struct GetUniformiv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLint _location, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLuint _program,
+            GLint _location,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     program = _program;
     location = _location;
@@ -3969,11 +3887,13 @@ struct GetUniformiv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLint _location, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _location, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _location, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3984,8 +3904,7 @@ struct GetUniformiv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetUniformiv) == 20,
-               Sizeof_GetUniformiv_is_not_20);
+COMPILE_ASSERT(sizeof(GetUniformiv) == 20, Sizeof_GetUniformiv_is_not_20);
 COMPILE_ASSERT(offsetof(GetUniformiv, header) == 0,
                OffsetOf_GetUniformiv_header_not_0);
 COMPILE_ASSERT(offsetof(GetUniformiv, program) == 4,
@@ -4009,13 +3928,12 @@ struct GetVertexAttribfv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _index, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLuint _index,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     index = _index;
     pname = _pname;
@@ -4023,11 +3941,13 @@ struct GetVertexAttribfv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _index, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_index, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLuint _index,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_index, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4063,13 +3983,12 @@ struct GetVertexAttribiv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _index, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLuint _index,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     index = _index;
     pname = _pname;
@@ -4077,11 +3996,13 @@ struct GetVertexAttribiv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _index, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_index, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLuint _index,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_index, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4117,13 +4038,12 @@ struct GetVertexAttribPointerv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _index, GLenum _pname, uint32 _pointer_shm_id,
-      uint32 _pointer_shm_offset) {
+  void Init(GLuint _index,
+            GLenum _pname,
+            uint32 _pointer_shm_id,
+            uint32 _pointer_shm_offset) {
     SetHeader();
     index = _index;
     pname = _pname;
@@ -4131,11 +4051,13 @@ struct GetVertexAttribPointerv {
     pointer_shm_offset = _pointer_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _index, GLenum _pname, uint32 _pointer_shm_id,
-      uint32 _pointer_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_index, _pname, _pointer_shm_id, _pointer_shm_offset);
+  void* Set(void* cmd,
+            GLuint _index,
+            GLenum _pname,
+            uint32 _pointer_shm_id,
+            uint32 _pointer_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_index, _pname, _pointer_shm_id, _pointer_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4169,9 +4091,7 @@ struct Hint {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLenum _mode) {
     SetHeader();
@@ -4189,14 +4109,10 @@ struct Hint {
   uint32 mode;
 };
 
-COMPILE_ASSERT(sizeof(Hint) == 12,
-               Sizeof_Hint_is_not_12);
-COMPILE_ASSERT(offsetof(Hint, header) == 0,
-               OffsetOf_Hint_header_not_0);
-COMPILE_ASSERT(offsetof(Hint, target) == 4,
-               OffsetOf_Hint_target_not_4);
-COMPILE_ASSERT(offsetof(Hint, mode) == 8,
-               OffsetOf_Hint_mode_not_8);
+COMPILE_ASSERT(sizeof(Hint) == 12, Sizeof_Hint_is_not_12);
+COMPILE_ASSERT(offsetof(Hint, header) == 0, OffsetOf_Hint_header_not_0);
+COMPILE_ASSERT(offsetof(Hint, target) == 4, OffsetOf_Hint_target_not_4);
+COMPILE_ASSERT(offsetof(Hint, mode) == 8, OffsetOf_Hint_mode_not_8);
 
 struct IsBuffer {
   typedef IsBuffer ValueType;
@@ -4210,9 +4126,7 @@ struct IsBuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _buffer, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
@@ -4221,11 +4135,12 @@ struct IsBuffer {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _buffer, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_buffer, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _buffer,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_buffer, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4235,12 +4150,9 @@ struct IsBuffer {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsBuffer) == 16,
-               Sizeof_IsBuffer_is_not_16);
-COMPILE_ASSERT(offsetof(IsBuffer, header) == 0,
-               OffsetOf_IsBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(IsBuffer, buffer) == 4,
-               OffsetOf_IsBuffer_buffer_not_4);
+COMPILE_ASSERT(sizeof(IsBuffer) == 16, Sizeof_IsBuffer_is_not_16);
+COMPILE_ASSERT(offsetof(IsBuffer, header) == 0, OffsetOf_IsBuffer_header_not_0);
+COMPILE_ASSERT(offsetof(IsBuffer, buffer) == 4, OffsetOf_IsBuffer_buffer_not_4);
 COMPILE_ASSERT(offsetof(IsBuffer, result_shm_id) == 8,
                OffsetOf_IsBuffer_result_shm_id_not_8);
 COMPILE_ASSERT(offsetof(IsBuffer, result_shm_offset) == 12,
@@ -4258,9 +4170,7 @@ struct IsEnabled {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _cap, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
@@ -4269,11 +4179,12 @@ struct IsEnabled {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _cap, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_cap, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLenum _cap,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_cap, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4283,12 +4194,10 @@ struct IsEnabled {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsEnabled) == 16,
-               Sizeof_IsEnabled_is_not_16);
+COMPILE_ASSERT(sizeof(IsEnabled) == 16, Sizeof_IsEnabled_is_not_16);
 COMPILE_ASSERT(offsetof(IsEnabled, header) == 0,
                OffsetOf_IsEnabled_header_not_0);
-COMPILE_ASSERT(offsetof(IsEnabled, cap) == 4,
-               OffsetOf_IsEnabled_cap_not_4);
+COMPILE_ASSERT(offsetof(IsEnabled, cap) == 4, OffsetOf_IsEnabled_cap_not_4);
 COMPILE_ASSERT(offsetof(IsEnabled, result_shm_id) == 8,
                OffsetOf_IsEnabled_result_shm_id_not_8);
 COMPILE_ASSERT(offsetof(IsEnabled, result_shm_offset) == 12,
@@ -4306,23 +4215,23 @@ struct IsFramebuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _framebuffer, uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _framebuffer,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     framebuffer = _framebuffer;
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _framebuffer, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_framebuffer, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _framebuffer,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_framebuffer, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4332,8 +4241,7 @@ struct IsFramebuffer {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsFramebuffer) == 16,
-               Sizeof_IsFramebuffer_is_not_16);
+COMPILE_ASSERT(sizeof(IsFramebuffer) == 16, Sizeof_IsFramebuffer_is_not_16);
 COMPILE_ASSERT(offsetof(IsFramebuffer, header) == 0,
                OffsetOf_IsFramebuffer_header_not_0);
 COMPILE_ASSERT(offsetof(IsFramebuffer, framebuffer) == 4,
@@ -4355,23 +4263,21 @@ struct IsProgram {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _program, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
     program = _program;
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4381,8 +4287,7 @@ struct IsProgram {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsProgram) == 16,
-               Sizeof_IsProgram_is_not_16);
+COMPILE_ASSERT(sizeof(IsProgram) == 16, Sizeof_IsProgram_is_not_16);
 COMPILE_ASSERT(offsetof(IsProgram, header) == 0,
                OffsetOf_IsProgram_header_not_0);
 COMPILE_ASSERT(offsetof(IsProgram, program) == 4,
@@ -4404,23 +4309,23 @@ struct IsRenderbuffer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _renderbuffer, uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _renderbuffer,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     renderbuffer = _renderbuffer;
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _renderbuffer, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_renderbuffer, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _renderbuffer,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_renderbuffer, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4430,8 +4335,7 @@ struct IsRenderbuffer {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsRenderbuffer) == 16,
-               Sizeof_IsRenderbuffer_is_not_16);
+COMPILE_ASSERT(sizeof(IsRenderbuffer) == 16, Sizeof_IsRenderbuffer_is_not_16);
 COMPILE_ASSERT(offsetof(IsRenderbuffer, header) == 0,
                OffsetOf_IsRenderbuffer_header_not_0);
 COMPILE_ASSERT(offsetof(IsRenderbuffer, renderbuffer) == 4,
@@ -4453,9 +4357,7 @@ struct IsShader {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
@@ -4464,11 +4366,12 @@ struct IsShader {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _shader, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_shader, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _shader,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_shader, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4478,12 +4381,9 @@ struct IsShader {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsShader) == 16,
-               Sizeof_IsShader_is_not_16);
-COMPILE_ASSERT(offsetof(IsShader, header) == 0,
-               OffsetOf_IsShader_header_not_0);
-COMPILE_ASSERT(offsetof(IsShader, shader) == 4,
-               OffsetOf_IsShader_shader_not_4);
+COMPILE_ASSERT(sizeof(IsShader) == 16, Sizeof_IsShader_is_not_16);
+COMPILE_ASSERT(offsetof(IsShader, header) == 0, OffsetOf_IsShader_header_not_0);
+COMPILE_ASSERT(offsetof(IsShader, shader) == 4, OffsetOf_IsShader_shader_not_4);
 COMPILE_ASSERT(offsetof(IsShader, result_shm_id) == 8,
                OffsetOf_IsShader_result_shm_id_not_8);
 COMPILE_ASSERT(offsetof(IsShader, result_shm_offset) == 12,
@@ -4501,23 +4401,21 @@ struct IsTexture {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _texture, uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _texture, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
     texture = _texture;
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _texture, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_texture, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _texture,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_texture, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4527,8 +4425,7 @@ struct IsTexture {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(IsTexture) == 16,
-               Sizeof_IsTexture_is_not_16);
+COMPILE_ASSERT(sizeof(IsTexture) == 16, Sizeof_IsTexture_is_not_16);
 COMPILE_ASSERT(offsetof(IsTexture, header) == 0,
                OffsetOf_IsTexture_header_not_0);
 COMPILE_ASSERT(offsetof(IsTexture, texture) == 4,
@@ -4548,9 +4445,7 @@ struct LineWidth {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLfloat _width) {
     SetHeader();
@@ -4566,12 +4461,10 @@ struct LineWidth {
   float width;
 };
 
-COMPILE_ASSERT(sizeof(LineWidth) == 8,
-               Sizeof_LineWidth_is_not_8);
+COMPILE_ASSERT(sizeof(LineWidth) == 8, Sizeof_LineWidth_is_not_8);
 COMPILE_ASSERT(offsetof(LineWidth, header) == 0,
                OffsetOf_LineWidth_header_not_0);
-COMPILE_ASSERT(offsetof(LineWidth, width) == 4,
-               OffsetOf_LineWidth_width_not_4);
+COMPILE_ASSERT(offsetof(LineWidth, width) == 4, OffsetOf_LineWidth_width_not_4);
 
 struct LinkProgram {
   typedef LinkProgram ValueType;
@@ -4583,9 +4476,7 @@ struct LinkProgram {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program) {
     SetHeader();
@@ -4601,8 +4492,7 @@ struct LinkProgram {
   uint32 program;
 };
 
-COMPILE_ASSERT(sizeof(LinkProgram) == 8,
-               Sizeof_LinkProgram_is_not_8);
+COMPILE_ASSERT(sizeof(LinkProgram) == 8, Sizeof_LinkProgram_is_not_8);
 COMPILE_ASSERT(offsetof(LinkProgram, header) == 0,
                OffsetOf_LinkProgram_header_not_0);
 COMPILE_ASSERT(offsetof(LinkProgram, program) == 4,
@@ -4618,9 +4508,7 @@ struct PixelStorei {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _pname, GLint _param) {
     SetHeader();
@@ -4638,8 +4526,7 @@ struct PixelStorei {
   int32 param;
 };
 
-COMPILE_ASSERT(sizeof(PixelStorei) == 12,
-               Sizeof_PixelStorei_is_not_12);
+COMPILE_ASSERT(sizeof(PixelStorei) == 12, Sizeof_PixelStorei_is_not_12);
 COMPILE_ASSERT(offsetof(PixelStorei, header) == 0,
                OffsetOf_PixelStorei_header_not_0);
 COMPILE_ASSERT(offsetof(PixelStorei, pname) == 4,
@@ -4657,9 +4544,7 @@ struct PolygonOffset {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLfloat _factor, GLfloat _units) {
     SetHeader();
@@ -4677,8 +4562,7 @@ struct PolygonOffset {
   float units;
 };
 
-COMPILE_ASSERT(sizeof(PolygonOffset) == 12,
-               Sizeof_PolygonOffset_is_not_12);
+COMPILE_ASSERT(sizeof(PolygonOffset) == 12, Sizeof_PolygonOffset_is_not_12);
 COMPILE_ASSERT(offsetof(PolygonOffset, header) == 0,
                OffsetOf_PolygonOffset_header_not_0);
 COMPILE_ASSERT(offsetof(PolygonOffset, factor) == 4,
@@ -4701,14 +4585,19 @@ struct ReadPixels {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _x, GLint _y, GLsizei _width, GLsizei _height, GLenum _format,
-      GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset,
-      uint32 _result_shm_id, uint32 _result_shm_offset, GLboolean _async) {
+  void Init(GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset,
+            GLboolean _async) {
     SetHeader();
     x = _x;
     y = _y;
@@ -4723,15 +4612,29 @@ struct ReadPixels {
     async = _async;
   }
 
-  void* Set(
-      void* cmd, GLint _x, GLint _y, GLsizei _width, GLsizei _height,
-      GLenum _format, GLenum _type, uint32 _pixels_shm_id,
-      uint32 _pixels_shm_offset, uint32 _result_shm_id,
-      uint32 _result_shm_offset, GLboolean _async) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _x, _y, _width, _height, _format, _type, _pixels_shm_id,
-            _pixels_shm_offset, _result_shm_id, _result_shm_offset, _async);
+  void* Set(void* cmd,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset,
+            GLboolean _async) {
+    static_cast<ValueType*>(cmd)->Init(_x,
+                                       _y,
+                                       _width,
+                                       _height,
+                                       _format,
+                                       _type,
+                                       _pixels_shm_id,
+                                       _pixels_shm_offset,
+                                       _result_shm_id,
+                                       _result_shm_offset,
+                                       _async);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4749,14 +4652,11 @@ struct ReadPixels {
   uint32 async;
 };
 
-COMPILE_ASSERT(sizeof(ReadPixels) == 48,
-               Sizeof_ReadPixels_is_not_48);
+COMPILE_ASSERT(sizeof(ReadPixels) == 48, Sizeof_ReadPixels_is_not_48);
 COMPILE_ASSERT(offsetof(ReadPixels, header) == 0,
                OffsetOf_ReadPixels_header_not_0);
-COMPILE_ASSERT(offsetof(ReadPixels, x) == 4,
-               OffsetOf_ReadPixels_x_not_4);
-COMPILE_ASSERT(offsetof(ReadPixels, y) == 8,
-               OffsetOf_ReadPixels_y_not_8);
+COMPILE_ASSERT(offsetof(ReadPixels, x) == 4, OffsetOf_ReadPixels_x_not_4);
+COMPILE_ASSERT(offsetof(ReadPixels, y) == 8, OffsetOf_ReadPixels_y_not_8);
 COMPILE_ASSERT(offsetof(ReadPixels, width) == 12,
                OffsetOf_ReadPixels_width_not_12);
 COMPILE_ASSERT(offsetof(ReadPixels, height) == 16,
@@ -4786,13 +4686,9 @@ struct ReleaseShaderCompiler {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -4817,13 +4713,12 @@ struct RenderbufferStorage {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _internalformat, GLsizei _width,
-      GLsizei _height) {
+  void Init(GLenum _target,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
     SetHeader();
     target = _target;
     internalformat = _internalformat;
@@ -4831,11 +4726,13 @@ struct RenderbufferStorage {
     height = _height;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _internalformat, GLsizei _width,
-      GLsizei _height) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _internalformat, _width, _height);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _internalformat, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4869,9 +4766,7 @@ struct SampleCoverage {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLclampf _value, GLboolean _invert) {
     SetHeader();
@@ -4889,8 +4784,7 @@ struct SampleCoverage {
   uint32 invert;
 };
 
-COMPILE_ASSERT(sizeof(SampleCoverage) == 12,
-               Sizeof_SampleCoverage_is_not_12);
+COMPILE_ASSERT(sizeof(SampleCoverage) == 12, Sizeof_SampleCoverage_is_not_12);
 COMPILE_ASSERT(offsetof(SampleCoverage, header) == 0,
                OffsetOf_SampleCoverage_header_not_0);
 COMPILE_ASSERT(offsetof(SampleCoverage, value) == 4,
@@ -4908,9 +4802,7 @@ struct Scissor {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _x, GLint _y, GLsizei _width, GLsizei _height) {
     SetHeader();
@@ -4932,18 +4824,12 @@ struct Scissor {
   int32 height;
 };
 
-COMPILE_ASSERT(sizeof(Scissor) == 20,
-               Sizeof_Scissor_is_not_20);
-COMPILE_ASSERT(offsetof(Scissor, header) == 0,
-               OffsetOf_Scissor_header_not_0);
-COMPILE_ASSERT(offsetof(Scissor, x) == 4,
-               OffsetOf_Scissor_x_not_4);
-COMPILE_ASSERT(offsetof(Scissor, y) == 8,
-               OffsetOf_Scissor_y_not_8);
-COMPILE_ASSERT(offsetof(Scissor, width) == 12,
-               OffsetOf_Scissor_width_not_12);
-COMPILE_ASSERT(offsetof(Scissor, height) == 16,
-               OffsetOf_Scissor_height_not_16);
+COMPILE_ASSERT(sizeof(Scissor) == 20, Sizeof_Scissor_is_not_20);
+COMPILE_ASSERT(offsetof(Scissor, header) == 0, OffsetOf_Scissor_header_not_0);
+COMPILE_ASSERT(offsetof(Scissor, x) == 4, OffsetOf_Scissor_x_not_4);
+COMPILE_ASSERT(offsetof(Scissor, y) == 8, OffsetOf_Scissor_y_not_8);
+COMPILE_ASSERT(offsetof(Scissor, width) == 12, OffsetOf_Scissor_width_not_12);
+COMPILE_ASSERT(offsetof(Scissor, height) == 16, OffsetOf_Scissor_height_not_16);
 
 struct ShaderBinary {
   typedef ShaderBinary ValueType;
@@ -4955,14 +4841,15 @@ struct ShaderBinary {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLsizei _n, uint32 _shaders_shm_id, uint32 _shaders_shm_offset,
-      GLenum _binaryformat, uint32 _binary_shm_id, uint32 _binary_shm_offset,
-      GLsizei _length) {
+  void Init(GLsizei _n,
+            uint32 _shaders_shm_id,
+            uint32 _shaders_shm_offset,
+            GLenum _binaryformat,
+            uint32 _binary_shm_id,
+            uint32 _binary_shm_offset,
+            GLsizei _length) {
     SetHeader();
     n = _n;
     shaders_shm_id = _shaders_shm_id;
@@ -4973,14 +4860,21 @@ struct ShaderBinary {
     length = _length;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _shaders_shm_id, uint32 _shaders_shm_offset,
-      GLenum _binaryformat, uint32 _binary_shm_id, uint32 _binary_shm_offset,
-      GLsizei _length) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _n, _shaders_shm_id, _shaders_shm_offset, _binaryformat,
-            _binary_shm_id, _binary_shm_offset, _length);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _shaders_shm_id,
+            uint32 _shaders_shm_offset,
+            GLenum _binaryformat,
+            uint32 _binary_shm_id,
+            uint32 _binary_shm_offset,
+            GLsizei _length) {
+    static_cast<ValueType*>(cmd)->Init(_n,
+                                       _shaders_shm_id,
+                                       _shaders_shm_offset,
+                                       _binaryformat,
+                                       _binary_shm_id,
+                                       _binary_shm_offset,
+                                       _length);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4994,12 +4888,10 @@ struct ShaderBinary {
   int32 length;
 };
 
-COMPILE_ASSERT(sizeof(ShaderBinary) == 32,
-               Sizeof_ShaderBinary_is_not_32);
+COMPILE_ASSERT(sizeof(ShaderBinary) == 32, Sizeof_ShaderBinary_is_not_32);
 COMPILE_ASSERT(offsetof(ShaderBinary, header) == 0,
                OffsetOf_ShaderBinary_header_not_0);
-COMPILE_ASSERT(offsetof(ShaderBinary, n) == 4,
-               OffsetOf_ShaderBinary_n_not_4);
+COMPILE_ASSERT(offsetof(ShaderBinary, n) == 4, OffsetOf_ShaderBinary_n_not_4);
 COMPILE_ASSERT(offsetof(ShaderBinary, shaders_shm_id) == 8,
                OffsetOf_ShaderBinary_shaders_shm_id_not_8);
 COMPILE_ASSERT(offsetof(ShaderBinary, shaders_shm_offset) == 12,
@@ -5023,13 +4915,12 @@ struct ShaderSource {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _shader, uint32 _data_shm_id, uint32 _data_shm_offset,
-      uint32 _data_size) {
+  void Init(GLuint _shader,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset,
+            uint32 _data_size) {
     SetHeader();
     shader = _shader;
     data_shm_id = _data_shm_id;
@@ -5037,11 +4928,13 @@ struct ShaderSource {
     data_size = _data_size;
   }
 
-  void* Set(
-      void* cmd, GLuint _shader, uint32 _data_shm_id, uint32 _data_shm_offset,
-      uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(_shader, _data_shm_id, _data_shm_offset, _data_size);
+  void* Set(void* cmd,
+            GLuint _shader,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset,
+            uint32 _data_size) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_shader, _data_shm_id, _data_shm_offset, _data_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -5052,8 +4945,7 @@ struct ShaderSource {
   uint32 data_size;
 };
 
-COMPILE_ASSERT(sizeof(ShaderSource) == 20,
-               Sizeof_ShaderSource_is_not_20);
+COMPILE_ASSERT(sizeof(ShaderSource) == 20, Sizeof_ShaderSource_is_not_20);
 COMPILE_ASSERT(offsetof(ShaderSource, header) == 0,
                OffsetOf_ShaderSource_header_not_0);
 COMPILE_ASSERT(offsetof(ShaderSource, shader) == 4,
@@ -5075,9 +4967,7 @@ struct ShaderSourceBucket {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader, uint32 _data_bucket_id) {
     SetHeader();
@@ -5114,9 +5004,7 @@ struct StencilFunc {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _func, GLint _ref, GLuint _mask) {
     SetHeader();
@@ -5136,14 +5024,12 @@ struct StencilFunc {
   uint32 mask;
 };
 
-COMPILE_ASSERT(sizeof(StencilFunc) == 16,
-               Sizeof_StencilFunc_is_not_16);
+COMPILE_ASSERT(sizeof(StencilFunc) == 16, Sizeof_StencilFunc_is_not_16);
 COMPILE_ASSERT(offsetof(StencilFunc, header) == 0,
                OffsetOf_StencilFunc_header_not_0);
 COMPILE_ASSERT(offsetof(StencilFunc, func) == 4,
                OffsetOf_StencilFunc_func_not_4);
-COMPILE_ASSERT(offsetof(StencilFunc, ref) == 8,
-               OffsetOf_StencilFunc_ref_not_8);
+COMPILE_ASSERT(offsetof(StencilFunc, ref) == 8, OffsetOf_StencilFunc_ref_not_8);
 COMPILE_ASSERT(offsetof(StencilFunc, mask) == 12,
                OffsetOf_StencilFunc_mask_not_12);
 
@@ -5157,9 +5043,7 @@ struct StencilFuncSeparate {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _face, GLenum _func, GLint _ref, GLuint _mask) {
     SetHeader();
@@ -5204,9 +5088,7 @@ struct StencilMask {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _mask) {
     SetHeader();
@@ -5222,8 +5104,7 @@ struct StencilMask {
   uint32 mask;
 };
 
-COMPILE_ASSERT(sizeof(StencilMask) == 8,
-               Sizeof_StencilMask_is_not_8);
+COMPILE_ASSERT(sizeof(StencilMask) == 8, Sizeof_StencilMask_is_not_8);
 COMPILE_ASSERT(offsetof(StencilMask, header) == 0,
                OffsetOf_StencilMask_header_not_0);
 COMPILE_ASSERT(offsetof(StencilMask, mask) == 4,
@@ -5239,9 +5120,7 @@ struct StencilMaskSeparate {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _face, GLuint _mask) {
     SetHeader();
@@ -5278,9 +5157,7 @@ struct StencilOp {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _fail, GLenum _zfail, GLenum _zpass) {
     SetHeader();
@@ -5300,14 +5177,11 @@ struct StencilOp {
   uint32 zpass;
 };
 
-COMPILE_ASSERT(sizeof(StencilOp) == 16,
-               Sizeof_StencilOp_is_not_16);
+COMPILE_ASSERT(sizeof(StencilOp) == 16, Sizeof_StencilOp_is_not_16);
 COMPILE_ASSERT(offsetof(StencilOp, header) == 0,
                OffsetOf_StencilOp_header_not_0);
-COMPILE_ASSERT(offsetof(StencilOp, fail) == 4,
-               OffsetOf_StencilOp_fail_not_4);
-COMPILE_ASSERT(offsetof(StencilOp, zfail) == 8,
-               OffsetOf_StencilOp_zfail_not_8);
+COMPILE_ASSERT(offsetof(StencilOp, fail) == 4, OffsetOf_StencilOp_fail_not_4);
+COMPILE_ASSERT(offsetof(StencilOp, zfail) == 8, OffsetOf_StencilOp_zfail_not_8);
 COMPILE_ASSERT(offsetof(StencilOp, zpass) == 12,
                OffsetOf_StencilOp_zpass_not_12);
 
@@ -5321,9 +5195,7 @@ struct StencilOpSeparate {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _face, GLenum _fail, GLenum _zfail, GLenum _zpass) {
     SetHeader();
@@ -5333,8 +5205,11 @@ struct StencilOpSeparate {
     zpass = _zpass;
   }
 
-  void* Set(
-      void* cmd, GLenum _face, GLenum _fail, GLenum _zfail, GLenum _zpass) {
+  void* Set(void* cmd,
+            GLenum _face,
+            GLenum _fail,
+            GLenum _zfail,
+            GLenum _zpass) {
     static_cast<ValueType*>(cmd)->Init(_face, _fail, _zfail, _zpass);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -5369,14 +5244,18 @@ struct TexImage2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _internalformat, GLsizei _width,
-      GLsizei _height, GLint _border, GLenum _format, GLenum _type,
-      uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -5390,14 +5269,27 @@ struct TexImage2D {
     pixels_shm_offset = _pixels_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _internalformat,
-      GLsizei _width, GLsizei _height, GLint _border, GLenum _format,
-      GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _internalformat, _width, _height, _border, _format,
-            _type, _pixels_shm_id, _pixels_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _internalformat,
+                                       _width,
+                                       _height,
+                                       _border,
+                                       _format,
+                                       _type,
+                                       _pixels_shm_id,
+                                       _pixels_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -5414,8 +5306,7 @@ struct TexImage2D {
   uint32 pixels_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(TexImage2D) == 44,
-               Sizeof_TexImage2D_is_not_44);
+COMPILE_ASSERT(sizeof(TexImage2D) == 44, Sizeof_TexImage2D_is_not_44);
 COMPILE_ASSERT(offsetof(TexImage2D, header) == 0,
                OffsetOf_TexImage2D_header_not_0);
 COMPILE_ASSERT(offsetof(TexImage2D, target) == 4,
@@ -5449,9 +5340,7 @@ struct TexParameterf {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLenum _pname, GLfloat _param) {
     SetHeader();
@@ -5471,8 +5360,7 @@ struct TexParameterf {
   float param;
 };
 
-COMPILE_ASSERT(sizeof(TexParameterf) == 16,
-               Sizeof_TexParameterf_is_not_16);
+COMPILE_ASSERT(sizeof(TexParameterf) == 16, Sizeof_TexParameterf_is_not_16);
 COMPILE_ASSERT(offsetof(TexParameterf, header) == 0,
                OffsetOf_TexParameterf_header_not_0);
 COMPILE_ASSERT(offsetof(TexParameterf, target) == 4,
@@ -5492,13 +5380,12 @@ struct TexParameterfv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     pname = _pname;
@@ -5506,11 +5393,13 @@ struct TexParameterfv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -5521,8 +5410,7 @@ struct TexParameterfv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(TexParameterfv) == 20,
-               Sizeof_TexParameterfv_is_not_20);
+COMPILE_ASSERT(sizeof(TexParameterfv) == 20, Sizeof_TexParameterfv_is_not_20);
 COMPILE_ASSERT(offsetof(TexParameterfv, header) == 0,
                OffsetOf_TexParameterfv_header_not_0);
 COMPILE_ASSERT(offsetof(TexParameterfv, target) == 4,
@@ -5541,25 +5429,21 @@ struct TexParameterfvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 1);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 1);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLenum _target, GLenum _pname, const GLfloat* _params) {
     SetHeader();
     target = _target;
     pname = _pname;
-    memcpy(ImmediateDataAddress(this),
-           _params, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _params, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLenum _target, GLenum _pname, const GLfloat* _params) {
@@ -5592,9 +5476,7 @@ struct TexParameteri {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLenum _pname, GLint _param) {
     SetHeader();
@@ -5614,8 +5496,7 @@ struct TexParameteri {
   int32 param;
 };
 
-COMPILE_ASSERT(sizeof(TexParameteri) == 16,
-               Sizeof_TexParameteri_is_not_16);
+COMPILE_ASSERT(sizeof(TexParameteri) == 16, Sizeof_TexParameteri_is_not_16);
 COMPILE_ASSERT(offsetof(TexParameteri, header) == 0,
                OffsetOf_TexParameteri_header_not_0);
 COMPILE_ASSERT(offsetof(TexParameteri, target) == 4,
@@ -5635,13 +5516,12 @@ struct TexParameteriv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
+  void Init(GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
     SetHeader();
     target = _target;
     pname = _pname;
@@ -5649,11 +5529,13 @@ struct TexParameteriv {
     params_shm_offset = _params_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _pname, uint32 _params_shm_id,
-      uint32 _params_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _pname, _params_shm_id, _params_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _pname,
+            uint32 _params_shm_id,
+            uint32 _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -5664,8 +5546,7 @@ struct TexParameteriv {
   uint32 params_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(TexParameteriv) == 20,
-               Sizeof_TexParameteriv_is_not_20);
+COMPILE_ASSERT(sizeof(TexParameteriv) == 20, Sizeof_TexParameteriv_is_not_20);
 COMPILE_ASSERT(offsetof(TexParameteriv, header) == 0,
                OffsetOf_TexParameteriv_header_not_0);
 COMPILE_ASSERT(offsetof(TexParameteriv, target) == 4,
@@ -5684,25 +5565,21 @@ struct TexParameterivImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLint) * 1);  // NOLINT
+    return static_cast<uint32>(sizeof(GLint) * 1);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLenum _target, GLenum _pname, const GLint* _params) {
     SetHeader();
     target = _target;
     pname = _pname;
-    memcpy(ImmediateDataAddress(this),
-           _params, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _params, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLenum _target, GLenum _pname, const GLint* _params) {
@@ -5735,14 +5612,19 @@ struct TexSubImage2D {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLenum _type,
-      uint32 _pixels_shm_id, uint32 _pixels_shm_offset, GLboolean _internal) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset,
+            GLboolean _internal) {
     SetHeader();
     target = _target;
     level = _level;
@@ -5757,14 +5639,29 @@ struct TexSubImage2D {
     internal = _internal;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLenum _type,
-      uint32 _pixels_shm_id, uint32 _pixels_shm_offset, GLboolean _internal) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _xoffset, _yoffset, _width, _height, _format,
-            _type, _pixels_shm_id, _pixels_shm_offset, _internal);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset,
+            GLboolean _internal) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _xoffset,
+                                       _yoffset,
+                                       _width,
+                                       _height,
+                                       _format,
+                                       _type,
+                                       _pixels_shm_id,
+                                       _pixels_shm_offset,
+                                       _internal);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -5782,8 +5679,7 @@ struct TexSubImage2D {
   uint32 internal;
 };
 
-COMPILE_ASSERT(sizeof(TexSubImage2D) == 48,
-               Sizeof_TexSubImage2D_is_not_48);
+COMPILE_ASSERT(sizeof(TexSubImage2D) == 48, Sizeof_TexSubImage2D_is_not_48);
 COMPILE_ASSERT(offsetof(TexSubImage2D, header) == 0,
                OffsetOf_TexSubImage2D_header_not_0);
 COMPILE_ASSERT(offsetof(TexSubImage2D, target) == 4,
@@ -5819,9 +5715,7 @@ struct Uniform1f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLfloat _x) {
     SetHeader();
@@ -5839,14 +5733,12 @@ struct Uniform1f {
   float x;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1f) == 12,
-               Sizeof_Uniform1f_is_not_12);
+COMPILE_ASSERT(sizeof(Uniform1f) == 12, Sizeof_Uniform1f_is_not_12);
 COMPILE_ASSERT(offsetof(Uniform1f, header) == 0,
                OffsetOf_Uniform1f_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform1f, location) == 4,
                OffsetOf_Uniform1f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1f, x) == 8,
-               OffsetOf_Uniform1f_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform1f, x) == 8, OffsetOf_Uniform1f_x_not_8);
 
 struct Uniform1fv {
   typedef Uniform1fv ValueType;
@@ -5858,13 +5750,12 @@ struct Uniform1fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -5872,11 +5763,13 @@ struct Uniform1fv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -5887,8 +5780,7 @@ struct Uniform1fv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1fv) == 20,
-               Sizeof_Uniform1fv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform1fv) == 20, Sizeof_Uniform1fv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform1fv, header) == 0,
                OffsetOf_Uniform1fv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform1fv, location) == 4,
@@ -5907,13 +5799,12 @@ struct Uniform1fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 1 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 1 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -5924,8 +5815,7 @@ struct Uniform1fvImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -5958,9 +5848,7 @@ struct Uniform1i {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLint _x) {
     SetHeader();
@@ -5978,14 +5866,12 @@ struct Uniform1i {
   int32 x;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1i) == 12,
-               Sizeof_Uniform1i_is_not_12);
+COMPILE_ASSERT(sizeof(Uniform1i) == 12, Sizeof_Uniform1i_is_not_12);
 COMPILE_ASSERT(offsetof(Uniform1i, header) == 0,
                OffsetOf_Uniform1i_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform1i, location) == 4,
                OffsetOf_Uniform1i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform1i, x) == 8,
-               OffsetOf_Uniform1i_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform1i, x) == 8, OffsetOf_Uniform1i_x_not_8);
 
 struct Uniform1iv {
   typedef Uniform1iv ValueType;
@@ -5997,13 +5883,12 @@ struct Uniform1iv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6011,11 +5896,13 @@ struct Uniform1iv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6026,8 +5913,7 @@ struct Uniform1iv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform1iv) == 20,
-               Sizeof_Uniform1iv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform1iv) == 20, Sizeof_Uniform1iv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform1iv, header) == 0,
                OffsetOf_Uniform1iv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform1iv, location) == 4,
@@ -6046,13 +5932,12 @@ struct Uniform1ivImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLint) * 1 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLint) * 1 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6063,8 +5948,7 @@ struct Uniform1ivImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLint* _v) {
@@ -6097,9 +5981,7 @@ struct Uniform2f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLfloat _x, GLfloat _y) {
     SetHeader();
@@ -6119,16 +6001,13 @@ struct Uniform2f {
   float y;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2f) == 16,
-               Sizeof_Uniform2f_is_not_16);
+COMPILE_ASSERT(sizeof(Uniform2f) == 16, Sizeof_Uniform2f_is_not_16);
 COMPILE_ASSERT(offsetof(Uniform2f, header) == 0,
                OffsetOf_Uniform2f_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform2f, location) == 4,
                OffsetOf_Uniform2f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2f, x) == 8,
-               OffsetOf_Uniform2f_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform2f, y) == 12,
-               OffsetOf_Uniform2f_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform2f, x) == 8, OffsetOf_Uniform2f_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform2f, y) == 12, OffsetOf_Uniform2f_y_not_12);
 
 struct Uniform2fv {
   typedef Uniform2fv ValueType;
@@ -6140,13 +6019,12 @@ struct Uniform2fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6154,11 +6032,13 @@ struct Uniform2fv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6169,8 +6049,7 @@ struct Uniform2fv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2fv) == 20,
-               Sizeof_Uniform2fv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform2fv) == 20, Sizeof_Uniform2fv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform2fv, header) == 0,
                OffsetOf_Uniform2fv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform2fv, location) == 4,
@@ -6189,13 +6068,12 @@ struct Uniform2fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 2 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 2 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6206,8 +6084,7 @@ struct Uniform2fvImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -6240,9 +6117,7 @@ struct Uniform2i {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLint _x, GLint _y) {
     SetHeader();
@@ -6262,16 +6137,13 @@ struct Uniform2i {
   int32 y;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2i) == 16,
-               Sizeof_Uniform2i_is_not_16);
+COMPILE_ASSERT(sizeof(Uniform2i) == 16, Sizeof_Uniform2i_is_not_16);
 COMPILE_ASSERT(offsetof(Uniform2i, header) == 0,
                OffsetOf_Uniform2i_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform2i, location) == 4,
                OffsetOf_Uniform2i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform2i, x) == 8,
-               OffsetOf_Uniform2i_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform2i, y) == 12,
-               OffsetOf_Uniform2i_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform2i, x) == 8, OffsetOf_Uniform2i_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform2i, y) == 12, OffsetOf_Uniform2i_y_not_12);
 
 struct Uniform2iv {
   typedef Uniform2iv ValueType;
@@ -6283,13 +6155,12 @@ struct Uniform2iv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6297,11 +6168,13 @@ struct Uniform2iv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6312,8 +6185,7 @@ struct Uniform2iv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform2iv) == 20,
-               Sizeof_Uniform2iv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform2iv) == 20, Sizeof_Uniform2iv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform2iv, header) == 0,
                OffsetOf_Uniform2iv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform2iv, location) == 4,
@@ -6332,13 +6204,12 @@ struct Uniform2ivImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLint) * 2 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLint) * 2 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6349,8 +6220,7 @@ struct Uniform2ivImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLint* _v) {
@@ -6383,9 +6253,7 @@ struct Uniform3f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLfloat _x, GLfloat _y, GLfloat _z) {
     SetHeader();
@@ -6407,18 +6275,14 @@ struct Uniform3f {
   float z;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3f) == 20,
-               Sizeof_Uniform3f_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform3f) == 20, Sizeof_Uniform3f_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform3f, header) == 0,
                OffsetOf_Uniform3f_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform3f, location) == 4,
                OffsetOf_Uniform3f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3f, x) == 8,
-               OffsetOf_Uniform3f_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform3f, y) == 12,
-               OffsetOf_Uniform3f_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform3f, z) == 16,
-               OffsetOf_Uniform3f_z_not_16);
+COMPILE_ASSERT(offsetof(Uniform3f, x) == 8, OffsetOf_Uniform3f_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform3f, y) == 12, OffsetOf_Uniform3f_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform3f, z) == 16, OffsetOf_Uniform3f_z_not_16);
 
 struct Uniform3fv {
   typedef Uniform3fv ValueType;
@@ -6430,13 +6294,12 @@ struct Uniform3fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6444,11 +6307,13 @@ struct Uniform3fv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6459,8 +6324,7 @@ struct Uniform3fv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3fv) == 20,
-               Sizeof_Uniform3fv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform3fv) == 20, Sizeof_Uniform3fv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform3fv, header) == 0,
                OffsetOf_Uniform3fv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform3fv, location) == 4,
@@ -6479,13 +6343,12 @@ struct Uniform3fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 3 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 3 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6496,8 +6359,7 @@ struct Uniform3fvImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -6530,9 +6392,7 @@ struct Uniform3i {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLint _x, GLint _y, GLint _z) {
     SetHeader();
@@ -6554,18 +6414,14 @@ struct Uniform3i {
   int32 z;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3i) == 20,
-               Sizeof_Uniform3i_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform3i) == 20, Sizeof_Uniform3i_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform3i, header) == 0,
                OffsetOf_Uniform3i_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform3i, location) == 4,
                OffsetOf_Uniform3i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform3i, x) == 8,
-               OffsetOf_Uniform3i_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform3i, y) == 12,
-               OffsetOf_Uniform3i_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform3i, z) == 16,
-               OffsetOf_Uniform3i_z_not_16);
+COMPILE_ASSERT(offsetof(Uniform3i, x) == 8, OffsetOf_Uniform3i_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform3i, y) == 12, OffsetOf_Uniform3i_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform3i, z) == 16, OffsetOf_Uniform3i_z_not_16);
 
 struct Uniform3iv {
   typedef Uniform3iv ValueType;
@@ -6577,13 +6433,12 @@ struct Uniform3iv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6591,11 +6446,13 @@ struct Uniform3iv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6606,8 +6463,7 @@ struct Uniform3iv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform3iv) == 20,
-               Sizeof_Uniform3iv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform3iv) == 20, Sizeof_Uniform3iv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform3iv, header) == 0,
                OffsetOf_Uniform3iv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform3iv, location) == 4,
@@ -6626,13 +6482,12 @@ struct Uniform3ivImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLint) * 3 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLint) * 3 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6643,8 +6498,7 @@ struct Uniform3ivImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLint* _v) {
@@ -6677,9 +6531,7 @@ struct Uniform4f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLfloat _x, GLfloat _y, GLfloat _z, GLfloat _w) {
     SetHeader();
@@ -6690,9 +6542,12 @@ struct Uniform4f {
     w = _w;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLfloat _x, GLfloat _y, GLfloat _z,
-      GLfloat _w) {
+  void* Set(void* cmd,
+            GLint _location,
+            GLfloat _x,
+            GLfloat _y,
+            GLfloat _z,
+            GLfloat _w) {
     static_cast<ValueType*>(cmd)->Init(_location, _x, _y, _z, _w);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -6705,20 +6560,15 @@ struct Uniform4f {
   float w;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4f) == 24,
-               Sizeof_Uniform4f_is_not_24);
+COMPILE_ASSERT(sizeof(Uniform4f) == 24, Sizeof_Uniform4f_is_not_24);
 COMPILE_ASSERT(offsetof(Uniform4f, header) == 0,
                OffsetOf_Uniform4f_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform4f, location) == 4,
                OffsetOf_Uniform4f_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4f, x) == 8,
-               OffsetOf_Uniform4f_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform4f, y) == 12,
-               OffsetOf_Uniform4f_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform4f, z) == 16,
-               OffsetOf_Uniform4f_z_not_16);
-COMPILE_ASSERT(offsetof(Uniform4f, w) == 20,
-               OffsetOf_Uniform4f_w_not_20);
+COMPILE_ASSERT(offsetof(Uniform4f, x) == 8, OffsetOf_Uniform4f_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform4f, y) == 12, OffsetOf_Uniform4f_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform4f, z) == 16, OffsetOf_Uniform4f_z_not_16);
+COMPILE_ASSERT(offsetof(Uniform4f, w) == 20, OffsetOf_Uniform4f_w_not_20);
 
 struct Uniform4fv {
   typedef Uniform4fv ValueType;
@@ -6730,13 +6580,12 @@ struct Uniform4fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6744,11 +6593,13 @@ struct Uniform4fv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6759,8 +6610,7 @@ struct Uniform4fv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4fv) == 20,
-               Sizeof_Uniform4fv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform4fv) == 20, Sizeof_Uniform4fv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform4fv, header) == 0,
                OffsetOf_Uniform4fv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform4fv, location) == 4,
@@ -6779,13 +6629,12 @@ struct Uniform4fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 4 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 4 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6796,8 +6645,7 @@ struct Uniform4fvImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -6830,9 +6678,7 @@ struct Uniform4i {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _location, GLint _x, GLint _y, GLint _z, GLint _w) {
     SetHeader();
@@ -6843,8 +6689,12 @@ struct Uniform4i {
     w = _w;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLint _x, GLint _y, GLint _z, GLint _w) {
+  void* Set(void* cmd,
+            GLint _location,
+            GLint _x,
+            GLint _y,
+            GLint _z,
+            GLint _w) {
     static_cast<ValueType*>(cmd)->Init(_location, _x, _y, _z, _w);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -6857,20 +6707,15 @@ struct Uniform4i {
   int32 w;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4i) == 24,
-               Sizeof_Uniform4i_is_not_24);
+COMPILE_ASSERT(sizeof(Uniform4i) == 24, Sizeof_Uniform4i_is_not_24);
 COMPILE_ASSERT(offsetof(Uniform4i, header) == 0,
                OffsetOf_Uniform4i_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform4i, location) == 4,
                OffsetOf_Uniform4i_location_not_4);
-COMPILE_ASSERT(offsetof(Uniform4i, x) == 8,
-               OffsetOf_Uniform4i_x_not_8);
-COMPILE_ASSERT(offsetof(Uniform4i, y) == 12,
-               OffsetOf_Uniform4i_y_not_12);
-COMPILE_ASSERT(offsetof(Uniform4i, z) == 16,
-               OffsetOf_Uniform4i_z_not_16);
-COMPILE_ASSERT(offsetof(Uniform4i, w) == 20,
-               OffsetOf_Uniform4i_w_not_20);
+COMPILE_ASSERT(offsetof(Uniform4i, x) == 8, OffsetOf_Uniform4i_x_not_8);
+COMPILE_ASSERT(offsetof(Uniform4i, y) == 12, OffsetOf_Uniform4i_y_not_12);
+COMPILE_ASSERT(offsetof(Uniform4i, z) == 16, OffsetOf_Uniform4i_z_not_16);
+COMPILE_ASSERT(offsetof(Uniform4i, w) == 20, OffsetOf_Uniform4i_w_not_20);
 
 struct Uniform4iv {
   typedef Uniform4iv ValueType;
@@ -6882,13 +6727,12 @@ struct Uniform4iv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6896,11 +6740,13 @@ struct Uniform4iv {
     v_shm_offset = _v_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, uint32 _v_shm_id,
-      uint32 _v_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_location, _count, _v_shm_id, _v_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            uint32 _v_shm_id,
+            uint32 _v_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _v_shm_id, _v_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6911,8 +6757,7 @@ struct Uniform4iv {
   uint32 v_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(Uniform4iv) == 20,
-               Sizeof_Uniform4iv_is_not_20);
+COMPILE_ASSERT(sizeof(Uniform4iv) == 20, Sizeof_Uniform4iv_is_not_20);
 COMPILE_ASSERT(offsetof(Uniform4iv, header) == 0,
                OffsetOf_Uniform4iv_header_not_0);
 COMPILE_ASSERT(offsetof(Uniform4iv, location) == 4,
@@ -6931,13 +6776,12 @@ struct Uniform4ivImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLint) * 4 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLint) * 4 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -6948,8 +6792,7 @@ struct Uniform4ivImmediate {
     SetHeader(_count);
     location = _location;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _v, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _v, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLint _location, GLsizei _count, const GLint* _v) {
@@ -6982,13 +6825,13 @@ struct UniformMatrix2fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, GLboolean _transpose,
-      uint32 _value_shm_id, uint32 _value_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            uint32 _value_shm_id,
+            uint32 _value_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -6997,12 +6840,14 @@ struct UniformMatrix2fv {
     value_shm_offset = _value_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, GLboolean _transpose,
-      uint32 _value_shm_id, uint32 _value_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _location, _count, _transpose, _value_shm_id, _value_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            uint32 _value_shm_id,
+            uint32 _value_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _transpose, _value_shm_id, _value_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7036,33 +6881,34 @@ struct UniformMatrix2fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 4 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 4 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(
-      GLint _location, GLsizei _count, GLboolean _transpose,
-      const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
     transpose = _transpose;
-    memcpy(ImmediateDataAddress(this),
-           _value, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, GLboolean _transpose,
-      const GLfloat* _value) {
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32 size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
@@ -7095,13 +6941,13 @@ struct UniformMatrix3fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, GLboolean _transpose,
-      uint32 _value_shm_id, uint32 _value_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            uint32 _value_shm_id,
+            uint32 _value_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -7110,12 +6956,14 @@ struct UniformMatrix3fv {
     value_shm_offset = _value_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, GLboolean _transpose,
-      uint32 _value_shm_id, uint32 _value_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _location, _count, _transpose, _value_shm_id, _value_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            uint32 _value_shm_id,
+            uint32 _value_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _transpose, _value_shm_id, _value_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7149,33 +6997,34 @@ struct UniformMatrix3fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 9 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 9 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(
-      GLint _location, GLsizei _count, GLboolean _transpose,
-      const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
     transpose = _transpose;
-    memcpy(ImmediateDataAddress(this),
-           _value, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, GLboolean _transpose,
-      const GLfloat* _value) {
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32 size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
@@ -7208,13 +7057,13 @@ struct UniformMatrix4fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _location, GLsizei _count, GLboolean _transpose,
-      uint32 _value_shm_id, uint32 _value_shm_offset) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            uint32 _value_shm_id,
+            uint32 _value_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
@@ -7223,12 +7072,14 @@ struct UniformMatrix4fv {
     value_shm_offset = _value_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, GLboolean _transpose,
-      uint32 _value_shm_id, uint32 _value_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _location, _count, _transpose, _value_shm_id, _value_shm_offset);
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            uint32 _value_shm_id,
+            uint32 _value_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_location, _count, _transpose, _value_shm_id, _value_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7262,33 +7113,34 @@ struct UniformMatrix4fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 16 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 16 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(
-      GLint _location, GLsizei _count, GLboolean _transpose,
-      const GLfloat* _value) {
+  void Init(GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
     transpose = _transpose;
-    memcpy(ImmediateDataAddress(this),
-           _value, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(
-      void* cmd, GLint _location, GLsizei _count, GLboolean _transpose,
-      const GLfloat* _value) {
+  void* Set(void* cmd,
+            GLint _location,
+            GLsizei _count,
+            GLboolean _transpose,
+            const GLfloat* _value) {
     static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
     const uint32 size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
@@ -7321,9 +7173,7 @@ struct UseProgram {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program) {
     SetHeader();
@@ -7339,8 +7189,7 @@ struct UseProgram {
   uint32 program;
 };
 
-COMPILE_ASSERT(sizeof(UseProgram) == 8,
-               Sizeof_UseProgram_is_not_8);
+COMPILE_ASSERT(sizeof(UseProgram) == 8, Sizeof_UseProgram_is_not_8);
 COMPILE_ASSERT(offsetof(UseProgram, header) == 0,
                OffsetOf_UseProgram_header_not_0);
 COMPILE_ASSERT(offsetof(UseProgram, program) == 4,
@@ -7356,9 +7205,7 @@ struct ValidateProgram {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program) {
     SetHeader();
@@ -7374,8 +7221,7 @@ struct ValidateProgram {
   uint32 program;
 };
 
-COMPILE_ASSERT(sizeof(ValidateProgram) == 8,
-               Sizeof_ValidateProgram_is_not_8);
+COMPILE_ASSERT(sizeof(ValidateProgram) == 8, Sizeof_ValidateProgram_is_not_8);
 COMPILE_ASSERT(offsetof(ValidateProgram, header) == 0,
                OffsetOf_ValidateProgram_header_not_0);
 COMPILE_ASSERT(offsetof(ValidateProgram, program) == 4,
@@ -7391,9 +7237,7 @@ struct VertexAttrib1f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, GLfloat _x) {
     SetHeader();
@@ -7411,8 +7255,7 @@ struct VertexAttrib1f {
   float x;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib1f) == 12,
-               Sizeof_VertexAttrib1f_is_not_12);
+COMPILE_ASSERT(sizeof(VertexAttrib1f) == 12, Sizeof_VertexAttrib1f_is_not_12);
 COMPILE_ASSERT(offsetof(VertexAttrib1f, header) == 0,
                OffsetOf_VertexAttrib1f_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib1f, indx) == 4,
@@ -7430,9 +7273,7 @@ struct VertexAttrib1fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, uint32 _values_shm_id, uint32 _values_shm_offset) {
     SetHeader();
@@ -7441,11 +7282,12 @@ struct VertexAttrib1fv {
     values_shm_offset = _values_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _indx, uint32 _values_shm_id,
-      uint32 _values_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_indx, _values_shm_id, _values_shm_offset);
+  void* Set(void* cmd,
+            GLuint _indx,
+            uint32 _values_shm_id,
+            uint32 _values_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_indx, _values_shm_id, _values_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7455,8 +7297,7 @@ struct VertexAttrib1fv {
   uint32 values_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib1fv) == 16,
-               Sizeof_VertexAttrib1fv_is_not_16);
+COMPILE_ASSERT(sizeof(VertexAttrib1fv) == 16, Sizeof_VertexAttrib1fv_is_not_16);
 COMPILE_ASSERT(offsetof(VertexAttrib1fv, header) == 0,
                OffsetOf_VertexAttrib1fv_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib1fv, indx) == 4,
@@ -7473,24 +7314,20 @@ struct VertexAttrib1fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 1);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 1);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLuint _indx, const GLfloat* _values) {
     SetHeader();
     indx = _indx;
-    memcpy(ImmediateDataAddress(this),
-           _values, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _values, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLuint _indx, const GLfloat* _values) {
@@ -7520,9 +7357,7 @@ struct VertexAttrib2f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, GLfloat _x, GLfloat _y) {
     SetHeader();
@@ -7542,8 +7377,7 @@ struct VertexAttrib2f {
   float y;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib2f) == 16,
-               Sizeof_VertexAttrib2f_is_not_16);
+COMPILE_ASSERT(sizeof(VertexAttrib2f) == 16, Sizeof_VertexAttrib2f_is_not_16);
 COMPILE_ASSERT(offsetof(VertexAttrib2f, header) == 0,
                OffsetOf_VertexAttrib2f_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib2f, indx) == 4,
@@ -7563,9 +7397,7 @@ struct VertexAttrib2fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, uint32 _values_shm_id, uint32 _values_shm_offset) {
     SetHeader();
@@ -7574,11 +7406,12 @@ struct VertexAttrib2fv {
     values_shm_offset = _values_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _indx, uint32 _values_shm_id,
-      uint32 _values_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_indx, _values_shm_id, _values_shm_offset);
+  void* Set(void* cmd,
+            GLuint _indx,
+            uint32 _values_shm_id,
+            uint32 _values_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_indx, _values_shm_id, _values_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7588,8 +7421,7 @@ struct VertexAttrib2fv {
   uint32 values_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib2fv) == 16,
-               Sizeof_VertexAttrib2fv_is_not_16);
+COMPILE_ASSERT(sizeof(VertexAttrib2fv) == 16, Sizeof_VertexAttrib2fv_is_not_16);
 COMPILE_ASSERT(offsetof(VertexAttrib2fv, header) == 0,
                OffsetOf_VertexAttrib2fv_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib2fv, indx) == 4,
@@ -7606,24 +7438,20 @@ struct VertexAttrib2fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 2);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 2);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLuint _indx, const GLfloat* _values) {
     SetHeader();
     indx = _indx;
-    memcpy(ImmediateDataAddress(this),
-           _values, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _values, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLuint _indx, const GLfloat* _values) {
@@ -7653,9 +7481,7 @@ struct VertexAttrib3f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, GLfloat _x, GLfloat _y, GLfloat _z) {
     SetHeader();
@@ -7677,8 +7503,7 @@ struct VertexAttrib3f {
   float z;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib3f) == 20,
-               Sizeof_VertexAttrib3f_is_not_20);
+COMPILE_ASSERT(sizeof(VertexAttrib3f) == 20, Sizeof_VertexAttrib3f_is_not_20);
 COMPILE_ASSERT(offsetof(VertexAttrib3f, header) == 0,
                OffsetOf_VertexAttrib3f_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib3f, indx) == 4,
@@ -7700,9 +7525,7 @@ struct VertexAttrib3fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, uint32 _values_shm_id, uint32 _values_shm_offset) {
     SetHeader();
@@ -7711,11 +7534,12 @@ struct VertexAttrib3fv {
     values_shm_offset = _values_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _indx, uint32 _values_shm_id,
-      uint32 _values_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_indx, _values_shm_id, _values_shm_offset);
+  void* Set(void* cmd,
+            GLuint _indx,
+            uint32 _values_shm_id,
+            uint32 _values_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_indx, _values_shm_id, _values_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7725,8 +7549,7 @@ struct VertexAttrib3fv {
   uint32 values_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib3fv) == 16,
-               Sizeof_VertexAttrib3fv_is_not_16);
+COMPILE_ASSERT(sizeof(VertexAttrib3fv) == 16, Sizeof_VertexAttrib3fv_is_not_16);
 COMPILE_ASSERT(offsetof(VertexAttrib3fv, header) == 0,
                OffsetOf_VertexAttrib3fv_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib3fv, indx) == 4,
@@ -7743,24 +7566,20 @@ struct VertexAttrib3fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 3);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 3);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLuint _indx, const GLfloat* _values) {
     SetHeader();
     indx = _indx;
-    memcpy(ImmediateDataAddress(this),
-           _values, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _values, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLuint _indx, const GLfloat* _values) {
@@ -7790,9 +7609,7 @@ struct VertexAttrib4f {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, GLfloat _x, GLfloat _y, GLfloat _z, GLfloat _w) {
     SetHeader();
@@ -7803,9 +7620,12 @@ struct VertexAttrib4f {
     w = _w;
   }
 
-  void* Set(
-      void* cmd, GLuint _indx, GLfloat _x, GLfloat _y, GLfloat _z,
-      GLfloat _w) {
+  void* Set(void* cmd,
+            GLuint _indx,
+            GLfloat _x,
+            GLfloat _y,
+            GLfloat _z,
+            GLfloat _w) {
     static_cast<ValueType*>(cmd)->Init(_indx, _x, _y, _z, _w);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -7818,8 +7638,7 @@ struct VertexAttrib4f {
   float w;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib4f) == 24,
-               Sizeof_VertexAttrib4f_is_not_24);
+COMPILE_ASSERT(sizeof(VertexAttrib4f) == 24, Sizeof_VertexAttrib4f_is_not_24);
 COMPILE_ASSERT(offsetof(VertexAttrib4f, header) == 0,
                OffsetOf_VertexAttrib4f_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib4f, indx) == 4,
@@ -7843,9 +7662,7 @@ struct VertexAttrib4fv {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _indx, uint32 _values_shm_id, uint32 _values_shm_offset) {
     SetHeader();
@@ -7854,11 +7671,12 @@ struct VertexAttrib4fv {
     values_shm_offset = _values_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _indx, uint32 _values_shm_id,
-      uint32 _values_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_indx, _values_shm_id, _values_shm_offset);
+  void* Set(void* cmd,
+            GLuint _indx,
+            uint32 _values_shm_id,
+            uint32 _values_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_indx, _values_shm_id, _values_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7868,8 +7686,7 @@ struct VertexAttrib4fv {
   uint32 values_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(VertexAttrib4fv) == 16,
-               Sizeof_VertexAttrib4fv_is_not_16);
+COMPILE_ASSERT(sizeof(VertexAttrib4fv) == 16, Sizeof_VertexAttrib4fv_is_not_16);
 COMPILE_ASSERT(offsetof(VertexAttrib4fv, header) == 0,
                OffsetOf_VertexAttrib4fv_header_not_0);
 COMPILE_ASSERT(offsetof(VertexAttrib4fv, indx) == 4,
@@ -7886,24 +7703,20 @@ struct VertexAttrib4fvImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLfloat) * 4);  // NOLINT
+    return static_cast<uint32>(sizeof(GLfloat) * 4);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLuint _indx, const GLfloat* _values) {
     SetHeader();
     indx = _indx;
-    memcpy(ImmediateDataAddress(this),
-           _values, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _values, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLuint _indx, const GLfloat* _values) {
@@ -7933,13 +7746,14 @@ struct VertexAttribPointer {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _indx, GLint _size, GLenum _type, GLboolean _normalized,
-      GLsizei _stride, GLuint _offset) {
+  void Init(GLuint _indx,
+            GLint _size,
+            GLenum _type,
+            GLboolean _normalized,
+            GLsizei _stride,
+            GLuint _offset) {
     SetHeader();
     indx = _indx;
     size = _size;
@@ -7949,11 +7763,15 @@ struct VertexAttribPointer {
     offset = _offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _indx, GLint _size, GLenum _type, GLboolean _normalized,
-      GLsizei _stride, GLuint _offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_indx, _size, _type, _normalized, _stride, _offset);
+  void* Set(void* cmd,
+            GLuint _indx,
+            GLint _size,
+            GLenum _type,
+            GLboolean _normalized,
+            GLsizei _stride,
+            GLuint _offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_indx, _size, _type, _normalized, _stride, _offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7993,9 +7811,7 @@ struct Viewport {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _x, GLint _y, GLsizei _width, GLsizei _height) {
     SetHeader();
@@ -8017,16 +7833,11 @@ struct Viewport {
   int32 height;
 };
 
-COMPILE_ASSERT(sizeof(Viewport) == 20,
-               Sizeof_Viewport_is_not_20);
-COMPILE_ASSERT(offsetof(Viewport, header) == 0,
-               OffsetOf_Viewport_header_not_0);
-COMPILE_ASSERT(offsetof(Viewport, x) == 4,
-               OffsetOf_Viewport_x_not_4);
-COMPILE_ASSERT(offsetof(Viewport, y) == 8,
-               OffsetOf_Viewport_y_not_8);
-COMPILE_ASSERT(offsetof(Viewport, width) == 12,
-               OffsetOf_Viewport_width_not_12);
+COMPILE_ASSERT(sizeof(Viewport) == 20, Sizeof_Viewport_is_not_20);
+COMPILE_ASSERT(offsetof(Viewport, header) == 0, OffsetOf_Viewport_header_not_0);
+COMPILE_ASSERT(offsetof(Viewport, x) == 4, OffsetOf_Viewport_x_not_4);
+COMPILE_ASSERT(offsetof(Viewport, y) == 8, OffsetOf_Viewport_y_not_8);
+COMPILE_ASSERT(offsetof(Viewport, width) == 12, OffsetOf_Viewport_width_not_12);
 COMPILE_ASSERT(offsetof(Viewport, height) == 16,
                OffsetOf_Viewport_height_not_16);
 
@@ -8040,14 +7851,18 @@ struct BlitFramebufferCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLint _srcX0, GLint _srcY0, GLint _srcX1, GLint _srcY1, GLint _dstX0,
-      GLint _dstY0, GLint _dstX1, GLint _dstY1, GLbitfield _mask,
-      GLenum _filter) {
+  void Init(GLint _srcX0,
+            GLint _srcY0,
+            GLint _srcX1,
+            GLint _srcY1,
+            GLint _dstX0,
+            GLint _dstY0,
+            GLint _dstX1,
+            GLint _dstY1,
+            GLbitfield _mask,
+            GLenum _filter) {
     SetHeader();
     srcX0 = _srcX0;
     srcY0 = _srcY0;
@@ -8061,14 +7876,27 @@ struct BlitFramebufferCHROMIUM {
     filter = _filter;
   }
 
-  void* Set(
-      void* cmd, GLint _srcX0, GLint _srcY0, GLint _srcX1, GLint _srcY1,
-      GLint _dstX0, GLint _dstY0, GLint _dstX1, GLint _dstY1, GLbitfield _mask,
-      GLenum _filter) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _srcX0, _srcY0, _srcX1, _srcY1, _dstX0, _dstY0, _dstX1, _dstY1,
-            _mask, _filter);
+  void* Set(void* cmd,
+            GLint _srcX0,
+            GLint _srcY0,
+            GLint _srcX1,
+            GLint _srcY1,
+            GLint _dstX0,
+            GLint _dstY0,
+            GLint _dstX1,
+            GLint _dstY1,
+            GLbitfield _mask,
+            GLenum _filter) {
+    static_cast<ValueType*>(cmd)->Init(_srcX0,
+                                       _srcY0,
+                                       _srcX1,
+                                       _srcY1,
+                                       _dstX0,
+                                       _dstY0,
+                                       _dstX1,
+                                       _dstY1,
+                                       _mask,
+                                       _filter);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8121,13 +7949,13 @@ struct RenderbufferStorageMultisampleCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLsizei _samples, GLenum _internalformat, GLsizei _width,
-      GLsizei _height) {
+  void Init(GLenum _target,
+            GLsizei _samples,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
     SetHeader();
     target = _target;
     samples = _samples;
@@ -8136,11 +7964,14 @@ struct RenderbufferStorageMultisampleCHROMIUM {
     height = _height;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizei _samples, GLenum _internalformat,
-      GLsizei _width, GLsizei _height) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _samples, _internalformat, _width, _height);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _samples,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _samples, _internalformat, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8162,7 +7993,7 @@ COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, samples) == 8,
                OffsetOf_RenderbufferStorageMultisampleCHROMIUM_samples_not_8);
 COMPILE_ASSERT(
     offsetof(RenderbufferStorageMultisampleCHROMIUM, internalformat) == 12,
-               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_internalformat_not_12);  // NOLINT
+    OffsetOf_RenderbufferStorageMultisampleCHROMIUM_internalformat_not_12);  // NOLINT
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, width) == 16,
                OffsetOf_RenderbufferStorageMultisampleCHROMIUM_width_not_16);
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, height) == 20,
@@ -8179,13 +8010,13 @@ struct RenderbufferStorageMultisampleEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLsizei _samples, GLenum _internalformat, GLsizei _width,
-      GLsizei _height) {
+  void Init(GLenum _target,
+            GLsizei _samples,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
     SetHeader();
     target = _target;
     samples = _samples;
@@ -8194,11 +8025,14 @@ struct RenderbufferStorageMultisampleEXT {
     height = _height;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizei _samples, GLenum _internalformat,
-      GLsizei _width, GLsizei _height) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _samples, _internalformat, _width, _height);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _samples,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _samples, _internalformat, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8220,7 +8054,7 @@ COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, samples) == 8,
                OffsetOf_RenderbufferStorageMultisampleEXT_samples_not_8);
 COMPILE_ASSERT(
     offsetof(RenderbufferStorageMultisampleEXT, internalformat) == 12,
-               OffsetOf_RenderbufferStorageMultisampleEXT_internalformat_not_12);  // NOLINT
+    OffsetOf_RenderbufferStorageMultisampleEXT_internalformat_not_12);  // NOLINT
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
                OffsetOf_RenderbufferStorageMultisampleEXT_width_not_16);
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
@@ -8236,13 +8070,14 @@ struct FramebufferTexture2DMultisampleEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _attachment, GLenum _textarget, GLuint _texture,
-      GLint _level, GLsizei _samples) {
+  void Init(GLenum _target,
+            GLenum _attachment,
+            GLenum _textarget,
+            GLuint _texture,
+            GLint _level,
+            GLsizei _samples) {
     SetHeader();
     target = _target;
     attachment = _attachment;
@@ -8252,12 +8087,15 @@ struct FramebufferTexture2DMultisampleEXT {
     samples = _samples;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _attachment, GLenum _textarget,
-      GLuint _texture, GLint _level, GLsizei _samples) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _attachment, _textarget, _texture, _level, _samples);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _attachment,
+            GLenum _textarget,
+            GLuint _texture,
+            GLint _level,
+            GLsizei _samples) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _attachment, _textarget, _texture, _level, _samples);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8297,13 +8135,13 @@ struct TexStorage2DEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLsizei _levels, GLenum _internalFormat, GLsizei _width,
-      GLsizei _height) {
+  void Init(GLenum _target,
+            GLsizei _levels,
+            GLenum _internalFormat,
+            GLsizei _width,
+            GLsizei _height) {
     SetHeader();
     target = _target;
     levels = _levels;
@@ -8312,11 +8150,14 @@ struct TexStorage2DEXT {
     height = _height;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizei _levels, GLenum _internalFormat,
-      GLsizei _width, GLsizei _height) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _levels, _internalFormat, _width, _height);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _levels,
+            GLenum _internalFormat,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _levels, _internalFormat, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8328,8 +8169,7 @@ struct TexStorage2DEXT {
   int32 height;
 };
 
-COMPILE_ASSERT(sizeof(TexStorage2DEXT) == 24,
-               Sizeof_TexStorage2DEXT_is_not_24);
+COMPILE_ASSERT(sizeof(TexStorage2DEXT) == 24, Sizeof_TexStorage2DEXT_is_not_24);
 COMPILE_ASSERT(offsetof(TexStorage2DEXT, header) == 0,
                OffsetOf_TexStorage2DEXT_header_not_0);
 COMPILE_ASSERT(offsetof(TexStorage2DEXT, target) == 4,
@@ -8353,9 +8193,7 @@ struct GenQueriesEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _queries_shm_id, uint32 _queries_shm_offset) {
     SetHeader();
@@ -8364,11 +8202,12 @@ struct GenQueriesEXT {
     queries_shm_offset = _queries_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _queries_shm_id,
-      uint32 _queries_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _queries_shm_id, _queries_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _queries_shm_id,
+            uint32 _queries_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _queries_shm_id, _queries_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8378,12 +8217,10 @@ struct GenQueriesEXT {
   uint32 queries_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GenQueriesEXT) == 16,
-               Sizeof_GenQueriesEXT_is_not_16);
+COMPILE_ASSERT(sizeof(GenQueriesEXT) == 16, Sizeof_GenQueriesEXT_is_not_16);
 COMPILE_ASSERT(offsetof(GenQueriesEXT, header) == 0,
                OffsetOf_GenQueriesEXT_header_not_0);
-COMPILE_ASSERT(offsetof(GenQueriesEXT, n) == 4,
-               OffsetOf_GenQueriesEXT_n_not_4);
+COMPILE_ASSERT(offsetof(GenQueriesEXT, n) == 4, OffsetOf_GenQueriesEXT_n_not_4);
 COMPILE_ASSERT(offsetof(GenQueriesEXT, queries_shm_id) == 8,
                OffsetOf_GenQueriesEXT_queries_shm_id_not_8);
 COMPILE_ASSERT(offsetof(GenQueriesEXT, queries_shm_offset) == 12,
@@ -8400,8 +8237,8 @@ struct GenQueriesEXTImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -8411,8 +8248,7 @@ struct GenQueriesEXTImmediate {
   void Init(GLsizei _n, GLuint* _queries) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _queries, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _queries, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, GLuint* _queries) {
@@ -8442,9 +8278,7 @@ struct DeleteQueriesEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _queries_shm_id, uint32 _queries_shm_offset) {
     SetHeader();
@@ -8453,11 +8287,12 @@ struct DeleteQueriesEXT {
     queries_shm_offset = _queries_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _queries_shm_id,
-      uint32 _queries_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_n, _queries_shm_id, _queries_shm_offset);
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _queries_shm_id,
+            uint32 _queries_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_n, _queries_shm_id, _queries_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8489,8 +8324,8 @@ struct DeleteQueriesEXTImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -8500,8 +8335,7 @@ struct DeleteQueriesEXTImmediate {
   void Init(GLsizei _n, const GLuint* _queries) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _queries, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _queries, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, const GLuint* _queries) {
@@ -8531,13 +8365,12 @@ struct BeginQueryEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLuint _id, uint32 _sync_data_shm_id,
-      uint32 _sync_data_shm_offset) {
+  void Init(GLenum _target,
+            GLuint _id,
+            uint32 _sync_data_shm_id,
+            uint32 _sync_data_shm_offset) {
     SetHeader();
     target = _target;
     id = _id;
@@ -8545,11 +8378,13 @@ struct BeginQueryEXT {
     sync_data_shm_offset = _sync_data_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLuint _id, uint32 _sync_data_shm_id,
-      uint32 _sync_data_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _id, _sync_data_shm_id, _sync_data_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLuint _id,
+            uint32 _sync_data_shm_id,
+            uint32 _sync_data_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _id, _sync_data_shm_id, _sync_data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8560,8 +8395,7 @@ struct BeginQueryEXT {
   uint32 sync_data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(BeginQueryEXT) == 20,
-               Sizeof_BeginQueryEXT_is_not_20);
+COMPILE_ASSERT(sizeof(BeginQueryEXT) == 20, Sizeof_BeginQueryEXT_is_not_20);
 COMPILE_ASSERT(offsetof(BeginQueryEXT, header) == 0,
                OffsetOf_BeginQueryEXT_header_not_0);
 COMPILE_ASSERT(offsetof(BeginQueryEXT, target) == 4,
@@ -8583,9 +8417,7 @@ struct EndQueryEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLuint _submit_count) {
     SetHeader();
@@ -8603,8 +8435,7 @@ struct EndQueryEXT {
   uint32 submit_count;
 };
 
-COMPILE_ASSERT(sizeof(EndQueryEXT) == 12,
-               Sizeof_EndQueryEXT_is_not_12);
+COMPILE_ASSERT(sizeof(EndQueryEXT) == 12, Sizeof_EndQueryEXT_is_not_12);
 COMPILE_ASSERT(offsetof(EndQueryEXT, header) == 0,
                OffsetOf_EndQueryEXT_header_not_0);
 COMPILE_ASSERT(offsetof(EndQueryEXT, target) == 4,
@@ -8622,9 +8453,7 @@ struct InsertEventMarkerEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _bucket_id) {
     SetHeader();
@@ -8657,9 +8486,7 @@ struct PushGroupMarkerEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _bucket_id) {
     SetHeader();
@@ -8692,13 +8519,9 @@ struct PopGroupMarkerEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -8723,9 +8546,7 @@ struct GenVertexArraysOES {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _arrays_shm_id, uint32 _arrays_shm_offset) {
     SetHeader();
@@ -8734,9 +8555,10 @@ struct GenVertexArraysOES {
     arrays_shm_offset = _arrays_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _arrays_shm_id,
-      uint32 _arrays_shm_offset) {
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _arrays_shm_id,
+            uint32 _arrays_shm_offset) {
     static_cast<ValueType*>(cmd)->Init(_n, _arrays_shm_id, _arrays_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -8769,8 +8591,8 @@ struct GenVertexArraysOESImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -8780,8 +8602,7 @@ struct GenVertexArraysOESImmediate {
   void Init(GLsizei _n, GLuint* _arrays) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _arrays, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _arrays, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, GLuint* _arrays) {
@@ -8811,9 +8632,7 @@ struct DeleteVertexArraysOES {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _n, uint32 _arrays_shm_id, uint32 _arrays_shm_offset) {
     SetHeader();
@@ -8822,9 +8641,10 @@ struct DeleteVertexArraysOES {
     arrays_shm_offset = _arrays_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _n, uint32 _arrays_shm_id,
-      uint32 _arrays_shm_offset) {
+  void* Set(void* cmd,
+            GLsizei _n,
+            uint32 _arrays_shm_id,
+            uint32 _arrays_shm_offset) {
     static_cast<ValueType*>(cmd)->Init(_n, _arrays_shm_id, _arrays_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -8857,8 +8677,8 @@ struct DeleteVertexArraysOESImmediate {
   }
 
   static uint32 ComputeSize(GLsizei n) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(n));  // NOLINT
   }
 
   void SetHeader(GLsizei n) {
@@ -8868,8 +8688,7 @@ struct DeleteVertexArraysOESImmediate {
   void Init(GLsizei _n, const GLuint* _arrays) {
     SetHeader(_n);
     n = _n;
-    memcpy(ImmediateDataAddress(this),
-           _arrays, ComputeDataSize(_n));
+    memcpy(ImmediateDataAddress(this), _arrays, ComputeDataSize(_n));
   }
 
   void* Set(void* cmd, GLsizei _n, const GLuint* _arrays) {
@@ -8901,9 +8720,7 @@ struct IsVertexArrayOES {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _array, uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
@@ -8912,11 +8729,12 @@ struct IsVertexArrayOES {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _array, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_array, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _array,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_array, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8947,9 +8765,7 @@ struct BindVertexArrayOES {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _array) {
     SetHeader();
@@ -8982,13 +8798,9 @@ struct SwapBuffers {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -8998,8 +8810,7 @@ struct SwapBuffers {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(SwapBuffers) == 4,
-               Sizeof_SwapBuffers_is_not_4);
+COMPILE_ASSERT(sizeof(SwapBuffers) == 4, Sizeof_SwapBuffers_is_not_4);
 COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
                OffsetOf_SwapBuffers_header_not_0);
 
@@ -9015,13 +8826,14 @@ struct GetMaxValueInBufferCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _buffer_id, GLsizei _count, GLenum _type, GLuint _offset,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _buffer_id,
+            GLsizei _count,
+            GLenum _type,
+            GLuint _offset,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     buffer_id = _buffer_id;
     count = _count;
@@ -9031,13 +8843,15 @@ struct GetMaxValueInBufferCHROMIUM {
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _buffer_id, GLsizei _count, GLenum _type,
-      GLuint _offset, uint32 _result_shm_id, uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _buffer_id, _count, _type, _offset, _result_shm_id,
-            _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _buffer_id,
+            GLsizei _count,
+            GLenum _type,
+            GLuint _offset,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _buffer_id, _count, _type, _offset, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9077,13 +8891,13 @@ struct GenSharedIdsCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _namespace_id, GLuint _id_offset, GLsizei _n, uint32 _ids_shm_id,
-      uint32 _ids_shm_offset) {
+  void Init(GLuint _namespace_id,
+            GLuint _id_offset,
+            GLsizei _n,
+            uint32 _ids_shm_id,
+            uint32 _ids_shm_offset) {
     SetHeader();
     namespace_id = _namespace_id;
     id_offset = _id_offset;
@@ -9092,12 +8906,14 @@ struct GenSharedIdsCHROMIUM {
     ids_shm_offset = _ids_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _namespace_id, GLuint _id_offset, GLsizei _n,
-      uint32 _ids_shm_id, uint32 _ids_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _namespace_id, _id_offset, _n, _ids_shm_id, _ids_shm_offset);
+  void* Set(void* cmd,
+            GLuint _namespace_id,
+            GLuint _id_offset,
+            GLsizei _n,
+            uint32 _ids_shm_id,
+            uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_namespace_id, _id_offset, _n, _ids_shm_id, _ids_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9134,13 +8950,12 @@ struct DeleteSharedIdsCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
-      uint32 _ids_shm_offset) {
+  void Init(GLuint _namespace_id,
+            GLsizei _n,
+            uint32 _ids_shm_id,
+            uint32 _ids_shm_offset) {
     SetHeader();
     namespace_id = _namespace_id;
     n = _n;
@@ -9148,11 +8963,13 @@ struct DeleteSharedIdsCHROMIUM {
     ids_shm_offset = _ids_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
-      uint32 _ids_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_namespace_id, _n, _ids_shm_id, _ids_shm_offset);
+  void* Set(void* cmd,
+            GLuint _namespace_id,
+            GLsizei _n,
+            uint32 _ids_shm_id,
+            uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_namespace_id, _n, _ids_shm_id, _ids_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9186,13 +9003,12 @@ struct RegisterSharedIdsCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
-      uint32 _ids_shm_offset) {
+  void Init(GLuint _namespace_id,
+            GLsizei _n,
+            uint32 _ids_shm_id,
+            uint32 _ids_shm_offset) {
     SetHeader();
     namespace_id = _namespace_id;
     n = _n;
@@ -9200,11 +9016,13 @@ struct RegisterSharedIdsCHROMIUM {
     ids_shm_offset = _ids_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _namespace_id, GLsizei _n, uint32 _ids_shm_id,
-      uint32 _ids_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_namespace_id, _n, _ids_shm_id, _ids_shm_offset);
+  void* Set(void* cmd,
+            GLuint _namespace_id,
+            GLsizei _n,
+            uint32 _ids_shm_id,
+            uint32 _ids_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_namespace_id, _n, _ids_shm_id, _ids_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9240,23 +9058,23 @@ struct EnableFeatureCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _bucket_id, uint32 _result_shm_id, uint32 _result_shm_offset) {
+  void Init(GLuint _bucket_id,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
     SetHeader();
     bucket_id = _bucket_id;
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLuint _bucket_id, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_bucket_id, _result_shm_id, _result_shm_offset);
+  void* Set(void* cmd,
+            GLuint _bucket_id,
+            uint32 _result_shm_id,
+            uint32 _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_bucket_id, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9287,9 +9105,7 @@ struct ResizeCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _width, GLuint _height, GLfloat _scale_factor) {
     SetHeader();
@@ -9309,8 +9125,7 @@ struct ResizeCHROMIUM {
   float scale_factor;
 };
 
-COMPILE_ASSERT(sizeof(ResizeCHROMIUM) == 16,
-               Sizeof_ResizeCHROMIUM_is_not_16);
+COMPILE_ASSERT(sizeof(ResizeCHROMIUM) == 16, Sizeof_ResizeCHROMIUM_is_not_16);
 COMPILE_ASSERT(offsetof(ResizeCHROMIUM, header) == 0,
                OffsetOf_ResizeCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(ResizeCHROMIUM, width) == 4,
@@ -9330,9 +9145,7 @@ struct GetRequestableExtensionsCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(uint32 _bucket_id) {
     SetHeader();
@@ -9365,9 +9178,7 @@ struct RequestExtensionCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(uint32 _bucket_id) {
     SetHeader();
@@ -9400,13 +9211,14 @@ struct GetMultipleIntegervCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      uint32 _pnames_shm_id, uint32 _pnames_shm_offset, GLuint _count,
-      uint32 _results_shm_id, uint32 _results_shm_offset, GLsizeiptr _size) {
+  void Init(uint32 _pnames_shm_id,
+            uint32 _pnames_shm_offset,
+            GLuint _count,
+            uint32 _results_shm_id,
+            uint32 _results_shm_offset,
+            GLsizeiptr _size) {
     SetHeader();
     pnames_shm_id = _pnames_shm_id;
     pnames_shm_offset = _pnames_shm_offset;
@@ -9416,14 +9228,19 @@ struct GetMultipleIntegervCHROMIUM {
     size = _size;
   }
 
-  void* Set(
-      void* cmd, uint32 _pnames_shm_id, uint32 _pnames_shm_offset,
-      GLuint _count, uint32 _results_shm_id, uint32 _results_shm_offset,
-      GLsizeiptr _size) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _pnames_shm_id, _pnames_shm_offset, _count, _results_shm_id,
-            _results_shm_offset, _size);
+  void* Set(void* cmd,
+            uint32 _pnames_shm_id,
+            uint32 _pnames_shm_offset,
+            GLuint _count,
+            uint32 _results_shm_id,
+            uint32 _results_shm_offset,
+            GLsizeiptr _size) {
+    static_cast<ValueType*>(cmd)->Init(_pnames_shm_id,
+                                       _pnames_shm_offset,
+                                       _count,
+                                       _results_shm_id,
+                                       _results_shm_offset,
+                                       _size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9469,9 +9286,7 @@ struct GetProgramInfoCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program, uint32 _bucket_id) {
     SetHeader();
@@ -9514,9 +9329,7 @@ struct GetTranslatedShaderSourceANGLE {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _shader, uint32 _bucket_id) {
     SetHeader();
@@ -9553,9 +9366,7 @@ struct PostSubBufferCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLint _x, GLint _y, GLint _width, GLint _height) {
     SetHeader();
@@ -9600,13 +9411,13 @@ struct TexImageIOSurface2DCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLsizei _width, GLsizei _height, GLuint _ioSurfaceId,
-      GLuint _plane) {
+  void Init(GLenum _target,
+            GLsizei _width,
+            GLsizei _height,
+            GLuint _ioSurfaceId,
+            GLuint _plane) {
     SetHeader();
     target = _target;
     width = _width;
@@ -9615,11 +9426,14 @@ struct TexImageIOSurface2DCHROMIUM {
     plane = _plane;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizei _width, GLsizei _height,
-      GLuint _ioSurfaceId, GLuint _plane) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _width, _height, _ioSurfaceId, _plane);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _width,
+            GLsizei _height,
+            GLuint _ioSurfaceId,
+            GLuint _plane) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _width, _height, _ioSurfaceId, _plane);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9656,13 +9470,14 @@ struct CopyTextureCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLenum _source_id, GLenum _dest_id, GLint _level,
-      GLint _internalformat, GLenum _dest_type) {
+  void Init(GLenum _target,
+            GLenum _source_id,
+            GLenum _dest_id,
+            GLint _level,
+            GLint _internalformat,
+            GLenum _dest_type) {
     SetHeader();
     target = _target;
     source_id = _source_id;
@@ -9672,13 +9487,15 @@ struct CopyTextureCHROMIUM {
     dest_type = _dest_type;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLenum _source_id, GLenum _dest_id,
-      GLint _level, GLint _internalformat, GLenum _dest_type) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _source_id, _dest_id, _level, _internalformat,
-            _dest_type);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _source_id,
+            GLenum _dest_id,
+            GLint _level,
+            GLint _internalformat,
+            GLenum _dest_type) {
+    static_cast<ValueType*>(cmd)->Init(
+        _target, _source_id, _dest_id, _level, _internalformat, _dest_type);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9718,9 +9535,7 @@ struct DrawArraysInstancedANGLE {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _mode, GLint _first, GLsizei _count, GLsizei _primcount) {
     SetHeader();
@@ -9730,9 +9545,11 @@ struct DrawArraysInstancedANGLE {
     primcount = _primcount;
   }
 
-  void* Set(
-      void* cmd, GLenum _mode, GLint _first, GLsizei _count,
-      GLsizei _primcount) {
+  void* Set(void* cmd,
+            GLenum _mode,
+            GLint _first,
+            GLsizei _count,
+            GLsizei _primcount) {
     static_cast<ValueType*>(cmd)->Init(_mode, _first, _count, _primcount);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -9767,13 +9584,13 @@ struct DrawElementsInstancedANGLE {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _mode, GLsizei _count, GLenum _type, GLuint _index_offset,
-      GLsizei _primcount) {
+  void Init(GLenum _mode,
+            GLsizei _count,
+            GLenum _type,
+            GLuint _index_offset,
+            GLsizei _primcount) {
     SetHeader();
     mode = _mode;
     count = _count;
@@ -9782,11 +9599,14 @@ struct DrawElementsInstancedANGLE {
     primcount = _primcount;
   }
 
-  void* Set(
-      void* cmd, GLenum _mode, GLsizei _count, GLenum _type,
-      GLuint _index_offset, GLsizei _primcount) {
-    static_cast<ValueType*>(
-        cmd)->Init(_mode, _count, _type, _index_offset, _primcount);
+  void* Set(void* cmd,
+            GLenum _mode,
+            GLsizei _count,
+            GLenum _type,
+            GLuint _index_offset,
+            GLsizei _primcount) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_mode, _count, _type, _index_offset, _primcount);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9823,9 +9643,7 @@ struct VertexAttribDivisorANGLE {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _index, GLuint _divisor) {
     SetHeader();
@@ -9862,23 +9680,23 @@ struct ProduceTextureCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, uint32 _mailbox_shm_id, uint32 _mailbox_shm_offset) {
+  void Init(GLenum _target,
+            uint32 _mailbox_shm_id,
+            uint32 _mailbox_shm_offset) {
     SetHeader();
     target = _target;
     mailbox_shm_id = _mailbox_shm_id;
     mailbox_shm_offset = _mailbox_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, uint32 _mailbox_shm_id,
-      uint32 _mailbox_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _mailbox_shm_id, _mailbox_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            uint32 _mailbox_shm_id,
+            uint32 _mailbox_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _mailbox_shm_id, _mailbox_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9906,24 +9724,20 @@ struct ProduceTextureCHROMIUMImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLbyte) * 64);  // NOLINT
+    return static_cast<uint32>(sizeof(GLbyte) * 64);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLenum _target, const GLbyte* _mailbox) {
     SetHeader();
     target = _target;
-    memcpy(ImmediateDataAddress(this),
-           _mailbox, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLenum _target, const GLbyte* _mailbox) {
@@ -9953,23 +9767,23 @@ struct ConsumeTextureCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, uint32 _mailbox_shm_id, uint32 _mailbox_shm_offset) {
+  void Init(GLenum _target,
+            uint32 _mailbox_shm_id,
+            uint32 _mailbox_shm_offset) {
     SetHeader();
     target = _target;
     mailbox_shm_id = _mailbox_shm_id;
     mailbox_shm_offset = _mailbox_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, uint32 _mailbox_shm_id,
-      uint32 _mailbox_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(_target, _mailbox_shm_id, _mailbox_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            uint32 _mailbox_shm_id,
+            uint32 _mailbox_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _mailbox_shm_id, _mailbox_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9997,24 +9811,20 @@ struct ConsumeTextureCHROMIUMImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
   static uint32 ComputeDataSize() {
-    return static_cast<uint32>(
-        sizeof(GLbyte) * 64);  // NOLINT
+    return static_cast<uint32>(sizeof(GLbyte) * 64);  // NOLINT
   }
 
   static uint32 ComputeSize() {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize());  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize());  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize());
-  }
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
   void Init(GLenum _target, const GLbyte* _mailbox) {
     SetHeader();
     target = _target;
-    memcpy(ImmediateDataAddress(this),
-           _mailbox, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
   }
 
   void* Set(void* cmd, GLenum _target, const GLbyte* _mailbox) {
@@ -10044,13 +9854,13 @@ struct BindUniformLocationCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLuint _program, GLint _location, uint32 _name_shm_id,
-      uint32 _name_shm_offset, uint32 _data_size) {
+  void Init(GLuint _program,
+            GLint _location,
+            uint32 _name_shm_id,
+            uint32 _name_shm_offset,
+            uint32 _data_size) {
     SetHeader();
     program = _program;
     location = _location;
@@ -10059,12 +9869,14 @@ struct BindUniformLocationCHROMIUM {
     data_size = _data_size;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLint _location, uint32 _name_shm_id,
-      uint32 _name_shm_offset, uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _location, _name_shm_id, _name_shm_offset, _data_size);
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            uint32 _name_shm_id,
+            uint32 _name_shm_offset,
+            uint32 _data_size) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _location, _name_shm_id, _name_shm_offset, _data_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10101,9 +9913,7 @@ struct BindUniformLocationCHROMIUMBucket {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _program, GLint _location, uint32 _name_bucket_id) {
     SetHeader();
@@ -10112,8 +9922,10 @@ struct BindUniformLocationCHROMIUMBucket {
     name_bucket_id = _name_bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLint _location, uint32 _name_bucket_id) {
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            uint32 _name_bucket_id) {
     static_cast<ValueType*>(cmd)->Init(_program, _location, _name_bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -10134,7 +9946,7 @@ COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUMBucket, location) == 8,
                OffsetOf_BindUniformLocationCHROMIUMBucket_location_not_8);
 COMPILE_ASSERT(
     offsetof(BindUniformLocationCHROMIUMBucket, name_bucket_id) == 12,
-               OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);  // NOLINT
+    OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);  // NOLINT
 
 struct BindTexImage2DCHROMIUM {
   typedef BindTexImage2DCHROMIUM ValueType;
@@ -10146,9 +9958,7 @@ struct BindTexImage2DCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLint _imageId) {
     SetHeader();
@@ -10185,9 +9995,7 @@ struct ReleaseTexImage2DCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target, GLint _imageId) {
     SetHeader();
@@ -10224,9 +10032,7 @@ struct TraceBeginCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _bucket_id) {
     SetHeader();
@@ -10259,13 +10065,9 @@ struct TraceEndCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -10275,8 +10077,7 @@ struct TraceEndCHROMIUM {
   gpu::CommandHeader header;
 };
 
-COMPILE_ASSERT(sizeof(TraceEndCHROMIUM) == 4,
-               Sizeof_TraceEndCHROMIUM_is_not_4);
+COMPILE_ASSERT(sizeof(TraceEndCHROMIUM) == 4, Sizeof_TraceEndCHROMIUM_is_not_4);
 COMPILE_ASSERT(offsetof(TraceEndCHROMIUM, header) == 0,
                OffsetOf_TraceEndCHROMIUM_header_not_0);
 
@@ -10290,14 +10091,18 @@ struct AsyncTexSubImage2DCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLenum _type,
-      uint32 _data_shm_id, uint32 _data_shm_offset) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLenum _type,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -10311,14 +10116,27 @@ struct AsyncTexSubImage2DCHROMIUM {
     data_shm_offset = _data_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _xoffset, GLint _yoffset,
-      GLsizei _width, GLsizei _height, GLenum _format, GLenum _type,
-      uint32 _data_shm_id, uint32 _data_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _xoffset, _yoffset, _width, _height, _format,
-            _type, _data_shm_id, _data_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLsizei _width,
+            GLsizei _height,
+            GLenum _format,
+            GLenum _type,
+            uint32 _data_shm_id,
+            uint32 _data_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _xoffset,
+                                       _yoffset,
+                                       _width,
+                                       _height,
+                                       _format,
+                                       _type,
+                                       _data_shm_id,
+                                       _data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10370,14 +10188,18 @@ struct AsyncTexImage2DCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLint _level, GLint _internalformat, GLsizei _width,
-      GLsizei _height, GLint _border, GLenum _format, GLenum _type,
-      uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
+  void Init(GLenum _target,
+            GLint _level,
+            GLint _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -10391,14 +10213,27 @@ struct AsyncTexImage2DCHROMIUM {
     pixels_shm_offset = _pixels_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLint _level, GLint _internalformat,
-      GLsizei _width, GLsizei _height, GLint _border, GLenum _format,
-      GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _level, _internalformat, _width, _height, _border, _format,
-            _type, _pixels_shm_id, _pixels_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLint _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLint _border,
+            GLenum _format,
+            GLenum _type,
+            uint32 _pixels_shm_id,
+            uint32 _pixels_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target,
+                                       _level,
+                                       _internalformat,
+                                       _width,
+                                       _height,
+                                       _border,
+                                       _format,
+                                       _type,
+                                       _pixels_shm_id,
+                                       _pixels_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10450,9 +10285,7 @@ struct WaitAsyncTexImage2DCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _target) {
     SetHeader();
@@ -10485,13 +10318,12 @@ struct DiscardFramebufferEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(
-      GLenum _target, GLsizei _count, uint32 _attachments_shm_id,
-      uint32 _attachments_shm_offset) {
+  void Init(GLenum _target,
+            GLsizei _count,
+            uint32 _attachments_shm_id,
+            uint32 _attachments_shm_offset) {
     SetHeader();
     target = _target;
     count = _count;
@@ -10499,12 +10331,13 @@ struct DiscardFramebufferEXT {
     attachments_shm_offset = _attachments_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizei _count, uint32 _attachments_shm_id,
-      uint32 _attachments_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _target, _count, _attachments_shm_id, _attachments_shm_offset);
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _count,
+            uint32 _attachments_shm_id,
+            uint32 _attachments_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _count, _attachments_shm_id, _attachments_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10535,13 +10368,12 @@ struct DiscardFramebufferEXTImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLenum) * 1 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLenum) * 1 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -10552,12 +10384,13 @@ struct DiscardFramebufferEXTImmediate {
     SetHeader(_count);
     target = _target;
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _attachments, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _attachments, ComputeDataSize(_count));
   }
 
-  void* Set(
-      void* cmd, GLenum _target, GLsizei _count, const GLenum* _attachments) {
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _count,
+            const GLenum* _attachments) {
     static_cast<ValueType*>(cmd)->Init(_target, _count, _attachments);
     const uint32 size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
@@ -10587,9 +10420,7 @@ struct LoseContextCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLenum _current, GLenum _other) {
     SetHeader();
@@ -10626,9 +10457,7 @@ struct WaitSyncPointCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLuint _sync_point) {
     SetHeader();
@@ -10661,9 +10490,7 @@ struct DrawBuffersEXT {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
   void Init(GLsizei _count, uint32 _bufs_shm_id, uint32 _bufs_shm_offset) {
     SetHeader();
@@ -10672,9 +10499,10 @@ struct DrawBuffersEXT {
     bufs_shm_offset = _bufs_shm_offset;
   }
 
-  void* Set(
-      void* cmd, GLsizei _count, uint32 _bufs_shm_id,
-      uint32 _bufs_shm_offset) {
+  void* Set(void* cmd,
+            GLsizei _count,
+            uint32 _bufs_shm_id,
+            uint32 _bufs_shm_offset) {
     static_cast<ValueType*>(cmd)->Init(_count, _bufs_shm_id, _bufs_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -10685,8 +10513,7 @@ struct DrawBuffersEXT {
   uint32 bufs_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(DrawBuffersEXT) == 16,
-               Sizeof_DrawBuffersEXT_is_not_16);
+COMPILE_ASSERT(sizeof(DrawBuffersEXT) == 16, Sizeof_DrawBuffersEXT_is_not_16);
 COMPILE_ASSERT(offsetof(DrawBuffersEXT, header) == 0,
                OffsetOf_DrawBuffersEXT_header_not_0);
 COMPILE_ASSERT(offsetof(DrawBuffersEXT, count) == 4,
@@ -10703,13 +10530,12 @@ struct DrawBuffersEXTImmediate {
   static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   static uint32 ComputeDataSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(GLenum) * 1 * count);  // NOLINT
+    return static_cast<uint32>(sizeof(GLenum) * 1 * count);  // NOLINT
   }
 
   static uint32 ComputeSize(GLsizei count) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT
+    return static_cast<uint32>(sizeof(ValueType) +
+                               ComputeDataSize(count));  // NOLINT
   }
 
   void SetHeader(GLsizei count) {
@@ -10719,8 +10545,7 @@ struct DrawBuffersEXTImmediate {
   void Init(GLsizei _count, const GLenum* _bufs) {
     SetHeader(_count);
     count = _count;
-    memcpy(ImmediateDataAddress(this),
-           _bufs, ComputeDataSize(_count));
+    memcpy(ImmediateDataAddress(this), _bufs, ComputeDataSize(_count));
   }
 
   void* Set(void* cmd, GLsizei _count, const GLenum* _bufs) {
@@ -10750,13 +10575,9 @@ struct DiscardBackbufferCHROMIUM {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
 
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
+  void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init() {
-    SetHeader();
-  }
+  void Init() { SetHeader(); }
 
   void* Set(void* cmd) {
     static_cast<ValueType*>(cmd)->Init();
@@ -10771,6 +10592,4 @@ COMPILE_ASSERT(sizeof(DiscardBackbufferCHROMIUM) == 4,
 COMPILE_ASSERT(offsetof(DiscardBackbufferCHROMIUM, header) == 0,
                OffsetOf_DiscardBackbufferCHROMIUM_header_not_0);
 
-
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
-

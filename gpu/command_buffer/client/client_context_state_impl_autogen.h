@@ -4,6 +4,8 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 // It is included by client_context_state.cc
@@ -19,74 +21,72 @@ ClientContextState::EnableFlags::EnableFlags()
       sample_alpha_to_coverage(false),
       sample_coverage(false),
       scissor_test(false),
-      stencil_test(false) {
-}
+      stencil_test(false) {}
 
-
-bool ClientContextState::SetCapabilityState(
-    GLenum cap, bool enabled, bool* changed) {
+bool ClientContextState::SetCapabilityState(GLenum cap,
+                                            bool enabled,
+                                            bool* changed) {
   *changed = false;
   switch (cap) {
     case GL_BLEND:
       if (enable_flags.blend != enabled) {
-         *changed = true;
-         enable_flags.blend = enabled;
+        *changed = true;
+        enable_flags.blend = enabled;
       }
       return true;
     case GL_CULL_FACE:
       if (enable_flags.cull_face != enabled) {
-         *changed = true;
-         enable_flags.cull_face = enabled;
+        *changed = true;
+        enable_flags.cull_face = enabled;
       }
       return true;
     case GL_DEPTH_TEST:
       if (enable_flags.depth_test != enabled) {
-         *changed = true;
-         enable_flags.depth_test = enabled;
+        *changed = true;
+        enable_flags.depth_test = enabled;
       }
       return true;
     case GL_DITHER:
       if (enable_flags.dither != enabled) {
-         *changed = true;
-         enable_flags.dither = enabled;
+        *changed = true;
+        enable_flags.dither = enabled;
       }
       return true;
     case GL_POLYGON_OFFSET_FILL:
       if (enable_flags.polygon_offset_fill != enabled) {
-         *changed = true;
-         enable_flags.polygon_offset_fill = enabled;
+        *changed = true;
+        enable_flags.polygon_offset_fill = enabled;
       }
       return true;
     case GL_SAMPLE_ALPHA_TO_COVERAGE:
       if (enable_flags.sample_alpha_to_coverage != enabled) {
-         *changed = true;
-         enable_flags.sample_alpha_to_coverage = enabled;
+        *changed = true;
+        enable_flags.sample_alpha_to_coverage = enabled;
       }
       return true;
     case GL_SAMPLE_COVERAGE:
       if (enable_flags.sample_coverage != enabled) {
-         *changed = true;
-         enable_flags.sample_coverage = enabled;
+        *changed = true;
+        enable_flags.sample_coverage = enabled;
       }
       return true;
     case GL_SCISSOR_TEST:
       if (enable_flags.scissor_test != enabled) {
-         *changed = true;
-         enable_flags.scissor_test = enabled;
+        *changed = true;
+        enable_flags.scissor_test = enabled;
       }
       return true;
     case GL_STENCIL_TEST:
       if (enable_flags.stencil_test != enabled) {
-         *changed = true;
-         enable_flags.stencil_test = enabled;
+        *changed = true;
+        enable_flags.stencil_test = enabled;
       }
       return true;
     default:
       return false;
   }
 }
-bool ClientContextState::GetEnabled(
-    GLenum cap, bool* enabled) const {
+bool ClientContextState::GetEnabled(GLenum cap, bool* enabled) const {
   switch (cap) {
     case GL_BLEND:
       *enabled = enable_flags.blend;
@@ -120,4 +120,3 @@ bool ClientContextState::GetEnabled(
   }
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_CLIENT_CONTEXT_STATE_IMPL_AUTOGEN_H_
-

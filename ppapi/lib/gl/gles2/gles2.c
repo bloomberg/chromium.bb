@@ -4,6 +4,8 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 #ifndef GL_GLEXT_PROTOTYPES
@@ -22,15 +24,14 @@ void GL_APIENTRY glAttachShader(GLuint program, GLuint shader) {
       glGetCurrentContextPPAPI(), program, shader);
 }
 
-void GL_APIENTRY glBindAttribLocation(
-    GLuint program, GLuint index, const char* name) {
+void GL_APIENTRY
+glBindAttribLocation(GLuint program, GLuint index, const char* name) {
   glGetInterfacePPAPI()->BindAttribLocation(
       glGetCurrentContextPPAPI(), program, index, name);
 }
 
 void GL_APIENTRY glBindBuffer(GLenum target, GLuint buffer) {
-  glGetInterfacePPAPI()->BindBuffer(
-      glGetCurrentContextPPAPI(), target, buffer);
+  glGetInterfacePPAPI()->BindBuffer(glGetCurrentContextPPAPI(), target, buffer);
 }
 
 void GL_APIENTRY glBindFramebuffer(GLenum target, GLuint framebuffer) {
@@ -48,8 +49,8 @@ void GL_APIENTRY glBindTexture(GLenum target, GLuint texture) {
       glGetCurrentContextPPAPI(), target, texture);
 }
 
-void GL_APIENTRY glBlendColor(
-    GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+void GL_APIENTRY
+glBlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
   glGetInterfacePPAPI()->BlendColor(
       glGetCurrentContextPPAPI(), red, green, blue, alpha);
 }
@@ -68,20 +69,24 @@ void GL_APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor) {
       glGetCurrentContextPPAPI(), sfactor, dfactor);
 }
 
-void GL_APIENTRY glBlendFuncSeparate(
-    GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha) {
+void GL_APIENTRY glBlendFuncSeparate(GLenum srcRGB,
+                                     GLenum dstRGB,
+                                     GLenum srcAlpha,
+                                     GLenum dstAlpha) {
   glGetInterfacePPAPI()->BlendFuncSeparate(
       glGetCurrentContextPPAPI(), srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
-void GL_APIENTRY glBufferData(
-    GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
+void GL_APIENTRY
+glBufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
   glGetInterfacePPAPI()->BufferData(
       glGetCurrentContextPPAPI(), target, size, data, usage);
 }
 
-void GL_APIENTRY glBufferSubData(
-    GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
+void GL_APIENTRY glBufferSubData(GLenum target,
+                                 GLintptr offset,
+                                 GLsizeiptr size,
+                                 const void* data) {
   glGetInterfacePPAPI()->BufferSubData(
       glGetCurrentContextPPAPI(), target, offset, size, data);
 }
@@ -95,8 +100,8 @@ void GL_APIENTRY glClear(GLbitfield mask) {
   glGetInterfacePPAPI()->Clear(glGetCurrentContextPPAPI(), mask);
 }
 
-void GL_APIENTRY glClearColor(
-    GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+void GL_APIENTRY
+glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
   glGetInterfacePPAPI()->ClearColor(
       glGetCurrentContextPPAPI(), red, green, blue, alpha);
 }
@@ -109,8 +114,8 @@ void GL_APIENTRY glClearStencil(GLint s) {
   glGetInterfacePPAPI()->ClearStencil(glGetCurrentContextPPAPI(), s);
 }
 
-void GL_APIENTRY glColorMask(
-    GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
+void GL_APIENTRY
+glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
   glGetInterfacePPAPI()->ColorMask(
       glGetCurrentContextPPAPI(), red, green, blue, alpha);
 }
@@ -119,36 +124,82 @@ void GL_APIENTRY glCompileShader(GLuint shader) {
   glGetInterfacePPAPI()->CompileShader(glGetCurrentContextPPAPI(), shader);
 }
 
-void GL_APIENTRY glCompressedTexImage2D(
-    GLenum target, GLint level, GLenum internalformat, GLsizei width,
-    GLsizei height, GLint border, GLsizei imageSize, const void* data) {
-  glGetInterfacePPAPI()->CompressedTexImage2D(
-      glGetCurrentContextPPAPI(), target, level, internalformat, width, height,
-      border, imageSize, data);
+void GL_APIENTRY glCompressedTexImage2D(GLenum target,
+                                        GLint level,
+                                        GLenum internalformat,
+                                        GLsizei width,
+                                        GLsizei height,
+                                        GLint border,
+                                        GLsizei imageSize,
+                                        const void* data) {
+  glGetInterfacePPAPI()->CompressedTexImage2D(glGetCurrentContextPPAPI(),
+                                              target,
+                                              level,
+                                              internalformat,
+                                              width,
+                                              height,
+                                              border,
+                                              imageSize,
+                                              data);
 }
 
-void GL_APIENTRY glCompressedTexSubImage2D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLsizei imageSize, const void* data) {
-  glGetInterfacePPAPI()->CompressedTexSubImage2D(
-      glGetCurrentContextPPAPI(), target, level, xoffset, yoffset, width,
-      height, format, imageSize, data);
+void GL_APIENTRY glCompressedTexSubImage2D(GLenum target,
+                                           GLint level,
+                                           GLint xoffset,
+                                           GLint yoffset,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLenum format,
+                                           GLsizei imageSize,
+                                           const void* data) {
+  glGetInterfacePPAPI()->CompressedTexSubImage2D(glGetCurrentContextPPAPI(),
+                                                 target,
+                                                 level,
+                                                 xoffset,
+                                                 yoffset,
+                                                 width,
+                                                 height,
+                                                 format,
+                                                 imageSize,
+                                                 data);
 }
 
-void GL_APIENTRY glCopyTexImage2D(
-    GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
-    GLsizei width, GLsizei height, GLint border) {
-  glGetInterfacePPAPI()->CopyTexImage2D(
-      glGetCurrentContextPPAPI(), target, level, internalformat, x, y, width,
-      height, border);
+void GL_APIENTRY glCopyTexImage2D(GLenum target,
+                                  GLint level,
+                                  GLenum internalformat,
+                                  GLint x,
+                                  GLint y,
+                                  GLsizei width,
+                                  GLsizei height,
+                                  GLint border) {
+  glGetInterfacePPAPI()->CopyTexImage2D(glGetCurrentContextPPAPI(),
+                                        target,
+                                        level,
+                                        internalformat,
+                                        x,
+                                        y,
+                                        width,
+                                        height,
+                                        border);
 }
 
-void GL_APIENTRY glCopyTexSubImage2D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
-    GLsizei width, GLsizei height) {
-  glGetInterfacePPAPI()->CopyTexSubImage2D(
-      glGetCurrentContextPPAPI(), target, level, xoffset, yoffset, x, y, width,
-      height);
+void GL_APIENTRY glCopyTexSubImage2D(GLenum target,
+                                     GLint level,
+                                     GLint xoffset,
+                                     GLint yoffset,
+                                     GLint x,
+                                     GLint y,
+                                     GLsizei width,
+                                     GLsizei height) {
+  glGetInterfacePPAPI()->CopyTexSubImage2D(glGetCurrentContextPPAPI(),
+                                           target,
+                                           level,
+                                           xoffset,
+                                           yoffset,
+                                           x,
+                                           y,
+                                           width,
+                                           height);
 }
 
 GLuint GL_APIENTRY glCreateProgram() {
@@ -176,8 +227,7 @@ void GL_APIENTRY glDeleteProgram(GLuint program) {
   glGetInterfacePPAPI()->DeleteProgram(glGetCurrentContextPPAPI(), program);
 }
 
-void GL_APIENTRY glDeleteRenderbuffers(
-    GLsizei n, const GLuint* renderbuffers) {
+void GL_APIENTRY glDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
   glGetInterfacePPAPI()->DeleteRenderbuffers(
       glGetCurrentContextPPAPI(), n, renderbuffers);
 }
@@ -213,8 +263,8 @@ void GL_APIENTRY glDisable(GLenum cap) {
 }
 
 void GL_APIENTRY glDisableVertexAttribArray(GLuint index) {
-  glGetInterfacePPAPI()->DisableVertexAttribArray(
-      glGetCurrentContextPPAPI(), index);
+  glGetInterfacePPAPI()->DisableVertexAttribArray(glGetCurrentContextPPAPI(),
+                                                  index);
 }
 
 void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
@@ -222,8 +272,8 @@ void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
       glGetCurrentContextPPAPI(), mode, first, count);
 }
 
-void GL_APIENTRY glDrawElements(
-    GLenum mode, GLsizei count, GLenum type, const void* indices) {
+void GL_APIENTRY
+glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) {
   glGetInterfacePPAPI()->DrawElements(
       glGetCurrentContextPPAPI(), mode, count, type, indices);
 }
@@ -233,8 +283,8 @@ void GL_APIENTRY glEnable(GLenum cap) {
 }
 
 void GL_APIENTRY glEnableVertexAttribArray(GLuint index) {
-  glGetInterfacePPAPI()->EnableVertexAttribArray(
-      glGetCurrentContextPPAPI(), index);
+  glGetInterfacePPAPI()->EnableVertexAttribArray(glGetCurrentContextPPAPI(),
+                                                 index);
 }
 
 void GL_APIENTRY glFinish() {
@@ -245,20 +295,28 @@ void GL_APIENTRY glFlush() {
   glGetInterfacePPAPI()->Flush(glGetCurrentContextPPAPI());
 }
 
-void GL_APIENTRY glFramebufferRenderbuffer(
-    GLenum target, GLenum attachment, GLenum renderbuffertarget,
-    GLuint renderbuffer) {
-  glGetInterfacePPAPI()->FramebufferRenderbuffer(
-      glGetCurrentContextPPAPI(), target, attachment, renderbuffertarget,
-      renderbuffer);
+void GL_APIENTRY glFramebufferRenderbuffer(GLenum target,
+                                           GLenum attachment,
+                                           GLenum renderbuffertarget,
+                                           GLuint renderbuffer) {
+  glGetInterfacePPAPI()->FramebufferRenderbuffer(glGetCurrentContextPPAPI(),
+                                                 target,
+                                                 attachment,
+                                                 renderbuffertarget,
+                                                 renderbuffer);
 }
 
-void GL_APIENTRY glFramebufferTexture2D(
-    GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
-    GLint level) {
-  glGetInterfacePPAPI()->FramebufferTexture2D(
-      glGetCurrentContextPPAPI(), target, attachment, textarget, texture,
-      level);
+void GL_APIENTRY glFramebufferTexture2D(GLenum target,
+                                        GLenum attachment,
+                                        GLenum textarget,
+                                        GLuint texture,
+                                        GLint level) {
+  glGetInterfacePPAPI()->FramebufferTexture2D(glGetCurrentContextPPAPI(),
+                                              target,
+                                              attachment,
+                                              textarget,
+                                              texture,
+                                              level);
 }
 
 void GL_APIENTRY glFrontFace(GLenum mode) {
@@ -287,24 +345,44 @@ void GL_APIENTRY glGenTextures(GLsizei n, GLuint* textures) {
   glGetInterfacePPAPI()->GenTextures(glGetCurrentContextPPAPI(), n, textures);
 }
 
-void GL_APIENTRY glGetActiveAttrib(
-    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
-    GLenum* type, char* name) {
-  glGetInterfacePPAPI()->GetActiveAttrib(
-      glGetCurrentContextPPAPI(), program, index, bufsize, length, size, type,
-      name);
+void GL_APIENTRY glGetActiveAttrib(GLuint program,
+                                   GLuint index,
+                                   GLsizei bufsize,
+                                   GLsizei* length,
+                                   GLint* size,
+                                   GLenum* type,
+                                   char* name) {
+  glGetInterfacePPAPI()->GetActiveAttrib(glGetCurrentContextPPAPI(),
+                                         program,
+                                         index,
+                                         bufsize,
+                                         length,
+                                         size,
+                                         type,
+                                         name);
 }
 
-void GL_APIENTRY glGetActiveUniform(
-    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
-    GLenum* type, char* name) {
-  glGetInterfacePPAPI()->GetActiveUniform(
-      glGetCurrentContextPPAPI(), program, index, bufsize, length, size, type,
-      name);
+void GL_APIENTRY glGetActiveUniform(GLuint program,
+                                    GLuint index,
+                                    GLsizei bufsize,
+                                    GLsizei* length,
+                                    GLint* size,
+                                    GLenum* type,
+                                    char* name) {
+  glGetInterfacePPAPI()->GetActiveUniform(glGetCurrentContextPPAPI(),
+                                          program,
+                                          index,
+                                          bufsize,
+                                          length,
+                                          size,
+                                          type,
+                                          name);
 }
 
-void GL_APIENTRY glGetAttachedShaders(
-    GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
+void GL_APIENTRY glGetAttachedShaders(GLuint program,
+                                      GLsizei maxcount,
+                                      GLsizei* count,
+                                      GLuint* shaders) {
   glGetInterfacePPAPI()->GetAttachedShaders(
       glGetCurrentContextPPAPI(), program, maxcount, count, shaders);
 }
@@ -315,12 +393,11 @@ GLint GL_APIENTRY glGetAttribLocation(GLuint program, const char* name) {
 }
 
 void GL_APIENTRY glGetBooleanv(GLenum pname, GLboolean* params) {
-  glGetInterfacePPAPI()->GetBooleanv(
-      glGetCurrentContextPPAPI(), pname, params);
+  glGetInterfacePPAPI()->GetBooleanv(glGetCurrentContextPPAPI(), pname, params);
 }
 
-void GL_APIENTRY glGetBufferParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
+void GL_APIENTRY
+glGetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   glGetInterfacePPAPI()->GetBufferParameteriv(
       glGetCurrentContextPPAPI(), target, pname, params);
 }
@@ -333,15 +410,16 @@ void GL_APIENTRY glGetFloatv(GLenum pname, GLfloat* params) {
   glGetInterfacePPAPI()->GetFloatv(glGetCurrentContextPPAPI(), pname, params);
 }
 
-void GL_APIENTRY glGetFramebufferAttachmentParameteriv(
-    GLenum target, GLenum attachment, GLenum pname, GLint* params) {
+void GL_APIENTRY glGetFramebufferAttachmentParameteriv(GLenum target,
+                                                       GLenum attachment,
+                                                       GLenum pname,
+                                                       GLint* params) {
   glGetInterfacePPAPI()->GetFramebufferAttachmentParameteriv(
       glGetCurrentContextPPAPI(), target, attachment, pname, params);
 }
 
 void GL_APIENTRY glGetIntegerv(GLenum pname, GLint* params) {
-  glGetInterfacePPAPI()->GetIntegerv(
-      glGetCurrentContextPPAPI(), pname, params);
+  glGetInterfacePPAPI()->GetIntegerv(glGetCurrentContextPPAPI(), pname, params);
 }
 
 void GL_APIENTRY glGetProgramiv(GLuint program, GLenum pname, GLint* params) {
@@ -349,14 +427,16 @@ void GL_APIENTRY glGetProgramiv(GLuint program, GLenum pname, GLint* params) {
       glGetCurrentContextPPAPI(), program, pname, params);
 }
 
-void GL_APIENTRY glGetProgramInfoLog(
-    GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
+void GL_APIENTRY glGetProgramInfoLog(GLuint program,
+                                     GLsizei bufsize,
+                                     GLsizei* length,
+                                     char* infolog) {
   glGetInterfacePPAPI()->GetProgramInfoLog(
       glGetCurrentContextPPAPI(), program, bufsize, length, infolog);
 }
 
-void GL_APIENTRY glGetRenderbufferParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
+void GL_APIENTRY
+glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   glGetInterfacePPAPI()->GetRenderbufferParameteriv(
       glGetCurrentContextPPAPI(), target, pname, params);
 }
@@ -366,20 +446,26 @@ void GL_APIENTRY glGetShaderiv(GLuint shader, GLenum pname, GLint* params) {
       glGetCurrentContextPPAPI(), shader, pname, params);
 }
 
-void GL_APIENTRY glGetShaderInfoLog(
-    GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
+void GL_APIENTRY glGetShaderInfoLog(GLuint shader,
+                                    GLsizei bufsize,
+                                    GLsizei* length,
+                                    char* infolog) {
   glGetInterfacePPAPI()->GetShaderInfoLog(
       glGetCurrentContextPPAPI(), shader, bufsize, length, infolog);
 }
 
-void GL_APIENTRY glGetShaderPrecisionFormat(
-    GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
+void GL_APIENTRY glGetShaderPrecisionFormat(GLenum shadertype,
+                                            GLenum precisiontype,
+                                            GLint* range,
+                                            GLint* precision) {
   glGetInterfacePPAPI()->GetShaderPrecisionFormat(
       glGetCurrentContextPPAPI(), shadertype, precisiontype, range, precision);
 }
 
-void GL_APIENTRY glGetShaderSource(
-    GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
+void GL_APIENTRY glGetShaderSource(GLuint shader,
+                                   GLsizei bufsize,
+                                   GLsizei* length,
+                                   char* source) {
   glGetInterfacePPAPI()->GetShaderSource(
       glGetCurrentContextPPAPI(), shader, bufsize, length, source);
 }
@@ -388,26 +474,25 @@ const GLubyte* GL_APIENTRY glGetString(GLenum name) {
   return glGetInterfacePPAPI()->GetString(glGetCurrentContextPPAPI(), name);
 }
 
-void GL_APIENTRY glGetTexParameterfv(
-    GLenum target, GLenum pname, GLfloat* params) {
+void GL_APIENTRY
+glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   glGetInterfacePPAPI()->GetTexParameterfv(
       glGetCurrentContextPPAPI(), target, pname, params);
 }
 
-void GL_APIENTRY glGetTexParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
+void GL_APIENTRY
+glGetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
   glGetInterfacePPAPI()->GetTexParameteriv(
       glGetCurrentContextPPAPI(), target, pname, params);
 }
 
-void GL_APIENTRY glGetUniformfv(
-    GLuint program, GLint location, GLfloat* params) {
+void GL_APIENTRY
+glGetUniformfv(GLuint program, GLint location, GLfloat* params) {
   glGetInterfacePPAPI()->GetUniformfv(
       glGetCurrentContextPPAPI(), program, location, params);
 }
 
-void GL_APIENTRY glGetUniformiv(
-    GLuint program, GLint location, GLint* params) {
+void GL_APIENTRY glGetUniformiv(GLuint program, GLint location, GLint* params) {
   glGetInterfacePPAPI()->GetUniformiv(
       glGetCurrentContextPPAPI(), program, location, params);
 }
@@ -417,20 +502,20 @@ GLint GL_APIENTRY glGetUniformLocation(GLuint program, const char* name) {
       glGetCurrentContextPPAPI(), program, name);
 }
 
-void GL_APIENTRY glGetVertexAttribfv(
-    GLuint index, GLenum pname, GLfloat* params) {
+void GL_APIENTRY
+glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
   glGetInterfacePPAPI()->GetVertexAttribfv(
       glGetCurrentContextPPAPI(), index, pname, params);
 }
 
-void GL_APIENTRY glGetVertexAttribiv(
-    GLuint index, GLenum pname, GLint* params) {
+void GL_APIENTRY
+glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
   glGetInterfacePPAPI()->GetVertexAttribiv(
       glGetCurrentContextPPAPI(), index, pname, params);
 }
 
-void GL_APIENTRY glGetVertexAttribPointerv(
-    GLuint index, GLenum pname, void** pointer) {
+void GL_APIENTRY
+glGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {
   glGetInterfacePPAPI()->GetVertexAttribPointerv(
       glGetCurrentContextPPAPI(), index, pname, pointer);
 }
@@ -448,8 +533,8 @@ GLboolean GL_APIENTRY glIsEnabled(GLenum cap) {
 }
 
 GLboolean GL_APIENTRY glIsFramebuffer(GLuint framebuffer) {
-  return glGetInterfacePPAPI()->IsFramebuffer(
-      glGetCurrentContextPPAPI(), framebuffer);
+  return glGetInterfacePPAPI()->IsFramebuffer(glGetCurrentContextPPAPI(),
+                                              framebuffer);
 }
 
 GLboolean GL_APIENTRY glIsProgram(GLuint program) {
@@ -457,8 +542,8 @@ GLboolean GL_APIENTRY glIsProgram(GLuint program) {
 }
 
 GLboolean GL_APIENTRY glIsRenderbuffer(GLuint renderbuffer) {
-  return glGetInterfacePPAPI()->IsRenderbuffer(
-      glGetCurrentContextPPAPI(), renderbuffer);
+  return glGetInterfacePPAPI()->IsRenderbuffer(glGetCurrentContextPPAPI(),
+                                               renderbuffer);
 }
 
 GLboolean GL_APIENTRY glIsShader(GLuint shader) {
@@ -486,9 +571,13 @@ void GL_APIENTRY glPolygonOffset(GLfloat factor, GLfloat units) {
       glGetCurrentContextPPAPI(), factor, units);
 }
 
-void GL_APIENTRY glReadPixels(
-    GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
-    void* pixels) {
+void GL_APIENTRY glReadPixels(GLint x,
+                              GLint y,
+                              GLsizei width,
+                              GLsizei height,
+                              GLenum format,
+                              GLenum type,
+                              void* pixels) {
   glGetInterfacePPAPI()->ReadPixels(
       glGetCurrentContextPPAPI(), x, y, width, height, format, type, pixels);
 }
@@ -497,8 +586,10 @@ void GL_APIENTRY glReleaseShaderCompiler() {
   glGetInterfacePPAPI()->ReleaseShaderCompiler(glGetCurrentContextPPAPI());
 }
 
-void GL_APIENTRY glRenderbufferStorage(
-    GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
+void GL_APIENTRY glRenderbufferStorage(GLenum target,
+                                       GLenum internalformat,
+                                       GLsizei width,
+                                       GLsizei height) {
   glGetInterfacePPAPI()->RenderbufferStorage(
       glGetCurrentContextPPAPI(), target, internalformat, width, height);
 }
@@ -513,15 +604,19 @@ void GL_APIENTRY glScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
       glGetCurrentContextPPAPI(), x, y, width, height);
 }
 
-void GL_APIENTRY glShaderBinary(
-    GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
-    GLsizei length) {
+void GL_APIENTRY glShaderBinary(GLsizei n,
+                                const GLuint* shaders,
+                                GLenum binaryformat,
+                                const void* binary,
+                                GLsizei length) {
   glGetInterfacePPAPI()->ShaderBinary(
       glGetCurrentContextPPAPI(), n, shaders, binaryformat, binary, length);
 }
 
-void GL_APIENTRY glShaderSource(
-    GLuint shader, GLsizei count, const char** str, const GLint* length) {
+void GL_APIENTRY glShaderSource(GLuint shader,
+                                GLsizei count,
+                                const char** str,
+                                const GLint* length) {
   glGetInterfacePPAPI()->ShaderSource(
       glGetCurrentContextPPAPI(), shader, count, str, length);
 }
@@ -531,8 +626,8 @@ void GL_APIENTRY glStencilFunc(GLenum func, GLint ref, GLuint mask) {
       glGetCurrentContextPPAPI(), func, ref, mask);
 }
 
-void GL_APIENTRY glStencilFuncSeparate(
-    GLenum face, GLenum func, GLint ref, GLuint mask) {
+void GL_APIENTRY
+glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask) {
   glGetInterfacePPAPI()->StencilFuncSeparate(
       glGetCurrentContextPPAPI(), face, func, ref, mask);
 }
@@ -551,19 +646,31 @@ void GL_APIENTRY glStencilOp(GLenum fail, GLenum zfail, GLenum zpass) {
       glGetCurrentContextPPAPI(), fail, zfail, zpass);
 }
 
-void GL_APIENTRY glStencilOpSeparate(
-    GLenum face, GLenum fail, GLenum zfail, GLenum zpass) {
+void GL_APIENTRY
+glStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass) {
   glGetInterfacePPAPI()->StencilOpSeparate(
       glGetCurrentContextPPAPI(), face, fail, zfail, zpass);
 }
 
-void GL_APIENTRY glTexImage2D(
-    GLenum target, GLint level, GLint internalformat, GLsizei width,
-    GLsizei height, GLint border, GLenum format, GLenum type,
-    const void* pixels) {
-  glGetInterfacePPAPI()->TexImage2D(
-      glGetCurrentContextPPAPI(), target, level, internalformat, width, height,
-      border, format, type, pixels);
+void GL_APIENTRY glTexImage2D(GLenum target,
+                              GLint level,
+                              GLint internalformat,
+                              GLsizei width,
+                              GLsizei height,
+                              GLint border,
+                              GLenum format,
+                              GLenum type,
+                              const void* pixels) {
+  glGetInterfacePPAPI()->TexImage2D(glGetCurrentContextPPAPI(),
+                                    target,
+                                    level,
+                                    internalformat,
+                                    width,
+                                    height,
+                                    border,
+                                    format,
+                                    type,
+                                    pixels);
 }
 
 void GL_APIENTRY glTexParameterf(GLenum target, GLenum pname, GLfloat param) {
@@ -571,8 +678,8 @@ void GL_APIENTRY glTexParameterf(GLenum target, GLenum pname, GLfloat param) {
       glGetCurrentContextPPAPI(), target, pname, param);
 }
 
-void GL_APIENTRY glTexParameterfv(
-    GLenum target, GLenum pname, const GLfloat* params) {
+void GL_APIENTRY
+glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params) {
   glGetInterfacePPAPI()->TexParameterfv(
       glGetCurrentContextPPAPI(), target, pname, params);
 }
@@ -582,26 +689,38 @@ void GL_APIENTRY glTexParameteri(GLenum target, GLenum pname, GLint param) {
       glGetCurrentContextPPAPI(), target, pname, param);
 }
 
-void GL_APIENTRY glTexParameteriv(
-    GLenum target, GLenum pname, const GLint* params) {
+void GL_APIENTRY
+glTexParameteriv(GLenum target, GLenum pname, const GLint* params) {
   glGetInterfacePPAPI()->TexParameteriv(
       glGetCurrentContextPPAPI(), target, pname, params);
 }
 
-void GL_APIENTRY glTexSubImage2D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type, const void* pixels) {
-  glGetInterfacePPAPI()->TexSubImage2D(
-      glGetCurrentContextPPAPI(), target, level, xoffset, yoffset, width,
-      height, format, type, pixels);
+void GL_APIENTRY glTexSubImage2D(GLenum target,
+                                 GLint level,
+                                 GLint xoffset,
+                                 GLint yoffset,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLenum format,
+                                 GLenum type,
+                                 const void* pixels) {
+  glGetInterfacePPAPI()->TexSubImage2D(glGetCurrentContextPPAPI(),
+                                       target,
+                                       level,
+                                       xoffset,
+                                       yoffset,
+                                       width,
+                                       height,
+                                       format,
+                                       type,
+                                       pixels);
 }
 
 void GL_APIENTRY glUniform1f(GLint location, GLfloat x) {
   glGetInterfacePPAPI()->Uniform1f(glGetCurrentContextPPAPI(), location, x);
 }
 
-void GL_APIENTRY glUniform1fv(
-    GLint location, GLsizei count, const GLfloat* v) {
+void GL_APIENTRY glUniform1fv(GLint location, GLsizei count, const GLfloat* v) {
   glGetInterfacePPAPI()->Uniform1fv(
       glGetCurrentContextPPAPI(), location, count, v);
 }
@@ -619,8 +738,7 @@ void GL_APIENTRY glUniform2f(GLint location, GLfloat x, GLfloat y) {
   glGetInterfacePPAPI()->Uniform2f(glGetCurrentContextPPAPI(), location, x, y);
 }
 
-void GL_APIENTRY glUniform2fv(
-    GLint location, GLsizei count, const GLfloat* v) {
+void GL_APIENTRY glUniform2fv(GLint location, GLsizei count, const GLfloat* v) {
   glGetInterfacePPAPI()->Uniform2fv(
       glGetCurrentContextPPAPI(), location, count, v);
 }
@@ -639,8 +757,7 @@ void GL_APIENTRY glUniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) {
       glGetCurrentContextPPAPI(), location, x, y, z);
 }
 
-void GL_APIENTRY glUniform3fv(
-    GLint location, GLsizei count, const GLfloat* v) {
+void GL_APIENTRY glUniform3fv(GLint location, GLsizei count, const GLfloat* v) {
   glGetInterfacePPAPI()->Uniform3fv(
       glGetCurrentContextPPAPI(), location, count, v);
 }
@@ -655,20 +772,19 @@ void GL_APIENTRY glUniform3iv(GLint location, GLsizei count, const GLint* v) {
       glGetCurrentContextPPAPI(), location, count, v);
 }
 
-void GL_APIENTRY glUniform4f(
-    GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+void GL_APIENTRY
+glUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   glGetInterfacePPAPI()->Uniform4f(
       glGetCurrentContextPPAPI(), location, x, y, z, w);
 }
 
-void GL_APIENTRY glUniform4fv(
-    GLint location, GLsizei count, const GLfloat* v) {
+void GL_APIENTRY glUniform4fv(GLint location, GLsizei count, const GLfloat* v) {
   glGetInterfacePPAPI()->Uniform4fv(
       glGetCurrentContextPPAPI(), location, count, v);
 }
 
-void GL_APIENTRY glUniform4i(
-    GLint location, GLint x, GLint y, GLint z, GLint w) {
+void GL_APIENTRY
+glUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
   glGetInterfacePPAPI()->Uniform4i(
       glGetCurrentContextPPAPI(), location, x, y, z, w);
 }
@@ -678,20 +794,26 @@ void GL_APIENTRY glUniform4iv(GLint location, GLsizei count, const GLint* v) {
       glGetCurrentContextPPAPI(), location, count, v);
 }
 
-void GL_APIENTRY glUniformMatrix2fv(
-    GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+void GL_APIENTRY glUniformMatrix2fv(GLint location,
+                                    GLsizei count,
+                                    GLboolean transpose,
+                                    const GLfloat* value) {
   glGetInterfacePPAPI()->UniformMatrix2fv(
       glGetCurrentContextPPAPI(), location, count, transpose, value);
 }
 
-void GL_APIENTRY glUniformMatrix3fv(
-    GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+void GL_APIENTRY glUniformMatrix3fv(GLint location,
+                                    GLsizei count,
+                                    GLboolean transpose,
+                                    const GLfloat* value) {
   glGetInterfacePPAPI()->UniformMatrix3fv(
       glGetCurrentContextPPAPI(), location, count, transpose, value);
 }
 
-void GL_APIENTRY glUniformMatrix4fv(
-    GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+void GL_APIENTRY glUniformMatrix4fv(GLint location,
+                                    GLsizei count,
+                                    GLboolean transpose,
+                                    const GLfloat* value) {
   glGetInterfacePPAPI()->UniformMatrix4fv(
       glGetCurrentContextPPAPI(), location, count, transpose, value);
 }
@@ -714,8 +836,7 @@ void GL_APIENTRY glVertexAttrib1fv(GLuint indx, const GLfloat* values) {
 }
 
 void GL_APIENTRY glVertexAttrib2f(GLuint indx, GLfloat x, GLfloat y) {
-  glGetInterfacePPAPI()->VertexAttrib2f(
-      glGetCurrentContextPPAPI(), indx, x, y);
+  glGetInterfacePPAPI()->VertexAttrib2f(glGetCurrentContextPPAPI(), indx, x, y);
 }
 
 void GL_APIENTRY glVertexAttrib2fv(GLuint indx, const GLfloat* values) {
@@ -723,8 +844,8 @@ void GL_APIENTRY glVertexAttrib2fv(GLuint indx, const GLfloat* values) {
       glGetCurrentContextPPAPI(), indx, values);
 }
 
-void GL_APIENTRY glVertexAttrib3f(
-    GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
+void GL_APIENTRY
+glVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
   glGetInterfacePPAPI()->VertexAttrib3f(
       glGetCurrentContextPPAPI(), indx, x, y, z);
 }
@@ -734,8 +855,8 @@ void GL_APIENTRY glVertexAttrib3fv(GLuint indx, const GLfloat* values) {
       glGetCurrentContextPPAPI(), indx, values);
 }
 
-void GL_APIENTRY glVertexAttrib4f(
-    GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+void GL_APIENTRY
+glVertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   glGetInterfacePPAPI()->VertexAttrib4f(
       glGetCurrentContextPPAPI(), indx, x, y, z, w);
 }
@@ -745,9 +866,12 @@ void GL_APIENTRY glVertexAttrib4fv(GLuint indx, const GLfloat* values) {
       glGetCurrentContextPPAPI(), indx, values);
 }
 
-void GL_APIENTRY glVertexAttribPointer(
-    GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
-    const void* ptr) {
+void GL_APIENTRY glVertexAttribPointer(GLuint indx,
+                                       GLint size,
+                                       GLenum type,
+                                       GLboolean normalized,
+                                       GLsizei stride,
+                                       const void* ptr) {
   glGetInterfacePPAPI()->VertexAttribPointer(
       glGetCurrentContextPPAPI(), indx, size, type, normalized, stride, ptr);
 }
@@ -757,26 +881,46 @@ void GL_APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
       glGetCurrentContextPPAPI(), x, y, width, height);
 }
 
-void GL_APIENTRY glBlitFramebufferEXT(
-    GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
-    GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) {
+void GL_APIENTRY glBlitFramebufferEXT(GLint srcX0,
+                                      GLint srcY0,
+                                      GLint srcX1,
+                                      GLint srcY1,
+                                      GLint dstX0,
+                                      GLint dstY0,
+                                      GLint dstX1,
+                                      GLint dstY1,
+                                      GLbitfield mask,
+                                      GLenum filter) {
   const struct PPB_OpenGLES2FramebufferBlit* ext =
       glGetFramebufferBlitInterfacePPAPI();
   if (ext)
-    ext->BlitFramebufferEXT(
-        glGetCurrentContextPPAPI(), srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-        dstX1, dstY1, mask, filter);
+    ext->BlitFramebufferEXT(glGetCurrentContextPPAPI(),
+                            srcX0,
+                            srcY0,
+                            srcX1,
+                            srcY1,
+                            dstX0,
+                            dstY0,
+                            dstX1,
+                            dstY1,
+                            mask,
+                            filter);
 }
 
-void GL_APIENTRY glRenderbufferStorageMultisampleEXT(
-    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
-    GLsizei height) {
+void GL_APIENTRY glRenderbufferStorageMultisampleEXT(GLenum target,
+                                                     GLsizei samples,
+                                                     GLenum internalformat,
+                                                     GLsizei width,
+                                                     GLsizei height) {
   const struct PPB_OpenGLES2FramebufferMultisample* ext =
       glGetFramebufferMultisampleInterfacePPAPI();
   if (ext)
-    ext->RenderbufferStorageMultisampleEXT(
-        glGetCurrentContextPPAPI(), target, samples, internalformat, width,
-        height);
+    ext->RenderbufferStorageMultisampleEXT(glGetCurrentContextPPAPI(),
+                                           target,
+                                           samples,
+                                           internalformat,
+                                           width,
+                                           height);
 }
 
 void GL_APIENTRY glGenQueriesEXT(GLsizei n, GLuint* queries) {
@@ -816,8 +960,8 @@ void GL_APIENTRY glGetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
     ext->GetQueryivEXT(glGetCurrentContextPPAPI(), target, pname, params);
 }
 
-void GL_APIENTRY glGetQueryObjectuivEXT(
-    GLuint id, GLenum pname, GLuint* params) {
+void GL_APIENTRY
+glGetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
   const struct PPB_OpenGLES2Query* ext = glGetQueryInterfacePPAPI();
   if (ext)
     ext->GetQueryObjectuivEXT(glGetCurrentContextPPAPI(), id, pname, params);
@@ -831,8 +975,10 @@ GLboolean GL_APIENTRY glEnableFeatureCHROMIUM(const char* feature) {
   return 0;
 }
 
-void* GL_APIENTRY glMapBufferSubDataCHROMIUM(
-    GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
+void* GL_APIENTRY glMapBufferSubDataCHROMIUM(GLuint target,
+                                             GLintptr offset,
+                                             GLsizeiptr size,
+                                             GLenum access) {
   const struct PPB_OpenGLES2ChromiumMapSub* ext =
       glGetChromiumMapSubInterfacePPAPI();
   if (ext)
@@ -848,15 +994,28 @@ void GL_APIENTRY glUnmapBufferSubDataCHROMIUM(const void* mem) {
     ext->UnmapBufferSubDataCHROMIUM(glGetCurrentContextPPAPI(), mem);
 }
 
-void* GL_APIENTRY glMapTexSubImage2DCHROMIUM(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type, GLenum access) {
+void* GL_APIENTRY glMapTexSubImage2DCHROMIUM(GLenum target,
+                                             GLint level,
+                                             GLint xoffset,
+                                             GLint yoffset,
+                                             GLsizei width,
+                                             GLsizei height,
+                                             GLenum format,
+                                             GLenum type,
+                                             GLenum access) {
   const struct PPB_OpenGLES2ChromiumMapSub* ext =
       glGetChromiumMapSubInterfacePPAPI();
   if (ext)
-    return ext->MapTexSubImage2DCHROMIUM(
-        glGetCurrentContextPPAPI(), target, level, xoffset, yoffset, width,
-        height, format, type, access);
+    return ext->MapTexSubImage2DCHROMIUM(glGetCurrentContextPPAPI(),
+                                         target,
+                                         level,
+                                         xoffset,
+                                         yoffset,
+                                         width,
+                                         height,
+                                         format,
+                                         type,
+                                         access);
   return 0;
 }
 
@@ -867,8 +1026,10 @@ void GL_APIENTRY glUnmapTexSubImage2DCHROMIUM(const void* mem) {
     ext->UnmapTexSubImage2DCHROMIUM(glGetCurrentContextPPAPI(), mem);
 }
 
-void GL_APIENTRY glDrawArraysInstancedANGLE(
-    GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
+void GL_APIENTRY glDrawArraysInstancedANGLE(GLenum mode,
+                                            GLint first,
+                                            GLsizei count,
+                                            GLsizei primcount) {
   const struct PPB_OpenGLES2InstancedArrays* ext =
       glGetInstancedArraysInterfacePPAPI();
   if (ext)
@@ -876,9 +1037,11 @@ void GL_APIENTRY glDrawArraysInstancedANGLE(
         glGetCurrentContextPPAPI(), mode, first, count, primcount);
 }
 
-void GL_APIENTRY glDrawElementsInstancedANGLE(
-    GLenum mode, GLsizei count, GLenum type, const void* indices,
-    GLsizei primcount) {
+void GL_APIENTRY glDrawElementsInstancedANGLE(GLenum mode,
+                                              GLsizei count,
+                                              GLenum type,
+                                              const void* indices,
+                                              GLsizei primcount) {
   const struct PPB_OpenGLES2InstancedArrays* ext =
       glGetInstancedArraysInterfacePPAPI();
   if (ext)
@@ -892,4 +1055,3 @@ void GL_APIENTRY glVertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   if (ext)
     ext->VertexAttribDivisorANGLE(glGetCurrentContextPPAPI(), index, divisor);
 }
-

@@ -11,6 +11,7 @@ import os.path
 import sys
 import re
 from optparse import OptionParser
+from subprocess import call
 
 _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
@@ -24,6 +25,8 @@ _LICENSE = """// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 
 _DO_NOT_EDIT_WARNING = """// This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 """
@@ -7827,6 +7830,10 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
     file.Close()
 
+def Format(generated_files):
+  for filename in generated_files:
+    call(["clang-format", "-i", "-style=chromium", filename])
+
 def main(argv):
   """This is the main function."""
   parser = OptionParser()
@@ -7904,6 +7911,42 @@ def main(argv):
   gen.WriteGLES2Header("../GLES2/gl2chromium_autogen.h")
   gen.WriteMojoGLCallVisitor(
       "../../mojo/public/gles2/gles2_call_visitor_autogen.h")
+
+  Format([
+      "common/gles2_cmd_format_autogen.h",
+      "common/gles2_cmd_format_test_autogen.h",
+      "common/gles2_cmd_ids_autogen.h",
+      "common/gles2_cmd_utils_autogen.h",
+      "common/gles2_cmd_utils_implementation_autogen.h",
+      "client/client_context_state_autogen.h",
+      "client/client_context_state_impl_autogen.h",
+      "client/gles2_cmd_helper_autogen.h",
+      "client/gles2_c_lib_autogen.h",
+      "client/gles2_implementation_autogen.h",
+      "client/gles2_implementation_impl_autogen.h",
+      "client/gles2_implementation_unittest_autogen.h",
+      "client/gles2_interface_autogen.h",
+      "client/gles2_interface_stub_autogen.h",
+      "client/gles2_interface_stub_impl_autogen.h",
+      "client/gles2_trace_implementation_autogen.h",
+      "client/gles2_trace_implementation_impl_autogen.h",
+      "service/context_state_autogen.h",
+      "service/context_state_impl_autogen.h",
+      "service/gles2_cmd_decoder_autogen.h",
+      "service/gles2_cmd_decoder_unittest_0_autogen.h",
+      "service/gles2_cmd_decoder_unittest_1_autogen.h",
+      "service/gles2_cmd_decoder_unittest_2_autogen.h",
+      "service/gles2_cmd_decoder_unittest_3_autogen.h",
+      "service/gles2_cmd_validation_autogen.h",
+      "service/gles2_cmd_validation_implementation_autogen.h"])
+  os.chdir("../..")
+  Format([
+      "gpu/GLES2/gl2chromium_autogen.h",
+      "mojo/public/gles2/gles2_call_visitor_autogen.h",
+      "ppapi/c/dev/ppb_opengles2ext_dev.h",
+      "ppapi/c/ppb_opengles2.h",
+      "ppapi/lib/gl/gles2/gles2.c",
+      "ppapi/shared_impl/ppb_opengles2_shared.cc"])
 
   if gen.errors > 0:
     print "%d errors" % gen.errors

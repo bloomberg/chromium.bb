@@ -4,12 +4,13 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 // It is included by gles2_cmd_decoder_unittest_2.cc
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
-
 
 TEST_F(GLES2DecoderTest2, IsRenderbufferValidArgs) {
   SpecializedSetup<cmds::IsRenderbuffer, 0>(true);
@@ -90,7 +91,6 @@ TEST_F(GLES2DecoderTest2, LinkProgramValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 // TODO(gman): PixelStorei
-
 
 TEST_F(GLES2DecoderTest2, PolygonOffsetValidArgs) {
   EXPECT_CALL(*gl_, PolygonOffset(1, 2));
@@ -233,10 +233,9 @@ TEST_F(GLES2DecoderTest2, StencilOpSeparateValidArgs) {
 }
 // TODO(gman): TexImage2D
 
-
 TEST_F(GLES2DecoderTest2, TexParameterfValidArgs) {
-  EXPECT_CALL(
-      *gl_, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+  EXPECT_CALL(*gl_,
+              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
   SpecializedSetup<cmds::TexParameterf, 0>(true);
   cmds::TexParameterf cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -274,14 +273,16 @@ TEST_F(GLES2DecoderTest2, TexParameterfInvalidArgs1_0) {
 TEST_F(GLES2DecoderTest2, TexParameterfvValidArgs) {
   SpecializedSetup<cmds::TexParameterfv, 0>(true);
   cmds::TexParameterfv cmd;
-  cmd.Init(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = GL_NEAREST;
   EXPECT_CALL(
-      *gl_, TexParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-          *reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+      *gl_,
+      TexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    *reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -290,9 +291,10 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs0_0) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
-  cmd.Init(
-      GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_1D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -302,9 +304,10 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs0_1) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
-  cmd.Init(
-      GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_3D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -314,9 +317,10 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs1_0) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
-  cmd.Init(
-      GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_2D,
+           GL_GENERATE_MIPMAP,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -335,9 +339,10 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs2_1) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
-  cmd.Init(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      kInvalidSharedMemoryOffset);
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           kInvalidSharedMemoryOffset);
   GetSharedMemoryAs<GLfloat*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
@@ -346,14 +351,14 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateValidArgs) {
   cmds::TexParameterfvImmediate& cmd =
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(true);
-  GLfloat temp[1] = { GL_NEAREST, };
+  GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(
       *gl_,
-      TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, *reinterpret_cast<
-          GLfloat*>(ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+      TexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    *reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -362,10 +367,9 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs0_0) {
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(false);
-  GLfloat temp[1] = { GL_NEAREST, };
+  GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
@@ -374,10 +378,9 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs0_1) {
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(false);
-  GLfloat temp[1] = { GL_NEAREST, };
+  GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
@@ -386,16 +389,15 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs1_0) {
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(false);
-  GLfloat temp[1] = { GL_NEAREST, };
+  GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, TexParameteriValidArgs) {
-  EXPECT_CALL(
-      *gl_, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+  EXPECT_CALL(*gl_,
+              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
   SpecializedSetup<cmds::TexParameteri, 0>(true);
   cmds::TexParameteri cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -433,14 +435,16 @@ TEST_F(GLES2DecoderTest2, TexParameteriInvalidArgs1_0) {
 TEST_F(GLES2DecoderTest2, TexParameterivValidArgs) {
   SpecializedSetup<cmds::TexParameteriv, 0>(true);
   cmds::TexParameteriv cmd;
-  cmd.Init(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLint*>()[0] = GL_NEAREST;
   EXPECT_CALL(
-      *gl_, TexParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, *reinterpret_cast<const GLint*>(
-              shared_memory_address_)));
+      *gl_,
+      TexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    *reinterpret_cast<const GLint*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -449,9 +453,10 @@ TEST_F(GLES2DecoderTest2, TexParameterivInvalidArgs0_0) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameteriv, 0>(false);
   cmds::TexParameteriv cmd;
-  cmd.Init(
-      GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_1D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLint*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -461,9 +466,10 @@ TEST_F(GLES2DecoderTest2, TexParameterivInvalidArgs0_1) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameteriv, 0>(false);
   cmds::TexParameteriv cmd;
-  cmd.Init(
-      GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_3D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLint*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -473,9 +479,10 @@ TEST_F(GLES2DecoderTest2, TexParameterivInvalidArgs1_0) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameteriv, 0>(false);
   cmds::TexParameteriv cmd;
-  cmd.Init(
-      GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
-      shared_memory_offset_);
+  cmd.Init(GL_TEXTURE_2D,
+           GL_GENERATE_MIPMAP,
+           shared_memory_id_,
+           shared_memory_offset_);
   GetSharedMemoryAs<GLint*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -494,9 +501,10 @@ TEST_F(GLES2DecoderTest2, TexParameterivInvalidArgs2_1) {
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameteriv, 0>(false);
   cmds::TexParameteriv cmd;
-  cmd.Init(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-      kInvalidSharedMemoryOffset);
+  cmd.Init(GL_TEXTURE_2D,
+           GL_TEXTURE_MAG_FILTER,
+           shared_memory_id_,
+           kInvalidSharedMemoryOffset);
   GetSharedMemoryAs<GLint*>()[0] = GL_NEAREST;
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
@@ -505,14 +513,14 @@ TEST_F(GLES2DecoderTest2, TexParameterivImmediateValidArgs) {
   cmds::TexParameterivImmediate& cmd =
       *GetImmediateAs<cmds::TexParameterivImmediate>();
   SpecializedSetup<cmds::TexParameterivImmediate, 0>(true);
-  GLint temp[1] = { GL_NEAREST, };
+  GLint temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(
       *gl_,
-      TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, *reinterpret_cast<
-          GLint*>(ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+      TexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    *reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -521,10 +529,9 @@ TEST_F(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs0_0) {
       *GetImmediateAs<cmds::TexParameterivImmediate>();
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterivImmediate, 0>(false);
-  GLint temp[1] = { GL_NEAREST, };
+  GLint temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
@@ -533,10 +540,9 @@ TEST_F(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs0_1) {
       *GetImmediateAs<cmds::TexParameterivImmediate>();
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterivImmediate, 0>(false);
-  GLint temp[1] = { GL_NEAREST, };
+  GLint temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
@@ -545,14 +551,12 @@ TEST_F(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs1_0) {
       *GetImmediateAs<cmds::TexParameterivImmediate>();
   EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterivImmediate, 0>(false);
-  GLint temp[1] = { GL_NEAREST, };
+  GLint temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 // TODO(gman): TexSubImage2D
-
 
 TEST_F(GLES2DecoderTest2, Uniform1fValidArgs) {
   EXPECT_CALL(*gl_, Uniform1fv(1, 1, _));
@@ -565,7 +569,8 @@ TEST_F(GLES2DecoderTest2, Uniform1fValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform1fvValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform1fv(
+      *gl_,
+      Uniform1fv(
           1, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform1fv, 0>(true);
   cmds::Uniform1fv cmd;
@@ -601,29 +606,28 @@ TEST_F(GLES2DecoderTest2, Uniform1fvInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform1fvValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform1fv(
+      *gl_,
+      Uniform1fv(
           3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform1fv, 0>(true);
   cmds::Uniform1fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform1fvImmediateValidArgs) {
-  cmds::Uniform1fvImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform1fvImmediate>();
+  cmds::Uniform1fvImmediate& cmd = *GetImmediateAs<cmds::Uniform1fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform1fv(1, 2,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      Uniform1fv(1, 2, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform1fvImmediate, 0>(true);
-  GLfloat temp[1 * 2] = { 0, };
+  GLfloat temp[1 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 // TODO(gman): Uniform1i
@@ -641,7 +645,8 @@ TEST_F(GLES2DecoderTest2, Uniform2fValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform2fvValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform2fv(
+      *gl_,
+      Uniform2fv(
           1, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform2fv, 0>(true);
   cmds::Uniform2fv cmd;
@@ -677,29 +682,28 @@ TEST_F(GLES2DecoderTest2, Uniform2fvInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform2fvValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform2fv(
+      *gl_,
+      Uniform2fv(
           3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform2fv, 0>(true);
   cmds::Uniform2fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform2fvImmediateValidArgs) {
-  cmds::Uniform2fvImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform2fvImmediate>();
+  cmds::Uniform2fvImmediate& cmd = *GetImmediateAs<cmds::Uniform2fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform2fv(1, 2,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      Uniform2fv(1, 2, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform2fvImmediate, 0>(true);
-  GLfloat temp[2 * 2] = { 0, };
+  GLfloat temp[2 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -714,8 +718,8 @@ TEST_F(GLES2DecoderTest2, Uniform2iValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform2ivValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform2iv(
-          1, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
+      *gl_,
+      Uniform2iv(1, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform2iv, 0>(true);
   cmds::Uniform2iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
@@ -750,29 +754,27 @@ TEST_F(GLES2DecoderTest2, Uniform2ivInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform2ivValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform2iv(
-          3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
+      *gl_,
+      Uniform2iv(3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform2iv, 0>(true);
   cmds::Uniform2iv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform2ivImmediateValidArgs) {
-  cmds::Uniform2ivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform2ivImmediate>();
+  cmds::Uniform2ivImmediate& cmd = *GetImmediateAs<cmds::Uniform2ivImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform2iv(1, 2,
-          reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+      Uniform2iv(1, 2, reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform2ivImmediate, 0>(true);
-  GLint temp[2 * 2] = { 0, };
+  GLint temp[2 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -787,7 +789,8 @@ TEST_F(GLES2DecoderTest2, Uniform3fValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform3fvValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform3fv(
+      *gl_,
+      Uniform3fv(
           1, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform3fv, 0>(true);
   cmds::Uniform3fv cmd;
@@ -823,29 +826,28 @@ TEST_F(GLES2DecoderTest2, Uniform3fvInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform3fvValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform3fv(
+      *gl_,
+      Uniform3fv(
           3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform3fv, 0>(true);
   cmds::Uniform3fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3fvImmediateValidArgs) {
-  cmds::Uniform3fvImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform3fvImmediate>();
+  cmds::Uniform3fvImmediate& cmd = *GetImmediateAs<cmds::Uniform3fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform3fv(1, 2,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      Uniform3fv(1, 2, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform3fvImmediate, 0>(true);
-  GLfloat temp[3 * 2] = { 0, };
+  GLfloat temp[3 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -860,8 +862,8 @@ TEST_F(GLES2DecoderTest2, Uniform3iValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform3ivValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform3iv(
-          1, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
+      *gl_,
+      Uniform3iv(1, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform3iv, 0>(true);
   cmds::Uniform3iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
@@ -896,29 +898,27 @@ TEST_F(GLES2DecoderTest2, Uniform3ivInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform3ivValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform3iv(
-          3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
+      *gl_,
+      Uniform3iv(3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform3iv, 0>(true);
   cmds::Uniform3iv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3ivImmediateValidArgs) {
-  cmds::Uniform3ivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform3ivImmediate>();
+  cmds::Uniform3ivImmediate& cmd = *GetImmediateAs<cmds::Uniform3ivImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform3iv(1, 2,
-          reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+      Uniform3iv(1, 2, reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform3ivImmediate, 0>(true);
-  GLint temp[3 * 2] = { 0, };
+  GLint temp[3 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -933,7 +933,8 @@ TEST_F(GLES2DecoderTest2, Uniform4fValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform4fvValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform4fv(
+      *gl_,
+      Uniform4fv(
           1, 2, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform4fv, 0>(true);
   cmds::Uniform4fv cmd;
@@ -969,29 +970,28 @@ TEST_F(GLES2DecoderTest2, Uniform4fvInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform4fvValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform4fv(
+      *gl_,
+      Uniform4fv(
           3, 3, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform4fv, 0>(true);
   cmds::Uniform4fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4fvImmediateValidArgs) {
-  cmds::Uniform4fvImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform4fvImmediate>();
+  cmds::Uniform4fvImmediate& cmd = *GetImmediateAs<cmds::Uniform4fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform4fv(1, 2,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      Uniform4fv(1, 2, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform4fvImmediate, 0>(true);
-  GLfloat temp[4 * 2] = { 0, };
+  GLfloat temp[4 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1006,8 +1006,8 @@ TEST_F(GLES2DecoderTest2, Uniform4iValidArgs) {
 
 TEST_F(GLES2DecoderTest2, Uniform4ivValidArgs) {
   EXPECT_CALL(
-      *gl_, Uniform4iv(
-          1, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
+      *gl_,
+      Uniform4iv(1, 2, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform4iv, 0>(true);
   cmds::Uniform4iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
@@ -1042,37 +1042,37 @@ TEST_F(GLES2DecoderTest2, Uniform4ivInvalidArgs2_1) {
 
 TEST_F(GLES2DecoderTest2, Uniform4ivValidArgsCountTooLarge) {
   EXPECT_CALL(
-      *gl_, Uniform4iv(
-          3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
+      *gl_,
+      Uniform4iv(3, 3, reinterpret_cast<const GLint*>(shared_memory_address_)));
   SpecializedSetup<cmds::Uniform4iv, 0>(true);
   cmds::Uniform4iv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4ivImmediateValidArgs) {
-  cmds::Uniform4ivImmediate& cmd =
-      *GetImmediateAs<cmds::Uniform4ivImmediate>();
+  cmds::Uniform4ivImmediate& cmd = *GetImmediateAs<cmds::Uniform4ivImmediate>();
   EXPECT_CALL(
       *gl_,
-      Uniform4iv(1, 2,
-          reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+      Uniform4iv(1, 2, reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::Uniform4ivImmediate, 0>(true);
-  GLint temp[4 * 2] = { 0, };
+  GLint temp[4 * 2] = {0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvValidArgs) {
-  EXPECT_CALL(
-      *gl_, UniformMatrix2fv(
-          1, 2, false, reinterpret_cast<const GLfloat*>(
-              shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              UniformMatrix2fv(
+                  1,
+                  2,
+                  false,
+                  reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::UniformMatrix2fv, 0>(true);
   cmds::UniformMatrix2fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
@@ -1115,15 +1115,19 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvInvalidArgs3_1) {
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvValidArgsCountTooLarge) {
-  EXPECT_CALL(
-      *gl_, UniformMatrix2fv(
-          3, 3, false, reinterpret_cast<const GLfloat*>(
-              shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              UniformMatrix2fv(
+                  3,
+                  3,
+                  false,
+                  reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::UniformMatrix2fv, 0>(true);
   cmds::UniformMatrix2fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, false, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           false,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1133,13 +1137,12 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvImmediateValidArgs) {
       *GetImmediateAs<cmds::UniformMatrix2fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      UniformMatrix2fv(1, 2, false,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      UniformMatrix2fv(
+          1, 2, false, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(true);
-  GLfloat temp[4 * 2] = { 0, };
+  GLfloat temp[4 * 2] = {0, };
   cmd.Init(1, 2, false, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1148,18 +1151,19 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvImmediateInvalidArgs2_0) {
       *GetImmediateAs<cmds::UniformMatrix2fvImmediate>();
   EXPECT_CALL(*gl_, UniformMatrix2fv(_, _, _, _)).Times(0);
   SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(false);
-  GLfloat temp[4 * 2] = { 0, };
+  GLfloat temp[4 * 2] = {0, };
   cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvValidArgs) {
-  EXPECT_CALL(
-      *gl_, UniformMatrix3fv(
-          1, 2, false, reinterpret_cast<const GLfloat*>(
-              shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              UniformMatrix3fv(
+                  1,
+                  2,
+                  false,
+                  reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::UniformMatrix3fv, 0>(true);
   cmds::UniformMatrix3fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
@@ -1202,15 +1206,19 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvInvalidArgs3_1) {
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvValidArgsCountTooLarge) {
-  EXPECT_CALL(
-      *gl_, UniformMatrix3fv(
-          3, 3, false, reinterpret_cast<const GLfloat*>(
-              shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              UniformMatrix3fv(
+                  3,
+                  3,
+                  false,
+                  reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::UniformMatrix3fv, 0>(true);
   cmds::UniformMatrix3fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, false, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           false,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1220,13 +1228,12 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvImmediateValidArgs) {
       *GetImmediateAs<cmds::UniformMatrix3fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      UniformMatrix3fv(1, 2, false,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      UniformMatrix3fv(
+          1, 2, false, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix3fvImmediate, 0>(true);
-  GLfloat temp[9 * 2] = { 0, };
+  GLfloat temp[9 * 2] = {0, };
   cmd.Init(1, 2, false, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1235,18 +1242,19 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvImmediateInvalidArgs2_0) {
       *GetImmediateAs<cmds::UniformMatrix3fvImmediate>();
   EXPECT_CALL(*gl_, UniformMatrix3fv(_, _, _, _)).Times(0);
   SpecializedSetup<cmds::UniformMatrix3fvImmediate, 0>(false);
-  GLfloat temp[9 * 2] = { 0, };
+  GLfloat temp[9 * 2] = {0, };
   cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvValidArgs) {
-  EXPECT_CALL(
-      *gl_, UniformMatrix4fv(
-          1, 2, false, reinterpret_cast<const GLfloat*>(
-              shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              UniformMatrix4fv(
+                  1,
+                  2,
+                  false,
+                  reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::UniformMatrix4fv, 0>(true);
   cmds::UniformMatrix4fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
@@ -1289,15 +1297,19 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvInvalidArgs3_1) {
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvValidArgsCountTooLarge) {
-  EXPECT_CALL(
-      *gl_, UniformMatrix4fv(
-          3, 3, false, reinterpret_cast<const GLfloat*>(
-              shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              UniformMatrix4fv(
+                  3,
+                  3,
+                  false,
+                  reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   SpecializedSetup<cmds::UniformMatrix4fv, 0>(true);
   cmds::UniformMatrix4fv cmd;
-  cmd.Init(
-      ProgramManager::MakeFakeLocation(
-          1, 1), 5, false, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(ProgramManager::MakeFakeLocation(1, 1),
+           5,
+           false,
+           shared_memory_id_,
+           shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1307,13 +1319,12 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateValidArgs) {
       *GetImmediateAs<cmds::UniformMatrix4fvImmediate>();
   EXPECT_CALL(
       *gl_,
-      UniformMatrix4fv(1, 2, false,
-          reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+      UniformMatrix4fv(
+          1, 2, false, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(true);
-  GLfloat temp[16 * 2] = { 0, };
+  GLfloat temp[16 * 2] = {0, };
   cmd.Init(1, 2, false, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1322,10 +1333,9 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateInvalidArgs2_0) {
       *GetImmediateAs<cmds::UniformMatrix4fvImmediate>();
   EXPECT_CALL(*gl_, UniformMatrix4fv(_, _, _, _)).Times(0);
   SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(false);
-  GLfloat temp[16 * 2] = { 0, };
+  GLfloat temp[16 * 2] = {0, };
   cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 // TODO(gman): UseProgram
@@ -1353,9 +1363,9 @@ TEST_F(GLES2DecoderTest2, VertexAttrib1fvValidArgs) {
   cmds::VertexAttrib1fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = 0;
-  EXPECT_CALL(
-      *gl_, VertexAttrib1fv(
-          1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib1fv(
+                  1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1382,14 +1392,12 @@ TEST_F(GLES2DecoderTest2, VertexAttrib1fvImmediateValidArgs) {
   cmds::VertexAttrib1fvImmediate& cmd =
       *GetImmediateAs<cmds::VertexAttrib1fvImmediate>();
   SpecializedSetup<cmds::VertexAttrib1fvImmediate, 0>(true);
-  GLfloat temp[1] = { 0, };
+  GLfloat temp[1] = {0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(
-      *gl_,
-      VertexAttrib1fv(1, reinterpret_cast<
-          GLfloat*>(ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib1fv(
+                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1407,9 +1415,9 @@ TEST_F(GLES2DecoderTest2, VertexAttrib2fvValidArgs) {
   cmds::VertexAttrib2fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = 0;
-  EXPECT_CALL(
-      *gl_, VertexAttrib2fv(
-          1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib2fv(
+                  1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1436,14 +1444,12 @@ TEST_F(GLES2DecoderTest2, VertexAttrib2fvImmediateValidArgs) {
   cmds::VertexAttrib2fvImmediate& cmd =
       *GetImmediateAs<cmds::VertexAttrib2fvImmediate>();
   SpecializedSetup<cmds::VertexAttrib2fvImmediate, 0>(true);
-  GLfloat temp[2] = { 0, };
+  GLfloat temp[2] = {0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(
-      *gl_,
-      VertexAttrib2fv(1, reinterpret_cast<
-          GLfloat*>(ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib2fv(
+                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1461,9 +1467,9 @@ TEST_F(GLES2DecoderTest2, VertexAttrib3fvValidArgs) {
   cmds::VertexAttrib3fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = 0;
-  EXPECT_CALL(
-      *gl_, VertexAttrib3fv(
-          1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib3fv(
+                  1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1490,14 +1496,12 @@ TEST_F(GLES2DecoderTest2, VertexAttrib3fvImmediateValidArgs) {
   cmds::VertexAttrib3fvImmediate& cmd =
       *GetImmediateAs<cmds::VertexAttrib3fvImmediate>();
   SpecializedSetup<cmds::VertexAttrib3fvImmediate, 0>(true);
-  GLfloat temp[3] = { 0, };
+  GLfloat temp[3] = {0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(
-      *gl_,
-      VertexAttrib3fv(1, reinterpret_cast<
-          GLfloat*>(ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib3fv(
+                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1515,9 +1519,9 @@ TEST_F(GLES2DecoderTest2, VertexAttrib4fvValidArgs) {
   cmds::VertexAttrib4fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
   GetSharedMemoryAs<GLfloat*>()[0] = 0;
-  EXPECT_CALL(
-      *gl_, VertexAttrib4fv(
-          1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib4fv(
+                  1, reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -1544,18 +1548,15 @@ TEST_F(GLES2DecoderTest2, VertexAttrib4fvImmediateValidArgs) {
   cmds::VertexAttrib4fvImmediate& cmd =
       *GetImmediateAs<cmds::VertexAttrib4fvImmediate>();
   SpecializedSetup<cmds::VertexAttrib4fvImmediate, 0>(true);
-  GLfloat temp[4] = { 0, };
+  GLfloat temp[4] = {0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(
-      *gl_,
-      VertexAttrib4fv(1, reinterpret_cast<
-          GLfloat*>(ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_CALL(*gl_,
+              VertexAttrib4fv(
+                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 // TODO(gman): VertexAttribPointer
-
 
 TEST_F(GLES2DecoderTest2, ViewportValidArgs) {
   EXPECT_CALL(*gl_, Viewport(1, 2, 3, 4));
@@ -1600,7 +1601,6 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 
 // TODO(gman): PushGroupMarkerEXT
 
-
 TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
   SpecializedSetup<cmds::PopGroupMarkerEXT, 0>(true);
   cmds::PopGroupMarkerEXT cmd;
@@ -1619,4 +1619,3 @@ TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): GenSharedIdsCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
-

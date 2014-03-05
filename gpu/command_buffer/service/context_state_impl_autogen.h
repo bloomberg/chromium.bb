@@ -4,6 +4,8 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 // It is included by context_state.cc
@@ -19,8 +21,7 @@ ContextState::EnableFlags::EnableFlags()
       sample_alpha_to_coverage(false),
       sample_coverage(false),
       scissor_test(false),
-      stencil_test(false) {
-}
+      stencil_test(false) {}
 
 void ContextState::Initialize() {
   blend_color_red = 0.0f;
@@ -88,8 +89,8 @@ void ContextState::InitCapabilities() const {
   EnableDisable(GL_DEPTH_TEST, enable_flags.depth_test);
   EnableDisable(GL_DITHER, enable_flags.dither);
   EnableDisable(GL_POLYGON_OFFSET_FILL, enable_flags.polygon_offset_fill);
-  EnableDisable(
-      GL_SAMPLE_ALPHA_TO_COVERAGE, enable_flags.sample_alpha_to_coverage);
+  EnableDisable(GL_SAMPLE_ALPHA_TO_COVERAGE,
+                enable_flags.sample_alpha_to_coverage);
   EnableDisable(GL_SAMPLE_COVERAGE, enable_flags.sample_coverage);
   EnableDisable(GL_SCISSOR_TEST, enable_flags.scissor_test);
   EnableDisable(GL_STENCIL_TEST, enable_flags.stencil_test);
@@ -114,8 +115,8 @@ void ContextState::InitState() const {
   glFrontFace(front_face);
   glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap);
   if (feature_info_->feature_flags().oes_standard_derivatives)
-    glHint(
-      GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES, hint_fragment_shader_derivative);
+    glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES,
+           hint_fragment_shader_derivative);
   glLineWidth(line_width);
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
@@ -128,12 +129,14 @@ void ContextState::InitState() const {
       GL_BACK, stencil_back_func, stencil_back_ref, stencil_back_mask);
   glStencilMaskSeparate(GL_FRONT, stencil_front_writemask);
   glStencilMaskSeparate(GL_BACK, stencil_back_writemask);
-  glStencilOpSeparate(
-      GL_FRONT, stencil_front_fail_op, stencil_front_z_fail_op,
-      stencil_front_z_pass_op);
-  glStencilOpSeparate(
-      GL_BACK, stencil_back_fail_op, stencil_back_z_fail_op,
-      stencil_back_z_pass_op);
+  glStencilOpSeparate(GL_FRONT,
+                      stencil_front_fail_op,
+                      stencil_front_z_fail_op,
+                      stencil_front_z_pass_op);
+  glStencilOpSeparate(GL_BACK,
+                      stencil_back_fail_op,
+                      stencil_back_z_fail_op,
+                      stencil_back_z_pass_op);
   glViewport(viewport_x, viewport_y, viewport_width, viewport_height);
 }
 bool ContextState::GetEnabled(GLenum cap) const {
@@ -162,8 +165,9 @@ bool ContextState::GetEnabled(GLenum cap) const {
   }
 }
 
-bool ContextState::GetStateAsGLint(
-    GLenum pname, GLint* params, GLsizei* num_written) const {
+bool ContextState::GetStateAsGLint(GLenum pname,
+                                   GLint* params,
+                                   GLsizei* num_written) const {
   switch (pname) {
     case GL_BLEND_COLOR:
       *num_written = 4;
@@ -486,8 +490,9 @@ bool ContextState::GetStateAsGLint(
   }
 }
 
-bool ContextState::GetStateAsGLfloat(
-    GLenum pname, GLfloat* params, GLsizei* num_written) const {
+bool ContextState::GetStateAsGLfloat(GLenum pname,
+                                     GLfloat* params,
+                                     GLsizei* num_written) const {
   switch (pname) {
     case GL_BLEND_COLOR:
       *num_written = 4;
@@ -784,8 +789,7 @@ bool ContextState::GetStateAsGLfloat(
     case GL_SAMPLE_ALPHA_TO_COVERAGE:
       *num_written = 1;
       if (params) {
-        params[0] =
-            static_cast<GLfloat>(enable_flags.sample_alpha_to_coverage);
+        params[0] = static_cast<GLfloat>(enable_flags.sample_alpha_to_coverage);
       }
       return true;
     case GL_SAMPLE_COVERAGE:
@@ -811,4 +815,3 @@ bool ContextState::GetStateAsGLfloat(
   }
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_CONTEXT_STATE_IMPL_AUTOGEN_H_
-

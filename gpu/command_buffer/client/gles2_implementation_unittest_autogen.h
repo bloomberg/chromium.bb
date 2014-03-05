@@ -4,13 +4,14 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 // This file is included by gles2_implementation.h to declare the
 // GL api functions.
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
-
 
 TEST_F(GLES2ImplementationTest, AttachShader) {
   struct Cmds {
@@ -243,7 +244,7 @@ TEST_F(GLES2ImplementationTest, CullFace) {
 }
 
 TEST_F(GLES2ImplementationTest, DeleteBuffers) {
-  GLuint ids[2] = { kBuffersStartId, kBuffersStartId + 1 };
+  GLuint ids[2] = {kBuffersStartId, kBuffersStartId + 1};
   struct Cmds {
     cmds::DeleteBuffersImmediate del;
     GLuint data[2];
@@ -257,7 +258,7 @@ TEST_F(GLES2ImplementationTest, DeleteBuffers) {
 }
 
 TEST_F(GLES2ImplementationTest, DeleteFramebuffers) {
-  GLuint ids[2] = { kFramebuffersStartId, kFramebuffersStartId + 1 };
+  GLuint ids[2] = {kFramebuffersStartId, kFramebuffersStartId + 1};
   struct Cmds {
     cmds::DeleteFramebuffersImmediate del;
     GLuint data[2];
@@ -282,7 +283,7 @@ TEST_F(GLES2ImplementationTest, DeleteProgram) {
 }
 
 TEST_F(GLES2ImplementationTest, DeleteRenderbuffers) {
-  GLuint ids[2] = { kRenderbuffersStartId, kRenderbuffersStartId + 1 };
+  GLuint ids[2] = {kRenderbuffersStartId, kRenderbuffersStartId + 1};
   struct Cmds {
     cmds::DeleteRenderbuffersImmediate del;
     GLuint data[2];
@@ -307,7 +308,7 @@ TEST_F(GLES2ImplementationTest, DeleteShader) {
 }
 
 TEST_F(GLES2ImplementationTest, DeleteTextures) {
-  GLuint ids[2] = { kTexturesStartId, kTexturesStartId + 1 };
+  GLuint ids[2] = {kTexturesStartId, kTexturesStartId + 1};
   struct Cmds {
     cmds::DeleteTexturesImmediate del;
     GLuint data[2];
@@ -444,7 +445,7 @@ TEST_F(GLES2ImplementationTest, FrontFace) {
 }
 
 TEST_F(GLES2ImplementationTest, GenBuffers) {
-  GLuint ids[2] = { 0, };
+  GLuint ids[2] = {0, };
   struct Cmds {
     cmds::GenBuffersImmediate gen;
     GLuint data[2];
@@ -471,7 +472,7 @@ TEST_F(GLES2ImplementationTest, GenerateMipmap) {
 }
 
 TEST_F(GLES2ImplementationTest, GenFramebuffers) {
-  GLuint ids[2] = { 0, };
+  GLuint ids[2] = {0, };
   struct Cmds {
     cmds::GenFramebuffersImmediate gen;
     GLuint data[2];
@@ -487,7 +488,7 @@ TEST_F(GLES2ImplementationTest, GenFramebuffers) {
 }
 
 TEST_F(GLES2ImplementationTest, GenRenderbuffers) {
-  GLuint ids[2] = { 0, };
+  GLuint ids[2] = {0, };
   struct Cmds {
     cmds::GenRenderbuffersImmediate gen;
     GLuint data[2];
@@ -503,7 +504,7 @@ TEST_F(GLES2ImplementationTest, GenRenderbuffers) {
 }
 
 TEST_F(GLES2ImplementationTest, GenTextures) {
-  GLuint ids[2] = { 0, };
+  GLuint ids[2] = {0, };
   struct Cmds {
     cmds::GenTexturesImmediate gen;
     GLuint data[2];
@@ -581,14 +582,18 @@ TEST_F(GLES2ImplementationTest, GetFramebufferAttachmentParameteriv) {
   Result::Type result = 0;
   Cmds expected;
   ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
-  expected.cmd.Init(
-      123, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
-      result1.id, result1.offset);
+  expected.cmd.Init(123,
+                    GL_COLOR_ATTACHMENT0,
+                    GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+                    result1.id,
+                    result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetFramebufferAttachmentParameteriv(
-      123, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+      123,
+      GL_COLOR_ATTACHMENT0,
+      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
       &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<Result::Type>(1), result);
@@ -1583,7 +1588,7 @@ TEST_F(GLES2ImplementationTest, TexStorage2DEXT) {
 }
 
 TEST_F(GLES2ImplementationTest, GenQueriesEXT) {
-  GLuint ids[2] = { 0, };
+  GLuint ids[2] = {0, };
   struct Cmds {
     cmds::GenQueriesEXTImmediate gen;
     GLuint data[2];
@@ -1599,7 +1604,7 @@ TEST_F(GLES2ImplementationTest, GenQueriesEXT) {
 }
 
 TEST_F(GLES2ImplementationTest, DeleteQueriesEXT) {
-  GLuint ids[2] = { kQueriesStartId, kQueriesStartId + 1 };
+  GLuint ids[2] = {kQueriesStartId, kQueriesStartId + 1};
   struct Cmds {
     cmds::DeleteQueriesEXTImmediate del;
     GLuint data[2];
@@ -1627,7 +1632,7 @@ TEST_F(GLES2ImplementationTest, PopGroupMarkerEXT) {
 }
 
 TEST_F(GLES2ImplementationTest, GenVertexArraysOES) {
-  GLuint ids[2] = { 0, };
+  GLuint ids[2] = {0, };
   struct Cmds {
     cmds::GenVertexArraysOESImmediate gen;
     GLuint data[2];
@@ -1643,7 +1648,7 @@ TEST_F(GLES2ImplementationTest, GenVertexArraysOES) {
 }
 
 TEST_F(GLES2ImplementationTest, DeleteVertexArraysOES) {
-  GLuint ids[2] = { kVertexArraysStartId, kVertexArraysStartId + 1 };
+  GLuint ids[2] = {kVertexArraysStartId, kVertexArraysStartId + 1};
   struct Cmds {
     cmds::DeleteVertexArraysOESImmediate del;
     GLuint data[2];
@@ -1832,4 +1837,3 @@ TEST_F(GLES2ImplementationTest, DiscardBackbufferCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
-

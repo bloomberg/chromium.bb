@@ -4,6 +4,8 @@
 
 // This file is auto-generated from
 // gpu/command_buffer/build_gles2_cmd_buffer.py
+// It's formatted by clang-format using chromium coding style:
+//    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
 // OpenGL ES interface.
@@ -14,4 +16,3 @@
 #include "ppapi/c/ppb_opengles2.h"
 
 #endif  // PPAPI_C_DEV_PPB_OPENGLES2EXT_DEV_H_
-
