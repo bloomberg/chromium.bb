@@ -123,24 +123,11 @@ double NumberInputType::valueAsDouble() const
 
 void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
-    // FIXME: We should use numeric_limits<double>::max for number input type.
-    // (NOTE: the range check will not be true for NaN.)
-    const double floatMax = numeric_limits<float>::max();
-    if (newValue < -floatMax || newValue > floatMax) {
-        exceptionState.throwDOMException(InvalidStateError, "The value provided (" + String::number(newValue) + ") is outside the range (" + String::number(-floatMax) + ", " + String::number(floatMax) + ").");
-        return;
-    }
     element().setValue(serializeForNumberType(newValue), eventBehavior);
 }
 
 void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
-    // FIXME: We should use numeric_limits<double>::max for number input type.
-    const Decimal floatMax = Decimal::fromDouble(numeric_limits<float>::max());
-    if (newValue < -floatMax || newValue > floatMax) {
-        exceptionState.throwDOMException(InvalidStateError, "The value provided (" + newValue.toString() + ") is outside the range (-" + floatMax.toString() + ", " + floatMax.toString() + ").");
-        return;
-    }
     element().setValue(serializeForNumberType(newValue), eventBehavior);
 }
 
@@ -158,10 +145,8 @@ bool NumberInputType::typeMismatch() const
 StepRange NumberInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (numberDefaultStep, numberDefaultStepBase, numberStepScaleFactor));
-
-    // FIXME: We should use numeric_limits<double>::max for number input type.
-    const Decimal floatMax = Decimal::fromDouble(numeric_limits<float>::max());
-    return InputType::createStepRange(anyStepHandling, numberDefaultStepBase, -floatMax, floatMax, stepDescription);
+    const Decimal doubleMax = Decimal::fromDouble(numeric_limits<double>::max());
+    return InputType::createStepRange(anyStepHandling, numberDefaultStepBase, -doubleMax, doubleMax, stepDescription);
 }
 
 bool NumberInputType::sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const
