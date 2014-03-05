@@ -28,6 +28,7 @@
 #ifndef MediaQueryEvaluator_h
 #define MediaQueryEvaluator_h
 
+#include "heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -37,7 +38,7 @@ class MediaQueryResult;
 class MediaQuerySet;
 class RenderStyle;
 
-typedef Vector<RefPtr<MediaQueryResult> > MediaQueryResultList;
+typedef WillBePersistentHeapVector<RefPtrWillBeMember<MediaQueryResult> > MediaQueryResultList;
 
 /**
  * Class that evaluates css media queries as defined in

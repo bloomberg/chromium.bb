@@ -584,7 +584,7 @@ void LinkStyle::process()
             LocalFrame* frame = loadingFrame();
             if (Document* document = loadingFrame()->document()) {
                 RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*document);
-                RefPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
+                RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
                 MediaQueryEvaluator evaluator(frame->view()->mediaType(), frame, documentStyle.get());
                 mediaQueryMatches = evaluator.eval(media.get());
             }

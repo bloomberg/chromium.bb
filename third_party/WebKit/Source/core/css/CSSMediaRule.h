@@ -45,14 +45,14 @@ public:
 
     MediaList* media() const;
 
-    virtual void trace(Visitor* visitor) OVERRIDE { CSSGroupingRule::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
 
     MediaQuerySet* mediaQueries() const;
 
-    mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
+    mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, MEDIA_RULE);

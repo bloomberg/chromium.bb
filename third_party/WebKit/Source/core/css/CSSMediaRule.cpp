@@ -35,8 +35,10 @@ CSSMediaRule::CSSMediaRule(StyleRuleMedia* mediaRule, CSSStyleSheet* parent)
 
 CSSMediaRule::~CSSMediaRule()
 {
+#if !ENABLE(OILPAN)
     if (m_mediaCSSOMWrapper)
         m_mediaCSSOMWrapper->clearParentRule();
+#endif
 }
 
 MediaQuerySet* CSSMediaRule::mediaQueries() const
@@ -74,4 +76,9 @@ void CSSMediaRule::reattach(StyleRuleBase* rule)
         m_mediaCSSOMWrapper->reattach(mediaQueries());
 }
 
+void CSSMediaRule::trace(Visitor* visitor)
+{
+    visitor->trace(m_mediaCSSOMWrapper);
+    CSSGroupingRule::trace(visitor);
+}
 } // namespace WebCore

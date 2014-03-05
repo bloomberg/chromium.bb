@@ -55,7 +55,7 @@ private:
     CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
 
     RefPtrWillBeMember<StyleRuleImport> m_importRule;
-    mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
+    mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;
     mutable RefPtr<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };
 

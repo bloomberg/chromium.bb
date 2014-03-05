@@ -1211,7 +1211,7 @@ bool BisonCSSParser::parseDeclaration(MutableStylePropertySet* declaration, cons
     return ok;
 }
 
-PassRefPtr<MediaQuerySet> BisonCSSParser::parseMediaQueryList(const String& string)
+PassRefPtrWillBeRawPtr<MediaQuerySet> BisonCSSParser::parseMediaQueryList(const String& string)
 {
     ASSERT(!m_mediaList);
 
@@ -1605,31 +1605,31 @@ MediaQueryExp* BisonCSSParser::createFloatingMediaQueryExp(const AtomicString& m
     return m_floatingMediaQueryExp.get();
 }
 
-PassOwnPtr<MediaQueryExp> BisonCSSParser::sinkFloatingMediaQueryExp(MediaQueryExp* expression)
+PassOwnPtrWillBeRawPtr<MediaQueryExp> BisonCSSParser::sinkFloatingMediaQueryExp(MediaQueryExp* expression)
 {
     ASSERT_UNUSED(expression, expression == m_floatingMediaQueryExp);
     return m_floatingMediaQueryExp.release();
 }
 
-Vector<OwnPtr<MediaQueryExp> >* BisonCSSParser::createFloatingMediaQueryExpList()
+WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* BisonCSSParser::createFloatingMediaQueryExpList()
 {
-    m_floatingMediaQueryExpList = adoptPtr(new Vector<OwnPtr<MediaQueryExp> >);
+    m_floatingMediaQueryExpList = adoptPtrWillBeNoop(new WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >);
     return m_floatingMediaQueryExpList.get();
 }
 
-PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > BisonCSSParser::sinkFloatingMediaQueryExpList(Vector<OwnPtr<MediaQueryExp> >* list)
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > BisonCSSParser::sinkFloatingMediaQueryExpList(WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* list)
 {
     ASSERT_UNUSED(list, list == m_floatingMediaQueryExpList);
     return m_floatingMediaQueryExpList.release();
 }
 
-MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const AtomicString& mediaType, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > expressions)
+MediaQuery* BisonCSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restrictor, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > expressions)
 {
-    m_floatingMediaQuery = adoptPtr(new MediaQuery(restrictor, mediaType, expressions));
+    m_floatingMediaQuery = adoptPtrWillBeNoop(new MediaQuery(restrictor, mediaType, expressions));
     return m_floatingMediaQuery.get();
 }
 
-MediaQuery* BisonCSSParser::createFloatingMediaQuery(PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > expressions)
+MediaQuery* BisonCSSParser::createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > expressions)
 {
     return createFloatingMediaQuery(MediaQuery::None, AtomicString("all", AtomicString::ConstructFromLiteral), expressions);
 }
@@ -1639,7 +1639,7 @@ MediaQuery* BisonCSSParser::createFloatingNotAllQuery()
     return createFloatingMediaQuery(MediaQuery::Not, AtomicString("all", AtomicString::ConstructFromLiteral), sinkFloatingMediaQueryExpList(createFloatingMediaQueryExpList()));
 }
 
-PassOwnPtr<MediaQuery> BisonCSSParser::sinkFloatingMediaQuery(MediaQuery* query)
+PassOwnPtrWillBeRawPtr<MediaQuery> BisonCSSParser::sinkFloatingMediaQuery(MediaQuery* query)
 {
     ASSERT_UNUSED(query, query == m_floatingMediaQuery);
     return m_floatingMediaQuery.release();
@@ -1659,7 +1659,7 @@ PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > BisonCSSParser::sinkFloatingKeyframe
 
 MediaQuerySet* BisonCSSParser::createMediaQuerySet()
 {
-    RefPtr<MediaQuerySet> queries = MediaQuerySet::create();
+    RefPtrWillBeRawPtr<MediaQuerySet> queries = MediaQuerySet::create();
     MediaQuerySet* result = queries.get();
     m_parsedMediaQuerySets.append(queries.release());
     return result;
@@ -1680,10 +1680,10 @@ StyleRuleBase* BisonCSSParser::createMediaRule(MediaQuerySet* media, RuleList* r
     m_allowImportRules = m_allowNamespaceDeclarations = false;
     RefPtrWillBeRawPtr<StyleRuleMedia> rule;
     if (rules) {
-        rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create(), *rules);
+        rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create().get(), *rules);
     } else {
         RuleList emptyRules;
-        rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create(), emptyRules);
+        rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create().get(), emptyRules);
     }
     StyleRuleMedia* result = rule.get();
     m_parsedRules.append(rule.release());

@@ -195,13 +195,19 @@ bool MediaQueryExp::isViewportDependent() const
         || m_mediaFeature == MediaFeatureNames::maxAspectRatioMediaFeature;
 }
 
+MediaQueryExp::MediaQueryExp(const MediaQueryExp& other)
+    : m_mediaFeature(other.mediaFeature())
+    , m_value(other.value())
+{
+}
+
 MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, PassRefPtrWillBeRawPtr<CSSValue> value)
     : m_mediaFeature(mediaFeature)
     , m_value(value)
 {
 }
 
-PassOwnPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& mediaFeature, CSSParserValueList* valueList)
+PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& mediaFeature, CSSParserValueList* valueList)
 {
     RefPtrWillBeRawPtr<CSSValue> cssValue;
     bool isValid = false;
@@ -268,7 +274,7 @@ PassOwnPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& mediaFeature
     if (!isValid)
         return nullptr;
 
-    return adoptPtr(new MediaQueryExp(mediaFeature, cssValue));
+    return adoptPtrWillBeNoop(new MediaQueryExp(mediaFeature, cssValue));
 }
 
 MediaQueryExp::~MediaQueryExp()

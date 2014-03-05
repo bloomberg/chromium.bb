@@ -40,8 +40,13 @@ CSSImportRule::~CSSImportRule()
 {
     if (m_styleSheetCSSOMWrapper)
         m_styleSheetCSSOMWrapper->clearOwnerRule();
+#if !ENABLE(OILPAN)
+    // MediaList and the parent CSSImportRule are both on the oilpan heap and die together.
+    // Therefor clearing is not needed nor allowed since it could be touching already
+    // finalized memory.
     if (m_mediaCSSOMWrapper)
         m_mediaCSSOMWrapper->clearParentRule();
+#endif // ENABLE(OILPAN)
 }
 
 String CSSImportRule::href() const
@@ -94,6 +99,7 @@ void CSSImportRule::reattach(StyleRuleBase*)
 void CSSImportRule::trace(Visitor* visitor)
 {
     visitor->trace(m_importRule);
+    visitor->trace(m_mediaCSSOMWrapper);
     CSSRule::trace(visitor);
 }
 

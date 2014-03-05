@@ -29,6 +29,7 @@
 #ifndef MediaQuery_h
 #define MediaQuery_h
 
+#include "heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -37,32 +38,34 @@
 namespace WebCore {
 class MediaQueryExp;
 
-typedef Vector<OwnPtr<MediaQueryExp> > ExpressionVector;
+typedef WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > ExpressionHeapVector;
 
-class MediaQuery {
-    WTF_MAKE_FAST_ALLOCATED;
+class MediaQuery : public NoBaseWillBeGarbageCollectedFinalized<MediaQuery> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     enum Restrictor {
         Only, Not, None
     };
 
-    MediaQuery(Restrictor, const AtomicString& mediaType, PassOwnPtr<ExpressionVector> exprs);
+    MediaQuery(Restrictor, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> exprs);
     ~MediaQuery();
 
     Restrictor restrictor() const { return m_restrictor; }
-    const ExpressionVector& expressions() const { return *m_expressions; }
+    const ExpressionHeapVector& expressions() const { return *m_expressions; }
     const AtomicString& mediaType() const { return m_mediaType; }
     bool operator==(const MediaQuery& other) const;
     String cssText() const;
 
-    PassOwnPtr<MediaQuery> copy() const { return adoptPtr(new MediaQuery(*this)); }
+    PassOwnPtrWillBeRawPtr<MediaQuery> copy() const { return adoptPtrWillBeNoop(new MediaQuery(*this)); }
+
+    void trace(Visitor*);
 
 private:
     MediaQuery(const MediaQuery&);
 
     Restrictor m_restrictor;
     AtomicString m_mediaType;
-    OwnPtr<ExpressionVector> m_expressions;
+    OwnPtrWillBeMember<ExpressionHeapVector> m_expressions;
     String m_serializationCache;
 
     String serialize() const;

@@ -194,7 +194,7 @@ private:
 
 class StyleRuleMedia : public StyleRuleGroup {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleMedia> create(PassRefPtr<MediaQuerySet> media, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules)
+    static PassRefPtrWillBeRawPtr<StyleRuleMedia> create(PassRefPtrWillBeRawPtr<MediaQuerySet> media, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules)
     {
         return adoptRefWillBeNoop(new StyleRuleMedia(media, adoptRules));
     }
@@ -203,13 +203,13 @@ public:
 
     PassRefPtrWillBeRawPtr<StyleRuleMedia> copy() const { return adoptRefWillBeNoop(new StyleRuleMedia(*this)); }
 
-    void traceAfterDispatch(Visitor* visitor) { StyleRuleGroup::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor*);
 
 private:
-    StyleRuleMedia(PassRefPtr<MediaQuerySet>, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules);
+    StyleRuleMedia(PassRefPtrWillBeRawPtr<MediaQuerySet>, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules);
     StyleRuleMedia(const StyleRuleMedia&);
 
-    RefPtr<MediaQuerySet> m_mediaQueries;
+    RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
 };
 
 class StyleRuleSupports : public StyleRuleGroup {

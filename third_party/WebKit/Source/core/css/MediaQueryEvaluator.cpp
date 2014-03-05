@@ -123,7 +123,7 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultLi
     if (!querySet)
         return true;
 
-    const Vector<OwnPtr<MediaQuery> >& queries = querySet->queryVector();
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queries = querySet->queryVector();
     if (!queries.size())
         return true; // Empty query list evaluates to true.
 
@@ -133,13 +133,13 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultLi
         MediaQuery* query = queries[i].get();
 
         if (mediaTypeMatch(query->mediaType())) {
-            const ExpressionVector& expressions = query->expressions();
+            const ExpressionHeapVector& expressions = query->expressions();
             // Iterate through expressions, stop if any of them eval to false (AND semantics).
             size_t j = 0;
             for (; j < expressions.size(); ++j) {
                 bool exprResult = eval(expressions.at(j).get());
                 if (viewportDependentMediaQueryResults && expressions.at(j)->isViewportDependent())
-                    viewportDependentMediaQueryResults->append(adoptRef(new MediaQueryResult(*expressions.at(j), exprResult)));
+                    viewportDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(j), exprResult)));
                 if (!exprResult)
                     break;
             }

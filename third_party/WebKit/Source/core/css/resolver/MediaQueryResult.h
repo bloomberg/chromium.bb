@@ -29,14 +29,16 @@
 
 namespace WebCore {
 
-class MediaQueryResult : public RefCounted<MediaQueryResult> {
-    WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;
+class MediaQueryResult : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryResult> {
+    WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     MediaQueryResult(const MediaQueryExp& expr, bool result)
         : m_expression(expr)
         , m_result(result)
     {
     }
+
+    void trace(Visitor* visitor) { visitor->trace(m_expression); }
 
     MediaQueryExp m_expression;
     bool m_result;
