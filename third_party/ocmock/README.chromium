@@ -23,3 +23,6 @@ Chromium adds gtest_support.h/.mm and ocmock_extensions.h/.mm.
 
 Chromium alters all NSLogging of -[NSArray count] to compile under both 32 and
 64 bits.
+
+Chromium also patches in e8a9cc97936bfa8be97706c5092110603745e708 for fixing
+unit tests broken with Xcode 5 due to the lack of copyWithZone: selector.
