@@ -53,9 +53,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  // Stores the state whether select_file_dialog is running.
-  bool is_running_;
-
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
