@@ -161,8 +161,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     static size_t GetMaximumSerializedSize(const Dispatcher* dispatcher,
                                            const Channel* channel);
     static bool SerializeAndClose(Dispatcher* dispatcher,
-                                  void* destination,
                                   Channel* channel,
+                                  void* destination,
                                   size_t* actual_size);
 
     // Deserialization API.
@@ -236,8 +236,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // being passed over a message pipe.
   virtual size_t GetMaximumSerializedSizeImplNoLock(
       const Channel* channel) const;
-  virtual bool SerializeAndCloseImplNoLock(void* destination,
-                                           Channel* channel,
+  virtual bool SerializeAndCloseImplNoLock(Channel* channel,
+                                           void* destination,
                                            size_t* actual_size);
 
   // Available to subclasses. (Note: Returns a non-const reference, just like
@@ -280,8 +280,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // success, in which case |*actual_size| is set to the amount it actually
   // wrote to |destination|. On failure, |*actual_size| should not be modified;
   // however, the dispatcher will still be closed.
-  bool SerializeAndClose(void* destination,
-                         Channel* channel,
+  bool SerializeAndClose(Channel* channel,
+                         void* destination,
                          size_t* actual_size);
 
   // This protects the following members as well as any state added by

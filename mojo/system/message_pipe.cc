@@ -35,6 +35,8 @@ unsigned MessagePipe::GetPeerPort(unsigned port) {
 MessagePipeEndpoint::Type MessagePipe::GetType(unsigned port) {
   DCHECK(port == 0 || port == 1);
   base::AutoLock locker(lock_);
+  DCHECK(endpoints_[port].get());
+
   return endpoints_[port]->GetType();
 }
 
@@ -116,15 +118,49 @@ void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {
   endpoints_[port]->RemoveWaiter(waiter);
 }
 
+void MessagePipe::ConvertLocalToProxy(unsigned port) {
+  DCHECK(port == 0 || port == 1);
+
+  base::AutoLock locker(lock_);
+  DCHECK(endpoints_[port].get());
+  DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeLocal);
+
+  bool is_peer_open = !!endpoints_[GetPeerPort(port)].get();
+
+  // TODO(vtl): Hopefully this will work if the peer has been closed and when
+  // the peer is local. If the peer is remote, we should do something more
+  // sophisticated.
+  DCHECK(!is_peer_open ||
+         endpoints_[GetPeerPort(port)]->GetType() ==
+             MessagePipeEndpoint::kTypeLocal);
+
+  scoped_ptr<MessagePipeEndpoint> replacement_endpoint(
+      new ProxyMessagePipeEndpoint(
+          static_cast<LocalMessagePipeEndpoint*>(endpoints_[port].get()),
+          is_peer_open));
+  endpoints_[port].swap(replacement_endpoint);
+}
+
 MojoResult MessagePipe::EnqueueMessage(
     unsigned port,
     scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(port == 0 || port == 1);
   DCHECK(message.get());
-  DCHECK((!transports && message->num_handles() == 0) ||
-         (transports && transports->size() > 0 &&
-              message->num_handles() == transports->size()));
+  if (message->num_handles() == 0) {
+    // If |message->num_handles()| is 0, then |transports| should be null and
+    // |message| should not have dispatchers.
+    DCHECK(!transports);
+    DCHECK(!message->has_dispatchers());
+  } else {
+    // Otherwise either |transports| must be (non-null and) of the right size
+    // and the message shouldn't have dispatchers, or |transports| must be null
+    // and the message should have the right number of dispatchers.
+    DCHECK((transports && transports->size() == message->num_handles() &&
+                !message->has_dispatchers()) ||
+           (!transports && message->has_dispatchers() &&
+                message->dispatchers()->size() == message->num_handles()));
+  }
 
   if (message->type() == MessageInTransit::kTypeMessagePipe) {
     DCHECK(!transports);
@@ -141,6 +177,8 @@ MojoResult MessagePipe::EnqueueMessage(
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   if (transports) {
+    DCHECK(!message->dispatchers());
+
     // You're not allowed to send either handle to a message pipe over the
     // message pipe, so check for this. (The case of trying to write a handle to
     // itself is taken care of by |CoreImpl|. That case kind of makes sense, but

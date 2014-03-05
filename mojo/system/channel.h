@@ -80,6 +80,15 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   void RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
                               MessageInTransit::EndpointId remote_id);
 
+  // Tells the other side of the channel to run a message pipe endpoint (which
+  // must already be attached); |local_id| and |remote_id| are relative to this
+  // channel (i.e., |local_id| is the other side's remote ID and |remote_id| is
+  // its local ID).
+  // TODO(vtl): Maybe we should just have a flag argument to
+  // |RunMessagePipeEndpoint()| that tells it to do this.
+  void RunRemoteMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
+                                    MessageInTransit::EndpointId remote_id);
+
   // This forwards |message| verbatim to |raw_channel_|.
   bool WriteMessage(scoped_ptr<MessageInTransit> message);
 

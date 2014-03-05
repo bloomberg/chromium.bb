@@ -439,7 +439,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
   ConnectMessagePipes(mp0, mp1);
 
-  // We'll try to pass one of these dispatc
+  // We'll try to pass this dispatcher.
   scoped_refptr<MessagePipeDispatcher> dispatcher(new MessagePipeDispatcher());
   scoped_refptr<MessagePipe> local_mp(new MessagePipe());
   dispatcher->Init(local_mp, 0);
@@ -459,9 +459,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
     EXPECT_EQ(MOJO_RESULT_OK,
-              mp0->WriteMessage(0,
-                                hello, sizeof(hello),
-                                &transports,
+              mp0->WriteMessage(0, hello, sizeof(hello), &transports,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
@@ -481,22 +479,73 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   std::vector<scoped_refptr<Dispatcher> > read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1,
-                             read_buffer, &read_buffer_size,
+            mp1->ReadMessage(1, read_buffer, &read_buffer_size,
                              &read_dispatchers, &read_num_dispatchers,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(hello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(hello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
   EXPECT_EQ(1u, read_num_dispatchers);
+  ASSERT_TRUE(read_dispatchers[0].get());
+  EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  // TODO(vtl): Once we can pass the local message pipe handle (over a remote
-  // message pipe), this will fail.
-  EXPECT_FALSE(read_dispatchers[0].get());
+  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
+
+  // Write to "local_mp", port 1.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->WriteMessage(1, hello, sizeof(hello), NULL,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // TODO(vtl): FIXME -- We (racily) crash if I close |dispatcher| immediately
+  // here. (We don't crash if I sleep and then close.)
+
+  // Wait for the dispatcher to become readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->AddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 456));
+  EXPECT_EQ(456, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  dispatcher->RemoveWaiter(&waiter);
+
+  // Read from the dispatcher.
+  memset(read_buffer, 0, sizeof(read_buffer));
+  read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->ReadMessage(read_buffer, &read_buffer_size, 0, NULL,
+                                    MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(hello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(hello, read_buffer);
+
+  // Prepare to wait on "local_mp", port 1.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 789));
+
+  // Write to the dispatcher.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->WriteMessage(hello, sizeof(hello), NULL,
+                                     MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Wait.
+  EXPECT_EQ(789, waiter.Wait(MOJO_DEADLINE_INDEFINITE));
+  local_mp->RemoveWaiter(1, &waiter);
+
+  // Read from "local_mp", port 1.
+  memset(read_buffer, 0, sizeof(read_buffer));
+  read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->ReadMessage(1, read_buffer, &read_buffer_size, NULL, NULL,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(hello), static_cast<size_t>(read_buffer_size));
+  EXPECT_STREQ(hello, read_buffer);
+
+  // TODO(vtl): Also test that messages queued up before the handle was sent are
+  // delivered properly.
 
   // Close everything that belongs to us.
   mp0->Close(0);
   mp1->Close(1);
+  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
   // Note that |local_mp|'s port 0 belong to |dispatcher|, which was closed.
   local_mp->Close(1);
 }

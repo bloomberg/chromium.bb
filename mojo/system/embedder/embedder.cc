@@ -10,10 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/core_impl.h"
-#include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
-#include "mojo/system/proxy_message_pipe_endpoint.h"
 
 namespace mojo {
 namespace embedder {
@@ -57,24 +55,19 @@ MojoHandle CreateChannel(
     DidCreateChannelOnIOThreadCallback callback) {
   DCHECK(platform_handle.is_valid());
 
-  scoped_refptr<system::MessagePipe> message_pipe(
-      new system::MessagePipe(scoped_ptr<system::MessagePipeEndpoint>(
-                                  new system::LocalMessagePipeEndpoint()),
-                              scoped_ptr<system::MessagePipeEndpoint>(
-                                  new system::ProxyMessagePipeEndpoint())));
-  scoped_refptr<system::MessagePipeDispatcher> dispatcher(
-      new system::MessagePipeDispatcher());
-  dispatcher->Init(message_pipe, 0);
+  std::pair<scoped_refptr<system::MessagePipeDispatcher>,
+            scoped_refptr<system::MessagePipe> > remote_message_pipe =
+      system::MessagePipeDispatcher::CreateRemoteMessagePipe();
 
   system::CoreImpl* core_impl = static_cast<system::CoreImpl*>(Core::Get());
   DCHECK(core_impl);
-  MojoHandle rv = core_impl->AddDispatcher(dispatcher);
+  MojoHandle rv = core_impl->AddDispatcher(remote_message_pipe.first);
   // TODO(vtl): Do we properly handle the failure case here?
   if (rv != MOJO_HANDLE_INVALID) {
     io_thread_task_runner->PostTask(FROM_HERE,
                                     base::Bind(&CreateChannelOnIOThread,
                                                base::Passed(&platform_handle),
-                                               message_pipe,
+                                               remote_message_pipe.second,
                                                callback));
   }
   return rv;

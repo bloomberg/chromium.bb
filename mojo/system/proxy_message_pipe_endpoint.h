@@ -20,6 +20,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class LocalMessagePipeEndpoint;
 class MessagePipe;
 
 // A |ProxyMessagePipeEndpoint| connects an end of a |MessagePipe| to a
@@ -41,6 +42,13 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
   ProxyMessagePipeEndpoint();
+  // Constructs a |ProxyMessagePipeEndpoint| that replaces the given
+  // |LocalMessagePipeEndpoint| (which this constructor will close), taking its
+  // message queue's contents. This is done when transferring a message pipe
+  // handle over a remote message pipe.
+  ProxyMessagePipeEndpoint(
+      LocalMessagePipeEndpoint* local_message_pipe_endpoint,
+      bool is_peer_open);
   virtual ~ProxyMessagePipeEndpoint();
 
   // |MessagePipeEndpoint| implementation:

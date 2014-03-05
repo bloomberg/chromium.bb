@@ -54,6 +54,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static const Subtype kSubtypeMessagePipeEndpointData = 0;
   // Subtypes for type |kTypeMessagePipe|:
   static const Subtype kSubtypeMessagePipePeerClosed = 0;
+  // Subtypes for type |kTypeChannel|:
+  static const Subtype kSubtypeChannelRunMessagePipeEndpoint = 0;
 
   typedef uint32_t EndpointId;
   // Never a valid endpoint ID.
@@ -146,6 +148,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // stays alive through the call.
   void SerializeAndCloseDispatchers(Channel* channel);
 
+  // Deserializes any dispatchers from the secondary buffer. This message must
+  // not have any dispatchers attached.
+  // TODO(vtl): Having to copy the secondary buffer (in the constructor from a
+  // |View|) is suboptimal. Maybe this should just be done in the constructor?
+  void DeserializeDispatchers(Channel* channel);
+
   // Gets the main buffer and its size (in number of bytes), respectively.
   const void* main_buffer() const { return main_buffer_; }
   size_t main_buffer_size() const { return main_buffer_size_; }
@@ -185,6 +193,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     return dispatchers_.get();
   }
 
+  // Returns true if this message has dispatchers attached.
+  bool has_dispatchers() const {
+    return dispatchers_.get() && !dispatchers_->empty();
+  }
+
   // Rounds |n| up to a multiple of |kMessageAlignment|.
   static inline size_t RoundUpMessageAlignment(size_t n) {
     return (n + kMessageAlignment - 1) & ~(kMessageAlignment - 1);
@@ -215,7 +228,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   struct HandleTableEntry {
     int32_t type;  // From |Dispatcher::Type| (|kTypeUnknown| for "invalid").
-    uint32_t offset;
+    uint32_t offset;  // Relative to the start of the secondary buffer.
     uint32_t size;  // (Not including any padding.)
     uint32_t unused;
   };

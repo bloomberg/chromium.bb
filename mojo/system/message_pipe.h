@@ -68,10 +68,15 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
                        MojoResult wake_result);
   void RemoveWaiter(unsigned port, Waiter* waiter);
 
+  // This is called by the dispatcher to convert a local endpoint to a proxy
+  // endpoint.
+  void ConvertLocalToProxy(unsigned port);
+
   // This is used internally by |WriteMessage()| and by |Channel| to enqueue
   // messages (typically to a |LocalMessagePipeEndpoint|). Unlike
-  // |WriteMessage()|, |port| is the *destination* port. |dispatchers| should be
-  // non-null only if it's nonempty.
+  // |WriteMessage()|, |port| is the *destination* port. |transports| should be
+  // non-null only if it's nonempty, and only if |message| has no dispatchers
+  // attached.
   MojoResult EnqueueMessage(unsigned port,
                             scoped_ptr<MessageInTransit> message,
                             std::vector<DispatcherTransport>* transports);

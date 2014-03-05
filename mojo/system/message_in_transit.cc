@@ -89,6 +89,8 @@ MessageInTransit::MessageInTransit(Type type,
   }
 }
 
+// TODO(vtl): Do I really want/need to copy the secondary buffer here, or should
+// I just create (deserialize) the dispatchers right away?
 MessageInTransit::MessageInTransit(const View& message_view)
     : main_buffer_size_(message_view.main_buffer_size()),
       main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
@@ -200,22 +202,63 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
       continue;
     }
 
+    void* destination = static_cast<char*>(secondary_buffer_) + current_offset;
     size_t actual_size = 0;
     if (Dispatcher::MessageInTransitAccess::SerializeAndClose(
-            dispatcher, static_cast<char*>(secondary_buffer_) + current_offset,
-            channel, &actual_size)) {
+            dispatcher, channel, destination, &actual_size)) {
       handle_table[i].type = static_cast<int32_t>(dispatcher->GetType());
       handle_table[i].offset = static_cast<uint32_t>(current_offset);
       handle_table[i].size = static_cast<uint32_t>(actual_size);
+    } else {
+      // (Nothing to do on failure, since |secondary_buffer_| was cleared, and
+      // |kTypeUnknown| is zero.)
+      // The handle will simply be closed.
+      LOG(ERROR) << "Failed to serialize handle to remote message pipe";
     }
-    // (Nothing to do on failure, since |secondary_buffer_| was cleared, and
-    // |kTypeUnknown| is zero.)
 
     current_offset += RoundUpMessageAlignment(actual_size);
     DCHECK_LE(current_offset, size);
   }
 
   UpdateTotalSize();
+}
+
+void MessageInTransit::DeserializeDispatchers(Channel* channel) {
+  DCHECK(!dispatchers_.get());
+
+  if (!num_handles())
+    return;
+
+  // TODO(vtl): Restrict |num_handles()| to a sane range. (Maybe this should be
+  // done earlier?)
+
+  dispatchers_.reset(
+      new std::vector<scoped_refptr<Dispatcher> >(num_handles()));
+
+  size_t handle_table_size = num_handles() * sizeof(HandleTableEntry);
+  if (secondary_buffer_size_ < handle_table_size) {
+    LOG(ERROR) << "Serialized handle table too small";
+    return;
+  }
+
+  const HandleTableEntry* handle_table =
+      static_cast<const HandleTableEntry*>(secondary_buffer_);
+  for (size_t i = 0; i < num_handles(); i++) {
+    size_t offset = handle_table[i].offset;
+    size_t size = handle_table[i].size;
+    // TODO(vtl): Sanity-check the size.
+    if (offset % kMessageAlignment != 0 || offset > secondary_buffer_size_ ||
+        offset + size > secondary_buffer_size_) {
+      // TODO(vtl): Maybe should report error (and make it possible to kill the
+      // connection with extreme prejudice).
+      LOG(ERROR) << "Invalid serialized handle table entry";
+      continue;
+    }
+
+    const void* source = static_cast<const char*>(secondary_buffer_) + offset;
+    (*dispatchers_)[i] = Dispatcher::MessageInTransitAccess::Deserialize(
+        channel, handle_table[i].type, source, size);
+  }
 }
 
 void MessageInTransit::UpdateTotalSize() {

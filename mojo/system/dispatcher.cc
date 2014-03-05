@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/system/constants.h"
+#include "mojo/system/message_pipe_dispatcher.h"
 
 namespace mojo {
 namespace system {
@@ -39,11 +40,11 @@ size_t Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
 // static
 bool Dispatcher::MessageInTransitAccess::SerializeAndClose(
     Dispatcher* dispatcher,
-    void* destination,
     Channel* channel,
+    void* destination,
     size_t* actual_size) {
   DCHECK(dispatcher);
-  return dispatcher->SerializeAndClose(destination, channel, actual_size);
+  return dispatcher->SerializeAndClose(channel, destination, actual_size);
 }
 
 // static
@@ -52,7 +53,20 @@ scoped_refptr<Dispatcher> Dispatcher::MessageInTransitAccess::Deserialize(
     int32_t type,
     const void* source,
     size_t size) {
-  // TODO(vtl)
+  switch (static_cast<int32_t>(type)) {
+    case kTypeUnknown:
+      DVLOG(2) << "Deserializing invalid handle";
+      return scoped_refptr<Dispatcher>();
+    case kTypeMessagePipe:
+      return scoped_refptr<Dispatcher>(
+          MessagePipeDispatcher::Deserialize(channel, source, size));
+    case kTypeDataPipeProducer:
+    case kTypeDataPipeConsumer:
+      LOG(WARNING) << "Deserialization of dispatcher type " << type
+                   << " not supported";
+      return scoped_refptr<Dispatcher>();
+  }
+  LOG(WARNING) << "Unknown dispatcher type " << type;
   return scoped_refptr<Dispatcher>();
 }
 
@@ -333,8 +347,8 @@ size_t Dispatcher::GetMaximumSerializedSizeImplNoLock(
   return 0;
 }
 
-bool Dispatcher::SerializeAndCloseImplNoLock(void* /*destination*/,
-                                             Channel* /*channel*/,
+bool Dispatcher::SerializeAndCloseImplNoLock(Channel* /*channel*/,
+                                             void* /*destination*/,
                                              size_t* /*actual_size*/) {
   lock_.AssertAcquired();
   DCHECK(is_closed_);
@@ -379,8 +393,8 @@ size_t Dispatcher::GetMaximumSerializedSize(const Channel* channel) const {
   return GetMaximumSerializedSizeImplNoLock(channel);
 }
 
-bool Dispatcher::SerializeAndClose(void* destination,
-                                   Channel* channel,
+bool Dispatcher::SerializeAndClose(Channel* channel,
+                                   void* destination,
                                    size_t* actual_size) {
   DCHECK(destination);
   DCHECK(channel);
@@ -401,7 +415,7 @@ bool Dispatcher::SerializeAndClose(void* destination,
   // No need to cancel waiters: we shouldn't have any (and shouldn't be in
   // |Core|'s handle table.
 
-  if (!SerializeAndCloseImplNoLock(destination, channel, actual_size))
+  if (!SerializeAndCloseImplNoLock(channel, destination, actual_size))
     return false;
 
   DCHECK_LE(*actual_size, max_size);

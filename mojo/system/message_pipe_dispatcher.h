@@ -5,6 +5,8 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_DISPATCHER_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_DISPATCHER_H_
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +29,18 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
   virtual Type GetType() const OVERRIDE;
+
+  // Creates a |MessagePipe| with a local endpoint (at port 0) and a proxy
+  // endpoint, and creates/initializes a |MessagePipeDispatcher| (attached to
+  // the message pipe, port 0).
+  static std::pair<scoped_refptr<MessagePipeDispatcher>,
+                   scoped_refptr<MessagePipe> > CreateRemoteMessagePipe();
+
+  // The "opposite" of |SerializeAndClose()|. (Typically this is called by
+  // |Dispatcher::Deserialize()|.)
+  static scoped_refptr<MessagePipeDispatcher> Deserialize(Channel* channel,
+                                                          const void* source,
+                                                          size_t size);
 
  private:
   friend class MessagePipeDispatcherTransport;
@@ -62,6 +76,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
                                          MojoWaitFlags flags,
                                          MojoResult wake_result) OVERRIDE;
   virtual void RemoveWaiterImplNoLock(Waiter* waiter) OVERRIDE;
+  virtual size_t GetMaximumSerializedSizeImplNoLock(
+      const Channel* channel) const OVERRIDE;
+  virtual bool SerializeAndCloseImplNoLock(Channel* channel,
+                                           void* destination,
+                                           size_t* actual_size) OVERRIDE;
 
   // Protected by |lock()|:
   scoped_refptr<MessagePipe> message_pipe_;  // This will be null if closed.

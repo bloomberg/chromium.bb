@@ -105,11 +105,36 @@ void Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
 
     IdToEndpointInfoMap::const_iterator it =
         local_id_to_endpoint_info_map_.find(local_id);
+    // TODO(vtl): FIXME -- This check is wrong if this is in response to a
+    // |kSubtypeChannelRunMessagePipeEndpoint| message. We should report error.
     CHECK(it != local_id_to_endpoint_info_map_.end());
     endpoint_info = it->second;
   }
 
+  // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
+  // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
   endpoint_info.message_pipe->Run(endpoint_info.port, remote_id);
+}
+
+void Channel::RunRemoteMessagePipeEndpoint(
+    MessageInTransit::EndpointId local_id,
+    MessageInTransit::EndpointId remote_id) {
+  base::AutoLock locker(lock_);
+
+  DCHECK(local_id_to_endpoint_info_map_.find(local_id) !=
+             local_id_to_endpoint_info_map_.end());
+
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(
+      MessageInTransit::kTypeChannel,
+      MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint,
+      0, 0, NULL));
+  message->set_source_id(local_id);
+  message->set_destination_id(remote_id);
+  if (!raw_channel_->WriteMessage(message.Pass())) {
+    // TODO(vtl): FIXME -- I guess we should report the error back somehow so
+    // that the dispatcher can be closed?
+    CHECK(false) << "Not yet handled";
+  }
 }
 
 bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
@@ -202,26 +227,36 @@ void Channel::OnReadMessageForDownstream(
   // ownership of it.
   // TODO(vtl): Need to enforce limits on message size and handle count.
   scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
-  std::vector<DispatcherTransport> transports(message->num_handles());
-  // TODO(vtl): Create dispatchers for handles.
-  // TODO(vtl): It's bad that the current API will create equivalent dispatchers
-  // for the freshly-created ones, which is totally redundant. Make a version of
-  // |EnqueueMessage()| that passes ownership.
-  if (endpoint_info.message_pipe->EnqueueMessage(
-          MessagePipe::GetPeerPort(endpoint_info.port), message.Pass(),
-          transports.empty() ? NULL : &transports) != MOJO_RESULT_OK) {
+  message->DeserializeDispatchers(this);
+  MojoResult result = endpoint_info.message_pipe->EnqueueMessage(
+      MessagePipe::GetPeerPort(endpoint_info.port), message.Pass(), NULL);
+  if (result != MOJO_RESULT_OK) {
     HandleLocalError(base::StringPrintf(
-        "Failed to enqueue message to local destination ID %u",
-        static_cast<unsigned>(local_id)));
+        "Failed to enqueue message to local destination ID %u (result %d)",
+        static_cast<unsigned>(local_id), static_cast<int>(result)));
     return;
   }
 }
 
 void Channel::OnReadMessageForChannel(
     const MessageInTransit::View& message_view) {
-  // TODO(vtl): Currently no channel-only messages yet.
-  HandleRemoteError("Received invalid channel message");
-  NOTREACHED();
+  DCHECK_EQ(message_view.type(), MessageInTransit::kTypeChannel);
+
+  switch (message_view.subtype()) {
+    case MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint:
+      // TODO(vtl): FIXME -- Error handling (also validation of
+      // source/destination IDs).
+      DVLOG(2) << "Handling channel message to run message pipe (local ID = "
+               << message_view.destination_id() << ", remote ID = "
+               << message_view.source_id() << ")";
+      RunMessagePipeEndpoint(message_view.destination_id(),
+                             message_view.source_id());
+      break;
+    default:
+      HandleRemoteError("Received invalid channel message");
+      NOTREACHED();
+      break;
+  }
 }
 
 void Channel::HandleRemoteError(const base::StringPiece& error_message) {

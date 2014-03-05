@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 
 namespace mojo {
@@ -18,6 +19,18 @@ ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint()
       remote_id_(MessageInTransit::kInvalidEndpointId),
       is_open_(true),
       is_peer_open_(true) {
+}
+
+ProxyMessagePipeEndpoint::ProxyMessagePipeEndpoint(
+    LocalMessagePipeEndpoint* local_message_pipe_endpoint,
+    bool is_peer_open)
+    : local_id_(MessageInTransit::kInvalidEndpointId),
+      remote_id_(MessageInTransit::kInvalidEndpointId),
+      is_open_(true),
+      is_peer_open_(is_peer_open),
+      paused_message_queue_(MessageInTransitQueue::PassContents(),
+                            local_message_pipe_endpoint->message_queue()) {
+  local_message_pipe_endpoint->Close();
 }
 
 ProxyMessagePipeEndpoint::~ProxyMessagePipeEndpoint() {
@@ -60,13 +73,6 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
   DCHECK(is_open_);
-
-  if (message->dispatchers() && !message->dispatchers()->empty()) {
-    // Since the dispatchers are attached to the message, they'll be closed on
-    // message destruction.
-    LOG(ERROR) << "Sending handles over remote message pipes not yet supported "
-                  "(sent handles will simply be closed)";
-  }
 
   if (is_running()) {
     message->SerializeAndCloseDispatchers(channel_.get());
