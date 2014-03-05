@@ -151,15 +151,11 @@ public:
     virtual bool willRespondToMouseMoveEvents() OVERRIDE;
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
     void setVolume(double);
-    void setClearMutedOnUserInteraction(bool);
 
 protected:
     explicit MediaControlVolumeSliderElement(Document&);
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
-
-private:
-    bool m_clearMutedOnUserInteraction;
 };
 
 } // namespace WebCore

@@ -157,7 +157,6 @@ void MediaControlMuteButtonElement::updateDisplayType()
 
 MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(Document& document)
     : MediaControlInputElement(document, MediaVolumeSlider)
-    , m_clearMutedOnUserInteraction(false)
 {
 }
 
@@ -176,10 +175,8 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
         return;
 
     double volume = value().toDouble();
-    if (volume != mediaController()->volume())
-        mediaController()->setVolume(volume, ASSERT_NO_EXCEPTION);
-    if (m_clearMutedOnUserInteraction)
-        mediaController()->setMuted(false);
+    mediaController()->setVolume(volume, ASSERT_NO_EXCEPTION);
+    mediaController()->setMuted(false);
 }
 
 bool MediaControlVolumeSliderElement::willRespondToMouseMoveEvents()
@@ -202,11 +199,6 @@ void MediaControlVolumeSliderElement::setVolume(double volume)
 {
     if (value().toDouble() != volume)
         setValue(String::number(volume));
-}
-
-void MediaControlVolumeSliderElement::setClearMutedOnUserInteraction(bool clearMute)
-{
-    m_clearMutedOnUserInteraction = clearMute;
 }
 
 } // namespace WebCore

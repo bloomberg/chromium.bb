@@ -116,7 +116,6 @@ bool MediaControls::initializeControls(Document& document)
 
     RefPtr<MediaControlPanelVolumeSliderElement> slider = MediaControlPanelVolumeSliderElement::create(document);
     m_volumeSlider = slider.get();
-    m_volumeSlider->setClearMutedOnUserInteraction(true);
     panel->appendChild(slider.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
