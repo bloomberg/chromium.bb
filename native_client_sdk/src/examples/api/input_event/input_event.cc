@@ -24,10 +24,6 @@
 
 namespace {
 
-const char* const kDidChangeFocus = "DidChangeFocus";
-const char* const kHaveFocus = "HaveFocus";
-const char* const kDontHaveFocus = "DontHaveFocus";
-
 std::string ModifierToString(uint32_t modifier) {
   std::string s;
   if (modifier & PP_INPUTEVENT_MODIFIER_SHIFTKEY) {
