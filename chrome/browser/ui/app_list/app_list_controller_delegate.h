@@ -120,9 +120,6 @@ class AppListControllerDelegate {
   // Uninstall the app identified by |app_id| from |profile|.
   void UninstallApp(Profile* profile, const std::string& app_id);
 
-  // Remove the app identified by |app_id| in |profile| from its folder.
-  void RemoveAppFromFolder(Profile* profile, const std::string& app_id);
-
   // True if the app was installed from the web store.
   bool IsAppFromWebStore(Profile* profile,
                          const std::string& app_id);

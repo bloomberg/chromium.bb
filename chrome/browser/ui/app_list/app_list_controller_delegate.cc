@@ -110,22 +110,6 @@ void AppListControllerDelegate::UninstallApp(Profile* profile,
   uninstaller->Run();
 }
 
-void AppListControllerDelegate::RemoveAppFromFolder(Profile* profile,
-                                                    const std::string& app_id) {
-  app_list::AppListModel* model =
-      app_list::AppListSyncableServiceFactory::GetForProfile(
-          profile)->model();
-  app_list::AppListItem* item = model->FindItem(app_id);
-  DCHECK(item) << "App not found in model: " << app_id;
-  syncer::StringOrdinal position;
-  app_list::AppListFolderItem* folder_item =
-      model->FindFolderItem(item->folder_id());
-  DCHECK(folder_item) << "No folder for item: " << item->ToDebugString();
-  // Position the item just after the folder.
-  position = folder_item->position().CreateAfter();
-  model->MoveItemToFolderAt(item, "", position);
-}
-
 bool AppListControllerDelegate::IsAppFromWebStore(
     Profile* profile,
     const std::string& app_id) {

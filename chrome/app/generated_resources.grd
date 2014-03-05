@@ -14360,9 +14360,6 @@ Do you accept?
         <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
           Unpin from shelf
         </message>
-        <message name="IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER" desc="Title text for the 'Remove from folder' context menu item of an app list item.">
-          Remove from folder
-        </message>
         <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
           Uninstall
         </message>
@@ -14397,9 +14394,6 @@ Do you accept?
         </message>
         <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
           Unpin from Shelf
-        </message>
-        <message name="IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER" desc="Title text for the 'Remove from folder' context menu item of an app list item.">
-          Remove from Folder
         </message>
         <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
           Uninstall

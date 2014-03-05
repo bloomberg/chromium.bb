@@ -163,12 +163,6 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
                          : IDS_EXTENSIONS_UNINSTALL);
   }
 
-  if (is_in_folder_) {
-    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model_->AddItemWithStringId(
-        REMOVE_FROM_FOLDER, IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER);
-  }
-
   return menu_model_.get();
 }
 
@@ -272,8 +266,6 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller_->ShowOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     controller_->UninstallApp(profile_, app_id_);
-  } else if (command_id == REMOVE_FROM_FOLDER) {
-    controller_->RemoveAppFromFolder(profile_, app_id_);
   } else if (command_id == DETAILS) {
     controller_->ShowAppInWebStore(profile_, app_id_, is_search_result_);
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
