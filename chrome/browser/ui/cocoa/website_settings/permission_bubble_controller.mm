@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
+#import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -41,6 +42,32 @@ const base::char16 kBulletPoint = 0x2022;
 
 @interface PermissionBubbleController ()
 
+// Returns an autoreleased NSView displaying the label for |request|.
+- (NSView*)labelForRequest:(PermissionBubbleRequest*)request
+           isSingleRequest:(BOOL)singleRequest;
+
+// Returns an autoreleased NSView displaying the title for the bubble if
+// there are multiple requests.
+- (NSView*)titleForMultipleRequests;
+
+// Returns an autoreleased NSView displaying a checkbox for |request|.  The
+// checkbox will be initialized as checked if |checked| is YES.
+- (NSView*)checkboxForRequest:(PermissionBubbleRequest*)request
+                      checked:(BOOL)checked;
+
+// Returns an autoreleased NSView displaying the customize button.
+- (NSView*)customizationButton;
+
+// Returns an autoreleased NSView of a button with |title| and |action|.
+// If |pairedButton| is non-nil, the size of both buttons will be set to be
+// equal to the size of the larger of the two.
+- (NSView*)buttonWithTitle:(NSString*)title
+                    action:(SEL)action
+                pairedWith:(NSView*)pairedButton;
+
+// Returns an autoreleased NSView displaying the close 'x' button.
+- (NSView*)closeButton;
+
 // Called when the 'ok' button is pressed.
 - (void)ok:(id)sender;
 
@@ -50,11 +77,15 @@ const base::char16 kBulletPoint = 0x2022;
 // Called when the 'block' button is pressed.
 - (void)onBlock:(id)sender;
 
+// Called when the 'close' button is pressed.
+- (void)onClose:(id)sender;
+
 // Called when the 'customize' button is pressed.
 - (void)onCustomize:(id)sender;
 
 // Called when a checkbox changes from checked to unchecked, or vice versa.
 - (void)onCheckboxChanged:(id)sender;
+
 
 @end
 
@@ -144,6 +175,17 @@ const base::char16 kBulletPoint = 0x2022;
     bubbleFrame = NSUnionRect(
         bubbleFrame, NSInsetRect([view frame], -kHorizontalPadding, 0));
   }
+
+  // 'x' button in the upper-right-hand corner.
+  base::scoped_nsobject<NSView> closeButton([[self closeButton] retain]);
+  // Place the close button at the rightmost edge of the bubble.
+  [closeButton setFrameOrigin:NSMakePoint(
+      NSMaxX(bubbleFrame), yOffset - chrome_style::kCloseButtonPadding)];
+  // Increase the size of the bubble by the width of the close button and its
+  // padding.
+  bubbleFrame.size.width +=
+      NSWidth([closeButton frame]) + chrome_style::kCloseButtonPadding;
+  [contentView addSubview:closeButton];
 
   // Position the allow/ok button.
   CGFloat xOrigin = NSWidth(bubbleFrame) - NSWidth([allowOrOkButton frame]) -
@@ -284,6 +326,16 @@ const base::char16 kBulletPoint = 0x2022;
   return button.autorelease();
 }
 
+- (NSView*)closeButton {
+  int dimension = chrome_style::GetCloseButtonSize();
+  NSRect frame = NSMakeRect(0, 0, dimension, dimension);
+  base::scoped_nsobject<NSButton> button(
+      [[WebUIHoverCloseButton alloc] initWithFrame:frame]);
+  [button setAction:@selector(onClose:)];
+  [button setTarget:self];
+  return button.autorelease();
+}
+
 - (void)ok:(id)sender {
   DCHECK(delegate_);
   delegate_->Closing();
@@ -297,6 +349,11 @@ const base::char16 kBulletPoint = 0x2022;
 - (void)onBlock:(id)sender {
   DCHECK(delegate_);
   delegate_->Deny();
+}
+
+- (void)onClose:(id)sender {
+  DCHECK(delegate_);
+  delegate_->Closing();
 }
 
 - (void)onCustomize:(id)sender {
