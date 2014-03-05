@@ -319,7 +319,7 @@ void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, S
     parser.parseDeclaration(this, styleDeclaration, 0, contextStyleSheet);
 }
 
-void MutableStylePropertySet::addParsedProperties(const Vector<CSSProperty, 256>& properties)
+void MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProperty, 256>& properties)
 {
     m_propertyVector.reserveCapacity(m_propertyVector.size() + properties.size());
     for (unsigned i = 0; i < properties.size(); ++i)
@@ -419,7 +419,7 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
     for (unsigned i = 0; i < length; ++i)
         toRemove.add(set[i]);
 
-    Vector<CSSProperty> newProperties;
+    WillBeHeapVector<CSSProperty> newProperties;
     newProperties.reserveInitialCapacity(m_propertyVector.size());
 
     unsigned size = m_propertyVector.size();
@@ -489,7 +489,7 @@ PassRefPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
 
 PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
-    Vector<CSSProperty, 256> list;
+    WillBeHeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
         RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);

@@ -53,6 +53,7 @@ struct StylePropertyMetadata {
 };
 
 class CSSProperty {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     CSSProperty(CSSPropertyID propertyID, PassRefPtrWillBeRawPtr<CSSValue> value, bool important = false, bool isSetFromShorthand = false, int indexInShorthandsVector = 0, bool implicit = false)
         : m_metadata(propertyID, isSetFromShorthand, indexInShorthandsVector, important, implicit, isInheritedProperty(propertyID))
@@ -81,9 +82,11 @@ public:
 
     const StylePropertyMetadata& metadata() const { return m_metadata; }
 
+    void trace(Visitor* visitor) { visitor->trace(m_value); }
+
 private:
     StylePropertyMetadata m_metadata;
-    RefPtr<CSSValue> m_value;
+    RefPtrWillBeMember<CSSValue> m_value;
 };
 
 inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
