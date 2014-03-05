@@ -390,6 +390,7 @@
                 'policy/core/common/forwarding_policy_provider_unittest.cc',
                 'policy/core/common/generate_policy_source_unittest.cc',
                 'policy/core/common/policy_bundle_unittest.cc',
+                'policy/core/common/policy_loader_ios_unittest.mm',
                 'policy/core/common/policy_loader_mac_unittest.cc',
                 'policy/core/common/policy_loader_win_unittest.cc',
                 'policy/core/common/policy_map_unittest.cc',
@@ -403,13 +404,17 @@
                 'policy/core/common/schema_unittest.cc',
               ],
               'conditions': [
+                ['OS=="android"', {
+                  'sources/': [
+                    ['exclude', '^policy/core/common/async_policy_provider_unittest\\.cc'],
+                  ],
+                }],
                 ['OS=="android" or OS=="ios"', {
                   # Note: 'sources!' is processed before any 'sources/', so the
                   # ['include', '^policy/'] on iOS above will include all of the
                   # policy source files again. Using 'source/' here too will get
                   # these files excluded as expected.
                   'sources/': [
-                    ['exclude', '^policy/core/common/async_policy_provider_unittest\\.cc'],
                     ['exclude', '^policy/core/common/cloud/component_cloud_policy_service_unittest\\.cc'],
                     ['exclude', '^policy/core/common/cloud/component_cloud_policy_store_unittest\\.cc'],
                     ['exclude', '^policy/core/common/cloud/component_cloud_policy_updater_unittest\\.cc'],
