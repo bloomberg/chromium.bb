@@ -4,6 +4,7 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_browsertest.h"
 
+#include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
@@ -107,6 +108,11 @@ void BrowserPluginTest::SetUp() {
 void BrowserPluginTest::TearDown() {
   BrowserPluginManager::set_factory_for_testing(
       TestBrowserPluginManagerFactory::GetInstance());
+#if defined(LEAK_SANITIZER)
+  // Do this before shutting down V8 in RenderViewTest::TearDown().
+  // http://crbug.com/328552
+  __lsan_do_leak_check();
+#endif
   content::RenderViewTest::TearDown();
   test_content_renderer_client_.reset();
 }
