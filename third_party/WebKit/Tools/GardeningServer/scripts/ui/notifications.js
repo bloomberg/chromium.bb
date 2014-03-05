@@ -96,7 +96,7 @@ ui.notifications.Info = base.extends(ui.notifications.Notification, {
 ui.notifications.FailingTestGroup = base.extends('li', {
     init: function(groupName, testNameList)
     {
-        this.appendChild(base.createLinkNode(ui.urlForFlakinessDashboard(testNameList), groupName));
+        this.appendChild(ui.createLinkNode(ui.urlForFlakinessDashboard(testNameList), groupName));
     }
 });
 
@@ -112,7 +112,7 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
     init: function(commitData)
     {
         this._revision = commitData.revision;
-        this._description.appendChild(base.createLinkNode(trac.changesetURL(commitData.revision), commitData.revision));
+        this._description.appendChild(ui.createLinkNode(trac.changesetURL(commitData.revision), commitData.revision));
         this._details = this._description.appendChild(document.createElement('span'));
         this._addDetail('title', commitData);
         this._addDetail('author', commitData);
@@ -142,7 +142,7 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
             parts.forEach(function(item, index) {
                 if (index > 0)
                     span.appendChild(document.createTextNode(', '));
-                var link = base.createLinkNode(linkFunction(item), item);
+                var link = ui.createLinkNode(linkFunction(item), item);
                 link.className = part + '-item';
                 span.appendChild(link);
             });

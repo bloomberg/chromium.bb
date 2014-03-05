@@ -59,6 +59,7 @@ test("ui.onebar", 3, function() {
             '<li class="ui-state-default ui-corner-top"><a href="#expected">Expected Failures</a></li>' +
             '<li class="ui-state-default ui-corner-top ui-state-disabled"><a href="#results">Results</a></li>' +
         '</ul>' +
+        '<div id="link-handling"><input type="checkbox" id="new-window-for-links"><label for="new-window-for-links">Open links in new window</label></div>' +
         '<div id="unexpected" class="ui-tabs-panel ui-widget-content ui-corner-bottom"></div>' +
         '<div id="expected" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide"></div>' +
         '<div id="results" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide"></div>');

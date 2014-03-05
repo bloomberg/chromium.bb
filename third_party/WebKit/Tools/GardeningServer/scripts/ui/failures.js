@@ -45,6 +45,7 @@ ui.failures.Builder = base.extends('a', {
 
         this.className = 'failing-builder';
         this.href = ui.displayURLForBuilder(builderName);
+        ui.setTargetForLink(this);
         if (failures)
             this._addSpan('failures', ' ' + failures.join(', '));
     },

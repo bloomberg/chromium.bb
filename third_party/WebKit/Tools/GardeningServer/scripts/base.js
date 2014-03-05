@@ -323,14 +323,4 @@ base.underscoredBuilderName = function(builderName)
     return builderName.replace(/[ .()]/g, '_');
 }
 
-base.createLinkNode = function(url, textContent, opt_target)
-{
-    var link = document.createElement('a');
-    link.href = url;
-    if (opt_target)
-        link.target = opt_target;
-    link.appendChild(document.createTextNode(textContent));
-    return link;
-}
-
 })();

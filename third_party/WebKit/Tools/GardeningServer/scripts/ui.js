@@ -34,6 +34,8 @@ ui.displayURLForBuilder = function(builderName)
     });
 }
 
+ui.kUseNewWindowForLinksSetting = 'gardenomatic.use-new-window-for-links';
+
 ui.displayNameForBuilder = function(builderName)
 {
     return builderName.replace(/Webkit /, '');
@@ -67,6 +69,39 @@ ui.rolloutReasonForTestNameList = function(testNameList)
     }).join('\n');
 }
 
+ui.setTargetForLink = function(anchor)
+{
+    if (anchor.href.indexOf('#') === 0)
+        return;
+    if (ui.useNewWindowForLinks)
+        anchor.target = '_blank';
+    else
+        anchor.removeAttribute('target');
+}
+
+ui.setUseNewWindowForLinks = function(enabled)
+{
+    ui.useNewWindowForLinks = enabled;
+    if (enabled)
+        localStorage[ui.kUseNewWindowForLinksSetting] = 'true';
+    else
+        delete localStorage[ui.kUseNewWindowForLinksSetting];
+
+    $('a').each(function() {
+        ui.setTargetForLink(this);
+    });
+}
+ui.setUseNewWindowForLinks(!!localStorage[ui.kUseNewWindowForLinksSetting]);
+
+ui.createLinkNode = function(url, textContent)
+{
+    var link = document.createElement('a');
+    link.href = url;
+    ui.setTargetForLink(link);
+    link.appendChild(document.createTextNode(textContent));
+    return link;
+}
+
 ui.onebar = base.extends('div', {
     init: function()
     {
@@ -77,6 +112,7 @@ ui.onebar = base.extends('div', {
                 '<li><a href="#expected">Expected Failures</a></li>' +
                 '<li><a href="#results">Results</a></li>' +
             '</ul>' +
+            '<div id="link-handling"><input type="checkbox" id="new-window-for-links"><label for="new-window-for-links">Open links in new window</label></div>' +
             '<div id="unexpected"></div>' +
             '<div id="expected"></div>' +
             '<div id="results"></div>';
@@ -90,6 +126,10 @@ ui.onebar = base.extends('div', {
         this._tabs = $(this).tabs({
             disabled: [2],
             show: function(event, ui) { this._restoreScrollOffset(ui.index); },
+            select: function(event, ui) {
+                this._saveScrollOffset();
+                window.location.hash = ui.tab.hash;
+            }.bind(this)
         });
     },
     _saveScrollOffset: function() {
@@ -108,15 +148,6 @@ ui.onebar = base.extends('div', {
         }
 
         var self = this;
-        $('.ui-tabs-nav a').bind('mouseup', function(event) {
-            var href = event.target.getAttribute('href');
-            var hash = currentHash();
-            if (href != hash) {
-                self._saveScrollOffset();
-                window.location = href
-            }
-        });
-
         window.onhashchange = function(event) {
             var tabName = currentHash().substring(1);
             self._selectInternal(tabName);
@@ -129,9 +160,17 @@ ui.onebar = base.extends('div', {
             self._saveScrollOffset();
         };
     },
+    _setupLinkSettingHandler: function()
+    {
+        $('#new-window-for-links').attr('checked', ui.useNewWindowForLinks);
+        $('#new-window-for-links').change(function(event) {
+            ui.setUseNewWindowForLinks(this.checked);
+        });
+    },
     attach: function()
     {
         document.body.insertBefore(this, document.body.firstChild);
+        this._setupLinkSettingHandler();
         this._setupHistoryHandlers();
     },
     tabNamed: function(tabName)
@@ -295,7 +334,7 @@ ui.revisionDetails = base.extends('span', {
         builders.sort(function (a, b) { return parseInt(latestRevisions[b]) - parseInt(latestRevisions[a]);});
 
         var summaryNode = document.createElement('summary');
-        var summaryLinkNode = base.createLinkNode(trac.changesetURL(latestRevision), latestRevision);
+        var summaryLinkNode = ui.createLinkNode(trac.changesetURL(latestRevision), latestRevision);
         summaryNode.appendChild(summaryLinkNode);
 
         var revisionsTableNode = document.createElement('table');
@@ -303,7 +342,7 @@ ui.revisionDetails = base.extends('span', {
             var trNode = document.createElement('tr');
 
             var tdNode = document.createElement('td');
-            tdNode.appendChild(base.createLinkNode(ui.displayURLForBuilder(builderName), builderName.replace('WebKit ', '')));
+            tdNode.appendChild(ui.createLinkNode(ui.displayURLForBuilder(builderName), builderName.replace('WebKit ', '')));
             trNode.appendChild(tdNode);
 
             var tdNode = document.createElement('td');
@@ -337,18 +376,18 @@ ui.revisionDetails = base.extends('span', {
 
         var totRevision = model.latestRevision();
         theSpan.appendChild(document.createTextNode(', trunk is at '));
-        theSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), totRevision));
+        theSpan.appendChild(ui.createLinkNode(trac.changesetURL(totRevision), totRevision));
 
         checkout.lastBlinkRollRevision().then(function(revision) {
             theSpan.appendChild(document.createTextNode(', last roll is to '));
-            theSpan.appendChild(base.createLinkNode(trac.changesetURL(revision), revision));
+            theSpan.appendChild(ui.createLinkNode(trac.changesetURL(revision), revision));
         }, function() {});
 
         rollbot.fetchCurrentRoll().then(function(roll) {
             theSpan.appendChild(document.createTextNode(', current autoroll '));
             if (roll) {
                 var linkText = "" + roll.fromRevision + ":" + roll.toRevision;
-                theSpan.appendChild(base.createLinkNode(roll.url, linkText));
+                theSpan.appendChild(ui.createLinkNode(roll.url, linkText));
                 if (roll.isStopped)
                     theSpan.appendChild(document.createTextNode(' (STOPPED) '));
             } else {
