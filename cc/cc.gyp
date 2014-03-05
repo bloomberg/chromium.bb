@@ -21,6 +21,9 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
+      'variables': {
+        'optimize': 'max',
+      },
       'export_dependent_settings': [
         '<(DEPTH)/skia/skia.gyp:skia',
       ],
