@@ -165,7 +165,7 @@ static String escapeUnicodeNonCharacters(const String& str)
     StringBuilder dst;
     for (unsigned i = 0; i < str.length(); ++i) {
         UChar c = str[i];
-        if (c > 126) {
+        if (c >= 0xD800) {
             unsigned symbol = static_cast<unsigned>(c);
             String symbolCode = String::format("\\u%04X", symbol);
             dst.append(symbolCode);
