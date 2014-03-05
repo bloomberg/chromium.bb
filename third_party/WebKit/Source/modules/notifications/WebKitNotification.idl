@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NotificationPresenterImpl_h
-#define NotificationPresenterImpl_h
+[
+    WillBeGarbageCollected,
+    ActiveDOMObject,
+    Conditional=LEGACY_NOTIFICATIONS,
+    NoInterfaceObject,
+    RuntimeEnabled=Notifications,
+] interface WebKitNotification : EventTarget {
+    void show();
+    void cancel();
 
-#include "core/html/VoidCallback.h"
-#include "modules/notifications/NotificationClient.h"
+    attribute EventHandler ondisplay;
+    attribute EventHandler onerror;
+    attribute EventHandler onclose;
+    attribute EventHandler onclick;
 
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-
-namespace blink {
-
-class WebNotificationPresenter;
-
-class NotificationPresenterImpl FINAL : public WebCore::NotificationClient {
-public:
-    NotificationPresenterImpl() : m_presenter(0) { }
-
-    void initialize(WebNotificationPresenter* presenter);
-    bool isInitialized();
-
-    // WebCore::NotificationPresenter implementation.
-    virtual bool show(WebCore::NotificationBase*) OVERRIDE;
-    virtual void cancel(WebCore::NotificationBase*) OVERRIDE;
-    virtual void notificationObjectDestroyed(WebCore::NotificationBase*) OVERRIDE;
-    virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*) OVERRIDE;
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::VoidCallback>) OVERRIDE;
-#endif
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>) OVERRIDE;
-
-private:
-    // WebNotificationPresenter that this object delegates to.
-    WebNotificationPresenter* m_presenter;
+    attribute DOMString dir;
+    attribute DOMString replaceId;
 };
-
-} // namespace blink
-
-#endif // NotificationPresenterImpl_h

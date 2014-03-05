@@ -35,12 +35,34 @@
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/notifications/Notification.h"
+#include "modules/notifications/NotificationBase.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 
 namespace blink {
+
+#if ENABLE(LEGACY_NOTIFICATIONS)
+class VoidCallbackClient : public WebNotificationPermissionCallback {
+public:
+    explicit VoidCallbackClient(PassOwnPtr<VoidCallback> callback)
+        : m_callback(callback)
+    {
+    }
+
+    virtual void permissionRequestComplete()
+    {
+        if (m_callback)
+            m_callback->handleEvent();
+        delete this;
+    }
+
+private:
+    virtual ~VoidCallbackClient() { }
+
+    OwnPtr<VoidCallback> m_callback;
+};
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
 
 class NotificationPermissionCallbackClient : public WebNotificationPermissionCallback {
 public:
@@ -54,7 +76,7 @@ public:
     virtual void permissionRequestComplete()
     {
         if (m_callback)
-            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(m_presenter->checkPermission(WebSecurityOrigin(m_securityOrigin)))));
+            m_callback->handleEvent(NotificationBase::permissionString(static_cast<NotificationClient::Permission>(m_presenter->checkPermission(WebSecurityOrigin(m_securityOrigin)))));
         delete this;
     }
 
@@ -76,19 +98,19 @@ bool NotificationPresenterImpl::isInitialized()
     return !!m_presenter;
 }
 
-bool NotificationPresenterImpl::show(Notification* notification)
+bool NotificationPresenterImpl::show(NotificationBase* notification)
 {
-    return m_presenter->show(PassRefPtr<Notification>(notification));
+    return m_presenter->show(PassRefPtr<NotificationBase>(notification));
 }
 
-void NotificationPresenterImpl::cancel(Notification* notification)
+void NotificationPresenterImpl::cancel(NotificationBase* notification)
 {
-    m_presenter->cancel(PassRefPtr<Notification>(notification));
+    m_presenter->cancel(PassRefPtr<NotificationBase>(notification));
 }
 
-void NotificationPresenterImpl::notificationObjectDestroyed(Notification* notification)
+void NotificationPresenterImpl::notificationObjectDestroyed(NotificationBase* notification)
 {
-    m_presenter->objectDestroyed(PassRefPtr<Notification>(notification));
+    m_presenter->objectDestroyed(PassRefPtr<NotificationBase>(notification));
 }
 
 NotificationClient::Permission NotificationPresenterImpl::checkPermission(ExecutionContext* context)
@@ -96,6 +118,13 @@ NotificationClient::Permission NotificationPresenterImpl::checkPermission(Execut
     int result = m_presenter->checkPermission(WebSecurityOrigin(context->securityOrigin()));
     return static_cast<NotificationClient::Permission>(result);
 }
+
+#if ENABLE(LEGACY_NOTIFICATIONS)
+void NotificationPresenterImpl::requestPermission(ExecutionContext* context, PassOwnPtr<VoidCallback> callback)
+{
+    m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new VoidCallbackClient(callback));
+}
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
 
 void NotificationPresenterImpl::requestPermission(ExecutionContext* context, WTF::PassOwnPtr<NotificationPermissionCallback> callback)
 {

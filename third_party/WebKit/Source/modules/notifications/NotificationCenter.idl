@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2011, 2012 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NotificationPresenterImpl_h
-#define NotificationPresenterImpl_h
+[
+    WillBeGarbageCollected,
+    NoInterfaceObject,
+    Conditional=LEGACY_NOTIFICATIONS,
+    ActiveDOMObject
+] interface NotificationCenter {
+   [MeasureAs=LegacyTextNotifications, ActivityLogging=ForAllWorlds, RaisesException] WebKitNotification createNotification(DOMString iconUrl, DOMString title, DOMString body);
 
-#include "core/html/VoidCallback.h"
-#include "modules/notifications/NotificationClient.h"
-
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-
-namespace blink {
-
-class WebNotificationPresenter;
-
-class NotificationPresenterImpl FINAL : public WebCore::NotificationClient {
-public:
-    NotificationPresenterImpl() : m_presenter(0) { }
-
-    void initialize(WebNotificationPresenter* presenter);
-    bool isInitialized();
-
-    // WebCore::NotificationPresenter implementation.
-    virtual bool show(WebCore::NotificationBase*) OVERRIDE;
-    virtual void cancel(WebCore::NotificationBase*) OVERRIDE;
-    virtual void notificationObjectDestroyed(WebCore::NotificationBase*) OVERRIDE;
-    virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*) OVERRIDE;
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::VoidCallback>) OVERRIDE;
-#endif
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>) OVERRIDE;
-
-private:
-    // WebNotificationPresenter that this object delegates to.
-    WebNotificationPresenter* m_presenter;
+   long checkPermission();
+   void requestPermission(optional VoidCallback callback);
 };
 
-} // namespace blink
-
-#endif // NotificationPresenterImpl_h
