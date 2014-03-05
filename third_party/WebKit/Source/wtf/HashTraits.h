@@ -191,6 +191,12 @@ namespace WTF {
     };
 
     template<typename T> struct HashTraits<RawPtr<T> > : SimpleClassHashTraits<RawPtr<T> > {
+        typedef std::nullptr_t EmptyValueType;
+        static EmptyValueType emptyValue() { return nullptr; }
+
+        static const bool hasIsEmptyValueFunction = true;
+        static bool isEmptyValue(const RawPtr<T>& value) { return !value; }
+
         static const bool needsDestruction = false;
         typedef T* PeekInType;
         typedef T* PassInType;
@@ -207,7 +213,10 @@ namespace WTF {
         static void store(const U& value, RawPtr<T>& storage) { storage = value; }
 
         static PeekOutType peek(const RawPtr<T>& value) { return value; }
+        static PeekOutType peek(std::nullptr_t) { return 0; }
+
         static PassOutType passOut(const RawPtr<T>& value) { return value; }
+        static PassOutType passOut(std::nullptr_t) { return 0; }
     };
 
     template<> struct HashTraits<String> : SimpleClassHashTraits<String> {
