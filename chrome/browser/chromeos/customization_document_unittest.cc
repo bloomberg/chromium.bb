@@ -4,20 +4,32 @@
 
 #include "chrome/browser/chromeos/customization_document.h"
 
+#include "base/at_exit.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service_mock_factory.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/system/mock_statistics_provider.h"
+#include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Exactly;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::_;
 
 namespace {
@@ -66,6 +78,8 @@ const char kGoodServicesManifest[] =
     "    \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"\n"
     "  ]\n"
     "}";
+
+const char kDummyCustomizationID[] = "test-dummy";
 
 }  // anonymous namespace
 
@@ -156,6 +170,28 @@ void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher) {
   fetcher->set_response_headers(download_headers);
 }
 
+class MockExternalProviderVisitor
+    : public extensions::ExternalProviderInterface::VisitorInterface {
+ public:
+  MockExternalProviderVisitor() {}
+
+  MOCK_METHOD6(OnExternalExtensionFileFound,
+               bool(const std::string&,
+                    const base::Version*,
+                    const base::FilePath&,
+                    extensions::Manifest::Location,
+                    int,
+                    bool));
+  MOCK_METHOD5(OnExternalExtensionUpdateUrlFound,
+               bool(const std::string&,
+                    const GURL&,
+                    extensions::Manifest::Location,
+                    int,
+                    bool));
+  MOCK_METHOD1(OnExternalProviderReady,
+               void(const extensions::ExternalProviderInterface* provider));
+};
+
 class ServicesCustomizationDocumentTest : public testing::Test {
  protected:
   ServicesCustomizationDocumentTest()
@@ -168,24 +204,11 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(mock_statistics_provider_,
-        GetMachineStatistic(std::string("customization_id"), NotNull()))
-            .WillOnce(DoAll(SetArgumentPointee<1>(std::string("test-dummy")),
-                            Return(true)));
     chromeos::system::StatisticsProvider::SetTestProvider(
         &mock_statistics_provider_);
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     ServicesCustomizationDocument::RegisterPrefs(local_state_.registry());
-
-    GURL url("http://localhost:1080/test-dummy.json");
-    factory_.SetFakeResponse(url,
-                             kGoodServicesManifest,
-                             net::HTTP_OK,
-                             net::URLRequestStatus::SUCCESS);
-    EXPECT_CALL(url_callback_, OnRequestCreate(url, _))
-      .Times(Exactly(1))
-      .WillRepeatedly(Invoke(AddMimeHeader));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -194,18 +217,54 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
   void RunUntilIdle() {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void AddCustomizationIdToVp(const std::string& id) {
+    EXPECT_CALL(mock_statistics_provider_,
+        GetMachineStatistic(system::kCustomizationIdKey, NotNull()))
+            .WillOnce(DoAll(SetArgumentPointee<1>(id),
+                            Return(true)));
+  }
+
+  void AddExpectedManifest(const std::string& id,
+                           const std::string& manifest) {
+    GURL url(base::StringPrintf(ServicesCustomizationDocument::kManifestUrl,
+                                id.c_str()));
+    factory_.SetFakeResponse(url,
+                             manifest,
+                             net::HTTP_OK,
+                             net::URLRequestStatus::SUCCESS);
+    EXPECT_CALL(url_callback_, OnRequestCreate(url, _))
+      .Times(Exactly(1))
+      .WillRepeatedly(Invoke(AddMimeHeader));
+  }
+
+  scoped_ptr<TestingProfile> CreateProfile() {
+    TestingProfile::Builder profile_builder;
+    PrefServiceMockFactory factory;
+    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
+        new user_prefs::PrefRegistrySyncable);
+    scoped_ptr<PrefServiceSyncable> prefs(
+        factory.CreateSyncable(registry.get()));
+    chrome::RegisterUserProfilePrefs(registry.get());
+    profile_builder.SetPrefService(prefs.Pass());
+    return profile_builder.Build();
   }
 
  private:
   system::MockStatisticsProvider mock_statistics_provider_;
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple local_state_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
+  base::ShadowingAtExitManager at_exit_manager_;
 };
 
 TEST_F(ServicesCustomizationDocumentTest, Basic) {
+  AddCustomizationIdToVp(kDummyCustomizationID);
+  AddExpectedManifest(kDummyCustomizationID, kGoodServicesManifest);
+
   ServicesCustomizationDocument* doc =
       ServicesCustomizationDocument::GetInstance();
   EXPECT_FALSE(doc->IsReady());
@@ -223,6 +282,86 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
 
   EXPECT_EQ(default_apps[0], "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   EXPECT_EQ(default_apps[1], "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+}
+
+TEST_F(ServicesCustomizationDocumentTest, EmptyCustomization) {
+  ServicesCustomizationDocument* doc =
+      ServicesCustomizationDocument::GetInstance();
+  EXPECT_FALSE(doc->IsReady());
+
+  scoped_ptr<TestingProfile> profile = CreateProfile();
+  extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
+  EXPECT_TRUE(loader);
+
+  MockExternalProviderVisitor visitor;
+  scoped_ptr<extensions::ExternalProviderImpl> provider(
+      new extensions::ExternalProviderImpl(
+          &visitor,
+          loader,
+          profile.get(),
+          extensions::Manifest::EXTERNAL_PREF,
+          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+          extensions::Extension::FROM_WEBSTORE |
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
+
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalProviderReady(_))
+      .Times(1);
+
+  // Manually request a load.
+  loader->StartLoading();
+  Mock::VerifyAndClearExpectations(&visitor);
+
+  RunUntilIdle();
+  EXPECT_FALSE(doc->IsReady());
+}
+
+TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
+  AddCustomizationIdToVp(kDummyCustomizationID);
+  AddExpectedManifest(kDummyCustomizationID, kGoodServicesManifest);
+
+  ServicesCustomizationDocument* doc =
+      ServicesCustomizationDocument::GetInstance();
+  EXPECT_FALSE(doc->IsReady());
+
+  scoped_ptr<TestingProfile> profile = CreateProfile();
+  extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
+  EXPECT_TRUE(loader);
+
+  MockExternalProviderVisitor visitor;
+  scoped_ptr<extensions::ExternalProviderImpl> provider(
+      new extensions::ExternalProviderImpl(
+          &visitor,
+          loader,
+          profile.get(),
+          extensions::Manifest::EXTERNAL_PREF,
+          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+          extensions::Extension::FROM_WEBSTORE |
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT));
+
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalProviderReady(_))
+      .Times(1);
+
+  // Manually request a load.
+  loader->StartLoading();
+  Mock::VerifyAndClearExpectations(&visitor);
+
+  EXPECT_CALL(visitor, OnExternalExtensionFileFound(_, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(visitor, OnExternalExtensionUpdateUrlFound(_, _, _, _, _))
+      .Times(2);
+  EXPECT_CALL(visitor, OnExternalProviderReady(_))
+      .Times(1);
+
+  RunUntilIdle();
+  EXPECT_TRUE(doc->IsReady());
 }
 
 }  // namespace chromeos

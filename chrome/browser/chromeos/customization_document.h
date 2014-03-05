@@ -12,26 +12,38 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
+class Profile;
 
 namespace base {
 class DictionaryValue;
 class FilePath;
 }
 
+namespace extensions {
+class ExternalLoader;
+}
+
 namespace net {
 class URLFetcher;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 // This test is in global namespace so it must be declared here.
 void Test__InitStartupCustomizationDocument(const std::string& manifest);
 
 namespace chromeos {
+
+class ServicesCustomizationExternalLoader;
 
 namespace system {
 class StatisticsProvider;
@@ -133,17 +145,20 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Registers preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  static const char kManifestUrl[];
 
   // Return true if the customization was applied. Customization is applied only
   // once per machine.
-  static bool WasApplied();
+  static bool WasOOBECustomizationApplied();
 
   // Start fetching customization document.
   void StartFetching();
 
   // Apply customization and save in machine options that customization was
   // applied successfully. Return true if customization was applied.
-  bool ApplyMachineCustomization();
+  bool ApplyOOBECustomization();
 
   // Returns default wallpaper URL.
   GURL GetDefaultWallpaperUrl() const;
@@ -151,8 +166,15 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Returns list of default apps.
   bool GetDefaultApps(std::vector<std::string>* ids) const;
 
+  // Creates an extensions::ExternalLoader that will provide OEM default apps.
+  // Cache of OEM default apps stored in profile preferences.
+  extensions::ExternalLoader* CreateExternalLoader(Profile* profile);
+
  private:
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
+
+  typedef std::vector<base::WeakPtr<ServicesCustomizationExternalLoader> >
+      ExternalLoaders;
 
   // C-tor for singleton construction.
   ServicesCustomizationDocument();
@@ -177,6 +199,19 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Executes on FILE thread and reads file to string.
   void ReadFileInBackground(const base::FilePath& file);
 
+  // Called on UI thread with results of ReadFileInBackground.
+  void OnManifesteRead(const std::string& manifest);
+
+  // Method called when manifest was successfully loaded.
+  void OnManifestLoaded();
+
+  // Returns list of default apps in ExternalProvider format.
+  static scoped_ptr<base::DictionaryValue> GetDefaultAppsInProviderFormat(
+      const base::DictionaryValue& root);
+
+  // Update cached manifest for |profile|.
+  void UpdateCachedManifest(Profile* profile);
+
   // Services customization manifest URL.
   GURL url_;
 
@@ -188,6 +223,12 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // How many times we already tried to fetch customization manifest file.
   int num_retries_;
+
+  // Manifest fetch is already in progress.
+  bool fetch_started_;
+
+  // Known external loaders.
+  ExternalLoaders external_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesCustomizationDocument);
 };

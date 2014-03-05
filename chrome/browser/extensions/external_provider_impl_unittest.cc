@@ -22,6 +22,16 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
+#endif
+
+using ::testing::_;
+using ::testing::NotNull;
+using ::testing::Return;
 
 namespace extensions {
 
@@ -65,6 +75,12 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     cmdline->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
                                test_server_->GetURL(kManifestPath).spec());
+#if defined(OS_CHROMEOS)
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &mock_statistics_provider_);
+    EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
+        .WillRepeatedly(Return(false));
+#endif
   }
 
  private:
@@ -104,6 +120,9 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 
   scoped_ptr<EmbeddedTestServer> test_server_;
   scoped_ptr<ExtensionCacheFake> test_extension_cache_;
+#if defined(OS_CHROMEOS)
+  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplTest);
 };

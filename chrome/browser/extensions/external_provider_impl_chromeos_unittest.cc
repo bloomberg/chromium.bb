@@ -12,8 +12,15 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::_;
+using ::testing::NotNull;
+using ::testing::Return;
 
 namespace extensions {
 
@@ -48,10 +55,16 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
     external_externsions_overrides_.reset(
         new base::ScopedPathOverride(chrome::DIR_EXTERNAL_EXTENSIONS,
                                      data_dir_.Append("external")));
+
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &mock_statistics_provider_);
+    EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
+        .WillRepeatedly(Return(false));
   }
 
  private:
   scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
+  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplChromeOSTest);
 };
