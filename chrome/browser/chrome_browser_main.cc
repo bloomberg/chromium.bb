@@ -144,10 +144,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/metrics/thread_watcher_android.h"
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 #include "chrome/browser/sxs_linux.h"
@@ -1466,10 +1462,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Start watching all browser threads for responsiveness.
   MetricsService::SetExecutionPhase(MetricsService::THREAD_WATCHER_START);
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
-
-#if defined(OS_ANDROID)
-  ThreadWatcherAndroid::RegisterApplicationStatusListener();
-#endif
 
 #if !defined(DISABLE_NACL)
   if (parsed_command_line().HasSwitch(switches::kPnaclDir)) {
