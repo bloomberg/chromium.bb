@@ -19,8 +19,6 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libpng/libpng.gyp:libpng',
-        '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
         'events/events.gyp:events_base',
