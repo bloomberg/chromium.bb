@@ -77,9 +77,10 @@ private:
     Platform3DObject m_oldTextureUnitZeroId;
 };
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(blink::WebGraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
-    Extensions3DUtil extensionsUtil(context);
+    ASSERT(context);
+    Extensions3DUtil extensionsUtil(context.get());
     bool multisampleSupported = extensionsUtil.supportsExtension("GL_CHROMIUM_framebuffer_multisample")
         && extensionsUtil.supportsExtension("GL_OES_rgb8_rgba8");
     if (multisampleSupported) {
@@ -90,12 +91,13 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(blink::WebGraphicsContext3D* con
     if (packedDepthStencilSupported)
         extensionsUtil.ensureExtensionEnabled("GL_OES_packed_depth_stencil");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
+    if (!drawingBuffer->initialize(size))
+        return PassRefPtr<DrawingBuffer>();
     return drawingBuffer.release();
 }
 
-DrawingBuffer::DrawingBuffer(blink::WebGraphicsContext3D* context,
-    const IntSize& size,
+DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
     bool multisampleExtensionSupported,
     bool packedDepthStencilExtensionSupported,
     PreserveDrawingBuffer preserve,
@@ -124,12 +126,12 @@ DrawingBuffer::DrawingBuffer(blink::WebGraphicsContext3D* context,
     , m_colorFormat(0)
     , m_internalRenderbufferFormat(0)
     , m_maxTextureSize(0)
+    , m_sampleCount(0)
     , m_packAlignment(4)
     , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
-    initialize(size);
 }
 
 DrawingBuffer::~DrawingBuffer()
@@ -156,12 +158,12 @@ void DrawingBuffer::markLayerComposited()
 
 blink::WebGraphicsContext3D* DrawingBuffer::context()
 {
-    return m_context;
+    return m_context.get();
 }
 
 bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
-    if (!m_context || !m_contentsChanged)
+    if (!m_contentsChanged)
         return false;
 
     m_context->makeContextCurrent();
@@ -182,7 +184,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
     // We must restore the texture binding since creating new textures,
     // consuming and producing mailboxes changes it.
-    ScopedTextureUnit0BindingRestorer restorer(m_context, m_activeTextureUnit, m_texture2DBinding);
+    ScopedTextureUnit0BindingRestorer restorer(m_context.get(), m_activeTextureUnit, m_texture2DBinding);
 
     // First try to recycle an old buffer.
     RefPtr<MailboxInfo> frontColorBufferMailbox = recycledMailbox();
@@ -245,7 +247,7 @@ void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mail
 
 PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
 {
-    if (!m_context || m_recycledMailboxes.isEmpty())
+    if (m_recycledMailboxes.isEmpty())
         return PassRefPtr<MailboxInfo>();
 
     RefPtr<MailboxInfo> mailboxInfo = m_recycledMailboxes.last().release();
@@ -275,11 +277,10 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(unsigned 
     return returnMailbox.release();
 }
 
-void DrawingBuffer::initialize(const IntSize& size)
+bool DrawingBuffer::initialize(const IntSize& size)
 {
-    ASSERT(m_context);
     m_attributes = m_context->getContextAttributes();
-    Extensions3DUtil extensionsUtil(m_context);
+    Extensions3DUtil extensionsUtil(m_context.get());
 
     if (m_attributes.alpha) {
         m_internalColorFormat = GL_RGBA;
@@ -312,12 +313,12 @@ void DrawingBuffer::initialize(const IntSize& size)
     else
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
     createSecondaryBuffers();
-    reset(size);
+    return reset(size);
 }
 
 bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
-    if (!m_context || !m_context->makeContextCurrent())
+    if (!m_context->makeContextCurrent())
         return false;
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
@@ -363,9 +364,6 @@ Platform3DObject DrawingBuffer::framebuffer() const
 
 blink::WebLayer* DrawingBuffer::platformLayer()
 {
-    if (!m_context)
-        return 0;
-
     if (!m_layer) {
         m_layer = adoptPtr(blink::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
@@ -380,7 +378,7 @@ blink::WebLayer* DrawingBuffer::platformLayer()
 
 void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 {
-    if (!m_context || !m_context->makeContextCurrent() || m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
+    if (!m_context->makeContextCurrent() || m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
         return;
 
     if (!imageBuffer)
@@ -421,40 +419,37 @@ void DrawingBuffer::clearPlatformLayer()
     if (m_layer)
         m_layer->clearTexture();
 
-    if (m_context)
-        m_context->flush();
+    m_context->flush();
 }
 
 void DrawingBuffer::releaseResources()
 {
-    if (m_context) {
-        m_context->makeContextCurrent();
+    m_context->makeContextCurrent();
 
-        clearPlatformLayer();
+    clearPlatformLayer();
 
-        for (size_t i = 0; i < m_textureMailboxes.size(); i++)
-            m_context->deleteTexture(m_textureMailboxes[i]->textureId);
+    for (size_t i = 0; i < m_textureMailboxes.size(); i++)
+        m_context->deleteTexture(m_textureMailboxes[i]->textureId);
 
-        if (m_multisampleColorBuffer)
-            m_context->deleteRenderbuffer(m_multisampleColorBuffer);
+    if (m_multisampleColorBuffer)
+        m_context->deleteRenderbuffer(m_multisampleColorBuffer);
 
-        if (m_depthStencilBuffer)
-            m_context->deleteRenderbuffer(m_depthStencilBuffer);
+    if (m_depthStencilBuffer)
+        m_context->deleteRenderbuffer(m_depthStencilBuffer);
 
-        if (m_depthBuffer)
-            m_context->deleteRenderbuffer(m_depthBuffer);
+    if (m_depthBuffer)
+        m_context->deleteRenderbuffer(m_depthBuffer);
 
-        if (m_stencilBuffer)
-            m_context->deleteRenderbuffer(m_stencilBuffer);
+    if (m_stencilBuffer)
+        m_context->deleteRenderbuffer(m_stencilBuffer);
 
-        if (m_multisampleFBO)
-            m_context->deleteFramebuffer(m_multisampleFBO);
+    if (m_multisampleFBO)
+        m_context->deleteFramebuffer(m_multisampleFBO);
 
-        if (m_fbo)
-            m_context->deleteFramebuffer(m_fbo);
+    if (m_fbo)
+        m_context->deleteFramebuffer(m_fbo);
 
-        m_context = 0;
-    }
+    m_context.clear();
 
     setSize(IntSize());
 
@@ -479,9 +474,6 @@ void DrawingBuffer::releaseResources()
 
 unsigned DrawingBuffer::createColorTexture(const IntSize& size)
 {
-    if (!m_context)
-        return 0;
-
     unsigned offscreenColorTexture = m_context->createTexture();
     if (!offscreenColorTexture)
         return 0;
@@ -598,9 +590,6 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
 
 void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
 {
-    if (!m_context)
-        return;
-
     // We will clear the multisample FBO, but we also need to clear the non-multisampled buffer.
     if (m_multisampleFBO) {
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -668,11 +657,9 @@ IntSize DrawingBuffer::adjustSizeWithContextEviction(const IntSize& size, bool& 
     return adjustedSize;
 }
 
-void DrawingBuffer::reset(const IntSize& newSize)
+bool DrawingBuffer::reset(const IntSize& newSize)
 {
-    if (!m_context)
-        return;
-
+    ASSERT(!newSize.isEmpty());
     IntSize adjustedSize;
     bool evictContext = false;
     bool isNewContext = m_size.isEmpty();
@@ -682,7 +669,7 @@ void DrawingBuffer::reset(const IntSize& newSize)
         adjustedSize = adjustSize(newSize);
 
     if (adjustedSize.isEmpty())
-        return;
+        return false;
 
     if (evictContext)
         m_contextEvictionManager->forciblyLoseOldestContext("WARNING: WebGL contexts have exceeded the maximum allowed backbuffer area. Oldest context will be lost.");
@@ -700,7 +687,7 @@ void DrawingBuffer::reset(const IntSize& newSize)
         setSize(adjustedSize);
 
         if (adjustedSize.isEmpty())
-            return;
+            return false;
     }
 
     m_context->disable(GL_SCISSOR_TEST);
@@ -720,13 +707,11 @@ void DrawingBuffer::reset(const IntSize& newSize)
     }
 
     clearFramebuffers(clearMask);
+    return true;
 }
 
 void DrawingBuffer::commit(long x, long y, long width, long height)
 {
-    if (!m_context)
-        return;
-
     if (width < 0)
         width = m_size.width();
     if (height < 0)
@@ -754,7 +739,7 @@ void DrawingBuffer::commit(long x, long y, long width, long height)
 
 void DrawingBuffer::restoreFramebufferBinding()
 {
-    if (!m_context || !m_framebufferBinding)
+    if (!m_framebufferBinding)
         return;
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_framebufferBinding);
@@ -767,9 +752,6 @@ bool DrawingBuffer::multisample() const
 
 void DrawingBuffer::bind()
 {
-    if (!m_context)
-        return;
-
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
 }
 

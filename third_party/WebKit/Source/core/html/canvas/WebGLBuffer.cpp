@@ -41,7 +41,7 @@ WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
     , m_target(0)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->webGraphicsContext3D()->createBuffer());
+    setObject(ctx->webContext()->createBuffer());
 }
 
 WebGLBuffer::~WebGLBuffer()

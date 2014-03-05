@@ -94,7 +94,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     renderingContext->registerContextExtensions();
     renderingContext->suspendIfNeeded();
 
-    if (renderingContext->m_drawingBuffer->isZeroSized()) {
+    if (!renderingContext->m_drawingBuffer) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
         return nullptr;
     }
