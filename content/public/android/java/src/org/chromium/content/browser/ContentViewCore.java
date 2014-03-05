@@ -382,6 +382,9 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;
 
+    // Accessibility touch exploration state.
+    private boolean mTouchExplorationEnabled;
+
     // Allows us to dynamically respond when the accessibility script injection flag changes.
     private ContentObserver mAccessibilityScriptInjectionObserver;
 
@@ -1718,6 +1721,13 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
      */
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
+
+        // Work around Android bug where the x, y coordinates of a hover exit
+        // event are incorrect when touch exploration is on.
+        if (mTouchExplorationEnabled && event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+            return true;
+        }
+
         mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
         if (mBrowserAccessibilityManager != null) {
             return mBrowserAccessibilityManager.onHoverEvent(event);
@@ -2962,10 +2972,12 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
         if (!state) {
             setInjectedAccessibility(false);
             mNativeAccessibilityAllowed = false;
+            mTouchExplorationEnabled = false;
         } else {
             boolean useScriptInjection = isDeviceAccessibilityScriptInjectionEnabled();
             setInjectedAccessibility(useScriptInjection);
             mNativeAccessibilityAllowed = !useScriptInjection;
+            mTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
         }
     }
 
