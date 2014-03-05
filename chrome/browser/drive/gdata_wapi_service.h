@@ -184,6 +184,11 @@ class GDataWapiService : public DriveServiceInterface,
   virtual google_apis::CancelCallback GetRemainingResourceList(
       const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
+  virtual google_apis::CancelCallback AddPermission(
+      const std::string& resource_id,
+      const std::string& email,
+      google_apis::drive::PermissionRole role,
+      const google_apis::EntryActionCallback& callback) OVERRIDE;
 
  private:
   // AuthService::Observer override.

@@ -1556,4 +1556,16 @@ GURL FakeDriveService::GetNewUploadSessionUrl() {
               base::Int64ToString(next_upload_sequence_number_++));
 }
 
+google_apis::CancelCallback FakeDriveService::AddPermission(
+    const std::string& resource_id,
+    const std::string& email,
+    google_apis::drive::PermissionRole role,
+    const google_apis::EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  NOTREACHED();
+  return CancelCallback();
+}
+
 }  // namespace drive

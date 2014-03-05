@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "google_apis/drive/auth_service_interface.h"
 #include "google_apis/drive/base_requests.h"
+#include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
 namespace base {
@@ -433,6 +434,15 @@ class DriveServiceInterface {
   virtual google_apis::CancelCallback GetRemainingResourceList(
       const GURL& next_link,
       const google_apis::GetResourceListCallback& callback) = 0;
+
+  // Authorizes the account |email| to access |resource_id| as a |role|.
+  //
+  // |callback| must not be null.
+  virtual google_apis::CancelCallback AddPermission(
+      const std::string& resource_id,
+      const std::string& email,
+      google_apis::drive::PermissionRole role,
+      const google_apis::EntryActionCallback& callback) = 0;
 };
 
 }  // namespace drive

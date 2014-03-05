@@ -200,4 +200,10 @@ CancelCallback DummyDriveService::GetRemainingResourceList(
     const GURL& next_link,
     const GetResourceListCallback& callback) { return CancelCallback(); }
 
+CancelCallback DummyDriveService::AddPermission(
+    const std::string& resource_id,
+    const std::string& email,
+    google_apis::drive::PermissionRole role,
+    const EntryActionCallback& callback) { return CancelCallback(); }
+
 }  // namespace drive

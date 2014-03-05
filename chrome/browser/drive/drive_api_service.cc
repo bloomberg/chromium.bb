@@ -868,6 +868,25 @@ CancelCallback DriveAPIService::GetRemainingResourceList(
                                  callback));
 }
 
+google_apis::CancelCallback DriveAPIService::AddPermission(
+    const std::string& resource_id,
+    const std::string& email,
+    google_apis::drive::PermissionRole role,
+    const google_apis::EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  google_apis::drive::PermissionsInsertRequest* request =
+      new google_apis::drive::PermissionsInsertRequest(sender_.get(),
+                                                       url_generator_,
+                                                       callback);
+  request->set_id(resource_id);
+  request->set_role(role);
+  request->set_type(google_apis::drive::PERMISSION_TYPE_USER);
+  request->set_value(email);
+  return sender_->StartRequestWithRetry(request);
+}
+
 bool DriveAPIService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return sender_->auth_service()->HasAccessToken();

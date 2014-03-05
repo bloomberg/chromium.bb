@@ -621,6 +621,18 @@ CancelCallback GDataWapiService::GetRemainingResourceList(
                                  callback));
 }
 
+google_apis::CancelCallback GDataWapiService::AddPermission(
+    const std::string& resource_id,
+    const std::string& email,
+    google_apis::drive::PermissionRole role,
+    const google_apis::EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  NOTREACHED();
+  return CancelCallback();
+}
+
 bool GDataWapiService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
