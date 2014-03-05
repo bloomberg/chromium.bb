@@ -648,14 +648,8 @@ ChannelState WebSocketChannel::HandleFrame(
         "Masked frame from server");
   }
   const WebSocketFrameHeader::OpCode opcode = frame->header.opcode;
-  if (WebSocketFrameHeader::IsKnownControlOpCode(opcode) &&
-      !frame->header.final) {
-    return FailChannel(
-        base::StringPrintf("Received fragmented control frame: opcode = %d",
-                           opcode),
-        kWebSocketErrorProtocolError,
-        "Control message with FIN bit unset received");
-  }
+  DCHECK(!WebSocketFrameHeader::IsKnownControlOpCode(opcode) ||
+         frame->header.final);
   if (frame->header.reserved1 || frame->header.reserved2 ||
       frame->header.reserved3) {
     return FailChannel(base::StringPrintf(

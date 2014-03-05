@@ -1181,7 +1181,7 @@ TEST_F(WebSocketChannelDeletingTest, FailChannelDueToBadControlFrame) {
   scoped_ptr<ReadableFakeWebSocketStream> stream(
       new ReadableFakeWebSocketStream);
   static const InitFrame frames[] = {
-      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, NOT_MASKED, ""}};
+      {FINAL_FRAME, 0xF, NOT_MASKED, ""}};
   stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
   set_stream(stream.Pass());
   deleting_ = EVENT_ON_FAIL_CHANNEL;
@@ -1195,7 +1195,7 @@ TEST_F(WebSocketChannelDeletingTest, FailChannelDueToBadControlFrameNull) {
   scoped_ptr<ReadableFakeWebSocketStream> stream(
       new ReadableFakeWebSocketStream);
   static const InitFrame frames[] = {
-      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, NOT_MASKED, NULL}};
+      {FINAL_FRAME, 0xF, NOT_MASKED, NULL}};
   stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
   set_stream(stream.Pass());
   deleting_ = EVENT_ON_FAIL_CHANNEL;
@@ -1513,29 +1513,6 @@ TEST_F(WebSocketChannelEventInterfaceTest, NullMessage) {
       *event_interface_,
       OnDataFrame(true, WebSocketFrameHeader::kOpCodeText, AsVector("")));
   CreateChannelAndConnectSuccessfully();
-}
-
-// A control frame is not permitted to be split into multiple frames. RFC6455
-// 5.5 "All control frames ... MUST NOT be fragmented."
-TEST_F(WebSocketChannelEventInterfaceTest, MultiFrameControlMessageIsRejected) {
-  scoped_ptr<ReadableFakeWebSocketStream> stream(
-      new ReadableFakeWebSocketStream);
-  static const InitFrame frames[] = {
-      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodePing, NOT_MASKED, "Pi"},
-      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
-       NOT_MASKED,  "ng"}};
-  stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
-  set_stream(stream.Pass());
-  {
-    InSequence s;
-    EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
-    EXPECT_CALL(*event_interface_, OnFlowControl(_));
-    EXPECT_CALL(*event_interface_,
-                OnFailChannel("Received fragmented control frame: opcode = 9"));
-  }
-
-  CreateChannelAndConnectSuccessfully();
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Connection closed by the remote host without a closing handshake.
