@@ -22,6 +22,8 @@ namespace content {
 // and embedded worker.
 const static int kInvalidRequestId = -1;
 
+const static int kInvalidServiceWorkerProviderId = -1;
+
 // To dispatch fetch request from browser to child process.
 // TODO(kinuko): This struct will definitely need more fields and
 // we'll probably want to have response struct/class too.

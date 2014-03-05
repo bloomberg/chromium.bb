@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 
 namespace content {
@@ -14,6 +15,17 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
+}
+
+bool ServiceWorkerProviderHost::ShouldHandleRequest(
+    ResourceType::Type resource_type) const {
+  if (ServiceWorkerUtils::IsMainResourceType(resource_type))
+    return true;
+
+  if (associated_version())
+    return true;
+
+  return false;
 }
 
 }  // namespace content

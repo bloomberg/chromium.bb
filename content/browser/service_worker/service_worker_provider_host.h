@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "webkit/common/resource_type.h"
 
 namespace content {
 
@@ -16,7 +18,8 @@ class ServiceWorkerVersion;
 // object is tied to the lifetime of its document in the renderer process.
 // This class holds service worker state this is scoped to an individual
 // document.
-class ServiceWorkerProviderHost {
+class ServiceWorkerProviderHost
+    : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
   ServiceWorkerProviderHost(int process_id,
                             int provider_id);
@@ -30,6 +33,10 @@ class ServiceWorkerProviderHost {
   ServiceWorkerVersion* associated_version() const {
     return  associated_version_.get();
   }
+
+  // Returns true if this provider host should handle requests for
+  // |resource_type|.
+  bool ShouldHandleRequest(ResourceType::Type resource_type) const;
 
  private:
   const int process_id_;
