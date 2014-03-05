@@ -332,7 +332,7 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 }
 
 bool ChromeNativeAppWindowViews::ShouldUseNativeFrame() const {
-  return !IsFrameless() & !has_frame_color_;
+  return !IsFrameless() && !has_frame_color_;
 }
 
 void ChromeNativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
