@@ -2031,3 +2031,26 @@ MSVCR120.dll!snprintf_s
 *!testing::`anonymous namespace'::PrintBytesInObjectToImpl
 *!testing::internal2::operator<<<>
 *!testing_internal::DefaultPrintNonContainerTo<>
+
+UNINITIALIZED READ
+name=bug_347976
+osmesa.dll!unpack_RGB*888
+osmesa.dll!_mesa_unpack_rgba_row
+osmesa.dll!slow_read_rgba_pixels
+osmesa.dll!read_rgba_pixels
+osmesa.dll!_mesa_readpixels
+...
+gpu.dll!gpu::gles2::GLES2DecoderImpl::DoCommand
+gpu.dll!gpu::CommandParser::ProcessCommand
+gpu.dll!gpu::GpuScheduler::PutChanged
+
+UNINITIALIZED READ
+name=bug_347976,bug_348357
+osmesa.dll!clip_span
+osmesa.dll!_swrast_write_rgba_span
+osmesa.dll!general_triangle
+...
+gpu.dll!gpu::gles2::GLES2DecoderImpl::DoDrawElements
+gpu.dll!gpu::gles2::GLES2DecoderImpl::HandleDrawElements
+gpu.dll!gpu::gles2::GLES2DecoderImpl::DoCommand
+gpu.dll!gpu::CommandParser::ProcessCommand

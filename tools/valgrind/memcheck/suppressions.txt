@@ -6289,42 +6289,19 @@
    fun:_ZN50LoginDatabaseTest_UpdateIncompleteCredentials_Test8TestBodyEv
 }
 {
-   bug_347967_a
+   bug_347967
    Memcheck:Uninitialized
-   fun:unpack_RGBA8888
+   fun:unpack_RGB*888
    fun:_mesa_unpack_rgba_row
    fun:slow_read_rgba_pixels
    fun:read_rgba_pixels
    fun:_mesa_readpixels
-   fun:_mesa_ReadnPixelsARB
-   fun:_mesa_ReadPixels
-   fun:shared_dispatch_stub_256
-   fun:_ZN3gfx9GLApiBase14glReadPixelsFnEiiiijjPv
-   fun:_ZN3gpu5gles216GLES2DecoderImpl16HandleReadPixelsEjRKNS0_4cmds10ReadPixelsE
+   ...
+   fun:shared_dispatch_stub_*
+   ...
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
-   fun:_ZN3gpu22InProcessCommandBuffer12PumpCommandsEv
-}
-{
-   bug_347967_b
-   Memcheck:Uninitialized
-   fun:unpack_RGB888
-   fun:_mesa_unpack_rgba_row
-   fun:slow_read_rgba_pixels
-   fun:read_rgba_pixels
-   fun:_mesa_readpixels
-   fun:_mesa_meta_CopyTexSubImage
-   fun:copytexsubimage
-   fun:_mesa_CopyTexSubImage2D
-   fun:shared_dispatch_stub_326
-   fun:_ZN3gfx9GLApiBase21glCopyTexSubImage2DFnEjiiiiiii
-   fun:_ZN3gpu5gles216GLES2DecoderImpl19DoCopyTexSubImage2DEjiiiiiii
-   fun:_ZN3gpu5gles216GLES2DecoderImpl23HandleCopyTexSubImage2DEjRKNS0_4cmds17CopyTexSubImage2DE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
-   fun:_ZN3gpu22InProcessCommandBuffer12PumpCommandsEv
 }
 {
    bug_348629
