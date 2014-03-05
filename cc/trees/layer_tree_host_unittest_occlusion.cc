@@ -8,7 +8,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/occlusion_tracker_test_common.h"
+#include "cc/test/test_occlusion_tracker.h"
 
 namespace cc {
 namespace {
@@ -19,15 +19,14 @@ class TestLayer : public Layer {
     return make_scoped_refptr(new TestLayer());
   }
 
-  virtual bool Update(
-      ResourceUpdateQueue* update_queue,
-      const OcclusionTracker* occlusion) OVERRIDE {
+  virtual bool Update(ResourceUpdateQueue* update_queue,
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE {
     if (!occlusion)
       return false;
 
     // Gain access to internals of the OcclusionTracker.
-    const TestOcclusionTracker* test_occlusion =
-        static_cast<const TestOcclusionTracker*>(occlusion);
+    const TestOcclusionTracker<Layer>* test_occlusion =
+        static_cast<const TestOcclusionTracker<Layer>*>(occlusion);
     occlusion_ = UnionRegions(
         test_occlusion->occlusion_from_inside_target(),
         test_occlusion->occlusion_from_outside_target());

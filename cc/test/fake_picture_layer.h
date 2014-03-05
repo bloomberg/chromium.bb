@@ -31,7 +31,7 @@ class FakePictureLayer : public PictureLayer {
   }
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
 
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 

@@ -88,7 +88,7 @@ void ContentLayer::SetTexturePriorities(
 }
 
 bool ContentLayer::Update(ResourceUpdateQueue* queue,
-                          const OcclusionTracker* occlusion) {
+                          const OcclusionTracker<Layer>* occlusion) {
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);

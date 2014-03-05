@@ -54,6 +54,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/quad_culler.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -560,10 +561,11 @@ static DrawMode GetDrawMode(OutputSurface* output_surface) {
   }
 }
 
-static void AppendQuadsForLayer(RenderPass* target_render_pass,
-                                LayerImpl* layer,
-                                const OcclusionTrackerImpl& occlusion_tracker,
-                                AppendQuadsData* append_quads_data) {
+static void AppendQuadsForLayer(
+    RenderPass* target_render_pass,
+    LayerImpl* layer,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
+    AppendQuadsData* append_quads_data) {
   bool for_surface = false;
   QuadCuller quad_culler(&target_render_pass->quad_list,
                          &target_render_pass->shared_quad_state_list,
@@ -578,7 +580,7 @@ static void AppendQuadsForRenderSurfaceLayer(
     RenderPass* target_render_pass,
     LayerImpl* layer,
     const RenderPass* contributing_render_pass,
-    const OcclusionTrackerImpl& occlusion_tracker,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data) {
   bool for_surface = true;
   QuadCuller quad_culler(&target_render_pass->quad_list,
@@ -611,7 +613,7 @@ static void AppendQuadsToFillScreen(
     RenderPass* target_render_pass,
     LayerImpl* root_layer,
     SkColor screen_background_color,
-    const OcclusionTrackerImpl& occlusion_tracker) {
+    const OcclusionTracker<LayerImpl>& occlusion_tracker) {
   if (!root_layer || !SkColorGetA(screen_background_color))
     return;
 
@@ -747,7 +749,7 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       settings_.show_overdraw_in_tracing &&
       base::debug::TraceLog::GetInstance() &&
       base::debug::TraceLog::GetInstance()->IsEnabled();
-  OcclusionTrackerImpl occlusion_tracker(
+  OcclusionTracker<LayerImpl> occlusion_tracker(
       active_tree_->root_layer()->render_surface()->content_rect(),
       record_metrics_for_frame);
   occlusion_tracker.set_minimum_tracking_size(

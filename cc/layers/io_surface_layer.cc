@@ -41,7 +41,7 @@ void IOSurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
 }
 
 bool IOSurfaceLayer::Update(ResourceUpdateQueue* queue,
-                            const OcclusionTracker* occlusion) {
+                            const OcclusionTracker<Layer>* occlusion) {
   bool updated = Layer::Update(queue, occlusion);
 
   // This layer doesn't update any resources from the main thread side,

@@ -40,7 +40,6 @@
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -1329,7 +1328,7 @@ class ContentLayerWithUpdateTracking : public ContentLayer {
   void ResetPaintContentsCount() { paint_contents_count_ = 0; }
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE {
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE {
     bool updated = ContentLayer::Update(queue, occlusion);
     paint_contents_count_++;
     return updated;
@@ -2020,7 +2019,8 @@ class EvictionTestLayer : public Layer {
     return make_scoped_refptr(new EvictionTestLayer());
   }
 
-  virtual bool Update(ResourceUpdateQueue*, const OcclusionTracker*) OVERRIDE;
+  virtual bool Update(ResourceUpdateQueue*,
+                      const OcclusionTracker<Layer>*) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE { return true; }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -2081,7 +2081,7 @@ void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&) {
 }
 
 bool EvictionTestLayer::Update(ResourceUpdateQueue* queue,
-                               const OcclusionTracker*) {
+                               const OcclusionTracker<Layer>* occlusion) {
   CreateTextureIfNeeded();
   if (!texture_)
     return false;
@@ -4667,7 +4667,7 @@ class LayerSetsNeedsFilterContext : public Layer {
   }
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE {
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE {
     bool updated = Layer::Update(queue, occlusion);
     if (needs_context_) {
       layer_tree_host()->set_needs_filter_context();

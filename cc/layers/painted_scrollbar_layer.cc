@@ -202,7 +202,7 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
 }
 
 bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
-                                   const OcclusionTracker* occlusion) {
+                                   const OcclusionTracker<Layer>* occlusion) {
   UpdateThumbAndTrackGeometry();
 
   gfx::Rect track_layer_rect = gfx::Rect(location_, bounds());

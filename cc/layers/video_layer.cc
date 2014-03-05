@@ -23,7 +23,7 @@ scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 }
 
 bool VideoLayer::Update(ResourceUpdateQueue* queue,
-                        const OcclusionTracker* occlusion) {
+                        const OcclusionTracker<Layer>* occlusion) {
   bool updated = Layer::Update(queue, occlusion);
 
   // Video layer doesn't update any resources from the main thread side,

@@ -29,12 +29,12 @@ class RenderSurface;
 // be queried via surfaceOccluded() and surfaceUnoccludedContentRect(). Finally,
 // once finished with the layer, occlusion behind the layer should be marked by
 // calling MarkOccludedBehindLayer().
-template <typename LayerType, typename RenderSurfaceType>
-class CC_EXPORT OcclusionTrackerBase {
+template <typename LayerType>
+class CC_EXPORT OcclusionTracker {
  public:
-  OcclusionTrackerBase(const gfx::Rect& screen_space_clip_rect,
-                       bool record_metrics_for_frame);
-  ~OcclusionTrackerBase();
+  OcclusionTracker(const gfx::Rect& screen_space_clip_rect,
+                   bool record_metrics_for_frame);
+  ~OcclusionTracker();
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
   // traversal.
@@ -149,14 +149,12 @@ class CC_EXPORT OcclusionTrackerBase {
   std::vector<gfx::Rect>* occluding_screen_space_rects_;
   std::vector<gfx::Rect>* non_occluding_screen_space_rects_;
 
-  DISALLOW_COPY_AND_ASSIGN(OcclusionTrackerBase);
+  DISALLOW_COPY_AND_ASSIGN(OcclusionTracker);
 };
 
-typedef OcclusionTrackerBase<Layer, RenderSurface> OcclusionTracker;
-typedef OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl> OcclusionTrackerImpl;
 #if !defined(COMPILER_MSVC)
-extern template class OcclusionTrackerBase<Layer, RenderSurface>;
-extern template class OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>;
+extern template class OcclusionTracker<Layer>;
+extern template class OcclusionTracker<LayerImpl>;
 #endif
 
 }  // namespace cc

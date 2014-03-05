@@ -18,7 +18,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/occlusion_tracker_test_common.h"
+#include "cc/test/test_occlusion_tracker.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,18 +80,15 @@ static inline bool LayerImplDrawTransformIsUnknown(const LayerImpl* layer) {
   return false;
 }
 
-template <typename LayerType, typename RenderSurfaceType>
-class TestOcclusionTrackerWithClip
-    : public TestOcclusionTrackerBase<LayerType, RenderSurfaceType> {
+template <typename LayerType>
+class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
  public:
   TestOcclusionTrackerWithClip(const gfx::Rect& viewport_rect,
                                bool record_metrics_for_frame)
-      : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(
-            viewport_rect,
-            record_metrics_for_frame) {}
+      : TestOcclusionTracker<LayerType>(viewport_rect,
+                                        record_metrics_for_frame) {}
   explicit TestOcclusionTrackerWithClip(const gfx::Rect& viewport_rect)
-      : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(viewport_rect,
-                                                               false) {}
+      : TestOcclusionTracker<LayerType>(viewport_rect, false) {}
 
   bool OccludedLayer(const LayerType* layer,
                      const gfx::Rect& content_rect) const {
@@ -123,7 +120,7 @@ struct OcclusionTrackerTestMainThreadTypes {
   typedef scoped_refptr<Layer> LayerPtrType;
   typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
   typedef LayerIterator<Layer> TestLayerIterator;
-  typedef OcclusionTracker OcclusionTrackerType;
+  typedef OcclusionTracker<Layer> OcclusionTrackerType;
 
   static LayerPtrType CreateLayer(HostType*  host) { return Layer::Create(); }
   static ContentLayerPtrType CreateContentLayer(HostType* host) {
@@ -153,7 +150,7 @@ struct OcclusionTrackerTestImplThreadTypes {
   typedef scoped_ptr<LayerImpl> LayerPtrType;
   typedef scoped_ptr<ContentLayerType> ContentLayerPtrType;
   typedef LayerIterator<LayerImpl> TestLayerIterator;
-  typedef OcclusionTrackerImpl OcclusionTrackerType;
+  typedef OcclusionTracker<LayerImpl> OcclusionTrackerType;
 
   static LayerPtrType CreateLayer(HostType* host) {
     return LayerImpl::Create(host, next_layer_impl_id++);
@@ -545,8 +542,7 @@ class OcclusionTrackerTestIdentityTransforms
     parent->SetMasksToBounds(true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000), false);
 
     this->VisitLayer(layer, &occlusion);
@@ -612,8 +608,7 @@ class OcclusionTrackerTestQuadsMismatchLayer
         layer1, layer_transform, gfx::PointF(), gfx::Size(50, 50), true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer2, &occlusion);
@@ -679,8 +674,7 @@ class OcclusionTrackerTestRotatedChild : public OcclusionTrackerTest<Types> {
     parent->SetMasksToBounds(true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer, &occlusion);
@@ -750,8 +744,7 @@ class OcclusionTrackerTestTranslatedChild : public OcclusionTrackerTest<Types> {
     parent->SetMasksToBounds(true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer, &occlusion);
@@ -822,8 +815,7 @@ class OcclusionTrackerTestChildInRotatedChild
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer, &occlusion);
@@ -929,8 +921,7 @@ class OcclusionTrackerTestScaledRenderSurface
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(occluder, &occlusion);
@@ -994,8 +985,7 @@ class OcclusionTrackerTestVisitTargetTwoTimes
                                  true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(child2, &occlusion);
@@ -1161,8 +1151,7 @@ class OcclusionTrackerTestSurfaceRotatedOffAxis
         child, layer_transform, gfx::PointF(), gfx::Size(500, 500), true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     gfx::Rect clipped_layer_in_child = MathUtil::MapEnclosingClippedRect(
@@ -1231,8 +1220,7 @@ class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren
                                  true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer2, &occlusion);
@@ -1351,8 +1339,7 @@ class OcclusionTrackerTestOverlappingSurfaceSiblings
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer2, &occlusion);
@@ -1472,8 +1459,7 @@ class OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer2, &occlusion);
@@ -1596,8 +1582,7 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest<Types> {
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // Opacity layer won't contribute to occlusion.
@@ -1668,8 +1653,7 @@ class OcclusionTrackerTestReplicaDoesOcclude
         surface, this->identity_matrix, gfx::PointF(50.f, 50.f), gfx::Size());
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(surface, &occlusion);
@@ -1710,8 +1694,7 @@ class OcclusionTrackerTestReplicaWithClipping
         surface, this->identity_matrix, gfx::PointF(50.f, 50.f), gfx::Size());
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(surface, &occlusion);
@@ -1751,8 +1734,7 @@ class OcclusionTrackerTestReplicaWithMask : public OcclusionTrackerTest<Types> {
     this->CreateMaskLayer(replica, gfx::Size(10, 10));
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(surface, &occlusion);
@@ -1789,8 +1771,7 @@ class OcclusionTrackerTestOpaqueContentsRegionEmpty
                                    false);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
     this->EnterLayer(layer, &occlusion);
 
@@ -1826,8 +1807,7 @@ class OcclusionTrackerTestOpaqueContentsRegionNonEmpty
                                  false);
     this->CalcDrawEtc(parent);
     {
-      TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                   typename Types::RenderSurfaceType> occlusion(
+      TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
           gfx::Rect(0, 0, 1000, 1000));
       layer->SetOpaqueContentsRect(gfx::Rect(0, 0, 100, 100));
 
@@ -1846,8 +1826,7 @@ class OcclusionTrackerTestOpaqueContentsRegionNonEmpty
           occlusion.OccludedLayer(parent, gfx::Rect(200, 200, 100, 100)));
     }
     {
-      TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                   typename Types::RenderSurfaceType> occlusion(
+      TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
           gfx::Rect(0, 0, 1000, 1000));
       layer->SetOpaqueContentsRect(gfx::Rect(20, 20, 180, 180));
 
@@ -1866,8 +1845,7 @@ class OcclusionTrackerTestOpaqueContentsRegionNonEmpty
           occlusion.OccludedLayer(parent, gfx::Rect(200, 200, 100, 100)));
     }
     {
-      TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                   typename Types::RenderSurfaceType> occlusion(
+      TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
           gfx::Rect(0, 0, 1000, 1000));
       layer->SetOpaqueContentsRect(gfx::Rect(150, 150, 100, 100));
 
@@ -1911,8 +1889,7 @@ class OcclusionTrackerTest3dTransform : public OcclusionTrackerTest<Types> {
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
     this->EnterLayer(layer, &occlusion);
 
@@ -1962,8 +1939,7 @@ class OcclusionTrackerTestUnsorted3dLayers
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
     this->VisitLayer(child2, &occlusion);
     EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
@@ -2009,8 +1985,7 @@ class OcclusionTrackerTestPerspectiveTransform
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
     this->EnterLayer(layer, &occlusion);
 
@@ -2054,8 +2029,7 @@ class OcclusionTrackerTestPerspectiveTransformBehindCamera
     layer->SetIs3dSorted(true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
     this->EnterLayer(layer, &occlusion);
 
@@ -2098,8 +2072,7 @@ class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude
     layer->SetIs3dSorted(true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // The |layer| is entirely behind the camera and should not occlude.
@@ -2140,8 +2113,7 @@ class OcclusionTrackerTestLargePixelsOccludeInsideClipRect
     layer->SetIs3dSorted(true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // This is very close to the camera, so pixels in its visible_content_rect()
@@ -2225,8 +2197,7 @@ class OcclusionTrackerTestAnimationOpacity1OnMainThread
     EXPECT_FALSE(surface->draw_opacity_is_animating());
     EXPECT_TRUE(surface->render_surface()->draw_opacity_is_animating());
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(topmost, &occlusion);
@@ -2346,8 +2317,7 @@ class OcclusionTrackerTestAnimationOpacity0OnMainThread
     EXPECT_FALSE(surface->draw_opacity_is_animating());
     EXPECT_TRUE(surface->render_surface()->draw_opacity_is_animating());
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(topmost, &occlusion);
@@ -2468,8 +2438,7 @@ class OcclusionTrackerTestAnimationTranslateOnMainThread
     EXPECT_TRUE(surface_child->draw_transform_is_animating());
     EXPECT_TRUE(surface_child->screen_space_transform_is_animating());
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(surface2, &occlusion);
@@ -2590,8 +2559,7 @@ class OcclusionTrackerTestSurfaceOcclusionTranslatesToParent
     surface2->SetOpaqueContentsRect(gfx::Rect(0, 0, 200, 200));
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(surface2, &occlusion);
@@ -2639,8 +2607,7 @@ class OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping
     surface->SetOpaqueContentsRect(gfx::Rect(0, 0, 400, 200));
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(surface, &occlusion);
@@ -2682,8 +2649,7 @@ class OcclusionTrackerTestReplicaOccluded : public OcclusionTrackerTest<Types> {
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // |topmost| occludes the replica, but not the surface itself.
@@ -2740,8 +2706,7 @@ class OcclusionTrackerTestSurfaceWithReplicaUnoccluded
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // |topmost| occludes the surface, but not the entire surface's replica.
@@ -2804,8 +2769,7 @@ class OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // These occlude the surface and replica differently, so we can test each
@@ -2870,8 +2834,7 @@ class OcclusionTrackerTestSurfaceChildOfSurface
         parent, this->identity_matrix, gfx::PointF(), gfx::Size(100, 50), true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(-100, -100, 1000, 1000));
 
     // |topmost| occludes everything partially so we know occlusion is happening
@@ -2948,8 +2911,7 @@ class OcclusionTrackerTestTopmostSurfaceIsClippedToViewport
     this->CalcDrawEtc(parent);
     {
       // Make a viewport rect that is larger than the root layer.
-      TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                   typename Types::RenderSurfaceType> occlusion(
+      TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
           gfx::Rect(0, 0, 1000, 1000));
 
       this->VisitLayer(surface, &occlusion);
@@ -2966,8 +2928,7 @@ class OcclusionTrackerTestTopmostSurfaceIsClippedToViewport
     this->ResetLayerIterator();
     {
       // Make a viewport rect that is smaller than the root layer.
-      TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                   typename Types::RenderSurfaceType> occlusion(
+      TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
           gfx::Rect(0, 0, 100, 100));
 
       this->VisitLayer(surface, &occlusion);
@@ -3016,8 +2977,7 @@ class OcclusionTrackerTestSurfaceChildOfClippingSurface
         parent, this->identity_matrix, gfx::PointF(), gfx::Size(100, 50), true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // |topmost| occludes everything partially so we know occlusion is happening
@@ -3120,8 +3080,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // These layers occlude pixels directly beside the filtered_surface. Because
@@ -3264,8 +3223,7 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
 
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(occluding_layer_above, &occlusion);
@@ -3345,8 +3303,7 @@ class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     // The surface has a background blur, so it blurs non-opaque pixels below
@@ -3413,8 +3370,7 @@ class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(occluding_layer, &occlusion);
@@ -3515,8 +3471,7 @@ class OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded
 
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(beside_replica_layer, &occlusion);
@@ -3589,8 +3544,7 @@ class OcclusionTrackerTestMinimumTrackingSize
                                  true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
     occlusion.set_minimum_tracking_size(tracking_size);
 
@@ -3637,8 +3591,7 @@ class OcclusionTrackerTestScaledLayerIsClipped
         scale, this->identity_matrix, gfx::PointF(), gfx::Size(500, 500), true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(scaled, &occlusion);
@@ -3677,8 +3630,7 @@ class OcclusionTrackerTestScaledLayerInSurfaceIsClipped
         scale, this->identity_matrix, gfx::PointF(), gfx::Size(500, 500), true);
     this->CalcDrawEtc(parent);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(scaled, &occlusion);
@@ -3718,8 +3670,7 @@ class OcclusionTrackerTestCopyRequestDoesOcclude
         true);
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(copy_child, &occlusion);
@@ -3767,8 +3718,7 @@ class OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude
 
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(copy_child, &occlusion);
@@ -3807,8 +3757,7 @@ class OcclusionTrackerTestEmptyEventLayerDoesNotOcclude
 
     this->CalcDrawEtc(root);
 
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
+    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
         gfx::Rect(0, 0, 1000, 1000), false);
 
     this->VisitLayer(empty_layer, &occlusion);

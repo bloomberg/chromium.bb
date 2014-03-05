@@ -24,7 +24,6 @@
 #include "cc/layers/paint_properties.h"
 #include "cc/layers/render_surface.h"
 #include "cc/output/filter_operations.h"
-#include "cc/trees/occlusion_tracker.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -61,6 +60,8 @@ class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
 struct AnimationEvent;
+template <typename LayerType>
+class OcclusionTracker;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
@@ -352,7 +353,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void SavePaintProperties();
   // Returns true iff any resources were updated that need to be committed.
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion);
+                      const OcclusionTracker<Layer>* occlusion);
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}

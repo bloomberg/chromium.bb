@@ -138,7 +138,7 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
 

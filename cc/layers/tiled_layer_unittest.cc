@@ -22,6 +22,7 @@
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
@@ -30,7 +31,7 @@
 namespace cc {
 namespace {
 
-class TestOcclusionTracker : public OcclusionTracker {
+class TestOcclusionTracker : public OcclusionTracker<Layer> {
  public:
   TestOcclusionTracker() : OcclusionTracker(gfx::Rect(0, 0, 1000, 1000), true) {
     stack_.push_back(StackObject());

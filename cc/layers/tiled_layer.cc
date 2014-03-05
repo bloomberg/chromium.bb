@@ -17,6 +17,7 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/priority_calculator.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -326,7 +327,7 @@ bool TiledLayer::UpdateTiles(int left,
                              int right,
                              int bottom,
                              ResourceUpdateQueue* queue,
-                             const OcclusionTracker* occlusion,
+                             const OcclusionTracker<Layer>* occlusion,
                              bool* updated) {
   CreateUpdaterIfNeeded();
 
@@ -358,7 +359,7 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
     int top,
     int right,
     int bottom,
-    const OcclusionTracker* occlusion) {
+    const OcclusionTracker<Layer>* occlusion) {
   // There is some difficult dependancies between occlusions, recording
   // occlusion metrics and requesting memory so those are encapsulated in this
   // function: - We only want to call RequestLate on unoccluded textures (to
@@ -477,7 +478,7 @@ void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
                                     int right,
                                     int bottom,
                                     ResourceUpdateQueue* queue,
-                                    const OcclusionTracker* occlusion) {
+                                    const OcclusionTracker<Layer>* occlusion) {
   // The update_rect should be in layer space. So we have to convert the
   // paint_rect from content space to layer space.
   float width_scale =
@@ -732,7 +733,7 @@ void TiledLayer::UpdateScrollPrediction() {
 }
 
 bool TiledLayer::Update(ResourceUpdateQueue* queue,
-                        const OcclusionTracker* occlusion) {
+                        const OcclusionTracker<Layer>* occlusion) {
   DCHECK(!skips_draw_ && !failed_update_);  // Did ResetUpdateState get skipped?
 
   // Tiled layer always causes commits to wait for activation, as it does

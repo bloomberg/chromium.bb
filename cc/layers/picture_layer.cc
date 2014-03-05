@@ -81,7 +81,7 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
 }
 
 bool PictureLayer::Update(ResourceUpdateQueue* queue,
-                          const OcclusionTracker* occlusion) {
+                          const OcclusionTracker<Layer>* occlusion) {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue, occlusion);
 

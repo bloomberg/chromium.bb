@@ -35,7 +35,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
       OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
   virtual void OnOutputSurfaceCreated() OVERRIDE;
 
  protected:
@@ -85,18 +85,19 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   bool TileOnlyNeedsPartialUpdate(UpdatableTile* tile);
   bool TileNeedsBufferedUpdate(UpdatableTile* tile);
 
-  void MarkOcclusionsAndRequestTextures(int left,
-                                        int top,
-                                        int right,
-                                        int bottom,
-                                        const OcclusionTracker* occlusion);
+  void MarkOcclusionsAndRequestTextures(
+      int left,
+      int top,
+      int right,
+      int bottom,
+      const OcclusionTracker<Layer>* occlusion);
 
   bool UpdateTiles(int left,
                    int top,
                    int right,
                    int bottom,
                    ResourceUpdateQueue* queue,
-                   const OcclusionTracker* occlusion,
+                   const OcclusionTracker<Layer>* occlusion,
                    bool* did_paint);
   bool HaveTexturesForTiles(int left,
                             int top,
@@ -117,7 +118,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
                           int right,
                           int bottom,
                           ResourceUpdateQueue* queue,
-                          const OcclusionTracker* occlusion);
+                          const OcclusionTracker<Layer>* occlusion);
   void UpdateScrollPrediction();
 
   UpdatableTile* TileAt(int i, int j) const;

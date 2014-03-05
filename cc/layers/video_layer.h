@@ -25,7 +25,8 @@ class CC_EXPORT VideoLayer : public Layer {
       OVERRIDE;
 
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
+
  private:
   explicit VideoLayer(VideoFrameProvider* provider);
   virtual ~VideoLayer();

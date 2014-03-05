@@ -71,8 +71,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   SetTestName("unoccluded_content_rect_fully_occluded");
 
   gfx::Rect viewport_rect(768, 1038);
-  OcclusionTrackerBase<LayerImpl, LayerImpl::RenderSurfaceType> tracker(
-      viewport_rect, false);
+  OcclusionTracker<LayerImpl> tracker(viewport_rect, false);
 
   CreateHost();
   host_impl_->SetViewportSize(viewport_rect.size());
@@ -140,8 +139,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
   SetTestName("unoccluded_content_rect_10_opaque_layers");
 
   gfx::Rect viewport_rect(768, 1038);
-  OcclusionTrackerBase<LayerImpl, LayerImpl::RenderSurfaceType> tracker(
-      viewport_rect, false);
+  OcclusionTracker<LayerImpl> tracker(viewport_rect, false);
 
   CreateHost();
   host_impl_->SetViewportSize(viewport_rect.size());

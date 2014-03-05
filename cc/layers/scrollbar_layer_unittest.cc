@@ -24,6 +24,7 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -651,7 +652,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
     ResourceUpdateQueue queue;
-    OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+    OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
 
     scrollbar_layer->SavePaintProperties();
     for (int update_counter = 0; update_counter < num_updates; update_counter++)
@@ -737,7 +738,7 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
     ResourceUpdateQueue queue;
-    OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+    OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
     scrollbar_layer->SavePaintProperties();
     scrollbar_layer->Update(&queue, &occlusion_tracker);
 
@@ -813,7 +814,7 @@ class ScaledScrollbarLayerTestScaledRasterization : public testing::Test {
                   scaled_size.height());
 
     ResourceUpdateQueue queue;
-    OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+    OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
     scrollbar_layer->SavePaintProperties();
 
     scrollbar_layer->Update(&queue, &occlusion_tracker);

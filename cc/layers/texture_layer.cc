@@ -217,7 +217,7 @@ bool TextureLayer::DrawsContent() const {
 }
 
 bool TextureLayer::Update(ResourceUpdateQueue* queue,
-                          const OcclusionTracker* occlusion) {
+                          const OcclusionTracker<Layer>* occlusion) {
   bool updated = Layer::Update(queue, occlusion);
   if (client_) {
     if (uses_mailbox_) {

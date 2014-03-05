@@ -26,7 +26,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
       OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion) OVERRIDE;
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* impl) OVERRIDE;
 
   // Set the size at which the frame should be displayed, with the origin at the

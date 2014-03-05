@@ -113,7 +113,7 @@ static bool FrameDataRequiresFilterContext(const DelegatedFrameData* frame) {
 }
 
 bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,
-                                    const OcclusionTracker* occlusion) {
+                                    const OcclusionTracker<Layer>* occlusion) {
   bool updated = Layer::Update(queue, occlusion);
   if (!should_collect_new_frame_)
     return updated;

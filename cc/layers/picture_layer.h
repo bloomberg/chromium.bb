@@ -30,9 +30,8 @@ class CC_EXPORT PictureLayer : public Layer {
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void SetNeedsDisplayRect(const gfx::RectF& layer_rect) OVERRIDE;
-  virtual bool Update(
-      ResourceUpdateQueue* queue,
-      const OcclusionTracker* occlusion) OVERRIDE;
+  virtual bool Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker<Layer>* occlusion) OVERRIDE;
   virtual void SetIsMask(bool is_mask) OVERRIDE;
   virtual bool SupportsLCDText() const OVERRIDE;
   virtual skia::RefPtr<SkPicture> GetPicture() const OVERRIDE;

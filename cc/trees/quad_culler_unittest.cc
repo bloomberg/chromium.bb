@@ -17,7 +17,7 @@
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/occlusion_tracker_test_common.h"
+#include "cc/test/test_occlusion_tracker.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,18 +26,6 @@
 
 namespace cc {
 namespace {
-
-class TestOcclusionTrackerImpl
-    : public TestOcclusionTrackerBase<LayerImpl, RenderSurfaceImpl> {
- public:
-  TestOcclusionTrackerImpl(const gfx::Rect& scissor_rect_in_screen,
-                           bool record_metrics_for_frame = true)
-      : TestOcclusionTrackerBase(scissor_rect_in_screen,
-                                 record_metrics_for_frame) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestOcclusionTrackerImpl);
-};
 
 typedef LayerIterator<LayerImpl> LayerIteratorType;
 
@@ -104,7 +92,7 @@ class QuadCullerTest : public testing::Test {
                    SharedQuadStateList* shared_state_list,
                    TiledLayerImpl* layer,
                    LayerIteratorType* it,
-                   OcclusionTrackerImpl* occlusion_tracker) {
+                   OcclusionTracker<LayerImpl>* occlusion_tracker) {
     occlusion_tracker->EnterLayer(*it);
     QuadCuller quad_culler(
         quad_list, shared_state_list, layer, *occlusion_tracker, false, false);
@@ -150,7 +138,9 @@ TEST_F(QuadCullerTest, NoCulling) {
                                                      false,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -190,7 +180,9 @@ TEST_F(QuadCullerTest, CullChildLinesUpTopLeft) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -230,7 +222,9 @@ TEST_F(QuadCullerTest, CullWhenChildOpacityNotOne) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -270,7 +264,9 @@ TEST_F(QuadCullerTest, CullWhenChildOpaqueFlagFalse) {
                                                      false,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -311,7 +307,9 @@ TEST_F(QuadCullerTest, CullCenterTileOnly) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -377,7 +375,9 @@ TEST_F(QuadCullerTest, CullCenterTileNonIntegralSize1) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -428,7 +428,9 @@ TEST_F(QuadCullerTest, CullCenterTileNonIntegralSize2) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -469,7 +471,9 @@ TEST_F(QuadCullerTest, CullChildLinesUpBottomRight) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -514,7 +518,9 @@ TEST_F(QuadCullerTest, CullSubRegion) {
                                                      false,
                                                      child_opaque_rect,
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -560,7 +566,9 @@ TEST_F(QuadCullerTest, CullSubRegion2) {
                                                      false,
                                                      child_opaque_rect,
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -606,7 +614,9 @@ TEST_F(QuadCullerTest, CullSubRegionCheckOvercull) {
                                                      false,
                                                      child_opaque_rect,
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -650,7 +660,9 @@ TEST_F(QuadCullerTest, NonAxisAlignedQuadsDontOcclude) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -699,7 +711,9 @@ TEST_F(QuadCullerTest, NonAxisAlignedQuadsSafelyCulled) {
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -739,8 +753,8 @@ TEST_F(QuadCullerTest, WithoutMetrics) {
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
   bool record_metrics = false;
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(-100, -100, 1000, 1000),
-                                             record_metrics);
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(
+      gfx::Rect(-100, -100, 1000, 1000), record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -773,7 +787,9 @@ TEST_F(QuadCullerTest, PartialCullingNotDestroyed) {
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
 
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(gfx::Rect(1000, 1000),
+                                                    record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   QuadCuller culler(&quad_list,
@@ -847,7 +863,9 @@ TEST_F(QuadCullerTest, PartialCullingWithOcclusionNotDestroyed) {
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
 
-  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(1000, 1000));
+  bool record_metrics = true;
+  TestOcclusionTracker<LayerImpl> occlusion_tracker(gfx::Rect(1000, 1000),
+                                                    record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   QuadCuller culler(&quad_list,

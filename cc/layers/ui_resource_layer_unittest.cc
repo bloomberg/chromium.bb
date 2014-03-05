@@ -58,7 +58,7 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   ResourceUpdateQueue queue;
-  OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+  OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
   test_layer->SavePaintProperties();
   test_layer->Update(&queue, &occlusion_tracker);
 
@@ -86,7 +86,7 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   ResourceUpdateQueue queue;
-  OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+  OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
   test_layer->SavePaintProperties();
   test_layer->Update(&queue, &occlusion_tracker);
 

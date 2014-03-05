@@ -41,7 +41,7 @@ void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
 }
 
 bool ImageLayer::Update(ResourceUpdateQueue* queue,
-                        const OcclusionTracker* occlusion) {
+                        const OcclusionTracker<Layer>* occlusion) {
   CreateUpdaterIfNeeded();
   if (!updater_->UsingBitmap(bitmap_)) {
     updater_->SetBitmap(bitmap_);

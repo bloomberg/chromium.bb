@@ -12,15 +12,15 @@
 namespace cc {
 class LayerImpl;
 class RenderSurfaceImpl;
-template <typename LayerType, typename SurfaceType> class OcclusionTrackerBase;
+template <typename LayerType>
+class OcclusionTracker;
 
 class CC_EXPORT QuadCuller : public QuadSink {
  public:
   QuadCuller(QuadList* quad_list,
              SharedQuadStateList* shared_quad_state_list,
              const LayerImpl* layer,
-             const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>&
-                 occlusion_tracker,
+             const OcclusionTracker<LayerImpl>& occlusion_tracker,
              bool show_culling_with_debug_border_quads,
              bool for_surface);
   virtual ~QuadCuller() {}
@@ -35,7 +35,7 @@ class CC_EXPORT QuadCuller : public QuadSink {
   QuadList* quad_list_;
   SharedQuadStateList* shared_quad_state_list_;
   const LayerImpl* layer_;
-  const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>& occlusion_tracker_;
+  const OcclusionTracker<LayerImpl>& occlusion_tracker_;
 
   SharedQuadState* current_shared_quad_state_;
   bool show_culling_with_debug_border_quads_;

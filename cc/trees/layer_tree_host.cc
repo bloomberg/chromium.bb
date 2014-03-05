@@ -989,7 +989,7 @@ void LayerTreeHost::PaintLayerContents(
       settings_.show_overdraw_in_tracing &&
       base::debug::TraceLog::GetInstance() &&
       base::debug::TraceLog::GetInstance()->IsEnabled();
-  OcclusionTracker occlusion_tracker(
+  OcclusionTracker<Layer> occlusion_tracker(
       root_layer_->render_surface()->content_rect(), record_metrics_for_frame);
   occlusion_tracker.set_minimum_tracking_size(
       settings_.minimum_occlusion_tracking_size);

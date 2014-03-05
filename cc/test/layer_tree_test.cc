@@ -17,7 +17,6 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/trees/layer_tree_host_client.h"

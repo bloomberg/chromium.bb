@@ -35,9 +35,8 @@ void ContentsScalingLayer::CalculateContentsScale(
       ideal_contents_scale);
 }
 
-bool ContentsScalingLayer::Update(
-    ResourceUpdateQueue* queue,
-    const OcclusionTracker* occlusion) {
+bool ContentsScalingLayer::Update(ResourceUpdateQueue* queue,
+                                  const OcclusionTracker<Layer>* occlusion) {
   bool updated = Layer::Update(queue, occlusion);
 
   if (draw_properties().contents_scale_x == last_update_contents_scale_x_ &&

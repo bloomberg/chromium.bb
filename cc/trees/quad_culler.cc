@@ -19,7 +19,7 @@ namespace cc {
 QuadCuller::QuadCuller(QuadList* quad_list,
                        SharedQuadStateList* shared_quad_state_list,
                        const LayerImpl* layer,
-                       const OcclusionTrackerImpl& occlusion_tracker,
+                       const OcclusionTracker<LayerImpl>& occlusion_tracker,
                        bool show_culling_with_debug_border_quads,
                        bool for_surface)
     : quad_list_(quad_list),
@@ -44,7 +44,7 @@ static inline bool AppendQuadInternal(
     scoped_ptr<DrawQuad> draw_quad,
     const gfx::Rect& culled_rect,
     QuadList* quad_list,
-    const OcclusionTrackerImpl& occlusion_tracker,
+    const OcclusionTracker<LayerImpl>& occlusion_tracker,
     const LayerImpl* layer,
     bool create_debug_border_quads) {
   bool keep_quad = !culled_rect.IsEmpty();
