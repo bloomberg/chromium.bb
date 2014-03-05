@@ -221,6 +221,7 @@
       }
     },
     {
+      "disabled": "Times out on Windows; crbug.com/338838",
       "url": "http://plus.google.com/app/basic/stream",
       "credentials": "google",
       "navigate_steps" : [
