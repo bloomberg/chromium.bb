@@ -142,15 +142,14 @@ class FileDownloader {
   // Returns the time delta between the call to Open() and this function.
   int64_t TimeSinceOpenMilliseconds() const;
 
-  // The value of |url_| changes over the life of this instance.  When the file
-  // is first opened, |url_| is a copy of the URL used to open the file, which
-  // can be a relative URL.  Once the GET request has finished, and the contents
-  // of the file represented by |url_| are available, |url_| is the full URL
-  // including the scheme, host and full path.
+  // Returns the url passed to Open().
   const nacl::string& url() const { return url_; }
 
-  // Returns the url passed to Open().
-  const nacl::string& url_to_open() const { return url_to_open_; }
+  // Once the GET request has finished, and the contents of the file
+  // represented by |url_| are available, |full_url_| is the full URL including
+  // the scheme, host and full path.
+  // Returns an empty string before the GET request has finished.
+  const nacl::string& full_url() const { return full_url_; }
 
   // Returns the PP_Resource of the active URL loader, or kInvalidResource.
   PP_Resource url_loader() const { return url_loader_.pp_resource(); }
@@ -208,8 +207,9 @@ class FileDownloader {
   void GotFileHandleNotify(int32_t pp_error, PP_FileHandle handle);
 
   Plugin* instance_;
-  nacl::string url_to_open_;
   nacl::string url_;
+  nacl::string full_url_;
+
   nacl::string extra_request_headers_;
   pp::URLResponseInfo url_response_;
   pp::CompletionCallback file_open_notify_callback_;

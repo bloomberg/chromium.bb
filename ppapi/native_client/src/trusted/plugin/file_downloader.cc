@@ -128,7 +128,6 @@ bool FileDownloader::Open(
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
   status_code_ = -1;
-  url_to_open_ = url;
   url_ = url;
   file_open_notify_callback_ = callback;
   mode_ = mode;
@@ -216,7 +215,6 @@ void FileDownloader::OpenFast(const nacl::string& url,
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
   status_code_ = NACL_HTTP_STATUS_OK;
-  url_to_open_ = url;
   url_ = url;
   mode_ = DOWNLOAD_NONE;
   if (not_streaming() && file_handle != PP_kInvalidFileHandle) {
@@ -264,7 +262,7 @@ bool FileDownloader::InitialResponseIsValid() {
         "FileDownloader::InitialResponseIsValid (url is not a string)\n"));
     return false;
   }
-  url_ = full_url.AsString();
+  full_url_ = full_url.AsString();
 
   // Note that URLs in the data-URI scheme produce different error
   // codes than other schemes.  This is because data-URI are really a
@@ -371,7 +369,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
     stream_finish_callback_.RunAndClear(PP_ERROR_FAILED);
     return;
   }
-  url_ = full_url.AsString();
+  full_url_ = full_url.AsString();
 
   // The file is now fully downloaded.
   pp::FileRef file(url_response_.GetBodyAsFileRef());

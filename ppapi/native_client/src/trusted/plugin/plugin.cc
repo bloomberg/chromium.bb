@@ -749,7 +749,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
 
   // Inform JavaScript that we successfully downloaded the nacl module.
   EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
-                       nexe_downloader_.url_to_open(),
+                       nexe_downloader_.url(),
                        LENGTH_IS_COMPUTABLE,
                        nexe_bytes_read,
                        nexe_bytes_read);
@@ -1164,11 +1164,11 @@ void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
     delete info;
   } else if (info->get_desc() > NACL_NO_FILE_DESC) {
     std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
-        url_file_info_map_.find(url_downloader->url_to_open());
+        url_file_info_map_.find(url_downloader->url());
     if (it != url_file_info_map_.end()) {
       delete it->second;
     }
-    url_file_info_map_[url_downloader->url_to_open()] = info;
+    url_file_info_map_[url_downloader->url()] = info;
     PP_RunCompletionCallback(&callback, PP_OK);
   } else {
     PP_RunCompletionCallback(&callback, PP_ERROR_FAILED);
@@ -1231,7 +1231,7 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
   // Set the readyState attribute to indicate loaded.
   set_nacl_ready_state(DONE);
   // Inform JavaScript that loading was successful and is complete.
-  const nacl::string& url = nexe_downloader_.url_to_open();
+  const nacl::string& url = nexe_downloader_.url();
   EnqueueProgressEvent(
       PP_NACL_EVENT_LOAD, url, length_computable, loaded_bytes, total_bytes);
   EnqueueProgressEvent(
@@ -1301,7 +1301,7 @@ void Plugin::UpdateDownloadProgress(
       // If not a streamed file, it must be the .nexe loader.
       if (file_downloader == NULL)
         file_downloader = &plugin->nexe_downloader_;
-      nacl::string url = file_downloader->url_to_open();
+      nacl::string url = file_downloader->url();
       LengthComputable length_computable = (total_bytes_to_be_received >= 0) ?
           LENGTH_IS_COMPUTABLE : LENGTH_IS_NOT_COMPUTABLE;
 

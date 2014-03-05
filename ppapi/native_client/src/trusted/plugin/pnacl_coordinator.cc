@@ -498,7 +498,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   int32_t nexe_fd_err =
       plugin_->nacl_interface()->GetNexeFd(
           plugin_->pp_instance(),
-          streaming_downloader_->url().c_str(),
+          streaming_downloader_->full_url().c_str(),
           // TODO(dschuff): Get this value from the pnacl json file after it
           // rolls in from NaCl.
           1,
