@@ -307,7 +307,10 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual void SetUp() OVERRIDE {
     ResourceDispatcherTest::SetUp();
     shared_handle_.Delete(kShmemSegmentName);
-    EXPECT_TRUE(shared_handle_.CreateNamed(kShmemSegmentName, false, 100));
+    // TODO(viettrungluu): Named shared memory is deprecated (crbug.com/345734).
+    // (I don't think we even need it here.)
+    EXPECT_TRUE(shared_handle_.CreateNamedDeprecated(kShmemSegmentName, false,
+                                                     100));
   }
 
   virtual void TearDown() OVERRIDE {

@@ -113,7 +113,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     return false;
 
   size_t rounded_size = (options.size + kSectionMask) & ~kSectionMask;
-  name_ = ASCIIToWide(options.name == NULL ? "" : *options.name);
+  name_ = ASCIIToWide(options.name_deprecated == NULL ? "" :
+                          *options.name_deprecated);
   mapped_file_ = CreateFileMapping(INVALID_HANDLE_VALUE, NULL,
       PAGE_READWRITE, 0, static_cast<DWORD>(rounded_size),
       name_.empty() ? NULL : name_.c_str());
@@ -127,7 +128,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     // If the file already existed, set requested_size_ to 0 to show that
     // we don't know the size.
     requested_size_ = 0;
-    if (!options.open_existing) {
+    if (!options.open_existing_deprecated) {
       Close();
       return false;
     }

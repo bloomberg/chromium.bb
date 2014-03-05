@@ -41,22 +41,25 @@ typedef ino_t SharedMemoryId;
 
 // Options for creating a shared memory object.
 struct SharedMemoryCreateOptions {
-  SharedMemoryCreateOptions() : name(NULL), size(0), open_existing(false),
+  SharedMemoryCreateOptions() : name_deprecated(NULL), size(0),
+                                open_existing_deprecated(false),
                                 executable(false) {}
 
+  // DEPRECATED (crbug.com/345734):
   // If NULL, the object is anonymous.  This pointer is owned by the caller
   // and must live through the call to Create().
-  const std::string* name;
+  const std::string* name_deprecated;
 
   // Size of the shared memory object to be created.
   // When opening an existing object, this has no effect.
   size_t size;
 
+  // DEPRECATED (crbug.com/345734):
   // If true, and the shared memory already exists, Create() will open the
   // existing shared memory and ignore the size parameter.  If false,
-  // shared memory must not exist.  This flag is meaningless unless name is
-  // non-NULL.
-  bool open_existing;
+  // shared memory must not exist.  This flag is meaningless unless
+  // name_deprecated is non-NULL.
+  bool open_existing_deprecated;
 
   // If true, mappings might need to be made executable later.
   bool executable;
@@ -122,16 +125,18 @@ class BASE_EXPORT SharedMemory {
     return Create(options);
   }
 
+  // DEPRECATED (crbug.com/345734):
   // Creates or opens a shared memory segment based on a name.
   // If open_existing is true, and the shared memory already exists,
   // opens the existing shared memory and ignores the size parameter.
   // If open_existing is false, shared memory must not exist.
   // size is the size of the block to be created.
   // Returns true on success, false on failure.
-  bool CreateNamed(const std::string& name, bool open_existing, size_t size) {
+  bool CreateNamedDeprecated(
+      const std::string& name, bool open_existing, size_t size) {
     SharedMemoryCreateOptions options;
-    options.name = &name;
-    options.open_existing = open_existing;
+    options.name_deprecated = &name;
+    options.open_existing_deprecated = open_existing;
     options.size = size;
     return Create(options);
   }

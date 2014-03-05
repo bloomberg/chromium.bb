@@ -223,8 +223,9 @@ bool ServiceProcessState::CreateSharedData() {
     return false;
 
   uint32 alloc_size = sizeof(ServiceProcessSharedData);
-  if (!shared_mem_service_data->CreateNamed(GetServiceProcessSharedMemName(),
-                                            true, alloc_size))
+  // TODO(viettrungluu): Named shared memory is deprecated (crbug.com/345734).
+  if (!shared_mem_service_data->CreateNamedDeprecated
+          (GetServiceProcessSharedMemName(), true, alloc_size))
     return false;
 
   if (!shared_mem_service_data->Map(alloc_size))

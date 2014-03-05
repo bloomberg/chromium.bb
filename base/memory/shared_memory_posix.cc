@@ -136,9 +136,9 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   ScopedFD readonly_fd(&readonly_fd_storage);
 
   FilePath path;
-  if (options.name == NULL || options.name->empty()) {
+  if (options.name_deprecated == NULL || options.name_deprecated->empty()) {
     // It doesn't make sense to have a open-existing private piece of shmem
-    DCHECK(!options.open_existing);
+    DCHECK(!options.open_existing_deprecated);
     // Q: Why not use the shm_open() etc. APIs?
     // A: Because they're limited to 4mb on OS X.  FFFFFFFUUUUUUUUUUU
     fp.reset(base::CreateAndOpenTemporaryShmemFile(&path, options.executable));
@@ -157,7 +157,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
         PLOG(WARNING) << "unlink";
     }
   } else {
-    if (!FilePathForMemoryName(*options.name, &path))
+    if (!FilePathForMemoryName(*options.name_deprecated, &path))
       return false;
 
     // Make sure that the file is opened without any permission
@@ -167,7 +167,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     // First, try to create the file.
     int fd = HANDLE_EINTR(
         open(path.value().c_str(), O_RDWR | O_CREAT | O_EXCL, kOwnerOnly));
-    if (fd == -1 && options.open_existing) {
+    if (fd == -1 && options.open_existing_deprecated) {
       // If this doesn't work, try and open an existing file in append mode.
       // Opening an existing file in a world writable directory has two main
       // security implications:

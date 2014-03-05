@@ -217,7 +217,7 @@ SharedMemory* StatsTable::Internal::CreateSharedMemory(const std::string& name,
   return shared_memory.release();
 #elif defined(OS_WIN)
   scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
-  if (!shared_memory->CreateNamed(name, true, size))
+  if (!shared_memory->CreateNamedDeprecated(name, true, size))
     return NULL;
   return shared_memory.release();
 #endif

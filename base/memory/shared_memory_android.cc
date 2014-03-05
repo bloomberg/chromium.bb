@@ -24,7 +24,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   // "name" is just a label in ashmem. It is visible in /proc/pid/maps.
   mapped_file_ = ashmem_create_region(
-      options.name == NULL ? "" : options.name->c_str(),
+      options.name_deprecated == NULL ? "" : options.name_deprecated->c_str(),
       options.size);
   if (-1 == mapped_file_) {
     DLOG(ERROR) << "Shared memory creation failed";

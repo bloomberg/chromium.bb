@@ -61,7 +61,7 @@ class MultipleThreadMain : public PlatformThread::Delegate {
 #endif
     const uint32 kDataSize = 1024;
     SharedMemory memory;
-    bool rv = memory.CreateNamed(s_test_name_, true, kDataSize);
+    bool rv = memory.CreateNamedDeprecated(s_test_name_, true, kDataSize);
     EXPECT_TRUE(rv);
     rv = memory.Map(kDataSize);
     EXPECT_TRUE(rv);
@@ -109,8 +109,8 @@ class MultipleLockThread : public PlatformThread::Delegate {
     SharedMemoryHandle handle = NULL;
     {
       SharedMemory memory1;
-      EXPECT_TRUE(memory1.CreateNamed("SharedMemoryMultipleLockThreadTest",
-                                 true, kDataSize));
+      EXPECT_TRUE(memory1.CreateNamedDeprecated(
+          "SharedMemoryMultipleLockThreadTest", true, kDataSize));
       EXPECT_TRUE(memory1.ShareToProcess(GetCurrentProcess(), &handle));
       // TODO(paulg): Implement this once we have a posix version of
       // SharedMemory::ShareToProcess.
@@ -143,7 +143,7 @@ class MultipleLockThread : public PlatformThread::Delegate {
 }  // namespace
 
 // Android doesn't support SharedMemory::Open/Delete/
-// CreateNamed(openExisting=true)
+// CreateNamedDeprecated(openExisting=true)
 #if !defined(OS_ANDROID)
 TEST(SharedMemoryTest, OpenClose) {
   const uint32 kDataSize = 1024;
@@ -158,7 +158,7 @@ TEST(SharedMemoryTest, OpenClose) {
   EXPECT_TRUE(rv);
   rv = memory1.Open(test_name, false);
   EXPECT_FALSE(rv);
-  rv = memory1.CreateNamed(test_name, false, kDataSize);
+  rv = memory1.CreateNamedDeprecated(test_name, false, kDataSize);
   EXPECT_TRUE(rv);
   rv = memory1.Map(kDataSize);
   EXPECT_TRUE(rv);
@@ -201,10 +201,10 @@ TEST(SharedMemoryTest, OpenExclusive) {
                    << Time::Now().ToDoubleT();
   std::string test_name = test_name_stream.str();
 
-  // Open two handles to a memory segment and check that open_existing works
-  // as expected.
+  // Open two handles to a memory segment and check that
+  // open_existing_deprecated works as expected.
   SharedMemory memory1;
-  bool rv = memory1.CreateNamed(test_name, false, kDataSize);
+  bool rv = memory1.CreateNamedDeprecated(test_name, false, kDataSize);
   EXPECT_TRUE(rv);
 
   // Memory1 knows it's size because it created it.
@@ -224,11 +224,11 @@ TEST(SharedMemoryTest, OpenExclusive) {
 
   SharedMemory memory2;
   // Should not be able to create if openExisting is false.
-  rv = memory2.CreateNamed(test_name, false, kDataSize2);
+  rv = memory2.CreateNamedDeprecated(test_name, false, kDataSize2);
   EXPECT_FALSE(rv);
 
   // Should be able to create with openExisting true.
-  rv = memory2.CreateNamed(test_name, true, kDataSize2);
+  rv = memory2.CreateNamedDeprecated(test_name, true, kDataSize2);
   EXPECT_TRUE(rv);
 
   // Memory2 shouldn't know the size because we didn't create it.
@@ -561,7 +561,7 @@ TEST(SharedMemoryTest, FilePermissionsNamed) {
   options.size = kTestSize;
   std::string shared_mem_name = "shared_perm_test-" + IntToString(getpid()) +
       "-" + Uint64ToString(RandUint64());
-  options.name = &shared_mem_name;
+  options.name_deprecated = &shared_mem_name;
   // Set a file mode creation mask that gives all permissions.
   ScopedUmaskSetter permissive_mask(S_IWGRP | S_IWOTH);
 
@@ -613,7 +613,7 @@ class SharedMemoryProcessTest : public MultiProcessTest {
 #endif
     const uint32 kDataSize = 1024;
     SharedMemory memory;
-    bool rv = memory.CreateNamed(s_test_name_, true, kDataSize);
+    bool rv = memory.CreateNamedDeprecated(s_test_name_, true, kDataSize);
     EXPECT_TRUE(rv);
     if (rv != true)
       errors++;
