@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 from metrics import power
-from telemetry.core.timeline import model
 from telemetry.page import page_measurement
+from telemetry.core.timeline import model
+
 
 class ImageDecoding(page_measurement.PageMeasurement):
   def __init__(self):

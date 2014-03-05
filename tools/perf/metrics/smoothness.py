@@ -74,12 +74,6 @@ class SmoothnessMetric(Metric):
     if not self._stats.frame_times:
       raise NotEnoughFramesError()
 
-  def SetStats(self, stats):
-    """ Pass in a RenderingStats object directly. For unittests that don't call
-        Start/Stop.
-    """
-    self._stats = stats
-
   def AddResults(self, tab, results):
     if self._stats.mouse_wheel_scroll_latency:
       mean_mouse_wheel_scroll_latency = statistics.ArithmeticMean(
