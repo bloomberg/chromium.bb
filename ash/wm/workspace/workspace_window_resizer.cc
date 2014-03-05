@@ -57,6 +57,9 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     return scoped_ptr<WindowResizer>();
   }
 
+  if (window_component == HTCAPTION && !window_state->can_be_dragged())
+    return scoped_ptr<WindowResizer>();
+
   // TODO(varkha): The chaining of window resizers causes some of the logic
   // to be repeated and the logic flow difficult to control. With some windows
   // classes using reparenting during drag operations it becomes challenging to

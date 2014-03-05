@@ -13,8 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 
 namespace ash {
 
@@ -70,8 +73,13 @@ public:
   aura::Window* CreateWindowInWatchedContainer(ui::wm::WindowType type,
                                                const gfx::Rect& bounds,
                                                bool can_maximize) {
+    aura::test::TestWindowDelegate* delegate = NULL;
+    if (!can_maximize) {
+      delegate = aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
+      delegate->set_window_component(HTCAPTION);
+    }
     aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
-        NULL, type, 0, bounds, NULL);
+        delegate, type, 0, bounds, NULL);
     window->SetProperty(aura::client::kCanMaximizeKey, can_maximize);
     aura::Window* container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),
@@ -416,6 +424,52 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
     EXPECT_EQ(w4.get(), windows[1]);
     EXPECT_EQ(w5.get(), windows[0]);
   }
+}
+
+// Check that non maximizable windows cannot be dragged by the user.
+TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
+  gfx::Rect rect(10, 10, 100, 100);
+  scoped_ptr<aura::Window> window(
+      CreateNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  EXPECT_EQ(rect.ToString(), window->bounds().ToString());
+
+  // 1. Move the mouse over the caption and check that dragging the window does
+  // change the location.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.MoveMouseTo(gfx::Point(rect.x() + 2, rect.y() + 2));
+  generator.PressLeftButton();
+  generator.MoveMouseBy(10, 5);
+  RunAllPendingInMessageLoop();
+  generator.ReleaseLeftButton();
+  gfx::Point first_dragged_origin = window->bounds().origin();
+  EXPECT_EQ(rect.x() + 10, first_dragged_origin.x());
+  EXPECT_EQ(rect.y() + 5, first_dragged_origin.y());
+
+  // 2. Check that turning on the manager will stop allowing the window from
+  // dragging.
+  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  gfx::Rect center_bounds(window->bounds());
+  EXPECT_NE(rect.origin().ToString(), center_bounds.origin().ToString());
+  generator.MoveMouseTo(gfx::Point(center_bounds.x() + 1,
+                                   center_bounds.y() + 1));
+  generator.PressLeftButton();
+  generator.MoveMouseBy(10, 5);
+  RunAllPendingInMessageLoop();
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(center_bounds.x(), window->bounds().x());
+  EXPECT_EQ(center_bounds.y(), window->bounds().y());
+  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+
+  // 3. Releasing the mazimize manager again will restore the window to its
+  // previous bounds and
+  generator.MoveMouseTo(gfx::Point(first_dragged_origin.x() + 1,
+                                   first_dragged_origin.y() + 1));
+  generator.PressLeftButton();
+  generator.MoveMouseBy(10, 5);
+  RunAllPendingInMessageLoop();
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(first_dragged_origin.x() + 10, window->bounds().x());
+  EXPECT_EQ(first_dragged_origin.y() + 5, window->bounds().y());
 }
 
 }  // namespace ash

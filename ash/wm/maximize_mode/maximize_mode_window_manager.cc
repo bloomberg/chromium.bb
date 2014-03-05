@@ -82,12 +82,8 @@ void MaximizeModeWindowManager::MaximizeAllWindows() {
 }
 
 void MaximizeModeWindowManager::RestoreAllWindows() {
-  WindowToStateType::iterator it = initial_state_type_.begin();
-  while (it != initial_state_type_.end()) {
-    RestoreAndForgetWindow(it->first);
-    // |RestoreAndForgetWindow| will change the |initial_state_type_| list.
-    it = initial_state_type_.begin();
-  }
+  while (initial_state_type_.size())
+    RestoreAndForgetWindow(initial_state_type_.begin()->first);
 }
 
 void MaximizeModeWindowManager::MaximizeAndTrackWindow(
@@ -121,17 +117,21 @@ void MaximizeModeWindowManager::MaximizeAndTrackWindow(
         wm::GetWindowState(window)->Maximize();
     }
   }
+  window_state->set_can_be_dragged(false);
 }
 
 void MaximizeModeWindowManager::RestoreAndForgetWindow(
     aura::Window* window) {
   wm::WindowStateType state = ForgetWindow(window);
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  window_state->set_can_be_dragged(true);
   // Restore window if it can be restored.
   if (state != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
     if (!CanMaximize(window)) {
       // TODO(skuhne): Remove the background cover layer.
-      wm::WindowState* window_state = wm::GetWindowState(window);
       if (window_state->HasRestoreBounds()) {
+        // TODO(skuhne): If the system shuts down in maximized mode, the proper
+        // restore coordinates should get saved.
         gfx::Rect initial_bounds =
             window->parent() ? window_state->GetRestoreBoundsInParent() :
                                window_state->GetRestoreBoundsInScreen();

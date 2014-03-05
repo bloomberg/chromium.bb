@@ -91,6 +91,7 @@ WindowState::WindowState(aura::Window* window)
       hide_shelf_when_fullscreen_(true),
       animate_to_fullscreen_(true),
       minimum_visibility_(false),
+      can_be_dragged_(true),
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
