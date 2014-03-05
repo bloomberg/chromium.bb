@@ -228,7 +228,6 @@
               'sources!': [
                 'debug/debug_on_start_win.cc',
               ],
-              'dependencies': ['../chrome_elf/chrome_elf.gyp:chrome_redirects'],
             }],
           ],
         }],
