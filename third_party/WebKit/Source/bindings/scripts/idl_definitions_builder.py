@@ -54,9 +54,6 @@ def file_node_to_idl_definitions(node):
     interfaces = {}
     typedefs = STANDARD_TYPEDEFS
 
-    # FIXME: only needed for Perl, remove later
-    file_name = os.path.abspath(node.GetName())
-
     children = node.GetChildren()
     for child in children:
         child_class = child.GetClass()
@@ -82,7 +79,7 @@ def file_node_to_idl_definitions(node):
         else:
             raise ValueError('Unrecognized node class: %s' % child_class)
 
-    return IdlDefinitions(callback_functions=callback_functions, enumerations=enumerations, file_name=file_name, interfaces=interfaces, typedefs=typedefs)
+    return IdlDefinitions(callback_functions=callback_functions, enumerations=enumerations, interfaces=interfaces, typedefs=typedefs)
 
 # Constructors for Interface definitions and interface members
 
@@ -220,11 +217,9 @@ def argument_node_to_idl_argument(node):
 
     idl_type = None
     extended_attributes = {}
-    # FIXME: Boolean values are inconsistent due to Perl compatibility.
-    # Make all default to False once Perl removed.
     is_nullable = False
     is_optional = node.GetProperty('OPTIONAL')
-    is_variadic = None
+    is_variadic = False
     children = node.GetChildren()
     for child in children:
         child_class = child.GetClass()
