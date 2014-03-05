@@ -20,7 +20,7 @@
 /*
  * Create thunk for use by syscall trampoline code.
  */
-int NaClMakePcrelThunk(struct NaClApp *nap) {
+int NaClMakePcrelThunk(struct NaClApp *nap, enum NaClAslrMode aslr_mode) {
   int                   retval = 0;  /* fail */
   int                   error;
   void                  *thunk_addr = NULL;
@@ -31,11 +31,21 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   uintptr_t             naclsyscallseg;
   size_t                thunk_size = ((uintptr_t) &NaClPcrelThunk_end
                                       - (uintptr_t) &NaClPcrelThunk);
+  int (*allocator)(void **, size_t) = ((NACL_ENABLE_ASLR == aslr_mode) ?
+                                       NaClPageAllocRandomized :
+                                       NaClPageAlloc);
 
-  if (0 != (error = NaClPageAllocRandomized(&thunk_addr, NACL_MAP_PAGESIZE))) {
+  /*
+   * Using the randomized allocator can cause sufficient fragmentation to
+   * prevent two 512MB sandboxes from being allocated even when 1GB of address
+   * space is available. Use a stable allocator in the non-ALSR case for
+   * testing.
+   */
+  if (0 != (error = allocator(&thunk_addr, NACL_MAP_PAGESIZE))) {
     NaClLog(LOG_INFO,
-            "NaClMakePcrelThunk::NaClPageAlloc failed, errno %d\n",
-            -error);
+            "NaClMakePcrelThunk::NaClPageAlloc[Randomized] failed, "
+            "errno %d, randomized %d\n",
+            -error, NACL_ENABLE_ASLR == aslr_mode);
     retval = 0;
     goto cleanup;
   }

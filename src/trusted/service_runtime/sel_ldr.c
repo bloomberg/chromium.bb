@@ -477,15 +477,17 @@ void  NaClApplyPatchToMemory(struct NaClPatchInfo  *patch) {
  * correspond to unimplemented system calls and will just abort the
  * program.
  */
-void  NaClLoadTrampoline(struct NaClApp *nap) {
+void  NaClLoadTrampoline(struct NaClApp *nap, enum NaClAslrMode aslr_mode) {
   int         num_syscalls;
   int         i;
   uintptr_t   addr;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  if (!NaClMakePcrelThunk(nap)) {
+  if (!NaClMakePcrelThunk(nap, aslr_mode)) {
     NaClLog(LOG_FATAL, "NaClMakePcrelThunk failed!\n");
   }
+#else
+  UNREFERENCED_PARAMETER(aslr_mode);
 #endif
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
   if (!NaClMakeDispatchAddrs(nap)) {

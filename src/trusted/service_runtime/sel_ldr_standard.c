@@ -406,7 +406,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
   NaClInitSwitchToApp(nap);
 
   NaClLog(2, "Installing trampoline\n");
-  NaClLoadTrampoline(nap);
+  NaClLoadTrampoline(nap, aslr_mode);
 
   NaClLog(2, "Installing springboard\n");
   NaClLoadSpringboard(nap);

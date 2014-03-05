@@ -627,7 +627,7 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uint32_t       user_tls1,
                                    uint32_t       user_tls2) NACL_WUR;
 
-void NaClLoadTrampoline(struct NaClApp *nap);
+void NaClLoadTrampoline(struct NaClApp *nap, enum NaClAslrMode aslr_mode);
 
 void NaClLoadSpringboard(struct NaClApp  *nap);
 
@@ -749,7 +749,7 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
-int NaClMakePcrelThunk(struct NaClApp *nap);
+int NaClMakePcrelThunk(struct NaClApp *nap, enum NaClAslrMode aslr_mode);
 
 #endif
 
