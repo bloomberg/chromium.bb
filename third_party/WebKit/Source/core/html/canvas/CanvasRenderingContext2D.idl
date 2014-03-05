@@ -88,8 +88,16 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void clip(Path? path);
     void clip(CanvasWindingRule winding);
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void clip(Path? path, CanvasWindingRule winding);
-    boolean isPointInPath(float x, float y, optional CanvasWindingRule winding);
+
+    // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
+    boolean isPointInPath(float x, float y);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] boolean isPointInPath(Path? path, float x, float y);
+    boolean isPointInPath(float x, float y, CanvasWindingRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] boolean isPointInPath(Path? path, float x, float y, CanvasWindingRule winding);
+
+    // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
     boolean isPointInStroke(float x, float y);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] boolean isPointInStroke(Path? path, float x, float y);
 
     // text
     attribute DOMString font;

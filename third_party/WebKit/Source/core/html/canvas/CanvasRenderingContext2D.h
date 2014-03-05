@@ -157,7 +157,10 @@ public:
     void clip(DOMPath*, const String& winding, ExceptionState&);
 
     bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
+    bool isPointInPath(DOMPath*, const float x, const float y, ExceptionState&);
+    bool isPointInPath(DOMPath*, const float x, const float y, const String& winding, ExceptionState&);
     bool isPointInStroke(const float x, const float y);
+    bool isPointInStroke(DOMPath*, const float x, const float y, ExceptionState&);
 
     void clearRect(float x, float y, float width, float height);
     void fillRect(float x, float y, float width, float height);
@@ -310,6 +313,9 @@ private:
     void fillInternal(const Path&, const String& windingRuleString);
     void strokeInternal(const Path&);
     void clipInternal(const Path&, const String& windingRuleString);
+
+    bool isPointInPathInternal(const Path&, const float x, const float y, const String& windingRuleString);
+    bool isPointInStrokeInternal(const Path&, const float x, const float y);
 
     void drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth = 0, bool useMaxWidth = false);
 

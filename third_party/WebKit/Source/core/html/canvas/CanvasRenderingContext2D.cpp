@@ -1031,6 +1031,26 @@ void CanvasRenderingContext2D::clip(DOMPath* domPath, const String& windingRuleS
 
 bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const String& windingRuleString)
 {
+    return isPointInPathInternal(m_path, x, y, windingRuleString);
+}
+
+bool CanvasRenderingContext2D::isPointInPath(DOMPath* domPath, const float x, const float y, ExceptionState& exceptionState)
+{
+    return isPointInPath(domPath, x, y, "nonzero", exceptionState);
+}
+
+bool CanvasRenderingContext2D::isPointInPath(DOMPath* domPath, const float x, const float y, const String& windingRuleString, ExceptionState& exceptionState)
+{
+    if (!domPath) {
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        return false;
+    }
+
+    return isPointInPathInternal(domPath->path(), x, y, windingRuleString);
+}
+
+bool CanvasRenderingContext2D::isPointInPathInternal(const Path& path, const float x, const float y, const String& windingRuleString)
+{
     GraphicsContext* c = drawingContext();
     if (!c)
         return false;
@@ -1047,11 +1067,25 @@ bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const
     if (!parseWinding(windingRuleString, windRule))
         return false;
 
-    return m_path.contains(transformedPoint, windRule);
+    return path.contains(transformedPoint, windRule);
 }
 
-
 bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)
+{
+    return isPointInStrokeInternal(m_path, x, y);
+}
+
+bool CanvasRenderingContext2D::isPointInStroke(DOMPath* domPath, const float x, const float y, ExceptionState& exceptionState)
+{
+    if (!domPath) {
+        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+        return false;
+    }
+
+    return isPointInStrokeInternal(domPath->path(), x, y);
+}
+
+bool CanvasRenderingContext2D::isPointInStrokeInternal(const Path& path, const float x, const float y)
 {
     GraphicsContext* c = drawingContext();
     if (!c)
@@ -1071,7 +1105,7 @@ bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)
     strokeData.setLineJoin(getLineJoin());
     strokeData.setMiterLimit(miterLimit());
     strokeData.setLineDash(getLineDash(), lineDashOffset());
-    return m_path.strokeContains(transformedPoint, strokeData);
+    return path.strokeContains(transformedPoint, strokeData);
 }
 
 void CanvasRenderingContext2D::clearRect(float x, float y, float width, float height)

@@ -5,12 +5,41 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Testing default isPointInPath
 PASS ctx.isPointInPath(50, 50) is true
+PASS ctx.isPointInPath(NaN, 50) is false
+PASS ctx.isPointInPath(50, NaN) is false
 
 Testing nonzero isPointInPath
 PASS ctx.isPointInPath(50, 50, 'nonzero') is true
 
 Testing evenodd isPointInPath
 PASS ctx.isPointInPath(50, 50, 'evenodd') is false
+
+Testing default isPointInPath with Path object
+PASS ctx.isPointInPath(path, 50, 50) is true
+PASS ctx.isPointInPath(path, NaN, 50) is false
+PASS ctx.isPointInPath(path, 50, NaN) is false
+
+Testing nonzero isPointInPath with Path object
+PASS ctx.isPointInPath(path, 50, 50, 'nonzero') is true
+
+Testing evenodd isPointInPath with Path object
+PASS ctx.isPointInPath(path, 50, 50, 'evenodd') is false
+
+Testing null isPointInPath with Path object
+PASS ctx.isPointInPath(null, 50, 50) threw exception TypeMismatchError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.isPointInPath(null, 50, 50, 'nonzero') threw exception TypeMismatchError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.isPointInPath(null, 50, 50, 'evenodd') threw exception TypeMismatchError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.isPointInPath(path, 50, 50) threw exception TypeMismatchError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.isPointInPath(path, 50, 50, 'nonzero') threw exception TypeMismatchError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+PASS ctx.isPointInPath(path, 50, 50, 'evenodd') threw exception TypeMismatchError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The 1st argument provided is either null, or an invalid Path object..
+
+Testing invalid type isPointInPath with Path object
+PASS ctx.isPointInPath([], 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 3 ('50') is not a valid enum value..
+PASS ctx.isPointInPath([], 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.isPointInPath([], 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.isPointInPath({}, 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 3 ('50') is not a valid enum value..
+PASS ctx.isPointInPath({}, 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.isPointInPath({}, 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 
 PASS successfullyParsed is true
 
