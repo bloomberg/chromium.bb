@@ -287,7 +287,11 @@ void ShillPropertyHandler::CheckPendingStateListUpdates(
 
 void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
                                                   const base::Value& value) {
-  if (key == shill::kServicesProperty) {
+  if (key == shill::kDefaultServiceProperty) {
+    std::string service_path;
+    value.GetAsString(&service_path);
+    listener_->DefaultNetworkServiceChanged(service_path);
+  } else if (key == shill::kServicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_NETWORK, *vlist);

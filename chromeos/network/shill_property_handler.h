@@ -83,6 +83,10 @@ class CHROMEOS_EXPORT ShillPropertyHandler
     // UpdateManagedStateProperties has been called for each new entry.
     virtual void ManagedStateListChanged(ManagedState::ManagedType type) = 0;
 
+    // Called when the default network service changes.
+    virtual void DefaultNetworkServiceChanged(
+        const std::string& service_path) = 0;
+
    protected:
     virtual ~Listener() {}
   };

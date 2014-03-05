@@ -57,6 +57,10 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     // Used to reset all properties; does not notify observers.
     virtual void ClearProperties() = 0;
 
+    // Set manager property.
+    virtual void SetManagerProperty(const std::string& key,
+                                    const base::Value& value) = 0;
+
     // Add/Remove/ClearService should only be called from ShillServiceClient.
     virtual void AddManagerService(const std::string& service_path,
                                    bool add_to_visible_list,
@@ -64,8 +68,15 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     virtual void RemoveManagerService(const std::string& service_path) = 0;
     virtual void ClearManagerServices() = 0;
 
-    // Called by ShillServiceClient when a service's State property changes.
-    // Services are sorted first by Active vs. Inactive State, then by Type.
+    // Called by ShillServiceClient when a service's State property changes,
+    // before notifying observers. Sets the DefaultService property to empty
+    // if the state changes to a non-connected state.
+    virtual void ServiceStateChanged(const std::string& service_path,
+                                     const std::string& state) = 0;
+
+    // Called by ShillServiceClient when a service's State property changes,
+    // after notifying observers. Services are sorted first by Active or
+    // Inactive State, then by Type.
     virtual void SortManagerServices() = 0;
 
    protected:

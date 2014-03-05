@@ -121,8 +121,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // observe this class and implement NetworkPropertyChanged().
   const NetworkState* GetNetworkState(const std::string& service_path) const;
 
-  // Returns the default connected network (which includes VPNs) or NULL.
-  // This is equivalent to ConnectedNetworkByType(kMatchTypeDefault).
+  // Returns the default network (which includes VPNs) based on the
+  // Shill Manager.DefaultNetwork property. Normally this is the same as
+  // ConnectedNetworkByType(kMatchTypeDefault), but the timing might differ.
   const NetworkState* DefaultNetwork() const;
 
   // Returns the FavoriteState associated to DefaultNetwork. Returns NULL if,
@@ -281,6 +282,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE;
 
+  // Called when the default network service changes. Sets default_network_path_
+  // and notifies listeners.
+  virtual void DefaultNetworkServiceChanged(
+      const std::string& service_path) OVERRIDE;
+
   // Called after construction. Called explicitly by tests after adding
   // test observers.
   void InitShillPropertyHandler();
@@ -314,15 +320,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Helper function to notify observers. Calls CheckDefaultNetworkChanged().
   void OnNetworkConnectionStateChanged(NetworkState* network);
 
-  // If the default network changed returns true and sets
-  // |default_network_path_|.
-  bool CheckDefaultNetworkChanged();
-
-  // Logs an event and notifies observers.
-  void OnDefaultNetworkChanged();
+  // Notifies observers when the default network or its properties change.
+  void NotifyDefaultNetworkChanged(const NetworkState* default_network);
 
   // Notifies observers about changes to |network|.
-  void NetworkPropertiesUpdated(const NetworkState* network);
+  void NotifyNetworkPropertiesUpdated(const NetworkState* network);
 
   // Called whenever Device.Scanning state transitions to false.
   void ScanCompleted(const std::string& type);

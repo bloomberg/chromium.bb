@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using testing::AnyNumber;
 using testing::Mock;
 using testing::_;
 
@@ -388,12 +389,22 @@ TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
   MockObserver observer;
   network_portal_detector()->AddObserver(&observer);
 
+  NetworkPortalDetector::CaptivePortalState offline_state;
+  offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
+
   // WiFi is in online state.
   {
-    NetworkPortalDetector::CaptivePortalState state;
-    state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-    state.response_code = 204;
-    EXPECT_CALL(observer, OnPortalDetectionCompleted(_, state)).Times(1);
+    // When transitioning to a connected state, the network will transition to
+    // connecting states which will set the default network to NULL. This may
+    // get triggered multiple times.
+    EXPECT_CALL(observer, OnPortalDetectionCompleted(_, offline_state))
+        .Times(AnyNumber());
+
+    // Expect a single transition to an online state.
+    NetworkPortalDetector::CaptivePortalState online_state;
+    online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+    online_state.response_code = 204;
+    EXPECT_CALL(observer, OnPortalDetectionCompleted(_, online_state)).Times(1);
 
     SetConnected(kStubWireless1);
     ASSERT_TRUE(is_state_checking_for_portal());
@@ -407,9 +418,8 @@ TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
 
   // WiFi is turned off.
   {
-    NetworkPortalDetector::CaptivePortalState state;
-    state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
-    EXPECT_CALL(observer, OnPortalDetectionCompleted(NULL, state)).Times(1);
+    EXPECT_CALL(observer, OnPortalDetectionCompleted(NULL, offline_state))
+        .Times(1);
 
     SetDisconnected(kStubWireless1);
     ASSERT_TRUE(is_state_idle());

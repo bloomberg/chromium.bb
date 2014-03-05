@@ -39,6 +39,11 @@ void PassStubServiceProperties(
   callback.Run(call_status, *properties);
 }
 
+void CallSortManagerServices() {
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      SortManagerServices();
+}
+
 }  // namespace
 
 FakeShillServiceClient::FakeShillServiceClient() : weak_ptr_factory_(this) {
@@ -358,10 +363,14 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   properties->SetWithoutPathExpansion(
       shill::kStateProperty,
       base::Value::CreateStringValue(state));
-  if (!ipconfig_path.empty())
+  if (!ipconfig_path.empty()) {
     properties->SetWithoutPathExpansion(
         shill::kIPConfigProperty,
         base::Value::CreateStringValue(ipconfig_path));
+  }
+
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      SortManagerServices();
 }
 
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {
@@ -401,12 +410,22 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
 
   dict->MergeDictionary(&new_properties);
 
+  // Notify the Manager if the state changed (affects DefaultService).
   if (property == shill::kStateProperty) {
-    // When State changes the sort order of Services may change.
+    std::string state;
+    value.GetAsString(&state);
     DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-        SortManagerServices();
+        ServiceStateChanged(service_path, state);
   }
 
+  // If the State changes, the sort order of Services may change and the
+  // DefaultService property may change.
+  if (property == shill::kStateProperty) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&CallSortManagerServices));
+  }
+
+  // Notifiy Chrome of the property change.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeShillServiceClient::NotifyObserversPropertyChanged,

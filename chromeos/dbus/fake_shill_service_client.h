@@ -18,8 +18,8 @@ namespace chromeos {
 
 // A fake implementation of ShillServiceClient. This works in close coordination
 // with FakeShillManagerClient and is not intended to be used independently.
-class CHROMEOS_EXPORT FakeShillServiceClient :
-      public ShillServiceClient,
+class CHROMEOS_EXPORT FakeShillServiceClient
+    : public ShillServiceClient,
       public ShillServiceClient::TestInterface {
  public:
   FakeShillServiceClient();

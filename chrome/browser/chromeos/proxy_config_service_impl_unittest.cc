@@ -242,6 +242,8 @@ class ProxyConfigServiceImplTest : public testing::Test {
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
 
+    // Process any pending notifications before clearing services.
+    loop_.RunUntilIdle();
     service_test->ClearServices();
 
     // Sends a notification about the added profile.

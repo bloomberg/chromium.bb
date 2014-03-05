@@ -17,8 +17,8 @@ namespace chromeos {
 // A fake implementation of ShillManagerClient. This works in close coordination
 // with FakeShillServiceClient. FakeShillDeviceClient, and
 // FakeShillProfileClient, and is not intended to be used independently.
-class CHROMEOS_EXPORT FakeShillManagerClient :
-      public ShillManagerClient,
+class CHROMEOS_EXPORT FakeShillManagerClient
+    : public ShillManagerClient,
       public ShillManagerClient::TestInterface {
  public:
   FakeShillManagerClient();
@@ -91,11 +91,15 @@ class CHROMEOS_EXPORT FakeShillManagerClient :
                              const base::DictionaryValue& network) OVERRIDE;
   virtual void AddProfile(const std::string& profile_path) OVERRIDE;
   virtual void ClearProperties() OVERRIDE;
+  virtual void SetManagerProperty(const std::string& key,
+                                  const base::Value& value) OVERRIDE;
   virtual void AddManagerService(const std::string& service_path,
                                  bool add_to_visible_list,
                                  bool add_to_watch_list) OVERRIDE;
   virtual void RemoveManagerService(const std::string& service_path) OVERRIDE;
   virtual void ClearManagerServices() OVERRIDE;
+  virtual void ServiceStateChanged(const std::string& service_path,
+                                   const std::string& state) OVERRIDE;
   virtual void SortManagerServices() OVERRIDE;
 
  private:
@@ -103,8 +107,7 @@ class CHROMEOS_EXPORT FakeShillManagerClient :
   void SetDefaultProperties();
   void PassStubProperties(const DictionaryValueCallback& callback) const;
   void PassStubGeoNetworks(const DictionaryValueCallback& callback) const;
-  void CallNotifyObserversPropertyChanged(const std::string& property,
-                                          int delay_ms);
+  void CallNotifyObserversPropertyChanged(const std::string& property);
   void NotifyObserversPropertyChanged(const std::string& property);
   base::ListValue* GetListProperty(const std::string& property);
   bool TechnologyEnabled(const std::string& type) const;
@@ -125,6 +128,9 @@ class CHROMEOS_EXPORT FakeShillManagerClient :
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FakeShillManagerClient> weak_ptr_factory_;
+
+  // Track the default service for signaling Manager.DefaultService.
+  std::string default_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeShillManagerClient);
 };
