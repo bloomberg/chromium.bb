@@ -97,9 +97,6 @@ WHITELISTED_LICENSES = [
 
 
 PATH_SPECIFIC_WHITELISTED_LICENSES = {
-    'base/hash.cc': [  # http://crbug.com/98100
-        'UNKNOWN',
-    ],
     'base/third_party/icu': [  # http://crbug.com/98087
         'UNKNOWN',
     ],
