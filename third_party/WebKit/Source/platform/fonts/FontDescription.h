@@ -149,7 +149,7 @@ public:
     LigaturesState historicalLigaturesState() const { return static_cast<LigaturesState>(m_historicalLigaturesState); }
     unsigned keywordSize() const { return m_keywordSize; }
     FontSmoothingMode fontSmoothing() const { return static_cast<FontSmoothingMode>(m_fontSmoothing); }
-    TextRenderingMode textRenderingMode() const { return static_cast<TextRenderingMode>(m_textRendering); }
+    TextRenderingMode textRendering() const { return static_cast<TextRenderingMode>(m_textRendering); }
     UScriptCode script() const { return static_cast<UScriptCode>(m_script); }
     bool isSyntheticBold() const { return m_syntheticBold; }
     bool isSyntheticItalic() const { return m_syntheticItalic; }
@@ -186,7 +186,7 @@ public:
     void setHistoricalLigaturesState(LigaturesState historicalLigaturesState) { m_historicalLigaturesState = historicalLigaturesState; }
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
     void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
-    void setTextRenderingMode(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }
+    void setTextRendering(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }
     void setIsSpecifiedFont(bool isSpecifiedFont) { m_isSpecifiedFont = isSpecifiedFont; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
     void setNonCJKGlyphOrientation(NonCJKGlyphOrientation orientation) { m_nonCJKGlyphOrientation = orientation; }

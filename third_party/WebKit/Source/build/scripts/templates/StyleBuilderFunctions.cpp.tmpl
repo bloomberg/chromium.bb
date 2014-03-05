@@ -426,36 +426,6 @@ namespace WebCore {
 {{ apply_fill_layer("CSSPropertyWebkitMaskRepeatY", "RepeatY") }}
 {{ apply_fill_layer("CSSPropertyWebkitMaskSize", "Size") }}
 
-{%- macro apply_font(property_id, name_for_methods, initial, type_name) %}
-{#- We specify the getters/setters here since they are on FontDescription
-        and not RenderStyle #}
-{%- set getter = lower_first(name_for_methods) %}
-{%- set setter = "set" + name_for_methods %}
-{{ declare_initial_function(property_id) }}
-{
-    state.fontBuilder().{{setter}}({{initial}});
-}
-
-{{ declare_inherit_function(property_id) }}
-{
-    state.fontBuilder().{{setter}}(state.parentFontDescription().{{getter}}());
-}
-
-{{ declare_value_function(property_id) }}
-{
-    if (!value->isPrimitiveValue())
-        return;
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    state.fontBuilder().{{setter}}(static_cast<{{type_name}}>(*primitiveValue));
-}
-{%- endmacro %}
-
-{{ apply_font("CSSPropertyFontStyle", "Italic", "FontItalicOff", "FontItalic") }}
-{{ apply_font("CSSPropertyFontVariant", "SmallCaps", "FontSmallCapsOff", "FontSmallCaps") }}
-{{ apply_font("CSSPropertyTextRendering", "TextRenderingMode", "AutoTextRendering", "TextRenderingMode") }}
-{{ apply_font("CSSPropertyFontKerning", "Kerning", "FontDescription::AutoKerning", "FontDescription::Kerning") }}
-{{ apply_font("CSSPropertyWebkitFontSmoothing", "FontSmoothing", "AutoSmoothing", "FontSmoothingMode") }}
-
 {%- macro apply_value_number(property_id, id_for_minus_one) %}
 {{ declare_value_function(property_id) }}
 {

@@ -56,10 +56,10 @@ flex-shrink type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating
 font-family custom_all
-font-kerning custom_all
+font-kerning font, type_name=FontDescription::Kerning, name_for_methods=Kerning
 font-size custom_all
-font-style custom_all
-font-variant custom_all
+font-style font, type_name=FontItalic, name_for_methods=Italic
+font-variant font, type_name=FontSmallCaps, name_for_methods=SmallCaps
 font-variant-ligatures custom_all
 font-weight custom_all
 grid-auto-flow type_name=GridAutoFlow
@@ -125,7 +125,7 @@ text-decoration-style type_name=TextDecorationStyle
 text-indent custom_all
 text-justify type_name=TextJustify
 text-overflow type_name=TextOverflow
-text-rendering custom_all
+text-rendering font, type_name=TextRenderingMode
 text-shadow converter=convertShadow
 text-transform
 top type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
@@ -188,7 +188,7 @@ column-fill type_name=ColumnFill
 -webkit-column-rule-width type_name=unsigned short, converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
--webkit-font-smoothing custom_all
+-webkit-font-smoothing font, type_name=FontSmoothingMode
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-break type_name=LineBreak

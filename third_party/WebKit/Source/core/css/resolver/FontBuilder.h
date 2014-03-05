@@ -73,7 +73,7 @@ public:
     void setScript(const String& locale);
     void setItalic(FontItalic);
     void setSmallCaps(FontSmallCaps);
-    void setTextRenderingMode(TextRenderingMode);
+    void setTextRendering(TextRenderingMode);
     void setKerning(FontDescription::Kerning);
     void setFontSmoothing(FontSmoothingMode);
 
@@ -90,7 +90,14 @@ public:
     // FIXME: This is only used by an ASSERT in StyleResolver. Remove?
     bool fontDirty() const { return m_fontDirty; }
 
+    static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
+    static FontSmallCaps initialSmallCaps() { return FontSmallCapsOff; }
+    static FontItalic initialItalic() { return FontItalicOff; }
+    static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
+    static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }
+
     friend class FontDescriptionChangeScope;
+
 private:
 
     // FIXME: "size" arg should be first for consistency with other similar functions.

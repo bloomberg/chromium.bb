@@ -225,7 +225,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, c
         return;
     }
 
-    if (style->fontDescription().textRenderingMode() == GeometricPrecision)
+    if (style->fontDescription().textRendering() == GeometricPrecision)
         scalingFactor = 1;
 
     FontDescription fontDescription(style->fontDescription());

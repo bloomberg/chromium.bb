@@ -72,7 +72,7 @@ static void setupPaint(SkPaint* paint, const SimpleFontData* fontData, const Fon
 
     // When using CoreGraphics, disable hinting when webkit-font-smoothing:antialiased is used.
     // See crbug.com/152304
-    if (font->fontDescription().fontSmoothing() == Antialiased || font->fontDescription().textRenderingMode() == GeometricPrecision)
+    if (font->fontDescription().fontSmoothing() == Antialiased || font->fontDescription().textRendering() == GeometricPrecision)
         paint->setHinting(SkPaint::kNo_Hinting);
 }
 

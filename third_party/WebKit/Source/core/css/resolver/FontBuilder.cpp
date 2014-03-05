@@ -466,11 +466,11 @@ void FontBuilder::setSmallCaps(FontSmallCaps smallCaps)
     scope.fontDescription().setSmallCaps(smallCaps);
 }
 
-void FontBuilder::setTextRenderingMode(TextRenderingMode textRenderingMode)
+void FontBuilder::setTextRendering(TextRenderingMode textRenderingMode)
 {
     FontDescriptionChangeScope scope(this);
 
-    scope.fontDescription().setTextRenderingMode(textRenderingMode);
+    scope.fontDescription().setTextRendering(textRenderingMode);
 }
 
 void FontBuilder::setKerning(FontDescription::Kerning kerning)

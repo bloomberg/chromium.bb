@@ -2228,7 +2228,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyTextShadow:
             return valueForShadowList(style->textShadow(), *style, false);
         case CSSPropertyTextRendering:
-            return cssValuePool().createValue(style->fontDescription().textRenderingMode());
+            return cssValuePool().createValue(style->fontDescription().textRendering());
         case CSSPropertyTextOverflow:
             if (style->textOverflow())
                 return cssValuePool().createIdentifierValue(CSSValueEllipsis);

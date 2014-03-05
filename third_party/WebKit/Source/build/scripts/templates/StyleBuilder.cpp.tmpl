@@ -14,6 +14,8 @@
 {%- macro set_value(property) %}
 {%- if property.svg -%}
     state.style()->accessSVGStyle()->{{property.setter}}
+{%- elif property.font -%}
+    state.fontBuilder().{{property.setter}}
 {%- else -%}
     state.style()->{{property.setter}}
 {%- endif %}
@@ -30,6 +32,8 @@ void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& stat
 {
 {%- if property.svg %}
     {{ set_value(property) }}(SVGRenderStyle::{{property.initial}}());
+{%- elif property.font %}
+    {{ set_value(property) }}(FontBuilder::{{property.initial}}());
 {%- else %}
     {{ set_value(property) }}(RenderStyle::{{property.initial}}());
 {%- endif %}
@@ -41,6 +45,8 @@ void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& stat
 {
 {%- if property.svg %}
     {{ set_value(property) }}(state.parentStyle()->svgStyle()->{{property.getter}}());
+{%- elif property.font %}
+    {{ set_value(property) }}(state.parentFontDescription().{{property.getter}}());
 {%- else %}
     {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
 {%- endif %}
@@ -52,6 +58,10 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state,
 {
 {%- if property.converter %}
     {{ set_value(property) }}(StyleBuilderConverter::{{property.converter}}(state, value));
+{%- elif property.font %}
+    if (!value->isPrimitiveValue())
+        return;
+    {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
 {%- else %}
     {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
 {%- endif %}

@@ -39,6 +39,7 @@ class StyleBuilderWriter(in_generator.Writer):
 
     valid_values = {
         'svg': [True, False],
+        'font': [True, False],
         'custom_all': [True, False],
         'custom_initial': [True, False],
         'custom_inherit': [True, False],
@@ -49,6 +50,7 @@ class StyleBuilderWriter(in_generator.Writer):
         'name_for_methods': None,
         'use_handlers_for': None,
         'svg': False,
+        'font': False,
         'converter': None,
 # These depend on property name by default
         'type_name': None,

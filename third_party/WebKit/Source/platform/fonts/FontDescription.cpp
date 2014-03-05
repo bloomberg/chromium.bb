@@ -192,7 +192,7 @@ void FontDescription::updateTypesettingFeatures() const
 {
     m_typesettingFeatures = s_defaultTypesettingFeatures;
 
-    switch (textRenderingMode()) {
+    switch (textRendering()) {
     case AutoTextRendering:
         break;
     case OptimizeSpeed:
