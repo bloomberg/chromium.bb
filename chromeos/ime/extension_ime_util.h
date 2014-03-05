@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -32,6 +33,10 @@ std::string CHROMEOS_EXPORT GetComponentInputMethodID(
 std::string CHROMEOS_EXPORT GetExtensionIDFromInputMethodID(
     const std::string& input_method_id);
 
+// Returns InputMethodID from keyboard layout (xkb) id (e.g. xkb:fr:fra).
+std::string CHROMEOS_EXPORT GetInputMethodIDByKeyboardLayout(
+    const std::string& keyboard_layout_id);
+
 // Returns true if |input_method_id| is extension IME ID. This function does not
 // check |input_method_id| is installed extension IME.
 bool CHROMEOS_EXPORT IsExtensionIME(const std::string& input_method_id);
@@ -52,6 +57,27 @@ bool CHROMEOS_EXPORT IsMemberOfExtension(const std::string& input_method_id,
 // otherwise returns false.
 bool CHROMEOS_EXPORT IsKeyboardLayoutExtension(
     const std::string& input_method_id);
+
+// Returns true to use the wrapped extension keyboards instead of the legacy
+// xkb keyboards, returns false otherwise.
+bool CHROMEOS_EXPORT UseWrappedExtensionKeyboardLayouts();
+
+// Gets legacy xkb id (e.g. xkb:us::eng) from the new extension based xkb id
+// (e.g. _comp_ime_...xkb:us::eng). If the given id is not prefixed with
+// 'xkb:', just return the same as the given id.
+std::string CHROMEOS_EXPORT MaybeGetLegacyXkbId(
+    const std::string& input_method_id);
+
+// The scoped class to temporarily set the flag to use extension based xkb
+// keyboards for testing.
+class CHROMEOS_EXPORT ScopedUseExtensionKeyboardFlagForTesting {
+ public:
+  explicit ScopedUseExtensionKeyboardFlagForTesting(bool new_flag);
+  ~ScopedUseExtensionKeyboardFlagForTesting();
+
+ private:
+  base::AutoReset<bool> auto_reset_;
+};
 
 }  // namespace extension_ime_util
 

@@ -16,6 +16,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -60,6 +61,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -123,13 +125,13 @@ const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
 // The information will be used in InputMethodUtil::GetHardwareInputMethodId().
 void DetermineAndSaveHardwareKeyboard(const std::string& locale,
                                       const std::string& oem_layout) {
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
   std::string layout;
   if (!oem_layout.empty()) {
     // If the OEM layout information is provided, use it.
     layout = oem_layout;
   } else {
-    chromeos::input_method::InputMethodManager* manager =
-        chromeos::input_method::InputMethodManager::Get();
     // Otherwise, determine the hardware keyboard from the locale.
     std::vector<std::string> input_method_ids;
     if (manager->GetInputMethodUtil()->GetInputMethodIdsFromLanguageCode(
@@ -144,8 +146,12 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
   }
 
   if (!layout.empty()) {
+    std::vector<std::string> layouts;
+    base::SplitString(layout, ',', &layouts);
+    manager->MigrateXkbInputMethods(&layouts);
+
     PrefService* prefs = g_browser_process->local_state();
-    prefs->SetString(prefs::kHardwareKeyboardLayout, layout);
+    prefs->SetString(prefs::kHardwareKeyboardLayout, JoinString(layouts, ","));
 
     // This asks the file thread to save the prefs (i.e. doesn't block).
     // The latest values of Local State reside in memory so we can safely
@@ -153,8 +159,6 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
     // yet saved to disk.
     prefs->CommitPendingWrite();
 
-    chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::Get();
     manager->GetInputMethodUtil()->UpdateHardwareLayoutCache();
     manager->SetInputMethodLoginDefault();
   }

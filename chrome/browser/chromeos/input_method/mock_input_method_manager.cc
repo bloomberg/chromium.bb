@@ -165,5 +165,11 @@ bool MockInputMethodManager::IsLoginKeyboard(
     const std::string& layout) const {
   return true;
 }
+
+bool MockInputMethodManager::MigrateXkbInputMethods(
+    std::vector<std::string>* input_method_ids) {
+  return false;
+}
+
 }  // namespace input_method
 }  // namespace chromeos

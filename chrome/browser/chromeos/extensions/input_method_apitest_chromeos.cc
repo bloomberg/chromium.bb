@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -81,6 +82,9 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
+  chromeos::extension_ime_util::ScopedUseExtensionKeyboardFlagForTesting
+      scoped_flag(false);
+
   // Two test, two calls. See JS code for more info.
   SetInputMethodListener listener(2);
 

@@ -40,6 +40,9 @@ class InputMethodUtil {
   // into Chrome's string ID, then pulls internationalized resource string from
   // the resource bundle and returns it. These functions are not thread-safe.
   // Non-UI threads are not allowed to call them.
+  // The english_string to should be a xkb id with "xkb:...:...:..." format.
+  // TODO(shuchen): this method should be removed when finish the wrapping of
+  // xkb to extension.
   base::string16 TranslateString(const std::string& english_string) const;
 
   // Converts an input method ID to a language code of the IME. Returns "Eng"
@@ -97,6 +100,14 @@ class InputMethodUtil {
   // Gets first input method associated with the language.
   // Returns empty string on error.
   std::string GetLanguageDefaultInputMethodId(const std::string& language_code);
+
+  // Migrates the legacy xkb id to extension based xkb id.
+  // Returns true if the given input method id list is modified,
+  // returns false otherwise.
+  // TODO(shuchen): Remove this function after few milestones are passed.
+  // See: http://crbug.com/345604
+  bool MigrateXkbInputMethods(
+      std::vector<std::string>* input_method_ids);
 
   // Updates the internal cache of hardware layouts.
   void UpdateHardwareLayoutCache();

@@ -50,6 +50,11 @@ bool InputMethodManagerImpl::IsLoginKeyboard(
   return util_.IsLoginKeyboard(layout);
 }
 
+bool InputMethodManagerImpl::MigrateXkbInputMethods(
+    std::vector<std::string>* input_method_ids) {
+  return util_.MigrateXkbInputMethods(input_method_ids);
+}
+
 InputMethodManagerImpl::InputMethodManagerImpl(
     scoped_ptr<InputMethodDelegate> delegate)
     : delegate_(delegate.Pass()),
@@ -208,6 +213,7 @@ void InputMethodManagerImpl::EnableLoginLayouts(
       layouts.push_back(candidate);
   }
 
+  MigrateXkbInputMethods(&layouts);
   active_input_method_ids_.swap(layouts);
 
   // Initialize candidate window controller and widgets such as
@@ -217,7 +223,9 @@ void InputMethodManagerImpl::EnableLoginLayouts(
     MaybeInitializeCandidateWindowController();
 
   // you can pass empty |initial_layout|.
-  ChangeInputMethod(initial_layouts.empty() ? "" : initial_layouts[0]);
+  ChangeInputMethod(initial_layouts.empty() ? "" :
+      extension_ime_util::GetInputMethodIDByKeyboardLayout(
+          initial_layouts[0]));
 }
 
 // Adds new input method to given list.
@@ -285,6 +293,7 @@ bool InputMethodManagerImpl::ReplaceEnabledInputMethods(
       new_active_input_method_ids_filtered.push_back(input_method_id);
   }
   active_input_method_ids_.swap(new_active_input_method_ids_filtered);
+  MigrateXkbInputMethods(&active_input_method_ids_);
 
   ReconfigureIMFramework();
 
@@ -320,7 +329,9 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   if (!component_extension_ime_manager_->IsInitialized() &&
-      !InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
+      (!InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch) ||
+       extension_ime_util::IsKeyboardLayoutExtension(
+           input_method_id_to_switch))) {
     // We can't change input method before the initialization of
     // component extension ime manager.  ChangeInputMethod will be
     // called with |pending_input_method_| when the initialization is
@@ -659,6 +670,8 @@ bool InputMethodManagerImpl::SwitchInputMethod(
     DVLOG(1) << "Unexpected VKEY: " << accelerator.key_code();
     return false;
   }
+
+  MigrateXkbInputMethods(&input_method_ids_to_switch);
 
   // Obtain the intersection of input_method_ids_to_switch and
   // active_input_method_ids_. The order of IDs in active_input_method_ids_ is

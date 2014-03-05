@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -429,7 +430,15 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
-  std::string current_input_method_id = manager->GetCurrentInputMethod().id();
+  // Uses extension_ime_util::MaybeGetLegacyXkbId() to make sure the input
+  // method id is in legacy xkb id format (e.g. xkb:us::eng), instead of
+  // extension based xkd id format (e.g. _comp_ime_...xkb:us::eng).
+  // Same for the rests.
+  // TODO(shuchen): support wait for component extension loading, and then show
+  // OOBE window. So that extension_ime_util::MaybeGetLegacyXkbId() can be
+  // removed.
+  std::string current_input_method_id = extension_ime_util::MaybeGetLegacyXkbId(
+      manager->GetCurrentInputMethod().id());
   const std::vector<std::string>& hardware_login_input_methods =
       util->GetHardwareLoginInputMethodIds();
   std::set<std::string> input_methods_added;
@@ -438,9 +447,11 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
            hardware_login_input_methods.begin();
        i != hardware_login_input_methods.end();
        ++i) {
-    input_methods_added.insert(*i);
+    // Makes sure the id is in legacy xkb id format.
+    const std::string id = extension_ime_util::MaybeGetLegacyXkbId(*i);
+    input_methods_added.insert(id);
     const input_method::InputMethodDescriptor* ime =
-        util->GetInputMethodDescriptorFromId(*i);
+        util->GetInputMethodDescriptorFromId(id);
     DCHECK(ime != NULL);
     // Do not crash in case of misconfiguration.
     if (ime != NULL) {
@@ -451,7 +462,9 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
 
   bool optgroup_added = false;
   for (size_t i = 0; i < input_methods->size(); ++i) {
-    const std::string& ime_id = input_methods->at(i).id();
+    // Makes sure the id is in legacy xkb id format.
+    const std::string& ime_id = extension_ime_util::MaybeGetLegacyXkbId(
+        (*input_methods)[i].id());
     if (!InsertString(ime_id, input_methods_added))
       continue;
     if (!optgroup_added) {
@@ -459,7 +472,7 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
       AddOptgroupOtherLayouts(input_methods_list);
     }
     input_methods_list->Append(
-        CreateInputMethodsEntry(input_methods->at(i), current_input_method_id));
+        CreateInputMethodsEntry((*input_methods)[i], current_input_method_id));
   }
   // "xkb:us::eng" should always be in the list of available layouts.
   if (input_methods_added.count(kUSlayout) == 0) {

@@ -18,6 +18,9 @@ const int kComponentExtensionIMEPrefixLength =
     sizeof(kComponentExtensionIMEPrefix) /
         sizeof(kComponentExtensionIMEPrefix[0]) - 1;
 const int kExtensionIdLength = 32;
+// Hard coded to true. If the wrapped extension keyboards misbehaves,
+// we can easily change this to false to switch back to legacy xkb keyboards.
+bool g_use_wrapped_extension_keyboard_layouts = true;
 }  // namespace
 
 namespace extension_ime_util {
@@ -52,6 +55,19 @@ std::string GetExtensionIDFromInputMethodID(
   return "";
 }
 
+std::string GetInputMethodIDByKeyboardLayout(
+    const std::string& keyboard_layout_id) {
+  bool migrate = UseWrappedExtensionKeyboardLayouts();
+  if (IsKeyboardLayoutExtension(keyboard_layout_id)) {
+    if (migrate)
+      return keyboard_layout_id;
+    return keyboard_layout_id.substr(arraysize(kExtensionXkbIdPrefix) - 1);
+  }
+  if (migrate && StartsWithASCII(keyboard_layout_id, "xkb:", true))
+    return kExtensionXkbIdPrefix + keyboard_layout_id;
+  return keyboard_layout_id;
+}
+
 bool IsExtensionIME(const std::string& input_method_id) {
   return StartsWithASCII(input_method_id,
                          kExtensionIMEPrefix,
@@ -73,6 +89,28 @@ bool IsMemberOfExtension(const std::string& input_method_id,
 
 bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
   return StartsWithASCII(input_method_id, kExtensionXkbIdPrefix, true);
+}
+
+bool UseWrappedExtensionKeyboardLayouts() {
+  return g_use_wrapped_extension_keyboard_layouts;
+}
+
+std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {
+  if (IsKeyboardLayoutExtension(input_method_id)) {
+    size_t pos = input_method_id.find("xkb:");
+    if (pos != std::string::npos)
+      return input_method_id.substr(pos);
+  }
+  return input_method_id;
+}
+
+ScopedUseExtensionKeyboardFlagForTesting::
+    ScopedUseExtensionKeyboardFlagForTesting(bool new_flag)
+  : auto_reset_(&g_use_wrapped_extension_keyboard_layouts, new_flag) {
+}
+
+ScopedUseExtensionKeyboardFlagForTesting::
+    ~ScopedUseExtensionKeyboardFlagForTesting() {
 }
 
 }  // namespace extension_ime_util

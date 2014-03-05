@@ -459,7 +459,12 @@ base::string16 InputMethodUtil::GetInputMethodLongName(
   DCHECK(!input_method.language_codes().empty());
   const std::string language_code = input_method.language_codes().at(0);
 
-  base::string16 text = TranslateString(input_method.id());
+  // Before translate the string, convert the input method id to legacy xkb id
+  // if possible.
+  // TODO(shuchen): the GetInputMethodLongName() method should be removed when
+  // finish the wrapping of xkb to extension.
+  base::string16 text = TranslateString(
+      extension_ime_util::MaybeGetLegacyXkbId(input_method.id()));
   if (text == standard_input_method_text ||
              language_code == "de" ||
              language_code == "fr" ||
@@ -478,7 +483,20 @@ const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromId(
     const std::string& input_method_id) const {
   InputMethodIdToDescriptorMap::const_iterator iter
       = id_to_descriptor_.find(input_method_id);
-  return (iter == id_to_descriptor_.end()) ? NULL : &(iter->second);
+  if (iter == id_to_descriptor_.end()) {
+    // If failed to find the descriptor for given id, it may because of the id
+    // is a component extension xkb id (_comp_ime_...xkb:...).
+    // So try to convert it to legacy xkb id and find again.
+    // This hack is mainly for OOBE session, which requires a sync call to get
+    // the input method descriptor for extension xkb id.
+    // TODO(shuchen): need to support async wait for component extension
+    // loading in OOBE session. This hack won't be needed when it's been done.
+    iter = id_to_descriptor_.find(
+        extension_ime_util::MaybeGetLegacyXkbId(input_method_id));
+    if (iter == id_to_descriptor_.end())
+      return NULL;
+  }
+  return &(iter->second);
 }
 
 bool InputMethodUtil::GetInputMethodIdsFromLanguageCode(
@@ -611,11 +629,36 @@ std::string InputMethodUtil::GetLanguageDefaultInputMethodId(
   return std::string();
 }
 
+bool InputMethodUtil::MigrateXkbInputMethods(
+    std::vector<std::string>* input_method_ids) {
+  bool rewritten = false;
+  std::vector<std::string>& ids = *input_method_ids;
+  for (size_t i = 0; i < ids.size(); ++i) {
+    std::string id =
+        extension_ime_util::GetInputMethodIDByKeyboardLayout(ids[i]);
+    if (id != ids[i]) {
+      ids[i] = id;
+      rewritten = true;
+    }
+  }
+  if (rewritten) {
+    // Removes the duplicates.
+    std::vector<std::string> new_ids;
+    for (size_t i = 0; i < ids.size(); ++i) {
+      if (std::find(new_ids.begin(), new_ids.end(), ids[i]) == new_ids.end())
+        new_ids.push_back(ids[i]);
+    }
+    ids.swap(new_ids);
+  }
+  return rewritten;
+}
+
 void InputMethodUtil::UpdateHardwareLayoutCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   hardware_layouts_.clear();
   hardware_login_layouts_.clear();
   Tokenize(delegate_->GetHardwareKeyboardLayouts(), ",", &hardware_layouts_);
+  MigrateXkbInputMethods(&hardware_layouts_);
 
   for (size_t i = 0; i < hardware_layouts_.size(); ++i) {
     if (IsLoginKeyboard(hardware_layouts_[i]))
@@ -682,14 +725,15 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
   layouts.push_back("us");
   std::vector<std::string> languages;
   languages.push_back("en-US");
-  return InputMethodDescriptor("xkb:us::eng",
-                               "",
-                               "US",
-                               layouts,
-                               languages,
-                               true,  // login keyboard.
-                               GURL(),  // options page, not available.
-                               GURL()); // input view page, not available.
+  return InputMethodDescriptor(
+      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:us::eng"),
+      "",
+      "US",
+      layouts,
+      languages,
+      true,  // login keyboard.
+      GURL(),  // options page, not available.
+      GURL()); // input view page, not available.
 }
 
 void InputMethodUtil::ReloadInternalMaps() {
