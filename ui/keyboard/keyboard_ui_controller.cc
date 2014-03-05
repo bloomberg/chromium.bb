@@ -59,6 +59,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_IMAGES_FORWARD);
   source->AddResourcePath("images/fullscreen.svg",
                           IDR_KEYBOARD_IMAGES_FULLSCREEN);
+  source->AddResourcePath("images/hide-keyboard.svg",
+                          IDR_KEYBOARD_IMAGES_HIDE_KEYBOARD);
   source->AddResourcePath("images/left.svg",
                           IDR_KEYBOARD_IMAGES_LEFT);
   source->AddResourcePath("images/microphone.svg",

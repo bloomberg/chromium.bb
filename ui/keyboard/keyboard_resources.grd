@@ -41,6 +41,7 @@
       <include name="IDR_KEYBOARD_IMAGES_DOWN" file="resources/images/down.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_FORWARD" file="resources/images/forward.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_FULLSCREEN" file="resources/images/fullscreen.svg" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_HIDE_KEYBOARD" file="resources/images/hide-keyboard.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_KEYBOARD" file="resources/images/keyboard.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_LEFT" file="resources/images/left.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_MICROPHONE" file="resources/images/microphone.svg" type="BINDATA" />
