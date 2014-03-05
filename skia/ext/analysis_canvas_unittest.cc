@@ -180,8 +180,12 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 TEST(AnalysisCanvasTest, ClipPath) {
   skia::AnalysisCanvas canvas(255, 255);
 
+  // Skia will look for paths that are actually rects and treat
+  // them as such. We add a divot to the following path to prevent
+  // this optimization and truly test clipPath's behavior.
   SkPath path;
   path.moveTo(0, 0);
+  path.lineTo(128, 50); 
   path.lineTo(255, 0);
   path.lineTo(255, 255);
   path.lineTo(0, 255);

@@ -59,30 +59,6 @@ public:
     SkProxyCanvas::restore();
   }
 
-  virtual bool clipRect(const SkRect& rect, SkRegion::Op op,
-                        bool doAa) OVERRIDE {
-    AutoStamper stamper(this);
-    return SkProxyCanvas::clipRect(rect, op, doAa);
-  }
-
-  virtual bool clipRRect(const SkRRect& rrect, SkRegion::Op op,
-                         bool doAa) OVERRIDE {
-    AutoStamper stamper(this);
-    return SkProxyCanvas::clipRRect(rrect, op, doAa);
-  }
-
-  virtual bool clipPath(const SkPath& path, SkRegion::Op op,
-                        bool doAa) OVERRIDE {
-    AutoStamper stamper(this);
-    return SkProxyCanvas::clipPath(path, op, doAa);
-  }
-
-  virtual bool clipRegion(const SkRegion& region,
-                          SkRegion::Op op = SkRegion::kIntersect_Op) OVERRIDE {
-    AutoStamper stamper(this);
-    return SkProxyCanvas::clipRegion(region, op);
-  }
-
   virtual void drawPaint(const SkPaint& paint) OVERRIDE {
     AutoStamper stamper(this);
     SkProxyCanvas::drawPaint(paint);
@@ -185,6 +161,31 @@ public:
   virtual void drawData(const void* data, size_t length) OVERRIDE {
     AutoStamper stamper(this);
     SkProxyCanvas::drawData(data, length);
+  }
+
+protected:
+  virtual void onClipRect(const SkRect& rect, SkRegion::Op op,
+                          ClipEdgeStyle edge_style) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onClipRect(rect, op, edge_style);
+  }
+
+  virtual void onClipRRect(const SkRRect& rrect, SkRegion::Op op,
+                          ClipEdgeStyle edge_style) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onClipRRect(rrect, op, edge_style);
+  }
+
+  virtual void onClipPath(const SkPath& path, SkRegion::Op op,
+                          ClipEdgeStyle edge_style) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onClipPath(path, op, edge_style);
+  }
+
+  virtual void onClipRegion(const SkRegion& region,
+                            SkRegion::Op op) OVERRIDE {
+    AutoStamper stamper(this);
+    SkProxyCanvas::onClipRegion(region, op);
   }
 
 private:

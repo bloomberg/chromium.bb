@@ -31,16 +31,6 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
   virtual bool abortDrawing() OVERRIDE;
 
   // SkCanvas overrides.
-  virtual bool clipRect(const SkRect& rect,
-                        SkRegion::Op op = SkRegion::kIntersect_Op,
-                        bool do_anti_alias = false) OVERRIDE;
-  virtual bool clipPath(const SkPath& path,
-                        SkRegion::Op op = SkRegion::kIntersect_Op,
-                        bool do_anti_alias = false) OVERRIDE;
-  virtual bool clipRRect(const SkRRect& rrect,
-                         SkRegion::Op op = SkRegion::kIntersect_Op,
-                         bool do_anti_alias = false) OVERRIDE;
-
   virtual int saveLayer(const SkRect* bounds,
                         const SkPaint* paint,
                         SkCanvas::SaveFlags flags) OVERRIDE;
@@ -104,6 +94,17 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                             const uint16_t indices[],
                             int indexCount,
                             const SkPaint&) OVERRIDE;
+
+ protected:
+  virtual void onClipRect(const SkRect& rect,
+                          SkRegion::Op op,
+                          ClipEdgeStyle edge_style) OVERRIDE;
+  virtual void onClipRRect(const SkRRect& rrect,
+                           SkRegion::Op op,
+                           ClipEdgeStyle edge_style) OVERRIDE;
+  virtual void onClipPath(const SkPath& path,
+                          SkRegion::Op op,
+                          ClipEdgeStyle edge_style) OVERRIDE;
 
  private:
   typedef SkCanvas INHERITED;

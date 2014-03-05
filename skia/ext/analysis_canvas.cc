@@ -305,11 +305,14 @@ bool AnalysisCanvas::abortDrawing() {
   return HasText();
 }
 
-bool AnalysisCanvas::clipRect(const SkRect& rect, SkRegion::Op op, bool do_aa) {
-  return INHERITED::clipRect(rect, op, do_aa);
+void AnalysisCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, 
+                                ClipEdgeStyle edge_style) {
+
+  INHERITED::onClipRect(rect, op, edge_style);
 }
 
-bool AnalysisCanvas::clipPath(const SkPath& path, SkRegion::Op op, bool do_aa) {
+void AnalysisCanvas::onClipPath(const SkPath& path, SkRegion::Op op,
+                                ClipEdgeStyle edge_style) {
   // clipPaths can make our calls to IsFullQuad invalid (ie have false
   // positives). As a precaution, force the setting to be non-solid
   // and non-transparent until we pop this
@@ -322,12 +325,12 @@ bool AnalysisCanvas::clipPath(const SkPath& path, SkRegion::Op op, bool do_aa) {
     SetForceNotTransparent(true);
   }
 
-  return INHERITED::clipRect(path.getBounds(), op, do_aa);
+  INHERITED::onClipRect(path.getBounds(), op, edge_style);
 }
 
-bool AnalysisCanvas::clipRRect(const SkRRect& rrect,
-                               SkRegion::Op op,
-                               bool do_aa) {
+void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
+                                 SkRegion::Op op,
+                                 ClipEdgeStyle edge_style) {
   // clipRRect can make our calls to IsFullQuad invalid (ie have false
   // positives). As a precaution, force the setting to be non-solid
   // and non-transparent until we pop this
@@ -340,7 +343,7 @@ bool AnalysisCanvas::clipRRect(const SkRRect& rrect,
     SetForceNotTransparent(true);
   }
 
-  return INHERITED::clipRect(rrect.getBounds(), op, do_aa);
+  INHERITED::onClipRect(rrect.getBounds(), op, edge_style);
 }
 
 int AnalysisCanvas::save(SkCanvas::SaveFlags flags) {

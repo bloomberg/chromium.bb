@@ -365,21 +365,24 @@ class NoSaveLayerCanvas : public SkCanvas {
     return count;
   }
 
+ protected:
   // Disable aa for speed.
-  virtual bool clipRect(const SkRect& rect, SkRegion::Op op, bool doAA)
-      SK_OVERRIDE {
-    return this->INHERITED::clipRect(rect, op, false);
+  virtual void onClipRect(const SkRect& rect, 
+                          SkRegion::Op op,
+                          ClipEdgeStyle edge_style) SK_OVERRIDE {
+    this->INHERITED::onClipRect(rect, op, kHard_ClipEdgeStyle);
   }
 
-  virtual bool clipPath(const SkPath& path, SkRegion::Op op, bool doAA)
-      SK_OVERRIDE {
-    return this->updateClipConservativelyUsingBounds(
-        path.getBounds(), op, path.isInverseFillType());
+  virtual void onClipPath(const SkPath& path, 
+                          SkRegion::Op op,
+                          ClipEdgeStyle edge_style) SK_OVERRIDE {
+    this->updateClipConservativelyUsingBounds(path.getBounds(), op, 
+                                              path.isInverseFillType());
   }
-  virtual bool clipRRect(const SkRRect& rrect, SkRegion::Op op, bool doAA)
-      SK_OVERRIDE {
-    return this->updateClipConservativelyUsingBounds(
-        rrect.getBounds(), op, false);
+  virtual void onClipRRect(const SkRRect& rrect, 
+                           SkRegion::Op op,
+                           ClipEdgeStyle edge_style) SK_OVERRIDE {
+    this->updateClipConservativelyUsingBounds(rrect.getBounds(), op, false);
   }
 
  private:
