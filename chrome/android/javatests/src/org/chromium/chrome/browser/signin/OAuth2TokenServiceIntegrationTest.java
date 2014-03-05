@@ -12,7 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.AccountHolder;
@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * These tests initialize the native part of the service.
  */
-public class OAuth2TokenServiceIntegrationTest extends ChromiumTestShellTestBase {
+public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
 
     private static final Account TEST_ACCOUNT1 =
             AccountManagerHelper.createAccountFromName("foo@gmail.com");

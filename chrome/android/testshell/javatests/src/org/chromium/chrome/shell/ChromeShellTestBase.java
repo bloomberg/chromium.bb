@@ -25,16 +25,15 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Base test class for all ChromiumTestShell based tests.
+ * Base test class for all ChromeShell based tests.
  */
-public class ChromiumTestShellTestBase extends
-        ActivityInstrumentationTestCase2<ChromiumTestShellActivity> {
+public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<ChromeShellActivity> {
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
     private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
-    private static final String TAG = "ChromiumTestShellTestBase";
+    private static final String TAG = "ChromeShellTestBase";
 
-    public ChromiumTestShellTestBase() {
-        super(ChromiumTestShellActivity.class);
+    public ChromeShellTestBase() {
+        super(ChromeShellActivity.class);
     }
 
     protected static void startChromeBrowserProcessSync(final Context targetContext) {
@@ -54,24 +53,24 @@ public class ChromiumTestShellTestBase extends
     }
 
     /**
-     * Starts the ChromiumTestShell activity and loads the given URL.
+     * Starts the {@link ChromeShellActivity} and loads the given URL.
      */
-    protected ChromiumTestShellActivity launchChromiumTestShellWithUrl(String url) {
+    protected ChromeShellActivity launchChromeShellWithUrl(String url) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (url != null) intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
-                ChromiumTestShellActivity.class));
+                ChromeShellActivity.class));
         setActivityIntent(intent);
         return getActivity();
     }
 
     /**
-     * Starts the ChromiumTestShell activity and loads a blank page.
+     * Starts the {@link ChromeShellActivity} and loads a blank page.
      */
-    protected ChromiumTestShellActivity launchChromiumTestShellWithBlankPage() {
-        return launchChromiumTestShellWithUrl("about:blank");
+    protected ChromeShellActivity launchChromeShellWithBlankPage() {
+        return launchChromeShellWithUrl("about:blank");
     }
 
     /**
@@ -83,7 +82,7 @@ public class ChromiumTestShellTestBase extends
      * @throws InterruptedException
      */
     protected boolean waitForActiveShellToBeDoneLoading() throws InterruptedException {
-        final ChromiumTestShellActivity activity = getActivity();
+        final ChromeShellActivity activity = getActivity();
 
         // Wait for the Content Shell to be initialized.
         return CriteriaHelper.pollForCriteria(new Criteria() {

@@ -18,7 +18,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.JavascriptAppModalDialog;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.content.browser.test.util.Criteria;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for displaying and functioning of modal dialogs.
  */
-public class ModalDialogTest extends ChromiumTestShellTestBase {
+public class ModalDialogTest extends ChromeShellTestBase {
     private static final String TAG = "ModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
@@ -46,7 +46,7 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        launchChromiumTestShellWithUrl(EMPTY_PAGE);
+        launchChromeShellWithUrl(EMPTY_PAGE);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
     }
 

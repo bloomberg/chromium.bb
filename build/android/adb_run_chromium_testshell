@@ -10,5 +10,5 @@ fi
 
 adb shell am start \
   -a android.intent.action.VIEW \
-  -n org.chromium.chrome.shell/.ChromiumTestShellActivity \
+  -n org.chromium.chrome.shell/.ChromeShellActivity \
   $INTENT_ARGS

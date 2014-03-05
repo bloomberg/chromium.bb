@@ -17,7 +17,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.shell.TestShellTab;
 
 import java.io.File;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * TODO(cimamoglu): Add a test with multiple, stacked onLayout/onWrite calls.
  * TODO(cimamoglu): Add a test which emulates Chromium failing to generate a PDF.
  */
-public class PrintingControllerTest extends ChromiumTestShellTestBase {
+public class PrintingControllerTest extends ChromeShellTestBase {
 
     private static final String TEMP_FILE_NAME = "temp_print";
     private static final String TEMP_FILE_EXTENSION = ".pdf";
@@ -77,7 +77,7 @@ public class PrintingControllerTest extends ChromiumTestShellTestBase {
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
-        final TestShellTab currentTab = launchChromiumTestShellWithUrl(URL).getActiveTab();
+        final TestShellTab currentTab = launchChromeShellWithUrl(URL).getActiveTab();
         assertTrue(waitForActiveShellToBeDoneLoading());
 
         final PrintingControllerImpl printingController = createControllerOnUiThread();

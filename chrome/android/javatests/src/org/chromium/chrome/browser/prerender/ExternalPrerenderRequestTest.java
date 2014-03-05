@@ -12,7 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 
 import java.util.concurrent.Callable;
@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for adding and removing prerenders using the {@link ExternalPrerenderHandler}
  */
-public class ExternalPrerenderRequestTest extends ChromiumTestShellTestBase {
+public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
     private static final String GOOGLE_URL =
             TestHttpServerClient.getUrl("chrome/test/data/android/prerender/google.html");
     private static final String YOUTUBE_URL =
@@ -34,7 +34,7 @@ public class ExternalPrerenderRequestTest extends ChromiumTestShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
-        launchChromiumTestShellWithBlankPage();
+        launchChromeShellWithBlankPage();
         assertTrue(waitForActiveShellToBeDoneLoading());
         mHandler = new ExternalPrerenderHandler();
         final Callable<Profile> profileCallable = new Callable<Profile>() {

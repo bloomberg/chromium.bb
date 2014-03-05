@@ -14,11 +14,11 @@ import android.test.suitebuilder.annotation.MediumTest;
 import com.google.protos.ipc.invalidation.Types;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 
-public class ChromiumSyncAdapterTest extends ChromiumTestShellTestBase {
+public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
 
     private static final Account TEST_ACCOUNT =
             AccountManagerHelper.createAccountFromName("test@gmail.com");
@@ -66,7 +66,7 @@ public class ChromiumSyncAdapterTest extends ChromiumTestShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        launchChromiumTestShellWithBlankPage();
+        launchChromeShellWithBlankPage();
         mSyncAdapter = new TestChromiumSyncAdapter(getInstrumentation().getTargetContext(),
                 getActivity().getApplication());
     }

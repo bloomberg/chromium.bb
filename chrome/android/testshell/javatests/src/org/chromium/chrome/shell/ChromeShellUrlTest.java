@@ -16,14 +16,14 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
+public class ChromeShellUrlTest extends ChromeShellTestBase {
     // URL used for base tests.
     private static final String URL = "data:text";
 
     @SmallTest
     @Feature({"Main"})
     public void testBaseStartup() throws InterruptedException {
-        ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl(URL);
+        ChromeShellActivity activity = launchChromeShellWithUrl(URL);
         waitForActiveShellToBeDoneLoading();
 
         // Make sure the activity was created as expected.
@@ -34,7 +34,7 @@ public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
     @Feature({"Main"})
     public void testChromeWelcomePageLoads() throws InterruptedException {
         String welcomeUrl = "chrome://welcome/";
-        final ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl(welcomeUrl);
+        final ChromeShellActivity activity = launchChromeShellWithUrl(welcomeUrl);
         waitForActiveShellToBeDoneLoading();
 
         // Make sure the activity was created as expected.
@@ -88,9 +88,9 @@ public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
     @SmallTest
     @Feature({"Main"})
     public void testCompositorInit() throws InterruptedException {
-        // Start the ChromiumTestShell, this loads the native library and create an instance of
+        // Start the ChromeShell, this loads the native library and create an instance of
         // ContentViewRenderView.
-        final ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl(URL);
+        final ChromeShellActivity activity = launchChromeShellWithUrl(URL);
         waitForActiveShellToBeDoneLoading();
 
         // Now create a new ContentViewRenderView, it should not assert.

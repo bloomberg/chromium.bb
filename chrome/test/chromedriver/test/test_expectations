@@ -162,7 +162,7 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     "SessionHandlingTest.callingQuitMoreThanOnceOnASessionIsANoOp",
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
-    # Not applicable on Chromium Test Shell (doesn't support tabs).
+    # Not applicable on ChromeShell (doesn't support tabs).
     'WindowSwitchingTest.*',
 
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=441

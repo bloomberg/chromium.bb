@@ -9,7 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.shell.TestShellTab;
 import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests verifying that form resubmission dialogs are correctly displayed and handled.
  */
-public class RepostFormWarningTest extends ChromiumTestShellTestBase {
+public class RepostFormWarningTest extends ChromeShellTestBase {
     // Active tab.
     private TestShellTab mTab;
     // Callback helper that manages waiting for pageloads to finish.
@@ -30,7 +30,7 @@ public class RepostFormWarningTest extends ChromiumTestShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        mTab = launchChromiumTestShellWithBlankPage().getActiveTab();
+        mTab = launchChromeShellWithBlankPage().getActiveTab();
         mCallbackHelper = TabUtils.getTestCallbackHelperContainer(mTab);
 
         // Wait for the initial load of about://blank to finish.

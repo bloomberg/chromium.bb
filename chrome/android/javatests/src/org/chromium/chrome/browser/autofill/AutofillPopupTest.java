@@ -13,7 +13,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for the AutofillPopup.
  */
-public class AutofillPopupTest extends ChromiumTestShellTestBase {
+public class AutofillPopupTest extends ChromeShellTestBase {
 
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Smith";
@@ -65,7 +65,7 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
-        launchChromiumTestShellWithUrl(PAGE_DATA);
+        launchChromeShellWithUrl(PAGE_DATA);
         assertTrue(waitForActiveShellToBeDoneLoading());
         mHelper = new AutofillTestHelper();
     }

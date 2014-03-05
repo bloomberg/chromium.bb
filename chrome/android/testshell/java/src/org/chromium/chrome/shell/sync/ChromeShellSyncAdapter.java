@@ -8,10 +8,10 @@ import android.app.Application;
 import android.content.Context;
 
 import org.chromium.chrome.browser.sync.ChromiumSyncAdapter;
-import org.chromium.chrome.shell.ChromiumTestShellApplication;
+import org.chromium.chrome.shell.ChromeShellApplication;
 
-public class ChromiumTestShellSyncAdapter extends ChromiumSyncAdapter {
-    public ChromiumTestShellSyncAdapter(Context appContext, Application application) {
+public class ChromeShellSyncAdapter extends ChromiumSyncAdapter {
+    public ChromeShellSyncAdapter(Context appContext, Application application) {
         super(appContext, application);
     }
 
@@ -22,6 +22,6 @@ public class ChromiumTestShellSyncAdapter extends ChromiumSyncAdapter {
 
     @Override
     protected void initCommandLine() {
-        ChromiumTestShellApplication.initCommandLine();
+        ChromeShellApplication.initCommandLine();
     }
 }

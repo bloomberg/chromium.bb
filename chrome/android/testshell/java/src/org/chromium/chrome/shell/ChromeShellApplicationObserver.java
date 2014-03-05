@@ -7,9 +7,9 @@ package org.chromium.chrome.shell;
 import android.content.Intent;
 
 /**
- * Monitors events happening in {@link ChromiumTestShellApplication}.
+ * Monitors events happening in {@link ChromeShellApplication}.
  */
-public interface ChromiumTestShellApplicationObserver {
+public interface ChromeShellApplicationObserver {
     /**
      * Called when an Intent is about to be broadcast.
      * @return Whether or not the Application should really fire the broadcast.

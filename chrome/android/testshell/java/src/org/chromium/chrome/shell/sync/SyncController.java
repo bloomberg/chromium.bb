@@ -21,7 +21,7 @@ import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
- * A helper class for managing sync state for the ChromiumTestShell.
+ * A helper class for managing sync state for the ChromeShell.
  *
  * Builds on top of the ProfileSyncService (which manages Chrome's sync engine's state) and mimics
  * the minimum additional functionality needed to fully enable sync for Chrome on Android.
@@ -98,7 +98,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         final Account account = AccountManagerHelper.createAccountFromName(accountName);
 
         // The SigninManager handles most of the sign-in flow, and doFinishSignIn handles the
-        // Chromium testshell specific details.
+        // ChromeShell specific details.
         SigninManager signinManager = SigninManager.get(mContext);
         signinManager.onFirstRunCheckDone();
         final boolean passive = false;

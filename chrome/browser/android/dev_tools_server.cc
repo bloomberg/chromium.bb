@@ -213,7 +213,7 @@ class NonTabTarget : public TargetBase {
 
   virtual std::string GetType() const OVERRIDE {
     if (TabModelList::begin() == TabModelList::end()) {
-      // If there are no tab models we must be running in ChromiumTestShell.
+      // If there are no tab models we must be running in ChromeShell.
       // Return the 'page' target type for backwards compatibility.
       return kTargetTypePage;
     }

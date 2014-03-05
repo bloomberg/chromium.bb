@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * A basic test shell {@link android.app.Application}.  Handles setting up the native library and
  * loading the right resources.
  */
-public class ChromiumTestShellApplication extends ChromiumApplication {
+public class ChromeShellApplication extends ChromiumApplication {
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromiumtestshell";
     private static final String[] CHROME_MANDATORY_PAKS = {
         "en-US.pak",
@@ -30,7 +30,7 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
     private static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-testshell-command-line";
 
-    ArrayList<ChromiumTestShellApplicationObserver> mObservers;
+    ArrayList<ChromeShellApplicationObserver> mObservers;
 
     @Override
     public void onCreate() {
@@ -41,7 +41,7 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
         ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
-        mObservers = new ArrayList<ChromiumTestShellApplicationObserver>();
+        mObservers = new ArrayList<ChromeShellApplicationObserver>();
 
         // Initialize the invalidations ID, just like we would in the downstream code.
         UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(this);
@@ -50,7 +50,7 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
     @Override
     public void sendBroadcast(Intent intent) {
         boolean shouldFire = true;
-        for (ChromiumTestShellApplicationObserver observer : mObservers) {
+        for (ChromeShellApplicationObserver observer : mObservers) {
             shouldFire &= observer.onSendBroadcast(intent);
         }
 
@@ -59,11 +59,11 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
         }
     }
 
-    public void addObserver(ChromiumTestShellApplicationObserver observer) {
+    public void addObserver(ChromeShellApplicationObserver observer) {
         mObservers.add(observer);
     }
 
-    public void removeObserver(ChromiumTestShellApplicationObserver observer) {
+    public void removeObserver(ChromeShellApplicationObserver observer) {
         mObservers.remove(observer);
     }
 

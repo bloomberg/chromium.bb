@@ -12,7 +12,7 @@ import org.chromium.net.AndroidPrivateKey;
 import java.security.cert.X509Certificate;
 
 /**
- * Chromium TestShell stub implementation of PKCS11AuthenticationManager.
+ * ChromeShell stub implementation of PKCS11AuthenticationManager.
  */
 public class TestShellPKCS11AuthenticationManager implements PKCS11AuthenticationManager {
     @Override

@@ -17,7 +17,7 @@ class ChromiumTestShellTarget(cr.NamedTarget):
       CR_RUN_ARGUMENTS=cr.Config.Optional('-d "{CR_URL!e}"'),
       CR_TARGET_NAME='ChromiumTestShell',
       CR_PACKAGE='org.chromium.chrome.shell',
-      CR_ACTIVITY='.ChromiumTestShellActivity',
+      CR_ACTIVITY='.ChromeShellActivity',
   )
 
 

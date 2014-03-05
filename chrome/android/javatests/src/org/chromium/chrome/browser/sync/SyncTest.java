@@ -13,8 +13,8 @@ import org.chromium.base.test.util.HostDrivenTest;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
-import org.chromium.chrome.shell.ChromiumTestShellActivity;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellActivity;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.ContentView;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for Sync.
  */
-public class SyncTest extends ChromiumTestShellTestBase {
+public class SyncTest extends ChromeShellTestBase {
     private static final String TAG = "SyncTest";
 
     private static final String FOREIGN_SESSION_TEST_MACHINE_ID =
@@ -167,7 +167,7 @@ public class SyncTest extends ChromiumTestShellTestBase {
 
         SyncTestUtil.verifySyncIsSignedOut(getActivity());
 
-        final Activity activity = launchChromiumTestShellWithBlankPage();
+        final Activity activity = launchChromeShellWithBlankPage();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -180,7 +180,7 @@ public class SyncTest extends ChromiumTestShellTestBase {
                 SyncTestUtil.isSyncEverythingEnabled(mContext));
     }
 
-    private static ContentViewCore getContentViewCore(ChromiumTestShellActivity activity) {
+    private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {
         ContentView contentView = activity.getActiveContentView();
         if (contentView == null) return null;
         return contentView.getContentViewCore();

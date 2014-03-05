@@ -11,7 +11,7 @@ import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -20,7 +20,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 
-public class InfoBarTest extends ChromiumTestShellTestBase {
+public class InfoBarTest extends ChromeShellTestBase {
     private static final long MAX_TIMEOUT = scaleTimeout(2000);
     private static final int CHECK_INTERVAL = 500;
     private static final String GEOLOCATION_PAGE =
@@ -48,7 +48,7 @@ public class InfoBarTest extends ChromiumTestShellTestBase {
 
     /**
      * Verify PopUp InfoBar. Only basic triggering verified due to lack of tabs
-     * in ChromiumTestShell
+     * in ChromeShell
      */
     @Smoke
     @MediumTest

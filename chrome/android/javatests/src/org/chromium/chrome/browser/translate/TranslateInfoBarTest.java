@@ -8,7 +8,7 @@ import android.test.FlakyTest;
 
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -20,7 +20,7 @@ import java.util.List;
  * Tests for the translate infobar, assumes it runs on a system with language
  * preferences set to English.
  */
-public class TranslateInfoBarTest extends ChromiumTestShellTestBase {
+public class TranslateInfoBarTest extends ChromeShellTestBase {
     private static final String TRANSLATE_PAGE = "chrome/test/data/translate/fr_test.html";
 
     private InfoBarTestAnimationListener mListener;

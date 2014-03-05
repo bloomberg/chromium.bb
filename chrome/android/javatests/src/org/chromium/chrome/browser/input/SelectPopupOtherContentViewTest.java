@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.input;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ContentViewUtil;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -17,7 +17,7 @@ import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
-public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
+public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
             "<html><body>" +
             "Which animal is the strongest:<br/>" +
@@ -55,7 +55,7 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
     public void testPopupNotClosedByOtherContentView()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.
-        launchChromiumTestShellWithUrl(SELECT_URL);
+        launchChromeShellWithUrl(SELECT_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
         final ContentView view = getActivity().getActiveContentView();

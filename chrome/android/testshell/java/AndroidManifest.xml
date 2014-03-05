@@ -31,10 +31,10 @@
     <uses-permission android:name="org.chromium.chrome.shell.permission.C2D_MESSAGE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-    <application android:name="org.chromium.chrome.shell.ChromiumTestShellApplication"
+    <application android:name="org.chromium.chrome.shell.ChromeShellApplication"
             android:icon="@mipmap/app_icon"
             android:label="Chrome Shell">
-        <activity android:name="org.chromium.chrome.shell.ChromiumTestShellActivity"
+        <activity android:name="org.chromium.chrome.shell.ChromeShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
@@ -173,7 +173,7 @@
 
         <!-- Sync adapter for browser sync. -->
         <service android:exported="false"
-                 android:name="org.chromium.chrome.shell.sync.ChromiumTestShellSyncAdapterService">
+                 android:name="org.chromium.chrome.shell.sync.ChromeShellSyncAdapterService">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>

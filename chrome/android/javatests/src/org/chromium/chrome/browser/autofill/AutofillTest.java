@@ -9,8 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromiumTestShellActivity;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellActivity;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests the Autofill's java code for creating the AutofillPopup object, opening and selecting
  * popups.
  */
-public class AutofillTest extends ChromiumTestShellTestBase {
+public class AutofillTest extends ChromeShellTestBase {
 
     private AutofillPopup mAutofillPopup;
     private WindowAndroid mWindowAndroid;
@@ -37,7 +37,7 @@ public class AutofillTest extends ChromiumTestShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ChromiumTestShellActivity activity = launchChromiumTestShellWithBlankPage();
+        ChromeShellActivity activity = launchChromeShellWithBlankPage();
         assertNotNull(activity);
         waitForActiveShellToBeDoneLoading();
 

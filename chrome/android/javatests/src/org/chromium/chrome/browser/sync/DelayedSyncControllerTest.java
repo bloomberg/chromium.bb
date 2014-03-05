@@ -18,12 +18,12 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 
-public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
+public class DelayedSyncControllerTest extends ChromeShellTestBase {
     private static final Account TEST_ACCOUNT =
             AccountManagerHelper.createAccountFromName("something@gmail.com");
     private static final long WAIT_FOR_LAUNCHER_MS = scaleTimeout(10 * 1000);
@@ -45,7 +45,7 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mController = new TestDelayedSyncController();
-        launchChromiumTestShellWithBlankPage();
+        launchChromeShellWithBlankPage();
     }
 
     @SmallTest

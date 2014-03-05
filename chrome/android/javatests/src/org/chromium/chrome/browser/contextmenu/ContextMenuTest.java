@@ -16,7 +16,7 @@ import junit.framework.Assert;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -30,11 +30,11 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ContextMenuTest extends ChromiumTestShellTestBase {
+public class ContextMenuTest extends ChromeShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        launchChromiumTestShellWithUrl(TestHttpServerClient.getUrl(
+        launchChromeShellWithUrl(TestHttpServerClient.getUrl(
                 "chrome/test/data/android/contextmenu/context_menu_test.html"));
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
         assertWaitForPageScaleFactorMatch(0.5f);

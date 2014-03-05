@@ -10,14 +10,14 @@ import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
 
 import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.shell.ChromiumTestShellActivity;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellActivity;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 
 /**
  * Base class for Chrome's ContentProvider tests.
  * Sets up a local ChromeBrowserProvider associated to a mock resolver in an isolated context.
  */
-public class ProviderTestBase extends ChromiumTestShellTestBase {
+public class ProviderTestBase extends ChromeShellTestBase {
 
     private IsolatedContext mContext;
 
@@ -25,7 +25,7 @@ public class ProviderTestBase extends ChromiumTestShellTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl(null);
+        ChromeShellActivity activity = launchChromeShellWithUrl(null);
         assertNotNull(activity);
 
         ContentProvider provider = new ChromeBrowserProvider();

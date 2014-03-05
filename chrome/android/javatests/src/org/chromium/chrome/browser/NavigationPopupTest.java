@@ -11,8 +11,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.shell.ChromiumTestShellActivity;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellActivity;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.NavigationClient;
 import org.chromium.content.browser.NavigationEntry;
 import org.chromium.content.browser.NavigationHistory;
@@ -25,17 +25,17 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for the navigation popup.
  */
-public class NavigationPopupTest extends ChromiumTestShellTestBase {
+public class NavigationPopupTest extends ChromeShellTestBase {
 
     private static final int INVALID_NAVIGATION_INDEX = -1;
 
-    private ChromiumTestShellActivity mActivity;
+    private ChromeShellActivity mActivity;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
-        mActivity = launchChromiumTestShellWithBlankPage();
+        mActivity = launchChromeShellWithBlankPage();
     }
 
     // Exists solely to expose protected methods to this test.

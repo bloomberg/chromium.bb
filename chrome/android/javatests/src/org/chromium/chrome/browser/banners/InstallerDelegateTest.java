@@ -8,7 +8,7 @@ import android.content.pm.PackageInfo;
 import android.os.HandlerThread;
 import android.test.mock.MockPackageManager;
 
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * Tests the InstallerDelegate to make sure that it functions correctly and responds to changes
  * in the PackageManager.
  */
-public class InstallerDelegateTest extends ChromiumTestShellTestBase
+public class InstallerDelegateTest extends ChromeShellTestBase
         implements InstallerDelegate.Observer{
     private static final String MOCK_PACKAGE_NAME = "mock.package.name";
 

@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  *
- * Tab provides common functionality for ChromiumTestshell's Tab as well as Chrome on Android's
+ * Tab provides common functionality for ChromeShell Tab as well as Chrome on Android's
  * tab. It is intended to be extended either on Java or both Java and C++, with ownership managed
  * by this base class.
  *

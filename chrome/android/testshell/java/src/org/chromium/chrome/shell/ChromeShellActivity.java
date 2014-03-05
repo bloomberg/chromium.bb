@@ -40,8 +40,8 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * The {@link android.app.Activity} component of a basic test shell to test Chrome features.
  */
-public class ChromiumTestShellActivity extends Activity implements AppMenuPropertiesDelegate {
-    private static final String TAG = "ChromiumTestShellActivity";
+public class ChromeShellActivity extends Activity implements AppMenuPropertiesDelegate {
+    private static final String TAG = "ChromeShellActivity";
 
     private WindowAndroid mWindow;
     private TabManager mTabManager;
@@ -55,7 +55,7 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ChromiumTestShellApplication.initCommandLine();
+        ChromeShellApplication.initCommandLine();
         waitForDebuggerIfNeeded();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
@@ -69,7 +69,7 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
 
                     @Override
                     public void onFailure() {
-                        Toast.makeText(ChromiumTestShellActivity.this,
+                        Toast.makeText(ChromeShellActivity.this,
                                        R.string.browser_process_initialization_failed,
                                        Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "Chromium browser process initialization failed");
@@ -271,7 +271,7 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
         MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
         forwardMenuItem.setEnabled(getActiveTab().canGoForward());
 
-        // ChromiumTestShell does not know about bookmarks yet
+        // ChromeShell does not know about bookmarks yet
         menu.findItem(R.id.bookmark_this_page_id).setEnabled(false);
 
         MenuItem signinItem = menu.findItem(R.id.signin);

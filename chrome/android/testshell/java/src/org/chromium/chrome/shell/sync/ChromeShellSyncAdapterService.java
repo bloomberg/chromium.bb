@@ -10,10 +10,10 @@ import android.content.Context;
 import org.chromium.chrome.browser.sync.ChromiumSyncAdapter;
 import org.chromium.chrome.browser.sync.ChromiumSyncAdapterService;
 
-public class ChromiumTestShellSyncAdapterService extends ChromiumSyncAdapterService {
+public class ChromeShellSyncAdapterService extends ChromiumSyncAdapterService {
     @Override
     protected ChromiumSyncAdapter createChromiumSyncAdapter(
             Context context, Application application) {
-        return new ChromiumTestShellSyncAdapter(context, getApplication());
+        return new ChromeShellSyncAdapter(context, getApplication());
     }
 }

@@ -115,7 +115,7 @@ const BrowserDescriptor kBrowserDescriptors[] = {
   {
     "org.chromium.chrome.shell",
     "chromium_testshell_devtools_remote",
-    "Chromium Test Shell"
+    "Chrome Shell"
   },
   {
     "org.chromium.android_webview.shell",

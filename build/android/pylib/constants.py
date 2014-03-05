@@ -62,7 +62,7 @@ PACKAGE_INFO = {
         'org.chromium.content_shell_apk.tests'),
     'chromium_test_shell': PackageInfo(
         'org.chromium.chrome.shell',
-        'org.chromium.chrome.shell.ChromiumTestShellActivity',
+        'org.chromium.chrome.shell.ChromeShellActivity',
         '/data/local/tmp/chromium-testshell-command-line',
         'chromium_testshell_devtools_remote',
         'org.chromium.chrome.shell.tests'),

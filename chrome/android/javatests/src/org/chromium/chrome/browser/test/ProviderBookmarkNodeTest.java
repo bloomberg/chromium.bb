@@ -12,21 +12,21 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProvider.Type;
 import org.chromium.chrome.browser.test.util.BookmarkUtils;
-import org.chromium.chrome.shell.ChromiumTestShellTestBase;
+import org.chromium.chrome.shell.ChromeShellTestBase;
 
 import java.util.Random;
 
 /**
  * Tests parceling of bookmark node hierarchies used by the provider client API.
  */
-public class ProviderBookmarkNodeTest extends ChromiumTestShellTestBase {
+public class ProviderBookmarkNodeTest extends ChromeShellTestBase {
     Random mGenerator = new Random();
     byte[][] mImageBlobs = null;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        launchChromiumTestShellWithUrl(null);
+        launchChromeShellWithUrl(null);
 
         mImageBlobs = new byte[][] {
             BookmarkUtils.getIcon("chrome/provider/icon1.png"),
