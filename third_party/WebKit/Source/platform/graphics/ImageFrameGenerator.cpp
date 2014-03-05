@@ -313,7 +313,7 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     // This is confusing and should be cleaned up when we can deprecate the use
     // case for Android discardable memory.
     SkBitmap copyBitmap;
-    if (!fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), m_discardableAllocator.get()))
+    if (!fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.colorType(), m_discardableAllocator.get()))
         return nullptr;
 
     if (isCacheComplete)

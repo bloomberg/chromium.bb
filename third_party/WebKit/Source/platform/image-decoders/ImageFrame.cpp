@@ -100,7 +100,7 @@ bool ImageFrame::copyBitmapData(const ImageFrame& other)
     m_hasAlpha = other.m_hasAlpha;
     m_bitmap->bitmap().reset();
     const NativeImageSkia* otherBitmap = other.m_bitmap.get();
-    return otherBitmap->bitmap().copyTo(&m_bitmap->bitmap(), otherBitmap->bitmap().config());
+    return otherBitmap->bitmap().copyTo(&m_bitmap->bitmap(), otherBitmap->bitmap().colorType());
 }
 
 bool ImageFrame::setSize(int newWidth, int newHeight)
