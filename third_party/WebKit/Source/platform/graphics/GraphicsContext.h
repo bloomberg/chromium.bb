@@ -39,7 +39,6 @@
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/skia/OpaqueRegionSkia.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -94,73 +93,76 @@ public:
     void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
     void restoreLayer();
 
-    float strokeThickness() const { return m_paintState->m_strokeData.thickness(); }
-    void setStrokeThickness(float thickness) { mutableState()->m_strokeData.setThickness(thickness); }
+    float strokeThickness() const { return immutableState()->strokeData().thickness(); }
+    void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }
 
-    StrokeStyle strokeStyle() const { return m_paintState->m_strokeData.style(); }
-    void setStrokeStyle(StrokeStyle style) { mutableState()->m_strokeData.setStyle(style); }
+    StrokeStyle strokeStyle() const { return immutableState()->strokeData().style(); }
+    void setStrokeStyle(StrokeStyle style) { mutableState()->setStrokeStyle(style); }
 
-    Color strokeColor() const { return m_paintState->m_strokeData.color(); }
-    void setStrokeColor(const Color&);
+    Color strokeColor() const { return immutableState()->strokeData().color(); }
+    void setStrokeColor(const Color& color) { mutableState()->setStrokeColor(color); }
+    SkColor effectiveStrokeColor() const { return immutableState()->effectiveStrokeColor(); }
 
-    Pattern* strokePattern() const { return m_paintState->m_strokeData.pattern(); }
+    Pattern* strokePattern() const { return immutableState()->strokeData().pattern(); }
     void setStrokePattern(PassRefPtr<Pattern>);
 
-    Gradient* strokeGradient() const { return m_paintState->m_strokeData.gradient(); }
+    Gradient* strokeGradient() const { return immutableState()->strokeData().gradient(); }
     void setStrokeGradient(PassRefPtr<Gradient>);
 
-    void setLineCap(LineCap cap) { mutableState()->m_strokeData.setLineCap(cap); }
-    void setLineDash(const DashArray& dashes, float dashOffset) { mutableState()->m_strokeData.setLineDash(dashes, dashOffset); }
-    void setLineJoin(LineJoin join) { mutableState()->m_strokeData.setLineJoin(join); }
-    void setMiterLimit(float limit) { mutableState()->m_strokeData.setMiterLimit(limit); }
+    void setLineCap(LineCap cap) { mutableState()->setLineCap(cap); }
+    void setLineDash(const DashArray& dashes, float dashOffset) { mutableState()->setLineDash(dashes, dashOffset); }
+    void setLineJoin(LineJoin join) { mutableState()->setLineJoin(join); }
+    void setMiterLimit(float limit) { mutableState()->setMiterLimit(limit); }
 
-    WindRule fillRule() const { return m_paintState->m_fillRule; }
-    void setFillRule(WindRule fillRule) { mutableState()->m_fillRule = fillRule; }
+    WindRule fillRule() const { return immutableState()->fillRule(); }
+    void setFillRule(WindRule fillRule) { mutableState()->setFillRule(fillRule); }
 
-    Color fillColor() const { return m_paintState->m_fillColor; }
-    void setFillColor(const Color&);
-    SkColor effectiveFillColor() const { return m_paintState->applyAlpha(m_paintState->m_fillColor.rgb()); }
+    Color fillColor() const { return immutableState()->fillColor(); }
+    void setFillColor(const Color& color) { mutableState()->setFillColor(color); }
+    SkColor effectiveFillColor() const { return immutableState()->effectiveFillColor(); }
 
     void setFillPattern(PassRefPtr<Pattern>);
-    Pattern* fillPattern() const { return m_paintState->m_fillPattern.get(); }
+    Pattern* fillPattern() const { return immutableState()->fillPattern(); }
 
     void setFillGradient(PassRefPtr<Gradient>);
-    Gradient* fillGradient() const { return m_paintState->m_fillGradient.get(); }
+    Gradient* fillGradient() const { return immutableState()->fillGradient(); }
 
-    SkDrawLooper* drawLooper() const { return m_paintState->m_looper.get(); }
-    SkColor effectiveStrokeColor() const { return m_paintState->applyAlpha(m_paintState->m_strokeData.color().rgb()); }
-
-    int getNormalizedAlpha() const;
+    SkDrawLooper* drawLooper() const { return immutableState()->drawLooper(); }
 
     FloatRect getClipBounds() const;
     bool getTransformedClipBounds(FloatRect* bounds) const;
     SkMatrix getTotalMatrix() const;
     bool isPrintingDevice() const;
 
-    void setShouldAntialias(bool antialias) { mutableState()->m_shouldAntialias = antialias; }
-    bool shouldAntialias() const { return m_paintState->m_shouldAntialias; }
+    void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }
+    bool shouldAntialias() const { return immutableState()->shouldAntialias(); }
 
-    void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->m_shouldClampToSourceRect = clampToSourceRect; }
-    bool shouldClampToSourceRect() const { return m_paintState->m_shouldClampToSourceRect; }
+    void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->setShouldClampToSourceRect(clampToSourceRect); }
+    bool shouldClampToSourceRect() const { return immutableState()->shouldClampToSourceRect(); }
 
-    void setShouldSmoothFonts(bool smoothFonts) { mutableState()->m_shouldSmoothFonts = smoothFonts; }
-    bool shouldSmoothFonts() const { return m_paintState->m_shouldSmoothFonts; }
+    void setShouldSmoothFonts(bool smoothFonts) { mutableState()->setShouldSmoothFonts(smoothFonts); }
+    bool shouldSmoothFonts() const { return immutableState()->shouldSmoothFonts(); }
 
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*);
     bool couldUseLCDRenderedText();
 
-    void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->m_textDrawingMode = mode; }
-    TextDrawingModeFlags textDrawingMode() const { return m_paintState->m_textDrawingMode; }
+    void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->setTextDrawingMode(mode); }
+    TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }
 
-    void setAlpha(float alpha) { mutableState()->m_alpha = alpha;}
+    void setAlphaAsFloat(float alpha) { mutableState()->setAlphaAsFloat(alpha);}
+    int getNormalizedAlpha() const
+    {
+        int alpha = immutableState()->alpha();
+        return alpha > 255 ? 255 : alpha;
+    }
 
-    void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->m_interpolationQuality = quality; }
-    InterpolationQuality imageInterpolationQuality() const { return m_paintState->m_interpolationQuality; }
+    void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->setInterpolationQuality(quality); }
+    InterpolationQuality imageInterpolationQuality() const { return immutableState()->interpolationQuality(); }
 
     void setCompositeOperation(CompositeOperator, blink::WebBlendMode = blink::WebBlendModeNormal);
-    CompositeOperator compositeOperation() const { return m_paintState->m_compositeOperator; }
-    blink::WebBlendMode blendModeOperation() const { return m_paintState->m_blendMode; }
+    CompositeOperator compositeOperation() const { return immutableState()->compositeOperator(); }
+    blink::WebBlendMode blendModeOperation() const { return immutableState()->blendMode(); }
 
     // Change the way document markers are rendered.
     // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
@@ -208,11 +210,8 @@ public:
     // Sets up the paint for the current fill style.
     void setupPaintForFilling(SkPaint*) const;
 
-    // Sets up the paint for stroking. Returns a float representing the
-    // effective width of the pen. If a non-zero length is provided, the
-    // number of dashes/dots on a dashed/dotted line will be adjusted to
-    // start and end that length with a dash/dot.
-    float setupPaintForStroking(SkPaint*, int length = 0) const;
+    // Sets up the paint for the current stroke style.
+    void setupPaintForStroking(SkPaint*) const;
 
     // These draw methods will do both stroking and filling.
     // FIXME: ...except drawRect(), which fills properly but always strokes
@@ -311,6 +310,7 @@ public:
     void beginRecording(const FloatRect& bounds);
     PassRefPtr<DisplayList> endRecording();
 
+    bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,
         DrawLooper::ShadowTransformMode = DrawLooper::ShadowRespectsTransforms,
         DrawLooper::ShadowAlphaMode = DrawLooper::ShadowRespectsAlpha);
@@ -412,12 +412,6 @@ private:
         return value;
     }
 
-    // Sets up the common flags on a paint for antialiasing, effects, etc.
-    // This is implicitly called by setupPaintFill and setupPaintStroke, but
-    // you may wish to call it directly sometimes if you don't want that other
-    // behavior.
-    void setupPaintCommon(SkPaint*) const;
-
     // Helpers for drawing a focus ring (drawFocusRing)
     void drawOuterPath(const SkPath&, SkPaint&, int);
     void drawInnerPath(const SkPath&, SkPaint&, int);
@@ -436,8 +430,8 @@ private:
     // Apply deferred paint state saves
     void realizePaintSave()
     {
-        if (m_paintState->m_saveCount) {
-            --m_paintState->m_saveCount;
+        if (m_paintState->saveCount()) {
+            m_paintState->decrementSaveCount();
             ++m_paintStateIndex;
             if (m_paintStateStack.size() == m_paintStateIndex)
                 m_paintStateStack.append(GraphicsContextState::create());

@@ -158,13 +158,13 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     ASSERT(svgStyle);
 
     if (resourceMode & ApplyToFillMode) {
-        context->setAlpha(svgStyle->fillOpacity());
+        context->setAlphaAsFloat(svgStyle->fillOpacity());
         context->setFillPattern(patternData->pattern);
         context->setFillRule(svgStyle->fillRule());
     } else if (resourceMode & ApplyToStrokeMode) {
         if (svgStyle->vectorEffect() == VE_NON_SCALING_STROKE)
             patternData->pattern->setPatternSpaceTransform(transformOnNonScalingStroke(object, patternData->transform));
-        context->setAlpha(svgStyle->strokeOpacity());
+        context->setAlphaAsFloat(svgStyle->strokeOpacity());
         context->setStrokePattern(patternData->pattern);
         SVGRenderSupport::applyStrokeStyleToContext(context, style, object);
     }

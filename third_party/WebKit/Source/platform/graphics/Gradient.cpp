@@ -39,28 +39,28 @@
 namespace WebCore {
 
 Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
-    : m_radial(false)
-    , m_p0(p0)
+    : m_p0(p0)
     , m_p1(p1)
     , m_r0(0)
     , m_r1(0)
     , m_aspectRatio(1)
+    , m_radial(false)
     , m_stopsSorted(false)
-    , m_spreadMethod(SpreadMethodPad)
     , m_drawInPMColorSpace(false)
+    , m_spreadMethod(SpreadMethodPad)
 {
 }
 
 Gradient::Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio)
-    : m_radial(true)
-    , m_p0(p0)
+    : m_p0(p0)
     , m_p1(p1)
     , m_r0(r0)
     , m_r1(r1)
     , m_aspectRatio(aspectRatio)
+    , m_radial(true)
     , m_stopsSorted(false)
-    , m_spreadMethod(SpreadMethodPad)
     , m_drawInPMColorSpace(false)
+    , m_spreadMethod(SpreadMethodPad)
 {
 }
 

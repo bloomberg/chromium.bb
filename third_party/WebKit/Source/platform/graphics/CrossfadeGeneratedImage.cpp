@@ -66,7 +66,7 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
             static_cast<float>(m_crossfadeSize.width()) / fromImageSize.width(),
             static_cast<float>(m_crossfadeSize.height()) / fromImageSize.height()));
     }
-    context->setAlpha(inversePercentage);
+    context->setAlphaAsFloat(inversePercentage);
     context->drawImage(m_fromImage, IntPoint());
     context->restore();
 
@@ -77,7 +77,7 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
             static_cast<float>(m_crossfadeSize.width()) / toImageSize.width(),
             static_cast<float>(m_crossfadeSize.height()) / toImageSize.height()));
     }
-    context->setAlpha(m_percentage);
+    context->setAlphaAsFloat(m_percentage);
     context->drawImage(m_toImage, IntPoint(), CompositePlusLighter);
     context->restore();
 

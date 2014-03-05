@@ -573,7 +573,7 @@ TEST(GraphicsContextTest, trackOpaqueImageTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
     context.save();
-    context.setAlpha(0.5);
+    context.setAlphaAsFloat(0.5);
     context.drawImage(opaqueImage.get(), IntPoint(25, 15), CompositeSourceIn);
     context.restore();
     EXPECT_EQ_RECT(IntRect(10, 25, 90, 75), context.opaqueRegion().asRect());
@@ -588,7 +588,7 @@ TEST(GraphicsContextTest, trackOpaqueImageTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
     context.save();
-    context.setAlpha(0.5);
+    context.setAlphaAsFloat(0.5);
     context.drawImage(opaqueImage.get(), IntPoint(15, 25), CompositeSourceIn);
     context.restore();
     EXPECT_EQ_RECT(IntRect(25, 10, 75, 90), context.opaqueRegion().asRect());

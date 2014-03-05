@@ -576,6 +576,7 @@
       'graphics/GraphicsContextAnnotation.h',
       'graphics/GraphicsContextRecorder.cpp',
       'graphics/GraphicsContextRecorder.h',
+      'graphics/GraphicsContextState.cpp',
       'graphics/GraphicsContextState.h',
       'graphics/GraphicsContextStateSaver.h',
       'graphics/GraphicsLayer.cpp',

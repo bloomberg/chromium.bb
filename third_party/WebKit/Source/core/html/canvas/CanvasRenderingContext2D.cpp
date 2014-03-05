@@ -548,7 +548,7 @@ void CanvasRenderingContext2D::setGlobalAlpha(float alpha)
     GraphicsContext* c = drawingContext();
     if (!c)
         return;
-    c->setAlpha(alpha);
+    c->setAlphaAsFloat(alpha);
 }
 
 String CanvasRenderingContext2D::globalCompositeOperation() const
@@ -1134,7 +1134,7 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
             context->save();
             saved = true;
         }
-        context->setAlpha(1);
+        context->setAlphaAsFloat(1);
     }
     if (state().m_globalComposite != CompositeSourceOver) {
         if (!saved) {
@@ -2507,7 +2507,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
         return;
 
     c->save();
-    c->setAlpha(1.0);
+    c->setAlphaAsFloat(1.0);
     c->clearShadow();
     c->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
 

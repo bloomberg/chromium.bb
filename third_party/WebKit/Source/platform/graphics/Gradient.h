@@ -72,6 +72,7 @@ public:
     void addColorStop(float, const Color&);
 
     bool hasAlpha() const;
+    bool shaderChanged() const { return !m_gradient; }
 
     bool isRadial() const { return m_radial; }
     bool isZeroSize() const { return m_p0.x() == m_p1.x() && m_p0.y() == m_p1.y() && (!m_radial || m_r0 == m_r1); }
@@ -135,19 +136,18 @@ private:
 
     void sortStopsIfNecessary();
 
-    // Keep any parameters relevant to rendering in sync with the structure in Gradient::hash().
-    bool m_radial;
     FloatPoint m_p0;
     FloatPoint m_p1;
     float m_r0;
     float m_r1;
     float m_aspectRatio; // For elliptical gradient, width / height.
     mutable Vector<ColorStop, 2> m_stops;
+    bool m_radial;
     mutable bool m_stopsSorted;
+    bool m_drawInPMColorSpace;
     GradientSpreadMethod m_spreadMethod;
     AffineTransform m_gradientSpaceTransformation;
 
-    bool m_drawInPMColorSpace;
 
     RefPtr<SkShader> m_gradient;
 };

@@ -56,10 +56,10 @@ public:
     }
 
     StrokeStyle style() const { return m_style; }
-    void setStyle(const StrokeStyle style) { m_style = style; }
+    void setStyle(StrokeStyle style) { m_style = style; }
 
     float thickness() const { return m_thickness; }
-    void setThickness(const float thickness) { m_thickness = thickness; }
+    void setThickness(float thickness) { m_thickness = thickness; }
 
     Color color() const { return m_color; }
     void setColor(const Color& color) { m_color = color; }
@@ -73,22 +73,26 @@ public:
     void clearPattern() { m_pattern.clear(); }
 
     LineCap lineCap() const { return (LineCap)m_lineCap; }
-    void setLineCap(const LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
+    void setLineCap(LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
 
     LineJoin lineJoin() const { return (LineJoin)m_lineJoin; }
-    void setLineJoin(const LineJoin join) { m_lineJoin = (SkPaint::Join)join; }
+    void setLineJoin(LineJoin join) { m_lineJoin = (SkPaint::Join)join; }
 
     float miterLimit() const { return m_miterLimit; }
-    void setMiterLimit(const float miterLimit) { m_miterLimit = miterLimit; }
+    void setMiterLimit(float miterLimit) { m_miterLimit = miterLimit; }
 
-    void setLineDash(const DashArray&, const float);
+    void setLineDash(const DashArray&, float);
 
     // Sets everything on the paint except the pattern, gradient and color.
-    // GraphicsContext::setupShader does that. Returns a float representing the
-    // effective width of the pen. If a non-zero length is provided, the
+    // GraphicsContext::setupShader does that. If a non-zero length is provided, the
     // number of dashes/dots on a dashed/dotted line will be adjusted to
     // start and end that length with a dash/dot.
-    float setupPaint(SkPaint*, int length = 0) const;
+    void setupPaint(SkPaint*, int length = 0) const;
+
+    // Setup any DashPathEffect on the paint. If a non-zero length is provided,
+    // and no line dash has been set, the number of dashes/dots on a dashed/dotted
+    // line will be adjusted to start and end that length with a dash/dot.
+    void setupPaintDashPathEffect(SkPaint*, int) const;
 
 private:
     StrokeStyle m_style;

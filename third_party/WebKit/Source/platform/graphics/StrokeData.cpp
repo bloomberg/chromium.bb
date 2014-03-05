@@ -57,16 +57,20 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset)
     m_dash = adoptRef(new SkDashPathEffect(intervals.get(), count, dashOffset));
 }
 
-float StrokeData::setupPaint(SkPaint* paint, int length) const
+void StrokeData::setupPaint(SkPaint* paint, int length) const
 {
-    float width = m_thickness;
-
     paint->setStyle(SkPaint::kStroke_Style);
-    paint->setStrokeWidth(SkFloatToScalar(width));
+    paint->setStrokeWidth(SkFloatToScalar(m_thickness));
     paint->setStrokeCap(m_lineCap);
     paint->setStrokeJoin(m_lineJoin);
     paint->setStrokeMiter(SkFloatToScalar(m_miterLimit));
 
+    setupPaintDashPathEffect(paint, length);
+}
+
+void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const
+{
+    float width = m_thickness;
     if (m_dash) {
         paint->setPathEffect(m_dash.get());
     } else {
@@ -75,7 +79,8 @@ float StrokeData::setupPaint(SkPaint* paint, int length) const
         case SolidStroke:
         case DoubleStroke:
         case WavyStroke: // FIXME: https://code.google.com/p/chromium/issues/detail?id=229574
-            break;
+            paint->setPathEffect(0);
+            return;
         case DashedStroke:
             width = dashRatio * width;
             // Fall through.
@@ -104,8 +109,6 @@ float StrokeData::setupPaint(SkPaint* paint, int length) const
             paint->setPathEffect(pathEffect.get());
         }
     }
-
-    return width;
 }
 
 } // namespace
