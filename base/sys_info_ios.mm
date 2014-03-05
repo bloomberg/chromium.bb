@@ -79,6 +79,23 @@ int64 SysInfo::AmountOfPhysicalMemory() {
 }
 
 // static
+int64 SysInfo::AmountOfAvailablePhysicalMemory() {
+  base::mac::ScopedMachPort host(mach_host_self());
+  vm_statistics_data_t vm_info;
+  mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
+  if (host_statistics(host.get(),
+                      HOST_VM_INFO,
+                      reinterpret_cast<host_info_t>(&vm_info),
+                      &count) != KERN_SUCCESS) {
+    NOTREACHED();
+    return 0;
+  }
+
+  return static_cast<int64>(
+      vm_info.free_count - vm_info.speculative_count) * PAGE_SIZE;
+}
+
+// static
 std::string SysInfo::CPUModelName() {
   char name[256];
   size_t len = arraysize(name);
