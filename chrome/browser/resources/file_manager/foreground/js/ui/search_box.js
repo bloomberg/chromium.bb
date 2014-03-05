@@ -49,6 +49,12 @@ function SearchBox(element) {
   this.inputElement.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.inputElement.addEventListener('focus', this.onFocus_.bind(this));
   this.inputElement.addEventListener('blur', this.onBlur_.bind(this));
+  this.inputElement.ownerDocument.addEventListener('dragover',
+                                                   this.onDragEnter_.bind(this),
+                                                   true);
+  this.inputElement.ownerDocument.addEventListener('dragend',
+                                                   this.onDragEnd_.bind(this),
+                                                   true);
   element.querySelector('.icon').addEventListener(
       'click', this.onIconClick_.bind(this));
   element.parentNode.appendChild(this.autocompleteList);
@@ -187,6 +193,27 @@ SearchBox.prototype.onKeyDown_ = function() {
  */
 SearchBox.prototype.onIconClick_ = function() {
   this.inputElement.focus();
+};
+
+/**
+ * Handles a dragenter event and refuses a drag source of files.
+ * @param {DragEvent} event The dragenter event.
+ * @private
+ */
+SearchBox.prototype.onDragEnter_ = function(event) {
+  // For normal elements, they does not accept drag drop by default, and accept
+  // it by using event.preventDefault. But input elements accept drag drop
+  // by default. So disalbe the input element here to prohibit drag drop.
+  if (event.dataTransfer.types.indexOf('text/plain') === -1)
+    this.inputElement.style.pointerEvents = 'none';
+};
+
+/**
+ * Handles a dragend event.
+ * @private
+ */
+SearchBox.prototype.onDragEnd_ = function() {
+  this.inputElement.style.pointerEvents = '';
 };
 
 /**
