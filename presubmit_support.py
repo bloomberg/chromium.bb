@@ -1133,7 +1133,7 @@ def DoGetTrySlaves(change,
   """
   presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
   if not presubmit_files and verbose:
-    output_stream.write("Warning, no presubmit.py found.\n")
+    output_stream.write("Warning, no PRESUBMIT.py found.\n")
   results = []
   executer = GetTrySlavesExecuter()
 
