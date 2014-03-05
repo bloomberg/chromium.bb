@@ -169,7 +169,7 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + file, true, 0, &client);
 
     // Set size to enable hit testing, and avoid line wrapping for consistency with browser.
-    webView->resize(WebSize(700, 1000));
+    webView->resize(WebSize(800, 1200));
 
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;

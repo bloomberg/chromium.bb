@@ -271,7 +271,13 @@ public:
 
     int expansion() const { return m_bitfields.expansion(); }
 
-    bool visibleToHitTestRequest(const HitTestRequest& request) const { return renderer().visibleToHitTestRequest(request); }
+    bool visibleForTouchAction() const { return false; }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const
+    {
+        if (request.touchAction() && !visibleForTouchAction())
+            return false;
+        return renderer().visibleToHitTestRequest(request);
+    }
 
     EVerticalAlign verticalAlign() const { return renderer().style(m_bitfields.firstLine())->verticalAlign(); }
 

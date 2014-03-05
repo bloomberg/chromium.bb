@@ -21,15 +21,38 @@
   </div>
 </div>
 
+<div class='ta-none' style='height: 0; margin-bottom: 50px'>
+  <span expected-action='none' style='display:inline-block'>
+    touch-action should be inherited by inline-block elements
+  </span>
+</div>
+
+<div class='ta-none' style='height: 0; margin-bottom: 50px'>
+  <span expected-action='none' style='display:table-cell'>
+    touch-action should be inherited by table-cell elements
+  </span>
+</div>
+
 <div style='padding: 20px 0'>
   <span class='ta-none' expected-action='auto'>Touch-action should be ignored on inline elements
     <div expected-action='auto'>And not propagated to any block children</div>
   </span>
 </div>
-<p>Below case is broken, should be AUTO - <a href='http://crbug.com/319479'>Bug 319479</a></p>
-<div class='ta-none' style='height: 0; margin-bottom: 100px'>
-  <span expected-action='none'>
+
+<div class='ta-none' style='height: 0; margin-bottom: 50px'>
+  <span expected-action='auto'>
     touch-action should not be inherited by inline elements
-    <div expected-action='none'>But is inherited by any block descendants of them</div>
   </span>
+</div>
+
+<div class='ta-none' style='height: 0; margin-bottom: 100px'>
+  <span>
+    <div expected-action='none'>touch-action should be inherited by any block descendants of inline elements</div>
+  </span>
+</div>
+
+<div class='ta-none' style='height: 0; margin-bottom: 50px'>
+  <svg expected-action='none' xmlns="http://www.w3.org/2000/svg">
+  touch-action should be inherited by svg root element
+  </svg>
 </div>

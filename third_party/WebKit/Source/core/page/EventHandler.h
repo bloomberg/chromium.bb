@@ -245,7 +245,7 @@ private:
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
 
     TouchAction intersectTouchAction(const TouchAction, const TouchAction);
-    TouchAction computeEffectiveTouchAction(const Node&);
+    TouchAction computeEffectiveTouchAction(const LayoutPoint&);
 
     bool handleMouseEventAsEmulatedGesture(const PlatformMouseEvent&);
     bool handleWheelEventAsEmulatedGesture(const PlatformWheelEvent&);

@@ -116,6 +116,8 @@ public:
         return objects && !objects->isEmpty();
     }
 
+    virtual bool visibleForTouchAction() const OVERRIDE FINAL { return true; }
+
     void addPercentHeightDescendant(RenderBox*);
     static void removePercentHeightDescendant(RenderBox*);
     TrackedRendererListHashSet* percentHeightDescendants() const;

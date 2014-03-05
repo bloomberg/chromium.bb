@@ -929,7 +929,14 @@ public:
     void remove() { if (parent()) parent()->removeChild(this); }
 
     bool isInert() const;
-    bool visibleToHitTestRequest(const HitTestRequest& request) const { return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert(); }
+    virtual bool visibleForTouchAction() const { return false; }
+    bool visibleToHitTestRequest(const HitTestRequest& request) const
+    {
+        if (request.touchAction() && !visibleForTouchAction())
+            return false;
+        return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert();
+    }
+
     bool visibleToHitTesting() const { return style()->visibility() == VISIBLE && style()->pointerEvents() != PE_NONE && !isInert(); }
 
     // Map points and quads through elements, potentially via 3d transforms. You should never need to call these directly; use
