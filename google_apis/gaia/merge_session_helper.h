@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;

@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/url_request/url_request_context_getter.h"
 
 int OAuth2TokenService::max_fetch_retry_num_ = 5;
@@ -246,7 +247,7 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 }
 
 void OAuth2TokenService::Fetcher::Start() {
-  fetcher_.reset(new OAuth2AccessTokenFetcher(this, getter_.get()));
+  fetcher_.reset(new OAuth2AccessTokenFetcherImpl(this, getter_.get()));
   fetcher_->Start(client_id_,
                   client_secret_,
                   refresh_token_,

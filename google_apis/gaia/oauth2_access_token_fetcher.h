@@ -8,33 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "url/gurl.h"
 
-class OAuth2AccessTokenFetcherTest;
+class OAuth2AccessTokenConsumer;
 
-namespace base {
-class Time;
-}
-
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-class URLRequestStatus;
-}
-
-// Abstracts the details to get OAuth2 access token token from
-// OAuth2 refresh token.
-// See "Using the Refresh Token" section in:
-// http://code.google.com/apis/accounts/docs/OAuth2WebServer.html
-//
-// This class should be used on a single thread, but it can be whichever thread
-// that you like.
-// Also, do not reuse the same instance. Once Start() is called, the instance
-// should not be reused.
+// Interface of a OAuth2 access token fetcher.
 //
 // Usage:
 // * Create an instance with a consumer.
@@ -44,10 +23,9 @@ class URLRequestStatus;
 //
 // This class can handle one request at a time. To parallelize requests,
 // create multiple instances.
-class OAuth2AccessTokenFetcher : public net::URLFetcherDelegate {
+class OAuth2AccessTokenFetcher {
  public:
-  OAuth2AccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                           net::URLRequestContextGetter* getter);
+  explicit OAuth2AccessTokenFetcher(OAuth2AccessTokenConsumer* consumer);
   virtual ~OAuth2AccessTokenFetcher();
 
   // Starts the flow with the given parameters.
@@ -59,64 +37,21 @@ class OAuth2AccessTokenFetcher : public net::URLFetcherDelegate {
   virtual void Start(const std::string& client_id,
                      const std::string& client_secret,
                      const std::string& refresh_token,
-                     const std::vector<std::string>& scopes);
+                     const std::vector<std::string>& scopes) = 0;
 
-  void CancelRequest();
+  // Cancels the current request and informs the consumer.
+  virtual void CancelRequest() = 0;
 
-  // Implementation of net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+ protected:
+  // Fires |OnGetTokenSuccess| on |consumer_|.
+  void FireOnGetTokenSuccess(const std::string& access_token,
+                             const base::Time& expiration_time);
+
+  // Fires |OnGetTokenFailure| on |consumer_|.
+  void FireOnGetTokenFailure(const GoogleServiceAuthError& error);
 
  private:
-  enum State {
-    INITIAL,
-    GET_ACCESS_TOKEN_STARTED,
-    GET_ACCESS_TOKEN_DONE,
-    ERROR_STATE,
-  };
-
-  // Helper methods for the flow.
-  void StartGetAccessToken();
-  void EndGetAccessToken(const net::URLFetcher* source);
-
-  // Helper mehtods for reporting back results.
-  void OnGetTokenSuccess(const std::string& access_token,
-                         const base::Time& expiration_time);
-  void OnGetTokenFailure(const GoogleServiceAuthError& error);
-
-  // Other helpers.
-  static GURL MakeGetAccessTokenUrl();
-  static std::string MakeGetAccessTokenBody(
-      const std::string& client_id,
-      const std::string& client_secret,
-      const std::string& refresh_token,
-      const std::vector<std::string>& scopes);
-
-  static bool ParseGetAccessTokenSuccessResponse(
-      const net::URLFetcher* source,
-      std::string* access_token,
-      int* expires_in);
-
-  static bool ParseGetAccessTokenFailureResponse(
-      const net::URLFetcher* source,
-      std::string* error);
-
-  // State that is set during construction.
   OAuth2AccessTokenConsumer* const consumer_;
-  net::URLRequestContextGetter* const getter_;
-  State state_;
-
-  // While a fetch is in progress.
-  scoped_ptr<net::URLFetcher> fetcher_;
-  std::string client_id_;
-  std::string client_secret_;
-  std::string refresh_token_;
-  std::vector<std::string> scopes_;
-
-  friend class OAuth2AccessTokenFetcherTest;
-  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenFetcherTest,
-                           ParseGetAccessTokenResponse);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenFetcherTest,
-                           MakeGetAccessTokenBody);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenFetcher);
 };

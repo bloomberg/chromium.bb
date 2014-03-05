@@ -19,7 +19,7 @@
 
 #if !defined(OS_ANDROID)
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #endif
 
 namespace policy {
@@ -134,7 +134,7 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::FetchAccessToken(
   // Start fetching an OAuth2 access token for the device management and
   // userinfo services.
   oauth2_access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcher(this, context));
+      new OAuth2AccessTokenFetcherImpl(this, context));
   std::vector<std::string> scopes;
   scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.push_back(kServiceScopeGetUserInfo);

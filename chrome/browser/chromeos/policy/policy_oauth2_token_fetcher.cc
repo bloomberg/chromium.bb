@@ -14,7 +14,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
@@ -60,7 +60,7 @@ void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {
   scopes.push_back(
       GaiaUrls::GetInstance()->oauth_wrap_bridge_user_info_scope());
   access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcher(this, system_context_getter_.get()));
+      new OAuth2AccessTokenFetcherImpl(this, system_context_getter_.get()));
   access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
