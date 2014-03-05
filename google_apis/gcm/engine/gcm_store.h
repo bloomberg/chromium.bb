@@ -68,6 +68,9 @@ class GCM_EXPORT GCMStore {
   // caller.
   virtual void Load(const LoadCallback& callback) = 0;
 
+  // Close the persistent store.
+  virtual void Close() = 0;
+
   // Clears the GCM store of all data.
   virtual void Destroy(const UpdateCallback& callback) = 0;
 

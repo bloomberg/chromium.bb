@@ -286,14 +286,19 @@ void GCMClientImpl::SetDeviceCredentialsCallback(bool success) {
   DCHECK(success);
 }
 
-void GCMClientImpl::CheckOut() {
+void GCMClientImpl::Stop() {
   device_checkin_info_.Reset();
   mcs_client_.reset();
-  gcm_store_->Destroy(base::Bind(&GCMClientImpl::OnGCMStoreDestroyed,
-                                 weak_ptr_factory_.GetWeakPtr()));
   checkin_request_.reset();
   pending_registrations_.clear();
   state_ = INITIALIZED;
+  gcm_store_->Close();
+}
+
+void GCMClientImpl::CheckOut() {
+  Stop();
+  gcm_store_->Destroy(base::Bind(&GCMClientImpl::OnGCMStoreDestroyed,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::Register(const std::string& app_id,

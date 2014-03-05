@@ -96,6 +96,7 @@ class GCMStoreImpl::Backend
 
   // Blocking implementations of GCMStoreImpl methods.
   void Load(const LoadCallback& callback);
+  void Close();
   void Destroy(const UpdateCallback& callback);
   void SetDeviceCredentials(uint64 device_android_id,
                             uint64 device_security_token,
@@ -211,6 +212,11 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
                                     base::Bind(callback,
                                                base::Passed(&result)));
   return;
+}
+
+void GCMStoreImpl::Backend::Close() {
+  DVLOG(1) << "Closing GCM store.";
+  db_.reset();
 }
 
 void GCMStoreImpl::Backend::Destroy(const UpdateCallback& callback) {
@@ -632,6 +638,12 @@ void GCMStoreImpl::Load(const LoadCallback& callback) {
                  base::Bind(&GCMStoreImpl::LoadContinuation,
                             weak_ptr_factory_.GetWeakPtr(),
                             callback)));
+}
+
+void GCMStoreImpl::Close() {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::Close, backend_));
 }
 
 void GCMStoreImpl::Destroy(const UpdateCallback& callback) {

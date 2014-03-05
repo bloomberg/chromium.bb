@@ -74,6 +74,10 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   void Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory);
 
+  void Start();
+
+  void Stop();
+
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.
   // |app_id|: application ID.
@@ -127,6 +131,10 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Ensures that the GCMClient is loaded and the GCM check-in is done when
   // the profile was signed in.
   void EnsureLoaded();
+
+  // Remove cached or persisted data when GCM service is stopped.
+  void RemoveCachedData();
+  void RemovePersistedData();
 
   // Checks out of GCM when the profile has been signed out. This will erase
   // all the cached and persisted data.

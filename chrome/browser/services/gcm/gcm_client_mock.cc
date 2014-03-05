@@ -53,6 +53,11 @@ void GCMClientMock::DoLoading() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void GCMClientMock::Stop() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  status_ = STOPPED;
+}
+
 void GCMClientMock::CheckOut() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   status_ = CHECKED_OUT;

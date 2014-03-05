@@ -153,7 +153,11 @@ class GCM_EXPORT GCMClient {
 
   // Loads the data from the persistent store. This will automatically kick off
   // the check-in if the check-in info is not found in the store.
+  // TODO(jianli): consider renaming this name to Start.
   virtual void Load() = 0;
+
+  // Stops using the GCM service. This will not erase the persisted data.
+  virtual void Stop() = 0;
 
   // Checks out of the GCM service. This will erase all the cached and persisted
   // data.

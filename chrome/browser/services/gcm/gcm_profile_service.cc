@@ -265,6 +265,7 @@ class GCMProfileService::IOWorker
                       url_request_context_getter);
   void Reset();
   void Load(const base::WeakPtr<GCMProfileService>& service);
+  void Stop();
   void CheckOut();
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids,
@@ -426,6 +427,12 @@ void GCMProfileService::IOWorker::Load(
   gcm_client_->Load();
 }
 
+void GCMProfileService::IOWorker::Stop() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  gcm_client_->Stop();
+}
+
 void GCMProfileService::IOWorker::CheckOut() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -557,6 +564,27 @@ void GCMProfileService::Initialize(
   // indicates yes.
   if (GetGCMEnabledState(profile_) == ALWAYS_ENABLED)
     EnsureLoaded();
+}
+
+void GCMProfileService::Start() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  EnsureLoaded();
+}
+
+void GCMProfileService::Stop() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // No need to stop GCM service if not started yet.
+  if (username_.empty())
+    return;
+
+  RemoveCachedData();
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::IOWorker::Stop, io_worker_));
 }
 
 void GCMProfileService::Register(const std::string& app_id,
@@ -772,18 +800,20 @@ void GCMProfileService::EnsureLoaded() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMProfileService::CheckOut() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // We still proceed with the check-out logic even if the check-in is not
-  // initiated in the current session. This will make sure that all the
-  // persisted data written previously will get purged.
-  username_.clear();
-
+void GCMProfileService::RemoveCachedData() {
   // Remove all the queued tasks since they no longer make sense after
-  // check-out.
+  // GCM service is stopped.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  username_.clear();
+  gcm_client_ready_ = false;
+  delayed_task_controller_.reset();
+  register_callbacks_.clear();
+  send_callbacks_.clear();
+  registration_info_map_.clear();
+}
+
+void GCMProfileService::RemovePersistedData() {
   // Remove persisted data from app's state store.
   for (RegistrationInfoMap::const_iterator iter =
            registration_info_map_.begin();
@@ -793,12 +823,20 @@ void GCMProfileService::CheckOut() {
 
   // Remove persisted data from prefs store.
   profile_->GetPrefs()->ClearPref(prefs::kGCMRegisteredAppIDs);
+}
 
-  gcm_client_ready_ = false;
-  delayed_task_controller_.reset();
-  register_callbacks_.clear();
-  send_callbacks_.clear();
-  registration_info_map_.clear();
+void GCMProfileService::CheckOut() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // We still proceed with the check-out logic even if the check-in is not
+  // initiated in the current session. This will make sure that all the
+  // persisted data written previously will get purged.
+
+  // This has to be done before removing the cached data since we need to do
+  // the lookup based on the cached data.
+  RemovePersistedData();
+
+  RemoveCachedData();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,

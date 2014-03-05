@@ -31,6 +31,9 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   // Load the directory and pass the initial state back to caller.
   virtual void Load(const LoadCallback& callback) OVERRIDE;
 
+  // Closes the GCM store.
+  virtual void Close() OVERRIDE;
+
   // Clears the GCM store of all data and destroys any LevelDB files associated
   // with this store.
   // WARNING: this will permanently destroy any pending outgoing messages

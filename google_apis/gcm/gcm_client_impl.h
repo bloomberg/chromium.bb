@@ -56,6 +56,7 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
           url_request_context_getter,
       Delegate* delegate) OVERRIDE;
   virtual void Load() OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void CheckOut() OVERRIDE;
   virtual void Register(const std::string& app_id,
                         const std::string& cert,

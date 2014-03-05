@@ -649,6 +649,47 @@ TEST_F(GCMProfileServiceTest, SignOutAndThenSignIn) {
   EXPECT_EQ(GCMClientMock::LOADED, consumer()->GetGCMClient()->status());
 }
 
+TEST_F(GCMProfileServiceTest, StopAndRestartGCM) {
+  // Positive channel signal is provided in SetUp.
+  consumer()->CreateGCMProfileServiceInstance();
+  consumer()->SignIn(kTestingUsername);
+
+  // GCMClient should be loaded.
+  EXPECT_TRUE(consumer()->IsGCMClientReady());
+  EXPECT_EQ(GCMClientMock::LOADED, consumer()->GetGCMClient()->status());
+
+  // Stops the GCM.
+  consumer()->GetGCMProfileService()->Stop();
+  PumpIOLoop();
+
+  // GCMClient should be stopped.
+  EXPECT_FALSE(consumer()->IsGCMClientReady());
+  EXPECT_EQ(GCMClientMock::STOPPED, consumer()->GetGCMClient()->status());
+
+  // Restarts the GCM.
+  consumer()->GetGCMProfileService()->Start();
+  PumpIOLoop();
+
+  // GCMClient should be loaded.
+  EXPECT_TRUE(consumer()->IsGCMClientReady());
+  EXPECT_EQ(GCMClientMock::LOADED, consumer()->GetGCMClient()->status());
+
+  // Stops the GCM.
+  consumer()->GetGCMProfileService()->Stop();
+  PumpIOLoop();
+
+  // GCMClient should be stopped.
+  EXPECT_FALSE(consumer()->IsGCMClientReady());
+  EXPECT_EQ(GCMClientMock::STOPPED, consumer()->GetGCMClient()->status());
+
+  // Signs out.
+  consumer()->SignOut();
+
+  // GCMClient should be checked out.
+  EXPECT_FALSE(consumer()->IsGCMClientReady());
+  EXPECT_EQ(GCMClientMock::CHECKED_OUT, consumer()->GetGCMClient()->status());
+}
+
 TEST_F(GCMProfileServiceTest, RegisterWhenNotSignedIn) {
   consumer()->CreateGCMProfileServiceInstance();
 

@@ -465,6 +465,23 @@ TEST_F(GCMStoreImplTest, AddMessageAfterDestroy) {
   }
 }
 
+TEST_F(GCMStoreImplTest, ReloadAfterClose) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+
+  gcm_store->Close();
+  PumpLoop();
+
+  gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+}
+
 }  // namespace
 
 }  // namespace gcm
