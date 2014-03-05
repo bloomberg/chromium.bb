@@ -193,4 +193,8 @@ void SharedWorkerHost::RelayMessage(
   }
 }
 
+void SharedWorkerHost::TerminateWorker() {
+  Send(new WorkerMsg_TerminateWorkerContext(worker_route_id_));
+}
+
 }  // namespace content

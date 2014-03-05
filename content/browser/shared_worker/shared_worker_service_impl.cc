@@ -27,8 +27,12 @@ SharedWorkerServiceImpl::~SharedWorkerServiceImpl() {
 }
 
 bool SharedWorkerServiceImpl::TerminateWorker(int process_id, int route_id) {
-  // TODO(horo): implement this.
-  return false;
+  SharedWorkerHost* host =
+      worker_hosts_.get(std::make_pair(process_id, route_id));
+  if (!host || !host->instance())
+    return false;
+  host->TerminateWorker();
+  return true;
 }
 
 std::vector<WorkerService::WorkerInfo> SharedWorkerServiceImpl::GetWorkers() {

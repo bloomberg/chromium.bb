@@ -64,6 +64,9 @@ class SharedWorkerHost {
                       const base::string16& name,
                       bool* result);
 
+  // Terminates the given worker, i.e. based on a UI action.
+  void TerminateWorker();
+
   SharedWorkerInstance* instance() { return instance_.get(); }
   SharedWorkerMessageFilter* container_render_filter() const {
     return container_render_filter_;
