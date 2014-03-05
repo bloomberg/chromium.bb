@@ -1457,6 +1457,8 @@ void Range::checkDeleteExtract(ExceptionState& exceptionState)
         return;
     }
 
+    ASSERT(boundaryPointsValid());
+
     if (!commonAncestorContainer(exceptionState) || exceptionState.hadException())
         return;
 
@@ -1764,12 +1766,12 @@ void Range::didMergeTextNodes(const NodeWithIndex& oldNode, unsigned offset)
 
 static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary, Text& oldNode)
 {
-    if (boundary.container() != oldNode)
-        return;
+    Node* boundaryContainer = boundary.container();
     unsigned boundaryOffset = boundary.offset();
-    if (boundaryOffset <= oldNode.length())
-        return;
-    boundary.set(oldNode.nextSibling(), boundaryOffset - oldNode.length(), 0);
+    if (boundary.childBefore() == &oldNode)
+        boundary.set(boundaryContainer, boundaryOffset + 1, oldNode.nextSibling());
+    else if (boundary.container() == &oldNode && boundaryOffset > oldNode.length())
+        boundary.set(oldNode.nextSibling(), boundaryOffset - oldNode.length(), 0);
 }
 
 void Range::didSplitTextNode(Text& oldNode)
@@ -1781,6 +1783,7 @@ void Range::didSplitTextNode(Text& oldNode)
     ASSERT(oldNode.nextSibling()->isTextNode());
     boundaryTextNodeSplit(m_start, oldNode);
     boundaryTextNodeSplit(m_end, oldNode);
+    ASSERT(boundaryPointsValid());
 }
 
 void Range::expand(const String& unit, ExceptionState& exceptionState)

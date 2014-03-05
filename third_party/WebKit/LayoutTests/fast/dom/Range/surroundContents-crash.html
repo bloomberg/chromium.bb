@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Range.surroundContents() crash</title>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Range::didSplitTextNode() should not yield an invalid Range object nor cause a crash inside surroundContents().');
+
+window.jsTestIsAsync = true;
+
+var range;
+var textContainer;
+var textToBeSplit;
+var newTextNode;
+
+function run()
+{
+    textContainer = document.createElement('div');
+    textToBeSplit = document.createTextNode('SPLITME');
+    textContainer.appendChild(textToBeSplit);
+    document.body.appendChild(textContainer);
+
+    var surroundParent = document.createElement('div');
+    var textToBeRemoved = document.createTextNode('I will be removed.');
+    surroundParent.appendChild(textToBeRemoved);
+    document.body.appendChild(surroundParent);
+
+    // Range.surroundContents(newParent) removes newParent's children during its preprocess phase, thus
+    // the following event handler is called in the middle of surroundContents() method.
+    textToBeRemoved.addEventListener('DOMNodeRemoved', function (event) {
+        shouldEvaluateTo('textContainer.childNodes.length', 1);
+        shouldBeTrue('range.startContainer === textToBeSplit');
+        shouldEvaluateTo('range.startOffset', textToBeSplit.length);
+        shouldBeTrue('range.endContainer === textContainer');
+        shouldEvaluateTo('range.endOffset', 1);
+
+        // A bug in Range::didSplitTextNode() yielded an invalid Range object (m_start is located *after* m_end).
+        // This leads to a crash if this happens within surroundContents().
+        textToBeSplit.splitText(textToBeSplit.length - 1);
+        newTextNode = textToBeSplit.nextSibling;
+
+        // To reproduce a crash, there must be something in between split text nodes.
+        textContainer.insertBefore(document.createElement('span'), newTextNode);
+
+        shouldEvaluateTo('textContainer.childNodes.length', 3);
+        shouldBeTrue('range.startContainer === newTextNode');
+        shouldEvaluateTo('range.startOffset', newTextNode.length);
+        shouldBeTrue('range.endContainer === textContainer');
+        shouldEvaluateTo('range.endOffset', 3);
+    });
+
+    range = new Range();
+    range.setStart(textToBeSplit, textToBeSplit.length);
+    range.setEnd(textContainer, 1);
+    range.surroundContents(surroundParent);
+
+    testPassed('Did not crash.');
+
+    // Cleanup.
+    document.body.removeChild(textContainer);
+
+    window.finishJSTest();
+}
+
+window.setTimeout(run, 0);
+</script>
+</body>
+</html>

@@ -3277,6 +3277,7 @@
             'dom/DocumentMarkerControllerTest.cpp',
             'dom/DocumentTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
+            'dom/RangeTest.cpp',
             'editing/TextIteratorTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
             'fetch/ImageResourceTest.cpp',
