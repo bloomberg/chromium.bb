@@ -514,7 +514,7 @@ Gallery.prototype.delete_ = function() {
 
 
   var confirm = new cr.ui.dialogs.ConfirmDialog(this.container_);
-  confirm.show(str(plural ?
+  confirm.show(strf(plural ?
       'GALLERY_CONFIRM_DELETE_SOME' : 'GALLERY_CONFIRM_DELETE_ONE', param),
       function() {
         restoreListener();
