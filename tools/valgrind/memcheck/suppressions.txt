@@ -6322,3 +6322,12 @@
    fun:_ZN7content21WebRtcLocalAudioTrack7CaptureEPKsN4base9TimeDeltaEibb
    fun:_ZN7content54WebRtcLocalAudioTrackAdapterTest_AddAndRemoveSink_Test8TestBodyEv
 }
+{
+   bug_349507
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN12_GLOBAL__N_118ConstructTlsVectorEv
+   fun:_ZN4base18ThreadLocalStorage10StaticSlot3SetEPv
+   fun:_ZN4base18ThreadLocalPointerINS_11MessageLoopEE3SetEPS1_
+   fun:_ZN4base11MessageLoop4InitEv
+}
