@@ -199,12 +199,6 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   NSWindow* window = [browserController_ window];
 
-  // When in presentation mode, the window's background will need to appear
-  // above the window contents. For this to happen, the window will need its
-  // own layer. This comes with a performance penalty when not fullscreen, so
-  // do not enable this by default.
-  [[window contentView] cr_setWantsLayer:YES];
-
   // Disable these notifications on Lion as they cause crashes.
   // TODO(rohitrao): Figure out what happens if a fullscreen window changes
   // monitors on Lion.
@@ -239,10 +233,6 @@ const CGFloat kFloatingBarVerticalOffset = 22;
                   object:nil];
   DCHECK(inPresentationMode_);
   inPresentationMode_ = NO;
-
-  // Remove the layer that was created.
-  NSWindow* window = [browserController_ window];
-  [[window contentView] cr_setWantsLayer:NO];
 
   [self cleanup];
 }

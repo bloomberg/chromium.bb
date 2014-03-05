@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 
+#import <Cocoa/Cocoa.h>
+
 #include "base/logging.h"
+#include "base/command_line.h"
+#include "base/mac/scoped_nsobject.h"
+#include "ui/base/cocoa/animation_utils.h"
+#include "ui/base/ui_base_switches.h"
 
 @interface FastResizeView (PrivateMethods)
 // Lays out this views subviews.  If fast resize mode is on, does not resize any
@@ -15,6 +20,24 @@
 @end
 
 @implementation FastResizeView
+
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect])) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableCoreAnimation)) {
+      ScopedCAActionDisabler disabler;
+      base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
+      [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+      [self setLayer:layer];
+      [self setWantsLayer:YES];
+    }
+  }
+  return self;
+}
+
+- (BOOL)isOpaque {
+  return YES;
+}
 
 - (void)setFastResizeMode:(BOOL)fastResizeMode {
   if (fastResizeMode_ == fastResizeMode)

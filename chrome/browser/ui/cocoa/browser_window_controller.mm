@@ -262,6 +262,10 @@ enum {
     browser_.reset(browser);
     ownsBrowser_ = ownIt;
     NSWindow* window = [self window];
+    // Make the content view for the window have a layer. This will make all
+    // sub-views have layers. This is necessary to ensure correct layer
+    // ordering of all child views and their layers.
+    [[window contentView] cr_setWantsLayer:YES];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
