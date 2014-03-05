@@ -170,7 +170,6 @@ public:
         virtual void didReparseStyleSheet() = 0;
     };
 
-    typedef HashMap<CSSStyleDeclaration*, RefPtr<InspectorStyle> > InspectorStyleMap;
     static PassRefPtr<InspectorStyleSheet> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
     static String styleSheetURL(CSSStyleSheet* pageStyleSheet);
     static void collectFlatRules(PassRefPtr<CSSRuleList>, CSSRuleVector* result);
@@ -225,7 +224,6 @@ private:
 
     bool checkPageStyleSheet(ExceptionState&) const;
     bool ensureText() const;
-    bool ensureSourceData();
     void ensureFlatRules() const;
     bool styleSheetTextWithChangedStyle(CSSStyleDeclaration*, const String& newStyleText, String* result);
     bool originalStyleSheetText(String* result) const;

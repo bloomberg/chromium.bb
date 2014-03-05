@@ -57,87 +57,16 @@
 using WebCore::TypeBuilder::Array;
 using WebCore::RuleSourceDataList;
 using WebCore::CSSRuleSourceData;
+using WebCore::CSSStyleSheet;
 
-class ParsedStyleSheet {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    ParsedStyleSheet();
-
-    const String& text() const { ASSERT(m_hasText); return m_text; }
-    void setText(const String& text);
-    bool hasText() const { return m_hasText; }
-    void setSourceData(PassOwnPtr<RuleSourceDataList>);
-    bool hasSourceData() const { return m_sourceData; }
-    PassRefPtr<WebCore::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
-
-private:
-    void flattenSourceData(RuleSourceDataList*);
-
-    String m_text;
-    bool m_hasText;
-    OwnPtr<RuleSourceDataList> m_sourceData;
-};
-
-ParsedStyleSheet::ParsedStyleSheet()
-    : m_hasText(false)
+static PassOwnPtr<WebCore::BisonCSSParser> createCSSParser(WebCore::Document* document)
 {
-}
-
-void ParsedStyleSheet::setText(const String& text)
-{
-    m_hasText = true;
-    m_text = text;
-    setSourceData(nullptr);
-}
-
-void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
-{
-    for (size_t i = 0; i < dataList->size(); ++i) {
-        RefPtr<CSSRuleSourceData>& data = dataList->at(i);
-        if (data->type == CSSRuleSourceData::STYLE_RULE) {
-            m_sourceData->append(data);
-        } else if (data->type == CSSRuleSourceData::IMPORT_RULE) {
-            m_sourceData->append(data);
-        } else if (data->type == CSSRuleSourceData::MEDIA_RULE) {
-            m_sourceData->append(data);
-            flattenSourceData(&data->childRules);
-        } else if (data->type == CSSRuleSourceData::SUPPORTS_RULE) {
-            flattenSourceData(&data->childRules);
-        }
-    }
-}
-
-void ParsedStyleSheet::setSourceData(PassOwnPtr<RuleSourceDataList> sourceData)
-{
-    if (!sourceData) {
-        m_sourceData.clear();
-        return;
-    }
-
-    m_sourceData = adoptPtr(new RuleSourceDataList());
-
-    // FIXME: This is a temporary solution to retain the original flat sourceData structure
-    // containing only style rules, even though BisonCSSParser now provides the full rule source data tree.
-    // Normally, we should just assign m_sourceData = sourceData;
-    flattenSourceData(sourceData.get());
-}
-
-PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsigned index) const
-{
-    if (!hasSourceData() || index >= m_sourceData->size())
-        return nullptr;
-
-    return m_sourceData->at(index);
-}
-
-namespace WebCore {
-
-static PassOwnPtr<BisonCSSParser> createCSSParser(Document* document)
-{
-    return adoptPtr(new BisonCSSParser(document ? CSSParserContext(*document, 0) : strictCSSParserContext()));
+    return adoptPtr(new WebCore::BisonCSSParser(document ? WebCore::CSSParserContext(*document, 0) : WebCore::strictCSSParserContext()));
 }
 
 namespace {
+
+using namespace WebCore;
 
 class StyleSheetHandler FINAL : public CSSParserObserver {
 public:
@@ -426,6 +355,99 @@ void StyleSheetHandler::endComment(unsigned offset)
 }
 
 } // namespace
+
+class ParsedStyleSheet {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    ParsedStyleSheet(CSSStyleSheet* pageStyleSheet);
+
+    const String& text() const { ASSERT(m_hasText); return m_text; }
+    void setText(const String&);
+    bool hasText() const { return m_hasText; }
+    bool ensureSourceData();
+    bool hasSourceData() const { return m_sourceData; }
+    PassRefPtr<WebCore::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
+
+private:
+    void flattenSourceData(RuleSourceDataList*);
+    void setSourceData(PassOwnPtr<RuleSourceDataList>);
+
+    String m_text;
+    bool m_hasText;
+    OwnPtr<RuleSourceDataList> m_sourceData;
+    RefPtr<CSSStyleSheet> m_pageStyleSheet;
+};
+
+ParsedStyleSheet::ParsedStyleSheet(CSSStyleSheet* pageStyleSheet)
+    : m_hasText(false)
+    , m_pageStyleSheet(pageStyleSheet)
+{
+}
+
+void ParsedStyleSheet::setText(const String& text)
+{
+    m_hasText = true;
+    m_text = text;
+    setSourceData(nullptr);
+}
+
+void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
+{
+    for (size_t i = 0; i < dataList->size(); ++i) {
+        RefPtr<CSSRuleSourceData>& data = dataList->at(i);
+        if (data->type == CSSRuleSourceData::STYLE_RULE) {
+            m_sourceData->append(data);
+        } else if (data->type == CSSRuleSourceData::IMPORT_RULE) {
+            m_sourceData->append(data);
+        } else if (data->type == CSSRuleSourceData::MEDIA_RULE) {
+            m_sourceData->append(data);
+            flattenSourceData(&data->childRules);
+        } else if (data->type == CSSRuleSourceData::SUPPORTS_RULE) {
+            flattenSourceData(&data->childRules);
+        }
+    }
+}
+
+bool ParsedStyleSheet::ensureSourceData()
+{
+    if (hasSourceData())
+        return true;
+
+    if (!hasText())
+        return false;
+
+    RefPtrWillBeRawPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create(strictCSSParserContext());
+    OwnPtr<RuleSourceDataList> result = adoptPtr(new RuleSourceDataList());
+    StyleSheetHandler handler(text(), m_pageStyleSheet->ownerDocument(), newStyleSheet.get(), result.get());
+    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), text(), TextPosition::minimumPosition(), &handler);
+    setSourceData(result.release());
+    return hasSourceData();
+}
+
+void ParsedStyleSheet::setSourceData(PassOwnPtr<RuleSourceDataList> sourceData)
+{
+    if (!sourceData) {
+        m_sourceData.clear();
+        return;
+    }
+
+    m_sourceData = adoptPtr(new RuleSourceDataList());
+
+    // FIXME: This is a temporary solution to retain the original flat sourceData structure
+    // containing only style rules, even though BisonCSSParser now provides the full rule source data tree.
+    // Normally, we should just assign m_sourceData = sourceData;
+    flattenSourceData(sourceData.get());
+}
+
+PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsigned index) const
+{
+    if (!hasSourceData() || index >= m_sourceData->size())
+        return nullptr;
+
+    return m_sourceData->at(index);
+}
+
+namespace WebCore {
 
 enum MediaListSource {
     MediaListSourceLinkedSheet,
@@ -860,7 +882,7 @@ InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, Inspecto
     , m_documentURL(documentURL)
     , m_listener(listener)
 {
-    m_parsedStyleSheet = new ParsedStyleSheet();
+    m_parsedStyleSheet = new ParsedStyleSheet(m_pageStyleSheet.get());
 }
 
 InspectorStyleSheet::~InspectorStyleSheet()
@@ -1388,7 +1410,7 @@ bool InspectorStyleSheet::checkPageStyleSheet(ExceptionState& exceptionState) co
 
 bool InspectorStyleSheet::ensureParsedDataReady()
 {
-    return ensureText() && ensureSourceData();
+    return ensureText() && m_parsedStyleSheet->ensureSourceData();
 }
 
 bool InspectorStyleSheet::ensureText() const
@@ -1405,22 +1427,6 @@ bool InspectorStyleSheet::ensureText() const
     // No need to clear m_flatRules here - it's empty.
 
     return success;
-}
-
-bool InspectorStyleSheet::ensureSourceData()
-{
-    if (m_parsedStyleSheet->hasSourceData())
-        return true;
-
-    if (!m_parsedStyleSheet->hasText())
-        return false;
-
-    RefPtrWillBeRawPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create(strictCSSParserContext());
-    OwnPtr<RuleSourceDataList> result = adoptPtr(new RuleSourceDataList());
-    StyleSheetHandler handler(m_parsedStyleSheet->text(), m_pageStyleSheet->ownerDocument(), newStyleSheet.get(), result.get());
-    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), TextPosition::minimumPosition(), &handler);
-    m_parsedStyleSheet->setSourceData(result.release());
-    return m_parsedStyleSheet->hasSourceData();
 }
 
 void InspectorStyleSheet::ensureFlatRules() const
