@@ -50,7 +50,6 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_DOWNLOADS_CUSTOM_BINDINGS_JS" file="extensions\downloads_custom_bindings.js" type="BINDATA" />
         <include name="IDR_ENTRY_ID_MANAGER" file="extensions\entry_id_manager.js" type="BINDATA" />
         <include name="IDR_EVENT_BINDINGS_JS" file="extensions\event.js" type="BINDATA" />
-        <include name="IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS" file="extensions\experimental.offscreenTabs_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXTENSION_CUSTOM_BINDINGS_JS" file="extensions\extension_custom_bindings.js" type="BINDATA" />
         <include name="IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\feedback_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS" file="extensions\file_browser_handler_custom_bindings.js" type="BINDATA" />

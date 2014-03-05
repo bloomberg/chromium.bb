@@ -999,8 +999,6 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("downloads",
                              IDR_DOWNLOADS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.offscreen",
-                             IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("feedbackPrivate",
                              IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
