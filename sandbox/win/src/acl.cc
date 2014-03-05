@@ -99,7 +99,7 @@ bool AddKnownSidToObject(HANDLE object, SE_OBJECT_TYPE object_type,
   PACL old_dacl = NULL;
   PACL new_dacl = NULL;
 
-  if (ERROR_SUCCESS != ::GetSecurityInfo(object, SE_KERNEL_OBJECT,
+  if (ERROR_SUCCESS != ::GetSecurityInfo(object, object_type,
                                          DACL_SECURITY_INFORMATION, NULL, NULL,
                                          &old_dacl, NULL, &descriptor))
     return false;
