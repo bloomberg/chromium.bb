@@ -507,7 +507,7 @@ public:
     ActiveAnimations& ensureActiveAnimations();
     bool hasActiveAnimations() const;
 
-    InputMethodContext* inputMethodContext();
+    InputMethodContext& inputMethodContext();
     bool hasInputMethodContext() const;
 
     void setPrefix(const AtomicString&, ExceptionState&);

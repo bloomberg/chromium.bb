@@ -2155,7 +2155,7 @@ InputMethodContext* WebViewImpl::inputMethodContext()
 
     Element* target = focusedFrame->document()->focusedElement();
     if (target && target->hasInputMethodContext())
-        return target->inputMethodContext();
+        return &target->inputMethodContext();
 
     return 0;
 }

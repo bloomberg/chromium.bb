@@ -3304,7 +3304,7 @@ void Element::createUniqueElementData()
     }
 }
 
-InputMethodContext* Element::inputMethodContext()
+InputMethodContext& Element::inputMethodContext()
 {
     return ensureElementRareData().ensureInputMethodContext(toHTMLElement(this));
 }
@@ -3344,7 +3344,7 @@ CSSStyleDeclaration* Element::style()
 {
     if (!isStyledElement())
         return 0;
-    return ensureElementRareData().ensureInlineCSSStyleDeclaration(this);
+    return &ensureElementRareData().ensureInlineCSSStyleDeclaration(this);
 }
 
 MutableStylePropertySet& Element::ensureMutableInlineStyle()

@@ -43,11 +43,11 @@ struct SameSizeAsElementRareData : NodeRareData {
     void* pointers[11];
 };
 
-CSSStyleDeclaration* ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
+CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
 {
     if (!m_cssomWrapper)
         m_cssomWrapper = adoptPtr(new InlineCSSStyleDeclaration(ownerElement));
-    return m_cssomWrapper.get();
+    return *m_cssomWrapper;
 }
 
 
