@@ -146,21 +146,33 @@ GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const
 
 GraphicsLayer* RenderLayerScrollableArea::layerForHorizontalScrollbar() const
 {
+    // See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForVerticalScrollbar() const
 {
+    // See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->layerForVerticalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrollCorner() const
 {
+    // See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->layerForScrollCorner() : 0;
 }
 
 void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
 {
+    // See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     if (scrollbar == m_vBar.get()) {
         if (GraphicsLayer* layer = layerForVerticalScrollbar()) {
             layer->setNeedsDisplayInRect(rect);

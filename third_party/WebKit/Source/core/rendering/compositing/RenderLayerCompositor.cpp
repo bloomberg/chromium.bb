@@ -1302,6 +1302,9 @@ void RenderLayerCompositor::rootFixedBackgroundsChanged()
     if (!supportsFixedRootBackgroundCompositing())
         return;
 
+    // crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     // To avoid having to make the fixed root background layer fixed positioned to
     // stay put, we position it in the layer tree as follows:
     //

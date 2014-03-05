@@ -474,6 +474,9 @@ static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameEl
 
 void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
+    // Presumably the same issue as in setScrollTop. See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     RenderBox* parentBox = 0;
     LayoutRect newRect = rect;
 
@@ -738,6 +741,9 @@ int RenderBox::instrinsicScrollbarLogicalWidth() const
 
 bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
+    // Presumably the same issue as in setScrollTop. See crbug.com/343132.
+    DisableCompositingQueryAsserts disabler;
+
     // Logical scroll is a higher level concept, all directions by here must be physical
     ASSERT(!isLogical(direction));
 
