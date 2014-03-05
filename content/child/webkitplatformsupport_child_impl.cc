@@ -6,6 +6,7 @@
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/child/fling_curve_configuration.h"
 #include "content/child/web_discardable_memory_impl.h"
@@ -110,10 +111,11 @@ blink::WebWaitableEvent* WebKitPlatformSupportChildImpl::createWaitableEvent() {
 
 blink::WebWaitableEvent* WebKitPlatformSupportChildImpl::waitMultipleEvents(
     const blink::WebVector<blink::WebWaitableEvent*>& web_events) {
-  base::WaitableEvent** events = new base::WaitableEvent*[web_events.size()];
+  std::vector<base::WaitableEvent*> events;
   for (size_t i = 0; i < web_events.size(); ++i)
-    events[i] = static_cast<WebWaitableEventImpl*>(web_events[i])->impl();
-  size_t idx = base::WaitableEvent::WaitMany(events, web_events.size());
+    events.push_back(static_cast<WebWaitableEventImpl*>(web_events[i])->impl());
+  size_t idx = base::WaitableEvent::WaitMany(
+      vector_as_array(&events), events.size());
   DCHECK_LT(idx, web_events.size());
   return web_events[idx];
 }

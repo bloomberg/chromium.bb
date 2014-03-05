@@ -6338,12 +6338,6 @@
    fun:_ZN3WTFL19wtfThreadEntryPointEPv
 }
 {
-   bug_348630
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN7content30WebKitPlatformSupportChildImpl18waitMultipleEventsERKN5blink9WebVectorIPNS1_16WebWaitableEventEEE
-}
-{
    bug_349152
    Memcheck:Uninitialized
    fun:_ZN7content31MediaStreamAudioLevelCalculator9CalculateEPKsii
