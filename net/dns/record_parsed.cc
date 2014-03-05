@@ -53,7 +53,7 @@ scoped_ptr<const RecordParsed> RecordParsed::CreateFrom(
       rdata = NsecRecordRdata::Create(record.rdata, *parser);
       break;
     default:
-      LOG(WARNING) << "Unknown RData type for recieved record: " << record.type;
+      DVLOG(1) << "Unknown RData type for recieved record: " << record.type;
       return scoped_ptr<const RecordParsed>();
   }
 

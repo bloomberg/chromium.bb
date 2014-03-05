@@ -202,7 +202,7 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
   std::map<MDnsCache::Key, MDnsCache::UpdateType> update_keys;
 
   if (!response->InitParseWithoutQuery(bytes_read)) {
-    LOG(WARNING) << "Could not understand an mDNS packet.";
+    DVLOG(1) << "Could not understand an mDNS packet.";
     return;  // Message is unreadable.
   }
 
@@ -220,10 +220,10 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
         &parser, base::Time::Now());
 
     if (!record) {
-      LOG(WARNING) << "Could not understand an mDNS record.";
+      DVLOG(1) << "Could not understand an mDNS record.";
 
       if (offset == parser.GetOffset()) {
-        LOG(WARNING) << "Abandoned parsing the rest of the packet.";
+        DVLOG(1) << "Abandoned parsing the rest of the packet.";
         return;  // The parser did not advance, abort reading the packet.
       } else {
         continue;  // We may be able to extract other records from the packet.
@@ -232,7 +232,7 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
 
     if ((record->klass() & dns_protocol::kMDnsClassMask) !=
         dns_protocol::kClassIN) {
-      LOG(WARNING) << "Received an mDNS record with non-IN class. Ignoring.";
+      DVLOG(1) << "Received an mDNS record with non-IN class. Ignoring.";
       continue;  // Ignore all records not in the IN class.
     }
 
