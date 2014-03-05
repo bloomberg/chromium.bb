@@ -5,13 +5,14 @@
 #include <list>
 
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_download.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -19,6 +20,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,8 +66,11 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
                              public testing::Test {
  public:
   AutofillDownloadTest()
-      : download_manager_(&driver_, profile_.GetPrefs(), this) {
-    driver_.SetURLRequestContext(profile_.GetRequestContext());
+      : prefs_(test::PrefServiceForTesting()),
+        request_context_(new net::TestURLRequestContextGetter(
+            base::MessageLoopProxy::current())),
+        download_manager_(&driver_, prefs_.get(), this) {
+    driver_.SetURLRequestContext(request_context_);
   }
 
   void LimitCache(size_t cache_size) {
@@ -115,10 +120,11 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
 
     ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {}
   };
-  std::list<ResponseData> responses_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  base::MessageLoop message_loop_;
+  std::list<ResponseData> responses_;
+  scoped_ptr<PrefService> prefs_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestAutofillDriver driver_;
   AutofillDownloadManager download_manager_;
 };

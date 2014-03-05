@@ -42,8 +42,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL),
-      manager_delegate_(manager_delegate),
-      send_ipc_(true) {
+      manager_delegate_(manager_delegate) {
   DCHECK(manager_delegate_);
 }
 

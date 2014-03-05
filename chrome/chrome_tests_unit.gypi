@@ -1950,8 +1950,6 @@
         '../components/autofill/content/browser/wallet/wallet_items_unittest.cc',
         '../components/autofill/content/browser/wallet/wallet_service_url_unittest.cc',
         '../components/autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
-        '../components/autofill/core/browser/autocomplete_history_manager_unittest.cc',
-        '../components/autofill/core/browser/autofill_download_unittest.cc',
         '../components/autofill/core/browser/autofill_external_delegate_unittest.cc',
         '../components/autofill/core/browser/autofill_ie_toolbar_import_win_unittest.cc',
         '../components/autofill/core/browser/autofill_metrics_unittest.cc',

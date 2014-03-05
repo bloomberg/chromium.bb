@@ -58,9 +58,6 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   // Sends the given |suggestions| for display in the Autofill popup.
   void SendSuggestions(const std::vector<base::string16>* suggestions);
 
-  // Used by tests to disable sending IPC.
-  void set_send_ipc(bool send_ipc) { send_ipc_ = send_ipc; }
-
  private:
   // Cancels the currently pending WebDataService query, if there is one.
   void CancelPendingQuery();

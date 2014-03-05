@@ -11,9 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -23,8 +20,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/webdata/common/web_data_service_test_util.h"
-#include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
@@ -199,14 +194,11 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
 };
 
-class AutocompleteHistoryManagerNoIPC : public AutocompleteHistoryManager {
-  public:
-   AutocompleteHistoryManagerNoIPC(AutofillDriver* driver,
-                                   AutofillManagerDelegate* delegate)
-       : AutocompleteHistoryManager(driver, delegate) {
-     // Ensure that IPC is not sent during the test.
-     set_send_ipc(false);
-   }
+class TestAutocompleteHistoryManager : public AutocompleteHistoryManager {
+ public:
+  TestAutocompleteHistoryManager(AutofillDriver* driver,
+                                 AutofillManagerDelegate* delegate)
+      : AutocompleteHistoryManager(driver, delegate) {}
 
   using AutocompleteHistoryManager::SendSuggestions;
 };
@@ -215,7 +207,7 @@ class AutocompleteHistoryManagerNoIPC : public AutocompleteHistoryManager {
 
 // Make sure our external delegate is called at the right time.
 TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
-  AutocompleteHistoryManagerNoIPC autocomplete_history_manager(
+  TestAutocompleteHistoryManager autocomplete_history_manager(
       autofill_driver_.get(), manager_delegate_.get());
 
   scoped_ptr<AutofillManager> autofill_manager(new AutofillManager(
