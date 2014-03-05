@@ -753,7 +753,10 @@
 
         ['OS=="linux" and target_arch=="arm" and chromeos==0', {
           # Set some defaults for arm/linux chrome builds
+          # TODO(dmikurube): Change the default of use_allocator to "none".
+          # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
           'linux_use_tcmalloc%': 0,
+          'use_allocator%': 'see_use_tcmalloc',
           # sysroot needs to be an absolute path otherwise it generates
           # incorrect results when passed to pkg-config
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/arm-sysroot',
@@ -1133,8 +1136,14 @@
     'release_unwind_tables%': 1,
 
     # Enable TCMalloc.
+    # TODO(dmikurube): Change the default of use_allocator to "tcmalloc".
+    # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+    # {linux|android}_use_tcmalloc are to be replaced with use_allocator.
+    # They are now used only if use_allocator=="see_use_tcmalloc" (default).
+    # TODO(dmikurube): Assert when linux_use_tcmalloc is explicitly specified.
     'linux_use_tcmalloc%': 1,
     'android_use_tcmalloc%': 0,
+    'use_allocator%': 'see_use_tcmalloc',
 
     # Set to 1 to link against libgnome-keyring instead of using dlopen().
     'linux_link_gnome_keyring%': 0,
@@ -1316,7 +1325,10 @@
             'werror%': '',
             'disable_nacl%': 1,
             'nacl_untrusted_build%': 0,
+            # TODO(dmikurube): Change the default of use_allocator to "none".
+            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
             'linux_use_tcmalloc%': 0,
+            'use_allocator%': 'see_use_tcmalloc',
           }],
           ['OS=="linux" and target_arch=="mipsel"', {
             'sysroot%': '<(sysroot)',
@@ -1481,7 +1493,10 @@
         'enable_automation%': 0,
         'java_bridge%': 1,
         'build_ffmpegsumo%': 0,
+        # TODO(dmikurube): Change the default of use_allocator to "none".
+        # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
         'linux_use_tcmalloc%': 0,
+        'use_allocator%': 'see_use_tcmalloc',
 
         # Disable Native Client.
         'disable_nacl%': 1,
@@ -1876,7 +1891,10 @@
         'win_release_InlineFunctionExpansion': '0',
         'win_release_OmitFramePointers': '0',
 
-        'linux_use_tcmalloc': 1,
+        # TODO(dmikurube): Change the default of use_allocator to "tcmalloc".
+        # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+        'linux_use_tcmalloc%': 1,
+        'use_allocator': 'see_use_tcmalloc',
         'release_valgrind_build': 1,
         'werror': '',
         'component': 'static_library',
@@ -2123,7 +2141,8 @@
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
         ],
       }],
-      ['OS=="linux" and linux_use_tcmalloc==1 and clang_type_profiler==1', {
+      # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+      ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)) and clang_type_profiler==1', {
         'cflags_cc!': ['-fno-rtti'],
         'cflags_cc+': [
           '-frtti',
@@ -3664,7 +3683,8 @@
               }],
             ],
           }],
-          ['linux_use_tcmalloc==0 and android_use_tcmalloc==0', {
+          # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+          ['(use_allocator!="tcmalloc" and (use_allocator!="see_use_tcmalloc" or linux_use_tcmalloc==0)) and android_use_tcmalloc==0', {
             'defines': ['NO_TCMALLOC'],
           }],
           ['linux_use_gold_flags==1', {

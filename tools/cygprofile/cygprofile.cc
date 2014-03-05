@@ -12,7 +12,7 @@
 // Special thread is created in the process to periodically flushes logs for all
 // threads for the case the thread has stopped before flushing its logs.
 //
-// Use this profiler with linux_use_tcmalloc=0.
+// Use this profiler with use_allocator!="none".
 //
 // Note for the ChromeOS Chrome. Remove renderer process from the sandbox (add
 // --no-sandbox option to running Chrome in /sbin/session_manager_setup.sh).

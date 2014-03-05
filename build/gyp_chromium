@@ -192,7 +192,7 @@ def GetArgsStringForGN(vars_dict):
   #   order_text_section=<path>   http://crbug.com/330299
   #   chromium_win_pch=0          http://crbug.com/297678
   #   chromium_ios_signing=0      http://crbug.com/330302
-  #   linux_use_tcmalloc=0        http://crbug.com/330303
+  #   use_allocator=tcmalloc      http://crbug.com/330303, 345554
   #   release_extra_flags=...     http://crbug.com/330305
 
   # These tuples of (key, value, gn_arg_string) use the gn_arg_string for

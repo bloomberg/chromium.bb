@@ -1311,9 +1311,10 @@
                   '<(angle_path)/src/build_angle.gyp:libGLESv2',
                 ],
               }],
+              # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
               ['(OS=="win" and win_use_allocator_shim==1) or '
                '(os_posix == 1 and OS != "android" and '
-               ' linux_use_tcmalloc==1)', {
+               ' ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)))', {
                 'dependencies': [
                   '../base/allocator/allocator.gyp:allocator',
                 ],

@@ -1074,7 +1074,8 @@
         }],
         ['os_posix==1 and OS!="mac"', {
           'conditions': [
-            ['linux_use_tcmalloc==1', {
+            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+            ['(use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
               ],
@@ -1640,7 +1641,8 @@
                 '../build/linux/system.gyp:gtk',
               ],
               'conditions': [
-                ['linux_use_tcmalloc==1', {
+                # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+                ['(use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)', {
                   'dependencies': [
                     '../base/allocator/allocator.gyp:allocator',
                   ],
@@ -1668,7 +1670,8 @@
           'conditions': [
             ['os_posix==1 and OS!="mac"', {
               'conditions': [
-                ['linux_use_tcmalloc==1', {
+                # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+                ['(use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)', {
                   'dependencies': [
                     '../base/allocator/allocator.gyp:allocator',
                   ],

@@ -142,7 +142,8 @@
             },
           ],
           'conditions': [
-            ['linux_use_tcmalloc==1', {
+            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+            ['(use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)', {
                 'dependencies': [
                   '<(allocator_target)',
                 ],

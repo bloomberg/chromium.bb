@@ -105,7 +105,8 @@ test("ipc_tests") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}
   #if (is_posix && !is_mac && !is_android) {
-  #  if (linux_use_tcmalloc) {
+  #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+  #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
   #    deps += "/base/allocator"
   #  }
   #}
@@ -133,7 +134,8 @@ test("ipc_perftests") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}
   #if (is_posix && !is_mac && !is_android) {
-  #  if (linux_use_tcmalloc) {
+  #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+  #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
   #    deps += "//base/allocator"
   #  }
   #}

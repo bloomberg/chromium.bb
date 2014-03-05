@@ -743,7 +743,8 @@
                 }],  # mac_breakpad==1
               ],  # conditions
             }],  # OS=mac
-            ['OS=="linux" and linux_use_tcmalloc==1', {
+            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+            ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
               ],
@@ -769,7 +770,8 @@
             'host/setup/me2me_native_messaging_host_main.h',
           ],
           'conditions': [
-            ['OS=="linux" and linux_use_tcmalloc==1', {
+            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+            ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
               ],
@@ -801,7 +803,8 @@
                 '../build/linux/system.gyp:gtk',
               ],
             }],
-            ['OS=="linux" and linux_use_tcmalloc==1', {
+            # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+            ['OS=="linux" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
               ],
