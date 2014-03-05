@@ -22,7 +22,14 @@ def ConfigureContentSettingsDict(adb, desired_settings):
     desired_settings: A dict of {table: {key: value}} for all
         settings to configure.
   """
-  if adb.system_properties['ro.build.version.sdk'] < 16:
+  try:
+    sdk_version = int(adb.system_properties['ro.build.version.sdk'])
+  except ValueError:
+    logging.error('Skipping content settings configuration, unknown sdk %s',
+                  adb.system_properties['ro.build.version.sdk'])
+    return
+
+  if sdk_version < 16:
     logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
