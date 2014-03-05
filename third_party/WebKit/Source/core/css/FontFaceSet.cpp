@@ -173,7 +173,7 @@ void FontFaceSet::handlePendingEventsAndPromisesSoon()
 
 void FontFaceSet::didLayout()
 {
-    if (document()->frame()->isMainFrame())
+    if (document()->frame()->isMainFrame() && m_loadingFonts.isEmpty())
         m_histogram.record();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
@@ -219,6 +219,7 @@ void FontFaceSet::beginFontLoading(FontFace* fontFace)
 
 void FontFaceSet::fontLoaded(FontFace* fontFace)
 {
+    m_histogram.updateStatus(fontFace);
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
         m_loadedFonts.append(fontFace);
     removeFromLoadingFonts(fontFace);
@@ -226,6 +227,7 @@ void FontFaceSet::fontLoaded(FontFace* fontFace)
 
 void FontFaceSet::loadError(FontFace* fontFace)
 {
+    m_histogram.updateStatus(fontFace);
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
         m_failedFonts.append(fontFace);
     removeFromLoadingFonts(fontFace);
@@ -509,12 +511,26 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
     return true;
 }
 
+void FontFaceSet::FontLoadHistogram::updateStatus(FontFace* fontFace)
+{
+    if (m_status == Reported)
+        return;
+    if (fontFace->hadBlankText())
+        m_status = HadBlankText;
+    else if (m_status == NoWebFonts)
+        m_status = DidNotHaveBlankText;
+}
+
 void FontFaceSet::FontLoadHistogram::record()
 {
-    if (m_recorded)
-        return;
-    m_recorded = true;
-    blink::Platform::current()->histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
+    if (!m_recorded) {
+        m_recorded = true;
+        blink::Platform::current()->histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
+    }
+    if (m_status == HadBlankText || m_status == DidNotHaveBlankText) {
+        blink::Platform::current()->histogramEnumeration("WebFont.HadBlankText", m_status == HadBlankText ? 1 : 0, 2);
+        m_status = Reported;
+    }
 }
 
 static const char* supplementName()

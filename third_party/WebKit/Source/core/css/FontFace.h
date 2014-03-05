@@ -87,6 +87,8 @@ public:
 
     void trace(Visitor*);
 
+    bool hadBlankText() const;
+
 private:
     FontFace(PassRefPtrWillBeRawPtr<CSSValue> source);
 

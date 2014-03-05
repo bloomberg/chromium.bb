@@ -205,6 +205,8 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 if (!m_font->ensureCustomFontData())
                     return nullptr;
 
+                m_histograms.recordFallbackTime(m_font.get());
+
                 fontData = SimpleFontData::create(
                     m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(),
                         fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic(),
@@ -285,12 +287,27 @@ void CSSFontFaceSource::FontLoadHistograms::loadStarted()
         m_loadStartTime = currentTimeMS();
 }
 
+void CSSFontFaceSource::FontLoadHistograms::fallbackFontPainted()
+{
+    if (!m_fallbackPaintTime)
+        m_fallbackPaintTime = currentTimeMS();
+}
+
 void CSSFontFaceSource::FontLoadHistograms::recordLocalFont(bool loadSuccess)
 {
     if (!m_loadStartTime) {
         blink::Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
         m_loadStartTime = -1; // Do not count this font again.
     }
+}
+
+void CSSFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontResource* font)
+{
+    if (m_fallbackPaintTime <= 0)
+        return;
+    int duration = static_cast<int>(currentTimeMS() - m_fallbackPaintTime);
+    blink::Platform::current()->histogramCustomCounts("WebFont.BlankTextShownTime", duration, 0, 10000, 50);
+    m_fallbackPaintTime = -1;
 }
 
 void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)

@@ -111,11 +111,14 @@ private:
 
     class FontLoadHistogram {
     public:
-        FontLoadHistogram() : m_count(0), m_recorded(false) { }
+        enum Status { NoWebFonts, HadBlankText, DidNotHaveBlankText, Reported };
+        FontLoadHistogram() : m_status(NoWebFonts), m_count(0), m_recorded(false) { }
         void incrementCount() { m_count++; }
+        void updateStatus(FontFace*);
         void record();
 
     private:
+        Status m_status;
         int m_count;
         bool m_recorded;
     };

@@ -35,6 +35,13 @@ public:
 
     virtual ~CSSCustomFontData() { }
 
+    virtual bool shouldSkipDrawing() const OVERRIDE
+    {
+        if (m_fontFaceSource)
+            m_fontFaceSource->paintRequested();
+        return m_fallbackVisibility == InvisibleFallback && m_isUsed;
+    }
+
     virtual void beginLoadIfNeeded() const OVERRIDE
     {
         if (!m_isUsed && m_isLoadingFallback && m_fontFaceSource) {

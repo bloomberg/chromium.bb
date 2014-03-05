@@ -48,7 +48,7 @@ public:
     virtual void beginLoadIfNeeded() const { };
     bool isLoading() const { return m_isLoadingFallback && m_isUsed; }
     bool isLoadingFallback() const { return m_isLoadingFallback; }
-    bool shouldSkipDrawing() const { return m_fallbackVisibility == InvisibleFallback && m_isUsed; }
+    virtual bool shouldSkipDrawing() const { return false; }
 
     virtual bool isSVGFont() const { return false; }
     virtual void initializeFontData(SimpleFontData*, float) { }

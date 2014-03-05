@@ -105,6 +105,8 @@ public:
     void willUseFontData(const FontDescription&);
     void load(const FontDescription&, CSSFontSelector* = 0);
 
+    bool hadBlankText() { return isValid() && m_sources.first()->hadBlankText(); }
+
 private:
     void setLoadStatus(FontFace::LoadStatus);
 

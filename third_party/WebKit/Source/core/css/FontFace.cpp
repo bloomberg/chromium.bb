@@ -550,4 +550,9 @@ void FontFace::trace(Visitor* visitor)
     visitor->trace(m_featureSettings);
 }
 
+bool FontFace::hadBlankText() const
+{
+    return m_cssFontFace->hadBlankText();
+}
+
 } // namespace WebCore

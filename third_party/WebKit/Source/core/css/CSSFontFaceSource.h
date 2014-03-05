@@ -74,18 +74,26 @@ public:
     bool isLocalFontAvailable(const FontDescription&);
     void beginLoadIfNeeded();
 
+    // For UMA reporting
+    void paintRequested() { m_histograms.fallbackFontPainted(); }
+    bool hadBlankText() { return m_histograms.hadBlankText(); }
+
 private:
     typedef HashMap<unsigned, RefPtr<SimpleFontData> > FontDataTable; // The hash key is composed of size synthetic styles.
 
     class FontLoadHistograms {
     public:
-        FontLoadHistograms() : m_loadStartTime(0) { }
+        FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0) { }
         void loadStarted();
+        void fallbackFontPainted();
         void recordLocalFont(bool loadSuccess);
         void recordRemoteFont(const FontResource*);
+        void recordFallbackTime(const FontResource*);
+        bool hadBlankText() { return m_fallbackPaintTime; }
     private:
         const char* histogramName(const FontResource*);
         double m_loadStartTime;
+        double m_fallbackPaintTime;
     };
 
     void pruneTable();
