@@ -20,8 +20,8 @@ public:
     explicit MockWebMediaStreamCenter(blink::WebMediaStreamCenterClient*);
 
     virtual bool getMediaStreamTrackSources(const blink::WebMediaStreamTrackSourcesRequest&) OVERRIDE;
-    virtual void didEnableMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
-    virtual void didDisableMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual void didEnableMediaStreamTrack(const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual void didDisableMediaStreamTrack(const blink::WebMediaStreamTrack&) OVERRIDE;
     virtual bool didAddMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
     virtual bool didRemoveMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
     virtual void didStopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;

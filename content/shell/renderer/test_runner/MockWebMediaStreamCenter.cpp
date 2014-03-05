@@ -31,12 +31,12 @@ bool MockWebMediaStreamCenter::getMediaStreamTrackSources(const WebMediaStreamTr
     return true;
 }
 
-void MockWebMediaStreamCenter::didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack& track)
+void MockWebMediaStreamCenter::didEnableMediaStreamTrack(const WebMediaStreamTrack& track)
 {
     track.source().setReadyState(WebMediaStreamSource::ReadyStateLive);
 }
 
-void MockWebMediaStreamCenter::didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack& track)
+void MockWebMediaStreamCenter::didDisableMediaStreamTrack(const WebMediaStreamTrack& track)
 {
     track.source().setReadyState(WebMediaStreamSource::ReadyStateMuted);
 }
