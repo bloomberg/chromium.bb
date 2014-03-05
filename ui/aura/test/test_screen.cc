@@ -42,7 +42,7 @@ WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
 void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
   gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
   display_.SetScaleAndBounds(device_scale_factor, bounds_in_pixel);
-  host_->NotifyHostResized(bounds_in_pixel.size());
+  host_->OnHostResized(bounds_in_pixel.size());
 }
 
 void TestScreen::SetDisplayRotation(gfx::Display::Rotation rotation) {

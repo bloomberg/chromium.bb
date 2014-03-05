@@ -367,7 +367,7 @@ void DesktopWindowTreeHostX11::SetSize(const gfx::Size& size) {
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
   bounds_.set_size(size);
   if (size_changed)
-    NotifyHostResized(size);
+    OnHostResized(size);
 }
 
 void DesktopWindowTreeHostX11::StackAtTop() {
@@ -797,7 +797,7 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed)
-    NotifyHostResized(bounds.size());
+    OnHostResized(bounds.size());
   else
     compositor()->ScheduleRedrawRect(gfx::Rect(bounds.size()));
 }
@@ -1376,9 +1376,9 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       previous_bounds_ = bounds_;
       bounds_ = bounds;
       if (size_changed)
-        NotifyHostResized(bounds.size());
+        OnHostResized(bounds.size());
       if (origin_changed)
-        delegate_->OnHostMoved(bounds_.origin());
+        OnHostMoved(bounds_.origin());
       ResetWindowRegion();
       break;
     }
@@ -1489,7 +1489,7 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         Atom protocol = static_cast<Atom>(xev->xclient.data.l[0]);
         if (protocol == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
           // We have received a close message from the window manager.
-          dispatcher_->OnWindowTreeHostCloseRequested();
+          OnHostCloseRequested();
         } else if (protocol == atom_cache_.GetAtom("_NET_WM_PING")) {
           XEvent reply_event = *xev;
           reply_event.xclient.window = x_root_window_;
@@ -1520,7 +1520,7 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         case MappingModifier:
         case MappingKeyboard:
           XRefreshKeyboardMapping(&xev->xmapping);
-          dispatcher_->OnKeyboardMappingChanged();
+          OnKeyboardMappingChanged();
           break;
         case MappingPointer:
           ui::DeviceDataManager::GetInstance()->UpdateButtonMap();

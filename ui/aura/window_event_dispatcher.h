@@ -113,20 +113,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // |last_moust_location()|.
   void OnWindowTransformed(Window* window, bool contained_mouse);
 
-  // Invoked when the keyboard mapping (in X11 terms: the mapping between
-  // key-codes and key-syms) has changed.
-  void OnKeyboardMappingChanged();
-
-  // The system windowing system has sent a request that we close our window.
-  void OnWindowTreeHostCloseRequested();
-
-  // Add/remove observer. There is no need to remove the observer if
-  // the root window is being deleted. In particular, you SHOULD NOT remove
-  // in |WindowObserver::OnWindowDestroying| of the observer observing
-  // the root window because it is too late to remove it.
-  void AddRootWindowObserver(RootWindowObserver* observer);
-  void RemoveRootWindowObserver(RootWindowObserver* observer);
-
   // Gesture Recognition -------------------------------------------------------
 
   // When a touch event is dispatched to a Window, it may want to process the
@@ -234,7 +220,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   virtual void OnHostActivated() OVERRIDE;
   virtual void OnHostLostWindowCapture() OVERRIDE;
   virtual void OnHostLostMouseGrab() OVERRIDE;
-  virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE;
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
   virtual void OnCursorMovedToRootLocation(
       const gfx::Point& root_location) OVERRIDE;
@@ -269,8 +254,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Touch ids that are currently down.
   uint32 touch_ids_down_;
-
-  ObserverList<RootWindowObserver> observers_;
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;

@@ -48,10 +48,10 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -446,7 +446,7 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
 }  // namespace
 
 class WebContentsViewAura::WindowObserver
-    : public aura::WindowObserver, public aura::RootWindowObserver {
+    : public aura::WindowObserver, public aura::WindowTreeHostObserver {
  public:
   explicit WindowObserver(WebContentsViewAura* view)
       : view_(view),
@@ -462,7 +462,7 @@ class WebContentsViewAura::WindowObserver
   virtual ~WindowObserver() {
     view_->window_->RemoveObserver(this);
     if (view_->window_->GetHost())
-      view_->window_->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
+      view_->window_->GetHost()->RemoveObserver(this);
     if (parent_)
       parent_->RemoveObserver(this);
 
@@ -593,7 +593,7 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
     if (window == view_->window_) {
-      window->GetHost()->dispatcher()->AddRootWindowObserver(this);
+      window->GetHost()->AddObserver(this);
 #if defined(OS_WIN)
       if (!window->GetRootWindow()->HasObserver(this))
         window->GetRootWindow()->AddObserver(this);
@@ -603,7 +603,7 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
     if (window == view_->window_) {
-      window->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
+      window->GetHost()->RemoveObserver(this);
 #if defined(OS_WIN)
       window->GetRootWindow()->RemoveObserver(this);
 
@@ -617,12 +617,11 @@ class WebContentsViewAura::WindowObserver
     }
   }
 
-  // Overridden RootWindowObserver:
-  virtual void OnWindowTreeHostMoved(
-      const aura::WindowEventDispatcher* dispatcher,
-      const gfx::Point& new_origin) OVERRIDE {
+  // Overridden WindowTreeHostObserver:
+  virtual void OnHostMoved(const aura::WindowTreeHost* host,
+                           const gfx::Point& new_origin) OVERRIDE {
     TRACE_EVENT1("ui",
-                 "WebContentsViewAura::WindowObserver::OnWindowTreeHostMoved",
+                 "WebContentsViewAura::WindowObserver::OnHostMoved",
                  "new_origin", new_origin.ToString());
 
     // This is for the desktop case (i.e. Aura desktop).

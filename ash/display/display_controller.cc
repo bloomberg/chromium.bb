@@ -613,15 +613,12 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
 }
 
-void DisplayController::OnWindowTreeHostResized(
-    const aura::WindowEventDispatcher* dispatcher) {
+void DisplayController::OnHostResized(const aura::WindowTreeHost* host) {
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
-      const_cast<aura::Window*>(dispatcher->window()));
+      const_cast<aura::Window*>(host->window()));
 
   internal::DisplayManager* display_manager = GetDisplayManager();
-  if (display_manager->UpdateDisplayBounds(
-          display.id(),
-          dispatcher->host()->GetBounds())) {
+  if (display_manager->UpdateDisplayBounds(display.id(), host->GetBounds())) {
     mirror_window_controller_->UpdateWindow();
     cursor_window_controller_->UpdateContainer();
   }
@@ -708,9 +705,9 @@ aura::WindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
           bounds_in_native);
   host->window()->SetName(base::StringPrintf("RootWindow-%d", host_count++));
   host->compositor()->SetBackgroundColor(SK_ColorBLACK);
-  // No need to remove RootWindowObserver because
-  // the DisplayController object outlives WindowEventDispatcher objects.
-  host->dispatcher()->AddRootWindowObserver(this);
+  // No need to remove our observer observer because the DisplayController
+  // outlives the host.
+  host->AddObserver(this);
   internal::InitRootWindowSettings(host->window())->display_id = display.id();
   host->InitHost();
 

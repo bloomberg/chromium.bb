@@ -809,8 +809,7 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 
 void DesktopWindowTreeHostWin::HandleMove() {
   native_widget_delegate_->OnNativeWidgetMove();
-  if (delegate_)
-    delegate_->OnHostMoved(GetBounds().origin());
+  OnHostMoved(GetBounds().origin());
 }
 
 void DesktopWindowTreeHostWin::HandleWorkAreaChanged() {
@@ -828,7 +827,7 @@ void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
 void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
   if (delegate_)
-    NotifyHostResized(new_size);
+    OnHostResized(new_size);
 }
 
 void DesktopWindowTreeHostWin::HandleFrameChanged() {

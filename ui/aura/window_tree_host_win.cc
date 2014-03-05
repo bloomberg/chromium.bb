@@ -131,14 +131,14 @@ void WindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
       window_rect.bottom - window_rect.top,
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
 
-  // Explicity call NotifyHostResized when the scale has changed because
+  // Explicity call OnHostResized when the scale has changed because
   // the window size may not have changed.
   float current_scale = compositor()->device_scale_factor();
   float new_scale = gfx::Screen::GetScreenFor(
       delegate_->AsDispatcher()->window())->GetDisplayNearestWindow(
           delegate_->AsDispatcher()->window()).device_scale_factor();
   if (current_scale != new_scale)
-    NotifyHostResized(bounds.size());
+    OnHostResized(bounds.size());
 }
 
 gfx::Insets WindowTreeHostWin::GetInsets() const {
@@ -282,8 +282,7 @@ LRESULT WindowTreeHostWin::OnNCActivate(UINT message,
 }
 
 void WindowTreeHostWin::OnMove(const gfx::Point& point) {
-  if (delegate_)
-    delegate_->OnHostMoved(point);
+  OnHostMoved(point);
 }
 
 void WindowTreeHostWin::OnPaint(HDC dc) {
@@ -299,7 +298,7 @@ void WindowTreeHostWin::OnSize(UINT param, const gfx::Size& size) {
   // Minimizing resizes the window to 0x0 which causes our layout to go all
   // screwy, so we just ignore it.
   if (delegate_ && param != SIZE_MINIMIZED)
-    NotifyHostResized(size);
+    OnHostResized(size);
 }
 
 namespace test {

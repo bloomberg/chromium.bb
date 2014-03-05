@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -36,7 +36,7 @@ class DisplayInfo;
 // An object that copies the content of the primary root window to a
 // mirror window. This also draws a mouse cursor as the mouse cursor
 // is typically drawn by the window system.
-class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
+class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
  public:
   MirrorWindowController();
   virtual ~MirrorWindowController();
@@ -52,9 +52,8 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   // Close the mirror window.
   void Close();
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnWindowTreeHostResized(
-      const aura::WindowEventDispatcher* root) OVERRIDE;
+  // aura::WindowTreeHostObserver overrides:
+  virtual void OnHostResized(const aura::WindowTreeHost* host) OVERRIDE;
 
   aura::WindowTreeHost* host() const { return host_.get(); }
 

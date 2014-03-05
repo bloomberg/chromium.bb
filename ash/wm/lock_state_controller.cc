@@ -167,13 +167,11 @@ LockStateController::LockStateController()
       shutdown_after_lock_(false),
       animating_lock_(false),
       can_cancel_lock_animation_(false) {
-  Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->AddRootWindowObserver(
-      this);
+  Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
 }
 
 LockStateController::~LockStateController() {
-  Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->
-      RemoveRootWindowObserver(this);
+  Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
 }
 
 void LockStateController::SetDelegate(LockStateControllerDelegate* delegate) {
@@ -290,8 +288,8 @@ void LockStateController::SetLockScreenDisplayedCallback(
   lock_screen_displayed_callback_ = callback;
 }
 
-void LockStateController::OnWindowTreeHostCloseRequested(
-    const aura::WindowEventDispatcher* dispatcher) {
+void LockStateController::OnHostCloseRequested(
+    const aura::WindowTreeHost* host) {
   Shell::GetInstance()->delegate()->Exit();
 }
 

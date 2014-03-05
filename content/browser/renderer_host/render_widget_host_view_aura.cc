@@ -3151,12 +3151,11 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, aura::RootWindowObserver implementation:
+// RenderWidgetHostViewAura, aura::WindowTreeHostObserver implementation:
 
-void RenderWidgetHostViewAura::OnWindowTreeHostMoved(
-    const aura::WindowEventDispatcher* dispatcher,
-    const gfx::Point& new_origin) {
-  TRACE_EVENT1("ui", "RenderWidgetHostViewAura::OnWindowTreeHostMoved",
+void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
+                                           const gfx::Point& new_origin) {
+  TRACE_EVENT1("ui", "RenderWidgetHostViewAura::OnHostMoved",
                "new_origin", new_origin.ToString());
 
   UpdateScreenInfo(window_);
@@ -3309,7 +3308,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 
   window_observer_.reset();
   if (window_->GetHost())
-    window_->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
+    window_->GetHost()->RemoveObserver(this);
   UnlockMouse();
   if (popup_parent_host_view_) {
     DCHECK(popup_parent_host_view_->popup_child_host_view_ == NULL ||
@@ -3492,7 +3491,7 @@ void RenderWidgetHostViewAura::AddOnCommitCallbackAndDisableLocks(
 }
 
 void RenderWidgetHostViewAura::AddedToRootWindow() {
-  window_->GetHost()->dispatcher()->AddRootWindowObserver(this);
+  window_->GetHost()->AddObserver(this);
   UpdateScreenInfo(window_);
 
   aura::client::CursorClient* cursor_client =
@@ -3533,7 +3532,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
   DetachFromInputMethod();
 
-  window_->GetHost()->dispatcher()->RemoveRootWindowObserver(this);
+  window_->GetHost()->RemoveObserver(this);
   ui::Compositor* compositor = GetCompositor();
   if (current_surface_.get()) {
     // We can't get notification for commits after this point, which would

@@ -24,6 +24,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
@@ -140,7 +141,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     // TODO(jamescook): For demo purposes create a window with a WebView just
     // to ensure that the content module is properly initialized.
     webview_window_.reset(CreateWebViewWindow(browser_context_.get(),
-        wm_test_helper_->dispatcher()->window()));
+        wm_test_helper_->host()->window()));
     webview_window_->Show();
   }
 }
@@ -164,8 +165,8 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   aura::Env::DeleteInstance();
 }
 
-void ShellBrowserMainParts::OnWindowTreeHostCloseRequested(
-    const aura::WindowEventDispatcher* dispatcher) {
+void ShellBrowserMainParts::OnHostCloseRequested(
+    const aura::WindowTreeHost* host) {
   extension_system_->CloseApp();
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
@@ -180,17 +181,17 @@ void ShellBrowserMainParts::CreateRootWindow() {
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
-  wm_test_helper_->dispatcher()->host()->Show();
+  wm_test_helper_->host()->Show();
   // Watch for the user clicking the close box.
-  wm_test_helper_->dispatcher()->AddRootWindowObserver(this);
+  wm_test_helper_->host()->AddObserver(this);
 }
 
 void ShellBrowserMainParts::DestroyRootWindow() {
   // We should close widget before destroying root window.
   webview_window_.reset();
   devtools_delegate_->Stop();
-  wm_test_helper_->dispatcher()->RemoveRootWindowObserver(this);
-  wm_test_helper_->dispatcher()->PrepareForShutdown();
+  wm_test_helper_->host()->RemoveObserver(this);
+  wm_test_helper_->host()->dispatcher()->PrepareForShutdown();
   wm_test_helper_.reset();
   ui::ShutdownInputMethodForTesting();
 }
@@ -198,7 +199,7 @@ void ShellBrowserMainParts::DestroyRootWindow() {
 void ShellBrowserMainParts::CreateViewsDelegate() {
   DCHECK(!views::ViewsDelegate::views_delegate);
   views::ViewsDelegate::views_delegate =
-      new ShellViewsDelegate(wm_test_helper_->dispatcher()->window());
+      new ShellViewsDelegate(wm_test_helper_->host()->window());
 }
 
 void ShellBrowserMainParts::DestroyViewsDelegate() {

@@ -18,7 +18,6 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"

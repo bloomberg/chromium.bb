@@ -315,7 +315,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   aura::client::SetActivationClient(host_->window(), NULL);
   focus_client_.reset();
 
-  host_->dispatcher()->RemoveRootWindowObserver(this);
+  host_->RemoveObserver(this);
   host_.reset();  // Uses input_method_event_filter_ at destruction.
   // WindowEventDispatcher owns |desktop_window_tree_host_|.
   desktop_window_tree_host_ = NULL;
@@ -482,9 +482,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   static_cast<aura::client::FocusClient*>(focus_client_.get())->
       FocusWindow(content_window_);
 
-  OnWindowTreeHostResized(host_->dispatcher());
+  OnHostResized(host());
 
-  host_->dispatcher()->AddRootWindowObserver(this);
+  host_->AddObserver(this);
 
   window_tree_client_.reset(
       new DesktopNativeWidgetAuraWindowTreeClient(host_->window()));
@@ -1130,22 +1130,21 @@ int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopNativeWidgetAura, aura::RootWindowObserver implementation:
+// DesktopNativeWidgetAura, aura::WindowTreeHostObserver implementation:
 
-void DesktopNativeWidgetAura::OnWindowTreeHostCloseRequested(
-    const aura::WindowEventDispatcher* dispatcher) {
+void DesktopNativeWidgetAura::OnHostCloseRequested(
+    const aura::WindowTreeHost* host) {
   Close();
 }
 
-void DesktopNativeWidgetAura::OnWindowTreeHostResized(
-    const aura::WindowEventDispatcher* dispatcher) {
+void DesktopNativeWidgetAura::OnHostResized(const aura::WindowTreeHost* host) {
   // Don't update the bounds of the child layers when animating closed. If we
   // did it would force a paint, which we don't want. We don't want the paint
   // as we can't assume any of the children are valid.
   if (desktop_window_tree_host_->IsAnimatingClosed())
     return;
 
-  gfx::Rect new_bounds = gfx::Rect(dispatcher->window()->bounds().size());
+  gfx::Rect new_bounds = gfx::Rect(host->window()->bounds().size());
   content_window_->SetBounds(new_bounds);
   // Can be NULL at start.
   if (content_window_container_)
@@ -1153,10 +1152,9 @@ void DesktopNativeWidgetAura::OnWindowTreeHostResized(
   native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
-void DesktopNativeWidgetAura::OnWindowTreeHostMoved(
-    const aura::WindowEventDispatcher* dispatcher,
-    const gfx::Point& new_origin) {
-  TRACE_EVENT1("views", "DesktopNativeWidgetAura::OnWindowTreeHostMoved",
+void DesktopNativeWidgetAura::OnHostMoved(const aura::WindowTreeHost* host,
+                                          const gfx::Point& new_origin) {
+  TRACE_EVENT1("views", "DesktopNativeWidgetAura::OnHostMoved",
                "new_origin", new_origin.ToString());
 
   native_widget_delegate_->OnNativeWidgetMove();

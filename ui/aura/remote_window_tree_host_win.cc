@@ -399,7 +399,7 @@ gfx::Rect RemoteWindowTreeHostWin::GetBounds() const {
 
 void RemoteWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   window_size_ = bounds.size();
-  NotifyHostResized(bounds.size());
+  OnHostResized(bounds.size());
 }
 
 gfx::Insets RemoteWindowTreeHostWin::GetInsets() const {

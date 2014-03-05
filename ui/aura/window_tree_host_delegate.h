@@ -42,7 +42,6 @@ class AURA_EXPORT WindowTreeHostDelegate {
   // window move on our behalf, but we should still paint as if we're active.
   virtual void OnHostLostMouseGrab() = 0;
 
-  virtual void OnHostMoved(const gfx::Point& origin) = 0;
   virtual void OnHostResized(const gfx::Size& size) = 0;
 
   virtual void OnCursorMovedToRootLocation(const gfx::Point& root_location) = 0;

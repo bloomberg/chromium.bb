@@ -143,8 +143,7 @@ EventRewriter::EventRewriter()
       pref_service_for_testing_(NULL) {
   // The ash shell isn't instantiated for our unit tests.
   if (ash::Shell::HasInstance()) {
-    ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->
-        AddRootWindowObserver(this);
+    ash::Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
   }
   base::MessageLoopForUI::current()->AddObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -156,8 +155,7 @@ EventRewriter::EventRewriter()
 EventRewriter::~EventRewriter() {
   base::MessageLoopForUI::current()->RemoveObserver(this);
   if (ash::Shell::HasInstance()) {
-    ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->
-        RemoveRootWindowObserver(this);
+    ash::Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
   }
   if (base::SysInfo::IsRunningOnChromeOS()) {
     XInputHierarchyChangedEventListener::GetInstance()->RemoveObserver(this);
@@ -196,8 +194,7 @@ void EventRewriter::RewriteForTesting(XEvent* event) {
   Rewrite(event);
 }
 
-void EventRewriter::OnKeyboardMappingChanged(
-    const aura::WindowEventDispatcher* dispatcher) {
+void EventRewriter::OnKeyboardMappingChanged(const aura::WindowTreeHost* host) {
   RefreshKeycodes();
 }
 

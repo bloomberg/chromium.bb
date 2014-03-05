@@ -12,7 +12,6 @@
 
 namespace aura {
 class Window;
-class WindowEventDispatcher;
 class WindowTreeHost;
 namespace client {
 class DefaultActivationClient;
@@ -43,7 +42,7 @@ class WMTestHelper : public aura::client::WindowTreeClient {
   explicit WMTestHelper(const gfx::Size& default_window_size);
   virtual ~WMTestHelper();
 
-  aura::WindowEventDispatcher* dispatcher() { return host_->dispatcher(); }
+  aura::WindowTreeHost* host() { return host_.get(); }
 
   // Overridden from client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,

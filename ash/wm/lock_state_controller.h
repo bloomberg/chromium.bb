@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 
 namespace gfx {
 class Rect;
@@ -68,7 +68,7 @@ class ASH_EXPORT LockStateControllerDelegate {
 // called at the end of the animation, lock UI is deleted, system unlocks, and
 // OnLockStateChanged is called. It leads to
 // StartUnlockAnimationAfterUIDestroyed.
-class ASH_EXPORT LockStateController : public aura::RootWindowObserver,
+class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
                                        public ShellObserver {
  public:
   // Amount of time that the power button needs to be held before we lock the
@@ -197,9 +197,8 @@ class ASH_EXPORT LockStateController : public aura::RootWindowObserver,
   // Callback is guaranteed to be called once and then discarded.
   void SetLockScreenDisplayedCallback(const base::Closure& callback);
 
-  // RootWindowObserver override:
-  virtual void OnWindowTreeHostCloseRequested(
-     const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
+  // aura::WindowTreeHostObserver override:
+  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

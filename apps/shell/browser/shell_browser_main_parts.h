@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 
 namespace aura {
 class TestScreen;
@@ -46,7 +46,7 @@ class ShellExtensionsClient;
 
 // Handles initialization of AppShell.
 class ShellBrowserMainParts : public content::BrowserMainParts,
-                              public aura::RootWindowObserver {
+                              public aura::WindowTreeHostObserver {
  public:
   explicit ShellBrowserMainParts(
       const content::MainFunctionParams& parameters);
@@ -69,9 +69,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnWindowTreeHostCloseRequested(
-      const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
+  // aura::WindowTreeHostObserver overrides:
+  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;
 
  private:
   // Creates the window that hosts the apps.

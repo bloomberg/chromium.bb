@@ -30,6 +30,7 @@ namespace aura {
 class RootWindowTransformer;
 class WindowEventDispatcher;
 class WindowTreeHostDelegate;
+class WindowTreeHostObserver;
 
 // WindowTreeHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
@@ -51,6 +52,9 @@ class AURA_EXPORT WindowTreeHost {
 
   Window* window() { return window_; }
   const Window* window() const { return window_; }
+
+  void AddObserver(WindowTreeHostObserver* observer);
+  void RemoveObserver(WindowTreeHostObserver* observer);
 
   WindowEventDispatcher* dispatcher() {
     return const_cast<WindowEventDispatcher*>(
@@ -178,7 +182,10 @@ class AURA_EXPORT WindowTreeHost {
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnNativeScreen() const = 0;
 
-  void NotifyHostResized(const gfx::Size& new_size);
+  void OnHostMoved(const gfx::Point& new_location);
+  void OnHostResized(const gfx::Size& new_size);
+  void OnHostCloseRequested();
+  void OnKeyboardMappingChanged();
 
   // Sets the currently displayed cursor.
   virtual void SetCursorNative(gfx::NativeCursor cursor) = 0;
@@ -202,6 +209,8 @@ class AURA_EXPORT WindowTreeHost {
   // reach back up to access this object which will be valid until the end of
   // the dtor).
   Window* window_;  // Owning.
+
+  ObserverList<WindowTreeHostObserver> observers_;
 
   scoped_ptr<WindowEventDispatcher> dispatcher_;
 

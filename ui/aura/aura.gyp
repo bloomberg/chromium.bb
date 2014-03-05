@@ -110,6 +110,7 @@
         'window_tree_host_delegate.h',
         'window_tree_host_mac.mm',
         'window_tree_host_mac.h',
+        'window_tree_host_observer.h',
         'window_tree_host_ozone.cc',
         'window_tree_host_ozone.h',
         'window_tree_host_win.cc',

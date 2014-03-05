@@ -4,6 +4,7 @@
 
 #include "ui/aura/window_tree_host.h"
 
+#include "base/debug/trace_event.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window_transformer.h"
@@ -11,6 +12,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host_delegate.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
@@ -102,6 +104,14 @@ void WindowTreeHost::InitCompositor() {
   compositor_->SetRootLayer(window()->layer());
   transformer_.reset(
       new SimpleRootWindowTransformer(window(), gfx::Transform()));
+}
+
+void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowTreeHost::RemoveObserver(WindowTreeHostObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void WindowTreeHost::SetRootWindowTransformer(
@@ -253,7 +263,15 @@ void WindowTreeHost::CreateCompositor(
   delegate_ = dispatcher();
 }
 
-void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {
+void WindowTreeHost::OnHostMoved(const gfx::Point& new_location) {
+  TRACE_EVENT1("ui", "WindowTreeHost::OnHostMoved",
+               "origin", new_location.ToString());
+
+  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
+                    OnHostMoved(this, new_location));
+}
+
+void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
@@ -263,7 +281,18 @@ void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
   UpdateRootWindowSize(layer_size);
+  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_, OnHostResized(this));
   delegate_->OnHostResized(layer_size);
+}
+
+void WindowTreeHost::OnHostCloseRequested() {
+  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
+                    OnHostCloseRequested(this));
+}
+
+void WindowTreeHost::OnKeyboardMappingChanged() {
+  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
+                    OnKeyboardMappingChanged(this));
 }
 
 void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,

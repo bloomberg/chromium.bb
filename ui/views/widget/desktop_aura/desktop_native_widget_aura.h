@@ -10,13 +10,14 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
+class WindowEventDispatcher;
 class WindowTreeHost;
 namespace client {
 class DragDropClient;
@@ -57,7 +58,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       public aura::client::FocusChangeObserver,
       public views::internal::InputMethodDelegate,
       public aura::client::DragDropDelegate,
-      public aura::RootWindowObserver {
+      public aura::WindowTreeHostObserver {
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
@@ -228,14 +229,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
-  // Overridden from aura::RootWindowObserver:
-  virtual void OnWindowTreeHostCloseRequested(
-      const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
-  virtual void OnWindowTreeHostResized(
-      const aura::WindowEventDispatcher* dispatcher) OVERRIDE;
-  virtual void OnWindowTreeHostMoved(
-      const aura::WindowEventDispatcher* dispatcher,
-      const gfx::Point& new_origin) OVERRIDE;
+  // Overridden from aura::WindowTreeHostObserver:
+  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) OVERRIDE;
+  virtual void OnHostResized(const aura::WindowTreeHost* host) OVERRIDE;
+  virtual void OnHostMoved(const aura::WindowTreeHost* host,
+                           const gfx::Point& new_origin) OVERRIDE;
 
  private:
   friend class FocusManagerEventHandler;

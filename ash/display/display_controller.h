@@ -16,8 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/point.h"
 
@@ -50,7 +50,7 @@ class VirtualKeyboardWindowController;
 // DisplayController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
 class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
-                                     public aura::RootWindowObserver,
+                                     public aura::WindowTreeHostObserver,
                                      public internal::DisplayManager::Delegate {
  public:
   class ASH_EXPORT Observer {
@@ -149,9 +149,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
-  // RootWindowObserver overrides:
-  virtual void OnWindowTreeHostResized(
-      const aura::WindowEventDispatcher* root) OVERRIDE;
+  // aura::WindowTreeHostObserver overrides:
+  virtual void OnHostResized(const aura::WindowTreeHost* host) OVERRIDE;
 
   // aura::DisplayManager::Delegate overrides:
   virtual void CreateOrUpdateNonDesktopDisplay(

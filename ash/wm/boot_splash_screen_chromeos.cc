@@ -51,13 +51,13 @@ class BootSplashScreen::CopyHostContentLayerDelegate
   DISALLOW_COPY_AND_ASSIGN(CopyHostContentLayerDelegate);
 };
 
-BootSplashScreen::BootSplashScreen(aura::WindowEventDispatcher* dispatcher)
-    : layer_delegate_(new CopyHostContentLayerDelegate(dispatcher->host())),
+BootSplashScreen::BootSplashScreen(aura::WindowTreeHost* host)
+    : layer_delegate_(new CopyHostContentLayerDelegate(host)),
       layer_(new ui::Layer(ui::LAYER_TEXTURED)) {
   layer_->set_delegate(layer_delegate_.get());
 
-  ui::Layer* root_layer = dispatcher->window()->layer();
-  layer_->SetBounds(gfx::Rect(dispatcher->window()->bounds().size()));
+  ui::Layer* root_layer = host->window()->layer();
+  layer_->SetBounds(gfx::Rect(host->window()->bounds().size()));
   root_layer->Add(layer_.get());
   root_layer->StackAtTop(layer_.get());
 }

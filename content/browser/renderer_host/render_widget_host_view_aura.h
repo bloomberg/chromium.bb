@@ -32,8 +32,8 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -88,7 +88,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       public ui::CompositorVSyncManager::Observer,
       public ui::TextInputClient,
       public gfx::DisplayObserver,
-      public aura::RootWindowObserver,
+      public aura::WindowTreeHostObserver,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
@@ -324,10 +324,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnWindowFocused(aura::Window* gained_focus,
                                aura::Window* lost_focus) OVERRIDE;
 
-  // Overridden from aura::RootWindowObserver:
-  virtual void OnWindowTreeHostMoved(
-      const aura::WindowEventDispatcher* dispatcher,
-      const gfx::Point& new_origin) OVERRIDE;
+  // Overridden from aura::WindowTreeHostObserver:
+  virtual void OnHostMoved(const aura::WindowTreeHost* host,
+                           const gfx::Point& new_origin) OVERRIDE;
 
   // SoftwareFrameManagerClient implementation:
   virtual void SoftwareFrameWasFreed(

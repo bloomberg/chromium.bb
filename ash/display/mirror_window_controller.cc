@@ -88,11 +88,10 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     host_->window()->SetName(
         base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));
     host_->compositor()->SetBackgroundColor(SK_ColorBLACK);
-    // No need to remove RootWindowObserver because the DisplayController object
-    // outlives WindowEventDispatcher objects.
-    host_->dispatcher()->AddRootWindowObserver(
-        Shell::GetInstance()->display_controller());
-    host_->dispatcher()->AddRootWindowObserver(this);
+    // No need to remove the observer because the DisplayController outlives the
+    // host.
+    host_->AddObserver(Shell::GetInstance()->display_controller());
+    host_->AddObserver(this);
     // TODO(oshima): TouchHUD is using idkey.
     InitRootWindowSettings(host_->window())->display_id = display_info.id();
     host_->InitHost();
@@ -146,20 +145,16 @@ void MirrorWindowController::Close() {
     aura::client::SetCaptureClient(host_->window(), NULL);
     delete capture_client;
 
-    host_->dispatcher()->RemoveRootWindowObserver(
-        Shell::GetInstance()->display_controller());
-    host_->dispatcher()->RemoveRootWindowObserver(this);
+    host_->RemoveObserver(Shell::GetInstance()->display_controller());
+    host_->RemoveObserver(this);
     host_.reset();
   }
 }
 
-void MirrorWindowController::OnWindowTreeHostResized(
-    const aura::WindowEventDispatcher* dispatcher) {
-  // Do not use |old_size| as it contains RootWindow's (but not host's) size,
-  // and this parameter wil be removed soon.
-  if (mirror_window_host_size_ == dispatcher->host()->GetBounds().size())
+void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
+  if (mirror_window_host_size_ == host->GetBounds().size())
     return;
-  mirror_window_host_size_ = dispatcher->host()->GetBounds().size();
+  mirror_window_host_size_ = host->GetBounds().size();
   reflector_->OnMirroringCompositorResized();
   host_->SetRootWindowTransformer(CreateRootWindowTransformer().Pass());
   Shell::GetInstance()->display_controller()->cursor_window_controller()->

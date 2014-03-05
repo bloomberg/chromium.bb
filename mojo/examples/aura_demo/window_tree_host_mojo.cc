@@ -164,7 +164,7 @@ void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
                       bounds.size().width(), bounds.size().height());
   if (delegate_)
     window()->SetBounds(gfx::Rect(bounds_.size()));
-  NotifyHostResized(bounds_.size());
+  OnHostResized(bounds_.size());
 }
 
 void WindowTreeHostMojo::OnDestroyed() {

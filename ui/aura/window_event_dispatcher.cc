@@ -17,7 +17,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_targeter.h"
@@ -230,26 +229,6 @@ void WindowEventDispatcher::OnWindowTransformed(Window* window,
        window->ContainsPointInRoot(GetLastMouseLocationInRoot()))) {
     PostMouseMoveEventAfterWindowChange();
   }
-}
-
-void WindowEventDispatcher::OnKeyboardMappingChanged() {
-  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnKeyboardMappingChanged(this));
-}
-
-void WindowEventDispatcher::OnWindowTreeHostCloseRequested() {
-  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnWindowTreeHostCloseRequested(this));
-}
-
-void WindowEventDispatcher::AddRootWindowObserver(
-    RootWindowObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WindowEventDispatcher::RemoveRootWindowObserver(
-    RootWindowObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
@@ -621,14 +600,6 @@ void WindowEventDispatcher::OnHostLostMouseGrab() {
   mouse_moved_handler_ = NULL;
 }
 
-void WindowEventDispatcher::OnHostMoved(const gfx::Point& origin) {
-  TRACE_EVENT1("ui", "WindowEventDispatcher::OnHostMoved",
-               "origin", origin.ToString());
-
-  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnWindowTreeHostMoved(this, origin));
-}
-
 void WindowEventDispatcher::OnHostResized(const gfx::Size& size) {
   TRACE_EVENT1("ui", "WindowEventDispatcher::OnHostResized",
                "size", size.ToString());
@@ -636,8 +607,6 @@ void WindowEventDispatcher::OnHostResized(const gfx::Size& size) {
   DispatchDetails details = DispatchHeldEvents();
   if (details.dispatcher_destroyed)
     return;
-  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnWindowTreeHostResized(this));
 
   // Constrain the mouse position within the new root Window size.
   gfx::Point point;

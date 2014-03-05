@@ -457,9 +457,9 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         ConfineCursorToRootWindow();
       }
       if (size_changed)
-        NotifyHostResized(bounds.size());
+        OnHostResized(bounds.size());
       if (origin_changed)
-        delegate_->OnHostMoved(bounds_.origin());
+        OnHostMoved(bounds_.origin());
       break;
     }
     case GenericEvent:
@@ -469,7 +469,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
       if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
         // We have received a close message from the window manager.
-        delegate_->AsDispatcher()->OnWindowTreeHostCloseRequested();
+        OnHostCloseRequested();
       } else if (message_type == atom_cache_.GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
@@ -487,7 +487,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         case MappingModifier:
         case MappingKeyboard:
           XRefreshKeyboardMapping(&xev->xmapping);
-          delegate_->AsDispatcher()->OnKeyboardMappingChanged();
+          OnKeyboardMappingChanged();
           break;
         case MappingPointer:
           ui::DeviceDataManager::GetInstance()->UpdateButtonMap();
@@ -600,9 +600,9 @@ void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   UpdateIsInternalDisplay();
   if (origin_changed)
-    delegate_->OnHostMoved(bounds.origin());
+    OnHostMoved(bounds.origin());
   if (size_changed || current_scale != new_scale) {
-    NotifyHostResized(bounds.size());
+    OnHostResized(bounds.size());
   } else {
     delegate_->AsDispatcher()->window()->SchedulePaintInRect(
         delegate_->AsDispatcher()->window()->bounds());

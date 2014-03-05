@@ -355,7 +355,7 @@ void RootWindowController::Shutdown() {
   internal::GetRootWindowSettings(root_window())->display_id =
       gfx::Display::kInvalidDisplayID;
   // And this root window should no longer process events.
-  dispatcher()->PrepareForShutdown();
+  host()->dispatcher()->PrepareForShutdown();
 
   system_background_.reset();
   aura::client::SetScreenPositionClient(root_window(), NULL);
@@ -797,7 +797,7 @@ void RootWindowController::CreateSystemBackground(
            switches::kAshCopyHostBackgroundAtBoot) ||
        CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshAnimateFromBootSplashScreen)))
-    boot_splash_screen_.reset(new BootSplashScreen(dispatcher()));
+    boot_splash_screen_.reset(new BootSplashScreen(host()));
 #endif
 }
 
