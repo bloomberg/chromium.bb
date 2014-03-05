@@ -235,7 +235,6 @@
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
       ],
       'action': [
         'python',
@@ -244,14 +243,41 @@
         '<(static_idl_files_list)',
         '--interfaces-info-file',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-        '--event-names-file',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
         '<@(write_file_only_if_changed)',
         '--',
         # Generated files must be passed at command line
         '<@(generated_idl_files)',
       ],
-      'message': 'Computing global information about IDL files, and generating list of Event interfaces',
+      'message': 'Computing global information about IDL files',
+      }]
+  },
+################################################################################
+  {
+    'target_name': 'event_interfaces',
+    'type': 'none',
+    'dependencies': [
+      'interfaces_info',
+    ],
+    'actions': [{
+      'action_name': 'generate_event_interfaces',
+      'inputs': [
+        'scripts/generate_event_interfaces.py',
+        'scripts/utilities.py',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+      ],
+      'outputs': [
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
+      ],
+      'action': [
+        'python',
+        'scripts/generate_event_interfaces.py',
+        '--interfaces-info-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        '--event-names-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
+        '<@(write_file_only_if_changed)',
+      ],
+      'message': 'Generating list of Event interfaces',
       }]
   },
 ################################################################################
@@ -369,6 +395,7 @@
     'type': 'none',
     'dependencies': [
       'aggregate_generated_bindings',
+      'event_interfaces',
       'individual_generated_bindings',
     ],
   },

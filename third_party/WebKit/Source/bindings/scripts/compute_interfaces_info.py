@@ -73,8 +73,6 @@ Note that all of these are stable information, unlikely to change without
 moving or deleting files (hence requiring a full rebuild anyway) or significant
 code changes (for inherited extended attributes).
 
-FIXME: also generates EventNames.in; factor out.  http://crbug.com/341748
-
 Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
@@ -83,7 +81,7 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, write_file, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implemented_interfaces_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
+from utilities import get_file_contents, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implemented_interfaces_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -111,13 +109,11 @@ class IdlInterfaceFileNotFoundError(Exception):
 def parse_options():
     usage = 'Usage: %prog [options] [generated1.idl]...'
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--event-names-file', help='output file')
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
+
     options, args = parser.parse_args()
-    if options.event_names_file is None:
-        parser.error('Must specify an output file using --event-names-file.')
     if options.interfaces_info_file is None:
         parser.error('Must specify an output file using --interfaces-info-file.')
     if options.idl_files_list is None:
@@ -126,46 +122,6 @@ def parse_options():
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     return options, args
-
-
-################################################################################
-# Write files
-################################################################################
-
-def write_event_names_file(destination_filename, only_if_changed):
-    # Generate event names for all interfaces that inherit from Event,
-    # including Event itself.
-    # FIXME: factor out.  http://crbug.com/341748
-    event_names = set(
-        interface_name
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if (interface_name == 'Event' or
-            ('ancestors' in interface_info and
-             interface_info['ancestors'][-1] == 'Event')))
-
-    def extended_attribute_string(name):
-        value = extended_attributes[name]
-        if name == 'RuntimeEnabled':
-            value += 'Enabled'
-        return name + '=' + value
-
-    source_dir, _ = os.path.split(os.getcwd())
-    lines = []
-    lines.append('namespace="Event"\n')
-    lines.append('\n')
-    for filename, extended_attributes in sorted(
-        (interface_info['full_path'],
-         extended_attributes_by_interface[interface_name])
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if interface_name in event_names):
-        refined_filename, _ = os.path.splitext(os.path.relpath(filename, source_dir))
-        refined_filename = refined_filename.replace(os.sep, posixpath.sep)
-        extended_attributes_list = [
-            extended_attribute_string(name)
-            for name in 'Conditional', 'ImplementedAs', 'RuntimeEnabled'
-            if name in extended_attributes]
-        lines.append('%s %s\n' % (refined_filename, ', '.join(extended_attributes_list)))
-    write_file(lines, destination_filename, only_if_changed)
 
 
 ################################################################################
@@ -329,10 +285,10 @@ def main():
     # cannot be included in the file listing static files
     idl_files.extend(args)
 
-    only_if_changed = options.write_file_only_if_changed
     compute_interfaces_info(idl_files)
-    write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)
-    write_event_names_file(options.event_names_file, only_if_changed)
+    write_pickle_file(options.interfaces_info_file,
+                      interfaces_info,
+                      options.write_file_only_if_changed)
 
 
 if __name__ == '__main__':

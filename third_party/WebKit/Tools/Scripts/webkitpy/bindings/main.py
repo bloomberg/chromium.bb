@@ -146,13 +146,19 @@ class BindingsTests(object):
             os.write(list_file, list_contents)
             return list_filename
 
-        def compute_interfaces_info(idl_files_list_filename,
-                                    event_names_filename):
+        def generate_event_interfaces(event_names_filename):
+            cmd = ['python',
+                   'bindings/scripts/generate_event_interfaces.py',
+                   '--interfaces-info-file', self.interfaces_info_filename,
+                   '--event-names-file', event_names_filename,
+                   '--write-file-only-if-changed', '0']
+            self.run_command(cmd)
+
+        def compute_interfaces_info(idl_files_list_filename):
             cmd = ['python',
                    'bindings/scripts/compute_interfaces_info.py',
                    '--idl-files-list', idl_files_list_filename,
                    '--interfaces-info-file', self.interfaces_info_filename,
-                   '--event-names-file', event_names_filename,
                    '--write-file-only-if-changed', '0']
             self.run_command(cmd)
 
@@ -164,8 +170,8 @@ class BindingsTests(object):
         try:
             # We first compute interfaces info for testing files only,
             # so we can compare EventInterfaces.in.
-            compute_interfaces_info(test_idl_files_list_filename,
-                                    self.event_names_filename)
+            compute_interfaces_info(test_idl_files_list_filename)
+            generate_event_interfaces(self.event_names_filename)
 
             # We then compute interfaces info for all IDL files, as code
             # generator output depends on inheritance (both ancestor chain and
@@ -178,9 +184,7 @@ class BindingsTests(object):
             # computing dependencies for the real Node.idl file.
             #
             # Don't overwrite the event names file generated for testing IDLs
-            _, dummy_event_names_filename = self.provider.new_temp_file()
-            compute_interfaces_info(all_idl_files_list_filename,
-                                    dummy_event_names_filename)
+            compute_interfaces_info(all_idl_files_list_filename)
         except ScriptError, e:
             print 'ERROR: compute_interfaces_info.py'
             print e.output
