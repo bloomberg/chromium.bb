@@ -127,6 +127,14 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
   agent_host->ConnectRenderViewHost(current);
 }
 
+// static
+bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
+    RenderViewHost* source,
+    const IPC::Message& message) {
+  RenderViewDevToolsAgentHost* agent_host = FindAgentHost(source);
+  return agent_host && agent_host->DispatchIPCMessage(message);
+}
+
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     RenderViewHost* rvh)
     : render_view_host_(NULL),
@@ -351,7 +359,7 @@ void RenderViewDevToolsAgentHost::RenderViewCrashed() {
       DispatchOnInspectorFrontend(this, notification->Serialize());
 }
 
-bool RenderViewDevToolsAgentHost::OnMessageReceived(
+bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
     const IPC::Message& msg) {
   if (!render_view_host_)
     return false;

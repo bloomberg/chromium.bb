@@ -38,6 +38,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   static void OnCancelPendingNavigation(RenderViewHost* pending,
                                         RenderViewHost* current);
 
+  static bool DispatchIPCMessage(RenderViewHost* source,
+                                 const IPC::Message& message);
+
   RenderViewDevToolsAgentHost(RenderViewHost*);
 
   RenderViewHost* render_view_host() { return render_view_host_; }
@@ -68,12 +71,13 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual void RenderViewDeleted(RenderViewHost* rvh) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  bool DispatchIPCMessage(const IPC::Message& message);
 
   void SetRenderViewHost(RenderViewHost* rvh);
   void ClearRenderViewHost();

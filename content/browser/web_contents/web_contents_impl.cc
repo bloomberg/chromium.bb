@@ -22,7 +22,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
@@ -437,10 +437,17 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
   // Message handlers should be aware of which
   // RenderViewHost/RenderFrameHost sent the message, which is temporarily
   // stored in render_(view|frame)_message_source_.
-  if (render_frame_host)
+  if (render_frame_host) {
+    if (RenderViewDevToolsAgentHost::DispatchIPCMessage(
+        render_frame_host->GetRenderViewHost(), message))
+        return true;
     render_frame_message_source_ = render_frame_host;
-  else
+  } else {
+    if (RenderViewDevToolsAgentHost::DispatchIPCMessage(
+        render_view_host, message))
+        return true;
     render_view_message_source_ = render_view_host;
+  }
 
   bool handled = true;
   bool message_is_ok = true;
