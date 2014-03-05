@@ -303,14 +303,6 @@ void MediaControls::updateCurrentTimeDisplay()
     m_currentTimeDisplay->setCurrentValue(now);
 }
 
-void MediaControls::showVolumeSlider()
-{
-    if (!m_mediaController->hasAudio())
-        return;
-
-    m_volumeSlider->show();
-}
-
 void MediaControls::changedMute()
 {
     m_panelMuteButton->changedMute();

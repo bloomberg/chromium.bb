@@ -286,7 +286,6 @@ const AtomicString& MediaControlOverlayEnclosureElement::shadowPseudoId() const
 
 MediaControlPanelMuteButtonElement::MediaControlPanelMuteButtonElement(Document& document, MediaControls* controls)
     : MediaControlMuteButtonElement(document, MediaMuteButton)
-    , m_controls(controls)
 {
 }
 
@@ -298,14 +297,6 @@ PassRefPtr<MediaControlPanelMuteButtonElement> MediaControlPanelMuteButtonElemen
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     return button.release();
-}
-
-void MediaControlPanelMuteButtonElement::defaultEventHandler(Event* event)
-{
-    if (event->type() == EventTypeNames::mouseover)
-        m_controls->showVolumeSlider();
-
-    MediaControlMuteButtonElement::defaultEventHandler(event);
 }
 
 const AtomicString& MediaControlPanelMuteButtonElement::shadowPseudoId() const

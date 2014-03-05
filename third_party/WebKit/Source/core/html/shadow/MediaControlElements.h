@@ -110,9 +110,6 @@ private:
     explicit MediaControlPanelMuteButtonElement(Document&, MediaControls*);
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-
-    MediaControls* m_controls;
 };
 
 // ----------------------------

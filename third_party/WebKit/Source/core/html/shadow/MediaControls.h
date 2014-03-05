@@ -60,7 +60,6 @@ public:
     virtual void playbackStopped();
 
     void updateCurrentTimeDisplay();
-    void showVolumeSlider();
 
     void changedMute();
     void changedVolume();
