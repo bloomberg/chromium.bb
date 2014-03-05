@@ -54,28 +54,18 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> >& textToSheetCache()
+static HashMap<AtomicString, StyleSheetContents*>& textToSheetCache()
 {
-    typedef WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> > TextToSheetCache;
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<TextToSheetCache>, cache, (new TextToSheetCache));
-    return *cache;
-#else
+    typedef HashMap<AtomicString, StyleSheetContents*> TextToSheetCache;
     DEFINE_STATIC_LOCAL(TextToSheetCache, cache, ());
     return cache;
-#endif
 }
 
-static WillBeHeapHashMap<RawPtrWillBeWeakMember<StyleSheetContents>, AtomicString>& sheetToTextCache()
+static HashMap<StyleSheetContents*, AtomicString>& sheetToTextCache()
 {
-    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<StyleSheetContents>, AtomicString> SheetToTextCache;
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<SheetToTextCache>, cache, (new SheetToTextCache));
-    return *cache;
-#else
+    typedef HashMap<StyleSheetContents*, AtomicString> SheetToTextCache;
     DEFINE_STATIC_LOCAL(SheetToTextCache, cache, ());
     return cache;
-#endif
 }
 
 StyleEngine::StyleEngine(Document& document)
@@ -589,7 +579,7 @@ PassRefPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& tex
     if (!e->document().inQuirksMode()) {
         AtomicString textContent(text);
 
-        WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> >::AddResult result = textToSheetCache().add(textContent, RawPtrWillBeWeakMember<StyleSheetContents>(nullptr));
+        HashMap<AtomicString, StyleSheetContents*>::AddResult result = textToSheetCache().add(textContent, 0);
         if (result.isNewEntry || !result.storedValue->value) {
             styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
             if (result.isNewEntry && styleSheet->contents()->maybeCacheable()) {
@@ -620,7 +610,7 @@ PassRefPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text
 
 void StyleEngine::removeSheet(StyleSheetContents* contents)
 {
-    WillBeHeapHashMap<RawPtrWillBeWeakMember<StyleSheetContents>, AtomicString>::iterator it = sheetToTextCache().find(contents);
+    HashMap<StyleSheetContents*, AtomicString>::iterator it = sheetToTextCache().find(contents);
     if (it == sheetToTextCache().end())
         return;
 
