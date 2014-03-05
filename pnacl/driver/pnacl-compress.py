@@ -124,14 +124,16 @@ def Compress(f_input, f_output):
 
   if (f_input == f_output):
     if (f_input == current_smallest_file): return
+    # python os.rename/shutil.move on Windows will raise an error when
+    # dst already exists, and f_input already exists.
     f_temp = f_input + test_suffix + "0"
-    os.rename(f_input, f_temp)
-    os.rename(current_smallest_file, f_input)
+    shutil.move(f_input, f_temp)
+    shutil.move(current_smallest_file, f_input)
     os.remove(f_temp)
-  elif current_smallest_file == f_input:
+  elif f_input == current_smallest_file:
     shutil.copyfile(current_smallest_file, f_output)
   else:
-    os.rename(current_smallest_file, f_output)
+    shutil.move(current_smallest_file, f_output)
 
 
 def main(argv):
