@@ -89,7 +89,7 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         nextText->setDataWithoutUpdate(emptyString());
         nextText->updateTextRenderer(0, nextTextData.length());
 
-        document().didMergeTextNodes(nextText.get(), offset);
+        document().didMergeTextNodes(*nextText, offset);
 
         // Restore nextText for mutation event.
         nextText->setDataWithoutUpdate(nextTextData);
@@ -128,7 +128,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState
         toRenderText(renderer())->setTextWithOffset(dataImpl(), 0, oldStr.length());
 
     if (parentNode())
-        document().didSplitTextNode(this);
+        document().didSplitTextNode(*this);
 
     return newText.release();
 }

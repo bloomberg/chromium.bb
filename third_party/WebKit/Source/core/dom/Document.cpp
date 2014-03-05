@@ -3667,7 +3667,7 @@ void Document::didRemoveText(Node* text, unsigned offset, unsigned length)
     m_markers->shiftMarkers(text, offset + length, 0 - length);
 }
 
-void Document::didMergeTextNodes(Text* oldNode, unsigned offset)
+void Document::didMergeTextNodes(Text& oldNode, unsigned offset)
 {
     if (!m_ranges.isEmpty()) {
         NodeWithIndex oldNodeWithIndex(oldNode);
@@ -3677,12 +3677,12 @@ void Document::didMergeTextNodes(Text* oldNode, unsigned offset)
     }
 
     if (m_frame)
-        m_frame->selection().didMergeTextNodes(*oldNode, offset);
+        m_frame->selection().didMergeTextNodes(oldNode, offset);
 
     // FIXME: This should update markers for spelling and grammar checking.
 }
 
-void Document::didSplitTextNode(Text* oldNode)
+void Document::didSplitTextNode(Text& oldNode)
 {
     if (!m_ranges.isEmpty()) {
         HashSet<Range*>::const_iterator end = m_ranges.end();
@@ -3691,7 +3691,7 @@ void Document::didSplitTextNode(Text* oldNode)
     }
 
     if (m_frame)
-        m_frame->selection().didSplitTextNode(*oldNode);
+        m_frame->selection().didSplitTextNode(oldNode);
 
     // FIXME: This should update markers for spelling and grammar checking.
 }

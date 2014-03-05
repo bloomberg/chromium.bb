@@ -666,8 +666,8 @@ public:
 
     void didInsertText(Node*, unsigned offset, unsigned length);
     void didRemoveText(Node*, unsigned offset, unsigned length);
-    void didMergeTextNodes(Text* oldNode, unsigned offset);
-    void didSplitTextNode(Text* oldNode);
+    void didMergeTextNodes(Text& oldNode, unsigned offset);
+    void didSplitTextNode(Text& oldNode);
 
     void clearDOMWindow() { m_domWindow = 0; }
     DOMWindow* domWindow() const { return m_domWindow; }

@@ -1743,44 +1743,42 @@ void Range::didRemoveText(Node* text, unsigned offset, unsigned length)
     boundaryTextRemoved(m_end, text, offset, length);
 }
 
-static inline void boundaryTextNodesMerged(RangeBoundaryPoint& boundary, NodeWithIndex& oldNode, unsigned offset)
+static inline void boundaryTextNodesMerged(RangeBoundaryPoint& boundary, const NodeWithIndex& oldNode, unsigned offset)
 {
     if (boundary.container() == oldNode.node())
-        boundary.set(oldNode.node()->previousSibling(), boundary.offset() + offset, 0);
-    else if (boundary.container() == oldNode.node()->parentNode() && boundary.offset() == oldNode.index())
-        boundary.set(oldNode.node()->previousSibling(), offset, 0);
+        boundary.set(oldNode.node().previousSibling(), boundary.offset() + offset, 0);
+    else if (boundary.container() == oldNode.node().parentNode() && boundary.offset() == oldNode.index())
+        boundary.set(oldNode.node().previousSibling(), offset, 0);
 }
 
-void Range::didMergeTextNodes(NodeWithIndex& oldNode, unsigned offset)
+void Range::didMergeTextNodes(const NodeWithIndex& oldNode, unsigned offset)
 {
-    ASSERT(oldNode.node());
-    ASSERT(oldNode.node()->document() == m_ownerDocument);
-    ASSERT(oldNode.node()->parentNode());
-    ASSERT(oldNode.node()->isTextNode());
-    ASSERT(oldNode.node()->previousSibling());
-    ASSERT(oldNode.node()->previousSibling()->isTextNode());
+    ASSERT(oldNode.node().document() == m_ownerDocument);
+    ASSERT(oldNode.node().parentNode());
+    ASSERT(oldNode.node().isTextNode());
+    ASSERT(oldNode.node().previousSibling());
+    ASSERT(oldNode.node().previousSibling()->isTextNode());
     boundaryTextNodesMerged(m_start, oldNode, offset);
     boundaryTextNodesMerged(m_end, oldNode, offset);
 }
 
-static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary, Text* oldNode)
+static inline void boundaryTextNodeSplit(RangeBoundaryPoint& boundary, Text& oldNode)
 {
     if (boundary.container() != oldNode)
         return;
     unsigned boundaryOffset = boundary.offset();
-    if (boundaryOffset <= oldNode->length())
+    if (boundaryOffset <= oldNode.length())
         return;
-    boundary.set(oldNode->nextSibling(), boundaryOffset - oldNode->length(), 0);
+    boundary.set(oldNode.nextSibling(), boundaryOffset - oldNode.length(), 0);
 }
 
-void Range::didSplitTextNode(Text* oldNode)
+void Range::didSplitTextNode(Text& oldNode)
 {
-    ASSERT(oldNode);
-    ASSERT(oldNode->document() == m_ownerDocument);
-    ASSERT(oldNode->parentNode());
-    ASSERT(oldNode->isTextNode());
-    ASSERT(oldNode->nextSibling());
-    ASSERT(oldNode->nextSibling()->isTextNode());
+    ASSERT(oldNode.document() == m_ownerDocument);
+    ASSERT(oldNode.parentNode());
+    ASSERT(oldNode.isTextNode());
+    ASSERT(oldNode.nextSibling());
+    ASSERT(oldNode.nextSibling()->isTextNode());
     boundaryTextNodeSplit(m_start, oldNode);
     boundaryTextNodeSplit(m_end, oldNode);
 }
