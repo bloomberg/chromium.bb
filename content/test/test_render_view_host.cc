@@ -265,6 +265,10 @@ bool TestRenderViewHost::IsRenderViewLive() const {
   return render_view_created_;
 }
 
+bool TestRenderViewHost::IsFullscreen() const {
+  return RenderViewHostImpl::IsFullscreen();
+}
+
 void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
   main_render_frame_host_->SendNavigate(page_id, url);
 }

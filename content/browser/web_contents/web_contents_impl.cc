@@ -2846,6 +2846,11 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
     return;
   }
 
+  // Ensure fullscreen mode is exited in the |delegate_| since a crashed
+  // renderer may not have made a clean exit.
+  if (IsFullscreenForCurrentTab())
+    ToggleFullscreenMode(false);
+
   // Cancel any visible dialogs so they are not left dangling over the sad tab.
   if (dialog_manager_)
     dialog_manager_->CancelActiveAndPendingDialogs(this);
@@ -2957,8 +2962,19 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
 }
 
 void WebContentsImpl::SwappedOut(RenderViewHost* rvh) {
-  if (delegate_ && rvh == GetRenderViewHost())
-    delegate_->SwappedOut(this);
+  if (rvh == GetRenderViewHost()) {
+    // Exit fullscreen mode before the current RVH is swapped out.  For numerous
+    // cases, there is no guarantee the renderer would/could initiate an exit.
+    // Example: http://crbug.com/347232
+    if (IsFullscreenForCurrentTab()) {
+      if (rvh)
+        rvh->ExitFullscreen();
+      DCHECK(!IsFullscreenForCurrentTab());
+    }
+
+    if (delegate_)
+      delegate_->SwappedOut(this);
+  }
 
   // Allow the navigation to proceed.
   GetRenderManager()->SwappedOut(rvh);
