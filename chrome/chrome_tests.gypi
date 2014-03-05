@@ -1765,15 +1765,6 @@
             '../ui/events/events.gyp:events_test_support',
           ],
         }],
-        ['use_aura==1', {
-          'sources!': [
-            # http://crbug.com/31663
-            # TODO(linux_aura) http://crbug.com/163931
-            # TODO(vabr): There is always a GPU process on ChromeOS:
-            # crbug.com/331947
-            'browser/task_manager/task_manager_browsertest.cc',
-          ],
-        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],

@@ -205,8 +205,11 @@ void NotificationResourceProvider::Observe(
 
 void NotificationResourceProvider::AddToTaskManager(
     BalloonHost* balloon_host) {
+  // The resource may already be tracked, if the task manager was opened
+  // while the BalloonHost was waiting to connect.
+  if (resources_.count(balloon_host))
+    return;
   NotificationResource* resource = new NotificationResource(balloon_host);
-  DCHECK(resources_.find(balloon_host) == resources_.end());
   resources_[balloon_host] = resource;
   task_manager_->AddResource(resource);
 }

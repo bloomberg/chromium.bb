@@ -2,50 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+
 #include "base/message_loop/message_loop.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/run_loop.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/test/test_timeouts.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/web_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace task_manager {
+namespace browsertest_util {
 
 namespace {
-
-int GetWebResourceCount(const TaskManagerModel* model) {
-  int count = 0;
-  for (int i = 0; i < model->ResourceCount(); i++) {
-    task_manager::Resource::Type type = model->GetResourceType(i);
-    // Skip system infrastructure resources.
-    if (type == task_manager::Resource::BROWSER ||
-        type == task_manager::Resource::NACL ||
-        type == task_manager::Resource::GPU ||
-        type == task_manager::Resource::UTILITY ||
-        type == task_manager::Resource::ZYGOTE ||
-        type == task_manager::Resource::SANDBOX_HELPER) {
-      continue;
-    }
-
-    count++;
-  }
-  return count;
-}
 
 class ResourceChangeObserver : public TaskManagerModelObserver {
  public:
   ResourceChangeObserver(const TaskManagerModel* model,
-                         int target_resource_count)
+                         int required_count,
+                         const base::string16& title_pattern)
       : model_(model),
-        target_resource_count_(target_resource_count) {
-  }
+        required_count_(required_count),
+        title_pattern_(title_pattern) {}
 
   virtual void OnModelChanged() OVERRIDE {
     OnResourceChange();
@@ -63,33 +46,102 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
     OnResourceChange();
   }
 
+  void RunUntilSatisfied() {
+    // See if the condition is satisfied without having to run the loop. This
+    // check has to be placed after the installation of the
+    // TaskManagerModelObserver, because resources may change before that.
+    if (IsSatisfied())
+      return;
+
+    timer_.Start(FROM_HERE,
+                 TestTimeouts::action_timeout(),
+                 this,
+                 &ResourceChangeObserver::OnTimeout);
+
+    run_loop_.Run();
+
+    // If we succeeded normally (no timeout), check our post condition again
+    // before returning control to the test. If it is no longer satisfied, the
+    // test is likely flaky: we were waiting for a state that was only achieved
+    // emphemerally), so treat this as a failure.
+    if (!IsSatisfied() && timer_.IsRunning()) {
+      FAIL() << "Wait condition satisfied only emphemerally. Likely test "
+             << "problem. Maybe wait instead for the state below?\n"
+             << DumpTaskManagerModel();
+    }
+
+    timer_.Stop();
+  }
+
  private:
   void OnResourceChange() {
-    if (GetWebResourceCount(model_) == target_resource_count_)
-      base::MessageLoopForUI::current()->Quit();
+    if (!IsSatisfied())
+      return;
+
+    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+  }
+
+  bool IsSatisfied() { return CountMatches() == required_count_; }
+
+  int CountMatches() {
+    int match_count = 0;
+    for (int i = 0; i < model_->ResourceCount(); i++) {
+      task_manager::Resource::Type type = model_->GetResourceType(i);
+      // Skip system infrastructure resources.
+      if (type == task_manager::Resource::BROWSER ||
+          type == task_manager::Resource::NACL ||
+          type == task_manager::Resource::GPU ||
+          type == task_manager::Resource::UTILITY ||
+          type == task_manager::Resource::ZYGOTE ||
+          type == task_manager::Resource::SANDBOX_HELPER) {
+        continue;
+      }
+
+      if (MatchPattern(model_->GetResourceTitle(i), title_pattern_)) {
+        match_count++;
+      }
+    }
+    return match_count;
+  }
+
+  void OnTimeout() {
+    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+    FAIL() << "Timed out.\n" << DumpTaskManagerModel();
+  }
+
+  testing::Message DumpTaskManagerModel() {
+    testing::Message task_manager_state_dump;
+    task_manager_state_dump << "Waiting for exactly " << required_count_
+                            << " matches of wildcard pattern \""
+                            << UTF16ToASCII(title_pattern_) << "\"\n";
+    task_manager_state_dump << "Currently there are " << CountMatches()
+                            << " matches.\n";
+    task_manager_state_dump << "Current Task Manager Model is:\n";
+    for (int i = 0; i < model_->ResourceCount(); i++) {
+      task_manager_state_dump
+          << "  > " << UTF16ToASCII(model_->GetResourceTitle(i)) << "\n";
+    }
+    return task_manager_state_dump;
   }
 
   const TaskManagerModel* model_;
-  const int target_resource_count_;
+  const int required_count_;
+  const base::string16 title_pattern_;
+  base::RunLoop run_loop_;
+  base::OneShotTimer<ResourceChangeObserver> timer_;
 };
 
 }  // namespace
 
-// static
-void TaskManagerBrowserTestUtil::WaitForWebResourceChange(int target_count) {
+void WaitForTaskManagerRows(int required_count,
+                            const base::string16& title_pattern) {
   TaskManagerModel* model = TaskManager::GetInstance()->model();
 
-  ResourceChangeObserver observer(model, target_count);
+  ResourceChangeObserver observer(model, required_count, title_pattern);
   model->AddObserver(&observer);
-
-  // Checks that the condition has not been satisfied yet.
-  // This check has to be placed after the installation of the observer,
-  // because resources may change before that.
-  if (GetWebResourceCount(model) == target_count) {
-    model->RemoveObserver(&observer);
-    return;
-  }
-
-  content::RunMessageLoop();
+  observer.RunUntilSatisfied();
   model->RemoveObserver(&observer);
 }
+
+}  // namespace browsertest_util
+}  // namespace task_manager

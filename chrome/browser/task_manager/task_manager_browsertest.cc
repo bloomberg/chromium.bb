@@ -46,14 +46,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
-
-// On Linux this is crashing intermittently http://crbug/84719
-// In some environments this test fails about 1/6 http://crbug/84850
-#if defined(OS_LINUX)
-#define MAYBE_KillExtension DISABLED_KillExtension
-#else
-#define MAYBE_KillExtension KillExtension
-#endif
+using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 namespace {
 
@@ -61,10 +54,10 @@ const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 }  // namespace
 
-class TaskManagerNoShowBrowserTest : public ExtensionBrowserTest {
+class TaskManagerBrowserTest : public ExtensionBrowserTest {
  public:
-  TaskManagerNoShowBrowserTest() {}
-  virtual ~TaskManagerNoShowBrowserTest() {}
+  TaskManagerBrowserTest() {}
+  virtual ~TaskManagerBrowserTest() {}
 
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();
@@ -76,9 +69,6 @@ class TaskManagerNoShowBrowserTest : public ExtensionBrowserTest {
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
     chrome::ShowTaskManager(browser());
-
-    // New Tab Page.
-    TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
   }
 
   void Refresh() {
@@ -89,31 +79,49 @@ class TaskManagerNoShowBrowserTest : public ExtensionBrowserTest {
     return TaskManagerModel::kUpdateTimeMs;
   }
 
+  GURL GetTestURL() {
+    return ui_test_utils::GetTestUrl(
+        base::FilePath(base::FilePath::kCurrentDirectory),
+        base::FilePath(kTitle1File));
+  }
+
+  base::string16 MatchTab(const char* title) {
+    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
+                                      base::ASCIIToUTF16(title));
+  }
+
+  base::string16 MatchAnyTab() { return MatchTab("*"); }
+
+  base::string16 MatchAboutBlankTab() { return MatchTab("about:blank"); }
+
+  base::string16 MatchExtension(const char* title) {
+    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_EXTENSION_PREFIX,
+                                      base::ASCIIToUTF16(title));
+  }
+
+  base::string16 MatchAnyExtension() { return MatchExtension("*"); }
+
+  base::string16 MatchApp(const char* title) {
+    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_APP_PREFIX,
+                                      base::ASCIIToUTF16(title));
+  }
+
+  base::string16 MatchAnyApp() { return MatchApp("*"); }
+
+  int FindResourceIndex(const base::string16& title) {
+    for (int i = 0; i < model()->ResourceCount(); ++i) {
+      if (title == model()->GetResourceTitle(i))
+        return i;
+    }
+    return -1;
+  }
+
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
-    // Do not launch the GPU process as the GPU process will show up in task
-    // manager but whether it appears before or after the new tab renderer
-    // process is not well defined.
-    command_line->AppendSwitch(switches::kDisableGpu);
-
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerNoShowBrowserTest);
-};
-
-class TaskManagerBrowserTest : public TaskManagerNoShowBrowserTest {
- public:
-  TaskManagerBrowserTest() {}
-  virtual ~TaskManagerBrowserTest() {}
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    TaskManagerNoShowBrowserTest::SetUpOnMainThread();
-    TaskManagerNoShowBrowserTest::ShowTaskManager();
   }
 
  private:
@@ -128,46 +136,86 @@ class TaskManagerBrowserTest : public TaskManagerNoShowBrowserTest {
 
 // Regression test for http://crbug.com/13361
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ShutdownWhileOpen) {
-  // Showing task manager handled by SetUp.
+  ShowTaskManager();
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
-  // Open a new tab and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
 
-  // Check that the last entry is a tab contents resource whose title starts
-  // starts with "Tab:".
-  ASSERT_TRUE(model()->GetResourceWebContents(resource_count) != NULL);
-  base::string16 prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_TAB_PREFIX, base::string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count), prefix,
-                         true));
+  // Open a new tab and make sure the task manager notices it.
+  AddTabAtIndex(0, GetTestURL(), content::PAGE_TRANSITION_TYPED);
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 
   // Close the tab and verify that we notice.
   browser()->tab_strip_model()->CloseWebContentsAt(0,
                                                    TabStripModel::CLOSE_NONE);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
 
-#if defined(USE_ASH)
-// This test fails on Ash because task manager treats view type
-// Panels differently for Ash.
-#define MAYBE_NoticePanelChanges DISABLED_NoticePanelChanges
-#else
-#define MAYBE_NoticePanelChanges NoticePanelChanges
-#endif
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanel) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
+                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                    .AppendASCII("1.0.0.0")));
+
+  // Open a new panel to an extension url.
+  GURL url(
+    "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/french_sentence.html");
+  Panel* panel = PanelManager::GetInstance()->CreatePanel(
+      web_app::GenerateApplicationNameFromExtensionId(
+          last_loaded_extension_id()),
+      browser()->profile(),
+      url,
+      gfx::Rect(300, 400),
+      PanelManager::CREATE_AS_DOCKED);
+
+  // Make sure that a task manager model created after the panel shows the
+  // existence of the panel and the extension.
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      1,
+      MatchExtension(
+          "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+          "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  // Close the panel and verify that we notice.
+  panel->Close();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      0,
+      MatchExtension(
+          "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+          "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanelChanges) {
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
                     .AppendASCII("1.0.0.0")));
 
   // Browser, the New Tab Page and Extension background page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
   // Open a new panel to an extension url and make sure we notice that.
   GURL url(
@@ -179,46 +227,46 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
       url,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
-
-  // Check that the fourth entry is a resource with the panel's web contents
-  // and whose title starts with "Extension:".
-  ASSERT_EQ(panel->GetWebContents(), model()->GetResourceWebContents(3));
-  base::string16 prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_EXTENSION_PREFIX, base::string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(3), prefix, true));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      1,
+      MatchExtension(
+          "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+          "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
   // Close the panel and verify that we notice.
   panel->Close();
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      0,
+      MatchExtension(
+          "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+          "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
 
-  // Unload extension to avoid crash on Windows.
+  // Unload extension.
   UnloadExtension(last_loaded_extension_id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
 
-#if defined(USE_ASH) || defined(OS_WIN)
-// This test fails on Ash because task manager treats view type
-// Panels differently for Ash.
-// This test also fails on Windows, win_rel trybot. http://crbug.com/166322
-#define MAYBE_KillPanelExtension DISABLED_KillPanelExtension
-#else
-#define MAYBE_KillPanelExtension KillPanelExtension
-#endif
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
+// Kills a process that has more than one task manager entry.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaExtensionResource) {
+  ShowTaskManager();
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("good")
+                                .AppendASCII("Extensions")
+                                .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                                .AppendASCII("1.0.0.0")));
 
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
-                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                    .AppendASCII("1.0.0.0")));
-
-  // Browser, the New Tab Page and Extension background page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-
-  // Open a new panel to an extension url and make sure we notice that.
+  // Open a new panel to an extension url.
   GURL url(
-    "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/french_sentence.html");
+      "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+      "french_sentence.html");
   PanelManager::GetInstance()->CreatePanel(
       web_app::GenerateApplicationNameFromExtensionId(
           last_loaded_extension_id()),
@@ -226,57 +274,199 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
       url,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
 
-  // Kill the panel extension process and verify that it disappears from the
-  // model along with its panel.
-  ASSERT_TRUE(model()->IsBackgroundResource(resource_count));
-  TaskManager::GetInstance()->KillProcess(resource_count);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      1,
+      MatchExtension(
+          "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+          "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  // Kill the process via the BACKGROUND PAGE (not the panel). Verify that both
+  // the background page and the panel go away from the task manager.
+  int background_page = FindResourceIndex(MatchExtension("My extension 1"));
+  ASSERT_NE(-1, background_page);
+  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
+  ASSERT_FALSE(model()->CanActivate(background_page));
+  TaskManager::GetInstance()->KillProcess(background_page);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
+// Kills a process that has more than one task manager entry. This test is the
+// same as KillPanelViaExtensionResource except it does the kill via the other
+// entry.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaPanelResource) {
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("good")
+                                .AppendASCII("Extensions")
+                                .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                                .AppendASCII("1.0.0.0")));
+
+  // Open a new panel to an extension url.
+  GURL url(
+      "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+      "french_sentence.html");
+  PanelManager::GetInstance()->CreatePanel(
+      web_app::GenerateApplicationNameFromExtensionId(
+          last_loaded_extension_id()),
+      browser()->profile(),
+      url,
+      gfx::Rect(300, 400),
+      PanelManager::CREATE_AS_DOCKED);
+
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      1,
+      MatchExtension(
+          "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+          "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  int background_page = FindResourceIndex(MatchExtension("My extension 1"));
+  ASSERT_NE(-1, background_page);
+  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
+  ASSERT_FALSE(model()->CanActivate(background_page));
+
+  // Kill the process via the PANEL RESOURCE (not the background page). Verify
+  // that both the background page and the panel go away from the task manager.
+  int panel = FindResourceIndex(MatchExtension(
+      "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+      "french_sentence.html"));
+  ASSERT_NE(-1, panel);
+  ASSERT_TRUE(model()->GetResourceWebContents(panel) != NULL);
+  ASSERT_TRUE(model()->CanActivate(panel));
+  TaskManager::GetInstance()->KillProcess(panel);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabChanges) {
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
                     .AppendASCII("1.0.0.0")));
 
   // Browser, Extension background page, and the New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
-  // Open a new tab to an extension URL and make sure we notice that.
+  // Open a new tab to an extension URL. Afterwards, the third entry (background
+  // page) should be an extension resource whose title starts with "Extension:".
+  // The fourth entry (page.html) is also of type extension and has both a
+  // WebContents and an extension. The title should start with "Extension:".
   GURL url("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html");
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchExtension("Foobar")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
-  // Check that the third entry (background) is an extension resource whose
-  // title starts with "Extension:".
-  ASSERT_EQ(task_manager::Resource::EXTENSION, model()->GetResourceType(
-      resource_count));
-  ASSERT_TRUE(model()->GetResourceWebContents(resource_count) == NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(resource_count) != NULL);
-  base::string16 prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_EXTENSION_PREFIX, base::string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
-                         prefix, true));
+  int extension_tab = FindResourceIndex(MatchExtension("Foobar"));
+  ASSERT_NE(-1, extension_tab);
+  ASSERT_TRUE(model()->GetResourceWebContents(extension_tab) != NULL);
+  ASSERT_TRUE(model()->CanActivate(extension_tab));
 
-  // Check that the fourth entry (page.html) is of type extension and has both
-  // a tab contents and an extension. The title should start with "Extension:".
-  ASSERT_EQ(task_manager::Resource::EXTENSION, model()->GetResourceType(
-      resource_count + 1));
-  ASSERT_TRUE(model()->GetResourceWebContents(resource_count + 1) != NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(resource_count + 1) != NULL);
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count + 1),
-                         prefix, true));
-
-  // Unload extension to avoid crash on Windows.
-  UnloadExtension(last_loaded_extension_id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  int background_page = FindResourceIndex(MatchExtension("My extension 1"));
+  ASSERT_NE(-1, background_page);
+  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
+  ASSERT_FALSE(model()->CanActivate(background_page));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
+  // With the task manager closed, open a new tab to an extension URL.
+  // Afterwards, when we open the task manager, the third entry (background
+  // page) should be an extension resource whose title starts with "Extension:".
+  // The fourth entry (page.html) is also of type extension and has both a
+  // WebContents and an extension. The title should start with "Extension:".
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("good")
+                                .AppendASCII("Extensions")
+                                .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                                .AppendASCII("1.0.0.0")));
+  GURL url("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html");
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchExtension("Foobar")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  int extension_tab = FindResourceIndex(MatchExtension("Foobar"));
+  ASSERT_NE(-1, extension_tab);
+  ASSERT_TRUE(model()->GetResourceWebContents(extension_tab) != NULL);
+  ASSERT_TRUE(model()->CanActivate(extension_tab));
+
+  int background_page = FindResourceIndex(MatchExtension("My extension 1"));
+  ASSERT_NE(-1, background_page);
+  ASSERT_TRUE(model()->GetResourceWebContents(background_page) == NULL);
+  ASSERT_FALSE(model()->CanActivate(background_page));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
+  ShowTaskManager();
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("packaged_app")));
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+                                  browser()->profile())->extension_service();
+  const extensions::Extension* extension =
+      service->GetExtensionById(last_loaded_extension_id(), false);
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
+
+  // Open a new tab to the app's launch URL and make sure we notice that.
+  GURL url(extension->GetResourceURL("main.html"));
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+
+  // There should be 1 "App: " tab and the original new tab page.
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchApp("Packaged App Test")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+
+  // Check that the third entry (main.html) is of type extension and has both
+  // a tab contents and an extension.
+  int app_tab = FindResourceIndex(MatchApp("Packaged App Test"));
+  ASSERT_NE(-1, app_tab);
+  ASSERT_TRUE(model()->GetResourceWebContents(app_tab) != NULL);
+  ASSERT_TRUE(model()->CanActivate(app_tab));
+  ASSERT_EQ(task_manager::Resource::EXTENSION,
+            model()->GetResourceType(app_tab));
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Unload extension to make sure the tab goes away.
+  UnloadExtension(last_loaded_extension_id());
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("packaged_app")));
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -284,32 +474,30 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id(), false);
 
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   // Open a new tab to the app's launch URL and make sure we notice that.
   GURL url(extension->GetResourceURL("main.html"));
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+
+  ShowTaskManager();
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchApp("Packaged App Test")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyApp()));
 
   // Check that the third entry (main.html) is of type extension and has both
-  // a tab contents and an extension. The title should start with "App:".
-  ASSERT_EQ(task_manager::Resource::EXTENSION, model()->GetResourceType(
-      resource_count));
-  ASSERT_TRUE(model()->GetResourceWebContents(resource_count) != NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(resource_count) == extension);
-  base::string16 prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_APP_PREFIX, base::string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
-                         prefix, true));
-
-  // Unload extension to avoid crash on Windows.
-  UnloadExtension(last_loaded_extension_id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  // a tab contents and an extension.
+  int app_tab = FindResourceIndex(MatchApp("Packaged App Test"));
+  ASSERT_NE(-1, app_tab);
+  ASSERT_TRUE(model()->GetResourceWebContents(app_tab) != NULL);
+  ASSERT_TRUE(model()->CanActivate(app_tab));
+  ASSERT_EQ(task_manager::Resource::EXTENSION,
+            model()->GetResourceType(app_tab));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
+  ShowTaskManager();
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
@@ -330,14 +518,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
-  // Force the TaskManager to query the title.
-  Refresh();
-
-  // Check that the third entry's title starts with "Tab:".
-  base::string16 tab_prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_TAB_PREFIX, base::string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
-                         tab_prefix, true));
+  // Check that the new entry's title starts with "Tab:".
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 
   // Load the hosted app and make sure it still starts with "Tab:",
   // since it hasn't changed to an app process yet.
@@ -345,117 +527,146 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
       test_data_dir_.AppendASCII("api_test").AppendASCII("app_process")));
   // Force the TaskManager to query the title.
   Refresh();
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
-                         tab_prefix, true));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("Unmodified")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
 
   // Now reload and check that the last entry's title now starts with "App:".
   ui_test_utils::NavigateToURL(browser(), url);
-  // Force the TaskManager to query the title.
-  Refresh();
-  base::string16 app_prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_APP_PREFIX, base::string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
-                         app_prefix, true));
 
-  // Disable extension and reload page.
+  // Force the TaskManager to query the title.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchApp("Unmodified")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+
+  // Disable extension.
   DisableExtension(last_loaded_extension_id());
+
+  // The hosted app should now show up as a normal "Tab: ".
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("Unmodified")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
+
+  // Reload the page.
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Force the TaskManager to query the title.
-  Refresh();
-
-  // The third entry's title should be back to a normal tab.
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
-                         tab_prefix, true));
+  // No change expected.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("Unmodified")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
 }
 
-// Disabled, http://crbug.com/66957.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       DISABLED_KillExtensionAndReload) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  GURL base_url =
+      embedded_test_server()->GetURL("/extensions/api_test/app_process/");
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  // Open a new tab to an app URL before the app is loaded.
+  GURL url(base_url.Resolve("path1/empty.html"));
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  observer.Wait();
+
+  // Load the hosted app and make sure it still starts with "Tab:",
+  // since it hasn't changed to an app process yet.
   ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
+      test_data_dir_.AppendASCII("api_test").AppendASCII("app_process")));
 
-  // Wait until we see the loaded extension in the task manager (the three
-  // resources are: the browser process, New Tab Page, and the extension).
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
+  // Now reload, which should transition this tab to being an App.
+  ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
-  EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
+  ShowTaskManager();
 
-  // Kill the extension process and make sure we notice it.
-  TaskManager::GetInstance()->KillProcess(2);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
-  // Reload the extension using the "crashed extension" infobar while the task
-  // manager is still visible. Make sure we don't crash and the extension
-  // gets reloaded and noticed in the task manager.
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(1U, infobar_service->infobar_count());
-  ConfirmInfoBarDelegate* delegate =
-      infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(delegate);
-  delegate->Accept();
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
+  // The TaskManager should show this as an "App: "
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/93158.
-#define MAYBE_ReloadExtension DISABLED_ReloadExtension
-#else
-#define MAYBE_ReloadExtension ReloadExtension
-#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabBeforeReload) {
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  GURL base_url =
+      embedded_test_server()->GetURL("/extensions/api_test/app_process/");
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  // Open a new tab to an app URL before the app is loaded.
+  GURL url(base_url.Resolve("path1/empty.html"));
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  observer.Wait();
+
+  // Load the hosted app and make sure it still starts with "Tab:",
+  // since it hasn't changed to an app process yet.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("api_test").AppendASCII("app_process")));
+
+  ShowTaskManager();
+
+  // The TaskManager should show this as a "Tab: " because the page hasn't been
+  // reloaded since the hosted app was installed.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
+}
 
 // Regression test for http://crbug.com/18693.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
-  LOG(INFO) << "loading extension";
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
+  ShowTaskManager();
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
 
   // Wait until we see the loaded extension in the task manager (the three
   // resources are: the browser process, New Tab Page, and the extension).
-  LOG(INFO) << "waiting for resource change";
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("background_page")));
 
-  EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
-  EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(resource_count) != NULL);
-
-  const extensions::Extension* extension = model()->GetResourceExtension(
-      resource_count);
-  ASSERT_TRUE(extension != NULL);
-
-  // Reload the extension a few times and make sure our resource count
-  // doesn't increase.
-  LOG(INFO) << "First extension reload";
-  ReloadExtension(extension->id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-  extension = model()->GetResourceExtension(resource_count);
-  ASSERT_TRUE(extension != NULL);
-
-  LOG(INFO) << "Second extension reload";
-  ReloadExtension(extension->id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-  extension = model()->GetResourceExtension(resource_count);
-  ASSERT_TRUE(extension != NULL);
-
-  LOG(INFO) << "Third extension reload";
-  ReloadExtension(extension->id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  // Reload the extension a few times and make sure our resource count doesn't
+  // increase.
+  std::string extension_id = last_loaded_extension_id();
+  for (int i = 1; i <= 5; i++) {
+    SCOPED_TRACE(testing::Message() << "Reloading extension for the " << i
+                                    << "th time.");
+    ReloadExtension(extension_id);
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchExtension("background_page")));
+  }
 }
 
 // Crashy, http://crbug.com/42301.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                        DISABLED_PopulateWebCacheFields) {
+  ShowTaskManager();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // Open a new tab and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  AddTabAtIndex(0, GetTestURL(), content::PAGE_TRANSITION_TYPED);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 
   // Check that we get some value for the cache columns.
   DCHECK_NE(model()->GetResourceWebCoreImageCacheSize(resource_count),
@@ -470,9 +681,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 // http://crbug.com/241066
 // Flaky, http://crbug.com/259368
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_WebWorkerJSHeapMemory) {
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
   const int extra_timeout_ms = 500;
   size_t minimal_heap_size = 2 * 1024 * 1024 * sizeof(void*);
   std::string test_js = base::StringPrintf(
@@ -507,29 +716,42 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_WebWorkerJSHeapMemory) {
   EXPECT_GE(result, minimal_heap_size);
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeInTabDevToolsWindow) {
-  DevToolsWindow::OpenDevToolsWindowForTest(
-      model()->GetResourceWebContents(1)->GetRenderViewHost(), true);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-}
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
+  ShowTaskManager();  // Task manager shown BEFORE dev tools window.
 
-// This test differs from TaskManagerBrowserTest.NoticeInTabDevToolsWindow in
-// the order in which the devtools window and task manager are created.
-IN_PROC_BROWSER_TEST_F(TaskManagerNoShowBrowserTest,
-                       NoticeInTabDevToolsWindow) {
-  // First create the devtools window.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   DevToolsWindow::OpenDevToolsWindowForTest(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       true);
-  // Make sure that the devtools window is loaded before starting the task
-  // manager.
-  content::RunAllPendingInMessageLoop();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+}
 
-  // Now add showing the task manager to the queue, and watch for the right
-  // number of reources to show up.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TaskManagerNoShowBrowserTest::ShowTaskManager,
-                 base::Unretained(this)));
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
+  ShowTaskManager();  // Task manager shown BEFORE dev tools window.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  DevToolsWindow::OpenDevToolsWindowForTest(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
+      false);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldDockedWindow) {
+  DevToolsWindow::OpenDevToolsWindowForTest(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
+      true);
+
+  ShowTaskManager();  // Task manager shown AFTER dev tools window.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUnockedWindow) {
+  DevToolsWindow::OpenDevToolsWindowForTest(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
+      false);
+  ShowTaskManager();  // Task manager shown AFTER dev tools window.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 }

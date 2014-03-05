@@ -300,17 +300,12 @@ bool ExtensionProcessResourceProvider::
   if (web_contents->GetRenderProcessHost()->IsGuest())
     return false;
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
-  // Don't add WebContents (those are handled by
-  // TabContentsResourceProvider) or background contents (handled
-  // by BackgroundResourceProvider).
-#if defined(USE_ASH)
-  return (view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
-          view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS);
-#else
+  // Don't add tab contents (those are handled by TabContentsResourceProvider)
+  // or background contents (handled by BackgroundResourceProvider) or panels
+  // (handled by PanelResourceProvider)
   return (view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
           view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS &&
           view_type != extensions::VIEW_TYPE_PANEL);
-#endif  // USE_ASH
 }
 
 void ExtensionProcessResourceProvider::AddToTaskManager(
@@ -318,10 +313,10 @@ void ExtensionProcessResourceProvider::AddToTaskManager(
   if (!IsHandledByThisProvider(render_view_host))
     return;
 
+  if (resources_.count(render_view_host))
+    return;
   ExtensionProcessResource* resource =
       new ExtensionProcessResource(render_view_host);
-  if (resources_.find(render_view_host) != resources_.end())
-    return;
   resources_[render_view_host] = resource;
   task_manager_->AddResource(resource);
 }

@@ -336,7 +336,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
  private:
   friend class base::RefCountedThreadSafe<TaskManagerModel>;
-  friend class TaskManagerNoShowBrowserTest;
+  friend class TaskManagerBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest, ProcessesVsTaskManager);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, RefreshCalled);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerWindowControllerTest,

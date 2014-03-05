@@ -101,6 +101,7 @@ using content::RenderWidgetHost;
 using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
+using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 // Prerender tests work as follows:
 //
@@ -1459,6 +1460,18 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         base::string16(), base::ASCIIToUTF16(javascript));
   }
 
+  // Returns a string for pattern-matching TaskManager tab entries.
+  base::string16 MatchTaskManagerTab(const char* page_title) {
+    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
+                                      base::ASCIIToUTF16(page_title));
+  }
+
+  // Returns a string for pattern-matching TaskManager prerender entries.
+  base::string16 MatchTaskManagerPrerender(const char* page_title) {
+    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
+                                      base::ASCIIToUTF16(page_title));
+  }
+
  protected:
   bool autostart_test_server_;
 
@@ -2401,68 +2414,93 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAbortPendingOnCancel) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
+  const base::string16 any_prerender = MatchTaskManagerPrerender("*");
+  const base::string16 any_tab = MatchTaskManagerTab("*");
+  const base::string16 original = MatchTaskManagerTab("Preloader");
+  const base::string16 prerender = MatchTaskManagerPrerender("Prerender Page");
+  const base::string16 final = MatchTaskManagerTab("Prerender Page");
+
   // Show the task manager. This populates the model.
   chrome::OpenTaskManager(current_browser());
-  // Wait for the model of task manager to start.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
+
+  // Prerender a page in addition to the original tab.
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+
+  // A TaskManager entry should appear like "Prerender: Prerender Page"
+  // alongside the original tab entry. There should be just these two entries.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, prerender));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, original));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, final));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_prerender));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+
+  // Swap in the prerendered content.
+  NavigateToDestURL();
+
+  // The "Prerender: " TaskManager entry should disappear, being replaced by a
+  // "Tab: Prerender Page" entry, and nothing else.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, prerender));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, original));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, final));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
+  const base::string16 any_prerender = MatchTaskManagerPrerender("*");
+  const base::string16 any_tab = MatchTaskManagerTab("*");
+  const base::string16 original = MatchTaskManagerTab("Preloader");
+  const base::string16 prerender = MatchTaskManagerPrerender("Prerender Page");
+  const base::string16 final = MatchTaskManagerTab("Prerender Page");
 
   // Start with two resources.
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
-  // One of the resources that has a WebContents associated with it should have
-  // the Prerender prefix.
-  const base::string16 prefix =
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
-                                 base::string16());
-  base::string16 prerender_title;
-  int num_prerender_tabs = 0;
+  // Show the task manager. This populates the model. Importantly, we're doing
+  // this after the prerender WebContents already exists - the task manager
+  // needs to find it, it can't just listen for creation.
+  chrome::OpenTaskManager(current_browser());
 
-  TaskManagerModel* model = GetModel();
-  // The task manager caches values. Force the titles to be fresh.
-  model->Refresh();
-  for (int i = 0; i < model->ResourceCount(); ++i) {
-    if (model->GetResourceWebContents(i)) {
-      prerender_title = model->GetResourceTitle(i);
-      if (StartsWith(prerender_title, prefix, true))
-        ++num_prerender_tabs;
-    }
-  }
-  EXPECT_EQ(1, num_prerender_tabs);
-  const base::string16 prerender_page_title =
-      prerender_title.substr(prefix.length());
+  // A TaskManager entry should appear like "Prerender: Prerender Page"
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, prerender));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, original));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, final));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_prerender));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
 
+  // Swap in the tab.
   NavigateToDestURL();
 
-  // There should be no tabs with the Prerender prefix.
-  const base::string16 tab_prefix =
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, base::string16());
-  num_prerender_tabs = 0;
-  int num_tabs_with_prerender_page_title = 0;
-  model->Refresh();
-  for (int i = 0; i < model->ResourceCount(); ++i) {
-    if (model->GetResourceWebContents(i)) {
-      base::string16 tab_title = model->GetResourceTitle(i);
-      if (StartsWith(tab_title, prefix, true)) {
-        ++num_prerender_tabs;
-      } else {
-        EXPECT_TRUE(StartsWith(tab_title, tab_prefix, true));
+  // The "Prerender: Prerender Page" TaskManager row should disappear, being
+  // replaced by "Tab: Prerender Page"
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, prerender));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, original));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, final));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
+}
 
-        // The prerender tab should now be a normal tab but the title should be
-        // the same. Depending on timing, there may be more than one of these.
-        const base::string16 tab_page_title =
-            tab_title.substr(tab_prefix.length());
-        if (prerender_page_title.compare(tab_page_title) == 0)
-          ++num_tabs_with_prerender_page_title;
-      }
-    }
-  }
-  EXPECT_EQ(0, num_prerender_tabs);
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterSwapIn) {
+  const base::string16 any_prerender = MatchTaskManagerPrerender("*");
+  const base::string16 any_tab = MatchTaskManagerTab("*");
+  const base::string16 final = MatchTaskManagerTab("Prerender Page");
 
-  // We may have deleted the prerender tab, but the swapped in tab should be
-  // active.
-  EXPECT_GE(num_tabs_with_prerender_page_title, 1);
-  EXPECT_LE(num_tabs_with_prerender_page_title, 2);
+  // Prerender, and swap it in.
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+
+  // Show the task manager. This populates the model. Importantly, we're doing
+  // this after the prerender has been swapped in.
+  chrome::OpenTaskManager(current_browser());
+
+  // We should not see a prerender resource in the task manager, just a normal
+  // page.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, final));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
 }
 
 // Checks that audio loads are deferred on prerendering.
