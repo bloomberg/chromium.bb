@@ -67,6 +67,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideSettings) {
   ASSERT_TRUE(default_provider);
   EXPECT_EQ(TemplateURL::NORMAL, default_provider->GetType());
 
+#if defined(OS_WIN)
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("settings_override"));
   ASSERT_TRUE(extension);
@@ -112,6 +113,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideSettings) {
   EXPECT_EQ(SessionStartupPref::LAST, startup_pref.type);
   EXPECT_EQ(std::vector<GURL>(urls, urls + arraysize(urls)), startup_pref.urls);
   EXPECT_EQ(default_provider, url_service->GetDefaultSearchProvider());
+#else
+  const extensions::Extension* extension =
+      LoadExtensionWithFlags(test_data_dir_.AppendASCII("settings_override"),
+                             kFlagIgnoreManifestWarnings);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(1u, extension->install_warnings().size());
+  EXPECT_EQ(std::string(
+                "'chrome_settings_overrides' "
+                "is not allowed for specified platform."),
+            extension->install_warnings().front().message);
+#endif
 }
 
 }  // namespace
