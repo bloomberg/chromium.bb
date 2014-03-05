@@ -19,8 +19,8 @@ vars = {
   "sourceforge_url": "http://svn.code.sf.net/p/%(repo)s/code",
   "llvm_url": "http://src.chromium.org/llvm-project",
   "llvm_git": "https://llvm.googlesource.com",
-  "libcxx_revision": "8f48c23568a122de6088455700e9d197b79bd8f8",
-  "libcxxabi_revision": "753a30dd68ae008948d48f16bc942d5963fe65a1",
+  "libcxx_revision": "197314",
+  "libcxxabi_revision": "197063",
   "webkit_trunk": "http://src.chromium.org/blink/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "168405",
@@ -121,13 +121,11 @@ deps = {
   "src/third_party/leveldatabase/src":
     (Var("googlecode_url") % "leveldb") + "/trunk@79",
 
-  # TODO(thakis): Pull from svn instead, http://crbug.com/333071
   "src/third_party/libc++/trunk":
-    Var("llvm_git") + "/libcxx.git@" + Var("libcxx_revision"),
+    Var("llvm_url") + "/libcxx/trunk@" + Var("libcxx_revision"),
 
-  # TODO(thakis): Pull from svn instead, http://crbug.com/333071
   "src/third_party/libc++abi/trunk":
-    Var("llvm_git") + "/libcxxabi.git@" + Var("libcxxabi_revision"),
+    Var("llvm_url") + "/libcxxabi/trunk@" + Var("libcxxabi_revision"),
 
   "src/third_party/snappy/src":
     (Var("googlecode_url") % "snappy") + "/trunk@80",
