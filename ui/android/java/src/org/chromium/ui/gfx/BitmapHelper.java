@@ -19,11 +19,9 @@ public class BitmapHelper {
     @CalledByNative
     private static Bitmap createBitmap(int width,
                                       int height,
-                                      boolean is565Config) {
-        if (is565Config) {
-            return Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        }
-        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                                      int bitmapFormatValue) {
+        Bitmap.Config bitmapConfig = getBitmapConfigForFormat(bitmapFormatValue);
+        return Bitmap.createBitmap(width, height, bitmapConfig);
     }
 
     /**
@@ -83,7 +81,7 @@ public class BitmapHelper {
      * @return Matching integer constant for the Bitmap.Config value passed.
      */
     @CalledByNative
-    private static int bitmapConfig(Bitmap.Config bitmapConfig) {
+    private static int getBitmapFormatForConfig(Bitmap.Config bitmapConfig) {
         switch (bitmapConfig) {
             case ALPHA_8:
                 return BitmapFormat.FORMAT_ALPHA_8;
@@ -97,4 +95,25 @@ public class BitmapHelper {
                 return BitmapFormat.FORMAT_NO_CONFIG;
         }
     }
+
+     /**
+     * Provides a matching Bitmap.Config for the enum config value passed.
+     *
+     * @param bitmapFormatValue The Bitmap Configuration enum value.
+     * @return Matching Bitmap.Config  for the enum value passed.
+     */
+    private static Bitmap.Config getBitmapConfigForFormat(int bitmapFormatValue) {
+        switch (bitmapFormatValue) {
+            case BitmapFormat.FORMAT_ALPHA_8:
+                return Bitmap.Config.ALPHA_8;
+            case BitmapFormat.FORMAT_ARGB_4444:
+                return Bitmap.Config.ARGB_4444;
+            case BitmapFormat.FORMAT_RGB_565:
+                return Bitmap.Config.RGB_565;
+            case BitmapFormat.FORMAT_ARGB_8888:
+            default:
+                return Bitmap.Config.ARGB_8888;
+        }
+    }
+
 }
