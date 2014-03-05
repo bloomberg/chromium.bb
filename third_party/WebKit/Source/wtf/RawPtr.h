@@ -51,6 +51,7 @@ public:
     RawPtr() : m_ptr(0) { }
     RawPtr(std::nullptr_t) : m_ptr(0) { }
     RawPtr(T* ptr) : m_ptr(ptr) { }
+    RawPtr(T& reference) : m_ptr(&reference) { }
     RawPtr(const RawPtr& other)
         : m_ptr(other.get())
     {
