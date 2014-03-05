@@ -330,9 +330,10 @@ static BOOL forceMagicMouse = NO;
 - (void)initiateMagicMouseHistorySwipe:(BOOL)isRightScroll
                                  event:(NSEvent*)event {
   // Released by the tracking handler once the gesture is complete.
-  HistoryOverlayController* historyOverlay = [[HistoryOverlayController alloc]
-      initForMode:isRightScroll ? kHistoryOverlayModeForward
-                                : kHistoryOverlayModeBack];
+  __block HistoryOverlayController* historyOverlay =
+      [[HistoryOverlayController alloc]
+          initForMode:isRightScroll ? kHistoryOverlayModeForward
+                                    : kHistoryOverlayModeBack];
 
   // The way this API works: gestureAmount is between -1 and 1 (float).  If
   // the user does the gesture for more than about 30% (i.e. < -0.3 or >
@@ -359,43 +360,44 @@ static BOOL forceMagicMouse = NO;
   // in the wrong direction.
   forceMagicMouse = YES;
   [event trackSwipeEventWithOptions:NSEventSwipeTrackingLockDirection
-    dampenAmountThresholdMin:-1
-    max:1
-    usingHandler:^(CGFloat gestureAmount,
-                   NSEventPhase phase,
-                   BOOL isComplete,
-                   BOOL *stop) {
-        if (phase == NSEventPhaseBegan) {
-          [historyOverlay
-              showPanelForView:[delegate_ viewThatWantsHistoryOverlay]];
-          return;
-        }
+      dampenAmountThresholdMin:-1
+      max:1
+      usingHandler:^(CGFloat gestureAmount,
+                     NSEventPhase phase,
+                     BOOL isComplete,
+                     BOOL* stop) {
+          if (phase == NSEventPhaseBegan) {
+            [historyOverlay
+                showPanelForView:[delegate_ viewThatWantsHistoryOverlay]];
+            return;
+          }
 
-        BOOL ended = phase == NSEventPhaseEnded;
+          BOOL ended = phase == NSEventPhaseEnded;
 
-        // Dismiss the panel before navigation for immediate visual feedback.
-        CGFloat progress = std::abs(gestureAmount) / 0.3;
-        BOOL finished = progress >= 1.0;
-        progress = MAX(0.0, progress);
-        progress = MIN(1.0, progress);
-        [historyOverlay setProgress:progress finished:finished];
+          // Dismiss the panel before navigation for immediate visual feedback.
+          CGFloat progress = std::abs(gestureAmount) / 0.3;
+          BOOL finished = progress >= 1.0;
+          progress = MAX(0.0, progress);
+          progress = MIN(1.0, progress);
+          [historyOverlay setProgress:progress finished:finished];
 
-        // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
-        // automatically.
-        Browser* browser =
-            chrome::FindBrowserWithWindow(historyOverlay.view.window);
-        if (ended && browser) {
-          if (isRightScroll)
-            chrome::GoForward(browser, CURRENT_TAB);
-          else
-            chrome::GoBack(browser, CURRENT_TAB);
-        }
+          // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
+          // automatically.
+          Browser* browser =
+              chrome::FindBrowserWithWindow(historyOverlay.view.window);
+          if (ended && browser) {
+            if (isRightScroll)
+              chrome::GoForward(browser, CURRENT_TAB);
+            else
+              chrome::GoBack(browser, CURRENT_TAB);
+          }
 
-        if (isComplete) {
-          [historyOverlay dismiss];
-          [historyOverlay release];
-        }
-  }];
+          if (ended || isComplete) {
+            [historyOverlay dismiss];
+            [historyOverlay release];
+            historyOverlay = nil;
+          }
+      }];
 }
 
 // Checks if |theEvent| should trigger history swiping, and if so, does
