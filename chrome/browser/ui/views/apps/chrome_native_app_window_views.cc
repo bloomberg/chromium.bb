@@ -673,7 +673,7 @@ void ChromeNativeAppWindowViews::InitializeWindow(
       NULL));
 
 #if defined(OS_WIN)
-  if (ShouldUseNativeFrame() &&
+  if (!ShouldUseNativeFrame() &&
       chrome::GetHostDesktopTypeForNativeWindow(window()->GetNativeWindow()) !=
       chrome::HOST_DESKTOP_TYPE_ASH) {
     InstallEasyResizeTargeterOnContainer();
