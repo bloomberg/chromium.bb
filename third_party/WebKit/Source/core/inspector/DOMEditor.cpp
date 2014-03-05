@@ -175,9 +175,10 @@ public:
 
     virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
-        m_hadAttribute = m_element->hasAttribute(m_name);
+        const AtomicString& value = m_element->getAttribute(m_name);
+        m_hadAttribute = !value.isNull();
         if (m_hadAttribute)
-            m_oldValue = m_element->getAttribute(m_name);
+            m_oldValue = value;
         return redo(exceptionState);
     }
 

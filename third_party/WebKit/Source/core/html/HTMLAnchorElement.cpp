@@ -393,12 +393,13 @@ bool HTMLAnchorElement::isLiveLink() const
 
 void HTMLAnchorElement::sendPings(const KURL& destinationURL)
 {
-    if (!hasAttribute(pingAttr) || !document().settings() || !document().settings()->hyperlinkAuditingEnabled())
+    const AtomicString& pingValue = getAttribute(pingAttr);
+    if (pingValue.isNull() || !document().settings() || !document().settings()->hyperlinkAuditingEnabled())
         return;
 
     UseCounter::count(document(), UseCounter::HTMLAnchorElementPingAttribute);
 
-    SpaceSplitString pingURLs(getAttribute(pingAttr), false);
+    SpaceSplitString pingURLs(pingValue, false);
     for (unsigned i = 0; i < pingURLs.size(); i++)
         PingLoader::sendPing(document().frame(), document().completeURL(pingURLs[i]), destinationURL);
 }
