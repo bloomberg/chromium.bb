@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import subprocess
 import sys
 
 import lib
@@ -162,3 +164,23 @@ def PlatformTriple(platform=None, machine=None):
       return 'x86_64-linux'
 
   raise Exception('Unknown platform and machine')
+
+
+def KillSubprocessAndChildren(proc):
+  """Kill a subprocess and all children.
+
+  While this is trivial on Posix platforms, on Windows this requires some
+  method for walking the process tree. Relying on this functionality in
+  the taskkill.exe utility for now.
+
+  Args:
+    proc: A subprocess.Popen process.
+  """
+  if IsWindows():
+    # Do subprocess call as the process may terminate before we manage
+    # to invoke taskkill.
+    subprocess.call(
+        [os.path.join(os.environ['SYSTEMROOT'], 'System32', 'taskkill.exe'),
+        '/F', '/T', '/PID', str(proc.pid)])
+  else:
+    proc.kill()

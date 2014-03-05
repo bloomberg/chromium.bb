@@ -39,7 +39,8 @@ node = env.CommandTest(
              + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command),
     extra_deps=[env.File('gdb_rsp.py')],
     # Don't run the host Python through qemu-arm.
-    direct_emulation=False)
+    direct_emulation=False,
+    size='medium')
 env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
                        'run_debug_stub_test', is_broken=is_broken)
 env.TestBindsFixedTcpPort(node)

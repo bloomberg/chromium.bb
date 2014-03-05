@@ -18,6 +18,8 @@ import sys
 import tempfile
 import threading
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
 
 
 # Windows does not fully implement os.times functionality.  If
@@ -122,7 +124,7 @@ def CommunicateWithTimeout(proc, input_data=None, timeout=None):
     sys.stderr.write('\nAttempting to kill test due to timeout!\n')
     # This will kill the process which should force communicate to return with
     # any partial output.
-    proc.kill()
+    pynacl.platform.KillSubprocessAndChildren(proc)
     # Thus result should ALWAYS contain something after this join.
     thread.join()
     sys.stderr.write('\n\nKilled test due to timeout!\n')
