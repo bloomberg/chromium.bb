@@ -1954,7 +1954,6 @@
         '../components/autofill/core/browser/autofill_download_unittest.cc',
         '../components/autofill/core/browser/autofill_external_delegate_unittest.cc',
         '../components/autofill/core/browser/autofill_ie_toolbar_import_win_unittest.cc',
-        '../components/autofill/core/browser/autofill_manager_unittest.cc',
         '../components/autofill/core/browser/autofill_metrics_unittest.cc',
         '../components/autofill/core/browser/password_autofill_manager_unittest.cc',
         '../components/autofill/core/browser/personal_data_manager_unittest.cc',

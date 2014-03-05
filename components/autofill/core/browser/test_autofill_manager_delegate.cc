@@ -19,9 +19,7 @@ TestAutofillManagerDelegate::GetDatabase() {
   return scoped_refptr<AutofillWebDataService>(NULL);
 }
 
-PrefService* TestAutofillManagerDelegate::GetPrefs() {
-  return NULL;
-}
+PrefService* TestAutofillManagerDelegate::GetPrefs() { return prefs_.get(); }
 
 void TestAutofillManagerDelegate::HideRequestAutocompleteDialog() {}
 

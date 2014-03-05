@@ -25,6 +25,7 @@
             'autofill/core/browser/autofill_data_model_unittest.cc',
             'autofill/core/browser/autofill_download_url_unittest.cc',
             'autofill/core/browser/autofill_field_unittest.cc',
+            'autofill/core/browser/autofill_manager_unittest.cc',
             'autofill/core/browser/autofill_merge_unittest.cc',
             'autofill/core/browser/autofill_profile_unittest.cc',
             'autofill/core/browser/autofill_regexes_unittest.cc',
