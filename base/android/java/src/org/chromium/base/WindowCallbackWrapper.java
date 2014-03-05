@@ -133,4 +133,8 @@ class WindowCallbackWrapper implements Window.Callback {
         return mCallback.onWindowStartingActionMode(callback);
     }
 
+    public void onWindowDismissed() {
+        // TODO(benm): implement me.
+    }
+
 }
