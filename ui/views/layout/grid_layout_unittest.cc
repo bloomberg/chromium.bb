@@ -346,6 +346,33 @@ TEST_F(GridLayoutTest, HorizontalResizeTest2) {
   RemoveAll();
 }
 
+// Tests that space leftover due to rounding is distributed to the last
+// resizable column.
+TEST_F(GridLayoutTest, HorizontalResizeTest3) {
+  SettableSizeView v1(gfx::Size(10, 10));
+  SettableSizeView v2(gfx::Size(10, 10));
+  SettableSizeView v3(gfx::Size(10, 10));
+  ColumnSet* c1 = layout.AddColumnSet(0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING,
+                1, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING,
+                1, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::TRAILING, GridLayout::LEADING,
+                0, GridLayout::USE_PREF, 0, 0);
+  layout.StartRow(0, 0);
+  layout.AddView(&v1);
+  layout.AddView(&v2);
+  layout.AddView(&v3);
+
+  host.SetBounds(0, 0, 31, 10);
+  layout.Layout(&host);
+  ExpectViewBoundsEquals(0, 0, 10, 10, &v1);
+  ExpectViewBoundsEquals(10, 0, 11, 10, &v2);
+  ExpectViewBoundsEquals(21, 0, 10, 10, &v3);
+
+  RemoveAll();
+}
+
 TEST_F(GridLayoutTest, TestVerticalResize1) {
   SettableSizeView v1(gfx::Size(50, 20));
   SettableSizeView v2(gfx::Size(10, 10));

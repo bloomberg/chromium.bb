@@ -57,7 +57,8 @@ class LayoutElement {
     for (typename std::vector<T*>::iterator i = elements->begin();
          i != elements->end(); ++i) {
       total_percent += (*i)->ResizePercent();
-      resize_count++;
+      if ((*i)->ResizePercent() > 0)
+        resize_count++;
     }
     if (total_percent == 0) {
       // None of the elements are resizable, return.
