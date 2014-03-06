@@ -42,7 +42,7 @@ SyntheticGestureTargetBase::~SyntheticGestureTargetBase() {
 
 void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     const WebInputEvent& event) {
-  TRACE_EVENT1("benchmark",
+  TRACE_EVENT1("input",
                "SyntheticGestureTarget::DispatchInputEventToPlatform",
                "type", WebInputEventTraits::GetName(event.type));
 

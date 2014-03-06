@@ -32,7 +32,7 @@ void SyntheticGestureController::QueueSyntheticGesture(
 }
 
 void SyntheticGestureController::Flush(base::TimeTicks timestamp) {
-  TRACE_EVENT0("benchmark", "SyntheticGestureController::Flush");
+  TRACE_EVENT0("input", "SyntheticGestureController::Flush");
   if (pending_gesture_queue_.IsEmpty())
     return;
 
@@ -53,7 +53,8 @@ void SyntheticGestureController::Flush(base::TimeTicks timestamp) {
 }
 
 void SyntheticGestureController::StartGesture(const SyntheticGesture& gesture) {
-  TRACE_EVENT_ASYNC_BEGIN0("benchmark", "SyntheticGestureController::running",
+  TRACE_EVENT_ASYNC_BEGIN0("input,benchmark",
+                           "SyntheticGestureController::running",
                            &gesture);
   gesture_target_->SetNeedsFlush();
 }
@@ -63,7 +64,8 @@ void SyntheticGestureController::StopGesture(
     const OnGestureCompleteCallback& completion_callback,
     SyntheticGesture::Result result) {
   DCHECK_NE(result, SyntheticGesture::GESTURE_RUNNING);
-  TRACE_EVENT_ASYNC_END0("benchmark", "SyntheticGestureController::running",
+  TRACE_EVENT_ASYNC_END0("input,benchmark",
+                         "SyntheticGestureController::running",
                          &gesture);
 
   completion_callback.Run(result);
