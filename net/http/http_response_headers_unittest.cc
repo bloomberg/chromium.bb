@@ -2056,6 +2056,10 @@ TEST(HttpResponseHeadersTest, IsChromeProxyResponse) {
       false,
     },
     { "HTTP/1.1 200 OK\n"
+      "Via: 1\n",
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
       true,
     },

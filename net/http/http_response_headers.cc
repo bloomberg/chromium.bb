@@ -1431,7 +1431,8 @@ bool HttpResponseHeaders::IsChromeProxyResponse() const {
   // space following it are always |kVersionSize| characters. E.g.,
   // 'Via: 1.1 Chrome-Compression-Proxy'
   while (EnumerateHeader(&iter, "via", &value)) {
-    if (!value.compare(kVersionSize, value_len, kChromeProxyViaValue))
+    if (value.size() >= kVersionSize + value_len &&
+        !value.compare(kVersionSize, value_len, kChromeProxyViaValue))
       return true;
   }
 
