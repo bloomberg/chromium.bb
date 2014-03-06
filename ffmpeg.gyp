@@ -30,6 +30,14 @@
       'win_debug_Optimization': '2',
       # Run time checks are incompatible with any level of optimizations.
       'win_debug_RuntimeChecks': '0',
+      'conditions': [
+        ['OS == "win"', {
+          # Setting the optimizations to 'speed' or to 'max' results in a lot of
+          # unresolved symbols. The only supported mode is 'size' (see
+          # crbug.com/264459).
+          'optimize' :'size',
+        }],
+      ],
     },
   },
   'variables': {
