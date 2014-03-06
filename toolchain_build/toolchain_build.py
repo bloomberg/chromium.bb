@@ -30,7 +30,7 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 # to use in place of the package name when calling GitUrl (below).
 GIT_REVISIONS = {
     'binutils': {
-        'rev': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
+        'rev': '7deface59753c3b249ac08d854d471951796343f',
         'upstream-branch': 'upstream/binutils-2_24-branch',
         'upstream-name': 'binutils-2.24',
         # This is tag binutils-2_24, but Gerrit won't let us push
