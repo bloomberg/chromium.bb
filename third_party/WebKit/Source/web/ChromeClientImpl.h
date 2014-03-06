@@ -82,6 +82,7 @@ public:
     virtual bool canTakeFocus(WebCore::FocusType) OVERRIDE;
     virtual void takeFocus(WebCore::FocusType) OVERRIDE;
     virtual void focusedNodeChanged(WebCore::Node*) OVERRIDE;
+    virtual void focusedFrameChanged(WebCore::LocalFrame*) OVERRIDE;
     virtual WebCore::Page* createWindow(
         WebCore::LocalFrame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy, WebCore::ShouldSendReferrer) OVERRIDE;
     virtual void show(WebCore::NavigationPolicy) OVERRIDE;

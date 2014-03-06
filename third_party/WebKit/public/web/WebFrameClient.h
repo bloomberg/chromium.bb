@@ -130,6 +130,9 @@ public:
     // This frame has been detached from the view, but has not been closed yet.
     virtual void frameDetached(WebFrame*) { }
 
+    // This frame has become focused..
+    virtual void frameFocused() { }
+
     // This frame is about to be closed. This is called after frameDetached,
     // when the document is being unloaded, due to new one committing.
     virtual void willClose(WebFrame*) { }

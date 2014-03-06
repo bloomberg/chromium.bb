@@ -213,6 +213,13 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 
+void ChromeClientImpl::focusedFrameChanged(WebCore::LocalFrame* frame)
+{
+    WebFrameImpl* webframe = WebFrameImpl::fromFrame(frame);
+    if (webframe && webframe->client())
+        webframe->client()->frameFocused();
+}
+
 Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
     NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer)
 {

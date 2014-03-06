@@ -256,6 +256,8 @@ void FocusController::setFocusedFrame(PassRefPtr<LocalFrame> frame)
     }
 
     m_isChangingFocusedFrame = false;
+
+    m_page->chrome().client().focusedFrameChanged(newFrame.get());
 }
 
 LocalFrame* FocusController::focusedOrMainFrame() const

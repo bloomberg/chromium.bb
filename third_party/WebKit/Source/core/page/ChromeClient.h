@@ -93,6 +93,8 @@ public:
 
     virtual void focusedNodeChanged(Node*) = 0;
 
+    virtual void focusedFrameChanged(LocalFrame*) = 0;
+
     // The LocalFrame pointer provides the ChromeClient with context about which
     // LocalFrame wants to create the new Page. Also, the newly created window
     // should not be shown to the user until the ChromeClient of the newly
