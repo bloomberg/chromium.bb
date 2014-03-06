@@ -6,6 +6,7 @@
 
 // Definition in base/third_party/superfasthash/superfasthash.c. (Third-party
 // code did not come with its own header file, so declaring the function here.)
+// Note: This algorithm is also in Blink under Source/wtf/StringHasher.h.
 extern "C" uint32_t SuperFastHash(const char* data, int len);
 
 namespace base {

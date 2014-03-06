@@ -25,6 +25,16 @@ TEST(HashTest, String) {
   str = "helmo world";
   EXPECT_EQ(1006697176u, Hash(str));
 
+  // Insert a null byte.
+  str = "hello  world";
+  str[5] = '\0';
+  EXPECT_EQ(2319902537u, Hash(str));
+
+  // Test that the bytes after the null contribute to the hash.
+  str = "hello  worle";
+  str[5] = '\0';
+  EXPECT_EQ(553904462u, Hash(str));
+
   // Extremely long string.
   // Also tests strings with high bit set, and null byte.
   std::vector<char> long_string_buffer;

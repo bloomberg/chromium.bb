@@ -17,21 +17,20 @@ namespace base {
 // WARNING: This hash function should not be used for any cryptographic purpose.
 BASE_EXPORT uint32 SuperFastHash(const char* data, int len);
 
-// Computes the hash of a string |key| of a given |length|. |key| does not need
-// to be null-terminated, and may contain null bytes.
+// Computes a hash of a memory buffer |data| of a given |length|.
 // WARNING: This hash function should not be used for any cryptographic purpose.
-inline uint32 Hash(const char* key, size_t length) {
+inline uint32 Hash(const char* data, size_t length) {
   if (length > static_cast<size_t>(std::numeric_limits<int>::max())) {
     NOTREACHED();
     return 0;
   }
-  return SuperFastHash(key, static_cast<int>(length));
+  return SuperFastHash(data, static_cast<int>(length));
 }
 
-// Computes the hash of a string |key|.
+// Computes a hash of a string |str|.
 // WARNING: This hash function should not be used for any cryptographic purpose.
-inline uint32 Hash(const std::string& key) {
-  return Hash(key.data(), key.size());
+inline uint32 Hash(const std::string& str) {
+  return Hash(str.data(), str.size());
 }
 
 }  // namespace base
