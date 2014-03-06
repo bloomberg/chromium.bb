@@ -1,0 +1,21 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://dev.w3.org/2009/dap/system-info/battery-status.html
+[
+    NoInterfaceObject,
+    RuntimeEnabled=BatteryStatus,
+] interface BatteryManager : EventTarget {
+    readonly attribute boolean charging;
+    readonly attribute double chargingTime;
+    readonly attribute double dischargingTime;
+    readonly attribute double level;
+
+    attribute EventHandler onchargingchange;
+    attribute EventHandler onchargingtimechange;
+    attribute EventHandler ondischargingtimechange;
+    attribute EventHandler onlevelchange;
+
+};
+

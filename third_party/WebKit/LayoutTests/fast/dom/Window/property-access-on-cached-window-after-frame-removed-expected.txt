@@ -18,6 +18,10 @@ PASS childWindow.menubar.visible is false
 PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
+PASS childWindow.navigator.battery.charging is true
+PASS childWindow.navigator.battery.chargingTime is Infinity
+PASS childWindow.navigator.battery.dischargingTime is Infinity
+PASS childWindow.navigator.battery.level is 1
 PASS childWindow.navigator.cookieEnabled is false
 PASS childWindow.navigator.language is window.navigator.language
 PASS childWindow.navigator.onLine is window.navigator.onLine

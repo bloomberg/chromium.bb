@@ -17,6 +17,7 @@
 
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
+BatteryStatus status=test
 BeforeLoad status=test
 
 // Enable bleeding-edge code to make Blink draw content faster.

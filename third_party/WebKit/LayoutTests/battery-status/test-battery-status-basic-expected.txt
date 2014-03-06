@@ -1,0 +1,9 @@
+This test prints the default battery status values.
+
+Charging Status: Charging
+
+Charging Time: Infinity
+
+Discharging Time: Infinity
+
+Percentage: 100

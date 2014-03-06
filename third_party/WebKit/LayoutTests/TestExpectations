@@ -421,6 +421,10 @@ crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Ski
 crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Pass Failure ]
 
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
+crbug.com/122593 [ Mac ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed.html [ NeedsRebaseline ]
+crbug.com/122593 [ Mac ] fast/dom/Window/property-access-on-cached-window-after-frame-removed.html [ NeedsRebaseline ]
+crbug.com/122593 [ Mac ] fast/dom/Window/property-access-on-cached-window-after-frame-navigated.html [ NeedsRebaseline ]
+crbug.com/122593 [ Mac ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ NeedsRebaseline ]
 
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]

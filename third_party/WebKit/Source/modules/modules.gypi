@@ -10,6 +10,7 @@
     # Files for which bindings (.cpp and .h files) will be generated
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
+      'battery/BatteryManager.idl',
       'crypto/AesKeyAlgorithm.idl',
       'crypto/Crypto.idl',
       'crypto/HmacKeyAlgorithm.idl',
@@ -185,6 +186,7 @@
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
+      'battery/NavigatorBattery.idl',
       'crypto/WindowCrypto.idl',
       'crypto/WorkerGlobalScopeCrypto.idl',
       'donottrack/NavigatorDoNotTrack.idl',
@@ -222,6 +224,12 @@
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',
+      'battery/BatteryManager.cpp',
+      'battery/BatteryManager.h',
+      'battery/BatteryStatus.cpp',
+      'battery/BatteryStatus.h',
+      'battery/NavigatorBattery.cpp',
+      'battery/NavigatorBattery.h',
       'crypto/Crypto.cpp',
       'crypto/Crypto.h',
       'crypto/CryptoResultImpl.cpp',

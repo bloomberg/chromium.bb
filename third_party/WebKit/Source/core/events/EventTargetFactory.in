@@ -21,6 +21,7 @@ core/workers/SharedWorkerGlobalScope
 core/workers/Worker
 core/xml/XMLHttpRequest
 core/xml/XMLHttpRequestUpload
+modules/battery/BatteryManager
 modules/encryptedmedia/MediaKeySession
 modules/filesystem/FileWriter
 modules/indexeddb/IDBDatabase

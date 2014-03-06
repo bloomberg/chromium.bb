@@ -53,6 +53,18 @@ function emitExpectedResult(path, expected)
     case "navigator.vendor":
         expected = "window." + propertyPath;
         break;
+    case "navigator.battery.charging":
+        expected = "true";
+        break;
+    case "navigator.battery.chargingTime":
+        expected = "Infinity";
+        break;
+    case "navigator.battery.dischargingTime":
+        expected = "Infinity";
+        break;
+    case "navigator.battery.level":
+        expected = "1";
+        break;
     }
 
     insertExpectedResult(path, expected);
