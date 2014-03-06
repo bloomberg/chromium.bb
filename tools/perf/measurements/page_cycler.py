@@ -19,7 +19,7 @@ import collections
 import os
 
 from metrics import cpu
-from metrics import io
+from metrics import iometric
 from metrics import memory
 from metrics import power
 from metrics import speedindex
@@ -98,7 +98,7 @@ class PageCycler(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
     power.PowerMetric.CustomizeBrowserOptions(options)
-    io.IOMetric.CustomizeBrowserOptions(options)
+    iometric.IOMetric.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs('--js-flags=--expose_gc')
 
     if options.v8_object_stats:
@@ -172,7 +172,7 @@ class PageCycler(page_measurement.PageMeasurement):
           tab, results, chart_name=chart_name_prefix+'speed_index')
 
   def DidRunTest(self, browser, results):
-    io.IOMetric().AddSummaryResults(browser, results)
+    iometric.IOMetric().AddSummaryResults(browser, results)
 
   def IsRunCold(self, url):
     return (self.ShouldRunCold(url) or
