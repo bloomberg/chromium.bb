@@ -308,9 +308,12 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     if (!m_isExternalScript && (!shouldBypassMainWorldContentSecurityPolicy && !elementDocument->contentSecurityPolicy()->allowInlineScript(elementDocument->url(), m_startLineNumber)))
         return;
 
-    if (m_isExternalScript && m_resource && !m_resource->mimeTypeAllowedByNosniff()) {
-        contextDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + m_resource->url().elidedString() + "' because its MIME type ('" + m_resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
-        return;
+    if (m_isExternalScript) {
+        ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
+        if (resource && !resource->mimeTypeAllowedByNosniff()) {
+            contextDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
+            return;
+        }
     }
 
     if (frame) {
