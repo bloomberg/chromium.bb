@@ -115,6 +115,9 @@ class HttpServerPropertiesManager
   virtual void SetBrokenAlternateProtocol(
       const net::HostPortPair& server) OVERRIDE;
 
+  // Clears the Alternate-Protocol for |server|.
+  virtual void ClearAlternateProtocol(const net::HostPortPair& server) OVERRIDE;
+
   // Returns all Alternate-Protocol mappings.
   virtual const net::AlternateProtocolMap&
       alternate_protocol_map() const OVERRIDE;

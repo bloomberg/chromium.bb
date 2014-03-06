@@ -266,6 +266,11 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   alternate_protocol_map_[server].protocol = ALTERNATE_PROTOCOL_BROKEN;
 }
 
+void HttpServerPropertiesImpl::ClearAlternateProtocol(
+    const HostPortPair& server) {
+  alternate_protocol_map_.erase(server);
+}
+
 const AlternateProtocolMap&
 HttpServerPropertiesImpl::alternate_protocol_map() const {
   return alternate_protocol_map_;

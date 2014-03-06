@@ -177,6 +177,13 @@ void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
   ScheduleUpdatePrefsOnIO();
 }
 
+void HttpServerPropertiesManager::ClearAlternateProtocol(
+    const net::HostPortPair& server) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->ClearAlternateProtocol(server);
+  ScheduleUpdatePrefsOnIO();
+}
+
 const net::AlternateProtocolMap&
 HttpServerPropertiesManager::alternate_protocol_map() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

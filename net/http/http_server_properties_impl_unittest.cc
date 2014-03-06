@@ -241,6 +241,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
       << "Second attempt should be ignored.";
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
+  HostPortPair test_host_port_pair("foo", 80);
+  impl_.SetBrokenAlternateProtocol(test_host_port_pair);
+  ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
+  PortAlternateProtocolPair alternate =
+      impl_.GetAlternateProtocol(test_host_port_pair);
+  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
+  impl_.ClearAlternateProtocol(test_host_port_pair);
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
   // Test forced alternate protocols.
 
