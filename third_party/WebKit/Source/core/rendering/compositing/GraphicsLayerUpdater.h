@@ -41,16 +41,11 @@ public:
     explicit GraphicsLayerUpdater(RenderView&);
     ~GraphicsLayerUpdater();
 
-    enum UpdateType {
-        DoNotForceUpdate,
-        ForceUpdate,
-    };
-
-    void updateRecursive(RenderLayer&, UpdateType);
-    void rebuildTree(RenderLayer&, UpdateType, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth);
+    void updateRecursive(RenderLayer&);
+    void rebuildTree(RenderLayer&, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth);
 
 private:
-    UpdateType update(RenderLayer&, UpdateType);
+    void update(RenderLayer&);
 
     RenderView& m_renderView;
 

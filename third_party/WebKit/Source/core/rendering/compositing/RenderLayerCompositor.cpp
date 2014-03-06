@@ -204,7 +204,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_showRepaintCounter(false)
     , m_needsToRecomputeCompositingRequirements(false)
     , m_needsToUpdateLayerTreeGeometry(false)
-    , m_pendingUpdateType(GraphicsLayerUpdater::DoNotForceUpdate)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
@@ -363,23 +362,15 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
 
     switch (updateType) {
     case CompositingUpdateAfterStyleChange:
-        m_needsToRecomputeCompositingRequirements = true;
-        break;
     case CompositingUpdateAfterLayout:
         m_needsToRecomputeCompositingRequirements = true;
-        // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
-        m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
         break;
     case CompositingUpdateOnScroll:
         m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
         m_needsToUpdateLayerTreeGeometry = true;
-        // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
-        m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
         break;
     case CompositingUpdateOnCompositedScroll:
         m_needsToUpdateLayerTreeGeometry = true;
-        // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
-        m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
         break;
     }
 
@@ -428,14 +419,10 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
     if (!needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needGeometryUpdate && !needsToUpdateScrollingCoordinator)
         return;
 
-    GraphicsLayerUpdater::UpdateType updateType = m_pendingUpdateType;
-
     // Only clear the flags if we're updating the entire hierarchy.
     m_compositingLayersNeedRebuild = false;
     m_needsToUpdateLayerTreeGeometry = false;
     m_needsToRecomputeCompositingRequirements = false;
-    m_pendingUpdateType = GraphicsLayerUpdater::DoNotForceUpdate;
-
     RenderLayer* updateRoot = rootRenderLayer();
 
     if (needCompositingRequirementsUpdate) {
@@ -484,7 +471,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         Vector<GraphicsLayer*> childList;
         {
             TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::rebuildTree");
-            GraphicsLayerUpdater(*m_renderView).rebuildTree(*updateRoot, updateType, childList, 0);
+            GraphicsLayerUpdater(*m_renderView).rebuildTree(*updateRoot, childList, 0);
         }
 
         // Host the document layer in the RenderView's root layer.
@@ -504,7 +491,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
-        GraphicsLayerUpdater(*m_renderView).updateRecursive(*updateRoot, updateType);
+        GraphicsLayerUpdater(*m_renderView).updateRecursive(*updateRoot);
     }
 
     ASSERT(updateRoot || !m_compositingLayersNeedRebuild);
@@ -1415,7 +1402,7 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
                     reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
             }
 
-            compositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
+            compositedLayerMapping->updateGraphicsLayerGeometry();
             if (compositedChildrenOnly)
                 return;
         }

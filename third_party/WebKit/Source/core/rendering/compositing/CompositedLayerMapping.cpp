@@ -421,7 +421,7 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         layerCompositor->updateCompositingDescendantGeometry(m_owningLayer->stackingNode(), m_owningLayer, flags & CompositingChildrenOnly);
 
         if (flags & IsUpdateRoot) {
-            updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
+            updateGraphicsLayerGeometry();
             layerCompositor->updateRootLayerPosition();
             RenderLayerStackingNode* stackingContainer = m_owningLayer->stackingNode()->enclosingStackingContainerNode();
             if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer->stackingNode()))
@@ -617,17 +617,11 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
     }
 }
 
-GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType)
+void CompositedLayerMapping::updateGraphicsLayerGeometry()
 {
     // If we haven't built z-order lists yet, wait until later.
     if (m_owningLayer->stackingNode()->isStackingContainer() && m_owningLayer->stackingNode()->zOrderListsDirty())
-        return updateType;
-
-    if (!m_needToUpdateGeometry && updateType != GraphicsLayerUpdater::ForceUpdate)
-        return updateType;
-    m_needToUpdateGeometry = false;
-    if (m_needToUpdateGeometryOfAllDecendants)
-        updateType = GraphicsLayerUpdater::ForceUpdate;
+        return;
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
@@ -789,7 +783,7 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
 
     if (m_owningLayer->reflectionInfo() && m_owningLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
         CompositedLayerMappingPtr reflectionCompositedLayerMapping = m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping();
-        reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
+        reflectionCompositedLayerMapping->updateGraphicsLayerGeometry();
 
         // The reflection layer has the bounds of m_owningLayer->reflectionLayer(),
         // but the reflected layer is the bounds of this layer, so we need to position it appropriately.
@@ -868,8 +862,6 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
     registerScrollingLayers();
 
     updateCompositingReasons();
-
-    return updateType;
 }
 
 void CompositedLayerMapping::registerScrollingLayers()
@@ -1855,28 +1847,6 @@ void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
     } else {
         m_graphicsLayer->setBlendMode(blendMode);
     }
-}
-
-void CompositedLayerMapping::setNeedsGeometryUpdate()
-{
-    m_needToUpdateGeometryOfAllDecendants = true;
-
-    for (RenderLayer* current = m_owningLayer; current; current = current->ancestorCompositingLayer()) {
-        // FIXME: We should be able to return early from this function once we
-        // find a CompositedLayerMapping that has m_needToUpdateGeometry set.
-        // However, we can't do that until we remove the incremental compositing
-        // updates because they can clear m_needToUpdateGeometry without walking
-        // the whole tree.
-        ASSERT(current->hasCompositedLayerMapping());
-        CompositedLayerMappingPtr mapping = current->compositedLayerMapping();
-        mapping->m_needToUpdateGeometry = true;
-    }
-}
-
-void CompositedLayerMapping::clearNeedsGeometryUpdate()
-{
-    m_needToUpdateGeometry = false;
-    m_needToUpdateGeometryOfAllDecendants = false;
 }
 
 struct SetContentsNeedsDisplayFunctor {

@@ -710,17 +710,8 @@ void RenderLayer::setHasVisibleContent()
         return;
     }
 
-    m_hasVisibleContent = true;
     m_visibleContentStatusDirty = false;
-
-    {
-        // FIXME: We can remove this code once we remove the recursive tree
-        // walk inside updateGraphicsLayerGeometry.
-        DisableCompositingQueryAsserts disabler;
-        if (RenderLayer* compositingLayer = enclosingCompositingLayer())
-            compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
-    }
-
+    m_hasVisibleContent = true;
     repainter().computeRepaintRects(renderer()->containerForRepaint());
     if (!m_stackingNode->isNormalFlowOnly()) {
         // We don't collect invisible layers in z-order lists if we are not in compositing mode.
@@ -857,7 +848,6 @@ void RenderLayer::updateDescendantDependentFlags()
     }
 
     if (m_visibleContentStatusDirty) {
-        bool previouslyHasVisibleCOntent = m_hasVisibleContent;
         if (renderer()->style()->visibility() == VISIBLE)
             m_hasVisibleContent = true;
         else {
@@ -885,14 +875,6 @@ void RenderLayer::updateDescendantDependentFlags()
             }
         }
         m_visibleContentStatusDirty = false;
-
-        // FIXME: We can remove this code once we remove the recursive tree
-        // walk inside updateGraphicsLayerGeometry.
-        if (m_hasVisibleContent != previouslyHasVisibleCOntent) {
-            DisableCompositingQueryAsserts disabler;
-            if (RenderLayer* compositingLayer = enclosingCompositingLayer())
-                compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
-        }
     }
 }
 
@@ -3529,7 +3511,6 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {
         m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(this));
-        m_compositedLayerMapping->setNeedsGeometryUpdate();
 
         updateOrRemoveFilterEffectRenderer();
 
@@ -3541,9 +3522,6 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 
 void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 {
-    if (!layerBeingDestroyed)
-        m_compositedLayerMapping->setNeedsGeometryUpdate();
-
     m_compositedLayerMapping.clear();
 
     if (!layerBeingDestroyed)
@@ -3898,9 +3876,6 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
-
-    if (RenderLayer* compositingLayer = enclosingCompositingLayer())
-        compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
 
     const RenderStyle* newStyle = renderer()->style();
 
