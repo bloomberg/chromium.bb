@@ -278,8 +278,8 @@ bool GraphicsLayer::replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChil
 
 void GraphicsLayer::removeAllChildren()
 {
-    while (m_children.size()) {
-        GraphicsLayer* curLayer = m_children[0];
+    while (!m_children.isEmpty()) {
+        GraphicsLayer* curLayer = m_children.last();
         ASSERT(curLayer->parent());
         curLayer->removeFromParent();
     }
@@ -288,14 +288,8 @@ void GraphicsLayer::removeAllChildren()
 void GraphicsLayer::removeFromParent()
 {
     if (m_parent) {
-        unsigned i;
-        for (i = 0; i < m_parent->m_children.size(); i++) {
-            if (this == m_parent->m_children[i]) {
-                m_parent->m_children.remove(i);
-                break;
-            }
-        }
-
+        // We use reverseFind so that removeAllChildren() isn't n^2.
+        m_parent->m_children.remove(m_parent->m_children.reverseFind(this));
         setParent(0);
     }
 
