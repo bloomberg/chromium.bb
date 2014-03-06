@@ -27,6 +27,7 @@
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
 #include <sys/socket.h>
@@ -71,14 +72,12 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
 
 // -----------------------------------------------------------------------------
 
-class RawChannelTest : public test::TestWithIOThreadBase {
+class RawChannelTest : public testing::Test {
  public:
   RawChannelTest() {}
   virtual ~RawChannelTest() {}
 
   virtual void SetUp() OVERRIDE {
-    test::TestWithIOThreadBase::SetUp();
-
     embedder::PlatformChannelPair channel_pair;
     handles[0] = channel_pair.PassServerHandle();
     handles[1] = channel_pair.PassClientHandle();
@@ -87,14 +86,16 @@ class RawChannelTest : public test::TestWithIOThreadBase {
   virtual void TearDown() OVERRIDE {
     handles[0].reset();
     handles[1].reset();
-
-    test::TestWithIOThreadBase::TearDown();
   }
 
  protected:
+  test::TestIOThread* io_thread() { return &io_thread_; }
+
   embedder::ScopedPlatformHandle handles[2];
 
  private:
+  test::TestIOThread io_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(RawChannelTest);
 };
 
@@ -191,11 +192,11 @@ TEST_F(RawChannelTest, WriteMessage) {
   WriteOnlyRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
-                                               io_thread_message_loop()));
+                                               io_thread()->message_loop()));
 
   TestMessageReaderAndChecker checker(handles[1].get());
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, rc.get()));
 
@@ -211,7 +212,7 @@ TEST_F(RawChannelTest, WriteMessage) {
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1)
     EXPECT_TRUE(checker.ReadAndCheckNextMessage(size)) << size;
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));
@@ -282,9 +283,9 @@ TEST_F(RawChannelTest, OnReadMessage) {
   ReadCheckerRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
-                                               io_thread_message_loop()));
+                                               io_thread()->message_loop()));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, rc.get()));
 
@@ -307,7 +308,7 @@ TEST_F(RawChannelTest, OnReadMessage) {
     EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), size));
   delegate.Wait();
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));
@@ -388,9 +389,9 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   scoped_ptr<RawChannel> writer_rc(
       RawChannel::Create(handles[0].Pass(),
                          &writer_delegate,
-                         io_thread_message_loop()));
+                         io_thread()->message_loop()));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, writer_rc.get()));
 
@@ -399,9 +400,9 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   scoped_ptr<RawChannel> reader_rc(
       RawChannel::Create(handles[1].Pass(),
                          &reader_delegate,
-                         io_thread_message_loop()));
+                         io_thread()->message_loop()));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, reader_rc.get()));
 
@@ -422,12 +423,12 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   // Wait for reading to finish.
   reader_delegate.Wait();
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(reader_rc.get())));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(writer_rc.get())));
@@ -485,9 +486,9 @@ TEST_F(RawChannelTest, OnFatalError) {
 
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
-                                               io_thread_message_loop()));
+                                               io_thread()->message_loop()));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, rc.get()));
 
@@ -506,7 +507,7 @@ TEST_F(RawChannelTest, OnFatalError) {
   // notification. (If we actually get another one, |OnFatalError()| crashes.)
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));
@@ -524,9 +525,9 @@ TEST_F(RawChannelTest, ReadUnaffectedByWriteFatalError) {
                                                  true);
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
-                                               io_thread_message_loop()));
+                                               io_thread()->message_loop()));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, rc.get()));
 
@@ -558,7 +559,7 @@ TEST_F(RawChannelTest, ReadUnaffectedByWriteFatalError) {
   // Wait for reading to finish. A writing failure shouldn't affect reading.
   delegate.Wait();
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));
@@ -573,12 +574,12 @@ TEST_F(RawChannelTest, WriteMessageAfterShutdown) {
   WriteOnlyRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
-                                               io_thread_message_loop()));
+                                               io_thread()->message_loop()));
 
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&InitOnIOThread, rc.get()));
-  test::PostTaskAndWait(io_thread_task_runner(),
+  test::PostTaskAndWait(io_thread()->task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));

@@ -14,7 +14,6 @@
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracked_objects {
 class Location;
@@ -50,29 +49,26 @@ void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
                      const tracked_objects::Location& from_here,
                      const base::Closure& task);
 
-// TestWithIOThreadBase --------------------------------------------------------
+// TestIOThread ----------------------------------------------------------------
 
-class TestWithIOThreadBase : public testing::Test {
+class TestIOThread {
  public:
-  TestWithIOThreadBase();
-  virtual ~TestWithIOThreadBase();
+  // Note: The I/O thread is started on construction and stopped on destruction.
+  TestIOThread();
+  ~TestIOThread();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-
- protected:
-  base::MessageLoopForIO* io_thread_message_loop() {
+  base::MessageLoopForIO* message_loop() {
     return static_cast<base::MessageLoopForIO*>(io_thread_.message_loop());
   }
 
-  scoped_refptr<base::TaskRunner> io_thread_task_runner() {
-    return io_thread_message_loop()->message_loop_proxy();
+  scoped_refptr<base::TaskRunner> task_runner() {
+    return message_loop()->message_loop_proxy();
   }
 
  private:
   base::Thread io_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWithIOThreadBase);
+  DISALLOW_COPY_AND_ASSIGN(TestIOThread);
 };
 
 }  // namespace test

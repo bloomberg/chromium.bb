@@ -14,12 +14,25 @@
 #include "mojo/system/embedder/platform_channel_pair.h"
 #include "mojo/system/embedder/test_embedder.h"
 #include "mojo/system/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace embedder {
 namespace {
 
-typedef system::test::TestWithIOThreadBase EmbedderTest;
+class EmbedderTest : public testing::Test {
+ public:
+  EmbedderTest() {}
+  virtual ~EmbedderTest() {}
+
+ protected:
+  system::test::TestIOThread* io_thread() { return &io_thread_; }
+
+ private:
+  system::test::TestIOThread io_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
+};
 
 void StoreChannelInfo(ChannelInfo** store_channel_info_here,
                       ChannelInfo* channel_info) {
@@ -37,14 +50,14 @@ TEST_F(EmbedderTest, ChannelsBasic) {
 
   ChannelInfo* server_channel_info = NULL;
   MojoHandle server_mp = CreateChannel(server_handle.Pass(),
-                                       io_thread_task_runner(),
+                                       io_thread()->task_runner(),
                                        base::Bind(&StoreChannelInfo,
                                                   &server_channel_info));
   EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
 
   ChannelInfo* client_channel_info = NULL;
   MojoHandle client_mp = CreateChannel(client_handle.Pass(),
-                                       io_thread_task_runner(),
+                                       io_thread()->task_runner(),
                                        base::Bind(&StoreChannelInfo,
                                                   &client_channel_info));
   EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
@@ -73,13 +86,13 @@ TEST_F(EmbedderTest, ChannelsBasic) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 
   EXPECT_TRUE(server_channel_info != NULL);
-  system::test::PostTaskAndWait(io_thread_task_runner(),
+  system::test::PostTaskAndWait(io_thread()->task_runner(),
                                 FROM_HERE,
                                 base::Bind(&DestroyChannelOnIOThread,
                                            server_channel_info));
 
   EXPECT_TRUE(client_channel_info != NULL);
-  system::test::PostTaskAndWait(io_thread_task_runner(),
+  system::test::PostTaskAndWait(io_thread()->task_runner(),
                                 FROM_HERE,
                                 base::Bind(&DestroyChannelOnIOThread,
                                            client_channel_info));
@@ -96,14 +109,14 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
   ChannelInfo* server_channel_info = NULL;
   MojoHandle server_mp = CreateChannel(server_handle.Pass(),
-                                       io_thread_task_runner(),
+                                       io_thread()->task_runner(),
                                        base::Bind(&StoreChannelInfo,
                                                   &server_channel_info));
   EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
 
   ChannelInfo* client_channel_info = NULL;
   MojoHandle client_mp = CreateChannel(client_handle.Pass(),
-                                       io_thread_task_runner(),
+                                       io_thread()->task_runner(),
                                        base::Bind(&StoreChannelInfo,
                                                   &client_channel_info));
   EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);

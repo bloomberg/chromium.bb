@@ -31,20 +31,14 @@ void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
   event.Wait();
 }
 
-// TestWithIOThreadBase --------------------------------------------------------
+// TestIOThread ----------------------------------------------------------------
 
-TestWithIOThreadBase::TestWithIOThreadBase() : io_thread_("io_thread") {
-}
-
-TestWithIOThreadBase::~TestWithIOThreadBase() {
-}
-
-void TestWithIOThreadBase::SetUp() {
+TestIOThread::TestIOThread() : io_thread_("test_io_thread") {
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
-void TestWithIOThreadBase::TearDown() {
+TestIOThread::~TestIOThread() {
   io_thread_.Stop();
 }
 

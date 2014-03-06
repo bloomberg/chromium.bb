@@ -25,39 +25,39 @@
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
 
-class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
+class RemoteMessagePipeTest : public testing::Test {
  public:
   RemoteMessagePipeTest() {}
   virtual ~RemoteMessagePipeTest() {}
 
   virtual void SetUp() OVERRIDE {
-    test::TestWithIOThreadBase::SetUp();
-    test::PostTaskAndWait(io_thread_task_runner(),
+    test::PostTaskAndWait(io_thread()->task_runner(),
                           FROM_HERE,
                           base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
                                      base::Unretained(this)));
   }
 
   virtual void TearDown() OVERRIDE {
-    test::PostTaskAndWait(io_thread_task_runner(),
+    test::PostTaskAndWait(io_thread()->task_runner(),
                           FROM_HERE,
                           base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,
                                      base::Unretained(this)));
-    test::TestWithIOThreadBase::TearDown();
   }
 
+ protected:
   // This connects MP 0, port 1 and MP 1, port 0 (leaving MP 0, port 0 and MP 1,
   // port 1 as the user-visible endpoints) to channel 0 and 1, respectively. MP
   // 0, port 1 and MP 1, port 0 must have |ProxyMessagePipeEndpoint|s.
   void ConnectMessagePipes(scoped_refptr<MessagePipe> mp0,
                            scoped_refptr<MessagePipe> mp1) {
     test::PostTaskAndWait(
-        io_thread_task_runner(),
+        io_thread()->task_runner(),
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::ConnectMessagePipesOnIOThread,
                    base::Unretained(this), mp0, mp1));
@@ -69,7 +69,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
   // returns *without* waiting for it to finish connecting.
   void BootstrapMessagePipeNoWait(unsigned channel_index,
                                   scoped_refptr<MessagePipe> mp) {
-    io_thread_task_runner()->PostTask(
+    io_thread()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::BootstrapMessagePipeOnIOThread,
                    base::Unretained(this), channel_index, mp));
@@ -77,15 +77,17 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
 
   void RestoreInitialState() {
     test::PostTaskAndWait(
-        io_thread_task_runner(),
+        io_thread()->task_runner(),
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::RestoreInitialStateOnIOThread,
                    base::Unretained(this)));
   }
 
+  test::TestIOThread* io_thread() { return &io_thread_; }
+
  private:
   void SetUpOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     embedder::PlatformChannelPair channel_pair;
     platform_handles_[0] = channel_pair.PassServerHandle();
@@ -93,7 +95,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
   }
 
   void TearDownOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     if (channels_[0].get()) {
       channels_[0]->Shutdown();
@@ -106,7 +108,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
   }
 
   void CreateAndInitChannel(unsigned channel_index) {
-    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
     CHECK(channel_index == 0 || channel_index == 1);
     CHECK(!channels_[channel_index].get());
 
@@ -117,7 +119,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
 
   void ConnectMessagePipesOnIOThread(scoped_refptr<MessagePipe> mp0,
                                      scoped_refptr<MessagePipe> mp1) {
-    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     if (!channels_[0].get())
       CreateAndInitChannel(0);
@@ -135,7 +137,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
 
   void BootstrapMessagePipeOnIOThread(unsigned channel_index,
                                       scoped_refptr<MessagePipe> mp) {
-    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
     CHECK(channel_index == 0 || channel_index == 1);
 
     unsigned port = channel_index ^ 1u;
@@ -149,12 +151,13 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
   }
 
   void RestoreInitialStateOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     TearDownOnIOThread();
     SetUpOnIOThread();
   }
 
+  test::TestIOThread io_thread_;
   embedder::ScopedPlatformHandle platform_handles_[2];
   scoped_refptr<Channel> channels_[2];
 
@@ -569,7 +572,7 @@ TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
     BootstrapMessagePipeNoWait(1, mp1);
 
     if (i & 1u) {
-      io_thread_task_runner()->PostTask(
+      io_thread()->task_runner()->PostTask(
           FROM_HERE, base::Bind(&base::PlatformThread::Sleep, delay));
     }
     if (i & 2u)
@@ -578,7 +581,7 @@ TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
     mp0->Close(0);
 
     if (i & 4u) {
-      io_thread_task_runner()->PostTask(
+      io_thread()->task_runner()->PostTask(
           FROM_HERE, base::Bind(&base::PlatformThread::Sleep, delay));
     }
     if (i & 8u)
