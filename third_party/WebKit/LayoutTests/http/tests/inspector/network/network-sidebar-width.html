@@ -24,12 +24,14 @@ function test()
 
         delete settingValue.vertical.size;
         setting.set(settingValue);
+        forceSettingRead(panel._splitView);
         panel._showRequest(request);
         InspectorTest.addResult("Sidebar width: " + panel._splitView.sidebarElement().offsetWidth);
         panel._toggleGridMode();
 
         settingValue.vertical.size = 242;
         setting.set(settingValue);
+        forceSettingRead(panel._splitView);
         panel._showRequest(request);
         InspectorTest.addResult("Sidebar width: " + panel._splitView.sidebarElement().offsetWidth);
         panel._closeVisibleRequest(request);
@@ -38,6 +40,12 @@ function test()
         setting.set(settingValue);
 
         InspectorTest.completeTest();
+    }
+
+    function forceSettingRead(splitView)
+    {
+        splitView.setVertical(false);
+        splitView.setVertical(true);
     }
 }
 </script>
