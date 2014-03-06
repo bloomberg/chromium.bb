@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="vttdemux.cc" />
+    <ClCompile Include="mkvparser.cpp" />
+    <ClCompile Include="webvttparser.cc" />
+    <ClCompile Include="mkvreader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mkvparser.hpp" />
+    <ClInclude Include="webvttparser.h" />
+    <ClInclude Include="mkvreader.hpp" />
+  </ItemGroup>
+</Project>

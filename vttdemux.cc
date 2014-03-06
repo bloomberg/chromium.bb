@@ -551,7 +551,11 @@ bool vttdemux::OpenFiles(metadata_map_t* metadata_map, const char* filename) {
     if (exists[type] > 1) {
       enum { kLen = 33 };
       char str[kLen];  // max 126 tracks, so only 4 chars really needed
+#ifndef _MSC_VER
       snprintf(str, kLen, "%ld", v.first);  // track number
+#else
+      _snprintf_s(str, sizeof(str), kLen, "%ld", v.first);  // track number
+#endif
       name += str;
     }
 
@@ -562,9 +566,15 @@ bool vttdemux::OpenFiles(metadata_map_t* metadata_map, const char* filename) {
     // We have synthesized the full output filename, so attempt to
     // open the WebVTT output file.
 
+#ifndef _MSC_VER
     info.file = fopen(name.c_str(), "wb");
+    const bool success = (info.file != NULL);
+#else
+    const errno_t e = fopen_s(&info.file, name.c_str(), "wb");
+    const bool success = (e == 0);
+#endif
 
-    if (info.file == NULL) {
+    if (!success) {
       printf("unable to open output file %s\n", name.c_str());
       return false;
     }
@@ -851,7 +861,7 @@ bool vttdemux::ProcessBlockEntry(
   const long long tn = block->GetTrackNumber();  // NOLINT
 
   typedef metadata_map_t::const_iterator iter_t;
-  const iter_t i = m.find(tn);
+  const iter_t i = m.find(static_cast<metadata_map_t::key_type>(tn));
 
   if (i == m.end())  // not a metadata track
     return true;     // nothing else to do
