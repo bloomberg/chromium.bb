@@ -27,6 +27,7 @@
 #define CompositedLayerMapping_h
 
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -94,7 +95,7 @@ public:
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration();
     // Update graphics layer position and bounds.
-    void updateGraphicsLayerGeometry(); // make private
+    GraphicsLayerUpdater::UpdateType updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType);
     // Update whether layer needs blending.
     void updateContentsOpaque();
 
@@ -194,6 +195,9 @@ public:
     bool canCompositeFilters() const { return m_canCompositeFilters; }
 
     void setBlendMode(blink::WebBlendMode);
+
+    void setNeedsGeometryUpdate();
+    void clearNeedsGeometryUpdate();
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
@@ -353,12 +357,14 @@ private:
     LayoutRect m_compositedBounds;
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of the compositedBounds compared to absolute coordinates.
 
-    bool m_artificiallyInflatedBounds; // bounds had to be made non-zero to make transform-origin work
-    bool m_isMainFrameRenderViewLayer;
-    bool m_requiresOwnBackingStoreForIntrinsicReasons;
-    bool m_requiresOwnBackingStoreForAncestorReasons;
-    bool m_canCompositeFilters;
-    bool m_backgroundLayerPaintsFixedRootBackground;
+    bool m_artificiallyInflatedBounds : 1; // bounds had to be made non-zero to make transform-origin work
+    bool m_isMainFrameRenderViewLayer : 1;
+    bool m_requiresOwnBackingStoreForIntrinsicReasons : 1;
+    bool m_requiresOwnBackingStoreForAncestorReasons : 1;
+    bool m_canCompositeFilters : 1;
+    bool m_backgroundLayerPaintsFixedRootBackground : 1;
+    bool m_needToUpdateGeometry : 1;
+    bool m_needToUpdateGeometryOfAllDecendants : 1;
 };
 
 } // namespace WebCore

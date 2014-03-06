@@ -59,7 +59,7 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
+void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
@@ -71,7 +71,7 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, Vector<GraphicsLayer*
     const bool hasCompositedLayerMapping = layer.hasCompositedLayerMapping();
     CompositedLayerMappingPtr currentCompositedLayerMapping = layer.compositedLayerMapping();
 
-    update(layer);
+    updateType = update(layer, updateType);
 
     // Grab some stats for histograms.
     if (hasCompositedLayerMapping) {
@@ -95,7 +95,7 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, Vector<GraphicsLayer*
     if (layer.stackingNode()->isStackingContainer()) {
         RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next())
-            rebuildTree(*curNode->layer(), childList, depth + 1);
+            rebuildTree(*curNode->layer(), updateType, childList, depth + 1);
 
         // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
         if (hasCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
@@ -104,7 +104,7 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, Vector<GraphicsLayer*
 
     RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
-        rebuildTree(*curNode->layer(), childList, depth + 1);
+        rebuildTree(*curNode->layer(), updateType, childList, depth + 1);
 
     if (hasCompositedLayerMapping) {
         bool parented = false;
@@ -144,9 +144,9 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, Vector<GraphicsLayer*
 }
 
 // This just updates layer geometry without changing the hierarchy.
-void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer)
+void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType updateType)
 {
-    update(layer);
+    updateType = update(layer, updateType);
 
 #if !ASSERT_DISABLED
     LayerListMutationDetector mutationChecker(layer.stackingNode());
@@ -154,13 +154,13 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer)
 
     RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), AllChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
-        updateRecursive(*curNode->layer());
+        updateRecursive(*curNode->layer(), updateType);
 }
 
-void GraphicsLayerUpdater::update(RenderLayer& layer)
+GraphicsLayerUpdater::UpdateType GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType)
 {
     if (!layer.hasCompositedLayerMapping())
-        return;
+        return updateType;
 
     CompositedLayerMappingPtr mapping = layer.compositedLayerMapping();
 
@@ -174,13 +174,16 @@ void GraphicsLayerUpdater::update(RenderLayer& layer)
     }
 
     mapping->updateGraphicsLayerConfiguration();
-    mapping->updateGraphicsLayerGeometry();
+    updateType = mapping->updateGraphicsLayerGeometry(updateType);
+    mapping->clearNeedsGeometryUpdate();
 
     if (!layer.parent())
         layer.compositor()->updateRootLayerPosition();
 
     if (mapping->hasUnpositionedOverflowControlsLayers())
         layer.scrollableArea()->positionOverflowControls();
+
+    return updateType;
 }
 
 } // namespace WebCore
