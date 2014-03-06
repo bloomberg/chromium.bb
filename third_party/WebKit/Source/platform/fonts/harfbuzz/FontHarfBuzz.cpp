@@ -136,7 +136,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
                 pos[i].set(
                     x + SkIntToScalar(lroundf(translations[i].x())),
                     y + -SkIntToScalar(-lroundf(currentWidth - translations[i].y())));
-                currentWidth += glyphBuffer.advanceAt(from + glyphIndex);
+                currentWidth += glyphBuffer.advanceAt(from + glyphIndex).width();
             }
             horizontalOffset += currentWidth;
             paintGlyphs(gc, font, glyphs, chunkLength, pos, textRect);

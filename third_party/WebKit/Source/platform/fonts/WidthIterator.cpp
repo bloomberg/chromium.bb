@@ -246,9 +246,12 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
                 m_isAfterExpansion = false;
         }
 
-        if (shouldApplyFontTransforms() && glyphBuffer && Character::treatAsSpace(character))
+        if (shouldApplyFontTransforms() && glyphBuffer && Character::treatAsSpace(character)) {
             charactersTreatedAsSpace.append(make_pair(glyphBuffer->size(),
-                OriginalAdvancesForCharacterTreatedAsSpace(character == ' ', glyphBuffer->size() ? glyphBuffer->advanceAt(glyphBuffer->size() - 1) : 0, width)));
+                OriginalAdvancesForCharacterTreatedAsSpace(character == ' ',
+                    glyphBuffer->size() ? glyphBuffer->advanceAt(glyphBuffer->size() - 1).width() : 0,
+                    width)));
+        }
 
         if (m_accountForGlyphBounds) {
             bounds = fontData->boundsForGlyph(glyph);
@@ -337,7 +340,7 @@ bool WidthIterator::advanceOneCharacter(float& width, GlyphBuffer& glyphBuffer)
     advance(m_currentCharacter + 1, &glyphBuffer);
     float w = 0;
     for (unsigned i = oldSize; i < glyphBuffer.size(); ++i)
-        w += glyphBuffer.advanceAt(i);
+        w += glyphBuffer.advanceAt(i).width();
     width = w;
     return glyphBuffer.size() > oldSize;
 }

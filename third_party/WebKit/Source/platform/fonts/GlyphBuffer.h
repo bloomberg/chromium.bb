@@ -86,9 +86,13 @@ public:
         return m_glyphs[index];
     }
 
-    float advanceAt(unsigned index) const
+    FloatSize advanceAt(unsigned index) const
     {
-        return m_advances[index].width();
+#if OS(MACOSX)
+    return FloatSize(m_advances[index]);
+#else
+    return m_advances[index];
+#endif
     }
 
     void add(Glyph glyph, const SimpleFontData* font, float width)
