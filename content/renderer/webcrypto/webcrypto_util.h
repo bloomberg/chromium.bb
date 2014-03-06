@@ -135,6 +135,11 @@ class CONTENT_EXPORT Status {
   // key's modulus).
   static Status ErrorDataTooLarge();
 
+  // The data provided to an encrypt/decrypt/sign/verify operation was too
+  // small. This usually represents an algorithm restriction (for instance
+  // AES-KW requires a minimum of 24 bytes input data).
+  static Status ErrorDataTooSmall();
+
   // Something was unsupported or unimplemented. This can mean the algorithm in
   // question was unsupported, some parameter combination was unsupported, or
   // something has not yet been implemented.
@@ -149,6 +154,10 @@ class CONTENT_EXPORT Status {
   // not 32, 64, 96, 104, 112, 120, or 128.
   static Status ErrorInvalidAesGcmTagLength();
 
+  // The input data given to an AES-KW encrypt/decrypt operation was not a
+  // multiple of 8 bytes, as required by RFC 3394.
+  static Status ErrorInvalidAesKwDataLength();
+
   // The "publicExponent" used to generate a key was invalid: either no bytes
   // were specified, or the number was too large to fit into an "unsigned long"
   // (implemention limitation), or the exponent was zero.
@@ -157,6 +166,10 @@ class CONTENT_EXPORT Status {
   // The algorithm was null when importing a raw-formatted key. In this case it
   // is required.
   static Status ErrorMissingAlgorithmImportRawKey();
+
+  // The algorithm was null when unwrapping a raw-formatted key. In this case it
+  // is required.
+  static Status ErrorMissingAlgorithmUnwrapRawKey();
 
   // The modulus bytes were empty when importing an RSA public key.
   static Status ErrorImportRsaEmptyModulus();

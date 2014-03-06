@@ -480,6 +480,89 @@ Status VerifySignature(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
+Status WrapKey(blink::WebCryptoKeyFormat format,
+               const blink::WebCryptoKey& wrapping_key,
+               const blink::WebCryptoKey& key_to_wrap,
+               const blink::WebCryptoAlgorithm& wrapping_algorithm,
+               blink::WebArrayBuffer* buffer) {
+  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageUnwrapKey))
+    return Status::ErrorUnexpected();
+  if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
+    return Status::ErrorUnexpected();
+
+  // TODO (padolph): Handle formats other than raw
+  if (format != blink::WebCryptoKeyFormatRaw)
+    return Status::ErrorUnsupported();
+  // TODO (padolph): Handle key-to-wrap types other than secret/symmetric
+  if (key_to_wrap.type() != blink::WebCryptoKeyTypeSecret)
+    return Status::ErrorUnsupported();
+
+  platform::SymKey* platform_wrapping_key;
+  Status status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
+  if (status.IsError())
+    return status;
+  platform::SymKey* platform_key;
+  status = ToPlatformSymKey(key_to_wrap, &platform_key);
+  if (status.IsError())
+    return status;
+
+  // TODO(padolph): Handle other wrapping algorithms
+  switch (wrapping_algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesKw:
+      return platform::WrapSymKeyAesKw(
+          platform_wrapping_key, platform_key, buffer);
+    default:
+      return Status::ErrorUnsupported();
+  }
+}
+
+Status UnwrapKey(blink::WebCryptoKeyFormat format,
+                 const CryptoData& wrapped_key_data,
+                 const blink::WebCryptoKey& wrapping_key,
+                 const blink::WebCryptoAlgorithm& wrapping_algorithm,
+                 const blink::WebCryptoAlgorithm& algorithm_or_null,
+                 bool extractable,
+                 blink::WebCryptoKeyUsageMask usage_mask,
+                 blink::WebCryptoKey* key) {
+  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageUnwrapKey))
+    return Status::ErrorUnexpected();
+  if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
+    return Status::ErrorUnexpected();
+
+  // TODO(padolph): Handle formats other than raw
+  if (format != blink::WebCryptoKeyFormatRaw)
+    return Status::ErrorUnsupported();
+
+  // Must provide an algorithm when unwrapping a raw key
+  if (format == blink::WebCryptoKeyFormatRaw && algorithm_or_null.isNull())
+    return Status::ErrorMissingAlgorithmUnwrapRawKey();
+
+  platform::SymKey* platform_wrapping_key;
+  Status status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
+  if (status.IsError())
+    return status;
+
+  // TODO(padolph): Handle other wrapping algorithms
+  switch (wrapping_algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesKw: {
+      // AES-KW requires the wrapped key data size must be at least 24 bytes and
+      // also a multiple of 8 bytes.
+      if (wrapped_key_data.byte_length() < 24)
+        return Status::ErrorDataTooSmall();
+      if (wrapped_key_data.byte_length() % 8)
+        return Status::ErrorInvalidAesKwDataLength();
+      return platform::UnwrapSymKeyAesKw(wrapped_key_data,
+                                         platform_wrapping_key,
+                                         algorithm_or_null,
+                                         extractable,
+                                         usage_mask,
+                                         key);
+    }
+    default:
+      return Status::ErrorUnsupported();
+  }
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

@@ -445,6 +445,51 @@ bool CreatePrivateKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
   return CreatePublicKeyAlgorithm(algorithm, public_key.get(), key_algorithm);
 }
 
+// The Default IV for AES-KW. See http://www.ietf.org/rfc/rfc3394.txt
+// Section 2.2.3.1.
+// TODO(padolph): Move to common place to be shared with OpenSSL implementation.
+const unsigned char kAesIv[] = {0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6};
+
+// Sets NSS CK_MECHANISM_TYPE and CK_FLAGS corresponding to the input Web Crypto
+// algorithm ID.
+Status WebCryptoAlgorithmToNssMechFlags(
+    const blink::WebCryptoAlgorithm& algorithm,
+    CK_MECHANISM_TYPE* mechanism,
+    CK_FLAGS* flags) {
+  // Flags are verified at the Blink layer; here the flags are set to all
+  // possible operations of a key for the input algorithm type.
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdHmac: {
+      const blink::WebCryptoAlgorithm hash = GetInnerHashAlgorithm(algorithm);
+      *mechanism = WebCryptoHashToHMACMechanism(hash);
+      if (*mechanism == CKM_INVALID_MECHANISM)
+        return Status::ErrorUnsupported();
+      *flags = CKF_SIGN | CKF_VERIFY;
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdAesCbc: {
+      *mechanism = CKM_AES_CBC;
+      *flags = CKF_ENCRYPT | CKF_DECRYPT;
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdAesKw: {
+      *mechanism = CKM_NSS_AES_KEY_WRAP;
+      *flags = CKF_WRAP | CKF_WRAP;
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdAesGcm: {
+      if (!g_aes_gcm_support.Get().IsSupported())
+        return Status::ErrorUnsupported();
+      *mechanism = CKM_AES_GCM;
+      *flags = CKF_ENCRYPT | CKF_DECRYPT;
+      break;
+    }
+    default:
+      return Status::ErrorUnsupported();
+  }
+  return Status::Success();
+}
+
 }  // namespace
 
 Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
@@ -455,47 +500,12 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
 
   DCHECK(!algorithm.isNull());
 
-  // TODO(bryaneyler): Need to split handling for symmetric and asymmetric keys.
-  // Currently only supporting symmetric.
-  CK_MECHANISM_TYPE mechanism = CKM_INVALID_MECHANISM;
-  // Flags are verified at the Blink layer; here the flags are set to all
-  // possible operations for this key type.
-  CK_FLAGS flags = 0;
-
-  switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdHmac: {
-      const blink::WebCryptoAlgorithm& hash = GetInnerHashAlgorithm(algorithm);
-
-      mechanism = WebCryptoHashToHMACMechanism(hash);
-      if (mechanism == CKM_INVALID_MECHANISM)
-        return Status::ErrorUnsupported();
-
-      flags |= CKF_SIGN | CKF_VERIFY;
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdAesCbc: {
-      mechanism = CKM_AES_CBC;
-      flags |= CKF_ENCRYPT | CKF_DECRYPT;
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdAesKw: {
-      mechanism = CKM_NSS_AES_KEY_WRAP;
-      flags |= CKF_WRAP | CKF_WRAP;
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdAesGcm: {
-      if (!g_aes_gcm_support.Get().IsSupported())
-        return Status::ErrorUnsupported();
-      mechanism = CKM_AES_GCM;
-      flags |= CKF_ENCRYPT | CKF_DECRYPT;
-      break;
-    }
-    default:
-      return Status::ErrorUnsupported();
-  }
-
-  DCHECK_NE(CKM_INVALID_MECHANISM, mechanism);
-  DCHECK_NE(0ul, flags);
+  CK_MECHANISM_TYPE mechanism;
+  CK_FLAGS flags;
+  Status status =
+      WebCryptoAlgorithmToNssMechFlags(algorithm, &mechanism, &flags);
+  if (status.IsError())
+    return status;
 
   SECItem key_item = MakeSECItemForBuffer(key_data);
 
@@ -1094,6 +1104,99 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 
   *key = blink::WebCryptoKey::create(new PublicKey(pubkey.Pass()),
                                      blink::WebCryptoKeyTypePublic,
+                                     extractable,
+                                     key_algorithm,
+                                     usage_mask);
+  return Status::Success();
+}
+
+Status WrapSymKeyAesKw(SymKey* wrapping_key,
+                       SymKey* key,
+                       blink::WebArrayBuffer* buffer) {
+  // The data size must be at least 16 bytes and a multiple of 8 bytes.
+  // RFC 3394 does not specify a maximum allowed data length, but since only
+  // keys are being wrapped in this application (which are small), a reasonable
+  // max limit is whatever will fit into an unsigned. For the max size test,
+  // note that AES Key Wrap always adds 8 bytes to the input data size.
+  const unsigned int input_length = PK11_GetKeyLength(key->key());
+  if (input_length < 16)
+    return Status::ErrorDataTooSmall();
+  if (input_length > UINT_MAX - 8)
+    return Status::ErrorDataTooLarge();
+  if (input_length % 8)
+    return Status::ErrorInvalidAesKwDataLength();
+
+  SECItem iv_item = MakeSECItemForBuffer(CryptoData(kAesIv, sizeof(kAesIv)));
+  crypto::ScopedSECItem param_item(
+      PK11_ParamFromIV(CKM_NSS_AES_KEY_WRAP, &iv_item));
+  if (!param_item)
+    return Status::ErrorUnexpected();
+
+  const unsigned int output_length = input_length + 8;
+  *buffer = blink::WebArrayBuffer::create(output_length, 1);
+  unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
+  SECItem wrapped_key_item = {siBuffer, buffer_data, output_length};
+
+  if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
+                                    param_item.get(),
+                                    wrapping_key->key(),
+                                    key->key(),
+                                    &wrapped_key_item)) {
+    return Status::Error();
+  }
+  if (output_length != wrapped_key_item.len)
+    return Status::ErrorUnexpected();
+
+  return Status::Success();
+}
+
+Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
+                         SymKey* wrapping_key,
+                         const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key) {
+  DCHECK_GE(wrapped_key_data.byte_length(), 24u);
+  DCHECK_EQ(wrapped_key_data.byte_length() % 8, 0u);
+
+  SECItem iv_item = MakeSECItemForBuffer(CryptoData(kAesIv, sizeof(kAesIv)));
+  crypto::ScopedSECItem param_item(
+      PK11_ParamFromIV(CKM_NSS_AES_KEY_WRAP, &iv_item));
+  if (!param_item)
+    return Status::ErrorUnexpected();
+
+  SECItem cipher_text = MakeSECItemForBuffer(wrapped_key_data);
+
+  // The plaintext length is always 64 bits less than the data size.
+  const unsigned int plaintext_length = wrapped_key_data.byte_length() - 8;
+
+  // Determine the proper NSS key properties from the input algorithm.
+  CK_MECHANISM_TYPE mechanism;
+  CK_FLAGS flags;
+  Status status =
+      WebCryptoAlgorithmToNssMechFlags(algorithm, &mechanism, &flags);
+  if (status.IsError())
+    return status;
+
+  crypto::ScopedPK11SymKey unwrapped_key(PK11_UnwrapSymKey(wrapping_key->key(),
+                                                           CKM_NSS_AES_KEY_WRAP,
+                                                           param_item.get(),
+                                                           &cipher_text,
+                                                           mechanism,
+                                                           flags,
+                                                           plaintext_length));
+  // TODO(padolph): Use NSS PORT_GetError() and friends to report a more
+  // accurate error, providing if doesn't leak any information to web pages
+  // about other web crypto users, key details, etc.
+  if (!unwrapped_key)
+    return Status::Error();
+
+  blink::WebCryptoKeyAlgorithm key_algorithm;
+  if (!CreateSecretKeyAlgorithm(algorithm, plaintext_length, &key_algorithm))
+    return Status::ErrorUnexpected();
+
+  *key = blink::WebCryptoKey::create(new SymKey(unwrapped_key.Pass()),
+                                     blink::WebCryptoKeyTypeSecret,
                                      extractable,
                                      key_algorithm,
                                      usage_mask);

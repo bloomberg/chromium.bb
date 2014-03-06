@@ -131,6 +131,23 @@ CONTENT_EXPORT Status
                  blink::WebCryptoKeyUsageMask usage_mask,
                  blink::WebCryptoKey* key);
 
+CONTENT_EXPORT Status
+    WrapKey(blink::WebCryptoKeyFormat format,
+            const blink::WebCryptoKey& wrapping_key,
+            const blink::WebCryptoKey& key_to_wrap,
+            const blink::WebCryptoAlgorithm& wrapping_algorithm,
+            blink::WebArrayBuffer* buffer);
+
+CONTENT_EXPORT Status
+    UnwrapKey(blink::WebCryptoKeyFormat format,
+              const CryptoData& wrapped_key_data,
+              const blink::WebCryptoKey& wrapping_key,
+              const blink::WebCryptoAlgorithm& wrapping_algorithm,
+              const blink::WebCryptoAlgorithm& algorithm_or_null,
+              bool extractable,
+              blink::WebCryptoKeyUsageMask usage_mask,
+              blink::WebCryptoKey* key);
+
 }  // namespace webcrypto
 
 }  // namespace content

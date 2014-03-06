@@ -112,6 +112,10 @@ Status Status::ErrorDataTooLarge() {
   return Status("The provided data is too large");
 }
 
+Status Status::ErrorDataTooSmall() {
+  return Status("The provided data is too small");
+}
+
 Status Status::ErrorUnsupported() {
   return Status("The requested operation is unsupported");
 }
@@ -126,6 +130,12 @@ Status Status::ErrorInvalidAesGcmTagLength() {
       "bits");
 }
 
+Status Status::ErrorInvalidAesKwDataLength() {
+  return Status(
+      "The AES-KW input data length is invalid: not a multiple of 8 "
+      "bytes");
+}
+
 Status Status::ErrorGenerateKeyPublicExponent() {
   return Status("The \"publicExponent\" is either empty, zero, or too large");
 }
@@ -133,6 +143,12 @@ Status Status::ErrorGenerateKeyPublicExponent() {
 Status Status::ErrorMissingAlgorithmImportRawKey() {
   return Status(
       "The key's algorithm must be specified when importing "
+      "raw-formatted key.");
+}
+
+Status Status::ErrorMissingAlgorithmUnwrapRawKey() {
+  return Status(
+      "The key's algorithm must be specified when unwrapping a "
       "raw-formatted key.");
 }
 

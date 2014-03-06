@@ -176,6 +176,25 @@ Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer);
 //  * |key| is non-null.
 Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer);
 
+// Preconditions:
+//  * |wrapping_key| is non-null
+//  * |key| is non-null
+Status WrapSymKeyAesKw(SymKey* wrapping_key,
+                       SymKey* key,
+                       blink::WebArrayBuffer* buffer);
+
+// Preconditions:
+//  * |wrapping_key| is non-null
+//  * |key| is non-null
+//  * |algorithm.id()| is for a symmetric key algorithm.
+//  * |wrapped_key_data| is at least 24 bytes and a multiple of 8 bytes
+Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
+                         SymKey* wrapping_key,
+                         const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key);
+
 }  // namespace platform
 
 }  // namespace webcrypto

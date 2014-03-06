@@ -388,6 +388,23 @@ Status ExportKeySpki(PublicKey* key, blink::WebArrayBuffer* buffer) {
   return Status::ErrorUnsupported();
 }
 
+Status WrapSymKeyAesKw(SymKey* wrapping_key,
+                       SymKey* key,
+                       blink::WebArrayBuffer* buffer) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
+Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
+                         SymKey* wrapping_key,
+                         const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
 }  // namespace platform
 
 }  // namespace webcrypto
