@@ -34,11 +34,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGScriptElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedByParser, bool alreadyStarted)
     : SVGElement(SVGNames::scriptTag, document)
     , SVGURIReference(this)

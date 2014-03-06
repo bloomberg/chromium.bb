@@ -70,8 +70,6 @@ private:
     RefPtr<SVGAnimatedBoolean> m_preserveAlpha;
     RefPtr<SVGAnimatedInteger> m_targetX;
     RefPtr<SVGAnimatedInteger> m_targetY;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

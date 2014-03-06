@@ -47,11 +47,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
     return entries;
 }
 
-// Animated property definitions
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGradientElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , SVGURIReference(this)

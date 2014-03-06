@@ -44,8 +44,6 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

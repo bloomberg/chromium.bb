@@ -51,8 +51,6 @@ protected:
     RefPtr<SVGAnimatedLengthList> m_dx;
     RefPtr<SVGAnimatedLengthList> m_dy;
     RefPtr<SVGAnimatedNumberList> m_rotate;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGTextPositioningElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 inline bool isSVGTextPositioningElement(const Node& node)

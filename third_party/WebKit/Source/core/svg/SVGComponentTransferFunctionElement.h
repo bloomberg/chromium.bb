@@ -60,8 +60,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_exponent;
     RefPtr<SVGAnimatedNumber> m_offset;
     RefPtr<SVGAnimatedEnumeration<ComponentTransferType> > m_type;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGComponentTransferFunctionElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

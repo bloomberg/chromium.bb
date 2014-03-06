@@ -32,10 +32,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFELightElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 SVGFELightElement::SVGFELightElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , m_azimuth(SVGAnimatedNumber::create(this, SVGNames::azimuthAttr, SVGNumber::create()))

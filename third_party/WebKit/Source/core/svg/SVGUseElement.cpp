@@ -51,12 +51,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGUseElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser)
     : SVGGraphicsElement(SVGNames::useTag, document)
     , SVGURIReference(this)

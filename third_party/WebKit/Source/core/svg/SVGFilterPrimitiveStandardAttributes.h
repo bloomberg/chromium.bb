@@ -83,8 +83,6 @@ private:
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedString> m_result;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 void invalidateFilterPrimitiveParent(SVGElement*);

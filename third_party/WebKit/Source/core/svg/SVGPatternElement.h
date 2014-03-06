@@ -80,8 +80,6 @@ private:
     RefPtr<SVGAnimatedTransformList> m_patternTransform;
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_patternUnits;
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_patternContentUnits;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPatternElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGPatternElement, hasTagName(SVGNames::patternTag));

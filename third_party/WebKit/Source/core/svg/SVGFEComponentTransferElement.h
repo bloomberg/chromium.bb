@@ -40,8 +40,6 @@ private:
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEComponentTransferElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

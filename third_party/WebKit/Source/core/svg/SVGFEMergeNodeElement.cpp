@@ -27,11 +27,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEMergeNodeElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     : SVGElement(SVGNames::feMergeNodeTag, document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))

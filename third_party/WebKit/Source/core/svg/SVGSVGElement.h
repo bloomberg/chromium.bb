@@ -164,8 +164,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSVGElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE;
 

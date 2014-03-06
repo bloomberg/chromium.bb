@@ -44,12 +44,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOp
     return entries;
 }
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFECompositeElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feCompositeTag, document)
     , m_k1(SVGAnimatedNumber::create(this, SVGNames::k1Attr, SVGNumber::create()))

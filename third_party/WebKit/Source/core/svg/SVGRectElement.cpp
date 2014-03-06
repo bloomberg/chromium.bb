@@ -29,11 +29,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGRectElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGRectElement::SVGRectElement(Document& document)
     : SVGGeometryElement(SVGNames::rectTag, document)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))

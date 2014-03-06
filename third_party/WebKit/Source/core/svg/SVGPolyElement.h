@@ -50,8 +50,6 @@ private:
 private:
     RefPtr<SVGAnimatedPointList> m_points;
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPolyElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 inline bool isSVGPolyElement(const Node& node)

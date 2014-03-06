@@ -41,9 +41,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
     return entries;
 }
 
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMarkerElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
-END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)

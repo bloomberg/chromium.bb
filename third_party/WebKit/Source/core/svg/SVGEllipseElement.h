@@ -54,8 +54,6 @@ private:
     RefPtr<SVGAnimatedLength> m_cy;
     RefPtr<SVGAnimatedLength> m_rx;
     RefPtr<SVGAnimatedLength> m_ry;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGEllipseElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGEllipseElement, hasTagName(SVGNames::ellipseTag));

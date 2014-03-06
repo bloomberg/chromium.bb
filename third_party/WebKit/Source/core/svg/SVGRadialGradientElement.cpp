@@ -32,12 +32,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGRadialGradientElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGradientElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document)
     , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth)))

@@ -50,8 +50,6 @@ private:
     RefPtr<SVGAnimatedNumberList> m_values;
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedEnumeration<ColorMatrixType> > m_type;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEColorMatrixElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

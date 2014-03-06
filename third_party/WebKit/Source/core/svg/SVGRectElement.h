@@ -58,8 +58,6 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedLength> m_rx;
     RefPtr<SVGAnimatedLength> m_ry;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGRectElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGRectElement, hasTagName(SVGNames::rectTag));

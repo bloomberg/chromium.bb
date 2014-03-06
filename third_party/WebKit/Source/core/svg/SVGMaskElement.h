@@ -63,8 +63,6 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_maskUnits;
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_maskContentUnits;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMaskElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGMaskElement, hasTagName(SVGNames::maskTag));

@@ -52,8 +52,6 @@ private:
     RefPtr<SVGAnimatedNumberOptionalNumber> m_radius;
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedEnumeration<MorphologyOperatorType> > m_svgOperator;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEMorphologyElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

@@ -45,8 +45,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_dx;
     RefPtr<SVGAnimatedNumber> m_dy;
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEOffsetElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

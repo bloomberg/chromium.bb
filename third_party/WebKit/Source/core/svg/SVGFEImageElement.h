@@ -62,8 +62,6 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEImageElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     ResourcePtr<ImageResource> m_cachedImage;
 };

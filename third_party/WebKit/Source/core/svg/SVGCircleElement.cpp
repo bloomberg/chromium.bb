@@ -29,11 +29,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCircleElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(SVGNames::circleTag, document)
     , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth)))

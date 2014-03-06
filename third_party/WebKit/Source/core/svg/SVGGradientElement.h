@@ -71,8 +71,6 @@ private:
     RefPtr<SVGAnimatedTransformList> m_gradientTransform;
     RefPtr<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGradientElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 inline bool isSVGGradientElement(const Node& node)

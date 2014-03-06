@@ -73,8 +73,6 @@ private:
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGImageElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     SVGImageLoader m_imageLoader;
     bool m_needsLoaderURIUpdate : 1;

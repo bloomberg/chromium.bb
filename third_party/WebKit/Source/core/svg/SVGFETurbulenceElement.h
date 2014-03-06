@@ -64,8 +64,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGStitchOptions> > m_stitchTiles;
     RefPtr<SVGAnimatedEnumeration<TurbulenceType> > m_type;
     RefPtr<SVGAnimatedInteger> m_numOctaves;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFETurbulenceElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

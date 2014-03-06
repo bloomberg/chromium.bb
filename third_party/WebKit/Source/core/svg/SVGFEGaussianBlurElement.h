@@ -47,8 +47,6 @@ private:
 
     RefPtr<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEGaussianBlurElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

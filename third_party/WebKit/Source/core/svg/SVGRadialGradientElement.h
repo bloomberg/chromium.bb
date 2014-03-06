@@ -59,8 +59,6 @@ private:
     RefPtr<SVGAnimatedLength> m_fx;
     RefPtr<SVGAnimatedLength> m_fy;
     RefPtr<SVGAnimatedLength> m_fr;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGRadialGradientElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGRadialGradientElement, hasTagName(SVGNames::radialGradientTag));

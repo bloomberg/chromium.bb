@@ -55,10 +55,6 @@ private:
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
     RefPtr<SVGAnimatedString> m_svgTarget;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)
-        // This declaration used to define a non-virtual "String& target() const" method, that clashes with "virtual String Element::target() const".
-        // That's why it has been renamed to "svgTarget", the CodeGenerators take care of calling svgTargetAnimated() instead of targetAnimated(), see CodeGenerator.pm.
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

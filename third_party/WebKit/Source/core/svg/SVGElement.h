@@ -25,7 +25,6 @@
 #include "core/dom/Element.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/Timer.h"
 #include "wtf/HashMap.h"
@@ -217,8 +216,6 @@ private:
     unsigned m_hasSVGRareData : 1;
 
     RefPtr<SVGAnimatedString> m_className;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 struct SVGAttributeHashTranslator {

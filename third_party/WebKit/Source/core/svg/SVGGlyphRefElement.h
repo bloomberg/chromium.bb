@@ -55,8 +55,6 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGlyphRefElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     float m_x;
     float m_y;

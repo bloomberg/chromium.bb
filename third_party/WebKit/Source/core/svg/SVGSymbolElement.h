@@ -45,8 +45,6 @@ private:
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSymbolElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

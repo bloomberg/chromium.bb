@@ -82,8 +82,6 @@ private:
     RefPtr<SVGAnimatedLength> m_textLength;
     bool m_textLengthIsSpecifiedByUser;
     RefPtr<SVGAnimatedEnumeration<SVGLengthAdjustType> > m_lengthAdjust;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGTextContentElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 inline bool isSVGTextContentElement(const Node& node)

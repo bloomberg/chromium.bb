@@ -32,11 +32,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document)
     , SVGURIReference(this)

@@ -76,8 +76,6 @@ protected:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
     RefPtr<SVGAnimatedTransformList> m_transform;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGraphicsElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
 private:
     virtual bool isSVGGraphicsElement() const OVERRIDE FINAL { return true; }

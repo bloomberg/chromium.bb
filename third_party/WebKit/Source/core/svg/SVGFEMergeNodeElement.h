@@ -42,8 +42,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEMergeNodeElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGFEMergeNodeElement, hasTagName(SVGNames::feMergeNodeTag));

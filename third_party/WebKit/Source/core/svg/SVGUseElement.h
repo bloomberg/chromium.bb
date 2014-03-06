@@ -103,8 +103,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGUseElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     bool resourceIsStillLoading();
     Document* externalDocument() const;

@@ -52,8 +52,6 @@ private:
     RefPtr<SVGAnimatedLength> m_cx;
     RefPtr<SVGAnimatedLength> m_cy;
     RefPtr<SVGAnimatedLength> m_r;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGCircleElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGCircleElement, hasTagName(SVGNames::circleTag));

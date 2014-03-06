@@ -54,8 +54,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y1;
     RefPtr<SVGAnimatedLength> m_x2;
     RefPtr<SVGAnimatedLength> m_y2;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGLineElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGLineElement, hasTagName(SVGNames::lineTag));

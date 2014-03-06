@@ -31,12 +31,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFESpecularLightingElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feSpecularLightingTag, document)
     , m_specularConstant(SVGAnimatedNumber::create(this, SVGNames::specularConstantAttr, SVGNumber::create(1)))

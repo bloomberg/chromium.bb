@@ -54,8 +54,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_dy;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDropShadowElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

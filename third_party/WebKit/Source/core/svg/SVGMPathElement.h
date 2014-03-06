@@ -56,8 +56,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
     void notifyParentOfPathChange(ContainerNode*);
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMPathElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGMPathElement, hasTagName(SVGNames::mpathTag));

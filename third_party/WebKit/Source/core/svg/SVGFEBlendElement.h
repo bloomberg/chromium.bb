@@ -48,8 +48,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;
     RefPtr<SVGAnimatedEnumeration<BlendModeType> > m_mode;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEBlendElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

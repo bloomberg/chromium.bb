@@ -56,8 +56,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_surfaceScale;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDiffuseLightingElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGFEDiffuseLightingElement, hasTagName(SVGNames::feDiffuseLightingTag));

@@ -83,8 +83,6 @@ private:
     RefPtr<SVGAnimatedLength> m_startOffset;
     RefPtr<SVGAnimatedEnumeration<SVGTextPathMethodType> > m_method;
     RefPtr<SVGAnimatedEnumeration<SVGTextPathSpacingType> > m_spacing;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGTextPathElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGTextPathElement, hasTagName(SVGNames::textPathTag));

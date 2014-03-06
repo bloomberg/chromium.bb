@@ -92,8 +92,6 @@ private:
     RefPtr<SVGAnimatedLength> m_markerHeight;
     RefPtr<SVGAnimatedAngle> m_orientAngle;
     RefPtr<SVGAnimatedEnumeration<SVGMarkerUnitsType> > m_markerUnits;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMarkerElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGMarkerElement, hasTagName(SVGNames::markerTag));

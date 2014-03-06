@@ -58,8 +58,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
     RefPtr<SVGAnimatedString> m_in2;
     RefPtr<SVGAnimatedEnumeration<CompositeOperationType> > m_svgOperator;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFECompositeElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

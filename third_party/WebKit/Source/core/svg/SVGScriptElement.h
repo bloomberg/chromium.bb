@@ -78,8 +78,6 @@ private:
 
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGScriptElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     Timer<SVGElement> m_svgLoadEventTimer;
     OwnPtr<ScriptLoader> m_loader;

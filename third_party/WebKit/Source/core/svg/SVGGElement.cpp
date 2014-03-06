@@ -30,12 +30,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 SVGGElement::SVGGElement(Document& document, ConstructionType constructionType)
     : SVGGraphicsElement(SVGNames::gTag, document, constructionType)
 {

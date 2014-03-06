@@ -51,12 +51,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
     return entries;
 }
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextPathElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTextContentElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document)
     , SVGURIReference(this)

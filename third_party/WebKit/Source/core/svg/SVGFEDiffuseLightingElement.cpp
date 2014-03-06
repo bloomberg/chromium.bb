@@ -30,12 +30,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDiffuseLightingElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDiffuseLightingTag, document)
     , m_diffuseConstant(SVGAnimatedNumber::create(this, SVGNames::diffuseConstantAttr, SVGNumber::create(1)))

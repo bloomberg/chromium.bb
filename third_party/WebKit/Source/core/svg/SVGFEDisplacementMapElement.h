@@ -55,8 +55,6 @@ private:
     RefPtr<SVGAnimatedString> m_in2;
     RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_xChannelSelector;
     RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_yChannelSelector;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDisplacementMapElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

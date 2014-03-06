@@ -30,11 +30,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMPathElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(SVGNames::mpathTag, document)
     , SVGURIReference(this)

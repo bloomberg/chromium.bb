@@ -28,12 +28,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGlyphRefElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
     : SVGElement(SVGNames::glyphRefTag, document)
     , SVGURIReference(this)

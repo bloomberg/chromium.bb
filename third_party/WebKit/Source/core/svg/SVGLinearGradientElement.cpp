@@ -33,11 +33,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGLinearGradientElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGradientElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     : SVGGradientElement(SVGNames::linearGradientTag, document)
     , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth)))

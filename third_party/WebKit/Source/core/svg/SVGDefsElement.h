@@ -35,8 +35,6 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGDefsElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 } // namespace WebCore

@@ -29,11 +29,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCursorElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
     , SVGTests(this)

@@ -48,8 +48,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
     RefPtr<SVGAnimatedNumber> m_offset;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGStopElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 inline bool isSVGStopElement(const Node& node)

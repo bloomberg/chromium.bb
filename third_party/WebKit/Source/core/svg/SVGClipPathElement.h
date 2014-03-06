@@ -49,8 +49,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGClipPathElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGClipPathElement, hasTagName(SVGNames::clipPathTag));

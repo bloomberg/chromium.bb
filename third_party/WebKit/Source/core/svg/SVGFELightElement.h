@@ -77,8 +77,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_pointsAtZ;
     RefPtr<SVGAnimatedNumber> m_specularExponent;
     RefPtr<SVGAnimatedNumber> m_limitingConeAngle;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFELightElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 inline bool isSVGFELightElement(const Node& node)

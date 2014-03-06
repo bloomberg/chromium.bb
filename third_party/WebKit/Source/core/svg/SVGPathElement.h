@@ -112,8 +112,6 @@ private:
 
     RefPtr<SVGAnimatedNumber> m_pathLength;
     RefPtr<SVGAnimatedPath> m_pathSegList;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPathElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGPathElement, hasTagName(SVGNames::pathTag));

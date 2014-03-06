@@ -59,8 +59,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_surfaceScale;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
     RefPtr<SVGAnimatedString> m_in1;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFESpecularLightingElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGFESpecularLightingElement, hasTagName(SVGNames::feSpecularLightingTag));

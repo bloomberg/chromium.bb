@@ -27,12 +27,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGDefsElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGDefsElement::SVGDefsElement(Document& document)
     : SVGGraphicsElement(SVGNames::defsTag, document)
 {

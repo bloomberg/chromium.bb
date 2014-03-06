@@ -81,8 +81,6 @@ private:
     void addPairsToKerningTable(const SVGKerningPair&, KerningTable&);
     void buildKerningTable(const KerningPairVector&, KerningTable&);
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFontElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
     KerningTable m_horizontalKerningTable;
     KerningTable m_verticalKerningTable;

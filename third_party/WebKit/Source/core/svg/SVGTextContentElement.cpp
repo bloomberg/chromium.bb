@@ -48,8 +48,6 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAd
     return entries;
 }
 
-// Animated property definitions
-
 // SVGTextContentElement's 'textLength' attribute needs special handling.
 // It should return getComputedTextLength() when textLength is not specified manually.
 class SVGAnimatedTextLength FINAL : public SVGAnimatedLength {
@@ -75,9 +73,6 @@ private:
     }
 };
 
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextContentElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
-END_REGISTER_ANIMATED_PROPERTIES
 
 SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Document& document)
     : SVGGraphicsElement(tagName, document)

@@ -33,12 +33,6 @@
 
 namespace WebCore {
 
-// Animated property definitions
-
-BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFontElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
-END_REGISTER_ANIMATED_PROPERTIES
-
 inline SVGFontElement::SVGFontElement(Document& document)
     : SVGElement(SVGNames::fontTag, document)
     , m_missingGlyph(0)

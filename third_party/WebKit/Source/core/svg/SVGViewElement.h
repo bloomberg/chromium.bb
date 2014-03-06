@@ -51,8 +51,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     RefPtr<SVGStaticStringList> m_viewTarget;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGViewElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGViewElement, hasTagName(SVGNames::viewTag));
