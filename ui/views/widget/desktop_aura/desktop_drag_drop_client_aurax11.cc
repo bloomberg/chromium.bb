@@ -682,6 +682,8 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
 }
 
 void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
+  if (source_current_window_ != None)
+    SendXdndLeave(source_current_window_);
   target_current_context_.reset();
 }
 
@@ -691,8 +693,7 @@ void DesktopDragDropClientAuraX11::DragTranslate(
     scoped_ptr<ui::DropTargetEvent>* event,
     aura::client::DragDropDelegate** delegate) {
   gfx::Point root_location = root_window_location;
-  root_window_->GetHost()->ConvertPointFromNativeScreen(
-      &root_location);
+  root_window_->GetHost()->ConvertPointFromNativeScreen(&root_location);
   aura::Window* target_window =
       root_window_->GetEventHandlerForPoint(root_location);
   bool target_window_changed = false;
