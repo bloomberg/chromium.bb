@@ -249,12 +249,6 @@ void BroadcastMountCompletedEvent(
       profile, volume_info, &event.volume_metadata);
   event.is_remounting = is_remounting;
 
-  if (!volume_info.mount_path.empty() &&
-      event.volume_metadata.mount_path.empty()) {
-    event.status =
-        file_browser_private::MOUNT_COMPLETED_STATUS_ERROR_PATH_UNMOUNTED;
-  }
-
   BroadcastEvent(
       profile,
       file_browser_private::OnMountCompleted::kEventName,

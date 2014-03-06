@@ -544,57 +544,61 @@ VolumeManager.prototype.initialize_ = function(callback) {
  */
 VolumeManager.prototype.onMountCompleted_ = function(event) {
   this.mountQueue_.run(function(callback) {
-    if (event.eventType === 'mount') {
-      var requestKey = this.makeRequestKey_(
-          'mount',
-          event.volumeMetadata.sourcePath);
+    switch (event.eventType) {
+      case 'mount':
+        var requestKey = this.makeRequestKey_(
+            'mount',
+            event.volumeMetadata.sourcePath);
 
-      // TODO(mtomasz): Migrate to volumeId once possible.
-      if (event.volumeMetadata.mountPath) {
         var error = event.status === 'success' ? '' : event.status;
-        volumeManagerUtil.createVolumeInfo(
-            event.volumeMetadata,
-            function(volumeInfo) {
-              this.volumeInfoList.add(volumeInfo);
-              this.finishRequest_(requestKey, event.status, volumeInfo);
-              if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
-                // Update the network connection status, because until the
-                // drive is initialized, the status is set to not ready.
-                // TODO(hidehiko): The connection status should be migrated into
-                // VolumeMetadata.
-                this.onDriveConnectionStatusChanged_();
-              }
-              callback();
-            }.bind(this));
-      } else {
-        console.warn('No mount path.');
-        this.finishRequest_(requestKey, event.status);
-        callback();
-      }
-    } else if (event.eventType === 'unmount') {
-      var volumeId = event.volumeMetadata.volumeId;
-      var status = event.status;
-      if (status === util.VolumeError.PATH_UNMOUNTED) {
-        console.warn('Volume already unmounted: ', volumeId);
-        status = 'success';
-      }
-      var requestKey = this.makeRequestKey_('unmount', volumeId);
-      var requested = requestKey in this.requests_;
-      var volumeInfoIndex =
-          this.volumeInfoList.findIndex(volumeId);
-      var volumeInfo = volumeInfoIndex !== -1 ?
-          this.volumeInfoList.item(volumeInfoIndex) : null;
-      if (event.status === 'success' && !requested && volumeInfo) {
-        console.warn('Mounted volume without a request: ', volumeId);
-        var e = new Event('externally-unmounted');
-        e.volumeInfo = volumeInfo;
-        this.dispatchEvent(e);
-      }
-      this.finishRequest_(requestKey, status);
+        if (!error || event.status === 'error_unknown_filesystem') {
+          volumeManagerUtil.createVolumeInfo(
+              event.volumeMetadata,
+              function(volumeInfo) {
+                this.volumeInfoList.add(volumeInfo);
+                this.finishRequest_(requestKey, event.status, volumeInfo);
 
-      if (event.status === 'success')
-        this.volumeInfoList.remove(event.volumeMetadata.volumeId);
-      callback();
+                if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
+                  // Update the network connection status, because until the
+                  // drive is initialized, the status is set to not ready.
+                  // TODO(mtomasz): The connection status should be migrated
+                  // into VolumeMetadata.
+                  this.onDriveConnectionStatusChanged_();
+                }
+                callback();
+              }.bind(this));
+        } else {
+          console.warn('Failed to mount a volume: ' + event.status);
+          this.finishRequest_(requestKey, event.status);
+          callback();
+        }
+        break;
+
+      case 'unmount':
+        var volumeId = event.volumeMetadata.volumeId;
+        var status = event.status;
+        if (status === util.VolumeError.PATH_UNMOUNTED) {
+          console.warn('Volume already unmounted: ', volumeId);
+          status = 'success';
+        }
+        var requestKey = this.makeRequestKey_('unmount', volumeId);
+        var requested = requestKey in this.requests_;
+        var volumeInfoIndex =
+            this.volumeInfoList.findIndex(volumeId);
+        var volumeInfo = volumeInfoIndex !== -1 ?
+            this.volumeInfoList.item(volumeInfoIndex) : null;
+        if (event.status === 'success' && !requested && volumeInfo) {
+          console.warn('Mounted volume without a request: ' + volumeId);
+          var e = new Event('externally-unmounted');
+          e.volumeInfo = volumeInfo;
+          this.dispatchEvent(e);
+        }
+
+        this.finishRequest_(requestKey, status);
+        if (event.status === 'success')
+          this.volumeInfoList.remove(event.volumeMetadata.volumeId);
+        callback();
+        break;
     }
   }.bind(this));
 };
@@ -706,7 +710,6 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
       return null;
     }
   } else {
-    // Otherwise, root path is same with a mount path of the volume.
     switch (volumeInfo.volumeType) {
       case util.VolumeType.DOWNLOADS:
         rootType = RootType.DOWNLOADS;

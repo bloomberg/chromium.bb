@@ -127,15 +127,6 @@ void VolumeInfoToVolumeMetadata(
   DCHECK(volume_metadata);
   DCHECK(!volume_info.mount_path.empty());
 
-  // Convert mount point path to relative path with the external file system
-  // exposed within File API.
-  base::FilePath relative_mount_path;
-  if (ConvertAbsoluteFilePathToRelativeFileSystemPath(
-          profile, kFileManagerAppId, base::FilePath(volume_info.mount_path),
-          &relative_mount_path)) {
-    volume_metadata->mount_path = "/" + relative_mount_path.AsUTF8Unsafe();
-  }
-
   volume_metadata->volume_id = volume_info.volume_id;
 
   // TODO(kinaba): fill appropriate information once multi-profile support is

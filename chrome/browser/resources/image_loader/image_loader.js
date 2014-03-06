@@ -42,8 +42,7 @@ function ImageLoader() {
     // Listen for mount events, and grant permissions to volumes being mounted.
     chrome.fileBrowserPrivate.onMountCompleted.addListener(
         function(event) {
-          // TODO(mtomasz): Get rid of mountPath when possible.
-          if (event.eventType == 'mount' && event.volumeMetadata.mountPath) {
+          if (event.eventType == 'mount' && event.status == 'success') {
             chrome.fileBrowserPrivate.requestFileSystem(
                 event.volumeMetadata.volumeId, function() {});
           }

@@ -5,7 +5,6 @@
 // These have to be sync'd with file_browser_private_apitest.cc
 var expectedVolume1 = {
   volumeId: 'removable:mount_path1',
-  mountPath: '/removable/mount_path1',
   sourcePath: 'device_path1',
   volumeType: 'removable',
   deviceType: 'usb',
@@ -18,7 +17,6 @@ var expectedVolume1 = {
 
 var expectedVolume2 = {
   volumeId: 'removable:mount_path2',
-  mountPath: '/removable/mount_path2',
   sourcePath: 'device_path2',
   volumeType: 'removable',
   deviceType: 'mobile',
@@ -31,7 +29,6 @@ var expectedVolume2 = {
 
 var expectedVolume3 = {
   volumeId: 'removable:mount_path3',
-  mountPath: '/removable/mount_path3',
   sourcePath: 'device_path3',
   volumeType: 'removable',
   deviceType: 'optical',
@@ -44,7 +41,6 @@ var expectedVolume3 = {
 
 var expectedDownloadsVolume = {
   volumeId: /^downloads:Downloads[^\/]*$/,
-  mountPath: /^\/Downloads[^\/]*$/,
   volumeType: 'downloads',
   isReadOnly: false,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
@@ -52,7 +48,6 @@ var expectedDownloadsVolume = {
 
 var expectedDriveVolume = {
   volumeId: /^drive:drive[^\/]*$/,
-  mountPath: /^\/drive[^\/]*$/,
   sourcePath: /^\/special\/drive[^\/]*$/,
   volumeType: 'drive',
   isReadOnly: false,
@@ -61,7 +56,6 @@ var expectedDriveVolume = {
 
 var expectedArchiveVolume = {
   volumeId: 'archive:archive_mount_path',
-  mountPath: '/archive/archive_mount_path',
   sourcePath: /removable\/mount_path3\/archive.zip$/,
   volumeType: 'archive',
   isReadOnly: true,

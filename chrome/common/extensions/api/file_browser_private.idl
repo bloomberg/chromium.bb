@@ -212,11 +212,8 @@ dictionary VolumeMetadata {
 
   // Description of the profile where the volume belongs.
   // TODO(hirono): Remove the property because of the design change of
-  // multi-profile suuport.
+  // multi-profile support.
   ProfileInfo profile;
-
-  // Disk volume mount point path.
-  DOMString mountPath;
 
   // The path to the mounted device, archive file or network resource.
   DOMString? sourcePath;
