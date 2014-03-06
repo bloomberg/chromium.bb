@@ -473,7 +473,12 @@ void ExtensionActionStorageManager::ReadFromStorage(
 
   ExtensionAction* browser_action =
       ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension);
-  CHECK(browser_action);
+  if (!browser_action) {
+    // This can happen if the extension is updated between startup and when the
+    // storage read comes back, and the update removes the browser action.
+    // http://crbug.com/349371
+    return;
+  }
 
   // Don't load values from storage if the extension has updated a value
   // already. The extension may have only updated some of the values, but
