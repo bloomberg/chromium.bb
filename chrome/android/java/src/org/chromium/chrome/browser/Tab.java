@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *    their own native pointer reference, but Tab#destroy() will handle deleting the native
  *    object.
  */
-public abstract class Tab implements NavigationClient {
+public class Tab implements NavigationClient {
     public static final int INVALID_TAB_ID = -1;
 
     /** Used for automatically generating tab ids. */
@@ -402,7 +402,14 @@ public abstract class Tab implements NavigationClient {
      * Create an {@code AutoLoginProcessor} to decide how to handle login
      * requests.
      */
-    protected abstract AutoLoginProcessor createAutoLoginProcessor();
+    protected AutoLoginProcessor createAutoLoginProcessor() {
+        return new AutoLoginProcessor() {
+            @Override
+            public void processAutoLoginResult(String accountName, String authToken,
+                    boolean success, String result) {
+            }
+        };
+    }
 
     /**
      * Prints the current page.
