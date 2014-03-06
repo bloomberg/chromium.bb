@@ -188,6 +188,16 @@ namespace WTF {
         return p.get();
     }
 
+    template<typename T> class RefPtrValuePeeker {
+    public:
+        ALWAYS_INLINE RefPtrValuePeeker(T* p): m_ptr(p) { }
+        template<typename U> RefPtrValuePeeker(const RefPtr<U>& p): m_ptr(p.get()) { }
+        template<typename U> RefPtrValuePeeker(const PassRefPtr<U>& p): m_ptr(p.get()) { }
+        ALWAYS_INLINE operator T*() const { return m_ptr; }
+    private:
+        T* m_ptr;
+    };
+
 } // namespace WTF
 
 using WTF::RefPtr;

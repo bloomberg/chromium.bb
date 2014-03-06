@@ -99,7 +99,6 @@
             'RefCountedLeakCounter.cpp',
             'RefCountedLeakCounter.h',
             'RefPtr.h',
-            'RefPtrHashMap.h',
             'RetainPtr.h',
             'SHA1.cpp',
             'SHA1.h',

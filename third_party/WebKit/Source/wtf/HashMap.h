@@ -526,6 +526,4 @@ namespace WTF {
 
 using WTF::HashMap;
 
-#include "wtf/RefPtrHashMap.h"
-
 #endif /* WTF_HashMap_h */

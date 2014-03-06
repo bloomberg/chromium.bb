@@ -170,7 +170,7 @@ namespace WTF {
         static const bool hasIsEmptyValueFunction = true;
         static bool isEmptyValue(const RefPtr<P>& value) { return !value; }
 
-        typedef const RefPtr<P>& PeekInType;
+        typedef RefPtrValuePeeker<P> PeekInType;
         typedef RefPtr<P>* IteratorGetType;
         typedef const RefPtr<P>* IteratorConstGetType;
         typedef RefPtr<P>& IteratorReferenceType;
