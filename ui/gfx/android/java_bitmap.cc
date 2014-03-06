@@ -41,14 +41,6 @@ bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static ScopedJavaLocalRef<jobject> CreateJavaBitmap(int width,
-                                                    int height,
-                                                    int bitmap_config) {
-
-  return Java_BitmapHelper_createBitmap(
-      AttachCurrentThread(), width, height, bitmap_config);
-}
-
 static int SkBitmapConfigToBitmapFormat(SkBitmap::Config bitmap_config) {
   switch (bitmap_config) {
     case SkBitmap::kA8_Config:
@@ -66,14 +58,21 @@ static int SkBitmapConfigToBitmapFormat(SkBitmap::Config bitmap_config) {
   }
 }
 
+ScopedJavaLocalRef<jobject> CreateJavaBitmap(int width,
+                                             int height,
+                                             SkBitmap::Config bitmap_config) {
+  int java_bitmap_config = SkBitmapConfigToBitmapFormat(bitmap_config);
+  return Java_BitmapHelper_createBitmap(
+      AttachCurrentThread(), width, height, java_bitmap_config);
+}
+
 ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   DCHECK(skbitmap);
-  SkBitmap::Config config = skbitmap->getConfig();
-  DCHECK((config == SkBitmap::kRGB_565_Config) ||
-         (config == SkBitmap::kARGB_8888_Config));
-  int java_bitmap_config = SkBitmapConfigToBitmapFormat(config);
+  SkBitmap::Config bitmap_config = skbitmap->getConfig();
+  DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
+         (bitmap_config == SkBitmap::kARGB_8888_Config));
   ScopedJavaLocalRef<jobject> jbitmap = CreateJavaBitmap(
-      skbitmap->width(), skbitmap->height(), java_bitmap_config);
+      skbitmap->width(), skbitmap->height(), bitmap_config);
   SkAutoLockPixels src_lock(*skbitmap);
   JavaBitmap dst_lock(jbitmap.obj());
   void* src_pixels = skbitmap->getPixels();

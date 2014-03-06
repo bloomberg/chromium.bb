@@ -49,6 +49,13 @@ class GFX_EXPORT JavaBitmap {
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
 
+// Allocates a Java-backed bitmap (android.graphics.Bitmap) with the given size
+// and configuration.
+GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
+    int width,
+    int height,
+    SkBitmap::Config bitmap_config);
+
 GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
 
