@@ -93,4 +93,8 @@ int UDPServerSocket::SetDiffServCodePoint(DiffServCodePoint dscp) {
   return socket_.SetDiffServCodePoint(dscp);
 }
 
+void UDPServerSocket::DetachFromThread() {
+  socket_.DetachFromThread();
+}
+
 }  // namespace net

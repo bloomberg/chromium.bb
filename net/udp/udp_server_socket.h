@@ -45,6 +45,7 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   virtual int SetMulticastTimeToLive(int time_to_live) OVERRIDE;
   virtual int SetMulticastLoopbackMode(bool loopback) OVERRIDE;
   virtual int SetDiffServCodePoint(DiffServCodePoint dscp) OVERRIDE;
+  virtual void DetachFromThread() OVERRIDE;
 
  private:
   UDPSocket socket_;

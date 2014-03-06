@@ -160,6 +160,10 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return net::ERR_NOT_IMPLEMENTED;
   }
 
+  virtual void DetachFromThread() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
  private:
   net::IPEndPoint address_;
   std::deque<UDPPacket>* sent_packets_;

@@ -810,4 +810,8 @@ int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
   return ERR_NOT_IMPLEMENTED;
 }
 
+void UDPSocketWin::DetachFromThread() {
+  base::NonThreadSafe::DetachFromThread();
+}
+
 }  // namespace net
