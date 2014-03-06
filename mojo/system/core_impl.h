@@ -117,15 +117,6 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
   // handle is marked busy. If it is, it fails (with |MOJO_RESULT_BUSY|). This
   // prevents |WriteMessage()| from sending a handle that has been closed (or
   // learning about this too late).
-  //
-  // TODO(vtl): Move this implementation note.
-  // To properly cancel waiters and avoid other races, |WriteMessage()| does not
-  // transfer dispatchers from one handle to another, even when sending a
-  // message in-process. Instead, it must transfer the "contents" of the
-  // dispatcher to a new dispatcher, and then close the old dispatcher. If this
-  // isn't done, in the in-process case, calls on the old handle may complete
-  // after the the message has been received and a new handle created (and
-  // possibly even after calls have been made on the new handle).
   struct HandleTableEntry {
     HandleTableEntry();
     explicit HandleTableEntry(const scoped_refptr<Dispatcher>& dispatcher);
