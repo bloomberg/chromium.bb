@@ -67,7 +67,7 @@ Length animatableValueToLength(const AnimatableValue* value, const StyleResolver
 {
     if (value->isLength())
         return toAnimatableLength(value)->toLength(state.cssToLengthConversionData(), range);
-    RefPtrWillBeRawPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
+    RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
     CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
     return cssPrimitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData());
 }
@@ -78,7 +78,7 @@ BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* valu
         return BorderImageLength(toAnimatableLength(value)->toLength(state.cssToLengthConversionData(), NonNegativeValues));
     if (value->isDouble())
         return BorderImageLength(clampTo<double>(toAnimatableDouble(value)->toDouble(), 0));
-    RefPtrWillBeRawPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
+    RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
     CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
     return BorderImageLength(cssPrimitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData()));
 }

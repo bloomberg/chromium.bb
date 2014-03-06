@@ -50,12 +50,8 @@ static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
 PassRefPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
 {
     ASSERT(count <= MaxArraySize);
-#if ENABLE(OILPAN)
-    void* slot = Heap::allocate<StylePropertySet>(sizeForImmutableStylePropertySetWithPropertyCount(count));
-#else
     void* slot = WTF::fastMalloc(sizeForImmutableStylePropertySetWithPropertyCount(count));
-#endif // ENABLE(OILPAN)
-    return adoptRefWillBeRefCountedGarbageCollected(new (slot) ImmutableStylePropertySet(properties, count, cssParserMode));
+    return adoptRef(new (slot) ImmutableStylePropertySet(properties, count, cssParserMode));
 }
 
 PassRefPtr<ImmutableStylePropertySet> StylePropertySet::immutableCopyIfNeeded() const
@@ -83,7 +79,7 @@ ImmutableStylePropertySet::ImmutableStylePropertySet(const CSSProperty* properti
     : StylePropertySet(cssParserMode, length)
 {
     StylePropertyMetadata* metadataArray = const_cast<StylePropertyMetadata*>(this->metadataArray());
-    RawPtrWillBeMember<CSSValue>* valueArray = const_cast<RawPtrWillBeMember<CSSValue>*>(this->valueArray());
+    CSSValue** valueArray = const_cast<CSSValue**>(this->valueArray());
     for (unsigned i = 0; i < m_arraySize; ++i) {
         metadataArray[i] = properties[i].metadata();
         valueArray[i] = properties[i].value();
@@ -93,11 +89,9 @@ ImmutableStylePropertySet::ImmutableStylePropertySet(const CSSProperty* properti
 
 ImmutableStylePropertySet::~ImmutableStylePropertySet()
 {
-#if !ENABLE(OILPAN)
-    RawPtrWillBeMember<CSSValue>* valueArray = const_cast<RawPtrWillBeMember<CSSValue>*>(this->valueArray());
+    CSSValue** valueArray = const_cast<CSSValue**>(this->valueArray());
     for (unsigned i = 0; i < m_arraySize; ++i)
         valueArray[i]->deref();
-#endif
 }
 
 int ImmutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
@@ -114,14 +108,6 @@ int ImmutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     }
 
     return -1;
-}
-
-void ImmutableStylePropertySet::traceAfterDispatch(Visitor* visitor)
-{
-    const RawPtrWillBeMember<CSSValue>* values = valueArray();
-    for (unsigned i = 0; i < m_arraySize; i++)
-        visitor->trace(values[i]);
-    StylePropertySet::traceAfterDispatch(visitor);
 }
 
 MutableStylePropertySet::MutableStylePropertySet(const StylePropertySet& other)
@@ -151,22 +137,6 @@ PassRefPtrWillBeRawPtr<CSSValue> StylePropertySet::getPropertyCSSValue(CSSProper
     if (foundPropertyIndex == -1)
         return nullptr;
     return propertyAt(foundPropertyIndex).value();
-}
-
-void StylePropertySet::trace(Visitor* visitor)
-{
-    if (m_isMutable)
-        toMutableStylePropertySet(this)->traceAfterDispatch(visitor);
-    else
-        toImmutableStylePropertySet(this)->traceAfterDispatch(visitor);
-}
-
-void StylePropertySet::finalize()
-{
-    if (m_isMutable)
-        toMutableStylePropertySet(this)->~MutableStylePropertySet();
-    else
-        toImmutableStylePropertySet(this)->~ImmutableStylePropertySet();
 }
 
 bool MutableStylePropertySet::removeShorthandProperty(CSSPropertyID propertyID)
@@ -349,7 +319,7 @@ void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, S
     parser.parseDeclaration(this, styleDeclaration, 0, contextStyleSheet);
 }
 
-void MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProperty, 256>& properties)
+void MutableStylePropertySet::addParsedProperties(const Vector<CSSProperty, 256>& properties)
 {
     m_propertyVector.reserveCapacity(m_propertyVector.size() + properties.size());
     for (unsigned i = 0; i < properties.size(); ++i)
@@ -449,7 +419,7 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
     for (unsigned i = 0; i < length; ++i)
         toRemove.add(set[i]);
 
-    WillBeHeapVector<CSSProperty> newProperties;
+    Vector<CSSProperty> newProperties;
     newProperties.reserveInitialCapacity(m_propertyVector.size());
 
     unsigned size = m_propertyVector.size();
@@ -514,12 +484,12 @@ void MutableStylePropertySet::removeEquivalentProperties(const CSSStyleDeclarati
 
 PassRefPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MutableStylePropertySet(*this));
+    return adoptRef(new MutableStylePropertySet(*this));
 }
 
 PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
-    WillBeHeapVector<CSSProperty, 256> list;
+    Vector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
         RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
@@ -558,12 +528,6 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     return -1;
 }
 
-void MutableStylePropertySet::traceAfterDispatch(Visitor* visitor)
-{
-    visitor->trace(m_propertyVector);
-    StylePropertySet::traceAfterDispatch(visitor);
-}
-
 unsigned StylePropertySet::averageSizeInBytes()
 {
     // Please update this if the storage scheme changes so that this longer reflects the actual size.
@@ -571,7 +535,7 @@ unsigned StylePropertySet::averageSizeInBytes()
 }
 
 // See the function above if you need to update this.
-struct SameSizeAsStylePropertySet : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsStylePropertySet> {
+struct SameSizeAsStylePropertySet : public RefCounted<SameSizeAsStylePropertySet> {
     unsigned bitfield;
 };
 COMPILE_ASSERT(sizeof(StylePropertySet) == sizeof(SameSizeAsStylePropertySet), style_property_set_should_stay_small);
@@ -585,12 +549,12 @@ void StylePropertySet::showStyle()
 
 PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(CSSParserMode cssParserMode)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MutableStylePropertySet(cssParserMode));
+    return adoptRef(new MutableStylePropertySet(cssParserMode));
 }
 
 PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(const CSSProperty* properties, unsigned count)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MutableStylePropertySet(properties, count));
+    return adoptRef(new MutableStylePropertySet(properties, count));
 }
 
 String StylePropertySet::PropertyReference::cssName() const

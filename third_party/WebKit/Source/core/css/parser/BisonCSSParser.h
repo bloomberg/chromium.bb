@@ -185,7 +185,7 @@ public:
     OwnPtr<CSSParserValueList> m_valueList;
     bool m_supportsCondition;
 
-    WillBePersistentHeapVector<CSSProperty, 256> m_parsedProperties;
+    CSSPropertyParser::ParsedPropertyVector m_parsedProperties;
     CSSSelectorList* m_selectorListForParseSelector;
 
     unsigned m_numParsedPropertiesBeforeMarginBox;

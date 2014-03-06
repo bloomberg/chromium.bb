@@ -2954,7 +2954,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForGridS
 
 PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
-    WillBeHeapVector<CSSProperty, 256> list;
+    Vector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
         RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(properties[i]);

@@ -41,20 +41,12 @@ class MutableStylePropertySet;
 class StylePropertyShorthand;
 class StyleSheetContents;
 
-class StylePropertySet : public RefCountedWillBeRefCountedGarbageCollected<StylePropertySet> {
+class StylePropertySet : public RefCounted<StylePropertySet> {
     friend class PropertyReference;
 public:
-
-#if ENABLE(OILPAN)
-    // When oilpan is enabled override the finalize method to dispatch to the subclasses'
-    // destructor. This can be removed once the MutableStylePropertySet's OwnPtr is moved
-    // to the heap.
-    void finalize();
-#else
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
     void deref();
-#endif
 
     class PropertyReference {
     public:
@@ -125,9 +117,6 @@ public:
 
     bool propertyMatches(CSSPropertyID, const CSSValue*) const;
 
-    void trace(Visitor*);
-    void traceAfterDispatch(Visitor*) { }
-
 protected:
 
     enum { MaxArraySize = (1 << 28) - 1 };
@@ -158,16 +147,9 @@ public:
 
     unsigned propertyCount() const { return m_arraySize; }
 
-    const RawPtrWillBeMember<CSSValue>* valueArray() const;
+    const CSSValue** valueArray() const;
     const StylePropertyMetadata* metadataArray() const;
     int findPropertyIndex(CSSPropertyID) const;
-
-    void traceAfterDispatch(Visitor*);
-
-    void* operator new(std::size_t, void* location)
-    {
-        return location;
-    }
 
     void* m_storage;
 
@@ -175,14 +157,14 @@ private:
     ImmutableStylePropertySet(const CSSProperty*, unsigned count, CSSParserMode);
 };
 
-inline const RawPtrWillBeMember<CSSValue>* ImmutableStylePropertySet::valueArray() const
+inline const CSSValue** ImmutableStylePropertySet::valueArray() const
 {
-    return reinterpret_cast<const RawPtrWillBeMember<CSSValue>*>(const_cast<const void**>(&(this->m_storage)));
+    return reinterpret_cast<const CSSValue**>(const_cast<const void**>(&(this->m_storage)));
 }
 
 inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() const
 {
-    return reinterpret_cast<const StylePropertyMetadata*>(&reinterpret_cast<const char*>(&(this->m_storage))[m_arraySize * sizeof(RawPtrWillBeMember<CSSValue>)]);
+    return reinterpret_cast<const StylePropertyMetadata*>(&reinterpret_cast<const char*>(&(this->m_storage))[m_arraySize * sizeof(CSSValue*)]);
 }
 
 DEFINE_TYPE_CASTS(ImmutableStylePropertySet, StylePropertySet, set, !set->isMutable(), !set.isMutable());
@@ -200,7 +182,7 @@ public:
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
 
-    void addParsedProperties(const WillBeHeapVector<CSSProperty, 256>&);
+    void addParsedProperties(const Vector<CSSProperty, 256>&);
     void addParsedProperty(const CSSProperty&);
 
     // These expand shorthand properties into multiple properties.
@@ -229,8 +211,6 @@ public:
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
     int findPropertyIndex(CSSPropertyID) const;
 
-    void traceAfterDispatch(Visitor*);
-
 private:
     explicit MutableStylePropertySet(CSSParserMode);
     explicit MutableStylePropertySet(const StylePropertySet&);
@@ -242,7 +222,7 @@ private:
 
     friend class StylePropertySet;
 
-    WillBeHeapVector<CSSProperty, 4> m_propertyVector;
+    Vector<CSSProperty, 4> m_propertyVector;
 };
 
 DEFINE_TYPE_CASTS(MutableStylePropertySet, StylePropertySet, set, set->isMutable(), set.isMutable());
@@ -278,7 +258,6 @@ inline bool StylePropertySet::isEmpty() const
     return !propertyCount();
 }
 
-#if !ENABLE(OILPAN)
 inline void StylePropertySet::deref()
 {
     if (!derefBase())
@@ -289,7 +268,6 @@ inline void StylePropertySet::deref()
     else
         delete toImmutableStylePropertySet(this);
 }
-#endif // !ENABLE(OILPAN)
 
 inline int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
 {

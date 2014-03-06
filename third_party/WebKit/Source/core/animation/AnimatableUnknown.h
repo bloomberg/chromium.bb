@@ -41,7 +41,7 @@ class AnimatableUnknown FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableUnknown() { }
 
-    static PassRefPtr<AnimatableUnknown> create(PassRefPtrWillBeRawPtr<CSSValue> value)
+    static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value)
     {
         return adoptRef(new AnimatableUnknown(value));
     }
@@ -50,7 +50,7 @@ public:
         return adoptRef(new AnimatableUnknown(cssValuePool().createIdentifierValue(value)));
     }
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const { return m_value; }
+    PassRefPtr<CSSValue> toCSSValue() const { return m_value; }
     CSSValueID toCSSValueID() const { return toCSSPrimitiveValue(m_value.get())->getValueID(); }
 
 protected:
@@ -62,7 +62,7 @@ protected:
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE { return true; }
 
 private:
-    explicit AnimatableUnknown(PassRefPtrWillBeRawPtr<CSSValue> value)
+    explicit AnimatableUnknown(PassRefPtr<CSSValue> value)
         : m_value(value)
     {
         ASSERT(m_value);
@@ -70,7 +70,7 @@ private:
     virtual AnimatableType type() const OVERRIDE { return TypeUnknown; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    const RefPtrWillBePersistent<CSSValue> m_value;
+    const RefPtr<CSSValue> m_value;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, isUnknown());
