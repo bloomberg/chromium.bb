@@ -200,6 +200,39 @@ TEST(VideoFrame, CreateBlackFrame) {
   }
 }
 
+static void FrameNoLongerNeededCallback(
+    const scoped_refptr<media::VideoFrame>& frame,
+    bool* triggered) {
+  *triggered = true;
+}
+
+TEST(VideoFrame, WrapVideoFrame) {
+  const int kWidth = 4;
+  const int kHeight = 4;
+  scoped_refptr<media::VideoFrame> frame;
+  bool no_longer_needed_triggered = false;
+  {
+    scoped_refptr<media::VideoFrame> wrapped_frame =
+        VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight));
+    ASSERT_TRUE(wrapped_frame.get());
+
+    gfx::Rect visible_rect(1, 1, 1, 1);
+    frame = media::VideoFrame::WrapVideoFrame(
+        wrapped_frame, visible_rect,
+        base::Bind(&FrameNoLongerNeededCallback, wrapped_frame,
+                   &no_longer_needed_triggered));
+    EXPECT_EQ(wrapped_frame->coded_size(), frame->coded_size());
+    EXPECT_EQ(wrapped_frame->data(media::VideoFrame::kYPlane),
+              frame->data(media::VideoFrame::kYPlane));
+    EXPECT_NE(wrapped_frame->visible_rect(), frame->visible_rect());
+    EXPECT_EQ(visible_rect, frame->visible_rect());
+  }
+
+  EXPECT_FALSE(no_longer_needed_triggered);
+  frame = NULL;
+  EXPECT_TRUE(no_longer_needed_triggered);
+}
+
 // Ensure each frame is properly sized and allocated.  Will trigger OOB reads
 // and writes as well as incorrect frame hashes otherwise.
 TEST(VideoFrame, CheckFrameExtents) {

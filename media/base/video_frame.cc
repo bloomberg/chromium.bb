@@ -180,9 +180,11 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
+      const gfx::Rect& visible_rect,
       const base::Closure& no_longer_needed_cb) {
+  DCHECK(frame->visible_rect().Contains(visible_rect));
   scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
-      frame->format(), frame->coded_size(), frame->visible_rect(),
+      frame->format(), frame->coded_size(), visible_rect,
       frame->natural_size(), frame->GetTimestamp(), frame->end_of_stream()));
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
