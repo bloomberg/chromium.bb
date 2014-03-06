@@ -2462,12 +2462,6 @@ void WebViewImpl::setInitialFocus(bool reverse)
     page()->focusController().setInitialFocus(reverse ? FocusTypeBackward : FocusTypeForward);
 }
 
-void WebViewImpl::clearFocusedNode()
-{
-    // Deprecated API. Use clearFocusedElement instead.
-    clearFocusedElement();
-}
-
 void WebViewImpl::clearFocusedElement()
 {
     RefPtr<LocalFrame> frame = focusedWebCoreFrame();

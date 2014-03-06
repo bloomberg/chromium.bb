@@ -196,11 +196,6 @@ WebElement WebDocument::getElementById(const WebString& id) const
     return WebElement(constUnwrap<Document>()->getElementById(id));
 }
 
-WebNode WebDocument::focusedNode() const
-{
-    return WebNode(constUnwrap<Document>()->focusedElement());
-}
-
 WebElement WebDocument::focusedElement() const
 {
     return WebElement(constUnwrap<Document>()->focusedElement());
