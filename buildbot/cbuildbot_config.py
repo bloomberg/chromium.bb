@@ -1529,6 +1529,12 @@ internal_paladin.add_config('squawks-paladin',
   important=False,
 )
 
+internal_paladin.add_config('quawks-paladin',
+  boards=['quawks'],
+  paladin_builder_name='quawks paladin',
+  important=False,
+)
+
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
   paladin_builder_name='peppy paladin',
