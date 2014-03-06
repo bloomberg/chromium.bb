@@ -17,7 +17,9 @@
 #include "chrome/common/switch_utils.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,21 +36,35 @@ void ShowBadFlagsPrompt(Browser* browser) {
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
   static const char* kBadFlags[] = {
-    // These imply disabling the sandbox.
-    switches::kSingleProcess,
-    switches::kNoSandbox,
+    // These flags disable sandbox-related security.
+    switches::kDisableGpuSandbox,
+    switches::kDisableSeccompFilterSandbox,
+    switches::kDisableSetuidSandbox,
     switches::kDisableWebSecurity,
-    // Browser plugin is dangerous on regular pages because it breaks the Same
-    // Origin Policy.
+    switches::kNoSandbox,
+    switches::kSingleProcess,
+
+    // These flags disable or undermine the Same Origin Policy.
     switches::kEnableBrowserPluginForAllViewTypes,
-    extensions::switches::kExtensionsOnChromeURLs,
-    // This parameter should be used only for server side developments.
-    translate::switches::kTranslateScriptURL,
+    switches::kTrustedSpdyProxy,
     translate::switches::kTranslateSecurityOrigin,
+
+    // These flags undermine HTTPS / connection security.
+    switches::kDisableUserMediaSecurity,
   #if defined(ENABLE_WEBRTC)
-    // This flag disables security of media packets in WebRTC.
     switches::kDisableWebRtcEncryption,
   #endif
+    switches::kIgnoreCertificateErrors,
+    switches::kReduceSecurityForTesting,
+    switches::kSyncAllowInsecureXmppConnection,
+
+    // These flags change the URLs that handle PII.
+    autofill::switches::kWalletSecureServiceUrl,
+    switches::kGaiaUrl,
+    translate::switches::kTranslateScriptURL,
+
+    // This flag gives extensions more powers.
+    extensions::switches::kExtensionsOnChromeURLs,
     NULL
   };
 
