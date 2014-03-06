@@ -77,8 +77,6 @@ typedef std::map<PP_Instance, nacl::TrustedPluginChannel*>
 base::LazyInstance<InstanceTrustedChannelMap> g_channel_map =
     LAZY_INSTANCE_INITIALIZER;
 
-base::WaitableEvent* g_shutdown_event;
-
 void HistogramEnumerate(const std::string& name,
                         int32_t sample,
                         int32_t boundary_value) {
@@ -195,10 +193,9 @@ void LaunchSelLdr(PP_Instance instance,
     invalid_handle = (launch_result.trusted_ipc_channel_handle.socket.fd == -1);
 #endif
   if (!invalid_handle) {
-    if (g_shutdown_event == NULL)
-      g_shutdown_event = new base::WaitableEvent(true, false);
     g_channel_map.Get()[instance] = new nacl::TrustedPluginChannel(
-        launch_result.trusted_ipc_channel_handle, callback, g_shutdown_event);
+        launch_result.trusted_ipc_channel_handle, callback,
+        content::RenderThread::Get()->GetShutdownEvent());
   }
 
   *(static_cast<NaClHandle*>(imc_handle)) =

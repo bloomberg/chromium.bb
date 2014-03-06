@@ -1023,6 +1023,10 @@ media::AudioHardwareConfig* RenderThreadImpl::GetAudioHardwareConfig() {
   return audio_hardware_config_.get();
 }
 
+base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
+  return ChildProcess::current()->GetShutDownEvent();
+}
+
 #if defined(OS_WIN)
 void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
                                               const base::string16& str) {

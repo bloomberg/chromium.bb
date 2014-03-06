@@ -185,6 +185,10 @@ bool MockRenderThread::ResolveProxy(const GURL& url, std::string* proxy_list) {
   return false;
 }
 
+base::WaitableEvent* MockRenderThread::GetShutdownEvent() {
+  return NULL;
+}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }

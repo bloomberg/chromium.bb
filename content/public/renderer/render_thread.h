@@ -22,6 +22,7 @@ class GURL;
 namespace base {
 class MessageLoop;
 class MessageLoopProxy;
+class WaitableEvent;
 }
 
 namespace IPC {
@@ -120,6 +121,9 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   // returned and |proxy_list| is set to a PAC string containing a list of
   // proxy servers.
   virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) = 0;
+
+  // Gets the shutdown event for the process.
+  virtual base::WaitableEvent* GetShutdownEvent() = 0;
 
 #if defined(OS_WIN)
   // Request that the given font be loaded by the browser so it's cached by the
