@@ -132,7 +132,6 @@
       'scripts/blink_idl_lexer.py',
       'scripts/blink_idl_parser.py',
       'scripts/idl_definitions.py',
-      'scripts/idl_definitions_builder.py',
       'scripts/idl_reader.py',
       'scripts/idl_validator.py',
       'scripts/interface_dependency_resolver.py',

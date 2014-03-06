@@ -28,10 +28,10 @@
 
 """Read an IDL file or complete IDL interface, producing an IdlDefinitions object."""
 
-import os.path
+import os
 
 import blink_idl_parser
-import idl_definitions_builder
+from idl_definitions import IdlDefinitions
 import idl_validator
 import interface_dependency_resolver
 
@@ -64,7 +64,9 @@ class IdlReader(object):
     def read_idl_file(self, idl_filename):
         """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
         ast = blink_idl_parser.parse_file(self.parser, idl_filename)
-        definitions = idl_definitions_builder.build_idl_definitions_from_ast(ast)
+        if not ast:
+            raise Exception('Failed to parse %s' % idl_filename)
+        definitions = IdlDefinitions(ast)
         if not self.extended_attribute_validator:
             return definitions
 
