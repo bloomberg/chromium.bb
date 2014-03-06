@@ -57,16 +57,61 @@ SVGImage::SVGImage(ImageObserver* observer)
 {
 }
 
-SVGImage::~SVGImage()
-{
-    if (m_page) {
-        // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
-        OwnPtr<Page> currentPage = m_page.release();
-        currentPage->mainFrame()->loader().frameDetached(); // Break both the loader and view references to the frame
+// Delay destruction of Page attached to SVGImage.
+// We need to call |loader().frameDetached()| before disposing a Page, however
+// the call is non-trivial and involves touching/creating on-heap objects
+// which is not possible from a GarbageCollected object finalizer.
+// To circumvent this, DelayedSVGImageDestructor will delay the call to
+// the end of current event loop.
+class DelayedSVGImageDestructor {
+public:
+    void add(PassOwnPtr<SVGImageChromeClient> chromeClient, PassOwnPtr<Page> page)
+    {
+        Entry entry;
+        entry.chromeClient = chromeClient.leakPtr();
+        entry.page = page.leakPtr();
+
+        m_entries.append(entry);
+        m_detachTimer.startOneShot(0.0);
     }
 
-    // Verify that page teardown destroyed the Chrome
-    ASSERT(!m_chromeClient || !m_chromeClient->image());
+    static DelayedSVGImageDestructor* get()
+    {
+        DEFINE_STATIC_LOCAL(DelayedSVGImageDestructor, delayed, ());
+        return &delayed;
+    }
+
+private:
+    DelayedSVGImageDestructor()
+        : m_detachTimer(this, &DelayedSVGImageDestructor::detachTimerFired)
+    {
+    }
+
+    void detachTimerFired(Timer<DelayedSVGImageDestructor>*)
+    {
+        Vector<Entry>::const_iterator it = m_entries.begin();
+        Vector<Entry>::const_iterator itEnd = m_entries.end();
+        for (; it != itEnd; ++it) {
+            it->page->mainFrame()->loader().frameDetached();
+            delete it->page;
+            delete it->chromeClient;
+        }
+
+        m_entries.clear();
+    }
+
+    struct Entry {
+        SVGImageChromeClient* chromeClient;
+        Page* page;
+    };
+    Vector<Entry> m_entries;
+    Timer<DelayedSVGImageDestructor> m_detachTimer;
+};
+
+SVGImage::~SVGImage()
+{
+    m_chromeClient->clearImage();
+    DelayedSVGImageDestructor::get()->add(m_chromeClient.release(), m_page.release());
 }
 
 bool SVGImage::isInSVGImage(const Element* element)
