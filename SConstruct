@@ -3035,7 +3035,6 @@ irt_variant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/app_lib/nacl.scons',
     'tests/bigalloc/nacl.scons',
-    'tests/bundle_size/nacl.scons',
     'tests/callingconv/nacl.scons',
     'tests/callingconv_ppapi/nacl.scons',
     'tests/callingconv_case_by_case/nacl.scons',
