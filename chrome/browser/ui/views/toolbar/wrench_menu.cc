@@ -57,10 +57,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/native_theme/native_theme_aura.h"
-#endif
-
 using base::UserMetricsAction;
 using content::HostZoomMap;
 using content::WebContents;
@@ -187,23 +183,19 @@ class MenuButtonBackground : public views::Background {
         button ? button->state() : views::Button::STATE_NORMAL;
     int w = view->width();
     int h = view->height();
-#if defined(USE_AURA)
-    // Normal buttons get a border drawn on the right side and the rest gets
-    // filled in. The left button however does not get a line to combine
-    // buttons.
-    int border = 0;
-    if (type_ != RIGHT_BUTTON) {
-      border = 1;
-      canvas->FillRect(gfx::Rect(0, 0, border, h),
-                       BorderColor(view, views::Button::STATE_NORMAL));
-    }
     if (use_new_menu_) {
+      // Normal buttons get a border drawn on the right side and the rest gets
+      // filled in. The left button however does not get a line to combine
+      // buttons.
+      if (type_ != RIGHT_BUTTON) {
+        canvas->FillRect(gfx::Rect(0, 0, 1, h),
+                         BorderColor(view, views::Button::STATE_NORMAL));
+      }
       gfx::Rect bounds(view->GetLocalBounds());
       bounds.set_x(view->GetMirroredXForRect(bounds));
       DrawBackground(canvas, view, bounds, state);
       return;
     }
-#endif
     const SkColor border_color = BorderColor(view, state);
     switch (TypeAdjustedForRTL()) {
       // TODO(pkasting): Why don't all the following use SkPaths with rounded
