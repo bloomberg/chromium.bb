@@ -12,18 +12,18 @@
       "navigate_steps": [
         { "action": "navigate" },
         { "action": "wait", "condition": "element", "selector": "img[alt=\"Expand all\"]" },
-        { "action": "click_element", "selector": "img[alt=\"Expand all\"]" },
+        { "action": "javascript_click", "selector": "img[alt=\"Expand all\"]" },
         { "action": "wait", "seconds": 5 },
         { "action": "wait", "condition": "element", "selector": "img[alt=\"Collapse all\"]" },
-        { "action": "click_element", "selector": "img[alt=\"Collapse all\"]" },
+        { "action": "javascript_click", "selector": "img[alt=\"Collapse all\"]" },
         { "action": "wait", "seconds": 1 }
       ],
       "endure": [
         { "action": "wait", "condition": "element", "selector": "img[alt=\"Expand all\"]" },
-        { "action": "click_element", "selector": "img[alt=\"Expand all\"]" },
+        { "action": "javascript_click", "selector": "img[alt=\"Expand all\"]" },
         { "action": "wait", "seconds": 1 },
         { "action": "wait", "condition": "element", "selector": "img[alt=\"Collapse all\"]" },
-        { "action": "click_element", "selector": "img[alt=\"Collapse all\"]" },
+        { "action": "javascript_click", "selector": "img[alt=\"Collapse all\"]" },
         { "action": "wait", "seconds": 1 }
       ]
     }

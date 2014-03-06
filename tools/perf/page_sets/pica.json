@@ -8,12 +8,7 @@
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "javascript": "window.__web_components_ready" }
-      ],
-      "smoothness": {
-        "action": "tap_element",
-        "find_element_expression": "document.querySelector('pi-app').$.Topics.$.topics.$.container.querySelector('.item > .card')",
-        "wait_for_event": "polymer-pages-animation-end"
-      }
+      ]
     }
   ]
 }

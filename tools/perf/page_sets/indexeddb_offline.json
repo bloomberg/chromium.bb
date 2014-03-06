@@ -12,11 +12,11 @@
       ],
       "endure": [
         { "action": "wait", "condition": "element", "selector": "button[id=\"online\"]:not(disabled)" },
-        { "action": "click_element", "selector": "button[id=\"online\"]:not(disabled)" },
+        { "action": "javascript_click", "selector": "button[id=\"online\"]:not(disabled)" },
         { "action": "wait", "condition": "element", "xpath": "id(\"state\")[text()=\"online\"]" },
         { "action": "wait", "seconds": 1 },
         { "action": "wait", "condition": "element", "selector": "button[id=\"offline\"]:not(disabled)" },
-        { "action": "click_element", "selector": "button[id=\"offline\"]:not(disabled)" },
+        { "action": "javascript_click", "selector": "button[id=\"offline\"]:not(disabled)" },
         { "action": "wait", "condition": "element", "xpath": "id(\"state\")[text()=\"offline\"]" }
       ]
     }

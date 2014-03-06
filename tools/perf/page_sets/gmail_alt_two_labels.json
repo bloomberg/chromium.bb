@@ -15,13 +15,13 @@
       ],
       "endure": [
         {
-          "action": "click_element",
+          "action": "javascript_click",
           "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#sent\"]"
         },
         { "action": "wait", "condition": "href_change" },
         { "action": "wait", "seconds": 1 },
         {
-          "action": "click_element",
+          "action": "javascript_click",
           "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]"
         },
         { "action": "wait", "condition": "href_change" },

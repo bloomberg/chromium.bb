@@ -15,10 +15,10 @@
         { "action": "wait", "condition": "element", "selector": "span[guidedhelpid=\"posts_tab_profile\"][class*=\"s6U8x\"]" }
       ],
       "endure": [
-        { "action": "click_element", "selector": "span[guidedhelpid=\"posts_tab_profile\"]" },
+        { "action": "javascript_click", "selector": "span[guidedhelpid=\"posts_tab_profile\"]" },
         { "action": "wait", "condition": "element", "selector": "span[guidedhelpid=\"posts_tab_profile\"][class*=\"s6U8x\"]" },
         { "action": "wait", "seconds": 5 },
-        { "action": "click_element", "selector": "span[guidedhelpid=\"photos_tab_profile\"]" },
+        { "action": "javascript_click", "selector": "span[guidedhelpid=\"photos_tab_profile\"]" },
         { "action": "wait", "condition": "element", "selector": "span[guidedhelpid=\"photos_tab_profile\"][class*=\"s6U8x\"]" },
         { "action": "wait", "seconds": 5 }
       ]

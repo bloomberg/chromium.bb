@@ -20,7 +20,7 @@
         { "action": "compose_click" },
         { "action": "wait", "seconds": 1 },
         { "action": "wait", "condition": "element", "selector": "div[class~=\"oh\"][data-tooltip=\"Discard draft\"]" },
-        { "action": "click_element", "selector": "div[class~=\"oh\"][data-tooltip=\"Discard draft\"]" },
+        { "action": "javascript_click", "selector": "div[class~=\"oh\"][data-tooltip=\"Discard draft\"]" },
         { "action": "wait", "seconds": 1 }
       ]
     }

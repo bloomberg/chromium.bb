@@ -152,7 +152,7 @@
       "navigate_steps": [
         { "action": "navigate" },
         { "action": "wait", "condition": "element", "text": "Other Answers (1 - 20 of 149)" },
-        { "action": "click_element", "text": "Other Answers (1 - 20 of 149)" }
+        { "action": "javascript_click", "text": "Other Answers (1 - 20 of 149)" }
       ]
     },
     {

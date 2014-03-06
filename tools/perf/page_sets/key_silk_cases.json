@@ -159,10 +159,10 @@
       },
       "toggle_drawer": [
         {
-          "action": "click_element",
-          "selector": "#menu-button"
-        },
-        { "action": "wait", "seconds": 1 }
+          "action": "tap",
+          "selector": "#menu-button",
+          "wait_after": { "seconds": 1 }
+        }
       ]
     },
     {

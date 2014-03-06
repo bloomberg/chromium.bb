@@ -11,9 +11,9 @@
         { "action": "wait", "condition": "element", "xpath": "id(\"attach\")" }
       ],
       "endure": [
-        { "action": "click_element", "xpath": "id(\"attach\")" },
+        { "action": "javascript_click", "xpath": "id(\"attach\")" },
         { "action": "wait", "seconds": 0.5 },
-        { "action": "click_element", "xpath": "id(\"detach\")" },
+        { "action": "javascript_click", "xpath": "id(\"detach\")" },
         { "action": "wait", "seconds": 0.5 }
       ]
     }
