@@ -446,7 +446,7 @@
                 },
               ],
             }],
-            ['enable_hidpi == 1 and OS!="win"', {
+            ['enable_hidpi == 1', {
               'copies': [
                 {
                   'destination': '<(PRODUCT_DIR)',

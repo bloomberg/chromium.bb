@@ -178,8 +178,8 @@
             'toolkit_uses_gtk%': 0,
           }],
 
-          # Enable HiDPI on Mac OS and Chrome OS.
-          ['OS=="mac" or chromeos==1', {
+          # Enable HiDPI on Mac OS, Chrome OS and Windows.
+          ['OS=="mac" or chromeos==1 or OS=="win"', {
             'enable_hidpi%': 1,
           }],
 
