@@ -465,6 +465,7 @@ def main():
     # correctly, as we don't otherwise care about working directory.
     os.chdir(os.path.join(BASEDIR, '7z'))
     if options.bot_mode and options.sha1:
+      options.express = False
       DoTreeMirror(target_dir, options.sha1)
     else:
       images = GetSourceImages(options.local, not options.express)
