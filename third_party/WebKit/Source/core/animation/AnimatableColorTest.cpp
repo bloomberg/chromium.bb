@@ -75,5 +75,16 @@ TEST(AnimationAnimatableColorTest, Add)
     EXPECT_EQ(AnimatableColorImpl(Color(0x10204080)).addWith(Color(0x104080C0)).toColor().rgb(), 0x203060A0u);
 }
 
+TEST(AnimationAnimatableColorTest, Distance)
+{
+    EXPECT_NEAR(1.0, AnimatableColorImpl(Color(0xFF000000)).distanceTo(Color(0xFFFF0000)), 0.00000001);
+    EXPECT_NEAR(13.0 / 255, AnimatableColorImpl(Color(0xFF53647C)).distanceTo(Color(0xFF506070)), 0.00000001);
+    EXPECT_NEAR(60.0 / 255, AnimatableColorImpl(Color(0x3C000000)).distanceTo(Color(0x00FFFFFF)), 0.00000001);
+    EXPECT_NEAR(60.0 / 255, AnimatableColorImpl(Color(0x3C000000)).distanceTo(Color(0x3C00FF00)), 0.00000001);
+
+    RefPtrWillBeRawPtr<AnimatableColor> first = AnimatableColor::create(AnimatableColorImpl(Color(0xFF53647C)), AnimatableColorImpl(Color(0xFF000000)));
+    RefPtrWillBeRawPtr<AnimatableColor> second = AnimatableColor::create(AnimatableColorImpl(Color(0xFF506070)), AnimatableColorImpl(Color(0xFF000000)));
+    EXPECT_NEAR(13.0 / 255, AnimatableValue::distance(first.get(), second.get()), 0.00000001);
 }
 
+}

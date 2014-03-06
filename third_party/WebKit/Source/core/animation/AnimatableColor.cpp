@@ -34,6 +34,15 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
+namespace {
+
+double square(double x)
+{
+    return x * x;
+}
+
+} // namespace
+
 namespace WebCore {
 
 AnimatableColorImpl::AnimatableColorImpl(float red, float green, float blue, float alpha)
@@ -83,6 +92,14 @@ bool AnimatableColorImpl::operator==(const AnimatableColorImpl& other) const
         && m_alpha == other.m_alpha;
 }
 
+double AnimatableColorImpl::distanceTo(const AnimatableColorImpl& other) const
+{
+    return sqrt(square(m_red - other.m_red)
+        + square(m_green - other.m_green)
+        + square(m_blue - other.m_blue)
+        + square(m_alpha - other.m_alpha));
+}
+
 PassRefPtr<AnimatableColor> AnimatableColor::create(const AnimatableColorImpl& color, const AnimatableColorImpl& visitedLinkColor)
 {
     return adoptRef(new AnimatableColor(color, visitedLinkColor));
@@ -106,6 +123,12 @@ bool AnimatableColor::equalTo(const AnimatableValue* value) const
 {
     const AnimatableColor* color = toAnimatableColor(value);
     return m_color == color->m_color && m_visitedLinkColor == color->m_visitedLinkColor;
+}
+
+double AnimatableColor::distanceTo(const AnimatableValue* value) const
+{
+    const AnimatableColor* color = toAnimatableColor(value);
+    return m_color.distanceTo(color->m_color);
 }
 
 } // namespace WebCore

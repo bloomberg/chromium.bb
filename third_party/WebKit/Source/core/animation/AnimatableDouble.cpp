@@ -34,6 +34,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePool.h"
 #include "platform/animation/AnimationUtilities.h"
+#include <math.h>
 
 namespace WebCore {
 
@@ -72,6 +73,12 @@ PassRefPtr<AnimatableValue> AnimatableDouble::addWith(const AnimatableValue* val
 bool AnimatableDouble::equalTo(const AnimatableValue* value) const
 {
     return m_number == toAnimatableDouble(value)->m_number;
+}
+
+double AnimatableDouble::distanceTo(const AnimatableValue* value) const
+{
+    const AnimatableDouble* other = toAnimatableDouble(value);
+    return fabs(m_number - other->m_number);
 }
 
 } // namespace WebCore

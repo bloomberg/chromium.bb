@@ -34,6 +34,12 @@
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
 
+namespace {
+
+const double defaultDistance = 1;
+
+} // namespace
+
 namespace WebCore {
 
 const AnimatableValue* AnimatableValue::neutralValue()
@@ -74,6 +80,22 @@ PassRefPtr<AnimatableValue> AnimatableValue::add(const AnimatableValue* left, co
 PassRefPtr<AnimatableValue> AnimatableValue::addWith(const AnimatableValue* value) const
 {
     return defaultAddWith(this, value);
+}
+
+double AnimatableValue::distance(const AnimatableValue* left, const AnimatableValue* right)
+{
+    ASSERT(left);
+    ASSERT(right);
+
+    if (left->isSameType(right))
+        return left->distanceTo(right);
+
+    return defaultDistance;
+}
+
+double AnimatableValue::distanceTo(const AnimatableValue*) const
+{
+    return defaultDistance;
 }
 
 } // namespace WebCore
