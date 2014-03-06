@@ -77,8 +77,6 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -445,9 +443,6 @@ Browser::Browser(const CreateParams& params)
   }
 
   fullscreen_controller_.reset(new FullscreenController(this));
-
-  TtsExtensionEngine* tts_extension_engine = TtsExtensionEngine::GetInstance();
-  TtsController::GetInstance()->SetTtsEngineDelegate(tts_extension_engine);
 }
 
 Browser::~Browser() {

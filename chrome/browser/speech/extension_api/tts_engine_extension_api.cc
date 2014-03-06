@@ -60,12 +60,7 @@ void WarnIfMissingPauseOrResumeListener(
 };
 }  // anonymous namespace
 
-TtsExtensionEngine* TtsExtensionEngine::GetInstance() {
-  return Singleton<TtsExtensionEngine>::get();
-}
-
-void TtsExtensionEngine::GetVoices(Profile* profile,
-    std::vector<VoiceData>* out_voices) {
+void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
   ExtensionService* service = profile->GetExtensionService();
   DCHECK(service);
   EventRouter* event_router =
@@ -132,8 +127,7 @@ void TtsExtensionEngine::GetVoices(Profile* profile,
   }
 }
 
-void TtsExtensionEngine::Speak(Utterance* utterance,
-                               const VoiceData& voice) {
+void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
   // See if the engine supports the "end" event; if so, we can keep the
   // utterance around and track it. If not, we're finished with this
   // utterance now.
@@ -177,7 +171,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
       DispatchEventToExtension(utterance->extension_id(), event.Pass());
 }
 
-void TtsExtensionEngine::Stop(Utterance* utterance) {
+void ExtensionTtsEngineStop(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnStop, args.Pass()));
@@ -186,7 +180,7 @@ void TtsExtensionEngine::Stop(Utterance* utterance) {
       DispatchEventToExtension(utterance->extension_id(), event.Pass());
 }
 
-void TtsExtensionEngine::Pause(Utterance* utterance) {
+void ExtensionTtsEnginePause(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnPause, args.Pass()));
@@ -198,7 +192,7 @@ void TtsExtensionEngine::Pause(Utterance* utterance) {
   WarnIfMissingPauseOrResumeListener(profile, event_router, id);
 }
 
-void TtsExtensionEngine::Resume(Utterance* utterance) {
+void ExtensionTtsEngineResume(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnResume, args.Pass()));
