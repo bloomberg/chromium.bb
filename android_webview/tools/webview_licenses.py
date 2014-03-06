@@ -119,6 +119,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('out/Release')
   # 'Copyright' appears in license agreements
   excluded_dirs_list.append('chrome/app/resources')
+  # Quickoffice js files from internal src used on buildbots
+  excluded_dirs_list.append('chrome/browser/resources/chromeos/quickoffice')
   # This is a test output directory
   excluded_dirs_list.append('chrome/tools/test/reference_build')
   # blink style copy right headers.
