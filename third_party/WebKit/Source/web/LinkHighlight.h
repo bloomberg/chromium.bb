@@ -63,8 +63,8 @@ public:
     virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebFloatRect& opaque) OVERRIDE;
 
     // WebAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double wallClockTime, double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
-    virtual void notifyAnimationFinished(double wallClockTime, double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationStarted(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationFinished(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
 
     // LinkHighlightClient inplementation.
     virtual void invalidate() OVERRIDE;

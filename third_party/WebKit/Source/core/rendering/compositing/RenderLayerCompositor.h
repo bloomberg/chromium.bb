@@ -237,7 +237,7 @@ private:
     bool updateLayerIfViewportConstrained(RenderLayer*);
 
     // GraphicsLayerClient implementation
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double, double) OVERRIDE { }
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double) OVERRIDE { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) OVERRIDE;
 
     virtual bool isTrackingRepaints() const OVERRIDE;

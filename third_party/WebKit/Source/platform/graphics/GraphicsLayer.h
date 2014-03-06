@@ -289,8 +289,8 @@ public:
     virtual void paint(GraphicsContext&, const IntRect& clip) OVERRIDE;
 
     // WebAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double wallClockTime, double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
-    virtual void notifyAnimationFinished(double wallClockTime, double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationStarted(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationFinished(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
 
     // WebLayerScrollClient implementation.
     virtual void didScroll() OVERRIDE;

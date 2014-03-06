@@ -64,7 +64,7 @@ public:
     virtual ~GraphicsLayerClient() {}
 
     // Callback for when hardware-accelerated animation started.
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime) = 0;
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) = 0;
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) = 0;
     virtual bool isTrackingRepaints() const { return false; }

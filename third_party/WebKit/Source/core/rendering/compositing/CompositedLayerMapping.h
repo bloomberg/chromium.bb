@@ -173,7 +173,7 @@ public:
     void updateShouldFlattenTransform();
 
     // GraphicsLayerClient interface
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double wallClockTime, double monotonicTime) OVERRIDE;
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) OVERRIDE;
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) OVERRIDE;
     virtual bool isTrackingRepaints() const OVERRIDE;
 

@@ -67,7 +67,7 @@ public:
     void clearViewportLayersForTreeView(WebLayerTreeView*) const;
 
     // GraphicsLayerClient implementation.
-    virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double wallClockTime, double monotonicTime) OVERRIDE;
+    virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double monotonicTime) OVERRIDE;
     virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip) OVERRIDE;
 
     virtual String debugName(const WebCore::GraphicsLayer*) OVERRIDE;
