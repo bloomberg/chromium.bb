@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "base/containers/mru_cache.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
@@ -62,7 +63,8 @@ struct NET_EXPORT PortAlternateProtocolPair {
   AlternateProtocol protocol;
 };
 
-typedef std::map<HostPortPair, PortAlternateProtocolPair> AlternateProtocolMap;
+typedef base::MRUCache<
+    HostPortPair, PortAlternateProtocolPair> AlternateProtocolMap;
 typedef std::map<HostPortPair, SettingsMap> SpdySettingsMap;
 typedef std::map<HostPortPair,
         HttpPipelinedHostCapability> PipelineCapabilityMap;
@@ -99,12 +101,12 @@ class NET_EXPORT HttpServerProperties {
                                bool support_spdy) = 0;
 
   // Returns true if |server| has an Alternate-Protocol header.
-  virtual bool HasAlternateProtocol(const HostPortPair& server) const = 0;
+  virtual bool HasAlternateProtocol(const HostPortPair& server) = 0;
 
   // Returns the Alternate-Protocol and port for |server|.
   // HasAlternateProtocol(server) must be true.
   virtual PortAlternateProtocolPair GetAlternateProtocol(
-      const HostPortPair& server) const = 0;
+      const HostPortPair& server) = 0;
 
   // Sets the Alternate-Protocol for |server|.
   virtual void SetAlternateProtocol(const HostPortPair& server,

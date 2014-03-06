@@ -19,7 +19,8 @@ namespace net {
 static const int kDefaultNumHostsToRemember = 200;
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
-    : pipeline_capability_map_(
+    : alternate_protocol_map_(AlternateProtocolMap::NO_AUTO_EVICT),
+      pipeline_capability_map_(
         new CachedPipelineCapabilityMap(kDefaultNumHostsToRemember)),
       weak_ptr_factory_(this) {
   canoncial_suffixes_.push_back(".c.youtube.com");
@@ -44,15 +45,24 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
 
 void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
     AlternateProtocolMap* alternate_protocol_map) {
-  // First swap, and then add back all the ALTERNATE_PROTOCOL_BROKEN ones since
-  // those don't get persisted.
-  alternate_protocol_map_.swap(*alternate_protocol_map);
-  for (AlternateProtocolMap::const_iterator it =
-       alternate_protocol_map->begin();
-       it != alternate_protocol_map->end(); ++it) {
-    if (it->second.protocol == ALTERNATE_PROTOCOL_BROKEN)
-      alternate_protocol_map_[it->first] = it->second;
+  // Keep all the ALTERNATE_PROTOCOL_BROKEN ones since those don't
+  // get persisted.
+  for (AlternateProtocolMap::iterator it = alternate_protocol_map_.begin();
+       it != alternate_protocol_map_.end();) {
+    AlternateProtocolMap::iterator old_it = it;
+    ++it;
+    if (old_it->second.protocol != ALTERNATE_PROTOCOL_BROKEN) {
+      alternate_protocol_map_.Erase(old_it);
+    }
   }
+
+  // Add the entries from persisted data.
+  for (AlternateProtocolMap::reverse_iterator it =
+           alternate_protocol_map->rbegin();
+       it != alternate_protocol_map->rend(); ++it) {
+    alternate_protocol_map_.Put(it->first, it->second);
+  }
+
   // Attempt to find canonical servers.
   int canonical_ports[] = { 80, 443 };
   for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
@@ -61,8 +71,8 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
       HostPortPair canonical_host(canonical_suffix, canonical_ports[j]);
       // If we already have a valid canonical server, we're done.
       if (ContainsKey(canonical_host_to_origin_map_, canonical_host) &&
-          ContainsKey(alternate_protocol_map_,
-                      canonical_host_to_origin_map_[canonical_host])) {
+          (alternate_protocol_map_.Peek(canonical_host_to_origin_map_[
+               canonical_host]) != alternate_protocol_map_.end())) {
         continue;
       }
       // Now attempt to find a server which matches this origin and set it as
@@ -147,7 +157,7 @@ base::WeakPtr<HttpServerProperties> HttpServerPropertiesImpl::GetWeakPtr() {
 void HttpServerPropertiesImpl::Clear() {
   DCHECK(CalledOnValidThread());
   spdy_servers_table_.clear();
-  alternate_protocol_map_.clear();
+  alternate_protocol_map_.Clear();
   spdy_settings_map_.clear();
   pipeline_capability_map_->Clear();
 }
@@ -185,8 +195,8 @@ void HttpServerPropertiesImpl::SetSupportsSpdy(
 }
 
 bool HttpServerPropertiesImpl::HasAlternateProtocol(
-    const HostPortPair& server) const {
-  if (ContainsKey(alternate_protocol_map_, server) ||
+    const HostPortPair& server) {
+  if (alternate_protocol_map_.Get(server) != alternate_protocol_map_.end() ||
       g_forced_alternate_protocol)
     return true;
 
@@ -195,19 +205,18 @@ bool HttpServerPropertiesImpl::HasAlternateProtocol(
 
 PortAlternateProtocolPair
 HttpServerPropertiesImpl::GetAlternateProtocol(
-    const HostPortPair& server) const {
+    const HostPortPair& server) {
   DCHECK(HasAlternateProtocol(server));
 
   // First check the map.
-  AlternateProtocolMap::const_iterator it =
-      alternate_protocol_map_.find(server);
+  AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
   if (it != alternate_protocol_map_.end())
     return it->second;
 
   // Next check the canonical host.
   CanonicalHostMap::const_iterator canonical_host = GetCanonicalHost(server);
   if (canonical_host != canonical_host_to_origin_map_.end())
-    return alternate_protocol_map_.find(canonical_host->second)->second;
+    return alternate_protocol_map_.Get(canonical_host->second)->second;
 
   // We must be forcing an alternate.
   DCHECK(g_forced_alternate_protocol);
@@ -247,7 +256,7 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
     }
   }
 
-  alternate_protocol_map_[server] = alternate;
+  alternate_protocol_map_.Put(server, alternate);
 
   // If this host ends with a canonical suffix, then set it as the
   // canonical host.
@@ -263,7 +272,14 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
 
 void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     const HostPortPair& server) {
-  alternate_protocol_map_[server].protocol = ALTERNATE_PROTOCOL_BROKEN;
+  AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
+  if (it != alternate_protocol_map_.end()) {
+    it->second.protocol = ALTERNATE_PROTOCOL_BROKEN;
+    return;
+  }
+  PortAlternateProtocolPair alternate;
+  alternate.protocol = ALTERNATE_PROTOCOL_BROKEN;
+  alternate_protocol_map_.Put(server, alternate);
 }
 
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
