@@ -10,7 +10,7 @@
 #include "mojo/services/native_viewport/geometry_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host_delegate.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -148,7 +148,7 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 // WindowTreeHostMojo, ui::EventSource implementation:
 
 ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
-  return delegate_->GetEventProcessor();
+  return dispatcher();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,8 +162,7 @@ void WindowTreeHostMojo::OnCreated() {
 void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
   bounds_ = gfx::Rect(bounds.position().x(), bounds.position().y(),
                       bounds.size().width(), bounds.size().height());
-  if (delegate_)
-    window()->SetBounds(gfx::Rect(bounds_.size()));
+  window()->SetBounds(gfx::Rect(bounds_.size()));
   OnHostResized(bounds_.size());
 }
 

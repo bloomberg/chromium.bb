@@ -13,6 +13,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/view_prop.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
@@ -134,9 +135,8 @@ void WindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   // Explicity call OnHostResized when the scale has changed because
   // the window size may not have changed.
   float current_scale = compositor()->device_scale_factor();
-  float new_scale = gfx::Screen::GetScreenFor(
-      delegate_->AsDispatcher()->window())->GetDisplayNearestWindow(
-          delegate_->AsDispatcher()->window()).device_scale_factor();
+  float new_scale = gfx::Screen::GetScreenFor(window())->
+      GetDisplayNearestWindow(window()).device_scale_factor();
   if (current_scale != new_scale)
     OnHostResized(bounds.size());
 }
@@ -230,7 +230,7 @@ void WindowTreeHostWin::PrepareForShutdown() {
 }
 
 ui::EventProcessor* WindowTreeHostWin::GetEventProcessor() {
-  return delegate_->GetEventProcessor();
+  return dispatcher();
 }
 
 void WindowTreeHostWin::OnClose() {
@@ -268,7 +268,7 @@ LRESULT WindowTreeHostWin::OnCaptureChanged(UINT message,
                                             LPARAM l_param) {
   if (has_capture_) {
     has_capture_ = false;
-    delegate_->OnHostLostWindowCapture();
+    OnHostLostWindowCapture();
   }
   return 0;
 }
@@ -277,7 +277,7 @@ LRESULT WindowTreeHostWin::OnNCActivate(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
   if (!!w_param)
-    delegate_->OnHostActivated();
+    OnHostActivated();
   return DefWindowProc(hwnd(), message, w_param, l_param);
 }
 
@@ -297,7 +297,7 @@ void WindowTreeHostWin::OnPaint(HDC dc) {
 void WindowTreeHostWin::OnSize(UINT param, const gfx::Size& size) {
   // Minimizing resizes the window to 0x0 which causes our layout to go all
   // screwy, so we just ignore it.
-  if (delegate_ && param != SIZE_MINIMIZED)
+  if (param != SIZE_MINIMIZED)
     OnHostResized(size);
 }
 

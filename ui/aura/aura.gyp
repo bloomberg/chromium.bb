@@ -107,7 +107,6 @@
         'window_tracker.h',
         'window_tree_host.cc',
         'window_tree_host.h',
-        'window_tree_host_delegate.h',
         'window_tree_host_mac.mm',
         'window_tree_host_mac.h',
         'window_tree_host_observer.h',
