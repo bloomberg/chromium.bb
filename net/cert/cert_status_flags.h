@@ -32,7 +32,7 @@ static const CertStatus CERT_STATUS_WEAK_SIGNATURE_ALGORITHM   = 1 << 8;
 // 1 << 9 was used for CERT_STATUS_NOT_IN_DNS
 static const CertStatus CERT_STATUS_NON_UNIQUE_NAME            = 1 << 10;
 static const CertStatus CERT_STATUS_WEAK_KEY                   = 1 << 11;
-static const CertStatus CERT_STATUS_WEAK_DH_KEY                = 1 << 12;
+// 1 << 12 was used for CERT_STATUS_WEAK_DH_KEY.
 static const CertStatus CERT_STATUS_PINNED_KEY_MISSING         = 1 << 13;
 static const CertStatus CERT_STATUS_NAME_CONSTRAINT_VIOLATION  = 1 << 14;
 

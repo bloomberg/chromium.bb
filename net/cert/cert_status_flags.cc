@@ -47,8 +47,6 @@ CertStatus MapNetErrorToCertStatus(int error) {
       return CERT_STATUS_WEAK_KEY;
     case ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
       return CERT_STATUS_PINNED_KEY_MISSING;
-    case ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
-      return CERT_STATUS_WEAK_DH_KEY;
     case ERR_CERT_NAME_CONSTRAINT_VIOLATION:
       return CERT_STATUS_NAME_CONSTRAINT_VIOLATION;
     default:
@@ -67,8 +65,6 @@ int MapCertStatusToNetError(CertStatus cert_status) {
     return ERR_CERT_INVALID;
   if (cert_status & CERT_STATUS_PINNED_KEY_MISSING)
     return ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
-  if (cert_status & CERT_STATUS_WEAK_DH_KEY)
-    return ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY;
 
   // Recoverable errors
   if (cert_status & CERT_STATUS_AUTHORITY_INVALID)
