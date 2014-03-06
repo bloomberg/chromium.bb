@@ -29,6 +29,8 @@ bool InDisableIgnoreAutocompleteOffGroup() {
 // flag instructing otherwise or is in the field trial group specifying that
 // ignore autocomplete='off' should be disabled.
 bool ShouldIgnoreAutocompleteOffForPasswordFields() {
+  // TODO(jww): The field trial is scheduled to end 2014/9/1. At latest, we
+  // should remove the field trial and switch by then.
   return !InDisableIgnoreAutocompleteOffGroup() &&
          !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableIgnoreAutocompleteOff);
