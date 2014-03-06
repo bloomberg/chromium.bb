@@ -14,14 +14,4 @@ MockBluetoothAdapter::MockBluetoothAdapter() {
 
 MockBluetoothAdapter::~MockBluetoothAdapter() {}
 
-void MockBluetoothAdapter::AddDiscoverySession(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
-
-void MockBluetoothAdapter::RemoveDiscoverySession(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
-
 }  // namespace device

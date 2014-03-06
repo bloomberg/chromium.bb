@@ -24,7 +24,6 @@ class BrowserContext;
 namespace device {
 
 class BluetoothDevice;
-class BluetoothDiscoverySession;
 class BluetoothProfile;
 
 }  // namespace device
@@ -82,31 +81,20 @@ class ExtensionBluetoothEventRouter
   // registered.
   bool HasProfile(const std::string& uuid) const;
 
-  // Requests that a new device discovery session be initiated for extension
-  // with id |extension_id|. |callback| is called, if a session has been
-  // initiated. |error_callback| is called, if the adapter failed to initiate
-  // the session or if an active session already exists for the extension.
-  void StartDiscoverySession(device::BluetoothAdapter* adapter,
-                             const std::string& extension_id,
-                             const base::Closure& callback,
-                             const base::Closure& error_callback);
-
-  // Requests that the active discovery session that belongs to the extension
-  // with id |extension_id| be terminated. |callback| is called, if the session
-  // successfully ended. |error_callback| is called, if the adapter failed to
-  // terminate the session or if no active discovery session exists for the
-  // extension.
-  void StopDiscoverySession(device::BluetoothAdapter* adapter,
-                            const std::string& extension_id,
-                            const base::Closure& callback,
-                            const base::Closure& error_callback);
-
   // Returns the BluetoothProfile that corresponds to |uuid|. It returns NULL
   // if the BluetoothProfile with |uuid| does not exist.
   device::BluetoothProfile* GetProfile(const std::string& uuid) const;
 
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<device::BluetoothSocket> GetSocket(int id);
+
+  // Sets whether this Profile is responsible for the discovering state of the
+  // adapter.
+  void SetResponsibleForDiscovery(bool responsible);
+  bool IsResponsibleForDiscovery() const;
+
+  // Sets whether or not DeviceAdded events will be dispatched to extensions.
+  void SetSendDiscoveryEvents(bool should_send);
 
   // Dispatch an event that takes a device as a parameter to all renderers.
   void DispatchDeviceEvent(
@@ -139,17 +127,15 @@ class ExtensionBluetoothEventRouter
   void SetAdapterForTest(device::BluetoothAdapter* adapter) {
     adapter_ = adapter;
   }
-
  private:
   void InitializeAdapterIfNeeded();
   void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();
   void CleanUpForExtension(const std::string& extension_id);
-  void OnStartDiscoverySession(
-      const std::string& extension_id,
-      const base::Closure& callback,
-      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+
+  bool send_discovery_events_;
+  bool responsible_for_discovery_;
 
   content::BrowserContext* browser_context_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
@@ -164,15 +150,14 @@ class ExtensionBluetoothEventRouter
   typedef std::map<int, ExtensionBluetoothSocketRecord> SocketMap;
   SocketMap socket_map_;
 
+  typedef ScopedVector<extensions::api::bluetooth::Device>
+      DeviceList;
+  DeviceList discovered_devices_;
+
   // A map that maps uuids to ExtensionBluetoothProfileRecord.
   typedef std::map<std::string, ExtensionBluetoothProfileRecord>
       BluetoothProfileMap;
   BluetoothProfileMap bluetooth_profile_map_;
-
-  // A map that maps extension ids to BluetoothDiscoverySession pointers.
-  typedef std::map<std::string, device::BluetoothDiscoverySession*>
-      DiscoverySessionMap;
-  DiscoverySessionMap discovery_session_map_;
 
   content::NotificationRegistrar registrar_;
 
