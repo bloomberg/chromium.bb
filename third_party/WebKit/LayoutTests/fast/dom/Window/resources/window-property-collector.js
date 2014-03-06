@@ -62,7 +62,13 @@ function collectPropertiesHelper(object, path)
 {
     if (path.length > 20)
         throw 'Error: probably looping';
+
     for (var property in object) {
+        // Skip the properties which are hard to expect a stable result.
+        // As for 'accessibilityController', we can hardly estimate the states
+        // of the cached WebAXObjects.
+        if (property == 'accessibilityController')
+            continue;
         if (!object[property])
             continue;
         path.push(property);
@@ -85,4 +91,3 @@ function collectPropertiesHelper(object, path)
         path.pop();
     }
 }
-
