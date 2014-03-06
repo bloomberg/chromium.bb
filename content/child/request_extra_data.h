@@ -30,7 +30,8 @@ class CONTENT_EXPORT RequestExtraData
                    PageTransition transition_type,
                    bool should_replace_current_entry,
                    int transferred_request_child_id,
-                   int transferred_request_request_id);
+                   int transferred_request_request_id,
+                   int service_worker_provider_id);
   virtual ~RequestExtraData();
 
   blink::WebPageVisibilityState visibility_state() const {
@@ -52,6 +53,9 @@ class CONTENT_EXPORT RequestExtraData
   int transferred_request_request_id() const {
     return transferred_request_request_id_;
   }
+  int service_worker_provider_id() const {
+    return service_worker_provider_id_;
+  }
 
  private:
   blink::WebPageVisibilityState visibility_state_;
@@ -65,6 +69,7 @@ class CONTENT_EXPORT RequestExtraData
   bool should_replace_current_entry_;
   int transferred_request_child_id_;
   int transferred_request_request_id_;
+  int service_worker_provider_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

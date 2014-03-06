@@ -20,9 +20,11 @@
 #include "content/child/plugin_messages.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -1220,6 +1222,13 @@ void RenderFrameImpl::didCreateDataSource(blink::WebFrame* frame,
   // * PopulateDocumentStateFromPending
   // * CreateNavigationStateFromPending
   render_view_->didCreateDataSource(frame, datasource);
+
+  // Create the serviceworker's per-document network observing object.
+  scoped_ptr<ServiceWorkerNetworkProvider>
+      network_provider(new ServiceWorkerNetworkProvider());
+  ServiceWorkerNetworkProvider::AttachToDocumentState(
+      DocumentState::FromDataSource(datasource),
+      network_provider.Pass());
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
@@ -1791,6 +1800,25 @@ void RenderFrameImpl::willSendRequest(
     should_replace_current_entry =
         navigation_state->should_replace_current_entry();
   }
+
+  int provider_id = kInvalidServiceWorkerProviderId;
+  if (request.targetType() == blink::WebURLRequest::TargetIsMainFrame ||
+      request.targetType() == blink::WebURLRequest::TargetIsSubframe) {
+    // |provisionalDataSource| may be null in some content::ResourceFetcher
+    // use cases, we don't hook those requests.
+    if (frame->provisionalDataSource()) {
+      ServiceWorkerNetworkProvider* provider =
+          ServiceWorkerNetworkProvider::FromDocumentState(
+              DocumentState::FromDataSource(frame->provisionalDataSource()));
+      provider_id = provider->provider_id();
+    }
+  } else if (frame->dataSource()) {
+    ServiceWorkerNetworkProvider* provider =
+        ServiceWorkerNetworkProvider::FromDocumentState(
+            DocumentState::FromDataSource(frame->dataSource()));
+    provider_id = provider->provider_id();
+  }
+
   int parent_routing_id = frame->parent() ?
       FromWebFrame(frame->parent())->GetRoutingID() : -1;
   request.setExtraData(
@@ -1806,7 +1834,8 @@ void RenderFrameImpl::willSendRequest(
                            transition_type,
                            should_replace_current_entry,
                            navigation_state->transferred_request_child_id(),
-                           navigation_state->transferred_request_request_id()));
+                           navigation_state->transferred_request_request_id(),
+                           provider_id));
 
   DocumentState* top_document_state =
       DocumentState::FromDataSource(top_data_source);

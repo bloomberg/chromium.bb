@@ -15,6 +15,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/web_url_loader_impl.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -118,7 +119,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
                               PAGE_TRANSITION_LINK,
                               false,
                               -1,
-                              -1);
+                              -1,
+                              kInvalidServiceWorkerProviderId);
 
   request_info.extra_data = &extra_data;
 

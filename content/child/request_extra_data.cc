@@ -21,7 +21,8 @@ RequestExtraData::RequestExtraData(
     PageTransition transition_type,
     bool should_replace_current_entry,
     int transferred_request_child_id,
-    int transferred_request_request_id)
+    int transferred_request_request_id,
+    int service_worker_provider_id)
     : webkit_glue::WebURLRequestExtraDataImpl(custom_user_agent,
                                               was_after_preconnect_request),
       visibility_state_(visibility_state),
@@ -34,7 +35,8 @@ RequestExtraData::RequestExtraData(
       transition_type_(transition_type),
       should_replace_current_entry_(should_replace_current_entry),
       transferred_request_child_id_(transferred_request_child_id),
-      transferred_request_request_id_(transferred_request_request_id) {
+      transferred_request_request_id_(transferred_request_request_id),
+      service_worker_provider_id_(service_worker_provider_id) {
 }
 
 RequestExtraData::~RequestExtraData() {

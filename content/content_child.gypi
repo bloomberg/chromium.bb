@@ -139,6 +139,8 @@
     'child/service_worker/service_worker_dispatcher.h',
     'child/service_worker/service_worker_message_filter.cc',
     'child/service_worker/service_worker_message_filter.h',
+    'child/service_worker/service_worker_network_provider.cc',
+    'child/service_worker/service_worker_network_provider.h',
     'child/service_worker/web_service_worker_impl.cc',
     'child/service_worker/web_service_worker_impl.h',
     'child/service_worker/web_service_worker_provider_impl.cc',

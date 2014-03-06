@@ -9,6 +9,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/common/frame_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -2248,6 +2250,48 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   ViewHostMsg_FocusedNodeChanged::Read(msg3, &params);
   EXPECT_FALSE(params.a);
   render_thread_->sink().ClearMessages();
+}
+
+TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
+  ServiceWorkerNetworkProvider* provider = NULL;
+  RequestExtraData* extra_data = NULL;
+
+  // Make sure each new document has a new provider and
+  // that the main request is tagged with the provider's id.
+  LoadHTML("<b>A Document</b>");
+  ASSERT_TRUE(GetMainFrame()->dataSource());
+  provider = ServiceWorkerNetworkProvider::FromDocumentState(
+      DocumentState::FromDataSource(GetMainFrame()->dataSource()));
+  ASSERT_TRUE(provider);
+  extra_data = static_cast<RequestExtraData*>(
+      GetMainFrame()->dataSource()->request().extraData());
+  ASSERT_TRUE(extra_data);
+  EXPECT_EQ(extra_data->service_worker_provider_id(),
+            provider->provider_id());
+  int provider1_id = provider->provider_id();
+
+  LoadHTML("<b>New Document B Goes Here</b>");
+  ASSERT_TRUE(GetMainFrame()->dataSource());
+  provider = ServiceWorkerNetworkProvider::FromDocumentState(
+      DocumentState::FromDataSource(GetMainFrame()->dataSource()));
+  ASSERT_TRUE(provider);
+  EXPECT_NE(provider1_id, provider->provider_id());
+  extra_data = static_cast<RequestExtraData*>(
+      GetMainFrame()->dataSource()->request().extraData());
+  ASSERT_TRUE(extra_data);
+  EXPECT_EQ(extra_data->service_worker_provider_id(),
+            provider->provider_id());
+
+  // See that subresource requests are also tagged with the provider's id.
+  EXPECT_EQ(frame(), RenderFrameImpl::FromWebFrame(GetMainFrame()));
+  blink::WebURLRequest request(GURL("http://foo.com"));
+  request.setTargetType(blink::WebURLRequest::TargetIsSubresource);
+  blink::WebURLResponse redirect_response;
+  frame()->willSendRequest(GetMainFrame(), 0, request, redirect_response);
+  extra_data = static_cast<RequestExtraData*>(request.extraData());
+  ASSERT_TRUE(extra_data);
+  EXPECT_EQ(extra_data->service_worker_provider_id(),
+            provider->provider_id());
 }
 
 }  // namespace content

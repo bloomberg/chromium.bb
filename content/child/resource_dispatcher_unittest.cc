@@ -12,6 +12,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -178,7 +179,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
                                 blink::WebString(),
                                 false, MSG_ROUTING_NONE, true, GURL(),
                                 false, -1, true,
-                                PAGE_TRANSITION_LINK, false, -1, -1);
+                                PAGE_TRANSITION_LINK, false, -1, -1,
+                                kInvalidServiceWorkerProviderId);
     request_info.extra_data = &extra_data;
 
     return dispatcher_->CreateBridge(request_info);
