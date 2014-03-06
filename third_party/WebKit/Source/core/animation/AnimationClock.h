@@ -53,7 +53,6 @@ public:
     void updateTime(double time);
     double currentTime();
     void unfreeze() { m_frozen = false; }
-    bool isFrozen() const { return m_frozen; }
     void resetTimeForTesting() { m_time = 0; m_frozen = true; }
 
 private:

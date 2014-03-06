@@ -54,8 +54,6 @@ public:
     void removeResource(const AtomicString& id);
     RenderSVGResourceContainer* resourceById(const AtomicString& id) const;
 
-    static void serviceOnAnimationFrame(Document&, double monotonicAnimationStartTime);
-
     void startAnimations();
     void pauseAnimations();
     void unpauseAnimations();
@@ -110,8 +108,6 @@ public:
     void clearHasPendingResourcesIfPossible(Element*);
     void removeElementFromPendingResources(Element*);
     PassOwnPtr<SVGPendingElements> removePendingResource(const AtomicString& id);
-
-    void serviceAnimations(double monotonicAnimationStartTime);
 
     // The following two functions are used for scheduling a pending resource to be removed.
     void markPendingResourcesForRemoval(const AtomicString&);

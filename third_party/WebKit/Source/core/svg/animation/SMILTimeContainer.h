@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-class AnimationClock;
-class Document;
 class SVGElement;
 class SVGSMILElement;
 class SVGSVGElement;
@@ -63,9 +61,6 @@ public:
     void resume();
     void setElapsed(SMILTime);
 
-    void serviceAnimations(double monotonicAnimationStartTime);
-    bool hasAnimations() const;
-
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
 private:
@@ -75,14 +70,11 @@ private:
     void scheduleAnimationFrame(SMILTime fireTime);
     void scheduleAnimationFrame();
     void cancelAnimationFrame();
-    void wakeupTimerFired(Timer<SMILTimeContainer>*);
+    void timerFired(Timer<SMILTimeContainer>*);
     void updateAnimations(SMILTime elapsed, bool seekToTime = false);
-    void serviceOnNextFrame();
 
     void updateDocumentOrderIndexes();
     double lastResumeTime() const { return m_resumeTime ? m_resumeTime : m_beginTime; }
-
-    Document& document() const;
 
     double m_beginTime;
     double m_pauseTime;
@@ -91,10 +83,8 @@ private:
     double m_presetStartTime;
 
     bool m_documentOrderIndexesDirty;
-    bool m_framePending;
 
-    OwnPtr<AnimationClock> m_animationClock;
-    Timer<SMILTimeContainer> m_wakeupTimer;
+    Timer<SMILTimeContainer> m_timer;
 
     typedef pair<SVGElement*, QualifiedName> ElementAttributePair;
     typedef Vector<SVGSMILElement*> AnimationsVector;

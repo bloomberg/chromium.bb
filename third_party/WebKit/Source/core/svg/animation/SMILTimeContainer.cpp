@@ -26,16 +26,16 @@
 #include "config.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 
-#include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/frame/FrameView.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include "wtf/CurrentTime.h"
 
 using namespace std;
 
 namespace WebCore {
+
+static const double animationFrameDelay = 0.025;
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner)
     : m_beginTime(0)
@@ -44,9 +44,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner)
     , m_accumulatedActiveTime(0)
     , m_presetStartTime(0)
     , m_documentOrderIndexesDirty(false)
-    , m_framePending(false)
-    , m_animationClock(AnimationClock::create())
-    , m_wakeupTimer(this, &SMILTimeContainer::wakeupTimerFired)
+    , m_timer(this, &SMILTimeContainer::timerFired)
     , m_ownerSVGElement(owner)
 #ifndef NDEBUG
     , m_preventScheduledAnimationsChanges(false)
@@ -57,7 +55,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner)
 SMILTimeContainer::~SMILTimeContainer()
 {
     cancelAnimationFrame();
-    ASSERT(!m_wakeupTimer.isActive());
+    ASSERT(!m_timer.isActive());
 #ifndef NDEBUG
     ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
@@ -101,11 +99,6 @@ void SMILTimeContainer::unschedule(SVGSMILElement* animation, SVGElement* target
     scheduled->remove(idx);
 }
 
-bool SMILTimeContainer::hasAnimations() const
-{
-    return !m_scheduledAnimations.isEmpty();
-}
-
 void SMILTimeContainer::notifyIntervalsChanged()
 {
     // Schedule updateAnimations() to be called asynchronously so multiple intervals
@@ -121,7 +114,7 @@ SMILTime SMILTimeContainer::elapsed() const
     if (isPaused())
         return m_accumulatedActiveTime;
 
-    return m_animationClock->currentTime() + m_accumulatedActiveTime - lastResumeTime();
+    return currentTime() + m_accumulatedActiveTime - lastResumeTime();
 }
 
 bool SMILTimeContainer::isPaused() const
@@ -137,7 +130,7 @@ bool SMILTimeContainer::isStarted() const
 void SMILTimeContainer::begin()
 {
     ASSERT(!m_beginTime);
-    double now = m_animationClock->currentTime();
+    double now = currentTime();
 
     // If 'm_presetStartTime' is set, the timeline was modified via setElapsed() before the document began.
     // In this case pass on 'seekToTime=true' to updateAnimations().
@@ -148,33 +141,28 @@ void SMILTimeContainer::begin()
     if (m_pauseTime) {
         m_pauseTime = now;
         cancelAnimationFrame();
-    } else {
-        // Latch the clock to this time (0 or the preset start time).
-        m_animationClock->updateTime(now);
     }
 }
 
 void SMILTimeContainer::pause()
 {
     ASSERT(!isPaused());
-    m_pauseTime = m_animationClock->currentTime();
+    m_pauseTime = currentTime();
 
     if (m_beginTime) {
         m_accumulatedActiveTime += m_pauseTime - lastResumeTime();
         cancelAnimationFrame();
     }
     m_resumeTime = 0;
-    m_animationClock->unfreeze();
 }
 
 void SMILTimeContainer::resume()
 {
     ASSERT(isPaused());
-    m_resumeTime = m_animationClock->currentTime();
+    m_resumeTime = currentTime();
 
     m_pauseTime = 0;
     scheduleAnimationFrame();
-    m_animationClock->unfreeze();
 }
 
 void SMILTimeContainer::setElapsed(SMILTime time)
@@ -185,11 +173,10 @@ void SMILTimeContainer::setElapsed(SMILTime time)
         return;
     }
 
-    m_animationClock->unfreeze();
+    if (m_beginTime)
+        cancelAnimationFrame();
 
-    cancelAnimationFrame();
-
-    double now = m_animationClock->currentTime();
+    double now = currentTime();
     m_beginTime = now - time.value();
     m_resumeTime = 0;
     if (m_pauseTime) {
@@ -214,8 +201,6 @@ void SMILTimeContainer::setElapsed(SMILTime time)
 #endif
 
     updateAnimations(time, true);
-    // Latch the clock to wait for this frame to be sampled by the frame interval.
-    m_animationClock->updateTime(now);
 }
 
 bool SMILTimeContainer::isTimelineRunning() const
@@ -231,11 +216,8 @@ void SMILTimeContainer::scheduleAnimationFrame(SMILTime fireTime)
     if (!fireTime.isFinite())
         return;
 
-    SMILTime delay = fireTime - elapsed();
-    if (delay.value() < DocumentTimeline::s_minimumDelay)
-        serviceOnNextFrame();
-    else
-        m_wakeupTimer.startOneShot(delay.value() - DocumentTimeline::s_minimumDelay);
+    SMILTime delay = max(fireTime - elapsed(), SMILTime(animationFrameDelay));
+    m_timer.startOneShot(delay.value());
 }
 
 void SMILTimeContainer::scheduleAnimationFrame()
@@ -243,21 +225,18 @@ void SMILTimeContainer::scheduleAnimationFrame()
     if (!isTimelineRunning())
         return;
 
-    // Could also schedule a wakeup at +0 seconds, but that could still
-    // potentially race with the servicing of the next frame.
-    serviceOnNextFrame();
+    m_timer.startOneShot(0);
 }
 
 void SMILTimeContainer::cancelAnimationFrame()
 {
-    m_framePending = false;
-    m_wakeupTimer.stop();
+    m_timer.stop();
 }
 
-void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
+void SMILTimeContainer::timerFired(Timer<SMILTimeContainer>*)
 {
     ASSERT(isTimelineRunning());
-    serviceOnNextFrame();
+    updateAnimations(elapsed());
 }
 
 void SMILTimeContainer::updateDocumentOrderIndexes()
@@ -286,35 +265,6 @@ struct PriorityCompare {
     }
     SMILTime m_elapsed;
 };
-
-Document& SMILTimeContainer::document() const
-{
-    ASSERT(m_ownerSVGElement);
-    return m_ownerSVGElement->document();
-}
-
-void SMILTimeContainer::serviceOnNextFrame()
-{
-    if (document().view()) {
-        document().view()->scheduleAnimation();
-        m_framePending = true;
-    }
-}
-
-void SMILTimeContainer::serviceAnimations(double monotonicAnimationStartTime)
-{
-    if (!m_framePending)
-        return;
-
-    m_framePending = false;
-    // If the clock is frozen at this point, it means the timeline has been
-    // started, but the first animation frame hasn't yet been serviced. If so,
-    // then just keep the clock frozen for this update.
-    if (!m_animationClock->isFrozen())
-        m_animationClock->updateTime(monotonicAnimationStartTime);
-    updateAnimations(elapsed());
-    m_animationClock->unfreeze();
-}
 
 void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 {

@@ -67,9 +67,6 @@ public:
     // Returns the SVG image document's frame.
     FrameView* frameView() const;
 
-    // Does the SVG image/document contain any animations?
-    bool hasAnimations() const;
-
 private:
     friend class AXRenderObject;
     friend class SVGImageChromeClient;
