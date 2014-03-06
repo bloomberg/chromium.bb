@@ -79,6 +79,13 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     // Inactive State, then by Type.
     virtual void SortManagerServices() = 0;
 
+    // Sets up the default fake environment based on default initial states
+    // or states provided by the command line.
+    virtual void SetupDefaultEnvironment() = 0;
+
+    // Returns the interactive delay specified on the command line, 0 for none.
+    virtual int GetInteractiveDelay() const = 0;
+
    protected:
     virtual ~TestInterface() {}
   };

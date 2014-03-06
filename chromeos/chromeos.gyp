@@ -180,8 +180,6 @@
         'dbus/shill_profile_client.h',
         'dbus/shill_service_client.cc',
         'dbus/shill_service_client.h',
-        'dbus/shill_stub_helper.cc',
-        'dbus/shill_stub_helper.h',
         'dbus/image_burner_client.cc',
         'dbus/image_burner_client.h',
         'dbus/introspectable_client.cc',

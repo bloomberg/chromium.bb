@@ -101,6 +101,8 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void ServiceStateChanged(const std::string& service_path,
                                    const std::string& state) OVERRIDE;
   virtual void SortManagerServices() OVERRIDE;
+  virtual void SetupDefaultEnvironment() OVERRIDE;
+  virtual int GetInteractiveDelay() const OVERRIDE;
 
  private:
   void AddServiceToWatchList(const std::string& service_path);
@@ -118,10 +120,27 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   void ScanCompleted(const std::string& device_path,
                      const base::Closure& callback);
 
+  // Parses the command line for Shill stub switches and sets initial states.
+  // Uses comma-separated name-value pairs (see SplitStringIntoKeyValuePairs):
+  // interactive={delay} - sets delay in seconds for interactive UI
+  // {wifi,cellular,etc}={on,off,disabled,none} - sets initial state for type
+  void ParseCommandLineSwitch();
+  bool ParseOption(const std::string& arg0, const std::string& arg1);
+  bool SetInitialNetworkState(std::string type_arg, std::string state_arg);
+  std::string GetInitialStateForType(const std::string& type,
+                                     bool* enabled);
+
   // Dictionary of property name -> property value
   base::DictionaryValue stub_properties_;
+
   // Dictionary of technology -> list of property dictionaries
   base::DictionaryValue stub_geo_networks_;
+
+  // Seconds to delay interactive actions
+  int interactive_delay_;
+
+  // Initial state for fake services.
+  std::map<std::string, std::string> shill_initial_state_map_;
 
   ObserverList<ShillPropertyChangedObserver> observer_list_;
 

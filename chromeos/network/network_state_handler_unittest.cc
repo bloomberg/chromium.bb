@@ -320,7 +320,9 @@ TEST_F(NetworkStateHandlerTest, TechnologyState) {
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   // Set a service property.
   const std::string eth1 = kShillManagerClientStubDefaultService;
-  EXPECT_EQ("", network_state_handler_->GetNetworkState(eth1)->security());
+  const NetworkState* ethernet = network_state_handler_->GetNetworkState(eth1);
+  ASSERT_TRUE(ethernet);
+  EXPECT_EQ("", ethernet->security());
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(eth1));
   base::StringValue security_value("TestSecurity");
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
@@ -328,8 +330,8 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
       shill::kSecurityProperty, security_value,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
-  EXPECT_EQ("TestSecurity",
-            network_state_handler_->GetNetworkState(eth1)->security());
+  ethernet = network_state_handler_->GetNetworkState(eth1);
+  EXPECT_EQ("TestSecurity", ethernet->security());
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
 
   // Changing a service to the existing value should not trigger an update.

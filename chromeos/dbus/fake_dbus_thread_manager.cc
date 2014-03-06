@@ -117,6 +117,13 @@ void FakeDBusThreadManager::SetFakeShillClients() {
       scoped_ptr<ShillProfileClient>(new FakeShillProfileClient));
 }
 
+void FakeDBusThreadManager::SetupDefaultEnvironment() {
+  ShillManagerClient::TestInterface* manager =
+      shill_manager_client_->GetTestInterface();
+  if (manager)
+    manager->SetupDefaultEnvironment();
+}
+
 void FakeDBusThreadManager::SetBluetoothAdapterClient(
     scoped_ptr<BluetoothAdapterClient> client) {
   bluetooth_adapter_client_ = client.Pass();

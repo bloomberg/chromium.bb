@@ -41,7 +41,6 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/dbus/shill_stub_helper.h"
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -469,7 +468,7 @@ void DBusThreadManager::InitializeWithStub() {
   fake_dbus_thread_manager->SetFakeClients();
   g_dbus_thread_manager = fake_dbus_thread_manager;
   InitializeClients();
-  shill_stub_helper::SetupDefaultEnvironment();
+  fake_dbus_thread_manager->SetupDefaultEnvironment();
   VLOG(1) << "DBusThreadManager initialized with stub implementation";
 }
 

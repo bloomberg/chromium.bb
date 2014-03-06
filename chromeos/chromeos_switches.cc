@@ -21,14 +21,14 @@ const char kAuthExtensionPath[]             = "auth-ext-path";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
-// All stub networks are idle by default.
-const char kDefaultStubNetworkStateIdle[] = "default-stub-network-state-idle";
-
 // Time before a machine at OOBE is considered derelict
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 
 // Time before a derelict machines starts demo mode.
 const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
+
+// Integer flag that sets the DeviceRegistered local state pref.
+const char kDeviceRegistered[]              = "device-registered";
 
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
@@ -93,24 +93,12 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
-// Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
+// Enable "interactive" mode for stub implemenations (e.g. PowerManagerClient)
 const char kEnableStubInteractive[] = "enable-stub-interactive";
-
-// Enable stub portalled wifi network for testing.
-const char kEnableStubPortalledWifi[] = "enable-stub-portalled-wifi";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";
-
-// Specifies stub network types to be enabled.  If this switch is not specified,
-// ethernet, wifi and vpn are enabled by default.
-//
-// Examples:
-// Disable all network types: --enabled-stub-network-types=''
-// Enable wifi only: --enabled-stub-network-types=wifi
-// Enable ethernet and wifi: --enabled-stub-network-types=ethernet,wifi
-const char kEnabledStubNetworkTypes[] = "enabled-stub-network-types";
 
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
@@ -187,8 +175,19 @@ const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[]             = "oobe-timer-interval";
 
-// Integer flag that sets the DeviceRegistered local state pref.
-const char kDeviceRegistered[]              = "device-registered";
+// Specifies network stub behavior. If this switch is not specified,
+// ethernet, wifi and vpn are enabled by default, and transitions occur
+// instantaneously. Multiple options can be comma separated (no spaces).
+// See FakeShillManagerClient::SetInitialNetworkState for implementation.
+// Examples:
+//  'wifi=on' - A wifi network is initially connected ('1' also works)
+//  'wifi=off' - Wifi networks are all initially disconnected ('0' also works)
+//  'wifi=disabled' - Wifi is initially disabled
+//  'wifi=none' - Wifi is unavailable
+//  'wifi=portal' - Wifi connection will be in Portal state
+//  'cellular=1' - Cellular is initially connected
+//  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
+const char kShillStub[] = "shill-stub";
 
 // Skips the machine hwid check. Useful for running in VMs because they have no
 // hwid.

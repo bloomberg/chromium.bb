@@ -34,6 +34,9 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   // Creates and sets all fake Shill DBusClients.
   void SetFakeShillClients();
 
+  // Sets up any default environment for fake clients, e.g. for UI testing.
+  void SetupDefaultEnvironment();
+
   void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
   void SetBluetoothAgentManagerClient(
       scoped_ptr<BluetoothAgentManagerClient> client);

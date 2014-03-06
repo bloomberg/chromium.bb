@@ -6,17 +6,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
-#include "chromeos/dbus/shill_stub_helper.h"
 #include "chromeos/network/shill_property_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -42,6 +39,11 @@ void PassStubServiceProperties(
 void CallSortManagerServices() {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       SortManagerServices();
+}
+
+int GetInteractiveDelay() {
+  return DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      GetInteractiveDelay();
 }
 
 }  // namespace
@@ -193,18 +195,12 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
                      associating_value);
 
   // Stay Associating until the state is changed again after a delay.
-  base::TimeDelta delay;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableStubInteractive)) {
-    const int kConnectDelaySeconds = 5;
-    delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
-  }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeShillServiceClient::ContinueConnect,
                  weak_ptr_factory_.GetWeakPtr(),
                  service_path.value()),
-      delay);
+      base::TimeDelta::FromSeconds(GetInteractiveDelay()));
 
   callback.Run();
 }
@@ -217,12 +213,6 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  base::TimeDelta delay;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableStubInteractive)) {
-    const int kConnectDelaySeconds = 2;
-    delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
-  }
   // Set Idle after a delay
   base::StringValue idle_value(shill::kStateIdle);
   base::MessageLoop::current()->PostDelayedTask(
@@ -234,7 +224,7 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
                  idle_value,
                  base::Bind(&base::DoNothing),
                  error_callback),
-      delay);
+      base::TimeDelta::FromSeconds(GetInteractiveDelay()));
   callback.Run();
 }
 
@@ -258,12 +248,6 @@ void FakeShillServiceClient::ActivateCellularModem(
   SetServiceProperty(service_path.value(),
                      shill::kActivationStateProperty,
                      base::StringValue(shill::kActivationStateActivating));
-  base::TimeDelta delay;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableStubInteractive)) {
-    const int kConnectDelaySeconds = 2;
-    delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
-  }
   // Set Activated after a delay
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -271,7 +255,7 @@ void FakeShillServiceClient::ActivateCellularModem(
                  weak_ptr_factory_.GetWeakPtr(),
                  service_path,
                  error_callback),
-      delay);
+      base::TimeDelta::FromSeconds(GetInteractiveDelay()));
 
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
@@ -324,12 +308,7 @@ void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& state,
                                         bool add_to_visible_list,
                                         bool add_to_watch_list) {
-  std::string nstate = state;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDefaultStubNetworkStateIdle)) {
-    nstate = shill::kStateIdle;
-  }
-  AddServiceWithIPConfig(service_path, name, type, nstate, "",
+  AddServiceWithIPConfig(service_path, name, type, state, "",
                          add_to_visible_list, add_to_watch_list);
 }
 

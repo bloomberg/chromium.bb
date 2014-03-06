@@ -94,10 +94,12 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Similar to Initialize(), but injects an alternative
   // DBusThreadManager using SetInstanceForTest first.  The injected
   // object will be owned by the internal pointer and deleted by
-  // Shutdown().
+  // Shutdown(). Does not create any Fake client implementations.
   static void InitializeForTesting(DBusThreadManager* dbus_thread_manager);
 
-  // Initialize with stub implementations for tests based on stubs.
+  // Initialize with stub implementations for tests, creating a complete set
+  // of fake/stub client implementations. Also initializes a default set of
+  // fake Shill devices and services, customizable with switches::kShillStub.
   static void InitializeWithStub();
 
   // Returns true if DBusThreadManager has been initialized. Call this to

@@ -309,29 +309,29 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   const int initial_technology_updates = 2;  // Available and Enabled lists
   EXPECT_EQ(initial_technology_updates, listener_->technology_list_updates());
 
-  // Remove a technology. Updates both the Available and Enabled lists.
-  manager_test_->RemoveTechnology(shill::kTypeWimax);
+  // Remove an enabled technology. Updates both the Available and Enabled lists.
+  manager_test_->RemoveTechnology(shill::kTypeWifi);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(initial_technology_updates + 2,
             listener_->technology_list_updates());
 
   // Add a disabled technology.
-  manager_test_->AddTechnology(shill::kTypeWimax, false);
+  manager_test_->AddTechnology(shill::kTypeWifi, false);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(initial_technology_updates + 3,
             listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
-      shill::kTypeWimax));
-  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWimax));
+      shill::kTypeWifi));
+  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
 
   // Enable the technology.
   DBusThreadManager::Get()->GetShillManagerClient()->EnableTechnology(
-      shill::kTypeWimax,
+      shill::kTypeWifi,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(initial_technology_updates + 4,
             listener_->technology_list_updates());
-  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWimax));
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
 
   EXPECT_EQ(0, listener_->errors());
 }

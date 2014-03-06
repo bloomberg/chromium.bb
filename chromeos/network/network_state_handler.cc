@@ -191,8 +191,10 @@ const FavoriteState* NetworkStateHandler::DefaultFavoriteNetwork() const {
     return NULL;
   const FavoriteState* default_favorite =
       GetFavoriteState(default_network->path());
-  DCHECK(default_favorite);
-  DCHECK(default_favorite->update_received());
+  DCHECK(default_network->type() != shill::kTypeWifi ||
+         default_favorite) << "No favorite for: " << default_network->path();
+  DCHECK(!default_favorite || default_favorite->update_received())
+      << "No update received for: " << default_network->path();
   return default_favorite;
 }
 

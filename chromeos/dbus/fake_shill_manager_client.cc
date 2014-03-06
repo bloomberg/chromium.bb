@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -83,10 +86,23 @@ bool IsConnectedState(const std::string& state) {
          state == shill::kStateReady;
 }
 
+void UpdatePortaledWifiState(const std::string& service_path) {
+  DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()
+      ->SetServiceProperty(service_path,
+                           shill::kStateProperty,
+                           base::StringValue(shill::kStatePortal));
+}
+
+const char* kTechnologyUnavailable = "unavailable";
+const char* kNetworkActivated = "activated";
+const char* kNetworkDisabled = "disabled";
+
 }  // namespace
 
 FakeShillManagerClient::FakeShillManagerClient()
-    : weak_ptr_factory_(this) {
+    : interactive_delay_(0),
+      weak_ptr_factory_(this) {
+  ParseCommandLineSwitch();
 }
 
 FakeShillManagerClient::~FakeShillManagerClient() {}
@@ -143,21 +159,16 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
       DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
   std::string device_path = device_client->GetDevicePathForType(device_type);
   if (!device_path.empty()) {
-    device_client->SetDeviceProperty(device_path,
-                                     shill::kScanningProperty,
-                                     base::FundamentalValue(true));
-  }
-  const int kScanDurationSeconds = 3;
-  int scan_duration_seconds = kScanDurationSeconds;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableStubInteractive)) {
-    scan_duration_seconds = 0;
+    device_client->SetDeviceProperty(
+        device_path, shill::kScanningProperty, base::FundamentalValue(true));
   }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeShillManagerClient::ScanCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), device_path, callback),
-      base::TimeDelta::FromSeconds(scan_duration_seconds));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 device_path,
+                 callback),
+      base::TimeDelta::FromSeconds(interactive_delay_));
 }
 
 void FakeShillManagerClient::EnableTechnology(
@@ -166,24 +177,21 @@ void FakeShillManagerClient::EnableTechnology(
     const ErrorCallback& error_callback) {
   base::ListValue* enabled_list = NULL;
   if (!stub_properties_.GetListWithoutPathExpansion(
-      shill::kEnabledTechnologiesProperty, &enabled_list)) {
+          shill::kAvailableTechnologiesProperty, &enabled_list)) {
     base::MessageLoop::current()->PostTask(FROM_HERE, callback);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(error_callback, "StubError", "Property not found"));
     return;
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableStubInteractive)) {
-    const int kEnableTechnologyDelaySeconds = 3;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&FakeShillManagerClient::SetTechnologyEnabled,
-                   weak_ptr_factory_.GetWeakPtr(), type, callback, true),
-        base::TimeDelta::FromSeconds(kEnableTechnologyDelaySeconds));
-  } else {
-    SetTechnologyEnabled(type, callback, true);
-  }
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeShillManagerClient::SetTechnologyEnabled,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 type,
+                 callback,
+                 true),
+      base::TimeDelta::FromSeconds(interactive_delay_));
 }
 
 void FakeShillManagerClient::DisableTechnology(
@@ -192,23 +200,20 @@ void FakeShillManagerClient::DisableTechnology(
     const ErrorCallback& error_callback) {
   base::ListValue* enabled_list = NULL;
   if (!stub_properties_.GetListWithoutPathExpansion(
-      shill::kEnabledTechnologiesProperty, &enabled_list)) {
+          shill::kAvailableTechnologiesProperty, &enabled_list)) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(error_callback, "StubError", "Property not found"));
     return;
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableStubInteractive)) {
-    const int kDisableTechnologyDelaySeconds = 3;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&FakeShillManagerClient::SetTechnologyEnabled,
-                   weak_ptr_factory_.GetWeakPtr(), type, callback, false),
-        base::TimeDelta::FromSeconds(kDisableTechnologyDelaySeconds));
-  } else {
-    SetTechnologyEnabled(type, callback, false);
-  }
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeShillManagerClient::SetTechnologyEnabled,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 type,
+                 callback,
+                 false),
+      base::TimeDelta::FromSeconds(interactive_delay_));
 }
 
 void FakeShillManagerClient::ConfigureService(
@@ -222,7 +227,7 @@ void FakeShillManagerClient::ConfigureService(
   std::string type;
   if (!properties.GetString(shill::kGuidProperty, &guid) ||
       !properties.GetString(shill::kTypeProperty, &type)) {
-    LOG(ERROR) << "ConfigureService requies GUID and Type to be defined";
+    LOG(ERROR) << "ConfigureService requires GUID and Type to be defined";
     // If the properties aren't filled out completely, then just return an empty
     // object path.
     base::MessageLoop::current()->PostTask(
@@ -316,8 +321,8 @@ void FakeShillManagerClient::VerifyAndEncryptData(
     const std::string& data,
     const StringCallback& callback,
     const ErrorCallback& error_callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(callback, "encrypted_data"));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, "encrypted_data"));
 }
 
 void FakeShillManagerClient::ConnectToBestServices(
@@ -394,6 +399,26 @@ void FakeShillManagerClient::SetTechnologyInitializing(const std::string& type,
       CallNotifyObserversPropertyChanged(
           shill::kUninitializedTechnologiesProperty);
     }
+  }
+}
+
+void FakeShillManagerClient::AddGeoNetwork(
+    const std::string& technology,
+    const base::DictionaryValue& network) {
+  base::ListValue* list_value = NULL;
+  if (!stub_geo_networks_.GetListWithoutPathExpansion(technology,
+                                                      &list_value)) {
+    list_value = new base::ListValue;
+    stub_geo_networks_.SetWithoutPathExpansion(technology, list_value);
+  }
+  list_value->Append(network.DeepCopy());
+}
+
+void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
+  const char* key = shill::kProfilesProperty;
+  if (GetListProperty(key)
+          ->AppendIfNotPresent(new base::StringValue(profile_path))) {
+    CallNotifyObserversPropertyChanged(key);
   }
 }
 
@@ -513,25 +538,193 @@ void FakeShillManagerClient::SortManagerServices() {
   }
 }
 
-void FakeShillManagerClient::AddGeoNetwork(
-    const std::string& technology,
-    const base::DictionaryValue& network) {
-  base::ListValue* list_value = NULL;
-  if (!stub_geo_networks_.GetListWithoutPathExpansion(
-      technology, &list_value)) {
-    list_value = new base::ListValue;
-    stub_geo_networks_.SetWithoutPathExpansion(technology, list_value);
-  }
-  list_value->Append(network.DeepCopy());
+
+int FakeShillManagerClient::GetInteractiveDelay() const {
+  return interactive_delay_;
 }
 
-void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
-  const char* key = shill::kProfilesProperty;
-  if (GetListProperty(key)->AppendIfNotPresent(
-          new base::StringValue(profile_path))) {
-    CallNotifyObserversPropertyChanged(key);
+void FakeShillManagerClient::SetupDefaultEnvironment() {
+  DBusThreadManager* dbus_manager = DBusThreadManager::Get();
+  ShillServiceClient::TestInterface* services =
+      dbus_manager->GetShillServiceClient()->GetTestInterface();
+  ShillProfileClient::TestInterface* profiles =
+      dbus_manager->GetShillProfileClient()->GetTestInterface();
+  ShillDeviceClient::TestInterface* devices =
+      dbus_manager->GetShillDeviceClient()->GetTestInterface();
+  if (!services || !profiles || !devices)
+    return;
+
+  const std::string shared_profile = ShillProfileClient::GetSharedProfilePath();
+  profiles->AddProfile(shared_profile, std::string());
+
+  const bool add_to_visible = true;
+  const bool add_to_watchlist = true;
+
+  bool enabled;
+  std::string state;
+
+  // Ethernet
+  state = GetInitialStateForType(shill::kTypeEthernet, &enabled);
+  if (state == shill::kStateOnline) {
+    AddTechnology(shill::kTypeEthernet, enabled);
+    devices->AddDevice(
+        "/device/eth1", shill::kTypeEthernet, "stub_eth_device1");
+    services->AddService("eth1", "eth1",
+                         shill::kTypeEthernet,
+                         state,
+                         add_to_visible, add_to_watchlist);
+    profiles->AddService(shared_profile, "eth1");
   }
+
+  // Wifi
+  state = GetInitialStateForType(shill::kTypeWifi, &enabled);
+  if (state != kTechnologyUnavailable) {
+    bool portaled = false;
+    if (state == shill::kStatePortal) {
+      portaled = true;
+      state = shill::kStateIdle;
+    }
+    AddTechnology(shill::kTypeWifi, enabled);
+    devices->AddDevice("/device/wifi1", shill::kTypeWifi, "stub_wifi_device1");
+
+    services->AddService("wifi1",
+                         "wifi1",
+                         shill::kTypeWifi,
+                         state,
+                         add_to_visible, add_to_watchlist);
+    services->SetServiceProperty("wifi1",
+                                 shill::kSecurityProperty,
+                                 base::StringValue(shill::kSecurityWep));
+    profiles->AddService(shared_profile, "wifi1");
+
+    services->AddService("wifi2",
+                         "wifi2_PSK",
+                         shill::kTypeWifi,
+                         shill::kStateIdle,
+                         add_to_visible, add_to_watchlist);
+    services->SetServiceProperty("wifi2",
+                                 shill::kSecurityProperty,
+                                 base::StringValue(shill::kSecurityPsk));
+
+    base::FundamentalValue strength_value(80);
+    services->SetServiceProperty(
+        "wifi2", shill::kSignalStrengthProperty, strength_value);
+    profiles->AddService(shared_profile, "wifi2");
+
+    if (portaled) {
+      const std::string kPortaledWifiPath = "portaled_wifi";
+      services->AddService(kPortaledWifiPath,
+                           "Portaled Wifi",
+                           shill::kTypeWifi,
+                           shill::kStatePortal,
+                           add_to_visible, add_to_watchlist);
+      services->SetServiceProperty(kPortaledWifiPath,
+                                   shill::kSecurityProperty,
+                                   base::StringValue(shill::kSecurityNone));
+      services->SetConnectBehavior(kPortaledWifiPath,
+                                   base::Bind(&UpdatePortaledWifiState,
+                                              "portaled_wifi"));
+      services->SetServiceProperty(kPortaledWifiPath,
+                                   shill::kConnectableProperty,
+                                   base::FundamentalValue(true));
+      profiles->AddService(shared_profile, kPortaledWifiPath);
+    }
+  }
+
+  // Wimax
+  state = GetInitialStateForType(shill::kTypeWimax, &enabled);
+  if (state != kTechnologyUnavailable) {
+    AddTechnology(shill::kTypeWimax, enabled);
+    devices->AddDevice(
+        "/device/wimax1", shill::kTypeWimax, "stub_wimax_device1");
+
+    services->AddService("wimax1",
+                         "wimax1",
+                         shill::kTypeWimax,
+                         state,
+                         add_to_visible, add_to_watchlist);
+    services->SetServiceProperty(
+        "wimax1", shill::kConnectableProperty, base::FundamentalValue(true));
+  }
+
+  // Cellular
+  state = GetInitialStateForType(shill::kTypeCellular, &enabled);
+  if (state != kTechnologyUnavailable) {
+    bool activated = false;
+    if (state == kNetworkActivated) {
+      activated = true;
+      state = shill::kStateIdle;
+    }
+    AddTechnology(shill::kTypeCellular, enabled);
+    devices->AddDevice(
+        "/device/cellular1", shill::kTypeCellular, "stub_cellular_device1");
+    devices->SetDeviceProperty("/device/cellular1",
+                               shill::kCarrierProperty,
+                               base::StringValue(shill::kCarrierSprint));
+
+    services->AddService("cellular1",
+                         "cellular1",
+                         shill::kTypeCellular,
+                         state,
+                         add_to_visible, add_to_watchlist);
+    base::StringValue technology_value(shill::kNetworkTechnologyGsm);
+    services->SetServiceProperty(
+        "cellular1", shill::kNetworkTechnologyProperty, technology_value);
+
+    if (activated) {
+      services->SetServiceProperty(
+          "cellular1",
+          shill::kActivationStateProperty,
+          base::StringValue(shill::kActivationStateActivated));
+      services->SetServiceProperty("cellular1",
+                                   shill::kConnectableProperty,
+                                   base::FundamentalValue(true));
+    } else {
+      services->SetServiceProperty(
+          "cellular1",
+          shill::kActivationStateProperty,
+          base::StringValue(shill::kActivationStateNotActivated));
+    }
+
+    services->SetServiceProperty("cellular1",
+                                 shill::kRoamingStateProperty,
+                                 base::StringValue(shill::kRoamingStateHome));
+  }
+
+  // VPN
+  state = GetInitialStateForType(shill::kTypeVPN, &enabled);
+  if (state != kTechnologyUnavailable) {
+    // Set the "Provider" dictionary properties. Note: when setting these in
+    // Shill, "Provider.Type", etc keys are used, but when reading the values
+    // "Provider" . "Type", etc keys are used. Here we are setting the values
+    // that will be read (by the UI, tests, etc).
+    base::DictionaryValue provider_properties;
+    provider_properties.SetString(shill::kTypeProperty,
+                                  shill::kProviderOpenVpn);
+    provider_properties.SetString(shill::kHostProperty, "vpn_host");
+
+    services->AddService("vpn1",
+                         "vpn1",
+                         shill::kTypeVPN,
+                         state,
+                         add_to_visible, add_to_watchlist);
+    services->SetServiceProperty(
+        "vpn1", shill::kProviderProperty, provider_properties);
+    profiles->AddService(shared_profile, "vpn1");
+
+    services->AddService("vpn2",
+                         "vpn2",
+                         shill::kTypeVPN,
+                         shill::kStateIdle,
+                         add_to_visible, add_to_watchlist);
+    services->SetServiceProperty(
+        "vpn2", shill::kProviderProperty, provider_properties);
+  }
+
+  SortManagerServices();
 }
+
+// Private methods
 
 void FakeShillManagerClient::AddServiceToWatchList(
     const std::string& service_path) {
@@ -635,10 +828,8 @@ void FakeShillManagerClient::SetTechnologyEnabled(
     const std::string& type,
     const base::Closure& callback,
     bool enabled) {
-  base::ListValue* enabled_list = NULL;
-  stub_properties_.GetListWithoutPathExpansion(
-      shill::kEnabledTechnologiesProperty, &enabled_list);
-  DCHECK(enabled_list);
+  base::ListValue* enabled_list =
+      GetListProperty(shill::kEnabledTechnologiesProperty);
   if (enabled)
     enabled_list->AppendIfNotPresent(new base::StringValue(type));
   else
@@ -691,6 +882,121 @@ void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
   CallNotifyObserversPropertyChanged(shill::kServicesProperty);
   CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+}
+
+void FakeShillManagerClient::ParseCommandLineSwitch() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kShillStub)) {
+    std::string option_str =
+        command_line->GetSwitchValueASCII(switches::kShillStub);
+    base::StringPairs string_pairs;
+    base::SplitStringIntoKeyValuePairs(option_str, '=', ',', &string_pairs);
+    for (base::StringPairs::iterator iter = string_pairs.begin();
+         iter != string_pairs.end(); ++iter) {
+      ParseOption((*iter).first, (*iter).second);
+    }
+    return;
+  }
+  // Default setup
+  SetInitialNetworkState(shill::kTypeEthernet, shill::kStateOnline);
+  SetInitialNetworkState(shill::kTypeWifi, shill::kStateOnline);
+  SetInitialNetworkState(shill::kTypeCellular, shill::kStateIdle);
+  SetInitialNetworkState(shill::kTypeVPN, shill::kStateIdle);
+}
+
+bool FakeShillManagerClient::ParseOption(const std::string& arg0,
+                                         const std::string& arg1) {
+  if (arg0 == "interactive") {
+    int seconds = 3;
+    if (!arg1.empty())
+      base::StringToInt(arg1, &seconds);
+    interactive_delay_ = seconds;
+    return true;
+  }
+  return SetInitialNetworkState(arg0, arg1);
+}
+
+bool FakeShillManagerClient::SetInitialNetworkState(std::string type_arg,
+                                                    std::string state_arg) {
+  std::string state;
+  state_arg = StringToLowerASCII(state_arg);
+  if (state_arg.empty() || state_arg == "1" || state_arg == "on" ||
+      state_arg == "enabled" || state_arg == "connected" ||
+      state_arg == "online") {
+    // Enabled and connected (default value)
+    state = shill::kStateOnline;
+  } else if (state_arg == "0" || state_arg == "off" ||
+             state_arg == "inactive" || state_arg == shill::kStateIdle) {
+    // Technology enabled, services are created but are not connected.
+    state = shill::kStateIdle;
+  } else if (state_arg == "disabled" || state_arg == "disconnect") {
+    // Technology disabled but available, services created but not connected.
+    state = kNetworkDisabled;
+  } else if (state_arg == "none" || state_arg == "offline") {
+    // Technology not available, do not create services.
+    state = kTechnologyUnavailable;
+  } else if (state_arg == "portal") {
+    // Technology is enabled, a service is connected and in Portal state.
+    state = shill::kStatePortal;
+  } else if (state_arg == "active" || state_arg == "activated") {
+    // Technology is enabled, a service is connected and Activated.
+    state = kNetworkActivated;
+  } else {
+    LOG(ERROR) << "Unrecognized initial state: " << state_arg;
+    return false;
+  }
+
+  type_arg = StringToLowerASCII(type_arg);
+  // Special cases
+  if (type_arg == "wireless") {
+    shill_initial_state_map_[shill::kTypeWifi] = state;
+    shill_initial_state_map_[shill::kTypeCellular] = state;
+    return true;
+  }
+  // Convenience synonyms.
+  if (type_arg == "eth")
+    type_arg = shill::kTypeEthernet;
+
+  if (type_arg != shill::kTypeEthernet &&
+      type_arg != shill::kTypeWifi &&
+      type_arg != shill::kTypeCellular &&
+      type_arg != shill::kTypeWimax &&
+      type_arg != shill::kTypeVPN) {
+    LOG(WARNING) << "Unrecognized Shill network type: " << type_arg;
+    return false;
+  }
+
+  // Unconnected or disabled ethernet is the same as unavailable.
+  if (type_arg == shill::kTypeEthernet &&
+      (state == shill::kStateIdle || state == kNetworkDisabled)) {
+    state = kTechnologyUnavailable;
+  }
+
+  shill_initial_state_map_[type_arg] = state;
+  return true;
+}
+
+std::string FakeShillManagerClient::GetInitialStateForType(
+    const std::string& type,
+    bool* enabled) {
+  std::map<std::string, std::string>::const_iterator iter =
+      shill_initial_state_map_.find(type);
+  if (iter == shill_initial_state_map_.end()) {
+    *enabled = false;
+    return kTechnologyUnavailable;
+  }
+  std::string state = iter->second;
+  if (state == kNetworkDisabled) {
+    *enabled = false;
+    return shill::kStateIdle;
+  }
+  *enabled = true;
+  if ((state == shill::kStatePortal && type != shill::kTypeWifi) ||
+      (state == kNetworkActivated && type != shill::kTypeCellular)) {
+    LOG(WARNING) << "Invalid state: " << state << " for " << type;
+    return shill::kStateIdle;
+  }
+  return state;
 }
 
 }  // namespace chromeos
