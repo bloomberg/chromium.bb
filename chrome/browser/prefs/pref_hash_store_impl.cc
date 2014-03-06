@@ -95,13 +95,13 @@ void PrefHashStoreImpl::Reset() {
   // Remove this store's entry in the kStoreVersionsDict.
   base::DictionaryValue* version_dict;
   if (update->GetDictionary(internals::kStoreVersionsDict, &version_dict))
-    version_dict->Remove(hash_store_id_, NULL);
+    version_dict->RemoveWithoutPathExpansion(hash_store_id_, NULL);
 
   // Remove this store's entry in the kHashOfHashesDict.
   base::DictionaryValue* hash_of_hashes_dict;
   if (update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesDict,
                                                 &hash_of_hashes_dict)) {
-    hash_of_hashes_dict->Remove(hash_store_id_, NULL);
+    hash_of_hashes_dict->RemoveWithoutPathExpansion(hash_store_id_, NULL);
   }
 }
 
@@ -121,7 +121,8 @@ PrefHashStoreImpl::StoreVersion PrefHashStoreImpl::GetCurrentVersion() const {
   int current_version;
   if (!pref_hash_data->GetDictionary(internals::kStoreVersionsDict,
                                      &version_dict) ||
-      !version_dict->GetInteger(hash_store_id_, &current_version)) {
+      !version_dict->GetIntegerWithoutPathExpansion(hash_store_id_,
+                                                    &current_version)) {
     return VERSION_PRE_MIGRATION;
   }
 
@@ -194,7 +195,8 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     store_versions_dict = new base::DictionaryValue;
     update->Set(internals::kStoreVersionsDict, store_versions_dict);
   }
-  store_versions_dict->SetInteger(outer_->hash_store_id_, VERSION_LATEST);
+  store_versions_dict->SetIntegerWithoutPathExpansion(outer_->hash_store_id_,
+                                                      VERSION_LATEST);
 }
 
 PrefHashStoreTransaction::ValueState
