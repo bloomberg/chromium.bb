@@ -13,6 +13,7 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_file_stream_reader.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/readahead_file_stream_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -272,8 +273,9 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
     return scoped_ptr<webkit_blob::FileStreamReader>();
 
   DCHECK(delegate->IsStreaming());
-  return scoped_ptr<webkit_blob::FileStreamReader>(new MTPFileStreamReader(
-      context, url, offset, expected_modification_time));
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new ReadaheadFileStreamReader(new MTPFileStreamReader(
+          context, url, offset, expected_modification_time)));
 }
 
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(

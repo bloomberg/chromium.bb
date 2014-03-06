@@ -1183,6 +1183,8 @@
         'browser/media_galleries/fileapi/picasa_finder.cc',
         'browser/media_galleries/fileapi/picasa_finder.h',
         'browser/media_galleries/fileapi/picasa_finder_mac.mm',
+        'browser/media_galleries/fileapi/readahead_file_stream_reader.cc',
+        'browser/media_galleries/fileapi/readahead_file_stream_reader.h',
         'browser/media_galleries/fileapi/safe_audio_video_checker.cc',
         'browser/media_galleries/fileapi/safe_audio_video_checker.h',
         'browser/media_galleries/fileapi/safe_media_metadata_parser.cc',
