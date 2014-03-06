@@ -181,7 +181,7 @@
        * @param {detail} The details of the swipe.
        */
       onFlick: function(detail) {
-        if (!(detail.direction & SWIPE_DIRECTION.UP) || !this.hintTextValue)
+        if (!(detail.direction & SwipeDirection.UP) || !this.hintTextValue)
           return;
         var typeDetails = {char: this.hintTextValue};
         this.fire('type-key', typeDetails);

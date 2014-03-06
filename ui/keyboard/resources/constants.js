@@ -59,6 +59,12 @@ var DEFAULT_KEY_WEIGHT_X = 100;
 var DEFAULT_KEY_WEIGHT_Y = 70;
 
 /**
+ * The default volume for keyboard sounds.
+ * @type {number}
+ */
+var DEFAULT_VOLUME = 0.2;
+
+/**
  * The top padding on each key.
  * @type {number}
  */
@@ -68,7 +74,9 @@ var KEY_PADDING_TOP = 1;
 var KEY_PADDING_BOTTOM = 1;
 
 /**
- * The default volume for keyboard sounds.
+ * The size of the pool to use for playing audio sounds on key press. This is to
+ * enable the same sound to be overlayed, for example, when a repeat key is
+ * pressed.
  * @type {number}
  */
-var DEFAULT_VOLUME = 0.3;
+var SOUND_POOL_SIZE = 10;

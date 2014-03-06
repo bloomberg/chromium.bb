@@ -334,12 +334,16 @@
         // Check if already loaded.
         if (soundId == Sound.NONE || this.sounds[soundId])
           return;
-        var audio = document.createElement('audio');
-        audio.preload = "auto";
-        audio.id = soundId;
-        audio.src = "../sounds/" + soundId + ".wav";
-        audio.volume = this.volume;
-        this.sounds[soundId] = audio;
+        var pool = [];
+        for (var i = 0; i < SOUND_POOL_SIZE; i++) {
+          var audio = document.createElement('audio');
+          audio.preload = "auto";
+          audio.id = soundId;
+          audio.src = "../sounds/" + soundId + ".wav";
+          audio.volume = this.volume;
+          pool.push(audio);
+        }
+        this.sounds[soundId] = pool;
       },
 
       /**
@@ -541,6 +545,7 @@
           repeatKey.timer = setTimeout(function() {
             repeatKey.timer = undefined;
             repeatKey.interval = setInterval(function() {
+               self.playSound(detail.sound);
                self.keyTyped(detail);
             }, REPEAT_INTERVAL_MSEC);
           }, Math.max(0, REPEAT_DELAY_MSEC - REPEAT_INTERVAL_MSEC));
@@ -798,11 +803,18 @@
       playSound: function(sound) {
         if (!sound || sound == Sound.NONE)
           return;
-        var soundElement = this.sounds[sound];
-        if (!soundElement)
+        var pool = this.sounds[sound];
+        if (!pool) {
           console.error("Cannot find audio tag: " + sound);
-        else
-          soundElement.play();
+          return;
+        }
+        // Search the sound pool for a free resource.
+        for (var i = 0; i < pool.length; i++) {
+          if (pool[i].paused) {
+            pool[i].play();
+            return;
+          }
+        }
       },
 
       /**
@@ -911,9 +923,12 @@
        * Callback function for when volume is changed.
        */
       volumeChanged: function() {
-        var toChange = keys(this.sounds);
+        var toChange = Object.keys(this.sounds);
         for (var i = 0; i < toChange.length; i++) {
-          this.sounds[toChange[i]].volume = this.volume;
+          var pool = this.sounds[toChange[i]];
+          for (var j = 0; j < pool.length; j++) {
+            pool[j].volume = this.volume;
+          }
         }
       },
 
