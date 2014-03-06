@@ -689,6 +689,8 @@ InspectorTest.switchToView = function(title, callback)
     callback = InspectorTest.safeWrap(callback);
     var view = WebInspector.panels.profiles.visibleView;
     view.changeView(title, callback);
+    // Increase the grid container height so the viewport don't limit the number of nodes.
+    InspectorTest._currentGrid().scrollContainer.style.height = "10000px";
 };
 
 InspectorTest.takeAndOpenSnapshot = function(generator, callback)
