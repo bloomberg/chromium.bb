@@ -1080,7 +1080,7 @@ nspr4.dll!*
 UNINITIALIZED READ
 name=http://crbug.com/64887 (GMock printing uninit data)
 ...
-*!testing::internal2::PrintBytesInObjectTo
+*!testing::*::PrintBytesInObjectTo*
 
 ###############################################################
 # Proactively borrowed from memcheck/suppressions.txt.
@@ -2009,28 +2009,6 @@ MSVCP120.dll!std::num_get<>::_Getffld
 MSVCP120.dll!std::num_get<>::do_get
 MSVCP120.dll!std::basic_istream<>::operator>>
 translator.dll!pp::numeric_lex_float<>
-
-UNINITIALIZED READ
-name=bug_349416_b
-MSVCR120.dll!_output_s_l
-MSVCR120.dll!_vsnprintf_helper
-MSVCR120.dll!_vsnprintf_s_l
-MSVCR120.dll!_snprintf_s
-*!testing::`anonymous namespace'::PrintByteSegmentInObjectTo
-*!testing::`anonymous namespace'::PrintBytesInObjectToImpl
-*!testing::internal2::operator<<<>
-*!testing_internal::DefaultPrintNonContainerTo<>
-
-UNINITIALIZED READ
-name=bug_349416_c
-MSVCR120.dll!sprintf_s
-MSVCR120.dll!_uncaught_exception
-MSVCR120.dll!vsnprintf_s_l
-MSVCR120.dll!snprintf_s
-*!testing::`anonymous namespace'::PrintByteSegmentInObjectTo
-*!testing::`anonymous namespace'::PrintBytesInObjectToImpl
-*!testing::internal2::operator<<<>
-*!testing_internal::DefaultPrintNonContainerTo<>
 
 UNINITIALIZED READ
 name=bug_347976
