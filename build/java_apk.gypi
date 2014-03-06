@@ -616,8 +616,8 @@
         '<(DEPTH)/build/android/ant/create-test-jar.js',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/ant.py',
-        '<(instr_stamp)',
         '>@(proguard_flags_paths)',
+        '<(instr_stamp)',
       ],
       'outputs': [
         # This lists obfuscate_stamp instead of obfuscated_jar_path because
@@ -649,11 +649,6 @@
         '-Dbasedir=.',
         '-buildfile',
         '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
-
-        # Add list of inputs to the command line, so if inputs change
-        # (e.g. if a Java file is removed), the command will be re-run.
-        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
       ],
     },
     {
