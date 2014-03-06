@@ -55,7 +55,7 @@ void RendererAccessibilityFocusOnly::DidFinishLoad(blink::WebFrame* frame) {
   // focus event. This is important so that if focus is initially in an
   // editable text field, Windows will know to pop up the keyboard if the
   // user touches it and focus doesn't change.
-  HandleFocusedNodeChanged(document.focusedNode(), false);
+  HandleFocusedNodeChanged(document.focusedElement(), false);
 }
 
 void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
