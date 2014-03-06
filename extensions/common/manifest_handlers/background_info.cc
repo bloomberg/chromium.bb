@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
@@ -63,25 +64,20 @@ GURL BackgroundInfo::GetBackgroundURL(const Extension* extension) {
 }
 
 // static
-bool BackgroundInfo::HasGeneratedBackgroundPage(const Extension* extension) {
-  const BackgroundInfo& info = GetBackgroundInfo(extension);
-  return !info.background_scripts_.empty();
-}
-
-// static
 const std::vector<std::string>& BackgroundInfo::GetBackgroundScripts(
     const Extension* extension) {
   return GetBackgroundInfo(extension).background_scripts_;
 }
 
 // static
-bool BackgroundInfo::HasBackgroundPage(const Extension* extension) {
-  return GetBackgroundInfo(extension).has_background_page();
+const std::string& BackgroundInfo::GetServiceWorkerScript(
+    const Extension* extension) {
+  return GetBackgroundInfo(extension).service_worker_script_;
 }
 
 // static
-bool BackgroundInfo::AllowJSAccess(const Extension* extension) {
-  return GetBackgroundInfo(extension).allow_js_access_;
+bool BackgroundInfo::HasBackgroundPage(const Extension* extension) {
+  return GetBackgroundInfo(extension).has_background_page();
 }
 
 // static
@@ -94,13 +90,64 @@ bool BackgroundInfo::HasLazyBackgroundPage(const Extension* extension) {
   return GetBackgroundInfo(extension).has_lazy_background_page();
 }
 
+// static
+bool BackgroundInfo::HasGeneratedBackgroundPage(const Extension* extension) {
+  const BackgroundInfo& info = GetBackgroundInfo(extension);
+  return !info.background_scripts_.empty();
+}
+
+// static
+bool BackgroundInfo::HasServiceWorker(const Extension* extension) {
+  return GetBackgroundInfo(extension).has_service_worker();
+}
+
+// static
+bool BackgroundInfo::AllowJSAccess(const Extension* extension) {
+  return GetBackgroundInfo(extension).allow_js_access_;
+}
+
 bool BackgroundInfo::Parse(const Extension* extension, base::string16* error) {
   const std::string& bg_scripts_key = extension->is_platform_app() ?
       keys::kPlatformAppBackgroundScripts : keys::kBackgroundScripts;
-  if (!LoadBackgroundScripts(extension, bg_scripts_key, error) ||
+  const std::string& sw_scripts_key =
+      extension->is_platform_app()
+          ? keys::kPlatformAppServiceWorkerScript
+          : "";  // TODO(scheib): Support extensions crbug.com/346885
+  if (!LoadServiceWorkerScript(extension, sw_scripts_key, error) ||
+      !LoadBackgroundScripts(extension, bg_scripts_key, error) ||
       !LoadBackgroundPage(extension, error) ||
       !LoadBackgroundPersistent(extension, error) ||
       !LoadAllowJSAccess(extension, error)) {
+    return false;
+  }
+
+  int background_solution_sum = (background_url_.is_valid() ? 1 : 0) +
+                                (!background_scripts_.empty() ? 1 : 0) +
+                                (has_service_worker() ? 1 : 0);
+  if (background_solution_sum > 1) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
+    return false;
+  }
+
+  return true;
+}
+
+bool BackgroundInfo::LoadServiceWorkerScript(const Extension* extension,
+                                             const std::string& key,
+                                             base::string16* error) {
+  const base::Value* service_worker_script_value = NULL;
+  if (!extension->manifest()->Get(key, &service_worker_script_value))
+    return true;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableServiceWorker)) {
+    *error = ASCIIToUTF16(errors::kServiceWorkerRequiresFlag);
+    return false;
+  }
+
+  CHECK(service_worker_script_value);
+  if (!service_worker_script_value->GetAsString(&service_worker_script_)) {
+    *error = ASCIIToUTF16(errors::kInvalidServiceWorkerScript);
     return false;
   }
   return true;
@@ -140,11 +187,6 @@ bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
   const base::Value* background_page_value = NULL;
   if (!extension->manifest()->Get(key, &background_page_value))
     return true;
-
-  if (!background_scripts_.empty()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
-    return false;
-  }
 
   std::string background_str;
   if (!background_page_value->GetAsString(&background_str)) {
@@ -247,8 +289,9 @@ bool BackgroundManifestHandler::Parse(Extension* extension,
   if (!info->Parse(extension, error))
     return false;
 
-  // Platform apps must have background pages.
-  if (extension->is_platform_app() && !info->has_background_page()) {
+  // Platform apps must have background pages or service workers.
+  if (extension->is_platform_app() && !info->has_background_page() &&
+      !info->has_service_worker()) {
     *error = ASCIIToUTF16(errors::kBackgroundRequiredForPlatformApps);
     return false;
   }
@@ -305,15 +348,14 @@ bool BackgroundManifestHandler::AlwaysParseForType(Manifest::Type type) const {
 }
 
 const std::vector<std::string> BackgroundManifestHandler::Keys() const {
-  static const char* keys[] = {
-    keys::kBackgroundAllowJsAccess,
-    keys::kBackgroundPage,
-    keys::kBackgroundPageLegacy,
-    keys::kBackgroundPersistent,
-    keys::kBackgroundScripts,
-    keys::kPlatformAppBackgroundPage,
-    keys::kPlatformAppBackgroundScripts
-  };
+  static const char* keys[] = {keys::kBackgroundAllowJsAccess,
+                               keys::kBackgroundPage,
+                               keys::kBackgroundPageLegacy,
+                               keys::kBackgroundPersistent,
+                               keys::kBackgroundScripts,
+                               keys::kPlatformAppBackgroundPage,
+                               keys::kPlatformAppBackgroundScripts,
+                               keys::kPlatformAppServiceWorkerScript};
   return std::vector<std::string>(keys, keys + arraysize(keys));
 }
 

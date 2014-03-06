@@ -24,6 +24,7 @@ class ExtensionManifestTest : public testing::Test {
    public:
     explicit Manifest(const char* name);
     Manifest(base::DictionaryValue* manifest, const char* name);
+    explicit Manifest(scoped_ptr<base::DictionaryValue> manifest);
     // C++98 requires the copy constructor for a type to be visible if you
     // take a const-ref of a temporary for that type.  Since Manifest
     // contains a scoped_ptr, its implicit copy constructor is declared
@@ -74,6 +75,11 @@ class ExtensionManifestTest : public testing::Test {
           extensions::Manifest::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
+  // Load and expect success from a manifest provided as a json string. Single
+  // quotes will be replaced with double quotes for test readability.
+  scoped_refptr<extensions::Extension> LoadFromStringAndExpectSuccess(
+      char const* manifest_json);
+
   scoped_refptr<extensions::Extension> LoadAndExpectWarning(
       const Manifest& manifest,
       const std::string& expected_error,
@@ -104,6 +110,11 @@ class ExtensionManifestTest : public testing::Test {
                           extensions::Manifest::Location location =
                               extensions::Manifest::INTERNAL,
                           int flags = extensions::Extension::NO_FLAGS);
+
+  // Load and expect an error from a manifest provided as a json string. Single
+  // quotes will be replaced with double quotes for test readability.
+  void LoadFromStringAndExpectError(char const* manifest_json,
+                                    const std::string& expected_error);
 
   void AddPattern(extensions::URLPatternSet* extent,
                   const std::string& pattern);

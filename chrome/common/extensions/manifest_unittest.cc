@@ -152,12 +152,18 @@ TEST_F(ManifestTest, ExtensionTypes) {
       &manifest, keys::kApp, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
 
-  // Platform app.
+  // Platform app with event page.
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
+
+  // Platform app with service worker.
+  MutateManifest(
+      &manifest, keys::kPlatformAppServiceWorker, new base::DictionaryValue());
+  AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
+  MutateManifest(&manifest, keys::kPlatformAppServiceWorker, NULL);
 
   // Hosted app.
   MutateManifest(

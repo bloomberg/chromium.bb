@@ -270,6 +270,7 @@
         'extensions_browser',
         'extensions_common',
         '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
         '..',

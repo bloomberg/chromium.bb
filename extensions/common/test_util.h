@@ -8,6 +8,11 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
 
 namespace extensions {
 class Extension;
@@ -20,6 +25,12 @@ ExtensionBuilder& BuildExtension(ExtensionBuilder& builder);
 
 // Return a very simple extension with a given |id|.
 scoped_refptr<Extension> CreateExtensionWithID(const std::string& id);
+
+// Parses |json| allowing trailing commas and replacing single quotes with
+// double quotes for test readability. If the json fails to parse, calls gtest's
+// ADD_FAILURE and returns an empty dictionary.
+scoped_ptr<base::DictionaryValue> ParseJsonDictionaryWithSingleQuotes(
+    std::string json);
 
 }  // namespace test_util
 }  // namespace extensions

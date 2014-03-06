@@ -4,9 +4,12 @@
 
 #include "extensions/common/test_util.h"
 
+#include "base/json/json_reader.h"
+#include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace test_util {
@@ -25,6 +28,22 @@ scoped_refptr<Extension> CreateExtensionWithID(const std::string& id) {
            DictionaryBuilder().Set("name", "test").Set("version", "0.1"))
       .SetID(id)
       .Build();
+}
+
+scoped_ptr<base::DictionaryValue> ParseJsonDictionaryWithSingleQuotes(
+    std::string json) {
+  std::replace(json.begin(), json.end(), '\'', '"');
+  std::string error_msg;
+  scoped_ptr<base::Value> result(base::JSONReader::ReadAndReturnError(
+      json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg));
+  scoped_ptr<base::DictionaryValue> result_dict;
+  if (result && result->IsType(base::Value::TYPE_DICTIONARY)) {
+    result_dict.reset(static_cast<base::DictionaryValue*>(result.release()));
+  } else {
+    ADD_FAILURE() << "Failed to parse \"" << json << "\": " << error_msg;
+    result_dict.reset(new base::DictionaryValue());
+  }
+  return result_dict.Pass();
 }
 
 }  // namespace test_util
