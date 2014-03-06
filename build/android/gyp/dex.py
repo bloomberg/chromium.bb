@@ -46,9 +46,6 @@ def main(argv):
                     help='Exclude locals list from the dex file.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
-  # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-  parser.add_option('--ignore', help='Ignored.')
-
   options, paths = parser.parse_args()
 
   if (options.proguard_enabled == 'true'

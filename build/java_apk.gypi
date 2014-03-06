@@ -623,6 +623,8 @@
         '>@(proguard_flags_paths)',
       ],
       'outputs': [
+        # This lists obfuscate_stamp instead of obfuscated_jar_path because
+        # ant only writes the latter if the md5 of the inputs changes.
         '<(obfuscate_stamp)',
       ],
       'action': [
@@ -661,10 +663,6 @@
       'action_name': 'dex_<(_target_name)',
       'variables': {
         'conditions': [
-          ['proguard_enabled == "true"', {
-            'input_paths': [ '<(obfuscate_stamp)' ],
-            'proguard_enabled_input_path': '<(obfuscated_jar_path)',
-          }],
           ['emma_instrument != 0', {
             'dex_no_locals': 1,
           }],
@@ -672,11 +670,15 @@
             'dex_input_paths': [ '<(emma_device_jar)' ],
           }],
         ],
-        'input_paths': [ '<(instr_stamp)' ],
         'dex_input_paths': [ '>@(library_dexed_jars_paths)' ],
         'dex_generated_input_dirs': [ '<(classes_final_dir)' ],
         'output_path': '<(dex_path)',
+        'proguard_enabled_input_path': '<(obfuscated_jar_path)',
       },
+      'conditions': [
+        ['proguard_enabled == "true"', { 'inputs': [ '<(obfuscate_stamp)' ] },
+                                       { 'inputs': [ '<(instr_stamp)' ] }],
+      ],
       'includes': [ 'android/dex_action.gypi' ],
     },
     {
