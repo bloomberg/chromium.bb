@@ -4,8 +4,6 @@
 
 #include "chrome/browser/profiles/profiles_state.h"
 
-#include <stdio.h>
-
 #include "base/files/file_path.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -72,13 +70,7 @@ base::string16 GetAvatarNameForProfile(Profile* profile) {
     // or the user has edited the profile name, or there are multiple profiles,
     // it will return the actual name  of the profile.
     base::string16 profile_name = cache.GetNameOfProfileAtIndex(index);
-    std::string default_name_format = l10n_util::GetStringFUTF8(
-        IDS_NEW_NUMBERED_PROFILE_NAME, base::string16()) + "%d";
-    int generic_profile_number;  // Unused. Just a placeholder for sscanf.
-    int assignments = sscanf(base::UTF16ToUTF8(profile_name).c_str(),
-                             default_name_format.c_str(),
-                             &generic_profile_number);
-    bool has_default_name = (assignments == 1);
+    bool has_default_name = cache.ProfileIsUsingDefaultNameAtIndex(index);
 
     if (cache.GetNumberOfProfiles() == 1 && has_default_name &&
         cache.GetUserNameOfProfileAtIndex(index).empty()) {

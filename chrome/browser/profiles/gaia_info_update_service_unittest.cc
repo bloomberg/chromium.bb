@@ -57,8 +57,14 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
   }
 
   Profile* profile() {
-    if (!profile_)
-      profile_ = testing_profile_manager_.CreateTestingProfile("profile_1");
+    if (!profile_) {
+      profile_ = testing_profile_manager_.CreateTestingProfile("Person 1");
+      // The testing manager sets the profile name manually, which counts as
+      // a user-customized profile name. Reset this to match the default name
+      // we are actually using.
+      size_t index = GetCache()->GetIndexOfProfileWithPath(profile_->GetPath());
+      GetCache()->SetProfileIsUsingDefaultNameAtIndex(index, true);
+    }
     return profile_;
   }
 
@@ -90,6 +96,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   // On success both the profile info and GAIA info should be updated.
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
   EXPECT_TRUE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(index));
+  EXPECT_TRUE(GetCache()->IsUsingGAIANameOfProfileAtIndex(index));
   EXPECT_EQ(name, GetCache()->GetNameOfProfileAtIndex(index));
   EXPECT_EQ(name, GetCache()->GetGAIANameOfProfileAtIndex(index));
   EXPECT_TRUE(gfx::test::IsEqual(

@@ -76,6 +76,11 @@ class ProfileInfoInterface {
   // Profile is known to be ephemeral and should be deleted when closed.
   virtual bool ProfileIsEphemeralAtIndex(size_t index) const = 0;
 
+  // Returns true if the profile is using the name it was assigned by default
+  // at creation (either the old-style "Lemonade" name, or the new "Profile %d"
+  // style name).
+  virtual bool ProfileIsUsingDefaultNameAtIndex(size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };

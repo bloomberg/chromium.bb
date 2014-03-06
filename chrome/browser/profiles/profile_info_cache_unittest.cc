@@ -329,36 +329,45 @@ TEST_F(ProfileInfoCacheTest, ProfileActiveTime) {
 
 TEST_F(ProfileInfoCacheTest, GAIAName) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      GetProfilePath("path_1"), ASCIIToUTF16("Person 1"),
       base::string16(), 0, std::string());
-  base::string16 profile_name(ASCIIToUTF16("profile name 2"));
+  base::string16 profile_name(ASCIIToUTF16("Person 2"));
   GetCache()->AddProfileToCache(
       GetProfilePath("path_2"), profile_name, base::string16(), 0,
       std::string());
 
+  int index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
+  int index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
+
   // Sanity check.
-  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
-  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(1).empty());
-  EXPECT_FALSE(GetCache()->IsUsingGAIANameOfProfileAtIndex(0));
-  EXPECT_FALSE(GetCache()->IsUsingGAIANameOfProfileAtIndex(1));
+  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(index1).empty());
+  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(index2).empty());
+  EXPECT_FALSE(GetCache()->IsUsingGAIANameOfProfileAtIndex(index1));
+  EXPECT_FALSE(GetCache()->IsUsingGAIANameOfProfileAtIndex(index2));
 
   // Set GAIA name.
   base::string16 gaia_name(ASCIIToUTF16("Pat Smith"));
-  GetCache()->SetGAIANameOfProfileAtIndex(1, gaia_name);
-  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
-  EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(1));
-  EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(1));
+  GetCache()->SetGAIANameOfProfileAtIndex(index2, gaia_name);
+  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(index1).empty());
+  EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(index2));
+  EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(index2));
 
-  // Use GAIA name as profile name.
-  GetCache()->SetIsUsingGAIANameOfProfileAtIndex(1, true);
+  // Use GAIA name as profile name. This re-sorts the cache.
+  GetCache()->SetIsUsingGAIANameOfProfileAtIndex(index2, true);
+  index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
+  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
 
-  EXPECT_EQ(gaia_name, GetCache()->GetNameOfProfileAtIndex(1));
-  EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(1));
+  EXPECT_EQ(GetCache()->IsUsingGAIANameOfProfileAtIndex(index2), true);
+  EXPECT_EQ(gaia_name, GetCache()->GetNameOfProfileAtIndex(index2));
+  EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(index2));
 
-  // Don't use GAIA name as profile name.
-  GetCache()->SetIsUsingGAIANameOfProfileAtIndex(1, false);
-  EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(1));
-  EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(1));
+  // Don't use GAIA name as profile name. This re-sorts the cache.
+  GetCache()->SetIsUsingGAIANameOfProfileAtIndex(index2, false);
+  index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
+  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
+
+  EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(index2));
+  EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(index2));
 }
 
 TEST_F(ProfileInfoCacheTest, GAIAPicture) {
