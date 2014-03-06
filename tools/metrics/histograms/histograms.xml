@@ -1393,7 +1393,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Blacklist.Blocked" units="DllHash">
+<histogram name="Blacklist.Blocked" enum="DllHash">
   <summary>
     Records the name hashes of all the dlls that are blocked from the browser
     process.
