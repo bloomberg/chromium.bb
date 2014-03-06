@@ -119,7 +119,7 @@ TEST(MediaQueryParserTest, Basic)
     };
 
     for (unsigned i = 0; testCases[i].input; ++i) {
-        RefPtr<MediaQuerySet> querySet = MediaQuerySet::create(testCases[i].input);
+        RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create(testCases[i].input);
         StringBuilder output;
         char outputCharArray[outputCharArrayLen];
         size_t j = 0;
