@@ -212,7 +212,8 @@ function iceCallback_(event) {
 /** @private */
 function setLocalAndSendMessage_(session_description) {
   session_description.sdp = gTransformOutgoingSdp(session_description.sdp);
-  if (session_description.sdp.search('a=crypto') != -1)
+  if (session_description.sdp.search('a=crypto') != -1 ||
+      session_description.sdp.search('a=fingerprint') != -1)
     gHasSeenCryptoInSdp = 'crypto-seen';
   peerConnection.setLocalDescription(
     session_description,
