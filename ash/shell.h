@@ -130,6 +130,7 @@ class EventTransformationHandler;
 class FocusCycler;
 class KeyboardUMAEventFilter;
 class LocaleNotificationController;
+class LogoutConfirmationController;
 class MaximizeModeWindowManager;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
@@ -525,6 +526,10 @@ class ASH_EXPORT Shell
     return window_tree_host_factory_.get();
   }
 
+  internal::LogoutConfirmationController* logout_confirmation_controller() {
+    return logout_confirmation_controller_.get();
+  }
+
   ShelfModel* shelf_model() {
     return shelf_model_.get();
   }
@@ -670,6 +675,8 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::EventTransformationHandler>
       event_transformation_handler_;
   scoped_ptr<WindowTreeHostFactory> window_tree_host_factory_;
+  scoped_ptr<internal::LogoutConfirmationController>
+      logout_confirmation_controller_;
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.

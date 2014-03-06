@@ -23,7 +23,7 @@
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
-#include "ash/system/logout_button/logout_button_observer.h"
+#include "ash/system/session/logout_button_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"

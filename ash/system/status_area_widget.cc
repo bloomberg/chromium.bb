@@ -11,7 +11,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/logout_button/logout_button_tray.h"
+#include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"

@@ -15,7 +15,7 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
-#include "ash/system/session_length_limit/tray_session_length_limit.h"
+#include "ash/system/session/tray_session_length_limit.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
