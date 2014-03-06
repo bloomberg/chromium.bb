@@ -105,7 +105,7 @@ void RenderBox::willBeDestroyed()
 
     RenderBlock::removePercentHeightDescendantIfNeeded(this);
 
-    ShapeOutsideInfo::removeInfo(this);
+    ShapeOutsideInfo::removeInfo(*this);
 
     RenderBoxModelObject::willBeDestroyed();
 }
@@ -238,9 +238,9 @@ void RenderBox::updateShapeOutsideInfoAfterStyleChange(const RenderStyle& style,
         return;
 
     if (!shapeOutside)
-        ShapeOutsideInfo::removeInfo(this);
+        ShapeOutsideInfo::removeInfo(*this);
     else
-        ShapeOutsideInfo::ensureInfo(this)->markShapeAsDirty();
+        ShapeOutsideInfo::ensureInfo(*this).markShapeAsDirty();
 
     if (shapeOutside || shapeOutside != oldShapeOutside)
         markShapeOutsideDependentsForLayout();
@@ -1578,7 +1578,7 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
     ShapeValue* shapeOutsideValue = style()->shapeOutside();
     if (!frameView()->isInPerformLayout() && isFloating() && shapeOutsideValue && shapeOutsideValue->image() && shapeOutsideValue->image()->data() == image) {
-        ShapeOutsideInfo::ensureInfo(this)->markShapeAsDirty();
+        ShapeOutsideInfo::ensureInfo(*this).markShapeAsDirty();
         markShapeOutsideDependentsForLayout();
     }
 

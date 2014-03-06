@@ -1400,8 +1400,8 @@ void RenderBlock::imageChanged(WrappedImagePtr image, const IntRect*)
 
     ShapeValue* shapeValue = style()->shapeInside();
     if (shapeValue && shapeValue->image() && shapeValue->image()->data() == image) {
-        ShapeInsideInfo* shapeInsideInfo = ensureShapeInsideInfo();
-        shapeInsideInfo->markShapeAsDirty();
+        ShapeInsideInfo& shapeInsideInfo = ensureShapeInsideInfo();
+        shapeInsideInfo.markShapeAsDirty();
         markShapeInsideDescendantsForLayout();
     }
 }
@@ -1413,8 +1413,8 @@ void RenderBlock::updateShapeInsideInfoAfterStyleChange(const ShapeValue* shapeI
         return;
 
     if (shapeInside) {
-        ShapeInsideInfo* shapeInsideInfo = ensureShapeInsideInfo();
-        shapeInsideInfo->markShapeAsDirty();
+        ShapeInsideInfo& shapeInsideInfo = ensureShapeInsideInfo();
+        shapeInsideInfo.markShapeAsDirty();
     } else {
         setShapeInsideInfo(nullptr);
         markShapeInsideDescendantsForLayout();

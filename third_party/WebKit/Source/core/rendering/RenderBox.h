@@ -613,7 +613,7 @@ public:
 
     ShapeOutsideInfo* shapeOutsideInfo() const
     {
-        return ShapeOutsideInfo::isEnabledFor(this) ? ShapeOutsideInfo::info(this) : 0;
+        return ShapeOutsideInfo::isEnabledFor(*this) ? ShapeOutsideInfo::info(*this) : 0;
     }
 
     void markShapeOutsideDependentsForLayout()

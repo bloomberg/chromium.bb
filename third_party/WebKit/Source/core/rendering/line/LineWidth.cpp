@@ -75,7 +75,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
     ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
     if (shapeOutsideInfo) {
         LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-        shapeOutsideInfo->updateDeltasForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), lineHeight);
+        shapeOutsideInfo->updateDeltasForContainingBlockLine(m_block, *newFloat, m_block.logicalHeight(), lineHeight);
     }
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
@@ -212,7 +212,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
                 // To safely update our shape segments, the current segment must be the first in this line, so committedWidth has to be 0
                 ASSERT(!m_committedWidth);
 
-                LayoutUnit logicalOffsetFromShapeContainer = m_block.logicalOffsetFromShapeAncestorContainer(shapeInsideInfo->owner()).height();
+                LayoutUnit logicalOffsetFromShapeContainer = m_block.logicalOffsetFromShapeAncestorContainer(&shapeInsideInfo->owner()).height();
                 LayoutUnit lineHeight = m_block.lineHeight(false, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
                 shapeInsideInfo->updateSegmentsForLine(lastFloatLogicalBottom + logicalOffsetFromShapeContainer, lineHeight);
                 updateCurrentShapeSegment();

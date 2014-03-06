@@ -45,14 +45,13 @@ public:
     LayoutUnit rightMarginBoxDelta() const { return m_rightMarginBoxDelta; }
     bool lineOverlapsShape() const { return m_lineOverlapsShape; }
 
-    void updateDeltasForContainingBlockLine(const RenderBlockFlow*, const FloatingObject*, LayoutUnit lineTop, LayoutUnit lineHeight);
-
-    static PassOwnPtr<ShapeOutsideInfo> createInfo(const RenderBox* renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
-    static bool isEnabledFor(const RenderBox*);
+    static PassOwnPtr<ShapeOutsideInfo> createInfo(const RenderBox& renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
+    static bool isEnabledFor(const RenderBox&);
+    void updateDeltasForContainingBlockLine(const RenderBlockFlow&, const FloatingObject&, LayoutUnit lineTop, LayoutUnit lineHeight);
 
     virtual bool lineOverlapsShapeBounds() const OVERRIDE
     {
-        return computedShape()->lineOverlapsShapeMarginBounds(m_referenceBoxLineTop, m_lineHeight);
+        return computedShape().lineOverlapsShapeMarginBounds(m_referenceBoxLineTop, m_lineHeight);
     }
 
 protected:
@@ -62,15 +61,15 @@ protected:
             return MarginBox;
         return shapeValue()->layoutBox();
     }
-    virtual LayoutRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape()->shapeMarginLogicalBoundingBox(); }
+    virtual LayoutRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape().shapeMarginLogicalBoundingBox(); }
     virtual ShapeValue* shapeValue() const OVERRIDE;
     virtual void getIntervals(LayoutUnit lineTop, LayoutUnit lineHeight, SegmentList& segments) const OVERRIDE
     {
-        return computedShape()->getExcludedIntervals(lineTop, lineHeight, segments);
+        return computedShape().getExcludedIntervals(lineTop, lineHeight, segments);
     }
 
 private:
-    ShapeOutsideInfo(const RenderBox* renderer)
+    ShapeOutsideInfo(const RenderBox& renderer)
         : ShapeInfo<RenderBox>(renderer)
         , m_lineOverlapsShape(false)
     { }

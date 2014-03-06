@@ -257,15 +257,15 @@ public:
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
 #endif
 
-    ShapeInsideInfo* ensureShapeInsideInfo()
+    ShapeInsideInfo& ensureShapeInsideInfo()
     {
         if (!m_rareData || !m_rareData->m_shapeInsideInfo)
-            setShapeInsideInfo(ShapeInsideInfo::createInfo(this));
-        return m_rareData->m_shapeInsideInfo.get();
+            setShapeInsideInfo(ShapeInsideInfo::createInfo(*this));
+        return *m_rareData->m_shapeInsideInfo;
     }
     ShapeInsideInfo* shapeInsideInfo() const
     {
-        return m_rareData && m_rareData->m_shapeInsideInfo && ShapeInsideInfo::isEnabledFor(this) ? m_rareData->m_shapeInsideInfo.get() : 0;
+        return m_rareData && m_rareData->m_shapeInsideInfo && ShapeInsideInfo::isEnabledFor(*this) ? m_rareData->m_shapeInsideInfo.get() : 0;
     }
     void setShapeInsideInfo(PassOwnPtr<ShapeInsideInfo> value)
     {

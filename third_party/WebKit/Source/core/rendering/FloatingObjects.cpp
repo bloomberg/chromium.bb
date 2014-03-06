@@ -487,13 +487,11 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
         m_outermostFloat = floatingObject;
 }
 
-static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject* floatingObject, const RenderBlockFlow* containingBlock, LayoutUnit lineTop, LayoutUnit lineBottom)
+static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject& floatingObject, const RenderBlockFlow& containingBlock, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    if (floatingObject) {
-        if (ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo()) {
-            shapeOutside->updateDeltasForContainingBlockLine(containingBlock, floatingObject, lineTop, lineBottom - lineTop);
-            return shapeOutside;
-        }
+    if (ShapeOutsideInfo* shapeOutside = floatingObject.renderer()->shapeOutsideInfo()) {
+        shapeOutside->updateDeltasForContainingBlockLine(containingBlock, floatingObject, lineTop, lineBottom - lineTop);
+        return shapeOutside;
     }
 
     return 0;
@@ -502,8 +500,9 @@ static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject* floating
 template<>
 inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
+    ASSERT(floatingObject);
     LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
-    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(floatingObject, m_renderer, m_lineTop, m_lineBottom)) {
+    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(*floatingObject, *m_renderer, m_lineTop, m_lineBottom)) {
         if (!shapeOutside->lineOverlapsShape())
             return false;
 
@@ -520,8 +519,9 @@ inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::u
 template<>
 inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
+    ASSERT(floatingObject);
     LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
-    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(floatingObject, m_renderer, m_lineTop, m_lineBottom)) {
+    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(*floatingObject, *m_renderer, m_lineTop, m_lineBottom)) {
         if (!shapeOutside->lineOverlapsShape())
             return false;
 

@@ -58,15 +58,15 @@ static LayoutRect getShapeImageRect(const StyleImage& styleImage, const RenderBo
 }
 
 template<class RenderType>
-const Shape* ShapeInfo<RenderType>::computedShape() const
+const Shape& ShapeInfo<RenderType>::computedShape() const
 {
     if (Shape* shape = m_shape.get())
-        return shape;
+        return *shape;
 
-    WritingMode writingMode = m_renderer->style()->writingMode();
-    Length margin = m_renderer->style()->shapeMargin();
-    Length padding = m_renderer->style()->shapePadding();
-    float shapeImageThreshold = m_renderer->style()->shapeImageThreshold();
+    WritingMode writingMode = m_renderer.style()->writingMode();
+    Length margin = m_renderer.style()->shapeMargin();
+    Length padding = m_renderer.style()->shapePadding();
+    float shapeImageThreshold = m_renderer.style()->shapeImageThreshold();
     const ShapeValue* shapeValue = this->shapeValue();
     ASSERT(shapeValue);
 
@@ -78,11 +78,11 @@ const Shape* ShapeInfo<RenderType>::computedShape() const
     case ShapeValue::Image: {
         ASSERT(shapeValue->image());
         const StyleImage& styleImage = *(shapeValue->image());
-        m_shape = Shape::createRasterShape(styleImage, shapeImageThreshold, getShapeImageRect(styleImage, m_renderer), m_referenceBoxLogicalSize, writingMode, margin, padding);
+        m_shape = Shape::createRasterShape(styleImage, shapeImageThreshold, getShapeImageRect(styleImage, &m_renderer), m_referenceBoxLogicalSize, writingMode, margin, padding);
         break;
     }
     case ShapeValue::Box: {
-        const RoundedRect& shapeRect = m_renderer->style()->getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer->view());
+        const RoundedRect& shapeRect = m_renderer.style()->getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer.view());
         m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin, padding);
         break;
     }
@@ -92,7 +92,7 @@ const Shape* ShapeInfo<RenderType>::computedShape() const
     }
 
     ASSERT(m_shape);
-    return m_shape.get();
+    return *m_shape;
 }
 
 template<class RenderType>

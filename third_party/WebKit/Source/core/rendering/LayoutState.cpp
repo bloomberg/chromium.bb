@@ -107,7 +107,7 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSiz
     if (renderer.isRenderBlock()) {
         const RenderBlock& renderBlock = toRenderBlock(renderer);
         m_shapeInsideInfo = renderBlock.shapeInsideInfo();
-        if (!m_shapeInsideInfo && m_next->m_shapeInsideInfo && renderBlock.allowsShapeInsideInfoSharing(m_next->m_shapeInsideInfo->owner()))
+        if (!m_shapeInsideInfo && m_next->m_shapeInsideInfo && renderBlock.allowsShapeInsideInfoSharing(&m_next->m_shapeInsideInfo->owner()))
             m_shapeInsideInfo = m_next->m_shapeInsideInfo;
     }
 

@@ -43,16 +43,16 @@ namespace WebCore {
 template<class KeyType, class InfoType>
 class MappedInfo {
 public:
-    static InfoType* ensureInfo(const KeyType* key)
+    static InfoType& ensureInfo(const KeyType& key)
     {
         InfoMap& infoMap = MappedInfo<KeyType, InfoType>::infoMap();
-        if (InfoType* info = infoMap.get(key))
-            return info;
-        typename InfoMap::AddResult result = infoMap.add(key, InfoType::createInfo(key));
-        return result.storedValue->value.get();
+        if (InfoType* info = infoMap.get(&key))
+            return *info;
+        typename InfoMap::AddResult result = infoMap.add(&key, InfoType::createInfo(key));
+        return *result.storedValue->value;
     }
-    static void removeInfo(const KeyType* key) { infoMap().remove(key); }
-    static InfoType* info(const KeyType* key) { return infoMap().get(key); }
+    static void removeInfo(const KeyType& key) { infoMap().remove(&key); }
+    static InfoType* info(const KeyType& key) { return infoMap().get(&key); }
 private:
     typedef HashMap<const KeyType*, OwnPtr<InfoType> > InfoMap;
     static InfoMap& infoMap()
@@ -72,15 +72,15 @@ public:
     {
         switch (referenceBox()) {
         case MarginBox:
-            newReferenceBoxLogicalSize.expand(m_renderer->marginLogicalWidth(), m_renderer->marginLogicalHeight());
+            newReferenceBoxLogicalSize.expand(m_renderer.marginLogicalWidth(), m_renderer.marginLogicalHeight());
             break;
         case BorderBox:
             break;
         case PaddingBox:
-            newReferenceBoxLogicalSize.shrink(m_renderer->borderLogicalWidth(), m_renderer->borderLogicalHeight());
+            newReferenceBoxLogicalSize.shrink(m_renderer.borderLogicalWidth(), m_renderer.borderLogicalHeight());
             break;
         case ContentBox:
-            newReferenceBoxLogicalSize.shrink(m_renderer->borderAndPaddingLogicalWidth(), m_renderer->borderAndPaddingLogicalHeight());
+            newReferenceBoxLogicalSize.shrink(m_renderer.borderAndPaddingLogicalWidth(), m_renderer.borderAndPaddingLogicalHeight());
             break;
         case BoxMissing:
             // A non-missing box value must be supplied.
@@ -105,19 +105,19 @@ public:
     LayoutUnit logicalLineTop() const { return m_referenceBoxLineTop + logicalTopOffset(); }
     LayoutUnit logicalLineBottom() const { return m_referenceBoxLineTop + m_lineHeight + logicalTopOffset(); }
 
-    LayoutUnit shapeContainingBlockHeight() const { return (m_renderer->style()->boxSizing() == CONTENT_BOX) ? (m_referenceBoxLogicalSize.height() + m_renderer->borderAndPaddingLogicalHeight()) : m_referenceBoxLogicalSize.height(); }
+    LayoutUnit shapeContainingBlockHeight() const { return (m_renderer.style()->boxSizing() == CONTENT_BOX) ? (m_referenceBoxLogicalSize.height() + m_renderer.borderAndPaddingLogicalHeight()) : m_referenceBoxLogicalSize.height(); }
 
     virtual bool lineOverlapsShapeBounds() const = 0;
 
     void markShapeAsDirty() { m_shape.clear(); }
     bool isShapeDirty() { return !m_shape.get(); }
-    const RenderType* owner() const { return m_renderer; }
+    const RenderType& owner() const { return m_renderer; }
     LayoutSize shapeSize() const { return m_referenceBoxLogicalSize; }
 
 protected:
-    ShapeInfo(const RenderType* renderer): m_renderer(renderer) { }
+    ShapeInfo(const RenderType& renderer): m_renderer(renderer) { }
 
-    const Shape* computedShape() const;
+    const Shape& computedShape() const;
 
     virtual LayoutBox referenceBox() const = 0;
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
@@ -128,13 +128,13 @@ protected:
     {
         switch (referenceBox()) {
         case MarginBox:
-            return -m_renderer->marginBefore();
+            return -m_renderer.marginBefore();
         case BorderBox:
             return LayoutUnit();
         case PaddingBox:
-            return m_renderer->borderBefore();
+            return m_renderer.borderBefore();
         case ContentBox:
-            return m_renderer->borderAndPaddingBefore();
+            return m_renderer.borderAndPaddingBefore();
         case BoxMissing:
             // A non-missing box value must be supplied.
             ASSERT_NOT_REACHED();
@@ -146,13 +146,13 @@ protected:
     {
         switch (referenceBox()) {
         case MarginBox:
-            return -m_renderer->marginStart();
+            return -m_renderer.marginStart();
         case BorderBox:
             return LayoutUnit();
         case PaddingBox:
-            return m_renderer->borderStart();
+            return m_renderer.borderStart();
         case ContentBox:
-            return m_renderer->borderAndPaddingStart();
+            return m_renderer.borderAndPaddingStart();
         case BoxMissing:
             // A non-missing box value must be supplied.
             ASSERT_NOT_REACHED();
@@ -163,7 +163,7 @@ protected:
     LayoutUnit m_referenceBoxLineTop;
     LayoutUnit m_lineHeight;
 
-    const RenderType* m_renderer;
+    const RenderType& m_renderer;
 
 private:
     mutable OwnPtr<Shape> m_shape;

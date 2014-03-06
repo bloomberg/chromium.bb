@@ -225,7 +225,7 @@ private:
         // We push LayoutState even if layoutState is disabled because it stores layoutDelta too.
         if (!doingFullRepaint() || m_layoutState->isPaginated() || renderer.hasColumns() || renderer.flowThreadContainingBlock()
             || (renderer.isRenderBlock() && toRenderBlock(renderer).shapeInsideInfo())
-            || (m_layoutState->shapeInsideInfo() && renderer.isRenderBlock() && !toRenderBlock(renderer).allowsShapeInsideInfoSharing(m_layoutState->shapeInsideInfo()->owner()))
+            || (m_layoutState->shapeInsideInfo() && renderer.isRenderBlock() && !toRenderBlock(renderer).allowsShapeInsideInfoSharing(&m_layoutState->shapeInsideInfo()->owner()))
             ) {
             pushLayoutStateForCurrentFlowThread(renderer);
             m_layoutState = new LayoutState(m_layoutState, renderer, offset, pageHeight, pageHeightChanged, colInfo);
