@@ -238,13 +238,6 @@ void DesktopWindowTreeHostX11::OnRootWindowCreated(
                                      content_window_);
   dispatcher_->window()->SetProperty(kHostForRootWindow, this);
 
-  // If we're given a parent, we need to mark ourselves as transient to another
-  // window. Otherwise activation gets screwy.
-  gfx::NativeView parent = params.parent;
-  if (!params.child && params.parent) {
-    corewm::AddTransientChild(parent, content_window_);
-  }
-
   // Ensure that the X11DesktopHandler exists so that it dispatches activation
   // messages to us.
   X11DesktopHandler::get();
