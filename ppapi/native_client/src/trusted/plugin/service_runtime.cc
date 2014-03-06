@@ -137,13 +137,7 @@ void PluginReverseInterface::PostMessage_MainThreadContinuation(
 
 bool PluginReverseInterface::EnumerateManifestKeys(
     std::set<nacl::string>* out_keys) {
-  Manifest const* mp = manifest_;
-
-  if (!mp->GetFileKeys(out_keys)) {
-    return false;
-  }
-
-  return true;
+  return manifest_->GetFileKeys(out_keys);
 }
 
 // TODO(bsy): OpenManifestEntry should use the manifest to ResolveKey
@@ -173,34 +167,23 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
   NaClLog(4,
           "PluginReverseInterface::OpenManifestEntry:"
           " waiting on main thread\n");
-  bool shutting_down;
-  do {
+
+  {
     nacl::MutexLocker take(&mu_);
-    for (;;) {
+    while (!shutting_down_ && !op_complete)
+      NaClXCondVarWait(&cv_, &mu_);
+    NaClLog(4, "PluginReverseInterface::OpenManifestEntry: done!\n");
+    if (shutting_down_) {
       NaClLog(4,
               "PluginReverseInterface::OpenManifestEntry:"
-              " got lock, checking shutdown and completion: (%s, %s)\n",
-              shutting_down_ ? "yes" : "no",
-              op_complete ? "yes" : "no");
-      shutting_down = shutting_down_;
-      if (op_complete || shutting_down) {
-        NaClLog(4,
-                "PluginReverseInterface::OpenManifestEntry:"
-                " done!\n");
-        break;
-      }
-      NaClXCondVarWait(&cv_, &mu_);
+              " plugin is shutting down\n");
+      return false;
     }
-  } while (0);
-  if (shutting_down) {
-    NaClLog(4,
-            "PluginReverseInterface::OpenManifestEntry:"
-            " plugin is shutting down\n");
-    return false;
   }
-  // out_desc has the returned descriptor if successful, else -1.
 
-  // The caller is responsible for not closing *out_desc.  If it is
+  // info->desc has the returned descriptor if successful, else -1.
+
+  // The caller is responsible for not closing info->desc.  If it is
   // closed prematurely, then another open could re-use the OS
   // descriptor, confusing the opened_ map.  If the caller is going to
   // want to make a NaClDesc object and transfer it etc., then the
@@ -208,8 +191,7 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
   // value) for use by the NaClDesc object, which closes when the
   // object is destroyed.
   NaClLog(4,
-          "PluginReverseInterface::OpenManifestEntry:"
-          " *out_desc = %d\n",
+          "PluginReverseInterface::OpenManifestEntry: info->desc = %d\n",
           info->desc);
   if (info->desc == -1) {
     // TODO(bsy,ncbray): what else should we do with the error?  This
@@ -359,7 +341,6 @@ bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
   CloseManifestEntryResource* to_close =
       new CloseManifestEntryResource(desc, &op_complete, &op_result);
 
-  bool shutting_down;
   plugin::WeakRefCallOnMainThread(
       anchor_,
       0,
@@ -367,19 +348,16 @@ bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
       &plugin::PluginReverseInterface::
         CloseManifestEntry_MainThreadContinuation,
       to_close);
-  // wait for completion or surf-away.
-  do {
-    nacl::MutexLocker take(&mu_);
-    for (;;) {
-      shutting_down = shutting_down_;
-      if (op_complete || shutting_down) {
-        break;
-      }
-      NaClXCondVarWait(&cv_, &mu_);
-    }
-  } while (0);
 
-  if (shutting_down) return false;
+  // wait for completion or surf-away.
+  {
+    nacl::MutexLocker take(&mu_);
+    while (!shutting_down_ && !op_complete)
+      NaClXCondVarWait(&cv_, &mu_);
+    if (shutting_down_)
+      return false;
+  }
+
   // op_result true if close was successful; false otherwise (e.g., bad desc).
   return op_result;
 }
