@@ -35,7 +35,7 @@ namespace WebCore {
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMPluginArray FINAL : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
 public:
     static PassRefPtrWillBeRawPtr<DOMPluginArray> create(LocalFrame* frame)
     {
