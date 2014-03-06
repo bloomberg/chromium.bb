@@ -66,7 +66,7 @@ body {
   height: 50px;
 }
 
-#categories-list > li:hover {
+#categories-list:not([disabled]) > li:hover {
   border-top-color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
 }
@@ -159,7 +159,7 @@ body {
   width: 108px;
 }
 
-.image-picker [role=listitem]:hover {
+.image-picker:not([disabled]) [role=listitem]:hover {
   outline: 3px solid #f1f1f1;
   z-index: 1;
 }
@@ -194,6 +194,11 @@ body {
 .image-picker img {
   height: 68px;
   width: 108px;
+}
+
+.image-picker[disabled]~.bottom-bar #online-wallpaper-attribute,
+.image-picker[disabled] .check {
+  visibility: hidden;
 }
 
 .image-picker[disabled],
@@ -302,7 +307,7 @@ body:not([custom]) [visibleif~='custom'] {
   content: url('../images/ui/add-wallpaper-thumbnail.png');
 }
 
-#add-new:hover img {
+.image-picker:not([disabled]) #add-new:hover img {
   content: url('../images/ui/add-wallpaper-thumbnail-hover.png');
 }
 

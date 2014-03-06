@@ -45,7 +45,9 @@ cr.define('wallpapers', function() {
         case Constants.WallpaperSourceEnum.AddNew:
           this.id = 'add-new';
           this.addEventListener('click', function(e) {
-            $('wallpaper-selection-container').hidden = false;
+            var checkbox = $('surprise-me').querySelector('#checkbox');
+            if (!checkbox.classList.contains('checked'))
+              $('wallpaper-selection-container').hidden = false;
           });
           break;
         case Constants.WallpaperSourceEnum.Custom:
