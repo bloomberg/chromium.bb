@@ -62,8 +62,11 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, AddAndRemoveSink) {
 
   // Send a packet via |track_| and it data should reach the sink of the
   // |adapter_|.
-  scoped_ptr<int16[]> data(
-      new int16[params_.frames_per_buffer() * params_.channels()]);
+  const int length = params_.frames_per_buffer() * params_.channels();
+  scoped_ptr<int16[]> data(new int16[length]);
+  // Initialize the data to 0 to avoid Memcheck:Uninitialized warning.
+  memset(data.get(), 0, length * sizeof(data[0]));
+
   EXPECT_CALL(*sink,
               OnData(_, 16, params_.sample_rate(), params_.channels(),
                      params_.frames_per_buffer()));
