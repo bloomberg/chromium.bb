@@ -4,7 +4,10 @@ var printFullTestDetails = true; // This is optionaly switched of by test whose 
 logConsole();
 
 if (window.testRunner) {
-    testRunner.dumpAsText();
+    if (window.runPixelTests)
+        testRunner.dumpAsTextWithPixelResults();
+    else
+        testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 

@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/rendering/compositing/GraphicsLayerUpdater.h"
 
+#include "core/html/HTMLMediaElement.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
 #include "core/rendering/RenderPart.h"
@@ -36,6 +37,16 @@
 #include "public/platform/Platform.h"
 
 namespace WebCore {
+
+bool shouldAppendLayer(const RenderLayer& layer)
+{
+    if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
+        return true;
+    Node* node = layer.renderer()->node();
+    if (isHTMLMediaElement(*node) && toHTMLMediaElement(node)->isFullscreen())
+        return false;
+    return true;
+}
 
 GraphicsLayerUpdater::GraphicsLayerUpdater(RenderView& renderView)
     : m_renderView(renderView)
@@ -122,7 +133,8 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, Vector<GraphicsLayer*
             }
         }
 
-        childLayersOfEnclosingLayer.append(currentCompositedLayerMapping->childForSuperlayers());
+        if (shouldAppendLayer(layer))
+            childLayersOfEnclosingLayer.append(currentCompositedLayerMapping->childForSuperlayers());
     }
 
     if (!depth) {

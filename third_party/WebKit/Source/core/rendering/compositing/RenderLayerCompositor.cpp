@@ -314,12 +314,12 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
 
 static RenderVideo* findFullscreenVideoRenderer(Document& document)
 {
-    Element* fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(document);
+    Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(document);
     while (fullscreenElement && fullscreenElement->isFrameOwnerElement()) {
         Document* contentDocument = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
         if (!contentDocument)
             return 0;
-        fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(*contentDocument);
+        fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*contentDocument);
     }
     if (!fullscreenElement || !fullscreenElement->hasTagName(videoTag))
         return 0;
