@@ -109,7 +109,15 @@ MarkupAccumulator::~MarkupAccumulator()
 
 String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childrenOnly, Vector<QualifiedName>* tagNamesToSkip)
 {
-    serializeNodesWithNamespaces(targetNode, childrenOnly, 0, tagNamesToSkip);
+    Namespaces* namespaces = 0;
+    Namespaces namespaceHash;
+    if (!targetNode.document().isHTMLDocument()) {
+        // Add pre-bound namespaces for XML fragments.
+        namespaceHash.set(xmlAtom.impl(), XMLNames::xmlNamespaceURI.impl());
+        namespaces = &namespaceHash;
+    }
+
+    serializeNodesWithNamespaces(targetNode, childrenOnly, namespaces, tagNamesToSkip);
     return m_markup.toString();
 }
 
