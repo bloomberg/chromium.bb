@@ -266,5 +266,11 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
   return SYNC_STATUS_FAILED;
 }
 
+scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj) {
+  if (!obj)
+    return scoped_ptr<FileTracker>();
+  return scoped_ptr<FileTracker>(new FileTracker(*obj));
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

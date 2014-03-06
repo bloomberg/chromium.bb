@@ -127,6 +127,7 @@ class MetadataDatabaseIndex {
   typedef std::set<int64> DirtyTrackers;
 
   friend class MetadataDatabase;
+  friend class MetadataDatabaseTest;
 
   // Maintains |app_root_by_app_id_|.
   void AddToAppIDIndex(const FileTracker& new_tracker);

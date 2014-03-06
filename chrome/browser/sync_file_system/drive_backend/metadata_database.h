@@ -49,6 +49,7 @@ namespace drive_backend {
 class FileDetails;
 class FileMetadata;
 class FileTracker;
+class MetadataDatabaseIndex;
 class ServiceMetadata;
 
 struct DatabaseContents {
@@ -120,12 +121,6 @@ struct DatabaseContents {
 //
 class MetadataDatabase {
  public:
-  typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;
-  typedef base::ScopedPtrHashMap<int64, FileTracker> TrackerByID;
-  typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByFileID;
-  typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByTitle;
-  typedef std::map<int64, TrackerIDsByTitle> TrackerIDsByParentAndTitle;
-  typedef base::hash_map<std::string, int64> TrackerIDByAppID;
   typedef std::vector<std::string> FileIDList;
 
   typedef base::Callback<
@@ -360,13 +355,6 @@ class MetadataDatabase {
  private:
   friend class MetadataDatabaseTest;
 
-  struct DirtyTrackerComparator {
-    bool operator()(const FileTracker* left,
-                    const FileTracker* right) const;
-  };
-
-  typedef std::set<FileTracker*, DirtyTrackerComparator> DirtyTrackers;
-
   MetadataDatabase(base::SequencedTaskRunner* task_runner,
                    const base::FilePath& database_path,
                    leveldb::Env* env_override);
@@ -382,15 +370,6 @@ class MetadataDatabase {
   void RegisterTrackerAsAppRoot(const std::string& app_id,
                                 int64 tracker_id,
                                 leveldb::WriteBatch* batch);
-  void MakeTrackerActive(int64 tracker_id, leveldb::WriteBatch* batch);
-  void MakeTrackerInactive(int64 tracker_id, leveldb::WriteBatch* batch);
-  void MakeAppRootDisabled(int64 tracker_id, leveldb::WriteBatch* batch);
-  void MakeAppRootEnabled(int64 tracker_id, leveldb::WriteBatch* batch);
-
-  void UnregisterTrackerAsAppRoot(const std::string& app_id,
-                                  leveldb::WriteBatch* batch);
-  void RemoveAllDescendantTrackers(int64 root_tracker_id,
-                                   leveldb::WriteBatch* batch);
 
   void CreateTrackerForParentAndFileID(const FileTracker& parent_tracker,
                                        const std::string& file_id,
@@ -405,37 +384,12 @@ class MetadataDatabase {
                              UpdateOption option,
                              leveldb::WriteBatch* batch);
 
-  void RemoveTracker(int64 tracker_id, leveldb::WriteBatch* batch);
-  void RemoveTrackerIgnoringSameTitle(int64 tracker_id,
-                                      leveldb::WriteBatch* batch);
-  void RemoveTrackerInternal(int64 tracker_id,
-                             leveldb::WriteBatch* batch,
-                             bool ignoring_same_title);
   void MaybeAddTrackersForNewFile(const FileMetadata& file,
                                   UpdateOption option,
                                   leveldb::WriteBatch* batch);
 
-  void MarkSingleTrackerAsDirty(FileTracker* tracker,
-                                leveldb::WriteBatch* batch);
-  void ClearDirty(FileTracker* tracker, leveldb::WriteBatch* batch);
-  void MarkTrackerSetDirty(TrackerIDSet* trackers,
-                           leveldb::WriteBatch* batch);
-  void MarkTrackersDirtyByFileID(const std::string& file_id,
-                                 leveldb::WriteBatch* batch);
-  void MarkTrackersDirtyByPath(int64 parent_tracker_id,
-                               const std::string& title,
-                               leveldb::WriteBatch* batch);
-
-  void EraseTrackerFromFileIDIndex(FileTracker* tracker,
-                                   leveldb::WriteBatch* batch);
-  void EraseTrackerFromPathIndex(FileTracker* tracker);
-  void EraseFileFromDatabase(const std::string& file_id,
-                             leveldb::WriteBatch* batch);
-
   int64 IncrementTrackerID(leveldb::WriteBatch* batch);
 
-  void RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
-                                   leveldb::WriteBatch* batch);
   bool CanActivateTracker(const FileTracker& tracker);
   bool ShouldKeepDirty(const FileTracker& tracker) const;
 
@@ -459,14 +413,10 @@ class MetadataDatabase {
   scoped_ptr<base::ListValue> DumpTrackers();
   scoped_ptr<base::ListValue> DumpMetadata();
 
-  void StoreFileMetadata(scoped_ptr<FileMetadata> file_metadata);
-  void StoreFileTracker(scoped_ptr<FileTracker> file_tracker);
-
   void AttachSyncRoot(const google_apis::FileResource& sync_root_folder,
                       leveldb::WriteBatch* batch);
   void AttachInitialAppRoot(const google_apis::FileResource& app_root_folder,
                             leveldb::WriteBatch* batch);
-  void InsertFileTrackerToIndex(FileTracker* tracker);
 
   void ForceActivateTrackerByPath(int64 parent_tracker_id,
                                   const std::string& title,
@@ -481,30 +431,7 @@ class MetadataDatabase {
   scoped_ptr<ServiceMetadata> service_metadata_;
   int64 largest_known_change_id_;
 
-  MetadataByID metadata_by_id_;  // Owned.
-  TrackerByID tracker_by_id_;  // Owned.
-
-  // Maps FileID to trackers.  The active tracker must be unique per FileID.
-  // This must be updated when updating |active| field of a tracker.
-  TrackerIDsByFileID trackers_by_file_id_;  // Not owned.
-
-  // Maps AppID to the app-root tracker.
-  // This must be updated when a tracker is registered/unregistered as an
-  // app-root.
-  TrackerIDByAppID app_root_by_app_id_;  // Not owned.
-
-  // Maps |tracker_id| to its children grouped by their |title|.
-  // If the title is unknown for a tracker, treats its title as empty. Empty
-  // titled file must not be active.
-  // The active tracker must be unique per its parent_tracker and its title.
-  // This must be updated when updating |title|, |active| or
-  // |parent_tracker_id|.
-  TrackerIDsByParentAndTitle trackers_by_parent_and_title_;
-
-  // Holds all trackers which marked as dirty.
-  // This must be updated when updating |dirty| field of a tracker.
-  DirtyTrackers dirty_trackers_;  // Not owned.
-  DirtyTrackers low_priority_dirty_trackers_;  // Not owned.
+  scoped_ptr<MetadataDatabaseIndex> index_;
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

@@ -68,6 +68,8 @@ scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
 SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error);
 
+scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj);
+
 template <typename Src, typename Dest>
 void AppendContents(const Src& src, Dest* dest) {
   dest->insert(dest->end(), src.begin(), src.end());

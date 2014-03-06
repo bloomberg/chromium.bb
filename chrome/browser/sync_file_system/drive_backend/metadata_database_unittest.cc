@@ -13,6 +13,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -468,6 +469,11 @@ class MetadataDatabaseTest : public testing::Test {
                   &metadata_database_2));
     metadata_database_->db_ = metadata_database_2->db_.Pass();
 
+    const MetadataDatabaseIndex* on_memory =
+        metadata_database_->index_.get();
+    const MetadataDatabaseIndex* reloaded =
+        metadata_database_2->index_.get();
+
     {
       SCOPED_TRACE("Expect equivalent service_metadata");
       ExpectEquivalent(metadata_database_->service_metadata_.get(),
@@ -475,39 +481,39 @@ class MetadataDatabaseTest : public testing::Test {
     }
 
     {
-      SCOPED_TRACE("Expect equivalent file_by_id_ contents.");
-      ExpectEquivalent(metadata_database_->metadata_by_id_,
-                       metadata_database_2->metadata_by_id_);
+      SCOPED_TRACE("Expect equivalent metadata_by_id_ contents.");
+      ExpectEquivalent(on_memory->metadata_by_id_,
+                       reloaded->metadata_by_id_);
     }
 
     {
       SCOPED_TRACE("Expect equivalent tracker_by_id_ contents.");
-      ExpectEquivalent(metadata_database_->tracker_by_id_,
-                       metadata_database_2->tracker_by_id_);
+      ExpectEquivalent(on_memory->tracker_by_id_,
+                       reloaded->tracker_by_id_);
     }
 
     {
       SCOPED_TRACE("Expect equivalent trackers_by_file_id_ contents.");
-      ExpectEquivalent(metadata_database_->trackers_by_file_id_,
-                       metadata_database_2->trackers_by_file_id_);
+      ExpectEquivalent(on_memory->trackers_by_file_id_,
+                       reloaded->trackers_by_file_id_);
     }
 
     {
       SCOPED_TRACE("Expect equivalent app_root_by_app_id_ contents.");
-      ExpectEquivalent(metadata_database_->app_root_by_app_id_,
-                       metadata_database_2->app_root_by_app_id_);
+      ExpectEquivalent(on_memory->app_root_by_app_id_,
+                       reloaded->app_root_by_app_id_);
     }
 
     {
       SCOPED_TRACE("Expect equivalent trackers_by_parent_and_title_ contents.");
-      ExpectEquivalent(metadata_database_->trackers_by_parent_and_title_,
-                       metadata_database_2->trackers_by_parent_and_title_);
+      ExpectEquivalent(on_memory->trackers_by_parent_and_title_,
+                       reloaded->trackers_by_parent_and_title_);
     }
 
     {
       SCOPED_TRACE("Expect equivalent dirty_trackers_ contents.");
-      ExpectEquivalent(metadata_database_->dirty_trackers_,
-                       metadata_database_2->dirty_trackers_);
+      ExpectEquivalent(on_memory->dirty_trackers_,
+                       reloaded->dirty_trackers_);
     }
   }
 
