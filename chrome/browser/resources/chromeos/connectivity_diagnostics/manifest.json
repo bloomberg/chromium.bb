@@ -1,6 +1,7 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGJWLUb83WKoDeODlrPIZu60M8bzbvrkg3Jf/5aO3ux2FL+G+/BO4Vyt/J0t8lXBtnTOvHo6KPpA042PyE9xMdlufFnJqEkvPXNzRlBWeVQqFHbMWE6o/x8diG69dNmHyFYcUjjFFDk2X2GOLQXNUGJQ6MIikbdzoWdLGttmhAIwIDAQAB",
   "manifest_version": 2,
+  "incognito" : "split",
   "name": "Connectivity Diagnostics",
   "version": "1.1.0",
   "minimum_chrome_version": "29",
