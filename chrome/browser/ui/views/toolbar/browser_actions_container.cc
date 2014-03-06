@@ -450,8 +450,8 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   container_width_ = animation_target_size_;
   animation_target_size_ = 0;
   resize_amount_ = 0;
-  OnBrowserActionVisibilityChanged();
   suppress_chevron_ = false;
+  OnBrowserActionVisibilityChanged();
 }
 
 void BrowserActionsContainer::NotifyMenuDeleted(
