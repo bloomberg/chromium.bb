@@ -120,7 +120,7 @@ bool WVTestLicenseServerConfig::SelectServerPort() {
 }
 
 bool WVTestLicenseServerConfig::IsPlatformSupported() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
   return true;
 #else
   return false;
