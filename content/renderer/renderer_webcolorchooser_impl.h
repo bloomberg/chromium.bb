@@ -36,6 +36,11 @@ class RendererWebColorChooserImpl : public blink::WebColorChooser,
 
   blink::WebColorChooserClient* client() { return client_; }
 
+  // Don't destroy the RendererWebColorChooserImpl when the RenderViewImpl goes
+  // away. RendererWebColorChooserImpl is owned by
+  // blink::ColorChooserUIController.
+  virtual void OnDestruct() OVERRIDE {}
+
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
