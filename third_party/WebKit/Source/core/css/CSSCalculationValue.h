@@ -56,7 +56,7 @@ enum CalculationCategory {
     CalcOther
 };
 
-class CSSCalcExpressionNode : public RefCountedWillBeGarbageCollected<CSSCalcExpressionNode> {
+class CSSCalcExpressionNode : public RefCountedWillBeGarbageCollectedFinalized<CSSCalcExpressionNode> {
 public:
     enum Type {
         CssCalcPrimitiveValue = 1,
