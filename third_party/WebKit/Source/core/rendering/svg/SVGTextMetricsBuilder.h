@@ -41,10 +41,10 @@ public:
     void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
 
 private:
-    SVGTextMetrics computeMetricsForCurrentCharacter();
-    SVGTextMetrics computeMetricsForCurrentCharacterSimple();
-    SVGTextMetrics computeMetricsForCurrentCharacterComplex();
-    bool currentCharacterStartsSurrogatePair() const;
+    SVGTextMetrics computeMetricsForCurrentCharacter(unsigned textPosition);
+    SVGTextMetrics computeMetricsForCurrentCharacterSimple(unsigned textPosition);
+    SVGTextMetrics computeMetricsForCurrentCharacterComplex(unsigned textPosition);
+    bool currentCharacterStartsSurrogatePair(unsigned textPosition) const;
 
     void initializeMeasurementWithTextRenderer(RenderSVGInlineText*);
     void walkTree(RenderObject*, RenderSVGInlineText* stopAtLeaf, MeasureTextData*);
@@ -52,7 +52,6 @@ private:
 
     RenderSVGInlineText* m_text;
     TextRun m_run;
-    unsigned m_textPosition;
     bool m_isComplexText;
     float m_totalWidth;
 

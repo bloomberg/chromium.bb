@@ -30,21 +30,20 @@ namespace WebCore {
 SVGTextMetricsBuilder::SVGTextMetricsBuilder()
     : m_text(0)
     , m_run(static_cast<const UChar*>(0), 0)
-    , m_textPosition(0)
     , m_isComplexText(false)
     , m_totalWidth(0)
 {
 }
 
-inline bool SVGTextMetricsBuilder::currentCharacterStartsSurrogatePair() const
+inline bool SVGTextMetricsBuilder::currentCharacterStartsSurrogatePair(unsigned textPosition) const
 {
-    return U16_IS_LEAD(m_run[m_textPosition]) && int(m_textPosition + 1) < m_run.charactersLength() && U16_IS_TRAIL(m_run[m_textPosition + 1]);
+    return U16_IS_LEAD(m_run[textPosition]) && int(textPosition + 1) < m_run.charactersLength() && U16_IS_TRAIL(m_run[textPosition + 1]);
 }
 
-SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacterSimple()
+SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacterSimple(unsigned textPosition)
 {
     GlyphBuffer glyphBuffer;
-    unsigned metricsLength = m_simpleWidthIterator->advance(m_textPosition + 1, &glyphBuffer);
+    unsigned metricsLength = m_simpleWidthIterator->advance(textPosition + 1, &glyphBuffer);
     if (!metricsLength)
         return SVGTextMetrics();
 
@@ -52,16 +51,16 @@ SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacterSimple()
     m_totalWidth = m_simpleWidthIterator->runWidthSoFar();
 
     Glyph glyphId = glyphBuffer.glyphAt(0);
-    return SVGTextMetrics(m_text, m_textPosition, metricsLength, currentWidth, glyphId);
+    return SVGTextMetrics(m_text, textPosition, metricsLength, currentWidth, glyphId);
 }
 
-SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacterComplex()
+SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacterComplex(unsigned textPosition)
 {
-    unsigned metricsLength = currentCharacterStartsSurrogatePair() ? 2 : 1;
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(m_text, m_textPosition, metricsLength);
+    unsigned metricsLength = currentCharacterStartsSurrogatePair(textPosition) ? 2 : 1;
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(m_text, textPosition, metricsLength);
     ASSERT(metrics.length() == metricsLength);
 
-    SVGTextMetrics complexStartToCurrentMetrics = SVGTextMetrics::measureCharacterRange(m_text, 0, m_textPosition + metricsLength);
+    SVGTextMetrics complexStartToCurrentMetrics = SVGTextMetrics::measureCharacterRange(m_text, 0, textPosition + metricsLength);
     // Frequent case for Arabic text: when measuring a single character the arabic isolated form is taken
     // when rendering the glyph "in context" (with it's surrounding characters) it changes due to shaping.
     // So whenever currentWidth != currentMetrics.width(), we are processing a text run whose length is
@@ -74,18 +73,17 @@ SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacterComplex()
     return metrics;
 }
 
-SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacter()
+SVGTextMetrics SVGTextMetricsBuilder::computeMetricsForCurrentCharacter(unsigned textPosition)
 {
     if (m_isComplexText)
-        return computeMetricsForCurrentCharacterComplex();
+        return computeMetricsForCurrentCharacterComplex(textPosition);
 
-    return computeMetricsForCurrentCharacterSimple();
+    return computeMetricsForCurrentCharacterSimple(textPosition);
 }
 
 void SVGTextMetricsBuilder::initializeMeasurementWithTextRenderer(RenderSVGInlineText* text)
 {
     m_text = text;
-    m_textPosition = 0;
     m_totalWidth = 0;
 
     const Font& scaledFont = text->scaledFont();
@@ -130,15 +128,16 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
     bool preserveWhiteSpace = text->style()->whiteSpace() == PRE;
     unsigned surrogatePairCharacters = 0;
     unsigned skippedCharacters = 0;
+    unsigned textPosition = 0;
     unsigned textLength = static_cast<unsigned>(m_run.charactersLength());
 
     SVGTextMetrics currentMetrics;
-    for (; m_textPosition < textLength; m_textPosition += currentMetrics.length()) {
-        currentMetrics = computeMetricsForCurrentCharacter();
+    for (; textPosition < textLength; textPosition += currentMetrics.length()) {
+        currentMetrics = computeMetricsForCurrentCharacter(textPosition);
         if (!currentMetrics.length())
             break;
 
-        bool characterIsWhiteSpace = m_run[m_textPosition] == ' ';
+        bool characterIsWhiteSpace = m_run[textPosition] == ' ';
         if (characterIsWhiteSpace && !preserveWhiteSpace && data->lastCharacterWasWhiteSpace) {
             if (processRenderer)
                 textMetricsValues->append(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
@@ -149,14 +148,14 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
 
         if (processRenderer) {
             if (data->allCharactersMap) {
-                const SVGCharacterDataMap::const_iterator it = data->allCharactersMap->find(data->valueListPosition + m_textPosition - skippedCharacters - surrogatePairCharacters + 1);
+                const SVGCharacterDataMap::const_iterator it = data->allCharactersMap->find(data->valueListPosition + textPosition - skippedCharacters - surrogatePairCharacters + 1);
                 if (it != data->allCharactersMap->end())
-                    attributes->characterDataMap().set(m_textPosition + 1, it->value);
+                    attributes->characterDataMap().set(textPosition + 1, it->value);
             }
             textMetricsValues->append(currentMetrics);
         }
 
-        if (data->allCharactersMap && currentCharacterStartsSurrogatePair())
+        if (data->allCharactersMap && currentCharacterStartsSurrogatePair(textPosition))
             surrogatePairCharacters++;
 
         data->lastCharacterWasWhiteSpace = characterIsWhiteSpace;
@@ -165,7 +164,7 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
     if (!data->allCharactersMap)
         return;
 
-    data->valueListPosition += m_textPosition - skippedCharacters;
+    data->valueListPosition += textPosition - skippedCharacters;
 }
 
 void SVGTextMetricsBuilder::walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
