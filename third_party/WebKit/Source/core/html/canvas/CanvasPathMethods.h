@@ -54,6 +54,7 @@ public:
 
 protected:
     CanvasPathMethods() { }
+    CanvasPathMethods(const Path& path) : m_path(path) { }
     Path m_path;
 };
 }

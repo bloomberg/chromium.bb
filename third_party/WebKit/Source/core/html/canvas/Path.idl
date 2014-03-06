@@ -34,6 +34,8 @@
     ImplementedAs=DOMPath
 ] interface Path {
 
+    [RaisesException] void addPath(Path? path, SVGMatrix? transform);
+
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();
     void moveTo([Default=Undefined] optional float x,

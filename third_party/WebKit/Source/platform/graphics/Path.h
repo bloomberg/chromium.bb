@@ -131,6 +131,8 @@ public:
     void addRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
     void addRoundedRect(const RoundedRect&);
 
+    void addPath(const Path&, const AffineTransform&);
+
     void translate(const FloatSize&);
 
     const SkPath& skPath() const { return m_path; }

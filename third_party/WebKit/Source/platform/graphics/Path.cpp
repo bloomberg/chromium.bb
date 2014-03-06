@@ -472,6 +472,11 @@ void Path::addBeziersForRoundedRect(const FloatRect& rect, const FloatSize& topL
     closeSubpath();
 }
 
+void Path::addPath(const Path& src, const AffineTransform& transform)
+{
+    m_path.addPath(src.skPath(), affineTransformToSkMatrix(transform));
+}
+
 void Path::translate(const FloatSize& size)
 {
     m_path.offset(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));

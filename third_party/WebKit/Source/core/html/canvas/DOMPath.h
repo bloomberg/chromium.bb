@@ -30,7 +30,9 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasPathMethods.h"
+#include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -48,6 +50,16 @@ public:
     const Path& path() const { return m_path; }
 
     virtual ~DOMPath() { }
+
+    void addPath(DOMPath* path, SVGMatrixTearOff* transform, ExceptionState& exceptionState)
+    {
+        if (!path) {
+            exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
+            return;
+        }
+        Path src = path->path();
+        m_path.addPath(src, transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
+    }
 private:
     DOMPath() : CanvasPathMethods()
     {
@@ -55,17 +67,15 @@ private:
     }
 
     DOMPath(const Path& path)
-        : CanvasPathMethods()
+        : CanvasPathMethods(path)
     {
         ScriptWrappable::init(this);
-        m_path = path;
     }
 
     DOMPath(DOMPath* path)
-        : CanvasPathMethods()
+        : CanvasPathMethods(path->path())
     {
         ScriptWrappable::init(this);
-        m_path = path->path();
     }
 
     DOMPath(const String& pathData)
