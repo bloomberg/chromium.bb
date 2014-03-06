@@ -49,10 +49,13 @@ public:
     static PassRefPtr<RTCIceCandidate> create(blink::WebRTCICECandidate);
 
     String candidate() const;
+    void setCandidate(String);
     String sdpMid() const;
+    void setSdpMid(String);
     unsigned short sdpMLineIndex() const;
+    void setSdpMLineIndex(unsigned short);
 
-    blink::WebRTCICECandidate webCandidate();
+    blink::WebRTCICECandidate webCandidate() const;
 
 private:
     explicit RTCIceCandidate(blink::WebRTCICECandidate);

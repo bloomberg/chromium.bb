@@ -17,6 +17,9 @@ PASS new RTCIceCandidate(5); threw exception TypeError: Failed to construct 'RTC
 PASS new RTCIceCandidate("foobar"); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('dictionary') is not an object..
 PASS new RTCIceCandidate({candidate:""}); threw exception TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty..
 PASS new RTCIceCandidate({candidate:"x"}); did not throw exception.
+PASS candidate.candidate is "bar"
+PASS candidate.sdpMid is "foo"
+PASS candidate.sdpMLineIndex is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -65,6 +65,9 @@ public:
     BLINK_PLATFORM_EXPORT WebString candidate() const;
     BLINK_PLATFORM_EXPORT WebString sdpMid() const;
     BLINK_PLATFORM_EXPORT unsigned short sdpMLineIndex() const;
+    BLINK_PLATFORM_EXPORT void setCandidate(WebString);
+    BLINK_PLATFORM_EXPORT void setSdpMid(WebString);
+    BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short);
 
 #if INSIDE_BLINK
     WebRTCICECandidate(WebString candidate, WebString sdpMid, unsigned short sdpMLineIndex)

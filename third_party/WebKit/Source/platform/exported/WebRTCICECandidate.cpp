@@ -48,6 +48,10 @@ public:
     const WebString& sdpMid() const { return m_sdpMid; }
     unsigned short sdpMLineIndex() const { return m_sdpMLineIndex; }
 
+    BLINK_PLATFORM_EXPORT void setCandidate(WebString candidate) { m_candidate = candidate; }
+    BLINK_PLATFORM_EXPORT void setSdpMid(WebString sdpMid) { m_sdpMid = sdpMid; }
+    BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short sdpMLineIndex) { m_sdpMLineIndex = sdpMLineIndex; }
+
 private:
     WebRTCICECandidatePrivate(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex);
 
@@ -94,6 +98,24 @@ unsigned short WebRTCICECandidate::sdpMLineIndex() const
 {
     ASSERT(!m_private.isNull());
     return m_private->sdpMLineIndex();
+}
+
+void WebRTCICECandidate::setCandidate(WebString candidate)
+{
+    ASSERT(!m_private.isNull());
+    m_private->setCandidate(candidate);
+}
+
+void WebRTCICECandidate::setSdpMid(WebString sdpMid)
+{
+    ASSERT(!m_private.isNull());
+    m_private->setSdpMid(sdpMid);
+}
+
+void WebRTCICECandidate::setSdpMLineIndex(unsigned short sdpMLineIndex)
+{
+    ASSERT(!m_private.isNull());
+    m_private->setSdpMLineIndex(sdpMLineIndex);
 }
 
 } // namespace blink

@@ -83,9 +83,24 @@ unsigned short RTCIceCandidate::sdpMLineIndex() const
     return m_webCandidate.sdpMLineIndex();
 }
 
-blink::WebRTCICECandidate RTCIceCandidate::webCandidate()
+blink::WebRTCICECandidate RTCIceCandidate::webCandidate() const
 {
     return m_webCandidate;
+}
+
+void RTCIceCandidate::setCandidate(String candidate)
+{
+    m_webCandidate.setCandidate(candidate);
+}
+
+void RTCIceCandidate::setSdpMid(String sdpMid)
+{
+    m_webCandidate.setSdpMid(sdpMid);
+}
+
+void RTCIceCandidate::setSdpMLineIndex(unsigned short sdpMLineIndex)
+{
+    m_webCandidate.setSdpMLineIndex(sdpMLineIndex);
 }
 
 } // namespace WebCore

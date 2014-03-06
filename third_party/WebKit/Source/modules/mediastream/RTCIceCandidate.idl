@@ -32,8 +32,8 @@
     Constructor(Dictionary dictionary),
     RaisesException=Constructor
 ] interface RTCIceCandidate {
-    readonly attribute DOMString candidate;
-    readonly attribute DOMString sdpMid;
-    readonly attribute unsigned short sdpMLineIndex;
+    [TreatNullAs=NullString] attribute DOMString candidate;
+    [TreatNullAs=NullString] attribute DOMString sdpMid;
+    attribute unsigned short sdpMLineIndex;
 };
 
