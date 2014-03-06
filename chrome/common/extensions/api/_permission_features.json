@@ -363,7 +363,11 @@
   },{
     "channel": "stable",
     "extension_types": ["extension"],
-    "whitelist": [ "2FC374607C2DF285634B67C64A2E356C607091C3" ]
+    "whitelist": [
+      "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
+      "3727DD3E564B6055387425027AD74C58784ACC15",  // Quickoffice internal
+      "12E618C3C6E97495AAECF2AC12DEB082353241C6"   // QO component extension
+    ]
   }],
   "fileSystem.directory": [{
     "channel": "stable",
@@ -379,7 +383,11 @@
   },{
     "channel": "stable",
     "extension_types": ["extension"],
-    "whitelist": [ "2FC374607C2DF285634B67C64A2E356C607091C3" ]
+    "whitelist": [
+      "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
+      "3727DD3E564B6055387425027AD74C58784ACC15",  // Quickoffice internal
+      "12E618C3C6E97495AAECF2AC12DEB082353241C6"   // QO component extension
+    ]
   }],
   "fileSystemProvider": {
     "channel": "trunk",
@@ -565,7 +573,7 @@
       // also doesn't hurt anything.
       "A948368FC53BE437A55FEB414106E207925482F5",  // File manager
       "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
-      "5D3851BEFF680AB6D954B76678EFCCE834465C23",  // Quickoffice dev
+      "3727DD3E564B6055387425027AD74C58784ACC15",  // Quickoffice internal
       "12E618C3C6E97495AAECF2AC12DEB082353241C6",  // QO component extension
       "3727DD3E564B6055387425027AD74C58784ACC15",  // Editor
       "C41AD9DCD670210295614257EF8C9945AD68D86E",  // Google Now

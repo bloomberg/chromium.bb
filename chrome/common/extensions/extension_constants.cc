@@ -114,7 +114,8 @@ const char kHotwordExtensionId[] = "bepbmhgboaologfdajaanbcjmnhjmhfn";
 const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =
     "bpmcpldpdmajfigpchkicefoigmkfalc";
-const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
+const char kQuickOfficeInternalExtensionId[] =
+    "ehibbfinohgbchlgdbfpikodjaojhccn";
 const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
 const char kStreamsPrivateTestExtensionId[] =

@@ -19,12 +19,11 @@ namespace errors = extensions::manifest_errors;
 namespace {
 
 const char* const kMIMETypeHandlersWhitelist[] = {
-  extension_misc::kPdfExtensionId,
-  extension_misc::kQuickOfficeComponentExtensionId,
-  extension_misc::kQuickOfficeDevExtensionId,
-  extension_misc::kQuickOfficeExtensionId,
-  extension_misc::kStreamsPrivateTestExtensionId
-};
+    extension_misc::kPdfExtensionId,
+    extension_misc::kQuickOfficeComponentExtensionId,
+    extension_misc::kQuickOfficeInternalExtensionId,
+    extension_misc::kQuickOfficeExtensionId,
+    extension_misc::kStreamsPrivateTestExtensionId};
 
 // Stored on the Extension.
 struct MimeTypesHandlerInfo : public extensions::Extension::ManifestData {
