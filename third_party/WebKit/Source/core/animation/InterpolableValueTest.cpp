@@ -5,27 +5,38 @@
 #include "config.h"
 #include "core/animation/InterpolableValue.h"
 
+#include "core/animation/Interpolation.h"
+
 #include <gtest/gtest.h>
 
 namespace WebCore {
 
 class AnimationInterpolableValueTest : public ::testing::Test {
 protected:
+    InterpolableValue* interpolationValue(Interpolation& interpolation)
+    {
+        return interpolation.getCachedValueForTesting();
+    }
+
     double interpolateNumbers(double a, double b, double progress)
     {
-        OwnPtr<InterpolableValue> aVal = static_pointer_cast<InterpolableValue>(InterpolableNumber::create(a));
-        return toInterpolableNumber(aVal->interpolate(*InterpolableNumber::create(b).get(), progress).get())->value();
+        RefPtr<Interpolation> i = Interpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
+        i->interpolate(progress);
+        return toInterpolableNumber(interpolationValue(*i.get()))->value();
     }
 
-    double interpolateBools(bool a, bool b, double progress)
+    bool interpolateBools(bool a, bool b, double progress)
     {
-        OwnPtr<InterpolableValue> aVal = static_pointer_cast<InterpolableValue>(InterpolableBool::create(a));
-        return toInterpolableBool(aVal->interpolate(*InterpolableBool::create(b).get(), progress).get())->value();
+        RefPtr<Interpolation> i = Interpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
+        i->interpolate(progress);
+        return toInterpolableBool(interpolationValue(*i.get()))->value();
     }
 
-    PassOwnPtr<InterpolableValue> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
+    PassRefPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
     {
-        return static_pointer_cast<InterpolableValue>(listA)->interpolate(*listB.get(), progress);
+        RefPtr<Interpolation> i = Interpolation::create(listA, listB);
+        i->interpolate(progress);
+        return i;
     }
 };
 
@@ -61,8 +72,8 @@ TEST_F(AnimationInterpolableValueTest, SimpleList)
     listB->set(1, InterpolableNumber::create(-200));
     listB->set(2, InterpolableNumber::create(300));
 
-    OwnPtr<InterpolableValue> result = interpolateLists(listA.release(), listB.release(), 0.3);
-    InterpolableList* outList = toInterpolableList(result.get());
+    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.3);
+    InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(30, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(-30.6f, toInterpolableNumber(outList->get(1))->value());
     EXPECT_FLOAT_EQ(104.35f, toInterpolableNumber(outList->get(2))->value());
@@ -84,8 +95,8 @@ TEST_F(AnimationInterpolableValueTest, NestedList)
     listB->set(1, subListB.release());
     listB->set(2, InterpolableBool::create(true));
 
-    OwnPtr<InterpolableValue> result = interpolateLists(listA.release(), listB.release(), 0.5);
-    InterpolableList* outList = toInterpolableList(result.get());
+    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.5);
+    InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(50, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(75, toInterpolableNumber(toInterpolableList(outList->get(1))->get(0))->value());
     EXPECT_TRUE(toInterpolableBool(outList->get(2))->value());

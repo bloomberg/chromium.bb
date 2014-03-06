@@ -22,10 +22,7 @@ public:
 private:
     virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const = 0;
 
-    // TODO: Replace this with Interpolation when committing Interpolation
-    // patch. Refactor InterpolableValueTest to test via Interpolation
-    // interface.
-    friend class AnimationInterpolableValueTest;
+    friend class Interpolation;
 
     // Keep interpolate private, but allow calls within the hierarchy without
     // knowledge of type.
@@ -99,6 +96,7 @@ public:
         ASSERT(position < m_size);
         return m_values.get()[position].get();
     }
+    size_t length() const { return m_size; }
     virtual PassOwnPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(*this); }
 
 private:

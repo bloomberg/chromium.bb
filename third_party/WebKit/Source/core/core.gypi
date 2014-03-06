@@ -595,6 +595,8 @@
             'animation/EffectInput.h',
             'animation/InertAnimation.cpp',
             'animation/InertAnimation.h',
+            'animation/Interpolation.cpp',
+            'animation/Interpolation.h',
             'animation/InterpolableValue.cpp',
             'animation/InterpolableValue.h',
             'animation/KeyframeEffectModel.cpp',
