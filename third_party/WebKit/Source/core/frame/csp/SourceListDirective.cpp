@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/frame/csp/SourceListDirective.h"
 
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/csp/CSPSourceList.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"

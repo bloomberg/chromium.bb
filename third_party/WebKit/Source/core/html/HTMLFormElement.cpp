@@ -46,10 +46,10 @@
 #include "core/html/forms/FormController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
 

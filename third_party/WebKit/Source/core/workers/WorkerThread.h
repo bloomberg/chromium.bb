@@ -27,7 +27,7 @@
 #ifndef WorkerThread_h
 #define WorkerThread_h
 
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"

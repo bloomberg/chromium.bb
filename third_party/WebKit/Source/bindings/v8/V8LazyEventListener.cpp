@@ -44,8 +44,8 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 
 #include "wtf/StdLibExtras.h"
 

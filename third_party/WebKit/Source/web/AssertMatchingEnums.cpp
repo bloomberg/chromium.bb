@@ -41,7 +41,7 @@
 #include "core/dom/IconURL.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fileapi/FileError.h"
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"

@@ -31,7 +31,7 @@
 #ifndef SharedWorkerGlobalScope_h
 #define SharedWorkerGlobalScope_h
 
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThreadStartupData.h"
 

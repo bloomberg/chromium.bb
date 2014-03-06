@@ -27,7 +27,7 @@
 
 #include "core/css/CSSSelector.h"
 #include "core/dom/SecurityContext.h"
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"

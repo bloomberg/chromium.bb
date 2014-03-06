@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/SecurityContext.h"
 
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {

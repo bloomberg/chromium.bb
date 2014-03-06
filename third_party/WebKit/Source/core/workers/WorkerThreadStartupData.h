@@ -31,7 +31,7 @@
 #ifndef WorkerThreadStartupData_h
 #define WorkerThreadStartupData_h
 
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"

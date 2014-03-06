@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/frame/csp/MediaListDirective.h"
 
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/ParsingUtilities.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/HashSet.h"

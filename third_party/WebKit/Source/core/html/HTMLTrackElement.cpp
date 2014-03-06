@@ -29,8 +29,8 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/Event.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "platform/Logging.h"
 
 using namespace std;

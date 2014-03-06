@@ -28,8 +28,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/StyleEngine.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLStyleElement.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/StringBuilder.h"
 

@@ -35,7 +35,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/Stream.h"
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DOMFormData.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/parser/TextResourceDecoder.h"

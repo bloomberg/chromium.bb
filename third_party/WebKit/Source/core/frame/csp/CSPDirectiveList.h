@@ -5,7 +5,7 @@
 #ifndef CSPDirectiveList_h
 #define CSPDirectiveList_h
 
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"

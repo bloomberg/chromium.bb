@@ -33,7 +33,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "core/workers/WorkerSupplementable.h"
