@@ -321,9 +321,6 @@ public:
     const GCInfo* gcInfo() { return m_gcInfo; }
 
     NO_SANITIZE_ADDRESS
-    const char* typeMarker() { return m_gcInfo->m_typeMarker; }
-
-    NO_SANITIZE_ADDRESS
     TraceCallback traceCallback() { return m_gcInfo->m_trace; }
 
     void finalize();
@@ -1406,7 +1403,6 @@ struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
 
 template<typename Key, typename Value, typename T, typename U, typename V>
 const GCInfo GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> >::info = {
-    "HashMap",
     TraceTrait<HashMap<Key, Value, T, U, V, HeapAllocator> >::trace,
     0,
     false, // HashMap needs no finalizer.
@@ -1420,7 +1416,6 @@ struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
 
 template<typename T, typename U, typename V>
 const GCInfo GCInfoTrait<HashSet<T, U, V, HeapAllocator> >::info = {
-    "HashSet",
     TraceTrait<HashSet<T, U, V, HeapAllocator> >::trace,
     0,
     false, // HashSet needs no finalizer.
@@ -1434,7 +1429,6 @@ struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
 
 template<typename T>
 const GCInfo GCInfoTrait<Vector<T, 0, HeapAllocator> >::info = {
-    "Vector",
     TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
     0,
     false, // Vector needs no finalizer if it has no inline capacity.
@@ -1451,7 +1445,6 @@ struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> > : public Finali
 
 template<typename T, size_t inlineCapacity>
 const GCInfo GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> >::info = {
-    "Vector",
     TraceTrait<Vector<T, inlineCapacity, HeapAllocator> >::trace,
     FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> >::finalize,
     // Finalizer is needed to destruct things stored in the inline capacity.
@@ -1466,7 +1459,6 @@ struct GCInfoTrait<HeapVectorBacking<T, Traits> > {
 
 template<typename T, typename Traits>
 const GCInfo GCInfoTrait<HeapVectorBacking<T, Traits> >::info = {
-    "VectorBacking",
     TraceTrait<HeapVectorBacking<T, Traits> >::trace,
     FinalizerTrait<HeapVectorBacking<T, Traits> >::finalize,
     Traits::needsDestruction,
@@ -1480,7 +1472,6 @@ struct GCInfoTrait<HeapHashTableBacking<T, U, V, W, X> > {
 
 template<typename T, typename U, typename V, typename Traits, typename W>
 const GCInfo GCInfoTrait<HeapHashTableBacking<T, U, V, Traits, W> >::info = {
-    "HashTableBacking",
     TraceTrait<HeapHashTableBacking<T, U, V, Traits, W> >::trace,
     FinalizerTrait<HeapHashTableBacking<T, U, V, Traits, W> >::finalize,
     Traits::needsDestruction,
@@ -1628,10 +1619,10 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
     {
         visitor->mark(backing, &trace);
     }
-    static void checkTypeMarker(Visitor* visitor, const Backing* backing)
+    static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
 #ifndef NDEBUG
-        visitor->checkTypeMarker(const_cast<Backing*>(backing), getTypeMarker<Backing>());
+        visitor->checkGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
 #endif
     }
 };
@@ -1657,10 +1648,10 @@ struct TraceTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>
         else
             visitor->mark(backing, 0);
     }
-    static void checkTypeMarker(Visitor* visitor, const Backing* backing)
+    static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
 #ifndef NDEBUG
-        visitor->checkTypeMarker(const_cast<Backing*>(backing), getTypeMarker<Backing>());
+        visitor->checkGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
 #endif
     }
 };

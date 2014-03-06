@@ -86,7 +86,6 @@ struct TraceMethodDelegate {
 // inherits from GarbageCollected or GarbageCollectedFinalized.
 struct GCInfo {
     bool hasFinalizer() const { return m_nonTrivialFinalizer; }
-    const char* m_typeMarker;
     TraceCallback m_trace;
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
@@ -125,12 +124,6 @@ struct FinalizerTrait {
 // Trait to get the GCInfo structure for types that have their
 // instances allocated in the Blink garbage-collected heap.
 template<typename T> struct GCInfoTrait;
-
-template<typename T>
-const char* getTypeMarker()
-{
-    return GCInfoTrait<T>::get()->m_typeMarker;
-}
 
 template<typename T> class GarbageCollected;
 class GarbageCollectedMixin;
@@ -177,9 +170,9 @@ public:
     }
 
 #ifndef NDEBUG
-    static void checkTypeMarker(Visitor* visitor, const T* t)
+    static void checkGCInfo(Visitor* visitor, const T* t)
     {
-        DefaultTraceTrait<T>::checkTypeMarker(visitor, t);
+        DefaultTraceTrait<T>::checkGCInfo(visitor, t);
     }
 #endif
 };
@@ -220,7 +213,7 @@ public:
         if (!t)
             return;
 #ifndef NDEBUG
-        TraceTrait<T>::checkTypeMarker(this, t);
+        TraceTrait<T>::checkGCInfo(this, t);
 #endif
         TraceTrait<T>::mark(this, t);
     }
@@ -369,12 +362,12 @@ public:
     }
 
 #ifndef NDEBUG
-    void checkTypeMarker(const void*, const char* marker);
+    void checkGCInfo(const void*, const GCInfo*);
 #endif
 
     // Macro to declare methods needed for each typed heap.
 #define DECLARE_VISITOR_METHODS(Type)                                  \
-    DEBUG_ONLY(void checkTypeMarker(const Type*, const char* marker);) \
+    DEBUG_ONLY(void checkGCInfo(const Type*, const GCInfo*);) \
     virtual void mark(const Type*, TraceCallback) = 0;                 \
     virtual bool isMarked(const Type*) = 0;
 
@@ -490,7 +483,7 @@ inline void doNothingTrace(Visitor*, void*) { }
     template<>                                                       \
     class TraceTrait<type> {                                         \
     public:                                                          \
-        static void checkTypeMarker(Visitor*, const void*) { }       \
+        static void checkGCInfo(Visitor*, const void*) { }       \
         static void mark(Visitor* visitor, const type* p) {          \
             visitor->mark(p, reinterpret_cast<TraceCallback>(0));    \
         }                                                            \
@@ -516,13 +509,6 @@ ITERATE_DO_NOTHING_TYPES(DECLARE_DO_NOTHING_TRAIT)
 template<typename T>
 class DefaultTraceTrait<T, false> {
 public:
-    // Default implementation of TraceTrait<T>::trace just statically
-    // dispatches to the trace method of the class T.
-    static void trace(Visitor* visitor, void* self)
-    {
-        static_cast<T*>(self)->trace(visitor);
-    }
-
     static void mark(Visitor* visitor, const T* t)
     {
         // Default mark method of the trait just calls the two-argument mark
@@ -533,9 +519,9 @@ public:
     }
 
 #ifndef NDEBUG
-    static void checkTypeMarker(Visitor* visitor, const T* t)
+    static void checkGCInfo(Visitor* visitor, const T* t)
     {
-        visitor->checkTypeMarker(const_cast<T*>(t), getTypeMarker<T>());
+        visitor->checkGCInfo(const_cast<T*>(t), GCInfoTrait<T>::get());
     }
 #endif
 };
@@ -549,7 +535,7 @@ public:
     }
 
 #ifndef NDEBUG
-    static void checkTypeMarker(Visitor*, const T*) { }
+    static void checkGCInfo(Visitor*, const T*) { }
 #endif
 };
 
@@ -632,9 +618,7 @@ template<typename T>
 struct GCInfoAtBase {
     static const GCInfo* get()
     {
-        static char pseudoTypeMarker = 'a';
         static const GCInfo gcInfo = {
-            &pseudoTypeMarker,
             TraceTrait<T>::trace,
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
