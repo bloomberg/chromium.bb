@@ -47,11 +47,6 @@ class Font;
 class SimpleFontData;
 class HarfBuzzShaper FINAL {
 public:
-    enum NormalizeMode {
-        DoNotNormalizeMirrorChars,
-        NormalizeMirrorChars
-    };
-
     enum ForTextEmphasisOrNot {
         NotForTextEmphasis,
         ForTextEmphasis
@@ -119,8 +114,6 @@ private:
         Vector<FloatPoint, 256> m_offsets;
         float m_width;
     };
-
-    void setNormalizedBuffer(NormalizeMode = DoNotNormalizeMirrorChars);
 
     bool isWordEnd(unsigned);
     int determineWordBreakSpacing();
