@@ -12,12 +12,11 @@ var didStartTest = false;
 function startTest() {
     if (didStartTest)
         return;
-    didStartTest = true;
-    var frameWindow = document.getElementById('frame1').contentWindow;
-    frameWindow.innerInput.focus();
+    didStartTest = true;;
+    frame1.innerInput.focus();
     outerInput.focus();
     document.execCommand('inserttext', false, 'abc');
-    frameWindow.innerInput.focus();
+    frame1.innerInput.focus();
     document.body.appendChild(document.createTextNode('PASS'));
     testRunner.notifyDone();
 }
