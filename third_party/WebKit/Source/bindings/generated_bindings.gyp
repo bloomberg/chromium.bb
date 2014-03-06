@@ -284,11 +284,11 @@
   },
 ################################################################################
   {
-    # A separate pre-caching step is *not required* to use parse table caching
-    # in PLY, as the cache is concurrency-safe.
+    # A separate pre-caching step is *not required* to use lex/parse table
+    # caching in PLY, as the caches are concurrency-safe.
     # However, pre-caching ensures that all compiler processes use the cached
-    # file (hence maximizing speed), instead of early processes building the
-    # table themselves (as it's not yet been written by the time they start).
+    # files (hence maximizing speed), instead of early processes building the
+    # tables themselves (as they've not yet been written when they start).
     'target_name': 'cached_yacc_tables',
     'type': 'none',
     'actions': [{
@@ -297,6 +297,7 @@
         '<@(idl_lexer_parser_files)',
       ],
       'outputs': [
+        '<(bindings_output_dir)/lextab.py',
         '<(bindings_output_dir)/parsetab.pickle',
       ],
       'action': [
@@ -304,7 +305,7 @@
         'scripts/blink_idl_parser.py',
         '<(bindings_output_dir)',
       ],
-      'message': 'Caching PLY yacc parse tables',
+      'message': 'Caching PLY lex & yacc lex/parse tables',
     }],
   },
 ################################################################################
@@ -356,6 +357,7 @@
       'inputs': [
         '<@(idl_lexer_parser_files)',  # to be explicit (covered by parsetab)
         '<@(idl_compiler_files)',
+        '<(bindings_output_dir)/lextab.py',
         '<(bindings_output_dir)/parsetab.pickle',
         '<(bindings_output_dir)/cached_jinja_templates.stamp',
         'IDLExtendedAttributes.txt',

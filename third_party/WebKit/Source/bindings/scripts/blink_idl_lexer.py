@@ -54,11 +54,16 @@ PLY:
 import os.path
 import sys
 
-# Base lexer is in Chromium src/tools/idl_parser
+# PLY is in Chromium src/third_party/ply
 module_path, module_name = os.path.split(__file__)
-tools_dir = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, 'tools')
-sys.path.append(tools_dir)
+third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir)
+# Insert at front to override system libraries, and after path[0] == script dir
+sys.path.insert(1, third_party)
+from ply import lex
 
+# Base lexer is in Chromium src/tools/idl_parser
+tools_dir = os.path.join(third_party, os.pardir, 'tools')
+sys.path.append(tools_dir)
 from idl_parser.idl_lexer import IDLLexer
 
 REMOVE_TOKENS = ['COMMENT']
@@ -80,11 +85,40 @@ class BlinkIDLLexer(IDLLexer):
         for token in tokens:
             self._RemoveToken(token)
 
-    def __init__(self):
+    def __init__(self, debug=False, optimize=True, outputdir=None):
+        if debug:
+            # Turn off optimization and caching to help debugging
+            optimize = False
+            outputdir = None
+        if outputdir:
+            # Need outputdir in path because lex imports the cached lex table
+            # as a Python module
+            sys.path.append(outputdir)
+
         IDLLexer.__init__(self)
+        # Overrides to parent class
         self._RemoveTokens(REMOVE_TOKENS)
+        # Optimized mode substantially decreases startup time (by disabling
+        # error checking), and also allows use of Python's optimized mode.
+        # See: Optimized Mode
+        # http://www.dabeaz.com/ply/ply.html#ply_nn15
+        self._lexobj = lex.lex(object=self,
+                               debug=debug,
+                               optimize=optimize,
+                               outputdir=outputdir)
 
 
-# If run by itself, attempt to build the lexer
+################################################################################
+
+def main(argv):
+    # If file itself executed, build and cache lex table
+    try:
+        outputdir = argv[1]
+    except IndexError as err:
+        print 'Usage: %s OUTPUT_DIR' % argv[0]
+        return 1
+    lexer = BlinkIDLLexer(outputdir=outputdir)
+
+
 if __name__ == '__main__':
-    lexer = BlinkIDLLexer()
+    sys.exit(main(sys.argv))

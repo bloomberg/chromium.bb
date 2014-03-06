@@ -194,10 +194,11 @@ class BindingsTests(object):
         file_pairs = [(os.path.join(reference_directory, output_file),
                        os.path.join(self.output_directory, output_file))
                       for output_file in os.listdir(self.output_directory)
-                      # Skip cache
-                      if not output_file.endswith(('.pickle',  # PLY yacc
-                                                   '.cache',  # Jinja
-                                                   ))]
+                      # Skip caches
+                      if not (output_file in ('lextab.py',  # PLY lex
+                                              'lextab.pyc',
+                                              'parsetab.pickle') or  # PLY yacc
+                              output_file.endswith('.cache'))]  # Jinja
         return all([self.identical_file(reference_filename, output_filename)
                     for (reference_filename, output_filename) in file_pairs])
 

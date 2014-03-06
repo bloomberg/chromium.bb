@@ -420,7 +420,9 @@ class BlinkIDLParser(IDLParser):
         if outputdir:
             picklefile = picklefile or os.path.join(outputdir, 'parsetab.pickle')
 
-        lexer = lexer or BlinkIDLLexer()
+        lexer = lexer or BlinkIDLLexer(debug=debug,
+                                       outputdir=outputdir,
+                                       optimize=optimize)
         self.lexer = lexer
         self.tokens = lexer.KnownTokens()
         # Using SLR (instead of LALR) generates the table faster,
