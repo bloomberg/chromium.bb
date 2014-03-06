@@ -53,7 +53,7 @@ bool CSSValueList::removeAll(CSSValue* val)
 {
     bool found = false;
     for (size_t index = 0; index < m_values.size(); index++) {
-        RefPtr<CSSValue>& value = m_values.at(index);
+        RefPtrWillBeMember<CSSValue>& value = m_values.at(index);
         if (value && val && value->equals(*val)) {
             m_values.remove(index);
             found = true;
@@ -66,7 +66,7 @@ bool CSSValueList::removeAll(CSSValue* val)
 bool CSSValueList::hasValue(CSSValue* val) const
 {
     for (size_t index = 0; index < m_values.size(); index++) {
-        const RefPtr<CSSValue>& value = m_values.at(index);
+        const RefPtrWillBeMember<CSSValue>& value = m_values.at(index);
         if (value && val && value->equals(*val))
             return true;
     }
@@ -135,7 +135,7 @@ bool CSSValueList::equals(const CSSValue& other) const
     if (m_values.size() != 1)
         return false;
 
-    const RefPtr<CSSValue>& value = m_values[0];
+    const RefPtrWillBeMember<CSSValue>& value = m_values[0];
     return value && value->equals(other);
 }
 
@@ -164,6 +164,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
 
 void CSSValueList::traceAfterDispatch(Visitor* visitor)
 {
+    visitor->trace(m_values);
     CSSValue::traceAfterDispatch(visitor);
 }
 
