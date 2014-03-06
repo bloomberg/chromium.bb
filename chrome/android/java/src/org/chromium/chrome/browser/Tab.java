@@ -722,6 +722,7 @@ public class Tab implements NavigationClient {
      */
     public void destroy() {
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
+        mObservers.clear();
 
         NativePage currentNativePage = mNativePage;
         mNativePage = null;
