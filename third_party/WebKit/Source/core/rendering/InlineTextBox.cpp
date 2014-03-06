@@ -705,12 +705,19 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Clockwise));
 
-            if (!paintSelectedTextSeparately || ePos <= sPos) {
-                // FIXME: Truncate right-to-left text correctly.
-                paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, 0, length, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
-            } else {
-                paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, ePos, sPos, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+            int startOffset = 0;
+            int endOffset = length;
+            int paintRunLength = length;
+            if (combinedText) {
+                startOffset = 0;
+                endOffset = objectReplacementCharacterTextRun.length();
+                paintRunLength = endOffset;
+            } else if (paintSelectedTextSeparately && ePos > sPos) {
+                startOffset = ePos;
+                endOffset = sPos;
             }
+            // FIXME: Truncate right-to-left text correctly.
+            paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, startOffset, endOffset, paintRunLength, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Counterclockwise));
@@ -732,7 +739,10 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Clockwise));
 
-            paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, sPos, ePos, length, emphasisMarkTextOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
+            int startOffset = combinedText ? 0 : sPos;
+            int endOffset = combinedText ? objectReplacementCharacterTextRun.length() : ePos;
+            int paintRunLength = combinedText ? endOffset : length;
+            paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, startOffset, endOffset, paintRunLength, emphasisMarkTextOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Counterclockwise));

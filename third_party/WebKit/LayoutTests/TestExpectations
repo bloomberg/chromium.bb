@@ -627,6 +627,7 @@ crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
 crbug.com/327447 [ Linux Win Debug ] animations/combo-transform-translate+scale.html [ Pass Failure ]
 
+crbug.com/348682 fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
 
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Failure Pass ]
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-spinbutton-click-in-iframe.html [ Failure Pass ]
