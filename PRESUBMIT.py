@@ -1014,28 +1014,32 @@ def _CheckCygwinShell(input_api, output_api):
 
 def _CheckUserActionUpdate(input_api, output_api):
   """Checks if any new user action has been added."""
-  if any('chromeactions.txt' == input_api.os_path.basename(f) for f in
+  if any('actions.xml' == input_api.os_path.basename(f) for f in
          input_api.LocalPaths()):
-    # If chromeactions.txt is already included in the changelist, the PRESUBMIT
-    # for chromeactions.txt will do a more complete presubmit check.
+    # If actions.xml is already included in the changelist, the PRESUBMIT
+    # for actions.xml will do a more complete presubmit check.
     return []
-
-  with open('tools/metrics/actions/chromeactions.txt') as f:
-    current_actions = f.read()
 
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm'))
   action_re = r'[^a-zA-Z]UserMetricsAction\("([^"]*)'
+  current_actions = None
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
       match = input_api.re.search(action_re, line)
       if match:
+        # Loads contents in tools/metrics/actions/actions.xml to memory. It's
+        # loaded only once.
+        if not current_actions:
+          with open('tools/metrics/actions/actions.xml') as actions_f:
+            current_actions = actions_f.read()
+        # Search for the matched user action name in |current_actions|.
         for action_name in match.groups():
-          name_pattern = r'\t%s\n' % action_name
-          if name_pattern not in current_actions:
+          action = 'name="{0}"'.format(action_name)
+          if action not in current_actions:
             return [output_api.PresubmitPromptWarning(
               'File %s line %d: %s is missing in '
-              'tools/metrics/actions/chromeactions.txt. Please run '
-              'tools/metrics/actions/extract_actions.py --hash to update.'
+              'tools/metrics/actions/actions.xml. Please run '
+              'tools/metrics/actions/extract_actions.py to update.'
               % (f.LocalPath(), line_num, action_name))]
   return []
 
