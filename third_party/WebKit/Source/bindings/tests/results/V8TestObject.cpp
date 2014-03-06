@@ -3174,6 +3174,22 @@ static void TestObjectConstructorGetter(v8::Local<v8::String>, const v8::Propert
     v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
 }
 
+static void TestSubObjMeasuredConstructorGetterCallback(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    TestObjectV8Internal::TestObjectConstructorGetter(property, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void deprecatedConstructorConstructorGetterCallback(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::ConstructorAttribute);
+    TestObjectV8Internal::TestObjectConstructorGetter(property, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void TestObjectReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     info.This()->ForceSet(name, jsValue);
@@ -5310,6 +5326,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"treatNullAsNullStringTreatUndefinedAsNullStringStringAttr", TestObjectV8Internal::treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetterCallback, TestObjectV8Internal::treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"eventHandlerAttr", TestObjectV8Internal::eventHandlerAttrAttributeGetterCallback, TestObjectV8Internal::eventHandlerAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testObjAttr", TestObjectV8Internal::testObjAttrAttributeGetterCallback, TestObjectV8Internal::testObjAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"TestSubObjMeasured", TestObjectV8Internal::TestSubObjMeasuredConstructorGetterCallback, TestObjectV8Internal::TestObjectReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"XMLObjAttr", TestObjectV8Internal::XMLObjAttrAttributeGetterCallback, TestObjectV8Internal::XMLObjAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedStringAttr", TestObjectV8Internal::reflectedStringAttrAttributeGetterCallback, TestObjectV8Internal::reflectedStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedTreatNullAsNullStringStringAttr", TestObjectV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeGetterCallback, TestObjectV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5402,6 +5419,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"activityLoggedInIsolatedWorldsAttrGetter", TestObjectV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttributeGetterCallback, TestObjectV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttributeSetterCallback, TestObjectV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"deprecatedReadonlyAttr", TestObjectV8Internal::deprecatedReadonlyAttrAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"deprecatedAttr", TestObjectV8Internal::deprecatedAttrAttributeGetterCallback, TestObjectV8Internal::deprecatedAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"deprecatedConstructor", TestObjectV8Internal::deprecatedConstructorConstructorGetterCallback, TestObjectV8Internal::TestObjectReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"location", TestObjectV8Internal::locationAttributeGetterCallback, TestObjectV8Internal::locationAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"locationWithException", TestObjectV8Internal::locationWithExceptionAttributeGetterCallback, TestObjectV8Internal::locationWithExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };

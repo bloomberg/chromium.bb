@@ -58,6 +58,7 @@ interface TestObject : EventTarget {
     attribute EventHandler             eventHandlerAttr;
     [MeasureAs=TestFeature] attribute TestObject testObjAttr;
     [ExposeJSAccessors] attribute DOMString attrWithJSGetterAndSetter;
+    [MeasureAs=TestFeature] attribute TestSubObjConstructor TestSubObjMeasured;
 
     // Name starting with an acronym
     attribute TestObject                  XMLObjAttr;
@@ -298,6 +299,7 @@ interface TestObject : EventTarget {
 
     [DeprecateAs=Method] void deprecatedMethod();
     [DeprecateAs=StaticMethod] static void deprecatedStaticMethod();
+    [DeprecateAs=ConstructorAttribute] attribute TestSubObjConstructor deprecatedConstructor;
 
     [DeprecateAs=Constant] const unsigned short DEPRECATED_CONSTANT = 1;
 

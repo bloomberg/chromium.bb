@@ -137,6 +137,7 @@ def generate_attribute(interface, attribute):
     }
 
     if is_constructor_attribute(attribute):
+        generate_constructor_getter(interface, attribute, contents)
         return contents
     if not has_custom_getter:
         generate_getter(interface, attribute, contents)
@@ -396,3 +397,7 @@ def property_attributes(attribute):
 
 def is_constructor_attribute(attribute):
     return attribute.idl_type.endswith('Constructor')
+
+
+def generate_constructor_getter(interface, attribute, contents):
+    contents['needs_constructor_getter_callback'] = contents['measure_as'] or contents['deprecate_as']

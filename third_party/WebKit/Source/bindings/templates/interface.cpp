@@ -7,7 +7,10 @@
        '%sV8Internal::%sAttributeGetterCallback' %
             (cpp_class, attribute.name)
        if not attribute.constructor_type else
-       '{0}V8Internal::{0}ConstructorGetter'.format(cpp_class) %}
+       ('%sV8Internal::%sConstructorGetterCallback' %
+            (cpp_class, attribute.name)
+        if attribute.needs_constructor_getter_callback else
+       '{0}V8Internal::{0}ConstructorGetter'.format(cpp_class)) %}
 {% set getter_callback_for_main_world =
        '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
             (cpp_class, attribute.name)

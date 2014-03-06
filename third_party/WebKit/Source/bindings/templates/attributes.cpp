@@ -184,6 +184,25 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
+{% macro constructor_getter_callback(attribute, world_suffix) %}
+{% filter conditional(attribute.conditional_string) %}
+static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    {% if attribute.deprecate_as %}
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+    {% endif %}
+    {% if attribute.measure_as %}
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
+    {% endif %}
+    {{cpp_class}}V8Internal::{{cpp_class}}ConstructorGetter{{world_suffix}}(property, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+{% endfilter %}
+{% endmacro %}
+
+
+{##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(

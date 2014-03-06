@@ -42,7 +42,7 @@
     [Replaceable] readonly attribute WorkerNavigator navigator;
 
     // Additional constructors
-    attribute URLConstructor webkitURL; // FIXME: deprecate this.
+    [MeasureAs=PrefixedWorkerURL] attribute URLConstructor webkitURL; // FIXME: deprecate this.
 };
 
 WorkerGlobalScope implements ImageBitmapFactories;
