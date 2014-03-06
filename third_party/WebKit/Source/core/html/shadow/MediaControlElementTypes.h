@@ -127,37 +127,6 @@ private:
     double m_currentValue;
 };
 
-// ----------------------------
-
-class MediaControlMuteButtonElement : public MediaControlInputElement {
-public:
-    void changedMute();
-
-    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
-
-protected:
-    explicit MediaControlMuteButtonElement(Document&, MediaControlElementType);
-
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-
-private:
-    virtual void updateDisplayType() OVERRIDE;
-};
-
-// ----------------------------
-
-class MediaControlVolumeSliderElement : public MediaControlInputElement {
-public:
-    virtual bool willRespondToMouseMoveEvents() OVERRIDE;
-    virtual bool willRespondToMouseClickEvents() OVERRIDE;
-    void setVolume(double);
-
-protected:
-    explicit MediaControlVolumeSliderElement(Document&);
-
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-};
-
 } // namespace WebCore
 
 #endif // MediaControlElementTypes_h

@@ -44,7 +44,7 @@ MediaControls::MediaControls(Document& document)
     , m_playButton(0)
     , m_currentTimeDisplay(0)
     , m_timeline(0)
-    , m_panelMuteButton(0)
+    , m_muteButton(0)
     , m_volumeSlider(0)
     , m_toggleClosedCaptionsButton(0)
     , m_fullScreenButton(0)
@@ -108,13 +108,13 @@ bool MediaControls::initializeControls(Document& document)
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlPanelMuteButtonElement> panelMuteButton = MediaControlPanelMuteButtonElement::create(document, this);
-    m_panelMuteButton = panelMuteButton.get();
-    panel->appendChild(panelMuteButton.release(), exceptionState);
+    RefPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(document);
+    m_muteButton = muteButton.get();
+    panel->appendChild(muteButton.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlPanelVolumeSliderElement> slider = MediaControlPanelVolumeSliderElement::create(document);
+    RefPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(document);
     m_volumeSlider = slider.get();
     panel->appendChild(slider.release(), exceptionState);
     if (exceptionState.hadException())
@@ -157,7 +157,7 @@ void MediaControls::setMediaController(MediaControllerInterface* controller)
     m_playButton->setMediaController(controller);
     m_currentTimeDisplay->setMediaController(controller);
     m_timeline->setMediaController(controller);
-    m_panelMuteButton->setMediaController(controller);
+    m_muteButton->setMediaController(controller);
     m_volumeSlider->setMediaController(controller);
     m_toggleClosedCaptionsButton->setMediaController(controller);
     m_fullScreenButton->setMediaController(controller);
@@ -181,8 +181,6 @@ void MediaControls::reset()
 
     m_timeline->setDuration(m_mediaController->duration());
     m_timeline->setPosition(m_mediaController->currentTime());
-
-    m_panelMuteButton->show();
 
     if (!m_mediaController->hasAudio()) {
         m_volumeSlider->hide();
@@ -291,7 +289,7 @@ void MediaControls::updateCurrentTimeDisplay()
 
 void MediaControls::changedMute()
 {
-    m_panelMuteButton->changedMute();
+    m_muteButton->updateDisplayType();
 
     if (m_mediaController->muted())
         m_volumeSlider->setVolume(0);
@@ -302,8 +300,8 @@ void MediaControls::changedMute()
 void MediaControls::changedVolume()
 {
     m_volumeSlider->setVolume(m_mediaController->volume());
-    if (m_panelMuteButton->renderer())
-        m_panelMuteButton->renderer()->repaint();
+    if (m_muteButton->renderer())
+        m_muteButton->renderer()->repaint();
 }
 
 void MediaControls::changedClosedCaptionsVisibility()

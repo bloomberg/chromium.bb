@@ -284,22 +284,35 @@ const AtomicString& MediaControlOverlayEnclosureElement::shadowPseudoId() const
 
 // ----------------------------
 
-MediaControlPanelMuteButtonElement::MediaControlPanelMuteButtonElement(Document& document, MediaControls* controls)
-    : MediaControlMuteButtonElement(document, MediaMuteButton)
+MediaControlMuteButtonElement::MediaControlMuteButtonElement(Document& document)
+    : MediaControlInputElement(document, MediaMuteButton)
 {
 }
 
-PassRefPtr<MediaControlPanelMuteButtonElement> MediaControlPanelMuteButtonElement::create(Document& document, MediaControls* controls)
+PassRefPtr<MediaControlMuteButtonElement> MediaControlMuteButtonElement::create(Document& document)
 {
-    ASSERT(controls);
-
-    RefPtr<MediaControlPanelMuteButtonElement> button = adoptRef(new MediaControlPanelMuteButtonElement(document, controls));
+    RefPtr<MediaControlMuteButtonElement> button = adoptRef(new MediaControlMuteButtonElement(document));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     return button.release();
 }
 
-const AtomicString& MediaControlPanelMuteButtonElement::shadowPseudoId() const
+void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == EventTypeNames::click) {
+        mediaController()->setMuted(!mediaController()->muted());
+        event->setDefaultHandled();
+    }
+
+    HTMLInputElement::defaultEventHandler(event);
+}
+
+void MediaControlMuteButtonElement::updateDisplayType()
+{
+    setDisplayType(mediaController()->muted() ? MediaUnMuteButton : MediaMuteButton);
+}
+
+const AtomicString& MediaControlMuteButtonElement::shadowPseudoId() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls-mute-button", AtomicString::ConstructFromLiteral));
     return id;
@@ -499,14 +512,14 @@ const AtomicString& MediaControlTimelineElement::shadowPseudoId() const
 
 // ----------------------------
 
-MediaControlPanelVolumeSliderElement::MediaControlPanelVolumeSliderElement(Document& document)
-    : MediaControlVolumeSliderElement(document)
+MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(Document& document)
+    : MediaControlInputElement(document, MediaVolumeSlider)
 {
 }
 
-PassRefPtr<MediaControlPanelVolumeSliderElement> MediaControlPanelVolumeSliderElement::create(Document& document)
+PassRefPtr<MediaControlVolumeSliderElement> MediaControlVolumeSliderElement::create(Document& document)
 {
-    RefPtr<MediaControlPanelVolumeSliderElement> slider = adoptRef(new MediaControlPanelVolumeSliderElement(document));
+    RefPtr<MediaControlVolumeSliderElement> slider = adoptRef(new MediaControlVolumeSliderElement(document));
     slider->ensureUserAgentShadowRoot();
     slider->setType("range");
     slider->setAttribute(stepAttr, "any");
@@ -514,7 +527,47 @@ PassRefPtr<MediaControlPanelVolumeSliderElement> MediaControlPanelVolumeSliderEl
     return slider.release();
 }
 
-const AtomicString& MediaControlPanelVolumeSliderElement::shadowPseudoId() const
+void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
+{
+    if (event->isMouseEvent() && toMouseEvent(event)->button() != LeftButton)
+        return;
+
+    if (!inDocument() || !document().isActive())
+        return;
+
+    MediaControlInputElement::defaultEventHandler(event);
+
+    if (event->type() == EventTypeNames::mouseover || event->type() == EventTypeNames::mouseout || event->type() == EventTypeNames::mousemove)
+        return;
+
+    double volume = value().toDouble();
+    mediaController()->setVolume(volume, ASSERT_NO_EXCEPTION);
+    mediaController()->setMuted(false);
+}
+
+bool MediaControlVolumeSliderElement::willRespondToMouseMoveEvents()
+{
+    if (!inDocument() || !document().isActive())
+        return false;
+
+    return MediaControlInputElement::willRespondToMouseMoveEvents();
+}
+
+bool MediaControlVolumeSliderElement::willRespondToMouseClickEvents()
+{
+    if (!inDocument() || !document().isActive())
+        return false;
+
+    return MediaControlInputElement::willRespondToMouseClickEvents();
+}
+
+void MediaControlVolumeSliderElement::setVolume(double volume)
+{
+    if (value().toDouble() != volume)
+        setValue(String::number(volume));
+}
+
+const AtomicString& MediaControlVolumeSliderElement::shadowPseudoId() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls-volume-slider", AtomicString::ConstructFromLiteral));
     return id;

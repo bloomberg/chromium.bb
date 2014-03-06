@@ -115,8 +115,8 @@ private:
     MediaControlPlayButtonElement* m_playButton;
     MediaControlCurrentTimeDisplayElement* m_currentTimeDisplay;
     MediaControlTimelineElement* m_timeline;
-    MediaControlPanelMuteButtonElement* m_panelMuteButton;
-    MediaControlPanelVolumeSliderElement* m_volumeSlider;
+    MediaControlMuteButtonElement* m_muteButton;
+    MediaControlVolumeSliderElement* m_volumeSlider;
     MediaControlToggleClosedCaptionsButtonElement* m_toggleClosedCaptionsButton;
     MediaControlFullscreenButtonElement* m_fullScreenButton;
     MediaControlTimeRemainingDisplayElement* m_durationDisplay;

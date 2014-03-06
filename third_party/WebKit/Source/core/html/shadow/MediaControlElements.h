@@ -100,16 +100,18 @@ private:
 
 // ----------------------------
 
-class MediaControlPanelMuteButtonElement FINAL : public MediaControlMuteButtonElement {
+class MediaControlMuteButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlPanelMuteButtonElement> create(Document&, MediaControls*);
+    static PassRefPtr<MediaControlMuteButtonElement> create(Document&);
 
-    virtual bool willRespondToMouseMoveEvents() OVERRIDE { return true; }
+    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
+    virtual void updateDisplayType() OVERRIDE;
 
 private:
-    explicit MediaControlPanelMuteButtonElement(Document&, MediaControls*);
+    explicit MediaControlMuteButtonElement(Document&);
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual void defaultEventHandler(Event*) OVERRIDE;
 };
 
 // ----------------------------
@@ -199,13 +201,19 @@ private:
 
 // ----------------------------
 
-class MediaControlPanelVolumeSliderElement FINAL : public MediaControlVolumeSliderElement {
+class MediaControlVolumeSliderElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlPanelVolumeSliderElement> create(Document&);
+    static PassRefPtr<MediaControlVolumeSliderElement> create(Document&);
+
+    virtual bool willRespondToMouseMoveEvents() OVERRIDE;
+    virtual bool willRespondToMouseClickEvents() OVERRIDE;
+    void setVolume(double);
 
 private:
-    explicit MediaControlPanelVolumeSliderElement(Document&);
+    explicit MediaControlVolumeSliderElement(Document&);
+
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
+    virtual void defaultEventHandler(Event*) OVERRIDE;
 };
 
 // ----------------------------
