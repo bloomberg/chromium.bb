@@ -14,6 +14,7 @@
 #      'variables': {
 #        'dex_input_paths': [ 'files to dex (when proguard is not used) and add to input paths' ],
 #        'dex_generated_input_dirs': [ 'dirs that contain generated files to dex' ],
+#        'input_paths': [ 'additional files to be added to the list of inputs' ],
 #
 #        # For targets that use proguard:
 #        'proguard_enabled': 'true',
@@ -29,6 +30,7 @@
   'variables': {
     'dex_input_paths': [],
     'dex_generated_input_dirs': [],
+    'input_paths': [],
     'proguard_enabled%': 'false',
     'proguard_enabled_input_path%': '',
     'dex_no_locals%': 0,
@@ -37,6 +39,7 @@
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
     '<(DEPTH)/build/android/gyp/util/md5_check.py',
     '<(DEPTH)/build/android/gyp/dex.py',
+    '>@(input_paths)',
     '>@(dex_input_paths)',
   ],
   'outputs': [
@@ -50,6 +53,10 @@
     '--proguard-enabled=<(proguard_enabled)',
     '--proguard-enabled-input-path=<(proguard_enabled_input_path)',
     '--no-locals=<(dex_no_locals)',
+
+    # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+    '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
+
     '>@(dex_input_paths)',
     '>@(dex_generated_input_dirs)',
   ]
