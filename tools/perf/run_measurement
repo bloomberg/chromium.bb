@@ -25,23 +25,7 @@ def main():
     print bootstrap.ListAllDepsPaths(CROS_BOOSTRAP_DEPS_PATH)
     return 0
 
-  old_benchmark_names = {
-  }
-
-  # There are bots that are hard-coded to run some specific named tests.
-  # Convert these to the current naming conventions by overriding them
-  # in the runner.
-  class MeasurementRunner(page_measurement_runner.PageMeasurementRunner):
-    def GetModernizedTestName(self, arg):
-      if arg not in old_benchmark_names:
-        return arg
-      sys.stderr.write(
-          'An old name %s was given. Please use %s in the future.\n' % (
-          arg,
-          old_benchmark_names.get(arg)))
-      return old_benchmark_names[arg]
-
-  runner = MeasurementRunner()
+  runner = page_measurement_runner.PageMeasurementRunner()
   env = environment.Environment([BASE_DIR])
   return runner.Run(env)
 
