@@ -61,7 +61,6 @@ using ::testing::Return;
 using ::testing::_;
 
 class AnimationCompositorAnimationsTest : public AnimationCompositorAnimationsTestBase {
-
 protected:
     RefPtr<TimingFunction> m_linearTimingFunction;
     RefPtr<TimingFunction> m_cubicEaseTimingFunction;
@@ -70,9 +69,9 @@ protected:
 
     Timing m_timing;
     CompositorAnimationsImpl::CompositorTiming m_compositorTiming;
-    KeyframeEffectModel::KeyframeVector m_keyframeVector2;
+    OwnPtrWillBePersistent<KeyframeEffectModel::KeyframeVector> m_keyframeVector2;
     RefPtrWillBePersistent<KeyframeEffectModel> m_keyframeAnimationEffect2;
-    KeyframeEffectModel::KeyframeVector m_keyframeVector5;
+    OwnPtrWillBePersistent<KeyframeEffectModel::KeyframeVector> m_keyframeVector5;
     RefPtrWillBePersistent<KeyframeEffectModel> m_keyframeAnimationEffect5;
 
     virtual void SetUp()
@@ -91,10 +90,10 @@ protected:
         ASSERT(convertTimingForCompositor(m_timing, m_compositorTiming));
 
         m_keyframeVector2 = createCompositableFloatKeyframeVector(2);
-        m_keyframeAnimationEffect2 = KeyframeEffectModel::create(m_keyframeVector2);
+        m_keyframeAnimationEffect2 = KeyframeEffectModel::create(*m_keyframeVector2.get());
 
         m_keyframeVector5 = createCompositableFloatKeyframeVector(5);
-        m_keyframeAnimationEffect5 = KeyframeEffectModel::create(m_keyframeVector5);
+        m_keyframeAnimationEffect5 = KeyframeEffectModel::create(*m_keyframeVector5.get());
     }
 
 public:
@@ -117,8 +116,8 @@ public:
         EXPECT_EQ(frame->offset(), 0);
         KeyframeEffectModel::KeyframeVector frames;
         frames.append(frame);
-        EXPECT_EQ(m_keyframeVector2[1]->offset(), 1.0);
-        frames.append(m_keyframeVector2[1]);
+        EXPECT_EQ((*m_keyframeVector2)[1]->offset(), 1.0);
+        frames.append((*m_keyframeVector2)[1]);
         return isCandidateForAnimationOnCompositor(m_timing, *KeyframeEffectModel::create(frames).get());
     }
 
@@ -161,7 +160,7 @@ public:
         return keyframe;
     }
 
-    KeyframeEffectModel::KeyframeVector createCompositableFloatKeyframeVector(size_t n)
+    PassOwnPtrWillBeRawPtr<KeyframeEffectModel::KeyframeVector> createCompositableFloatKeyframeVector(size_t n)
     {
         Vector<double> values;
         for (size_t i = 0; i < n; i++) {
@@ -170,15 +169,15 @@ public:
         return createCompositableFloatKeyframeVector(values);
     }
 
-    KeyframeEffectModel::KeyframeVector createCompositableFloatKeyframeVector(Vector<double>& values)
+    PassOwnPtrWillBeRawPtr<KeyframeEffectModel::KeyframeVector> createCompositableFloatKeyframeVector(Vector<double>& values)
     {
-        KeyframeEffectModel::KeyframeVector frames;
+        OwnPtrWillBeRawPtr<KeyframeEffectModel::KeyframeVector> frames = adoptPtrWillBeNoop(new KeyframeEffectModel::KeyframeVector);
         for (size_t i = 0; i < values.size(); i++) {
             double offset = 1.0 / (values.size() - 1) * i;
             RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
-            frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset).get());
+            frames->append(createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset).get());
         }
-        return frames;
+        return frames.release();
     }
 
     PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(PassRefPtrWillBeRawPtr<Keyframe> prpFrom, PassRefPtrWillBeRawPtr<Keyframe> prpTo, PassRefPtrWillBeRawPtr<Keyframe> prpC = nullptr, PassRefPtrWillBeRawPtr<Keyframe> prpD = nullptr)
