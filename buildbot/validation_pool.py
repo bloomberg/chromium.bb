@@ -1220,7 +1220,7 @@ class ValidationPool(object):
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
                conflicting_changes=None, pre_cq=False, metadata=None):
-    """Initializes an instance by setting default valuables to instance vars.
+    """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
     method.
