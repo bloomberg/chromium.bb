@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PinchViewports.h"
+#include "PinchViewport.h"
 
 #include "WebSettingsImpl.h"
 #include "WebViewImpl.h"
@@ -50,12 +50,12 @@ using WebCore::GraphicsLayer;
 
 namespace blink {
 
-PassOwnPtr<PinchViewports> PinchViewports::create(WebViewImpl* owner)
+PassOwnPtr<PinchViewport> PinchViewport::create(WebViewImpl* owner)
 {
-    return adoptPtr(new PinchViewports(owner));
+    return adoptPtr(new PinchViewport(owner));
 }
 
-PinchViewports::PinchViewports(WebViewImpl* owner)
+PinchViewport::PinchViewport(WebViewImpl* owner)
     : m_owner(owner)
     , m_innerViewportContainerLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
     , m_pageScaleLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
@@ -87,9 +87,9 @@ PinchViewports::PinchViewports(WebViewImpl* owner)
     setupScrollbar(WebScrollbar::Vertical);
 }
 
-PinchViewports::~PinchViewports() { }
+PinchViewport::~PinchViewport() { }
 
-void PinchViewports::setViewportSize(const WebCore::IntSize& newSize)
+void PinchViewport::setViewportSize(const WebCore::IntSize& newSize)
 {
     m_innerViewportContainerLayer->setSize(newSize);
     // The innerviewport scroll layer always has the same size as its clip layer, but
@@ -120,7 +120,7 @@ void PinchViewports::setViewportSize(const WebCore::IntSize& newSize)
 //  +- *horizontalScrollbarLayer (overlay)
 //  +- *verticalScrollbarLayer (overlay)
 //
-void PinchViewports::setOverflowControlsHostLayer(GraphicsLayer* layer)
+void PinchViewport::setOverflowControlsHostLayer(GraphicsLayer* layer)
 {
     if (layer) {
         ASSERT(!m_innerViewportScrollLayer->children().size());
@@ -144,7 +144,7 @@ void PinchViewports::setOverflowControlsHostLayer(GraphicsLayer* layer)
         scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
 }
 
-void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
+void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 {
     bool isHorizontal = orientation == WebScrollbar::Horizontal;
     GraphicsLayer* scrollbarGraphicsLayer = isHorizontal ?
@@ -176,7 +176,7 @@ void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
     scrollbarGraphicsLayer->setContentsRect(WebCore::IntRect(0, 0, width, height));
 }
 
-void PinchViewports::registerViewportLayersWithTreeView(WebLayerTreeView* layerTreeView) const
+void PinchViewport::registerViewportLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);
 
@@ -194,22 +194,22 @@ void PinchViewports::registerViewportLayersWithTreeView(WebLayerTreeView* layerT
         scrollLayer);
 }
 
-void PinchViewports::clearViewportLayersForTreeView(WebLayerTreeView* layerTreeView) const
+void PinchViewport::clearViewportLayersForTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);
 
     layerTreeView->clearViewportLayers();
 }
 
-void PinchViewports::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime)
+void PinchViewport::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime)
 {
 }
 
-void PinchViewports::paintContents(const GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip)
+void PinchViewport::paintContents(const GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip)
 {
 }
 
-String PinchViewports::debugName(const GraphicsLayer* graphicsLayer)
+String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)
 {
     String name;
     if (graphicsLayer == m_innerViewportContainerLayer.get()) {

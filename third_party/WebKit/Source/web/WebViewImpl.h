@@ -84,7 +84,7 @@ class ContextMenuClientImpl;
 class GeolocationClientProxy;
 class LinkHighlight;
 class MIDIClientProxy;
-class PinchViewports;
+class PinchViewport;
 class PopupContainer;
 class PrerendererClientImpl;
 class SpeechInputClientImpl;
@@ -741,7 +741,7 @@ private:
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
-    OwnPtr<PinchViewports> m_pinchViewports;
+    OwnPtr<PinchViewport> m_pinchViewports;
 
 #if ENABLE(INPUT_SPEECH)
     OwnPtr<SpeechInputClientImpl> m_speechInputClient;

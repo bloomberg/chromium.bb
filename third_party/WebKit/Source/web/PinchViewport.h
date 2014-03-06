@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PinchViewports_h
-#define PinchViewports_h
+#ifndef PinchViewport_h
+#define PinchViewport_h
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsLayerClient.h"
@@ -51,10 +51,10 @@ class WebLayerTreeView;
 class WebScrollbarLayer;
 class WebViewImpl;
 
-class PinchViewports FINAL : WebCore::GraphicsLayerClient {
+class PinchViewport FINAL : WebCore::GraphicsLayerClient {
 public:
-    static PassOwnPtr<PinchViewports> create(WebViewImpl* owner);
-    virtual ~PinchViewports();
+    static PassOwnPtr<PinchViewport> create(WebViewImpl* owner);
+    virtual ~PinchViewport();
 
     void setOverflowControlsHostLayer(WebCore::GraphicsLayer*);
     WebCore::GraphicsLayer* rootGraphicsLayer()
@@ -73,7 +73,7 @@ public:
     virtual String debugName(const WebCore::GraphicsLayer*) OVERRIDE;
 
 private:
-    explicit PinchViewports(WebViewImpl* owner);
+    explicit PinchViewport(WebViewImpl* owner);
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
 
@@ -89,4 +89,4 @@ private:
 
 } // namespace blink
 
-#endif // PinchViewports_h
+#endif // PinchViewport_h

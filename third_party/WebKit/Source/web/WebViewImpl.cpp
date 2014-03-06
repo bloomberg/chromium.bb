@@ -42,7 +42,7 @@
 #include "LinkHighlight.h"
 #include "LocalFileSystemClient.h"
 #include "MIDIClientProxy.h"
-#include "PinchViewports.h"
+#include "PinchViewport.h"
 #include "PopupContainer.h"
 #include "PrerendererClientImpl.h"
 #include "RuntimeEnabledFeatures.h"
@@ -3610,7 +3610,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
     if (page()->settings().pinchVirtualViewportEnabled()) {
         if (!m_pinchViewports)
-            m_pinchViewports = PinchViewports::create(this);
+            m_pinchViewports = PinchViewport::create(this);
 
         m_pinchViewports->setOverflowControlsHostLayer(layer);
         m_pinchViewports->setViewportSize(mainFrameImpl()->frame()->view()->frameRect().size());
