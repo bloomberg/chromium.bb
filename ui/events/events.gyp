@@ -180,6 +180,8 @@
       ],
       'sources': [
         'gesture_detection/bitset_32.h',
+        'gesture_detection/filtered_gesture_provider.cc',
+        'gesture_detection/filtered_gesture_provider.h',
         'gesture_detection/gesture_detection_export.h',
         'gesture_detection/gesture_detector.cc',
         'gesture_detection/gesture_detector.h',

@@ -346,12 +346,20 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
   if (touch_queue_.empty())
     return;
 
-  if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED &&
-      touch_filtering_state_ == FORWARD_TOUCHES_UNTIL_TIMEOUT)
-    touch_filtering_state_ = FORWARD_ALL_TOUCHES;
-
   const WebTouchEvent& acked_event =
       touch_queue_.front()->coalesced_event().event;
+
+  if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED &&
+      touch_filtering_state_ == FORWARD_TOUCHES_UNTIL_TIMEOUT) {
+    touch_filtering_state_ = FORWARD_ALL_TOUCHES;
+  }
+
+  if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS &&
+      touch_filtering_state_ != DROP_ALL_TOUCHES &&
+      WebTouchEventTraits::IsTouchSequenceStart(acked_event)) {
+    touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
+  }
+
   UpdateTouchAckStates(acked_event, ack_result);
   PopTouchEventToClient(ack_result, latency_info);
   TryForwardNextEventToRenderer();

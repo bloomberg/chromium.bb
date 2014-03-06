@@ -873,8 +873,6 @@
     'browser/renderer_host/image_transport_factory_android.h',
     'browser/renderer_host/ime_adapter_android.cc',
     'browser/renderer_host/ime_adapter_android.h',
-    'browser/renderer_host/input/content_gesture_provider.cc',
-    'browser/renderer_host/input/content_gesture_provider.h',
     'browser/renderer_host/input/gesture_event_queue.cc',
     'browser/renderer_host/input/gesture_event_queue.h',
     'browser/renderer_host/input/input_ack_handler.h',

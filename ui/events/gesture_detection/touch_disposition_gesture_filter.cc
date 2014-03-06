@@ -94,6 +94,11 @@ int GetGestureTypeIndex(EventType type) {
   return type - ET_GESTURE_TYPE_START;
 }
 
+bool IsTouchStartEvent(GestureEventDataPacket::GestureSource gesture_source) {
+  return gesture_source == GestureEventDataPacket::TOUCH_SEQUENCE_START ||
+         gesture_source == GestureEventDataPacket::TOUCH_START;
+}
+
 }  // namespace
 
 // TouchDispositionGestureFilter
@@ -123,27 +128,27 @@ TouchDispositionGestureFilter::OnGesturePacket(
     return INVALID_PACKET_ORDER;
 
   if (packet.gesture_source() == GestureEventDataPacket::TOUCH_TIMEOUT &&
-      Tail().IsEmpty()) {
+      Tail().empty()) {
     // Handle the timeout packet immediately if the packet preceding the timeout
     // has already been dispatched.
-    FilterAndSendPacket(packet, Tail().state(), NOT_CONSUMED);
+    FilterAndSendPacket(packet);
     return SUCCESS;
   }
 
-  Tail().Push(packet);
+  Tail().push(packet);
   return SUCCESS;
 }
 
-void TouchDispositionGestureFilter::OnTouchEventAck(TouchEventAck ack_result) {
+void TouchDispositionGestureFilter::OnTouchEventAck(bool event_consumed) {
   // Spurious touch acks from the renderer should not trigger a crash.
-  if (IsEmpty() || (Head().IsEmpty() && sequences_.size() == 1))
+  if (IsEmpty() || (Head().empty() && sequences_.size() == 1))
     return;
 
-  if (Head().IsEmpty()) {
+  if (Head().empty()) {
     CancelTapIfNecessary();
     CancelFlingIfNecessary();
     EndScrollIfNecessary();
-    last_event_of_type_dropped_.clear();
+    state_ = GestureHandlingState();
     sequences_.pop();
   }
 
@@ -152,8 +157,8 @@ void TouchDispositionGestureFilter::OnTouchEventAck(TouchEventAck ack_result) {
   // Dispatch the packet corresponding to the ack'ed touch, as well as any
   // additional timeout-based packets queued before the ack was received.
   bool touch_packet_for_current_ack_handled = false;
-  while (!sequence.IsEmpty()) {
-    const GestureEventDataPacket& packet = sequence.Front();
+  while (!sequence.empty()) {
+    const GestureEventDataPacket& packet = sequence.front();
     DCHECK_NE(packet.gesture_source(), GestureEventDataPacket::UNDEFINED);
     DCHECK_NE(packet.gesture_source(), GestureEventDataPacket::INVALID);
 
@@ -161,11 +166,12 @@ void TouchDispositionGestureFilter::OnTouchEventAck(TouchEventAck ack_result) {
       // We should handle at most one non-timeout based packet.
       if (touch_packet_for_current_ack_handled)
         break;
-      sequence.UpdateState(packet.gesture_source(), ack_result);
+      state_.OnTouchEventAck(event_consumed,
+                             IsTouchStartEvent(packet.gesture_source()));
       touch_packet_for_current_ack_handled = true;
     }
-    FilterAndSendPacket(packet, sequence.state(), ack_result);
-    sequence.Pop();
+    FilterAndSendPacket(packet);
+    sequence.pop();
   }
   DCHECK(touch_packet_for_current_ack_handled);
 }
@@ -175,19 +181,15 @@ bool TouchDispositionGestureFilter::IsEmpty() const {
 }
 
 void TouchDispositionGestureFilter::FilterAndSendPacket(
-    const GestureEventDataPacket& packet,
-    const GestureSequence::GestureHandlingState& sequence_state,
-    TouchEventAck ack_result) {
+    const GestureEventDataPacket& packet) {
   for (size_t i = 0; i < packet.gesture_count(); ++i) {
     const GestureEventData& gesture = packet.gesture(i);
     DCHECK(ET_GESTURE_TYPE_START <= gesture.type &&
            gesture.type <= ET_GESTURE_TYPE_END);
-    if (IsGesturePrevented(gesture.type, ack_result, sequence_state)) {
-      last_event_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture.type));
+    if (state_.Filter(gesture.type)) {
       CancelTapIfNecessary();
       continue;
     }
-    last_event_of_type_dropped_.clear_bit(GetGestureTypeIndex(gesture.type));
     SendGesture(gesture);
   }
 }
@@ -257,12 +259,6 @@ void TouchDispositionGestureFilter::EndScrollIfNecessary() {
   DCHECK(!needs_scroll_ending_event_);
 }
 
-// TouchDispositionGestureFilter::GestureSequence
-
-TouchDispositionGestureFilter::GestureSequence::GestureHandlingState::
-    GestureHandlingState()
-    : seen_ack(false), start_consumed(false), no_consumer(false) {}
-
 TouchDispositionGestureFilter::GestureSequence&
 TouchDispositionGestureFilter::Head() {
   DCHECK(!sequences_.empty());
@@ -275,70 +271,35 @@ TouchDispositionGestureFilter::Tail() {
   return sequences_.back();
 }
 
-TouchDispositionGestureFilter::GestureSequence::GestureSequence() {}
+// TouchDispositionGestureFilter::GestureHandlingState
 
-TouchDispositionGestureFilter::GestureSequence::~GestureSequence() {}
+TouchDispositionGestureFilter::GestureHandlingState::GestureHandlingState()
+    : start_touch_consumed_(false),
+      current_touch_consumed_(false) {}
 
-void TouchDispositionGestureFilter::GestureSequence::Push(
-    const GestureEventDataPacket& packet) {
-  packets_.push(packet);
+void TouchDispositionGestureFilter::GestureHandlingState::OnTouchEventAck(
+    bool event_consumed,
+    bool is_touch_start_event) {
+  current_touch_consumed_ = event_consumed;
+  if (event_consumed && is_touch_start_event)
+    start_touch_consumed_ = true;
 }
 
-void TouchDispositionGestureFilter::GestureSequence::Pop() {
-  DCHECK(!IsEmpty());
-  packets_.pop();
-}
-
-const GestureEventDataPacket&
-TouchDispositionGestureFilter::GestureSequence::Front() const {
-  DCHECK(!IsEmpty());
-  return packets_.front();
-}
-
-void TouchDispositionGestureFilter::GestureSequence::UpdateState(
-    GestureEventDataPacket::GestureSource gesture_source,
-    TouchEventAck ack_result) {
-
-  // Permanent states will not be affected by subsequent ack's.
-  if (state_.no_consumer || state_.start_consumed)
-    return;
-
-  // |NO_CONSUMER| should only be effective when the *first* touch is ack'ed.
-  if (!state_.seen_ack && ack_result == NO_CONSUMER_EXISTS) {
-    state_.no_consumer = true;
-  } else if (ack_result == CONSUMED) {
-    if (gesture_source == GestureEventDataPacket::TOUCH_SEQUENCE_START ||
-        gesture_source == GestureEventDataPacket::TOUCH_START) {
-      state_.start_consumed = true;
-    }
-  }
-  state_.seen_ack = true;
-}
-
-bool TouchDispositionGestureFilter::IsGesturePrevented(
-    EventType gesture_type,
-    TouchEventAck current,
-    const GestureSequence::GestureHandlingState& state) const {
-
-  if (state.no_consumer)
-    return false;
-
+bool TouchDispositionGestureFilter::GestureHandlingState::Filter(
+    EventType gesture_type) {
   DispositionHandlingInfo disposition_handling_info =
       GetDispositionHandlingInfo(gesture_type);
 
   int required_touches = disposition_handling_info.required_touches;
-  bool current_consumed = current == CONSUMED;
-  if ((required_touches & RT_START && state.start_consumed) ||
-      (required_touches & RT_CURRENT && current_consumed) ||
-      (last_event_of_type_dropped_.has_bit(GetGestureTypeIndex(
+  if ((required_touches & RT_START && start_touch_consumed_) ||
+      (required_touches & RT_CURRENT && current_touch_consumed_) ||
+      (last_gesture_of_type_dropped_.has_bit(GetGestureTypeIndex(
           disposition_handling_info.antecedent_event_type)))) {
+    last_gesture_of_type_dropped_.mark_bit(GetGestureTypeIndex(gesture_type));
     return true;
   }
+  last_gesture_of_type_dropped_.clear_bit(GetGestureTypeIndex(gesture_type));
   return false;
-}
-
-bool TouchDispositionGestureFilter::GestureSequence::IsEmpty() const {
-  return packets_.empty();
 }
 
 }  // namespace content

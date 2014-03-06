@@ -546,11 +546,13 @@ TEST_F(TouchEventQueueTest, NoConsumer) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
-  // Send a second press event. Even though the first touch had NO_CONSUMER,
-  // this press event should reach the renderer.
+  // Send a second press event. As the first touch press had NO_CONSUMER, this
+  // press event should not reach the renderer.
   PressTouchPoint(1, 1);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
 }
 
 TEST_F(TouchEventQueueTest, ConsumerIgnoreMultiFinger) {

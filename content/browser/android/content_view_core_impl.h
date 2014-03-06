@@ -14,7 +14,6 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
-#include "content/browser/renderer_host/input/content_gesture_provider.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "url/gurl.h"
@@ -37,7 +37,7 @@ struct MenuItem;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
-                            public ContentGestureProviderClient,
+                            public ui::GestureProviderClient,
                             public NotificationObserver,
                             public WebContentsObserver {
  public:
@@ -316,8 +316,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void RenderViewReady() OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
-  // ContentGestureProviderClient implementation.
-  virtual void OnGestureEvent(const blink::WebGestureEvent& event) OVERRIDE;
+  // ui::GestureProviderClient implementation.
+  virtual void OnGestureEvent(const ui::GestureEventData& gesture) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Other private methods and data
@@ -349,6 +349,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // through the touch pipeline.
   void CancelActiveTouchSequenceIfNecessary();
 
+  float dpi_scale() const { return dpi_scale_; }
+
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
 
@@ -377,7 +379,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Provides gesture synthesis given a stream of touch events (derived from
   // Android MotionEvent's) and touch event acks.
-  ContentGestureProvider gesture_provider_;
+  ui::FilteredGestureProvider gesture_provider_;
 
   // The cache of device's current orientation set from Java side, this value
   // will be sent to Renderer once it is ready.

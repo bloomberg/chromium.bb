@@ -10,6 +10,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
+struct GestureEventData;
 class MotionEvent;
 }
 
@@ -23,9 +24,16 @@ CONTENT_EXPORT void UpdateWindowsKeyCodeAndKeyIdentifier(
 
 // Creates a WebTouchEvent from |event|, scaling all size components from
 // |event| by |scale|.
-CONTENT_EXPORT blink::WebTouchEvent
-CreateWebTouchEventFromMotionEvent(const ui::MotionEvent& event, float scale);
+CONTENT_EXPORT blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
+    const ui::MotionEvent& event,
+    float scale);
 
-}
+// Creates a WebGestureEvent from |event|, scaling all size components from
+// |event| by |scale|.
+CONTENT_EXPORT blink::WebGestureEvent CreateWebGestureEventFromGestureEventData(
+    const ui::GestureEventData& data,
+    float scale);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_UTIL_H_

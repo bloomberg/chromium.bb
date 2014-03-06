@@ -56,6 +56,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
+#include "ui/events/gesture_detection/gesture_config_helper.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
@@ -163,6 +164,13 @@ float GetPrimaryDisplayDeviceScaleFactor() {
   return display.device_scale_factor();
 }
 
+ui::GestureProvider::Config GetGestureProviderConfig() {
+  ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
+  config.disable_click_delay =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableClickDelay);
+  return config;
+}
+
 }  // namespace
 
 // Enables a callback when the underlying WebContents is destroyed, to enable
@@ -229,7 +237,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
           kDefaultVSyncIntervalMicros * kDefaultBrowserCompositeVSyncFraction)),
       view_android_(view_android),
       window_android_(window_android),
-      gesture_provider_(this, 1.f / dpi_scale_),
+      gesture_provider_(GetGestureProviderConfig(), this),
       device_orientation_(0),
       geolocation_needs_pause_(false) {
   CHECK(web_contents) <<
@@ -359,8 +367,9 @@ void ContentViewCoreImpl::RenderViewReady() {
     SendOrientationChangeEventInternal();
 }
 
-void ContentViewCoreImpl::OnGestureEvent(const blink::WebGestureEvent& event) {
-  SendGestureEvent(event);
+void ContentViewCoreImpl::OnGestureEvent(const ui::GestureEventData& gesture) {
+  SendGestureEvent(
+      CreateWebGestureEventFromGestureEventData(gesture, 1.f / dpi_scale()));
 }
 
 RenderWidgetHostViewAndroid*
@@ -554,7 +563,8 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
 }
 
 void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
-  gesture_provider_.OnTouchEventAck(ack_result);
+  const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  gesture_provider_.OnTouchEventAck(event_consumed);
 }
 
 void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
@@ -569,8 +579,8 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
         // The view expects the fling velocity in pixels/s.
         Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj.obj(),
-            event.data.flingStart.velocityX * GetDpiScale(),
-            event.data.flingStart.velocityY * GetDpiScale());
+            event.data.flingStart.velocityX * dpi_scale(),
+            event.data.flingStart.velocityY * dpi_scale());
       } else {
         // If a scroll ends with a fling, a SCROLL_END event is never sent.
         // However, if that fling went unconsumed, we still need to let the
@@ -581,8 +591,8 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
       if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
         // The view expects the fling velocity in pixels/s.
         Java_ContentViewCore_onFlingStartEventHadNoConsumer(env, j_obj.obj(),
-            event.data.flingStart.velocityX * GetDpiScale(),
-            event.data.flingStart.velocityY * GetDpiScale());
+            event.data.flingStart.velocityX * dpi_scale(),
+            event.data.flingStart.velocityY * dpi_scale());
       }
       break;
     case WebInputEvent::GestureFlingCancel:
@@ -630,8 +640,8 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   return Java_ContentViewCore_filterTapOrPressEvent(env,
                                                     j_obj.obj(),
                                                     gesture_type,
-                                                    gesture.x * GetDpiScale(),
-                                                    gesture.y * GetDpiScale());
+                                                    gesture.x * dpi_scale(),
+                                                    gesture.y * dpi_scale());
 
   // TODO(jdduke): Also report double-tap UMA, crbug/347568.
 }
@@ -809,12 +819,12 @@ gfx::Size ContentViewCoreImpl::GetViewportSizeOffsetPix() const {
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
   return gfx::ToCeiledSize(
-      gfx::ScaleSize(GetViewportSizePix(), 1.0f / GetDpiScale()));
+      gfx::ScaleSize(GetViewportSizePix(), 1.0f / dpi_scale()));
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeOffsetDip() const {
   return gfx::ToCeiledSize(
-      gfx::ScaleSize(GetViewportSizeOffsetPix(), 1.0f / GetDpiScale()));
+      gfx::ScaleSize(GetViewportSizeOffsetPix(), 1.0f / dpi_scale()));
 }
 
 float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {
@@ -823,7 +833,7 @@ float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {
   if (j_obj.is_null())
     return 0.f;
   return Java_ContentViewCore_getOverdrawBottomHeightPix(env, j_obj.obj())
-      / GetDpiScale();
+      / dpi_scale();
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
@@ -1012,7 +1022,7 @@ void ContentViewCoreImpl::CancelActiveTouchSequenceIfNecessary() {
     return;
 
   rwhv->SendTouchEvent(
-      CreateWebTouchEventFromMotionEvent(*cancel_event, 1.f / GetDpiScale()));
+      CreateWebTouchEventFromMotionEvent(*cancel_event, 1.f / dpi_scale()));
 }
 
 jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
@@ -1027,7 +1037,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
   if (!gesture_provider_.OnTouchEvent(event))
     return false;
 
-  rwhv->SendTouchEvent(WebTouchEventBuilder::Build(event, 1.f / GetDpiScale()));
+  rwhv->SendTouchEvent(WebTouchEventBuilder::Build(event, 1.f / dpi_scale()));
   return true;
 }
 
@@ -1047,7 +1057,7 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
   blink::WebMouseEvent event = WebMouseEventBuilder::Build(
       WebInputEvent::MouseMove,
       blink::WebMouseEvent::ButtonNone,
-      time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale(), 0, 1);
+      time_ms / 1000.0, x / dpi_scale(), y / dpi_scale(), 0, 1);
 
   rwhv->SendMouseEvent(event);
   return true;
@@ -1072,7 +1082,7 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
     return false;
   }
   blink::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
-      direction, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
+      direction, time_ms / 1000.0, x / dpi_scale(), y / dpi_scale());
 
   rwhv->SendMouseWheelEvent(event);
   return true;
@@ -1081,7 +1091,7 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
 WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
     WebInputEvent::Type type, int64 time_ms, float x, float y) const {
   return WebGestureEventBuilder::Build(
-      type, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
+      type, time_ms / 1000.0, x / dpi_scale(), y / dpi_scale());
 }
 
 void ContentViewCoreImpl::SendGestureEvent(
@@ -1100,8 +1110,8 @@ void ContentViewCoreImpl::ScrollBegin(JNIEnv* env,
                                       jfloat hinty) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollBegin, time_ms, x, y);
-  event.data.scrollBegin.deltaXHint = hintx / GetDpiScale();
-  event.data.scrollBegin.deltaYHint = hinty / GetDpiScale();
+  event.data.scrollBegin.deltaXHint = hintx / dpi_scale();
+  event.data.scrollBegin.deltaYHint = hinty / dpi_scale();
 
   SendGestureEvent(event);
 }
@@ -1116,8 +1126,8 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
                                    jfloat x, jfloat y, jfloat dx, jfloat dy) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollUpdate, time_ms, x, y);
-  event.data.scrollUpdate.deltaX = -dx / GetDpiScale();
-  event.data.scrollUpdate.deltaY = -dy / GetDpiScale();
+  event.data.scrollUpdate.deltaX = -dx / dpi_scale();
+  event.data.scrollUpdate.deltaY = -dy / dpi_scale();
 
   SendGestureEvent(event);
 }
@@ -1126,8 +1136,8 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                                      jfloat x, jfloat y, jfloat vx, jfloat vy) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureFlingStart, time_ms, x, y);
-  event.data.flingStart.velocityX = vx / GetDpiScale();
-  event.data.flingStart.velocityY = vy / GetDpiScale();
+  event.data.flingStart.velocityX = vx / dpi_scale();
+  event.data.flingStart.velocityY = vy / dpi_scale();
 
   SendGestureEvent(event);
 }
@@ -1190,8 +1200,8 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
                                                    jfloat x2, jfloat y2) {
   if (GetRenderWidgetHostViewAndroid()) {
     GetRenderWidgetHostViewAndroid()->SelectRange(
-        gfx::Point(x1 / GetDpiScale(), y1 / GetDpiScale()),
-        gfx::Point(x2 / GetDpiScale(), y2 / GetDpiScale()));
+        gfx::Point(x1 / dpi_scale(), y1 / dpi_scale()),
+        gfx::Point(x2 / dpi_scale(), y2 / dpi_scale()));
   }
 }
 
@@ -1199,7 +1209,7 @@ void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,
                                     jfloat x, jfloat y) {
   if (GetRenderWidgetHostViewAndroid()) {
     GetRenderWidgetHostViewAndroid()->MoveCaret(
-        gfx::Point(x / GetDpiScale(), y / GetDpiScale()));
+        gfx::Point(x / dpi_scale(), y / dpi_scale()));
   }
 }
 
@@ -1693,12 +1703,12 @@ void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
                                                jint width,
                                                jint height) {
   gfx::Rect rect(
-      static_cast<int>(x / GetDpiScale()),
-      static_cast<int>(y / GetDpiScale()),
-      static_cast<int>((width > 0 && width < GetDpiScale()) ?
-          1 : (int)(width / GetDpiScale())),
-      static_cast<int>((height > 0 && height < GetDpiScale()) ?
-          1 : (int)(height / GetDpiScale())));
+      static_cast<int>(x / dpi_scale()),
+      static_cast<int>(y / dpi_scale()),
+      static_cast<int>((width > 0 && width < dpi_scale()) ?
+          1 : (int)(width / dpi_scale())),
+      static_cast<int>((height > 0 && height < dpi_scale()) ?
+          1 : (int)(height / dpi_scale())));
   GetWebContents()->Send(new ViewMsg_ExtractSmartClipData(
       GetWebContents()->GetRoutingID(), rect));
 }
