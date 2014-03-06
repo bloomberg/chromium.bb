@@ -27,11 +27,11 @@
 #ifndef GraphicsLayerUpdater_h
 #define GraphicsLayerUpdater_h
 
+#include "platform/graphics/GraphicsLayer.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class GraphicsLayer;
 class RenderLayer;
 class RenderPart;
 class RenderView;
@@ -47,7 +47,7 @@ public:
     };
 
     void updateRecursive(RenderLayer&, UpdateType);
-    void rebuildTree(RenderLayer&, UpdateType, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth);
+    void rebuildTree(RenderLayer&, UpdateType, GraphicsLayerVector& childLayersOfEnclosingLayer, int depth);
 
 private:
     UpdateType update(RenderLayer&, UpdateType);

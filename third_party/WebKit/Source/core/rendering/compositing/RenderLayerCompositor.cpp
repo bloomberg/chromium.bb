@@ -481,7 +481,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
 
     if (needHierarchyAndGeometryUpdate) {
         // Update the hierarchy of the compositing layers.
-        Vector<GraphicsLayer*> childList;
+        GraphicsLayerVector childList;
         {
             TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::rebuildTree");
             GraphicsLayerUpdater(*m_renderView).rebuildTree(*updateRoot, updateType, childList, 0);

@@ -1116,8 +1116,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         a.swap(b);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator>
-    bool operator==(const Vector<T, inlineCapacity, Allocator>& a, const Vector<T, inlineCapacity, Allocator>& b)
+    template<typename T, size_t inlineCapacityA, size_t inlineCapacityB, typename Allocator>
+    bool operator==(const Vector<T, inlineCapacityA, Allocator>& a, const Vector<T, inlineCapacityB, Allocator>& b)
     {
         if (a.size() != b.size())
             return false;
@@ -1125,8 +1125,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         return VectorTypeOperations<T>::compare(a.data(), b.data(), a.size());
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator>
-    inline bool operator!=(const Vector<T, inlineCapacity, Allocator>& a, const Vector<T, inlineCapacity, Allocator>& b)
+    template<typename T, size_t inlineCapacityA, size_t inlineCapacityB, typename Allocator>
+    inline bool operator!=(const Vector<T, inlineCapacityA, Allocator>& a, const Vector<T, inlineCapacityB, Allocator>& b)
     {
         return !(a == b);
     }

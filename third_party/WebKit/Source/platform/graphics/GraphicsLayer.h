@@ -59,6 +59,7 @@ namespace WebCore {
 
 class FloatRect;
 class GraphicsContext;
+class GraphicsLayer;
 class GraphicsLayerFactory;
 class Image;
 class ScrollableArea;
@@ -74,6 +75,8 @@ public:
 protected:
     virtual ~LinkHighlightClient() { }
 };
+
+typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
@@ -103,7 +106,7 @@ public:
 
     const Vector<GraphicsLayer*>& children() const { return m_children; }
     // Returns true if the child list changed.
-    bool setChildren(const Vector<GraphicsLayer*>&);
+    bool setChildren(const GraphicsLayerVector&);
 
     // Add child layers. If the child is already parented, it will be removed from its old parent.
     void addChild(GraphicsLayer*);
@@ -396,7 +399,6 @@ private:
     GraphicsLayerDebugInfo m_debugInfo;
     int m_3dRenderingContext;
 };
-
 
 } // namespace WebCore
 

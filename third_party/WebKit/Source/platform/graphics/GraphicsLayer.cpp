@@ -156,7 +156,7 @@ bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
     return false;
 }
 
-bool GraphicsLayer::setChildren(const Vector<GraphicsLayer*>& newChildren)
+bool GraphicsLayer::setChildren(const GraphicsLayerVector& newChildren)
 {
     // If the contents of the arrays are the same, nothing to do.
     if (newChildren == m_children)
@@ -351,13 +351,8 @@ void GraphicsLayer::updateChildList()
         childHost->addChild(m_contentsLayer);
     }
 
-    const Vector<GraphicsLayer*>& childLayers = children();
-    size_t numChildren = childLayers.size();
-    for (size_t i = 0; i < numChildren; ++i) {
-        GraphicsLayer* curChild = childLayers[i];
-
-        childHost->addChild(curChild->platformLayer());
-    }
+    for (size_t i = 0; i < m_children.size(); ++i)
+        childHost->addChild(m_children[i]->platformLayer());
 
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         childHost->addChild(m_linkHighlights[i]->layer());

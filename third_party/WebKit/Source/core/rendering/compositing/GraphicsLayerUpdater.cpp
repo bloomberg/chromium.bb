@@ -59,7 +59,7 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
+void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType, GraphicsLayerVector& childLayersOfEnclosingLayer, int depth)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
@@ -85,8 +85,8 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, UpdateType updateType
 
     // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
     // Otherwise children continue to append to the child list of the enclosing layer.
-    Vector<GraphicsLayer*> layerChildren;
-    Vector<GraphicsLayer*>& childList = hasCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
+    GraphicsLayerVector layerChildren;
+    GraphicsLayerVector& childList = hasCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
 
 #if !ASSERT_DISABLED
     LayerListMutationDetector mutationChecker(layer.stackingNode());
