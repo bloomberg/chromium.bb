@@ -13,11 +13,15 @@
         (GraphicsLayer
           (position 8.00 108.00)
           (bounds 100.00 100.00)
+          (drawsContent 1)
+          (backgroundColor #00FF007F)
         )
         (GraphicsLayer
           (position 8.00 208.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #008000)
         )
       )
     )

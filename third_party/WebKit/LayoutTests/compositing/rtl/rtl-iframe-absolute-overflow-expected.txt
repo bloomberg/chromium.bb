@@ -29,6 +29,8 @@
                                   (position 665.00 50.00)
                                   (bounds 100.00 100.00)
                                   (contentsOpaque 1)
+                                  (drawsContent 1)
+                                  (backgroundColor #008000)
                                 )
                               )
                             )

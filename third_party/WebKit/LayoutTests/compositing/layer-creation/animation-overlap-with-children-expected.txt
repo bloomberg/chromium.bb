@@ -17,6 +17,8 @@ Should be composited
               (position 6.00 6.00)
               (bounds 250.00 50.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #C0C0C0)
             )
             (GraphicsLayer
               (position 11.00 21.00)

@@ -185,7 +185,6 @@ public:
 #endif
 
     LayoutRect contentsBox() const;
-    IntRect backgroundBox() const;
 
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
@@ -227,7 +226,7 @@ private:
     void updateScrollParent(RenderLayer*);
     void updateClipParent(RenderLayer*);
     bool updateSquashingLayers(bool needsSquashingLayers);
-    void updateDrawsContent(bool isSimpleContainer);
+    void updateDrawsContent();
     void updateChildrenTransform();
     void registerScrollingLayers();
 
@@ -254,20 +253,17 @@ private:
 
     bool isMainFrameRenderViewLayer() const;
 
-    bool paintsBoxDecorations() const;
     bool paintsChildren() const;
 
-    // Returns true if this compositing layer has no visible content.
-    bool isSimpleContainerCompositingLayer() const;
     // Returns true if this layer has content that needs to be rendered by painting into the backing store.
-    bool containsPaintedContent(bool isSimpleContainer) const;
+    bool containsPaintedContent() const;
     // Returns true if the RenderLayer just contains an image that we can composite directly.
     bool isDirectlyCompositedImage() const;
     void updateImageContents();
 
     Color rendererBackgroundColor() const;
-    void updateBackgroundColor(bool isSimpleContainer);
-    void updateContentsRect(bool isSimpleContainer);
+    void updateBackgroundColor();
+    void updateContentsRect();
 
     void updateCompositingReasons();
 

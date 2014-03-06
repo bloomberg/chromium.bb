@@ -11,6 +11,8 @@
           (bounds 784.00 90.00)
           (isolate 1)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #0000FF)
           (children 2
             (GraphicsLayer
               (bounds 784.00 90.00)

@@ -346,7 +346,7 @@ void CompositedLayerMapping::updateCompositedBounds()
 {
     // We need to know if we draw content in order to update our bounds (this has an effect
     // on whether or not descendands will paint into our backing). Update this value now.
-    updateDrawsContent(isSimpleContainerCompositingLayer());
+    updateDrawsContent();
 
     LayoutRect layerBounds = compositor()->calculateCompositedBounds(m_owningLayer, m_owningLayer);
 
@@ -514,7 +514,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         m_graphicsLayer->setReplicatedByLayer(0);
     }
 
-    updateBackgroundColor(isSimpleContainerCompositingLayer());
+    updateBackgroundColor();
 
     if (isDirectlyCompositedImage())
         updateImageContents();
@@ -637,8 +637,6 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
     // Set opacity, if it is not animating.
     if (!hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
-
-    bool isSimpleContainer = isSimpleContainerCompositingLayer();
 
     m_owningLayer->updateDescendantDependentFlags();
 
@@ -854,9 +852,9 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
         updateIsRootForIsolatedGroup();
     }
 
-    updateContentsRect(isSimpleContainer);
-    updateBackgroundColor(isSimpleContainer);
-    updateDrawsContent(isSimpleContainer);
+    updateContentsRect();
+    updateBackgroundColor();
+    updateDrawsContent();
     updateContentsOpaque();
     updateAfterWidgetResize();
     updateRenderingContext();
@@ -943,18 +941,12 @@ void CompositedLayerMapping::updateInternalHierarchy()
     }
 }
 
-void CompositedLayerMapping::updateContentsRect(bool isSimpleContainer)
+void CompositedLayerMapping::updateContentsRect()
 {
-    LayoutRect contentsRect;
-    if (isSimpleContainer && renderer()->hasBackground())
-        contentsRect = backgroundBox();
-    else
-        contentsRect = contentsBox();
-
-    m_graphicsLayer->setContentsRect(pixelSnappedIntRect(contentsRect));
+    m_graphicsLayer->setContentsRect(pixelSnappedIntRect(contentsBox()));
 }
 
-void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
+void CompositedLayerMapping::updateDrawsContent()
 {
     if (m_scrollingLayer) {
         // We don't have to consider overflow controls, because we know that the scrollbars are drawn elsewhere.
@@ -969,7 +961,7 @@ void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
         return;
     }
 
-    bool hasPaintedContent = containsPaintedContent(isSimpleContainer);
+    bool hasPaintedContent = containsPaintedContent();
     if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
         CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
         // Content layer may be null if context is lost.
@@ -1503,45 +1495,9 @@ Color CompositedLayerMapping::rendererBackgroundColor() const
     return backgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
 }
 
-void CompositedLayerMapping::updateBackgroundColor(bool isSimpleContainer)
+void CompositedLayerMapping::updateBackgroundColor()
 {
-    Color backgroundColor = rendererBackgroundColor();
-    if (isSimpleContainer) {
-        m_graphicsLayer->setContentsToSolidColor(backgroundColor);
-        m_graphicsLayer->setBackgroundColor(Color::transparent);
-    } else {
-        m_graphicsLayer->setContentsToSolidColor(Color::transparent);
-        m_graphicsLayer->setBackgroundColor(backgroundColor);
-    }
-}
-
-static bool supportsDirectBoxDecorationsComposition(const RenderObject* renderer)
-{
-    if (renderer->hasClip())
-        return false;
-
-    if (hasBoxDecorationsOrBackgroundImage(renderer->style()))
-        return false;
-
-    // FIXME: we should be able to allow backgroundComposite; However since this is not a common use case it has been deferred for now.
-    if (renderer->style()->backgroundComposite() != CompositeSourceOver)
-        return false;
-
-    if (renderer->style()->backgroundClip() == TextFillBox)
-        return false;
-
-    return true;
-}
-
-bool CompositedLayerMapping::paintsBoxDecorations() const
-{
-    if (!m_owningLayer->hasVisibleBoxDecorations())
-        return false;
-
-    if (!supportsDirectBoxDecorationsComposition(renderer()))
-        return true;
-
-    return false;
+    m_graphicsLayer->setBackgroundColor(rendererBackgroundColor());
 }
 
 bool CompositedLayerMapping::paintsChildren() const
@@ -1558,52 +1514,6 @@ bool CompositedLayerMapping::paintsChildren() const
 static bool isCompositedPlugin(RenderObject* renderer)
 {
     return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing();
-}
-
-// A "simple container layer" is a RenderLayer which has no visible content to render.
-// It may have no children, or all its children may be themselves composited.
-// This is a useful optimization, because it allows us to avoid allocating backing store.
-bool CompositedLayerMapping::isSimpleContainerCompositingLayer() const
-{
-    RenderObject* renderObject = renderer();
-    if (renderObject->hasMask()) // masks require special treatment
-        return false;
-
-    if (renderObject->isReplaced() && !isCompositedPlugin(renderObject))
-        return false;
-
-    if (paintsBoxDecorations() || paintsChildren())
-        return false;
-
-    if (renderObject->isRenderRegion())
-        return false;
-
-    if (renderObject->node() && renderObject->node()->isDocumentNode()) {
-        // Look to see if the root object has a non-simple background
-        RenderObject* rootObject = renderObject->document().documentElement() ? renderObject->document().documentElement()->renderer() : 0;
-        if (!rootObject)
-            return false;
-
-        RenderStyle* style = rootObject->style();
-
-        // Reject anything that has a border, a border-radius or outline,
-        // or is not a simple background (no background, or solid color).
-        if (hasBoxDecorationsOrBackgroundImage(style))
-            return false;
-
-        // Now look at the body's renderer.
-        HTMLElement* body = renderObject->document().body();
-        RenderObject* bodyObject = (body && body->hasLocalName(bodyTag)) ? body->renderer() : 0;
-        if (!bodyObject)
-            return false;
-
-        style = bodyObject->style();
-
-        if (hasBoxDecorationsOrBackgroundImage(style))
-            return false;
-    }
-
-    return true;
 }
 
 static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
@@ -1638,20 +1548,49 @@ bool CompositedLayerMapping::hasVisibleNonCompositingDescendantLayers() const
     return hasVisibleNonCompositingDescendant(m_owningLayer);
 }
 
-bool CompositedLayerMapping::containsPaintedContent(bool isSimpleContainer) const
+bool CompositedLayerMapping::containsPaintedContent() const
 {
-    if (isSimpleContainer || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
+    if (paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
         return false;
 
     if (isDirectlyCompositedImage())
         return false;
 
+    RenderObject* renderObject = renderer();
     // FIXME: we could optimize cases where the image, video or canvas is known to fill the border box entirely,
     // and set background color on the layer in that case, instead of allocating backing store and painting.
-    if (renderer()->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
+    if (renderObject->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
         return m_owningLayer->hasBoxDecorationsOrBackground();
 
-    return true;
+    if (m_owningLayer->hasVisibleBoxDecorations())
+        return true;
+
+    if (renderObject->hasMask()) // masks require special treatment
+        return true;
+
+    if (renderObject->isReplaced() && !isCompositedPlugin(renderObject))
+        return true;
+
+    if (renderObject->isRenderRegion())
+        return true;
+
+    if (renderObject->node() && renderObject->node()->isDocumentNode()) {
+        // Look to see if the root object has a non-simple background
+        RenderObject* rootObject = renderObject->document().documentElement() ? renderObject->document().documentElement()->renderer() : 0;
+        // Reject anything that has a border, a border-radius or outline,
+        // or is not a simple background (no background, or solid color).
+        if (rootObject && hasBoxDecorationsOrBackgroundImage(rootObject->style()))
+            return true;
+
+        // Now look at the body's renderer.
+        HTMLElement* body = renderObject->document().body();
+        RenderObject* bodyObject = (body && body->hasLocalName(bodyTag)) ? body->renderer() : 0;
+        if (bodyObject && hasBoxDecorationsOrBackgroundImage(bodyObject->style()))
+            return true;
+    }
+
+    // FIXME: it's O(n^2). A better solution is needed.
+    return paintsChildren();
 }
 
 // An image can be directly compositing if it's the sole content of the layer, and has no box decorations
@@ -1707,8 +1646,7 @@ void CompositedLayerMapping::updateImageContents()
 
     // This is a no-op if the layer doesn't have an inner layer for the image.
     m_graphicsLayer->setContentsToImage(image);
-    bool isSimpleContainer = false;
-    updateDrawsContent(isSimpleContainer);
+    updateDrawsContent();
 
     // Image animation is "lazy", in that it automatically stops unless someone is drawing
     // the image. So we have to kick the animation each time; this has the downside that the
@@ -1753,13 +1691,6 @@ LayoutRect CompositedLayerMapping::contentsBox() const
     LayoutRect contentsBox = contentsRect(renderer());
     contentsBox.move(contentOffsetInCompostingLayer());
     return contentsBox;
-}
-
-IntRect CompositedLayerMapping::backgroundBox() const
-{
-    LayoutRect backgroundBox = backgroundRect(renderer());
-    backgroundBox.move(contentOffsetInCompostingLayer());
-    return pixelSnappedIntRect(backgroundBox);
 }
 
 GraphicsLayer* CompositedLayerMapping::parentForSublayers() const

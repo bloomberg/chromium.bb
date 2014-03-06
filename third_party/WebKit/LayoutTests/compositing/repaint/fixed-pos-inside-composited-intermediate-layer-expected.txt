@@ -10,6 +10,8 @@
           (position 8.00 8.00)
           (bounds 500.00 500.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #00FFFF)
         )
         (GraphicsLayer
           (position 20.00 20.00)

@@ -232,7 +232,6 @@ public:
     // Layer contents
     void setContentsToImage(Image*);
     void setContentsToNinePatch(Image*, const IntRect& aperture);
-    void setContentsToSolidColor(const Color&);
     void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsTo(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
@@ -382,8 +381,6 @@ private:
     OwnPtr<blink::WebContentLayer> m_layer;
     OwnPtr<blink::WebImageLayer> m_imageLayer;
     OwnPtr<blink::WebNinePatchLayer> m_ninePatchLayer;
-    Color m_contentsSolidColor;
-    OwnPtr<blink::WebSolidColorLayer> m_solidColorLayer;
     blink::WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
     // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
