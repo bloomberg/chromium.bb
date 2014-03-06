@@ -15,6 +15,7 @@ class RenderViewContextMenuMac;
 class WebDragBookmarkHandlerMac;
 
 namespace content {
+class RenderWidgetHostView;
 class WebContents;
 }
 
@@ -36,6 +37,8 @@ class ChromeWebContentsViewDelegateMac
       const content::ContextMenuParams& params) OVERRIDE;
 
  private:
+  content::RenderWidgetHostView* GetActiveRenderWidgetHostView();
+
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   scoped_ptr<RenderViewContextMenuMac> context_menu_;
 

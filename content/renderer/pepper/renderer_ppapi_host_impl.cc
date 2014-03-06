@@ -203,18 +203,10 @@ gfx::Point RendererPpapiHostImpl::PluginPointToRenderFrame(
     PP_Instance instance,
     const gfx::Point& pt) const {
   PepperPluginInstanceImpl* plugin_instance = GetAndValidateInstance(instance);
-  if (!plugin_instance)
+  if (!plugin_instance || plugin_instance->flash_fullscreen()) {
+    // Flash fullscreen is special in that it renders into its own separate,
+    // dedicated window.  So, do not offset the point.
     return pt;
-
-  RenderFrameImpl* render_frame = static_cast<RenderFrameImpl*>(
-      GetRenderFrameForInstance(instance));
-  if (plugin_instance->view_data().is_fullscreen ||
-      plugin_instance->flash_fullscreen()) {
-    blink::WebRect window_rect = render_frame->GetRenderWidget()->windowRect();
-    blink::WebRect screen_rect =
-        render_frame->GetRenderWidget()->screenInfo().rect;
-    return gfx::Point(pt.x() - window_rect.x + screen_rect.x,
-                      pt.y() - window_rect.y + screen_rect.y);
   }
   return gfx::Point(pt.x() + plugin_instance->view_data().rect.point.x,
                     pt.y() + plugin_instance->view_data().rect.point.y);

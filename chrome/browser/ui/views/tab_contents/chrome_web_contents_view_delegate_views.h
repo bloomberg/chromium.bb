@@ -12,6 +12,10 @@
 
 class RenderViewContextMenuViews;
 
+namespace aura {
+class Window;
+}
+
 namespace content {
 class WebContents;
 class WebDragDestDelegate;
@@ -43,6 +47,7 @@ class ChromeWebContentsViewDelegateViews
   virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
 
  private:
+  aura::Window* GetActiveNativeView();
   views::Widget* GetTopLevelWidget();
   views::FocusManager* GetFocusManager();
   void SetInitialFocus();

@@ -137,14 +137,13 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
 
   gfx::Point screen_point(params.x, params.y);
 
-  // Convert from content coordinates to window coordinates.
-  aura::Window* web_contents_window =
-      web_contents_->GetView()->GetNativeView();
-  aura::Window* root_window = web_contents_window->GetRootWindow();
+  // Convert from target window coordinates to root window coordinates.
+  aura::Window* target_window = GetActiveNativeView();
+  aura::Window* root_window = target_window->GetRootWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (screen_position_client) {
-    screen_position_client->ConvertPointToScreen(web_contents_window,
+    screen_position_client->ConvertPointToScreen(target_window,
                                                  &screen_point);
   }
   // Enable recursive tasks on the message loop so we can get updates while
@@ -163,9 +162,14 @@ void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
     sad_tab->GetWidget()->SetBounds(gfx::Rect(size));
 }
 
+aura::Window* ChromeWebContentsViewDelegateViews::GetActiveNativeView() {
+  return web_contents_->GetFullscreenRenderWidgetHostView() ?
+      web_contents_->GetFullscreenRenderWidgetHostView()->GetNativeView() :
+      web_contents_->GetView()->GetNativeView();
+}
+
 views::Widget* ChromeWebContentsViewDelegateViews::GetTopLevelWidget() {
-  return views::Widget::GetTopLevelWidgetForNativeView(
-      web_contents_->GetView()->GetNativeView());
+  return views::Widget::GetTopLevelWidgetForNativeView(GetActiveNativeView());
 }
 
 views::FocusManager*
