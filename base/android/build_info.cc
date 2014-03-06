@@ -37,7 +37,9 @@ struct BuildInfoSingletonTraits {
   }
 
   static const bool kRegisterAtExit = false;
+#ifndef NDEBUG
   static const bool kAllowedToAccessOnNonjoinableThread = true;
+#endif
 };
 
 BuildInfo::BuildInfo(JNIEnv* env)

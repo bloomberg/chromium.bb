@@ -63,10 +63,12 @@ struct DefaultSingletonTraits {
   // exit. See below for the required call that makes this happen.
   static const bool kRegisterAtExit = true;
 
+#ifndef NDEBUG
   // Set to false to disallow access on a non-joinable thread.  This is
   // different from kRegisterAtExit because StaticMemorySingletonTraits allows
   // access on non-joinable threads, and gracefully handles this.
   static const bool kAllowedToAccessOnNonjoinableThread = false;
+#endif
 };
 
 
@@ -76,7 +78,9 @@ struct DefaultSingletonTraits {
 template<typename Type>
 struct LeakySingletonTraits : public DefaultSingletonTraits<Type> {
   static const bool kRegisterAtExit = false;
+#ifndef NDEBUG
   static const bool kAllowedToAccessOnNonjoinableThread = true;
+#endif
 };
 
 
