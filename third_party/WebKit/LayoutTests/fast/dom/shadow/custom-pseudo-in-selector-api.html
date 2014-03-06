@@ -18,6 +18,20 @@ shouldBeNull('sandbox.firstChild.querySelector("input[type=\'search\']::-webkit-
 shouldBe('sandbox.firstChild.querySelectorAll("input[type=\'search\']::-webkit-search-decoration").length', '0');
 
 sandbox.innerHTML = '';
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('div', {'pseudo': 'x-pseudo', 'part': 'x-part'}))));
+
+shouldBeFalse('sandbox.firstChild.webkitMatchesSelector("div::x-pseudo")');
+shouldBeFalse('sandbox.firstChild.webkitMatchesSelector("div::x-part")');
+shouldBeNull('sandbox.firstChild.querySelector("div::x-pseudo")');
+shouldBeNull('sandbox.firstChild.querySelector("div::x-part")');
+shouldBe('sandbox.firstChild.querySelectorAll("div::x-pseudo").length', '0');
+shouldBe('sandbox.firstChild.querySelectorAll("div::x-part").length', '0');
+
+sandbox.innerHTML = '';
 </script>
 </body>
 </html>

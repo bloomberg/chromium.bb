@@ -6,6 +6,12 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS sandbox.firstChild.webkitMatchesSelector("input[type='search']::-webkit-search-decoration") is false
 PASS sandbox.firstChild.querySelector("input[type='search']::-webkit-search-decoration") is null
 PASS sandbox.firstChild.querySelectorAll("input[type='search']::-webkit-search-decoration").length is 0
+PASS sandbox.firstChild.webkitMatchesSelector("div::x-pseudo") is false
+PASS sandbox.firstChild.webkitMatchesSelector("div::x-part") is false
+PASS sandbox.firstChild.querySelector("div::x-pseudo") is null
+PASS sandbox.firstChild.querySelector("div::x-part") is null
+PASS sandbox.firstChild.querySelectorAll("div::x-pseudo").length is 0
+PASS sandbox.firstChild.querySelectorAll("div::x-part").length is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

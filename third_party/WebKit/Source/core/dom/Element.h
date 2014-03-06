@@ -404,6 +404,8 @@ public:
 
     virtual String title() const { return String(); }
 
+    virtual const AtomicString& pseudo() const { return shadowPseudoId(); }
+    void setPseudo(const AtomicString& value) { setShadowPseudoId(value); }
     virtual const AtomicString& shadowPseudoId() const;
     void setShadowPseudoId(const AtomicString&);
 

@@ -1034,6 +1034,8 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         classAttributeChanged(newValue);
     } else if (name == HTMLNames::nameAttr) {
         setHasName(!newValue.isNull());
+    } else if (name == HTMLNames::pseudoAttr) {
+        shouldInvalidateStyle |= testShouldInvalidateStyle && isInShadowTree();
     }
 
     invalidateNodeListCachesInAncestors(&name, this);
@@ -2435,16 +2437,11 @@ String Element::textFromChildren()
 
 const AtomicString& Element::shadowPseudoId() const
 {
-    if (ShadowRoot* root = containingShadowRoot()) {
-        if (root->type() == ShadowRoot::UserAgentShadowRoot)
-            return fastGetAttribute(pseudoAttr);
-    }
-    return nullAtom;
+    return getAttribute(pseudoAttr);
 }
 
 void Element::setShadowPseudoId(const AtomicString& id)
 {
-    ASSERT(CSSSelector::parsePseudoType(id) == CSSSelector::PseudoWebKitCustomElement || CSSSelector::parsePseudoType(id) == CSSSelector::PseudoUserAgentCustomElement);
     setAttribute(pseudoAttr, id);
 }
 

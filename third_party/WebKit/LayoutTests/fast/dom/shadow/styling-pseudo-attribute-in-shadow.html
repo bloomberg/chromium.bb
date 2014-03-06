@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<style>
+#host::x-foo {
+  border: 1px solid red;
+}
+
+#host-in-shadow::x-foo {
+  border: 1px solid navy;
+}
+</style>
+</head>
+<div id="host1"></div>
+
+<script>
+var outerShadowRoot = host1.createShadowRoot();
+outerShadowRoot.innerHTML = '<style>#host-in-shadow::x-foo { border: 1px solid green; } #host-in-shadow::x-foo::x-foobar { border: 2px solid lightgreen; }</style><div id="host-in-shadow"></div>';
+
+var innerShadowRoot = outerShadowRoot.getElementById('host-in-shadow').createShadowRoot();
+innerShadowRoot.innerHTML = '<div pseudo="x-foo" id="host-in-inner-shadow">foo</div>';
+
+var innerMostShadowRoot = innerShadowRoot.getElementById('host-in-inner-shadow').createShadowRoot();
+innerMostShadowRoot.innerHTML = '<div pseudo="x-foobar">foobar</div>';
+
+</script>
+
+</html>
