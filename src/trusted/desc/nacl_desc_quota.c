@@ -550,5 +550,6 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaGetMetadata,
   NaClDescQuotaSetFlags,
   NaClDescQuotaGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_QUOTA,
 };

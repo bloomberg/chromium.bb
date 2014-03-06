@@ -101,5 +101,6 @@ static const struct NaClDescVtbl kNaClDescCustomVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_CUSTOM,  /* diff */
 };

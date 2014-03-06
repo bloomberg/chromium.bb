@@ -109,6 +109,30 @@ int32_t NaClSysClose(struct NaClAppThread *natp,
   return retval;
 }
 
+int32_t NaClSysIsatty(struct NaClAppThread *natp,
+                      int                  d) {
+  struct NaClApp  *nap = natp->nap;
+  int             retval = -NACL_ABI_EBADF;
+  struct NaClDesc *ndp;
+
+  NaClLog(3, "Entered NaClSysIsatty(0x%08"NACL_PRIxPTR", %d)\n",
+          (uintptr_t) natp, d);
+
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
+  ndp = NaClAppGetDesc(nap, d);
+  if (NULL == ndp) {
+    NaClLog(4, "bad desc\n");
+    return -NACL_ABI_EBADF;
+  }
+
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->Isatty)(ndp);
+  NaClDescUnref(ndp);
+  return retval;
+}
+
 int32_t NaClSysGetdents(struct NaClAppThread *natp,
                         int                  d,
                         void                 *dirp,

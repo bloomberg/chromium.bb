@@ -376,6 +376,7 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_SYSV_SHM,
 };
 

@@ -141,5 +141,6 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_SEMAPHORE,
 };

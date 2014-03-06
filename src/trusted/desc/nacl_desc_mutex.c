@@ -136,5 +136,6 @@ static struct NaClDescVtbl const kNaClDescMutexVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_MUTEX,
 };

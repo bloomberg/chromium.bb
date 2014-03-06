@@ -714,6 +714,14 @@ void NaClDescMarkUnsafeForMmap(struct NaClDesc *self) {
                    ~NACL_DESC_FLAGS_MMAP_EXEC_OK & NaClDescGetFlags(self));
 }
 
+int32_t NaClDescIsattyNotImplemented(struct NaClDesc *vself) {
+  NaClLog(LOG_ERROR,
+          "Isatty method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_ENOTTY;
+}
+
 struct NaClDescVtbl const kNaClDescVtbl = {
   {
     NaClDescDtor,
@@ -750,5 +758,6 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   (enum NaClDescTypeTag) -1,  /* NaClDesc is an abstract base class */
 };

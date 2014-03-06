@@ -227,6 +227,7 @@ static struct NaClDescVtbl const kNaClDescConnCapVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_CONN_CAP,
 };
 

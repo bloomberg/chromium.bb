@@ -51,6 +51,9 @@ int32_t NaClSysGetdents(struct NaClAppThread  *natp,
                         void                  *dirp,
                         size_t                count);
 
+int32_t NaClSysIsatty(struct NaClAppThread *natp,
+                      int                  d);
+
 int32_t NaClSysIoctl(struct NaClAppThread *natp,
                      int                  d,
                      int                  request,

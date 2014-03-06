@@ -21,6 +21,23 @@ extern "C" {
 #endif
 
 #define NACL_IRT_DEV_FDIO_v0_2  "nacl-irt-dev-fdio-0.2"
+struct nacl_irt_dev_fdio_v0_2 {
+  int (*close)(int fd);
+  int (*dup)(int fd, int *newfd);
+  int (*dup2)(int fd, int newfd);
+  int (*read)(int fd, void *buf, size_t count, size_t *nread);
+  int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
+  int (*seek)(int fd, off_t offset, int whence, off_t *new_offset);
+  int (*fstat)(int fd, struct stat *);
+  int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
+  int (*fchdir)(int fd);
+  int (*fchmod)(int fd, mode_t mode);
+  int (*fsync)(int fd);
+  int (*fdatasync)(int fd);
+  int (*ftruncate)(int fd, off_t length);
+};
+
+#define NACL_IRT_DEV_FDIO_v0_3  "nacl-irt-dev-fdio-0.3"
 struct nacl_irt_dev_fdio {
   int (*close)(int fd);
   int (*dup)(int fd, int *newfd);
@@ -35,6 +52,7 @@ struct nacl_irt_dev_fdio {
   int (*fsync)(int fd);
   int (*fdatasync)(int fd);
   int (*ftruncate)(int fd, off_t length);
+  int (*isatty)(int fd, int *result);
 };
 
 /*

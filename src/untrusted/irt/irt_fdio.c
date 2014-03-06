@@ -5,7 +5,10 @@
  */
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
+#include <errno.h>
 
 static int nacl_irt_close(int fd) {
   return -NACL_SYSCALL(close)(fd);
@@ -64,6 +67,34 @@ static int nacl_irt_getdents(int fd, struct dirent *buf, size_t count,
   return 0;
 }
 
+static int nacl_irt_fchdir(int fd) {
+  return ENOSYS;
+}
+
+static int nacl_irt_fchmod(int fd, mode_t mode) {
+  return ENOSYS;
+}
+
+static int nacl_irt_fsync(int fd) {
+  return ENOSYS;
+}
+
+static int nacl_irt_fdatasync(int fd) {
+  return ENOSYS;
+}
+
+static int nacl_irt_ftruncate(int fd, off_t legnth) {
+  return ENOSYS;
+}
+
+static int nacl_irt_isatty(int fd, int *result) {
+  int rv = NACL_SYSCALL(isatty)(fd);
+  if (rv < 0)
+    return -rv;
+  *result = rv;
+  return 0;
+}
+
 const struct nacl_irt_fdio nacl_irt_fdio = {
   nacl_irt_close,
   nacl_irt_dup,
@@ -73,4 +104,21 @@ const struct nacl_irt_fdio nacl_irt_fdio = {
   nacl_irt_seek,
   nacl_irt_fstat,
   nacl_irt_getdents,
+};
+
+const struct nacl_irt_dev_fdio nacl_irt_dev_fdio = {
+  nacl_irt_close,
+  nacl_irt_dup,
+  nacl_irt_dup2,
+  nacl_irt_read,
+  nacl_irt_write,
+  nacl_irt_seek,
+  nacl_irt_fstat,
+  nacl_irt_getdents,
+  nacl_irt_fchdir,
+  nacl_irt_fchmod,
+  nacl_irt_fsync,
+  nacl_irt_fdatasync,
+  nacl_irt_ftruncate,
+  nacl_irt_isatty
 };

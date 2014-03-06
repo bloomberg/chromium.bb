@@ -82,6 +82,8 @@ typedef int (*TYPE_nacl_pwrite) (int fd,
                                  const void *buf, size_t count,
                                  off_t *offset);
 
+typedef int (*TYPE_nacl_isatty) (int fd);
+
 /* ============================================================ */
 /* imc */
 /* ============================================================ */

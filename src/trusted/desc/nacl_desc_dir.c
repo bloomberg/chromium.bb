@@ -193,5 +193,6 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_DIR,
 };

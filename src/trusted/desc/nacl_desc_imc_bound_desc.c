@@ -169,5 +169,6 @@ static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_BOUND_SOCKET,
 };

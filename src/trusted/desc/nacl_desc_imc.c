@@ -411,6 +411,7 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_CONNECTED_SOCKET,
 };
 
@@ -451,6 +452,7 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_IMC_SOCKET,  /* diff */
 };
 
@@ -491,6 +493,7 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_TRANSFERABLE_DATA_SOCKET,  /* diff */
 };
 

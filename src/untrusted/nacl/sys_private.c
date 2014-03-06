@@ -180,6 +180,15 @@ int getdents(int fd, struct dirent *buf, size_t count) {
       NACL_SYSCALL(getdents)(fd, buf, count)));
 }
 
+int isatty(int fd) {
+  int result = NACL_SYSCALL(isatty)(fd);
+  if (result < 0) {
+    errno = -result;
+    return 0;
+  }
+  return result;
+}
+
 int getpid(void) {
   return errno_value_call(NACL_SYSCALL(getpid)());
 }

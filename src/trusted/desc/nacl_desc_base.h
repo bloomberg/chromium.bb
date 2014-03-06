@@ -386,6 +386,8 @@ struct NaClDescVtbl {
 
   uint32_t (*GetFlags)(struct NaClDesc *self);
 
+  int32_t (*Isatty)(struct NaClDesc *self);
+
   /*
    * Inappropriate methods for the subclass will just return
    * -NACL_ABI_EINVAL.
@@ -495,6 +497,7 @@ void NaClDescSetFlags(struct NaClDesc *self,
  */
 uint32_t NaClDescGetFlags(struct NaClDesc *self);
 
+int32_t NaClDescIsattyNotImplemented(struct NaClDesc *vself);
 
 /*
  * Base class externalize functions; all subclass externalize

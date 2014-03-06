@@ -126,5 +126,6 @@ static struct NaClDescVtbl const kNaClDescPostMessageVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_DEVICE_POSTMESSAGE,
 };

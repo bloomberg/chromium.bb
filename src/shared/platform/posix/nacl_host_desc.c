@@ -598,6 +598,15 @@ int NaClHostDescFstat(struct NaClHostDesc  *d,
   return 0;
 }
 
+int NaClHostDescIsatty(struct NaClHostDesc *d) {
+  int retval;
+
+  NaClHostDescCheckValidity("NaClHostDescIsatty", d);
+  retval = isatty(d->d);
+  /* When isatty fails it returns zero and sets errno. */
+  return (0 == retval) ? -NaClXlateErrno(errno) : retval;
+}
+
 int NaClHostDescClose(struct NaClHostDesc *d) {
   int retval;
 

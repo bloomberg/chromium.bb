@@ -311,6 +311,12 @@ static int NaClDescIoDescFstat(struct NaClDesc         *vself,
   return NaClAbiStatHostDescStatXlateCtor(statbuf, &hstatbuf);
 }
 
+static int32_t NaClDescIoIsatty(struct NaClDesc *vself) {
+  struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+
+  return NaClHostDescIsatty(self->hd);
+}
+
 static int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
                                          size_t          *nbytes,
                                          size_t          *nhandles) {
@@ -391,6 +397,7 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIoIsatty,
   NACL_DESC_HOST_IO,
 };
 

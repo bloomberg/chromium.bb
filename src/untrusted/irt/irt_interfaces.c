@@ -53,6 +53,8 @@ static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio),
     non_pnacl_filter },
   { NACL_IRT_DEV_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
+  { NACL_IRT_DEV_FDIO_v0_3, &nacl_irt_dev_fdio, sizeof(nacl_irt_dev_fdio),
+    file_access_filter },
   /*
    * "irt-filename" is made available to non-PNaCl NaCl apps only for
    * compatibility, because existing nexes abort on startup if

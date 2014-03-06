@@ -569,6 +569,38 @@ bool test_readdir(const char *test_file) {
   return passed("test_readdir", "all");
 }
 
+// isatty returns 1 for TTY descriptors and 0 on error (setting errno)
+bool test_isatty(const char *test_file) {
+  // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
+  // interfaces. Remove this conditional once this gets addressed:
+  // https://code.google.com/p/nativeclient/issues/detail?id=3709
+#if !defined(__GLIBC__)
+  // Open a regular file that check that it is not a tty.
+  int fd = open(test_file, O_RDONLY);
+  ASSERT_NE_MSG(fd, -1, "open() failed");
+  errno = 0;
+  ASSERT_EQ_MSG(isatty(fd), 0, "isatty returned non-zero");
+  ASSERT_EQ_MSG(errno, ENOTTY, "isatty failed to set errno to ENOTTY");
+  close(fd);
+
+  // Verify that isatty() on closed file returns 0 and sets errno to EBADF
+  errno = 0;
+  ASSERT_EQ_MSG(isatty(fd), 0, "isatty returned non-zero");
+  ASSERT_EQ_MSG(errno, EBADF, "isatty failed to set errno to EBADF");
+
+  // On Linux opening /dev/ptmx always returns a TTY file descriptor.
+  fd = open("/dev/ptmx", O_RDWR);
+  if (fd >= 0) {
+    errno = 0;
+    ASSERT_EQ(isatty(fd), 1);
+    ASSERT_EQ(errno, 0);
+    close(fd);
+  }
+#endif
+
+  return passed("test_isatty", "all");
+}
+
 /*
  * Not strictly speaking a syscall, but we have a 'fake' implementation
  * that we want to test.
@@ -615,6 +647,7 @@ bool testSuite(const char *test_file) {
   ret &= test_mkdir_rmdir(test_file);
   ret &= test_readdir(test_file);
   ret &= test_gethostname();
+  ret &= test_isatty(test_file);
   return ret;
 }
 

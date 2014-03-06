@@ -169,6 +169,7 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_SYNC_SOCKET,
 };
 

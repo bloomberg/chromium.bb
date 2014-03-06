@@ -9,4 +9,5 @@ TEST PASSED: test_getcwd: all
 TEST PASSED: test_mkdir_rmdir: all
 TEST PASSED: test_readdir: all
 TEST PASSED: test_gethostname: all
+TEST PASSED: test_isatty: all
 All tests PASSED

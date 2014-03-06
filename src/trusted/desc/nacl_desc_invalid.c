@@ -85,6 +85,7 @@ static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_INVALID,
 };
 

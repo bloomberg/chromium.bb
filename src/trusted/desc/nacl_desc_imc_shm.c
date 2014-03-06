@@ -362,6 +362,7 @@ static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_SHM,
 };
 

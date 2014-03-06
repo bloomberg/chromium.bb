@@ -168,6 +168,7 @@ static struct NaClDescVtbl const kNaClDescRngVtbl = {
   NaClDescGetMetadata,
   NaClDescSetFlags,
   NaClDescGetFlags,
+  NaClDescIsattyNotImplemented,
   NACL_DESC_DEVICE_RNG,
 };
 

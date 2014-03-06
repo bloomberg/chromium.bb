@@ -31,6 +31,7 @@
 #define NACL_sys_stat                   16
 #define NACL_sys_fstat                  17
 #define NACL_sys_chmod                  18
+#define NACL_sys_isatty                 19
 /* no fchmod emulation on windows */
 
 #define NACL_sys_brk                    20

@@ -8,7 +8,7 @@
 
 void __libnacl_irt_dev_fdio_init(void) {
   /* Attempt to load the 'dev-fdio' interface */
-  if (!__libnacl_irt_query(NACL_IRT_DEV_FDIO_v0_2,
+  if (!__libnacl_irt_query(NACL_IRT_DEV_FDIO_v0_3,
                            &__libnacl_irt_dev_fdio,
                            sizeof(__libnacl_irt_dev_fdio))) {
     /*

@@ -301,6 +301,13 @@ extern int NaClHostDescFstat(struct NaClHostDesc  *d,
                              nacl_host_stat_t     *nasp) NACL_WUR;
 
 /*
+ * Isatty. Determine if file descriptor is connected to a TTY.
+ * Returns 1 if the descriptor is a TTY, otherwise returns a negative errno
+ * value.
+ */
+extern int NaClHostDescIsatty(struct NaClHostDesc *d) NACL_WUR;
+
+/*
  * Dtor for the NaClHostFile object. Close the file.
  *
  * Underlying host-OS functions:  close(2) / _close
