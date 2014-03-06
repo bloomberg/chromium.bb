@@ -19,6 +19,7 @@
 namespace content {
 
 class MediaStreamAudioLevelCalculator;
+class MediaStreamAudioProcessor;
 class MediaStreamAudioSink;
 class MediaStreamAudioSinkOwner;
 class MediaStreamAudioTrackSink;
@@ -65,7 +66,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   void Stop();
 
   // Method called by the capturer to deliver the capture data.
-  // Call on the capture audio thread.
+  // Called on the capture audio thread.
   void Capture(const int16* audio_data,
                base::TimeDelta delay,
                int volume,
@@ -74,8 +75,14 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..
-  // Call on the capture audio thread.
+  // Called on the capture audio thread.
   void OnSetFormat(const media::AudioParameters& params);
+
+  // Method called by the capturer to set the processor that applies signal
+  // processing on the data of the track.
+  // Called on the capture audio thread.
+  void SetAudioProcessor(
+      const scoped_refptr<MediaStreamAudioProcessor>& processor);
 
   blink::WebAudioSourceProvider* audio_source_provider() const {
     return source_provider_.get();

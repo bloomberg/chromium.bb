@@ -6,6 +6,7 @@
 
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/media_stream_audio_level_calculator.h"
+#include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_sink_owner.h"
 #include "content/renderer/media/media_stream_audio_track_sink.h"
 #include "content/renderer/media/peer_connection_audio_sink_owner.h"
@@ -111,6 +112,16 @@ void WebRtcLocalAudioTrack::OnSetFormat(
   base::AutoLock auto_lock(lock_);
   // Remember to notify all sinks of the new format.
   sinks_.TagAll();
+}
+
+void WebRtcLocalAudioTrack::SetAudioProcessor(
+    const scoped_refptr<MediaStreamAudioProcessor>& processor) {
+  // if the |processor| does not have audio processing, which can happen if
+  // kEnableAudioTrackProcessing is not set or all the constraints in
+  // the |processor| are turned off. In such case, we pass NULL to the
+  // adapter to indicate that no stats can be gotten from the processor.
+  adapter_->SetAudioProcessor(processor->has_audio_processing() ?
+      processor : NULL);
 }
 
 void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {

@@ -226,6 +226,12 @@ void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
   render_converter_.reset();
 }
 
+void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
+  stats->typing_noise_detected =
+      (base::subtle::Acquire_Load(&typing_detected_) != false);
+  GetAecStats(audio_processing_.get(), stats);
+}
+
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::WebMediaConstraints& constraints, int effects) {
   DCHECK(!audio_processing_);
@@ -425,8 +431,8 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
       audio_frame->vad_activity_ != webrtc::AudioFrame::kVadUnknown) {
     bool vad_active =
         (audio_frame->vad_activity_ == webrtc::AudioFrame::kVadActive);
-    // TODO(xians): Pass this |typing_detected_| to peer connection.
-    typing_detected_ = typing_detector_->Process(key_pressed, vad_active);
+    bool typing_detected = typing_detector_->Process(key_pressed, vad_active);
+    base::subtle::Release_Store(&typing_detected_, typing_detected);
   }
 
   // Return 0 if the volume has not been changed, otherwise return the new

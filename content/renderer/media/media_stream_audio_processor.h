@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/interface/module_common_types.h"
 
@@ -34,13 +35,15 @@ namespace content {
 
 class RTCMediaConstraints;
 
+using webrtc::AudioProcessorInterface;
+
 // This class owns an object of webrtc::AudioProcessing which contains signal
 // processing components like AGC, AEC and NS. It enables the components based
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
 class CONTENT_EXPORT MediaStreamAudioProcessor :
-    public base::RefCountedThreadSafe<MediaStreamAudioProcessor>,
-    NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink) {
+    NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink),
+    NON_EXPORTED_BASE(public AudioProcessorInterface) {
  public:
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
@@ -97,6 +100,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                              int sample_rate,
                              int audio_delay_milliseconds) OVERRIDE;
   virtual void OnPlayoutDataSourceChanged() OVERRIDE;
+
+  // webrtc::AudioProcessorInterface implementation.
+  // This method is called on the libjingle thread.
+  virtual void GetStats(AudioProcessorStats* stats) OVERRIDE;
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
@@ -164,8 +171,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Used by the typing detection.
   scoped_ptr<webrtc::TypingDetection> typing_detector_;
 
-  // Result from the typing detection.
-  bool typing_detected_;
+  // This flag is used to show the result of typing detection.
+  // It can be accessed by the capture audio thread and by the libjingle thread
+  // which calls GetStats().
+  base::subtle::Atomic32 typing_detected_;
 };
 
 }  // namespace content

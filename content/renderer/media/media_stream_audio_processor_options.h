@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+
 namespace blink {
 class WebMediaConstraints;
 }
@@ -74,6 +76,9 @@ void StartAecDump(AudioProcessing* audio_processing);
 void StopAecDump(AudioProcessing* audio_processing);
 
 void EnableAutomaticGainControl(AudioProcessing* audio_processing);
+
+void GetAecStats(AudioProcessing* audio_processing,
+                 webrtc::AudioProcessorInterface::AudioProcessorStats* stats);
 
 }  // namespace content
 

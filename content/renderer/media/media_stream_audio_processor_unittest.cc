@@ -152,14 +152,20 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
   // Setup the audio processor without enabling the flag.
   blink::WebMediaConstraints constraints;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
-      new MediaStreamAudioProcessor(params_, constraints, 0, NULL));
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          params_, constraints, 0, webrtc_audio_device.get()));
   EXPECT_FALSE(audio_processor->has_audio_processing());
 
   ProcessDataAndVerifyFormat(audio_processor,
                              params_.sample_rate(),
                              params_.channels(),
                              params_.sample_rate() / 100);
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
+  // |audio_processor|.
+  audio_processor = NULL;
 }
 
 TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
@@ -167,8 +173,11 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableAudioTrackProcessing);
   blink::WebMediaConstraints constraints;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
-      new MediaStreamAudioProcessor(params_, constraints, 0, NULL));
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          params_, constraints, 0, webrtc_audio_device.get()));
   EXPECT_TRUE(audio_processor->has_audio_processing());
   VerifyDefaultComponents(audio_processor);
 
@@ -176,6 +185,9 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
                              kAudioProcessingSampleRate,
                              kAudioProcessingNumberOfChannel,
                              kAudioProcessingSampleRate / 100);
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
+  // |audio_processor|.
+  audio_processor = NULL;
 }
 
 }  // namespace content

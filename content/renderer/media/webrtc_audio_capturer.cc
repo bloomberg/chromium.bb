@@ -68,6 +68,13 @@ class WebRtcAudioCapturer::TrackOwner
       delegate_->OnSetFormat(params);
   }
 
+  void SetAudioProcessor(
+      const scoped_refptr<MediaStreamAudioProcessor>& processor) {
+    base::AutoLock lock(lock_);
+    if (delegate_)
+      delegate_->SetAudioProcessor(processor);
+  }
+
   void Reset() {
     base::AutoLock lock(lock_);
     delegate_ = NULL;
@@ -296,8 +303,8 @@ void WebRtcAudioCapturer::SetCapturerSource(
                                 channel_layout, 0, sample_rate,
                                 16, buffer_size, effects);
   scoped_refptr<MediaStreamAudioProcessor> new_audio_processor(
-      new MediaStreamAudioProcessor(params, constraints, effects,
-                                    audio_device_));
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          params, constraints, effects, audio_device_));
   {
     base::AutoLock auto_lock(lock_);
     audio_processor_ = new_audio_processor;
@@ -470,6 +477,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   for (TrackList::ItemList::const_iterator it = tracks_to_notify_format.begin();
        it != tracks_to_notify_format.end(); ++it) {
     (*it)->OnSetFormat(output_params);
+    (*it)->SetAudioProcessor(audio_processor);
   }
 
   // Push the data to the processor for processing.

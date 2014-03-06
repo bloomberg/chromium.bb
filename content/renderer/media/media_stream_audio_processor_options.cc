@@ -182,4 +182,43 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing) {
   CHECK_EQ(err, 0);
 }
 
+void GetAecStats(AudioProcessing* audio_processing,
+                 webrtc::AudioProcessorInterface::AudioProcessorStats* stats) {
+  // These values can take on valid negative values, so use the lowest possible
+  // level as default rather than -1.
+  stats->echo_return_loss = -100;
+  stats->echo_return_loss_enhancement = -100;
+
+  // These values can also be negative, but in practice -1 is only used to
+  // signal insufficient data, since the resolution is limited to multiples
+  // of 4ms.
+  stats->echo_delay_median_ms = -1;
+  stats->echo_delay_std_ms = -1;
+
+  // TODO(ajm): Re-enable this metric once we have a reliable implementation.
+  stats->aec_quality_min = -1.0f;
+
+  if (!audio_processing->echo_cancellation()->are_metrics_enabled() ||
+      !audio_processing->echo_cancellation()->is_delay_logging_enabled() ||
+      !audio_processing->echo_cancellation()->is_enabled()) {
+    return;
+  }
+
+  // TODO(ajm): we may want to use VoECallReport::GetEchoMetricsSummary
+  // here, but it appears to be unsuitable currently. Revisit after this is
+  // investigated: http://b/issue?id=5666755
+  webrtc::EchoCancellation::Metrics echo_metrics;
+  if (!audio_processing->echo_cancellation()->GetMetrics(&echo_metrics)) {
+    stats->echo_return_loss = echo_metrics.echo_return_loss.instant;
+    stats->echo_return_loss_enhancement =
+        echo_metrics.echo_return_loss_enhancement.instant;
+  }
+
+  int median = 0, std = 0;
+  if (!audio_processing->echo_cancellation()->GetDelayMetrics(&median, &std)) {
+    stats->echo_delay_median_ms = median;
+    stats->echo_delay_std_ms = std;
+  }
+}
+
 }  // namespace content
