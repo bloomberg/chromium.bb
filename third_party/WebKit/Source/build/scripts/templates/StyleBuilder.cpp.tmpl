@@ -59,8 +59,6 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state,
 {%- if property.converter %}
     {{ set_value(property) }}(StyleBuilderConverter::{{property.converter}}(state, value));
 {%- elif property.font %}
-    if (!value->isPrimitiveValue())
-        return;
     {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
 {%- else %}
     {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
