@@ -196,6 +196,8 @@ protected:
 
     virtual void setTargetElement(SVGElement*) OVERRIDE;
     virtual void setAttributeName(const QualifiedName&) OVERRIDE;
+    AnimatedPropertyType determineAnimatedPropertyType() const;
+
     bool hasInvalidCSSAttributeType() const { return m_hasInvalidCSSAttributeType; }
 
     virtual void updateAnimationMode();

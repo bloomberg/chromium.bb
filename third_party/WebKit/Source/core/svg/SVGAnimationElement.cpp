@@ -483,6 +483,26 @@ void SVGAnimationElement::currentValuesFromKeyPoints(float percent, float& effec
     to = m_values[index + 1];
 }
 
+AnimatedPropertyType SVGAnimationElement::determineAnimatedPropertyType() const
+{
+    if (!targetElement())
+        return AnimatedString;
+
+    RefPtr<NewSVGAnimatedPropertyBase> property = targetElement()->propertyFromAttribute(attributeName());
+    if (property) {
+        AnimatedPropertyType propertyType = property->type();
+
+        // Only <animatedTransform> is allowed to animate AnimatedTransformList.
+        // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
+        if (propertyType == AnimatedTransformList && !hasTagName(SVGNames::animateTransformTag))
+            return AnimatedUnknown;
+
+        return propertyType;
+    }
+
+    return SVGElement::animatedPropertyTypeForCSSAttribute(attributeName());
+}
+
 void SVGAnimationElement::currentValuesForValuesAnimation(float percent, float& effectivePercent, String& from, String& to)
 {
     unsigned valuesCount = m_values.size();
@@ -498,7 +518,7 @@ void SVGAnimationElement::currentValuesForValuesAnimation(float percent, float& 
 
     CalcMode calcMode = this->calcMode();
     if (hasTagName(SVGNames::animateTag)) {
-        AnimatedPropertyType attributeType = toSVGAnimateElement(this)->determineAnimatedPropertyType(targetElement());
+        AnimatedPropertyType attributeType = determineAnimatedPropertyType();
         // Fall back to discrete animations for Strings.
         if (attributeType == AnimatedBoolean
             || attributeType == AnimatedEnumeration

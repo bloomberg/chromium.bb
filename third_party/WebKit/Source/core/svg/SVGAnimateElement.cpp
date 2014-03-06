@@ -62,29 +62,6 @@ bool SVGAnimateElement::hasValidAttributeType()
     return m_animatedPropertyType != AnimatedUnknown && !hasInvalidCSSAttributeType();
 }
 
-AnimatedPropertyType SVGAnimateElement::determineAnimatedPropertyType(SVGElement* targetElement) const
-{
-    ASSERT(targetElement);
-
-    Vector<AnimatedPropertyType> propertyTypes;
-    targetElement->animatedPropertyTypeForAttribute(attributeName(), propertyTypes);
-    if (propertyTypes.isEmpty())
-        return AnimatedUnknown;
-
-    ASSERT(propertyTypes.size() <= 2);
-    AnimatedPropertyType type = propertyTypes[0];
-
-    // Animations of transform lists are not allowed for <animate> or <set>
-    // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
-    if (type == AnimatedTransformList && !hasTagName(SVGNames::animateTransformTag))
-        return AnimatedUnknown;
-
-    if (propertyTypes.size() == 2)
-        ASSERT(propertyTypes[0] == propertyTypes[1]);
-
-    return type;
-}
-
 void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement)
 {
     ASSERT(resultElement);
@@ -92,7 +69,7 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     if (!targetElement || !isSVGAnimateElement(*resultElement))
         return;
 
-    ASSERT(m_animatedPropertyType == determineAnimatedPropertyType(targetElement));
+    ASSERT(m_animatedPropertyType == determineAnimatedPropertyType());
 
     ASSERT(percentage >= 0 && percentage <= 1);
     ASSERT(m_animatedPropertyType != AnimatedTransformList || hasTagName(SVGNames::animateTransformTag));
@@ -418,7 +395,7 @@ void SVGAnimateElement::resetAnimatedPropertyType()
     m_toProperty.clear();
     m_toAtEndOfDurationProperty.clear();
     m_animator.clear();
-    m_animatedPropertyType = targetElement() ? determineAnimatedPropertyType(targetElement()) : AnimatedString;
+    m_animatedPropertyType = determineAnimatedPropertyType();
 }
 
 SVGAnimatedTypeAnimator* SVGAnimateElement::ensureAnimator()

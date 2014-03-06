@@ -96,8 +96,8 @@ public:
 
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    void animatedPropertyTypeForAttribute(const QualifiedName&, Vector<AnimatedPropertyType>&);
     PassRefPtr<NewSVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
+    static AnimatedPropertyType animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName);
 
     void sendSVGLoadEventIfPossible(bool sendParentLoadEvents = false);
     void sendSVGLoadEventIfPossibleAsynchronously();

@@ -657,84 +657,74 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
 }
 
 typedef HashMap<QualifiedName, AnimatedPropertyType> AttributeToPropertyTypeMap;
-static inline AttributeToPropertyTypeMap& cssPropertyToTypeMap()
+AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName)
 {
-    DEFINE_STATIC_LOCAL(AttributeToPropertyTypeMap, s_cssPropertyMap, ());
+    DEFINE_STATIC_LOCAL(AttributeToPropertyTypeMap, cssPropertyMap, ());
 
-    if (!s_cssPropertyMap.isEmpty())
-        return s_cssPropertyMap;
-
-    // Fill the map for the first use.
-    s_cssPropertyMap.set(alignment_baselineAttr, AnimatedString);
-    s_cssPropertyMap.set(baseline_shiftAttr, AnimatedString);
-    s_cssPropertyMap.set(buffered_renderingAttr, AnimatedString);
-    s_cssPropertyMap.set(clipAttr, AnimatedRect);
-    s_cssPropertyMap.set(clip_pathAttr, AnimatedString);
-    s_cssPropertyMap.set(clip_ruleAttr, AnimatedString);
-    s_cssPropertyMap.set(SVGNames::colorAttr, AnimatedColor);
-    s_cssPropertyMap.set(color_interpolationAttr, AnimatedString);
-    s_cssPropertyMap.set(color_interpolation_filtersAttr, AnimatedString);
-    s_cssPropertyMap.set(color_profileAttr, AnimatedString);
-    s_cssPropertyMap.set(color_renderingAttr, AnimatedString);
-    s_cssPropertyMap.set(cursorAttr, AnimatedString);
-    s_cssPropertyMap.set(displayAttr, AnimatedString);
-    s_cssPropertyMap.set(dominant_baselineAttr, AnimatedString);
-    s_cssPropertyMap.set(fillAttr, AnimatedColor);
-    s_cssPropertyMap.set(fill_opacityAttr, AnimatedNumber);
-    s_cssPropertyMap.set(fill_ruleAttr, AnimatedString);
-    s_cssPropertyMap.set(filterAttr, AnimatedString);
-    s_cssPropertyMap.set(flood_colorAttr, AnimatedColor);
-    s_cssPropertyMap.set(flood_opacityAttr, AnimatedNumber);
-    s_cssPropertyMap.set(font_familyAttr, AnimatedString);
-    s_cssPropertyMap.set(font_sizeAttr, AnimatedLength);
-    s_cssPropertyMap.set(font_stretchAttr, AnimatedString);
-    s_cssPropertyMap.set(font_styleAttr, AnimatedString);
-    s_cssPropertyMap.set(font_variantAttr, AnimatedString);
-    s_cssPropertyMap.set(font_weightAttr, AnimatedString);
-    s_cssPropertyMap.set(image_renderingAttr, AnimatedString);
-    s_cssPropertyMap.set(kerningAttr, AnimatedLength);
-    s_cssPropertyMap.set(letter_spacingAttr, AnimatedLength);
-    s_cssPropertyMap.set(lighting_colorAttr, AnimatedColor);
-    s_cssPropertyMap.set(marker_endAttr, AnimatedString);
-    s_cssPropertyMap.set(marker_midAttr, AnimatedString);
-    s_cssPropertyMap.set(marker_startAttr, AnimatedString);
-    s_cssPropertyMap.set(maskAttr, AnimatedString);
-    s_cssPropertyMap.set(mask_typeAttr, AnimatedString);
-    s_cssPropertyMap.set(opacityAttr, AnimatedNumber);
-    s_cssPropertyMap.set(overflowAttr, AnimatedString);
-    s_cssPropertyMap.set(paint_orderAttr, AnimatedString);
-    s_cssPropertyMap.set(pointer_eventsAttr, AnimatedString);
-    s_cssPropertyMap.set(shape_renderingAttr, AnimatedString);
-    s_cssPropertyMap.set(stop_colorAttr, AnimatedColor);
-    s_cssPropertyMap.set(stop_opacityAttr, AnimatedNumber);
-    s_cssPropertyMap.set(strokeAttr, AnimatedColor);
-    s_cssPropertyMap.set(stroke_dasharrayAttr, AnimatedLengthList);
-    s_cssPropertyMap.set(stroke_dashoffsetAttr, AnimatedLength);
-    s_cssPropertyMap.set(stroke_linecapAttr, AnimatedString);
-    s_cssPropertyMap.set(stroke_linejoinAttr, AnimatedString);
-    s_cssPropertyMap.set(stroke_miterlimitAttr, AnimatedNumber);
-    s_cssPropertyMap.set(stroke_opacityAttr, AnimatedNumber);
-    s_cssPropertyMap.set(stroke_widthAttr, AnimatedLength);
-    s_cssPropertyMap.set(text_anchorAttr, AnimatedString);
-    s_cssPropertyMap.set(text_decorationAttr, AnimatedString);
-    s_cssPropertyMap.set(text_renderingAttr, AnimatedString);
-    s_cssPropertyMap.set(vector_effectAttr, AnimatedString);
-    s_cssPropertyMap.set(visibilityAttr, AnimatedString);
-    s_cssPropertyMap.set(word_spacingAttr, AnimatedLength);
-    return s_cssPropertyMap;
-}
-
-void SVGElement::animatedPropertyTypeForAttribute(const QualifiedName& attributeName, Vector<AnimatedPropertyType>& propertyTypes)
-{
-    RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = m_newAttributeToPropertyMap.get(attributeName);
-    if (animatedProperty) {
-        propertyTypes.append(animatedProperty->type());
-        return;
+    if (cssPropertyMap.isEmpty()) {
+        // Fill the map for the first use.
+        cssPropertyMap.set(alignment_baselineAttr, AnimatedString);
+        cssPropertyMap.set(baseline_shiftAttr, AnimatedString);
+        cssPropertyMap.set(buffered_renderingAttr, AnimatedString);
+        cssPropertyMap.set(clipAttr, AnimatedRect);
+        cssPropertyMap.set(clip_pathAttr, AnimatedString);
+        cssPropertyMap.set(clip_ruleAttr, AnimatedString);
+        cssPropertyMap.set(SVGNames::colorAttr, AnimatedColor);
+        cssPropertyMap.set(color_interpolationAttr, AnimatedString);
+        cssPropertyMap.set(color_interpolation_filtersAttr, AnimatedString);
+        cssPropertyMap.set(color_profileAttr, AnimatedString);
+        cssPropertyMap.set(color_renderingAttr, AnimatedString);
+        cssPropertyMap.set(cursorAttr, AnimatedString);
+        cssPropertyMap.set(displayAttr, AnimatedString);
+        cssPropertyMap.set(dominant_baselineAttr, AnimatedString);
+        cssPropertyMap.set(fillAttr, AnimatedColor);
+        cssPropertyMap.set(fill_opacityAttr, AnimatedNumber);
+        cssPropertyMap.set(fill_ruleAttr, AnimatedString);
+        cssPropertyMap.set(filterAttr, AnimatedString);
+        cssPropertyMap.set(flood_colorAttr, AnimatedColor);
+        cssPropertyMap.set(flood_opacityAttr, AnimatedNumber);
+        cssPropertyMap.set(font_familyAttr, AnimatedString);
+        cssPropertyMap.set(font_sizeAttr, AnimatedLength);
+        cssPropertyMap.set(font_stretchAttr, AnimatedString);
+        cssPropertyMap.set(font_styleAttr, AnimatedString);
+        cssPropertyMap.set(font_variantAttr, AnimatedString);
+        cssPropertyMap.set(font_weightAttr, AnimatedString);
+        cssPropertyMap.set(image_renderingAttr, AnimatedString);
+        cssPropertyMap.set(kerningAttr, AnimatedLength);
+        cssPropertyMap.set(letter_spacingAttr, AnimatedLength);
+        cssPropertyMap.set(lighting_colorAttr, AnimatedColor);
+        cssPropertyMap.set(marker_endAttr, AnimatedString);
+        cssPropertyMap.set(marker_midAttr, AnimatedString);
+        cssPropertyMap.set(marker_startAttr, AnimatedString);
+        cssPropertyMap.set(maskAttr, AnimatedString);
+        cssPropertyMap.set(mask_typeAttr, AnimatedString);
+        cssPropertyMap.set(opacityAttr, AnimatedNumber);
+        cssPropertyMap.set(overflowAttr, AnimatedString);
+        cssPropertyMap.set(paint_orderAttr, AnimatedString);
+        cssPropertyMap.set(pointer_eventsAttr, AnimatedString);
+        cssPropertyMap.set(shape_renderingAttr, AnimatedString);
+        cssPropertyMap.set(stop_colorAttr, AnimatedColor);
+        cssPropertyMap.set(stop_opacityAttr, AnimatedNumber);
+        cssPropertyMap.set(strokeAttr, AnimatedColor);
+        cssPropertyMap.set(stroke_dasharrayAttr, AnimatedLengthList);
+        cssPropertyMap.set(stroke_dashoffsetAttr, AnimatedLength);
+        cssPropertyMap.set(stroke_linecapAttr, AnimatedString);
+        cssPropertyMap.set(stroke_linejoinAttr, AnimatedString);
+        cssPropertyMap.set(stroke_miterlimitAttr, AnimatedNumber);
+        cssPropertyMap.set(stroke_opacityAttr, AnimatedNumber);
+        cssPropertyMap.set(stroke_widthAttr, AnimatedLength);
+        cssPropertyMap.set(text_anchorAttr, AnimatedString);
+        cssPropertyMap.set(text_decorationAttr, AnimatedString);
+        cssPropertyMap.set(text_renderingAttr, AnimatedString);
+        cssPropertyMap.set(vector_effectAttr, AnimatedString);
+        cssPropertyMap.set(visibilityAttr, AnimatedString);
+        cssPropertyMap.set(word_spacingAttr, AnimatedLength);
     }
 
-    AttributeToPropertyTypeMap& cssPropertyTypeMap = cssPropertyToTypeMap();
-    if (cssPropertyTypeMap.contains(attributeName))
-        propertyTypes.append(cssPropertyTypeMap.get(attributeName));
+    if (cssPropertyMap.contains(attributeName))
+        return cssPropertyMap.get(attributeName);
+
+    return AnimatedUnknown;
 }
 
 void SVGElement::addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase> passProperty)
@@ -751,7 +741,7 @@ PassRefPtr<NewSVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const Q
 
 bool SVGElement::isAnimatableCSSProperty(const QualifiedName& attrName)
 {
-    return cssPropertyToTypeMap().contains(attrName);
+    return animatedPropertyTypeForCSSAttribute(attrName) != AnimatedUnknown;
 }
 
 bool SVGElement::isPresentationAttribute(const QualifiedName& name) const

@@ -38,8 +38,6 @@ public:
     static PassRefPtr<SVGAnimateElement> create(Document&);
     virtual ~SVGAnimateElement();
 
-    AnimatedPropertyType determineAnimatedPropertyType(SVGElement*) const;
-
 protected:
     SVGAnimateElement(const QualifiedName&, Document&);
 
