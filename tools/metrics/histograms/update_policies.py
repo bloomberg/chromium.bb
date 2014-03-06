@@ -8,7 +8,6 @@ definitions read from policy_templates.json.
 If the file was pretty-printed, the updated version is pretty-printed too.
 """
 
-import os
 import re
 import sys
 
@@ -16,15 +15,12 @@ from ast import literal_eval
 from optparse import OptionParser
 from xml.dom import minidom
 
-import print_style
-
-# Import the metrics/common module.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
-from diff_util import PromptUserToAcceptDiff
+from diffutil import PromptUserToAcceptDiff
+from pretty_print import PrettyPrintNode
 
 HISTOGRAMS_PATH = 'histograms.xml'
-POLICY_TEMPLATES_PATH = (
-    '../../../components/policy/resources/policy_templates.json')
+POLICY_TEMPLATES_PATH =
+    '../../../components/policy/resources/policy_templates.json'
 ENUM_NAME = 'EnterprisePolicies'
 
 class UserError(Exception):
@@ -122,7 +118,8 @@ def main():
     xml = f.read()
 
   UpdateHistogramDefinitions(policy_templates, histograms_doc)
-  new_xml = print_style.GetPrintStyle().PrettyPrintNode(histograms_doc)
+
+  new_xml = PrettyPrintNode(histograms_doc)
   if PromptUserToAcceptDiff(xml, new_xml, 'Is the updated version acceptable?'):
     with open(HISTOGRAMS_PATH, 'wb') as f:
       f.write(new_xml)

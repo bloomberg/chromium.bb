@@ -13,11 +13,9 @@ import re
 import sys
 
 from xml.dom import minidom
-import print_style
 
-# Import the metrics/common module.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
-from diff_util import PromptUserToAcceptDiff
+from diffutil import PromptUserToAcceptDiff
+from pretty_print import PrettyPrintNode
 
 HISTOGRAMS_PATH = 'histograms.xml'
 ENUM_NAME = 'ExtensionFunctions'
@@ -138,8 +136,7 @@ def main():
   UpdateHistogramDefinitions(histogram_values, histograms_doc)
 
   Log('Writing out new histograms file.')
-  new_xml = print_style.GetPrintStyle().PrettyPrintNode(histograms_doc)
-
+  new_xml = PrettyPrintNode(histograms_doc)
   if PromptUserToAcceptDiff(xml, new_xml, 'Is the updated version acceptable?'):
     with open(HISTOGRAMS_PATH, 'wb') as f:
       f.write(new_xml)

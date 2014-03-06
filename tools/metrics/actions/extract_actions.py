@@ -16,31 +16,19 @@ See also:
   base/metrics/user_metrics.h
   http://wiki.corp.google.com/twiki/bin/view/Main/ChromeUserExperienceMetrics
 
-After extracting all actions, the content will go through a pretty print
-function to make sure it's well formatted. If the file content needs to be
-changed, a window will be prompted asking for user's consent. The old version
-will also be saved in a backup file.
+If run with a "--hash" argument, chromeactions.txt will be updated.
 """
 
 __author__ = 'evanm (Evan Martin)'
 
+import hashlib
 from HTMLParser import HTMLParser
-import logging
 import os
 import re
-import shutil
 import sys
-from xml.dom import minidom
-
-import print_style
 
 sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
 from google import path_utils
-
-# Import the metrics/common module for pretty print xml.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
-import diff_util
-import pretty_print_xml
 
 # Files that are known to use content::RecordComputedAction(), which means
 # they require special handling code in this script.
@@ -126,11 +114,6 @@ INPUT_METHOD_IDS = (
 REPOSITORY_ROOT = os.path.join(path_utils.ScriptDir(), '..', '..', '..')
 
 number_of_files_total = 0
-
-# Tags that need to be inserted to each 'action' tag and their default content.
-TAGS = {'description': 'Please enter the description of the metric.',
-        'owner': ('Please list the metric\'s owners. Add more owner tags as '
-                  'needed.')}
 
 
 def AddComputedActions(actions):
@@ -595,192 +578,27 @@ def AddAutomaticResetBannerActions(actions):
   actions.add('AutomaticSettingsReset_WebUIBanner_ManuallyClosed')
   actions.add('AutomaticSettingsReset_WebUIBanner_LearnMoreClicked')
 
-
-class Error(Exception):
-  pass
-
-
-def _ExtractText(parent_dom, tag_name):
-  """Extract the text enclosed by |tag_name| under |parent_dom|
-
-  Args:
-    parent_dom: The parent Element under which text node is searched for.
-    tag_name: The name of the tag which contains a text node.
-
-  Returns:
-    A (list of) string enclosed by |tag_name| under |parent_dom|.
-  """
-  texts = []
-  for child_dom in parent_dom.getElementsByTagName(tag_name):
-    text_dom = child_dom.childNodes
-    if text_dom.length != 1:
-      raise Error('More than 1 child node exists under %s' % tag_name)
-    if text_dom[0].nodeType != minidom.Node.TEXT_NODE:
-      raise Error('%s\'s child node is not a text node.' % tag_name)
-    texts.append(text_dom[0].data)
-  return texts
-
-
-class Action(object):
-  def __init__(self, name, description, owners, obsolete=None):
-    self.name = name
-    self.description = description
-    self.owners = owners
-    self.obsolete = obsolete
-
-
-def ParseActionFile(file_content):
-  """Parse the XML data currently stored in the file.
-
-  Args:
-    file_content: a string containing the action XML file content.
-
-  Returns:
-    (actions, actions_dict) actions is a set with all user actions' names.
-    actions_dict is a dict from user action name to Action object.
-  """
-  dom = minidom.parseString(file_content)
-
-  comment_nodes = []
-  # Get top-level comments. It is assumed that all comments are placed before
-  # <acionts> tag. Therefore the loop will stop if it encounters a non-comment
-  # node.
-  for node in dom.childNodes:
-    if node.nodeType == minidom.Node.COMMENT_NODE:
-      comment_nodes.append(node)
-    else:
-      break
-
-  actions = set()
-  actions_dict = {}
-  # Get each user action data.
-  for action_dom in dom.getElementsByTagName('action'):
-    action_name = action_dom.getAttribute('name')
-    actions.add(action_name)
-
-    owners = _ExtractText(action_dom, 'owner')
-    # There is only one description for each user action. Get the first element
-    # of the returned list.
-    description_list = _ExtractText(action_dom, 'description')
-    if len(description_list) > 1:
-      logging.error('user actions "%s" has more than one descriptions. Exactly '
-                    'one description is needed for each user action. Please '
-                    'fix.', action_name)
-      sys.exit(1)
-    description = description_list[0] if description_list else None
-    # There is at most one obsolete tag for each user action.
-    obsolete_list = _ExtractText(action_dom, 'obsolete')
-    if len(obsolete_list) > 1:
-      logging.error('user actions "%s" has more than one obsolete tag. At most '
-                    'one obsolete tag can be added for each user action. Please'
-                    ' fix.', action_name)
-      sys.exit(1)
-    obsolete = obsolete_list[0] if obsolete_list else None
-    actions_dict[action_name] = Action(action_name, description, owners,
-                                       obsolete)
-  return actions, actions_dict, comment_nodes
-
-
-def _CreateActionTag(doc, action_name, action_object):
-  """Create a new action tag.
-
-  Format of an action tag:
-  <action name="name">
-    <owner>Owner</owner>
-    <description>Description.</description>
-    <obsolete>Deprecated.</obsolete>
-  </action>
-
-  <obsolete> is an optional tag. It's added to user actions that are no longer
-  used any more.
-
-  If action_name is in actions_dict, the values to be inserted are based on the
-  corresponding Action object. If action_name is not in actions_dict, the
-  default value from TAGS is used.
-
-  Args:
-    doc: The document under which the new action tag is created.
-    action_name: The name of an action.
-    action_object: An action object representing the data to be inserted.
-
-  Returns:
-    An action tag Element with proper children elements.
-  """
-  action_dom = doc.createElement('action')
-  action_dom.setAttribute('name', action_name)
-
-  # Create owner tag.
-  if action_object and action_object.owners:
-    # If owners for this action is not None, use the stored value. Otherwise,
-    # use the default value.
-    for owner in action_object.owners:
-      owner_dom = doc.createElement('owner')
-      owner_dom.appendChild(doc.createTextNode(owner))
-      action_dom.appendChild(owner_dom)
-  else:
-    # Use default value.
-    owner_dom = doc.createElement('owner')
-    owner_dom.appendChild(doc.createTextNode(TAGS.get('owner', '')))
-    action_dom.appendChild(owner_dom)
-
-  # Create description tag.
-  description_dom = doc.createElement('description')
-  action_dom.appendChild(description_dom)
-  if action_object and action_object.description:
-    # If description for this action is not None, use the store value.
-    # Otherwise, use the default value.
-    description_dom.appendChild(doc.createTextNode(
-        action_object.description))
-  else:
-    description_dom.appendChild(doc.createTextNode(
-        TAGS.get('description', '')))
-
-  # Create obsolete tag.
-  if action_object and action_object.obsolete:
-    obsolete_dom = doc.createElement('obsolete')
-    action_dom.appendChild(obsolete_dom)
-    obsolete_dom.appendChild(doc.createTextNode(
-        action_object.obsolete))
-
-  return action_dom
-
-
-def PrettyPrint(actions, actions_dict, comment_nodes=[]):
-  """Given a list of action data, create a well-printed minidom document.
-
-  Args:
-    actions: A list of action names.
-    actions_dict: A mappting from action name to Action object.
-
-  Returns:
-    A well-printed minidom document that represents the input action data.
-  """
-  doc = minidom.Document()
-
-  # Attach top-level comments.
-  for node in comment_nodes:
-    doc.appendChild(node)
-
-  actions_element = doc.createElement('actions')
-  doc.appendChild(actions_element)
-
-  # Attach action node based on updated |actions|.
-  for action in sorted(actions):
-    actions_element.appendChild(
-        _CreateActionTag(doc, action, actions_dict.get(action, None)))
-
-  return print_style.GetPrintStyle().PrettyPrintNode(doc)
-
-
 def main(argv):
-  presubmit = ('--presubmit' in argv)
-  actions_xml_path = os.path.join(path_utils.ScriptDir(), 'actions.xml')
+  if '--hash' in argv:
+    hash_output = True
+  else:
+    hash_output = False
+    print >>sys.stderr, "WARNING: If you added new UMA tags, you must" + \
+           " use the --hash option to update chromeactions.txt."
+  # if we do a hash output, we want to only append NEW actions, and we know
+  # the file we want to work on
+  actions = set()
 
-  # Save the original file content.
-  with open(actions_xml_path, 'rb') as f:
-    original_xml = f.read()
+  chromeactions_path = os.path.join(path_utils.ScriptDir(), "chromeactions.txt")
 
-  actions, actions_dict, comment_nodes = ParseActionFile(original_xml)
+  if hash_output:
+    f = open(chromeactions_path)
+    for line in f:
+      part = line.rpartition("\t")
+      part = part[2].strip()
+      actions.add(part)
+    f.close()
+
 
   AddComputedActions(actions)
   # TODO(fmantek): bring back webkit editor actions.
@@ -802,28 +620,21 @@ def main(argv):
   AddHistoryPageActions(actions)
   AddKeySystemSupportActions(actions)
 
-  pretty = PrettyPrint(actions, actions_dict, comment_nodes)
-  if original_xml == pretty:
-    print 'actions.xml is correctly pretty-printed.'
-    sys.exit(0)
-  if presubmit:
-    logging.info('actions.xml is not formatted correctly; run '
-                 'extract_actions.py to fix.')
-    sys.exit(1)
+  if hash_output:
+    f = open(chromeactions_path, "wb")
 
-  # Prompt user to consent on the change.
-  if not diff_util.PromptUserToAcceptDiff(
-      original_xml, pretty, 'Is the new version acceptable?'):
-    logging.error('Aborting')
-    sys.exit(1)
 
-  print 'Creating backup file: actions.old.xml.'
-  shutil.move(actions_xml_path, 'actions.old.xml')
+  # Print out the actions as a sorted list.
+  for action in sorted(actions):
+    if hash_output:
+      hash = hashlib.md5()
+      hash.update(action)
+      print >>f, '0x%s\t%s' % (hash.hexdigest()[:16], action)
+    else:
+      print action
 
-  with open(actions_xml_path, 'wb') as f:
-    f.write(pretty)
-  print ('Updated %s. Don\'t forget to add it to your changelist' %
-         actions_xml_path)
+  if hash_output:
+    print "Done. Do not forget to add chromeactions.txt to your changelist"
   return 0
 
 
