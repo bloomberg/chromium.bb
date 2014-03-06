@@ -107,6 +107,11 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 
 void DesktopNotificationsTest::SetUp() {
   ui::InitializeInputMethodForTesting();
+#if defined(OS_WIN) && defined(USE_ASH)
+  // The system tray under Windows ash contains a volume slider which needs
+  // to talk to the audio hardware using COM.
+  com_initializer_.reset(new base::win::ScopedCOMInitializer());
+#endif
 #if defined(USE_AURA)
   wm_state_.reset(new views::corewm::WMState);
 #endif
@@ -146,6 +151,9 @@ void DesktopNotificationsTest::TearDown() {
 #endif
 #if defined(USE_AURA)
   wm_state_.reset();
+#endif
+#if defined(OS_WIN) && defined(USE_ASH)
+  com_initializer_.reset();
 #endif
   ui::ShutdownInputMethodForTesting();
 }

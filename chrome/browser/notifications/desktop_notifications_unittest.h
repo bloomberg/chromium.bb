@@ -21,6 +21,10 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 #if defined(USE_AURA)
 namespace views {
 namespace corewm {
@@ -133,6 +137,9 @@ class DesktopNotificationsTest : public testing::Test {
  private:
 #if defined(USE_AURA)
   scoped_ptr<views::corewm::WMState> wm_state_;
+#endif
+#if defined(OS_WIN) && defined(USE_ASH)
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationsTest);

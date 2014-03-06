@@ -4,7 +4,7 @@
 
 // Utility methods for the Core Audio API on Windows.
 // Always ensure that Core Audio is supported before using these methods.
-// Use media::CoreAudioIsSupported() for this purpose.
+// Use media::CoreAudioUtil::IsSupported() for this purpose.
 // Also, all methods must be called on a valid COM thread. This can be done
 // by using the base::win::ScopedCOMInitializer helper class.
 
