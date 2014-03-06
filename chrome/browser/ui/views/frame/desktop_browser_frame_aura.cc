@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/browser_shutdown.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/desktop_user_action_handler_aura.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/client/aura_constants.h"
@@ -67,11 +66,6 @@ void DesktopBrowserFrameAura::InitNativeWidget(
   modified_params.desktop_window_tree_host =
       browser_desktop_window_tree_host_->AsDesktopWindowTreeHost();
   DesktopNativeWidgetAura::InitNativeWidget(modified_params);
-
-  user_action_client_.reset(
-      new DesktopUserActionHandlerAura(browser_view_->browser()));
-  aura::client::SetUserActionClient(GetNativeView()->GetRootWindow(),
-                                    user_action_client_.get());
 
   visibility_controller_.reset(new views::corewm::VisibilityController);
   aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),

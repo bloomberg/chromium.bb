@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/ash/user_action_handler.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
@@ -123,10 +122,6 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     shelf_delegate_->Init();
   }
   return shelf_delegate_;
-}
-
-aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
-  return new UserActionHandler;
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(

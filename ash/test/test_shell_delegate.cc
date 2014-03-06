@@ -136,10 +136,6 @@ MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
   return new MediaDelegateImpl;
 }
 
-aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
-  return NULL;
-}
-
 ui::MenuModel* TestShellDelegate::CreateContextMenu(
     aura::Window* root,
     ash::ShelfItemDelegate* item_delegate,

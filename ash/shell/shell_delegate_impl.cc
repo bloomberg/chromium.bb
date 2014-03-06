@@ -155,10 +155,6 @@ ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
   return new MediaDelegateImpl;
 }
 
-aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
-  return NULL;
-}
-
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(
     aura::Window* root,
     ash::ShelfItemDelegate* item_delegate,

@@ -18,7 +18,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/client/user_action_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
@@ -64,10 +63,6 @@ DEFINE_WINDOW_PROPERTY_KEY(
     DesktopWindowTreeHostX11*, kHostForRootWindow, NULL);
 
 namespace {
-
-// Standard Linux mouse buttons for going back and forward.
-const int kBackMouseButton = 8;
-const int kForwardMouseButton = 9;
 
 // Constants that are part of EWMH.
 const int k_NET_WM_STATE_ADD = 1;
@@ -1301,20 +1296,7 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       SendEventToProcessor(&keyup_event);
       break;
     }
-    case ButtonPress: {
-      if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
-          static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
-        aura::client::UserActionClient* gesture_client =
-            aura::client::GetUserActionClient(dispatcher_->window());
-        if (gesture_client) {
-          gesture_client->OnUserAction(
-              static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
-              aura::client::UserActionClient::BACK :
-              aura::client::UserActionClient::FORWARD);
-        }
-        break;
-      }
-    }  // fallthrough
+    case ButtonPress:
     case ButtonRelease: {
       ui::EventType event_type = ui::EventTypeFromNative(xev);
       switch (event_type) {
@@ -1407,33 +1389,6 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
             num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
             if (num_coalesced > 0)
               xev = &last_event;
-          } else if (type == ui::ET_MOUSE_PRESSED) {
-            XIDeviceEvent* xievent =
-                static_cast<XIDeviceEvent*>(xev->xcookie.data);
-            int button = xievent->detail;
-            if (button == kBackMouseButton || button == kForwardMouseButton) {
-              aura::client::UserActionClient* gesture_client =
-                  aura::client::GetUserActionClient(window());
-              if (gesture_client) {
-                bool reverse_direction =
-                    ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
-                gesture_client->OnUserAction(
-                    (button == kBackMouseButton && !reverse_direction) ||
-                    (button == kForwardMouseButton && reverse_direction) ?
-                    aura::client::UserActionClient::BACK :
-                    aura::client::UserActionClient::FORWARD);
-              }
-              break;
-            }
-          } else if (type == ui::ET_MOUSE_RELEASED) {
-            XIDeviceEvent* xievent =
-                static_cast<XIDeviceEvent*>(xev->xcookie.data);
-            int button = xievent->detail;
-            if (button == kBackMouseButton || button == kForwardMouseButton) {
-              // We've already passed the back/forward mouse down to the user
-              // action client; we want to swallow the corresponding release.
-              break;
-            }
           }
           ui::MouseEvent mouseev(xev);
           DispatchMouseEvent(&mouseev);

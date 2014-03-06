@@ -29,7 +29,6 @@
 #include "base/sys_info.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
@@ -53,10 +52,6 @@ using std::min;
 namespace aura {
 
 namespace {
-
-// Standard Linux mouse buttons for going back and forward.
-const int kBackMouseButton = 8;
-const int kForwardMouseButton = 9;
 
 const char* kAtomsToCache[] = {
   "WM_DELETE_WINDOW",
@@ -400,20 +395,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       SendEventToProcessor(&keyup_event);
       break;
     }
-    case ButtonPress: {
-      if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
-          static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
-        client::UserActionClient* gesture_client =
-            client::GetUserActionClient(window());
-        if (gesture_client) {
-          gesture_client->OnUserAction(
-              static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
-              client::UserActionClient::BACK :
-              client::UserActionClient::FORWARD);
-        }
-        break;
-      }
-    }  // fallthrough
+    case ButtonPress:
     case ButtonRelease: {
       switch (ui::EventTypeFromNative(xev)) {
         case ui::ET_MOUSEWHEEL: {
@@ -861,27 +843,6 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
         num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
         if (num_coalesced > 0)
           xev = &last_event;
-      } else if (type == ui::ET_MOUSE_PRESSED ||
-                 type == ui::ET_MOUSE_RELEASED) {
-        XIDeviceEvent* xievent =
-            static_cast<XIDeviceEvent*>(xev->xcookie.data);
-        int button = xievent->detail;
-        if (button == kBackMouseButton || button == kForwardMouseButton) {
-          if (type == ui::ET_MOUSE_RELEASED)
-            break;
-          client::UserActionClient* gesture_client =
-              client::GetUserActionClient(window());
-          if (gesture_client) {
-            bool reverse_direction =
-                ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
-            gesture_client->OnUserAction(
-                (button == kBackMouseButton && !reverse_direction) ||
-                (button == kForwardMouseButton && reverse_direction) ?
-                client::UserActionClient::BACK :
-                client::UserActionClient::FORWARD);
-          }
-          break;
-        }
       }
       ui::MouseEvent mouseev(xev);
       TranslateAndDispatchMouseEvent(&mouseev);
