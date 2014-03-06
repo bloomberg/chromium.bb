@@ -193,9 +193,9 @@ double TimeRanges::nearest(double time) const
         if (time >= startTime && time <= endTime)
             return time;
         if (fabs(startTime - time) < closest)
-            closest = fabsf(startTime - time);
+            closest = fabs(startTime - time);
         else if (fabs(endTime - time) < closest)
-            closest = fabsf(endTime - time);
+            closest = fabs(endTime - time);
     }
     return closest;
 }
