@@ -157,6 +157,16 @@ public abstract class Tab implements NavigationClient {
         }
 
         @Override
+        public void onLoadStarted() {
+            for (TabObserver observer : mObservers) observer.onLoadStarted(Tab.this);
+        }
+
+        @Override
+        public void onLoadStopped() {
+            for (TabObserver observer : mObservers) observer.onLoadStopped(Tab.this);
+        }
+
+        @Override
         public void onUpdateUrl(String url) {
             for (TabObserver observer : mObservers) observer.onUpdateUrl(Tab.this, url);
         }

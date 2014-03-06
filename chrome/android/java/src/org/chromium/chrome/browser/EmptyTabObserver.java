@@ -33,6 +33,12 @@ public class EmptyTabObserver implements TabObserver {
     public void onContextMenuShown(Tab tab, ContextMenu menu) { }
 
     @Override
+    public void onLoadStarted(Tab tabBase) { }
+
+    @Override
+    public void onLoadStopped(Tab tabBase) { }
+
+    @Override
     public void onLoadProgressChanged(Tab tab, int progress) { }
 
     @Override

@@ -62,6 +62,18 @@ public interface TabObserver {
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**
+     * Called when the contents loading starts.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onLoadStarted(Tab tab);
+
+    /**
+     * Called when the contents loading stops.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onLoadStopped(Tab tab);
+
+    /**
      * Called when the load progress of a {@link Tab} changes.
      * @param tab      The notifying {@link Tab}.
      * @param progress The new progress from [0,100].
