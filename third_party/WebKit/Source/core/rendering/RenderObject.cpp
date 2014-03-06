@@ -2765,11 +2765,10 @@ bool RenderObject::acceleratedCompositingForOverflowScrollEnabled() const
 // overflow scroll is ready (crbug.com/254111).
 bool RenderObject::compositorDrivenAcceleratedScrollingEnabled() const
 {
-    if (!acceleratedCompositingForOverflowScrollEnabled())
-        return false;
-
     const Settings* settings = document().settings();
-    return settings && settings->compositorDrivenAcceleratedScrollingEnabled();
+    if (!settings)
+        return false;
+    return settings->acceleratedCompositingForOverflowScrollEnabled() && settings->compositorDrivenAcceleratedScrollingEnabled();
 }
 
 bool RenderObject::hitTest(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter hitTestFilter)
