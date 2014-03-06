@@ -2821,10 +2821,7 @@
             # TODO(phajdan.jr): Should we enable this for all of POSIX?
             'defines': ['_GLIBCXX_DEBUG=1',],
           }],
-          # Disabled on iOS because it was causing a crash on startup.
-          # TODO(michelea): investigate, create a reduced test and possibly
-          # submit a radar.
-          ['release_valgrind_build==0 and OS!="ios"', {
+          ['release_valgrind_build==0', {
             'xcode_settings': {
               'OTHER_CFLAGS': [
                 '-fstack-protector-all',  # Implies -fstack-protector
