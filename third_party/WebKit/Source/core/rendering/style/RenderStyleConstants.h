@@ -35,6 +35,7 @@ enum StyleRecalcChange {
     Inherit,
     Force,
     Reattach,
+    ReattachNoRenderer
 };
 
 static const size_t PrintColorAdjustBits = 1;

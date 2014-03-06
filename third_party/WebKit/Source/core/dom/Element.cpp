@@ -1598,8 +1598,11 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (localChange == Reattach) {
         AttachContext reattachContext;
         reattachContext.resolvedStyle = newStyle.get();
+        bool rendererWillChange = needsAttach() || renderer();
         reattach(reattachContext);
-        return Reattach;
+        if (rendererWillChange || renderer())
+            return Reattach;
+        return ReattachNoRenderer;
     }
 
     ASSERT(oldStyle);
