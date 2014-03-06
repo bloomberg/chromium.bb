@@ -211,9 +211,15 @@ deps_os = {
             None,
         'src/testing/iossim/third_party/class-dump':
             Var('git_url') + '/chromium/deps/class-dump.git@89bd40883c767584240b4dade8b74e6f57b9bdab',
+        'src/third_party/WebKit/LayoutTests/w3c/csswg-test':
+            None,
+        'src/third_party/WebKit/LayoutTests/w3c/web-platform-tests':
+            None,
         'src/third_party/angle':
             None,
         'src/third_party/bidichecker':
+            None,
+        'src/third_party/brotli/src':
             None,
         'src/third_party/cld_2/src':
             None,
@@ -228,6 +234,10 @@ deps_os = {
         'src/third_party/libaddressinput/src/cpp':
             None,
         'src/third_party/libaddressinput/src/testdata':
+            None,
+        'src/third_party/libc++/trunk':
+            None,
+        'src/third_party/libc++abi/trunk':
             None,
         'src/third_party/libexif/sources':
             None,
@@ -257,9 +267,9 @@ deps_os = {
             None,
         'src/third_party/sfntly/cpp/src':
             None,
-        'src/third_party/swig/Lib':
+        'src/third_party/speex':
             None,
-        'src/third_party/undoview':
+        'src/third_party/swig/Lib':
             None,
         'src/third_party/usrsctp/usrsctplib':
             None,
