@@ -409,8 +409,6 @@ bool ThreadWatcher::IsVeryUnresponsive() {
 // static
 ThreadWatcherList* ThreadWatcherList::g_thread_watcher_list_ = NULL;
 // static
-bool ThreadWatcherList::g_stopped_ = false;
-// static
 const int ThreadWatcherList::kSleepSeconds = 1;
 // static
 const int ThreadWatcherList::kUnresponsiveSeconds = 2;
@@ -444,10 +442,6 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
 
   ThreadWatcherObserver::SetupNotifications(
       base::TimeDelta::FromSeconds(kSleepSeconds * unresponsive_threshold));
-
-  WatchDogThread::PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcherList::SetStopped, false));
 
   WatchDogThread::PostDelayedTask(
       FROM_HERE,
@@ -641,12 +635,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
-  // This method is deferred in relationship to its StopWatchingAll()
-  // counterpart. If a previous initialization has already happened, or if
-  // stop has been called, there's nothing left to do here.
-  if (g_thread_watcher_list_ || g_stopped_)
-    return;
-
   ThreadWatcherList* thread_watcher_list = new ThreadWatcherList();
   CHECK(thread_watcher_list);
 
@@ -712,9 +700,6 @@ void ThreadWatcherList::DeleteAll() {
   }
 
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-
-  SetStopped(true);
-
   if (!g_thread_watcher_list_)
     return;
 
@@ -738,12 +723,6 @@ ThreadWatcher* ThreadWatcherList::Find(const BrowserThread::ID& thread_id) {
   if (g_thread_watcher_list_->registered_.end() == it)
     return NULL;
   return it->second;
-}
-
-// static
-void ThreadWatcherList::SetStopped(bool stopped) {
-  DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-  g_stopped_ = stopped;
 }
 
 // ThreadWatcherObserver methods and members.
