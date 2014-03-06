@@ -32,7 +32,6 @@ using namespace sdk_util;  // For sdk_util::ThreadPool
 
 // Global properties used to setup Earth demo.
 namespace {
-const float kHugeZ = 1.0e38f;
 const float kPI = M_PI;
 const float kTwoPI = kPI * 2.0f;
 const float kOneOverPI = 1.0f / kPI;
@@ -45,7 +44,6 @@ const float kZoomMax = 50.0f;
 const float kWheelSpeed = 2.0f;
 const float kLightMin = 0.0f;
 const float kLightMax = 2.0f;
-const int kFrameTimeBufferSize = 512;
 
 // Timer helper for benchmarking.  Returns seconds elapsed since program start,
 // as a double.
@@ -147,8 +145,6 @@ inline const float AsFloat(const int i) {
 }
 
 const long int kOneAsInteger = AsInteger(1.0f);
-const float kScaleUp = float(0x00800000);
-const float kScaleDown = 1.0f / kScaleUp;
 
 inline float inline_quick_sqrt(float x) {
   int i;

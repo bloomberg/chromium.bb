@@ -25,8 +25,6 @@ static const char kDeleteCommand[] = "Delete";
 static const char kHasKeyCommand[] = "HasKey";
 static const char kGetKeysCommand[] = "GetKeys";
 
-static const char kCommandKey[] = "cmd";
-
 pp::Var MakeResult(const char* cmd, const pp::Var& value,
                    const pp::Var& newDictionary) {
   pp::VarDictionary dict;
