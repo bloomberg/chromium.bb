@@ -121,11 +121,10 @@ port_test_exe = env.ComponentProgram('port_test',
                                      EXTRA_LIBS=['platform','gio'])
 
 node = env.CommandTest('port_test.out',
-                       [port_test_exe],
-                       size='huge')
+                       [port_test_exe])
 
 env.AddNodeToTestSuite(node,
-                       ['large_tests'],
+                       ['small_tests'],
                        'run_platform_tests')
 
 

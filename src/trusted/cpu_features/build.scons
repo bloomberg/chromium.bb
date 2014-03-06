@@ -41,4 +41,4 @@ if env.Bit('target_x86'):
   node = test_env.CommandTest(
       'cpu_x86_test.out',
       [cpu_x86_test])
-  test_env.AddNodeToTestSuite(node, ['large_tests'], 'run_cpu_x86_test')
+  test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_cpu_x86_test')

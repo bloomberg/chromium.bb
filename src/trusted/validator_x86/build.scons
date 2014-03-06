@@ -159,7 +159,7 @@ if test_env.Bit('linux') and test_env.Bit('target_x86_32'):
         __OutTestFile(test, base, ext),
         ["${PYTHON}", test_env.File('discmp.py'), test_env.File('ncdis'),
          __BaseTestFile(base, ext)],
-        )
+        size='large')
     __AddTest(test, test_env, base, ext, node, ['large_tests'])
 
 # ======================================================================
@@ -222,9 +222,8 @@ if env.Bit('target_x86_32'):
   for base in __GoldenBases(ext):
     node = test_env.CommandTest(
         __OutTestFile(test, base, ext),
-        [ncval, '-t', __BaseTestFile(base, ext)],
-        )
-    __AddTest(test, test_env, base, ext, node, ['large_tests'])
+        [ncval, '-t', __BaseTestFile(base, ext)])
+    __AddTest(test, test_env, base, ext, node, ['small_tests'])
 
 if test_env.Bit('target_x86_64'):
   node = test_env.CommandTest('ncval_hello_x32.out',

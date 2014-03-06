@@ -42,7 +42,6 @@ if not env.Bit('host_windows'):
       sel_ldr_flags=['-a'],
                                    )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
-#endif
 
 # getpid() works with nacl-glibc, but only via the IRT (there is no
 # direct syscall version).
