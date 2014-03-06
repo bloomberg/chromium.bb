@@ -25,6 +25,10 @@ OzonePlatformDri::GetInputMethodContextFactoryOzone() {
   return &input_method_context_factory_ozone_;
 }
 
+ui::CursorFactoryOzone* OzonePlatformDri::GetCursorFactoryOzone() {
+  return &cursor_factory_ozone_;
+}
+
 OzonePlatform* CreateOzonePlatformDri() { return new OzonePlatformDri; }
 
 }  // namespace ui

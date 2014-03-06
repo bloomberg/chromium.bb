@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_platform_list.h"
 #include "ui/ozone/ozone_switches.h"
@@ -41,6 +42,7 @@ OzonePlatform::OzonePlatform() {}
 OzonePlatform::~OzonePlatform() {
   gfx::SurfaceFactoryOzone::SetInstance(NULL);
   ui::EventFactoryOzone::SetInstance(NULL);
+  ui::CursorFactoryOzone::SetInstance(NULL);
 }
 
 // static
@@ -59,6 +61,7 @@ void OzonePlatform::Initialize() {
   ui::EventFactoryOzone::SetInstance(instance_->GetEventFactoryOzone());
   ui::InputMethodContextFactoryOzone::SetInstance(
       instance_->GetInputMethodContextFactoryOzone());
+  ui::CursorFactoryOzone::SetInstance(instance_->GetCursorFactoryOzone());
 }
 
 // static

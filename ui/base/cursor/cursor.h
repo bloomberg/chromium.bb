@@ -19,18 +19,12 @@ typedef struct HICON__* HICON;
 typedef HICON HCURSOR;
 #endif
 
-#if defined(USE_OZONE)
-class SkBitmap;
-#endif
-
 namespace ui {
 
 #if defined(OS_WIN)
 typedef ::HCURSOR PlatformCursor;
 #elif defined(USE_X11)
 typedef unsigned long PlatformCursor;
-#elif defined(USE_OZONE)
-typedef const SkBitmap* PlatformCursor;
 #else
 typedef void* PlatformCursor;
 #endif

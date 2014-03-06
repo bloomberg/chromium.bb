@@ -13,6 +13,8 @@
 
 namespace ui {
 
+class CursorFactoryOzone;
+
 // Base class for Ozone platform implementations.
 //
 // Ozone platforms must override this class and implement the virtual
@@ -43,6 +45,7 @@ class OZONE_EXPORT OzonePlatform {
   virtual ui::EventFactoryOzone* GetEventFactoryOzone() = 0;
   virtual ui::InputMethodContextFactoryOzone*
       GetInputMethodContextFactoryOzone() = 0;
+  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
 
  private:
   static OzonePlatform* instance_;

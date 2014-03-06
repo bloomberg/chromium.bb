@@ -7,12 +7,8 @@
 
 #include <map>
 
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
-
-namespace gfx {
-class ImageSkia;
-}
 
 namespace ui {
 
@@ -34,9 +30,8 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
 
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.
-  std::map<int, const gfx::ImageSkia*> cursors_;
-
-  SkBitmap invisible_cursor_;
+  typedef std::map<int, PlatformCursor> ImageCursorMap;
+  ImageCursorMap cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);
 };

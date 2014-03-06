@@ -132,6 +132,8 @@
         'base/cursor/cursor_x11.cc',
         'base/cursor/cursors_aura.cc',
         'base/cursor/cursors_aura.h',
+        'base/cursor/ozone/cursor_factory_ozone.cc',
+        'base/cursor/ozone/cursor_factory_ozone.h',
         'base/default_theme_provider.cc',
         'base/default_theme_provider.h',
         'base/default_theme_provider_mac.mm',

@@ -5,38 +5,26 @@
 #include "ui/base/cursor/cursor_loader_ozone.h"
 
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ui {
 
-namespace {
-
-// Creates a 1x1 cursor which will be fully transparent.
-SkBitmap CreateInvisibleCursor() {
-  SkBitmap cursor;
-  cursor.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  cursor.allocPixels();
-
-  cursor.lockPixels();
-  cursor.eraseARGB(0, 0, 0, 0);
-  cursor.unlockPixels();
-
-  return cursor;
-}
-
-}  // namespace
-
-CursorLoaderOzone::CursorLoaderOzone()
-    : invisible_cursor_(CreateInvisibleCursor()) {}
+CursorLoaderOzone::CursorLoaderOzone() {}
 
 CursorLoaderOzone::~CursorLoaderOzone() {}
 
 void CursorLoaderOzone::LoadImageCursor(int id,
                                         int resource_id,
                                         const gfx::Point& hot) {
-  cursors_[id] = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      resource_id);
+  const gfx::ImageSkia* image =
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+  const gfx::ImageSkiaRep& image_rep =
+      image->GetRepresentation(display().device_scale_factor());
+  SkBitmap bitmap = image_rep.sk_bitmap();
+  cursors_[id] =
+      CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hot);
 }
 
 void CursorLoaderOzone::LoadAnimatedCursor(int id,
@@ -48,26 +36,29 @@ void CursorLoaderOzone::LoadAnimatedCursor(int id,
 }
 
 void CursorLoaderOzone::UnloadAll() {
+  for (ImageCursorMap::const_iterator it = cursors_.begin();
+       it != cursors_.end();
+       ++it)
+    CursorFactoryOzone::GetInstance()->UnrefImageCursor(it->second);
   cursors_.clear();
 }
 
 void CursorLoaderOzone::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  if (cursors_.find(cursor->native_type()) != cursors_.end()) {
-    const gfx::ImageSkiaRep& image_rep =
-        cursors_[cursor->native_type()]->GetRepresentation(
-            display().device_scale_factor());
+  int native_type = cursor->native_type();
+  PlatformCursor platform;
 
-    cursor->SetPlatformCursor(&image_rep.sk_bitmap());
-  } else if (*cursor == kCursorNone) {
-    cursor->SetPlatformCursor(&invisible_cursor_);
-  } else if (*cursor == kCursorCustom) {
-    // TODO(dnicoara) Add support for custom cursors: crbug.com/343155
-    cursor->SetPlatformCursor(cursor->platform());
+  if (cursors_.count(native_type)) {
+    // An image cursor is loaded for this type.
+    platform = cursors_[native_type];
+  } else if (native_type == kCursorCustom) {
+    // The platform cursor was already set via WebCursor::GetPlatformCursor.
+    platform = cursor->platform();
   } else {
-    // We load different set of cursors with Ash and DesktopAura. Since we do
-    // not have the resource for this cursor, set platform cursor to NULL.
-    cursor->SetPlatformCursor(NULL);
+    // Use default cursor of this type.
+    platform = CursorFactoryOzone::GetInstance()->GetDefaultCursor(native_type);
   }
+
+  cursor->SetPlatformCursor(platform);
 }
 
 CursorLoader* CursorLoader::Create() {
