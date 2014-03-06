@@ -90,7 +90,7 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   void SetCursorInternal(gfx::NativeCursor cursor);
 
   // Translates the native mouse location into screen coordinates and and
-  // dispatches the event via WindowEventDispatcher.
+  // dispatches the event to WindowTreeHostDelegate.
   void TranslateAndDispatchMouseEvent(ui::MouseEvent* event);
 
   // Update is_internal_display_ based on delegate_ state

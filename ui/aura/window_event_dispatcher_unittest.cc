@@ -1831,7 +1831,7 @@ TEST_F(WindowEventDispatcherTest, HostCancelModeWithFocusedWindowOutside) {
   EXPECT_FALSE(root_window()->Contains(focused.get()));
   EXPECT_EQ(focused.get(),
             client::GetFocusClient(root_window())->GetFocusedWindow());
-  dispatcher()->DispatchCancelModeEvent();
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostCancelMode();
   EXPECT_EQ(focused.get(),
             client::GetFocusClient(root_window())->GetFocusedWindow());
 }

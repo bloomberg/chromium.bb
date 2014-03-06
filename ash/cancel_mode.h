@@ -7,7 +7,7 @@
 
 namespace ash {
 
-// Sends a CancelMode event to all window hierarchies.
+// Sends OnHostCancelMode() to all RootWindows.
 void DispatchCancelMode();
 
 } // namespace ash

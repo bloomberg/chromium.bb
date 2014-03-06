@@ -9,6 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host_delegate.h"
 #include "ui/events/event.h"
 
 namespace ash {

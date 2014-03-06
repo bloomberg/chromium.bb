@@ -489,7 +489,7 @@ void RemoteWindowTreeHostWin::PrepareForShutdown() {
 }
 
 ui::EventProcessor* RemoteWindowTreeHostWin::GetEventProcessor() {
-  return dispatcher();
+  return delegate_->GetEventProcessor();
 }
 
 void RemoteWindowTreeHostWin::CancelComposition() {
@@ -591,7 +591,7 @@ void RemoteWindowTreeHostWin::OnChar(uint32 key_code,
 }
 
 void RemoteWindowTreeHostWin::OnWindowActivated() {
-  OnHostActivated();
+  delegate_->OnHostActivated();
 }
 
 void RemoteWindowTreeHostWin::OnEdgeGesture() {

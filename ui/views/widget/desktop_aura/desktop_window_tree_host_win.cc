@@ -586,7 +586,7 @@ void DesktopWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
 // DesktopWindowTreeHostWin, ui::EventSource implementation:
 
 ui::EventProcessor* DesktopWindowTreeHostWin::GetEventProcessor() {
-  return dispatcher();
+  return delegate_->GetEventProcessor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -736,12 +736,11 @@ void DesktopWindowTreeHostWin::HandleAppDeactivated() {
 void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {
   // This can be invoked from HWNDMessageHandler::Init(), at which point we're
   // not in a good state and need to ignore it.
-  // TODO(beng): Do we need this still now the host owns the dispatcher?
-  if (!dispatcher())
+  if (!delegate_)
     return;
 
   if (active)
-    OnHostActivated();
+    delegate_->OnHostActivated();
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
@@ -753,11 +752,11 @@ bool DesktopWindowTreeHostWin::HandleAppCommand(short command) {
 }
 
 void DesktopWindowTreeHostWin::HandleCancelMode() {
-  dispatcher()->DispatchCancelModeEvent();
+  delegate_->OnHostCancelMode();
 }
 
 void DesktopWindowTreeHostWin::HandleCaptureLost() {
-  OnHostLostWindowCapture();
+  delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
@@ -827,7 +826,8 @@ void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
-  OnHostResized(new_size);
+  if (delegate_)
+    OnHostResized(new_size);
 }
 
 void DesktopWindowTreeHostWin::HandleFrameChanged() {

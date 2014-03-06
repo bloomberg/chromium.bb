@@ -16,7 +16,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/aura/window_tree_host_delegate.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_targeter.h"
@@ -34,6 +37,7 @@ namespace ui {
 class GestureEvent;
 class GestureRecognizer;
 class KeyEvent;
+class LayerAnimationSequence;
 class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
@@ -50,7 +54,9 @@ class WindowTargeter;
 //             event dispatch.
 class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                           public ui::GestureEventHelper,
-                                          public client::CaptureDelegate {
+                                          public ui::LayerAnimationObserver,
+                                          public client::CaptureDelegate,
+                                          public WindowTreeHostDelegate {
  public:
   explicit WindowEventDispatcher(WindowTreeHost* host);
   virtual ~WindowEventDispatcher();
@@ -73,10 +79,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // types (although the latter is currently a no-op).
   void RepostEvent(const ui::LocatedEvent& event);
 
+  WindowTreeHostDelegate* AsWindowTreeHostDelegate();
+
   // Invoked when the mouse events get enabled or disabled.
   void OnMouseEventsEnableStateChanged(bool enabled);
-
-  void DispatchCancelModeEvent();
 
   // Returns a target window for the given gesture event.
   Window* GetGestureTarget(ui::GestureEvent* event);
@@ -133,11 +139,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot() const;
 
-  void OnHostLostMouseGrab();
-  // TODO(beng): replace with a window observer.
-  void OnHostResized(const gfx::Size& size);
-  void OnCursorMovedToRootLocation(const gfx::Point& root_location);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowEventDispatcherTest,
                            KeepTranslatedEventInRoot);
@@ -154,7 +155,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   };
 
   // Updates the event with the appropriate transform for the device scale
-  // factor. The WindowEventDispatcher dispatches events in the physical pixel
+  // factor. The WindowTreeHostDelegate dispatches events in the physical pixel
   // coordinate. But the event processing from WindowEventDispatcher onwards
   // happen in device-independent pixel coordinate. So it is necessary to update
   // the event received from the host.
@@ -205,6 +206,26 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
   virtual void DispatchPostponedGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
+
+  // Overridden from ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* animation) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      ui::LayerAnimationSequence* animation) OVERRIDE;
+
+  // Overridden from aura::WindowTreeHostDelegate:
+  virtual void OnHostCancelMode() OVERRIDE;
+  virtual void OnHostActivated() OVERRIDE;
+  virtual void OnHostLostWindowCapture() OVERRIDE;
+  virtual void OnHostLostMouseGrab() OVERRIDE;
+  virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
+  virtual void OnCursorMovedToRootLocation(
+      const gfx::Point& root_location) OVERRIDE;
+  virtual WindowEventDispatcher* AsDispatcher() OVERRIDE;
+  virtual const WindowEventDispatcher* AsDispatcher() const OVERRIDE;
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // We hold and aggregate mouse drags and touch moves as a way of throttling
   // resizes when HoldMouseMoves() is called. The following methods are used to

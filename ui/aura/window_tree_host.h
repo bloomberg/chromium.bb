@@ -29,6 +29,7 @@ class ViewProp;
 namespace aura {
 class RootWindowTransformer;
 class WindowEventDispatcher;
+class WindowTreeHostDelegate;
 class WindowTreeHostObserver;
 
 // WindowTreeHost bridges between a native window and the embedded RootWindow.
@@ -78,6 +79,10 @@ class AURA_EXPORT WindowTreeHost {
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
   static gfx::Size GetNativeScreenSize();
 
+  void set_delegate(WindowTreeHostDelegate* delegate) {
+    delegate_ = delegate;
+  }
+
   // Converts |point| from the root window's coordinate system to native
   // screen's.
   void ConvertPointToNativeScreen(gfx::Point* point) const;
@@ -110,6 +115,8 @@ class AURA_EXPORT WindowTreeHost {
   void MoveCursorToHostLocation(const gfx::Point& host_location);
 
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
+
+  WindowEventDispatcher* GetDispatcher();
 
   // Returns the accelerated widget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
@@ -178,8 +185,6 @@ class AURA_EXPORT WindowTreeHost {
   void OnHostMoved(const gfx::Point& new_location);
   void OnHostResized(const gfx::Size& new_size);
   void OnHostCloseRequested();
-  void OnHostActivated();
-  void OnHostLostWindowCapture();
 
   // Sets the currently displayed cursor.
   virtual void SetCursorNative(gfx::NativeCursor cursor) = 0;
@@ -189,6 +194,8 @@ class AURA_EXPORT WindowTreeHost {
 
   // kCalled when the cursor visibility has changed.
   virtual void OnCursorVisibilityChangedNative(bool show) = 0;
+
+  WindowTreeHostDelegate* delegate_;
 
  private:
   // Moves the cursor to the specified location. This method is internally used

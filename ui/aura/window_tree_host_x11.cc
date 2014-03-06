@@ -36,7 +36,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -404,7 +403,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
         client::UserActionClient* gesture_client =
-            client::GetUserActionClient(window());
+            client::GetUserActionClient(delegate_->AsDispatcher()->window());
         if (gesture_client) {
           gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
@@ -437,7 +436,7 @@ uint32_t WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
     }
     case FocusOut:
       if (xev->xfocus.mode != NotifyGrab)
-        OnHostLostWindowCapture();
+        delegate_->OnHostLostWindowCapture();
       break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
@@ -570,8 +569,9 @@ void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = compositor()->device_scale_factor();
-  float new_scale = gfx::Screen::GetScreenFor(window())->
-      GetDisplayNearestWindow(window()).device_scale_factor();
+  float new_scale = gfx::Screen::GetScreenFor(
+      delegate_->AsDispatcher()->window())->GetDisplayNearestWindow(
+          delegate_->AsDispatcher()->window()).device_scale_factor();
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};
@@ -603,7 +603,8 @@ void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
   if (size_changed || current_scale != new_scale) {
     OnHostResized(bounds.size());
   } else {
-    window()->SchedulePaintInRect(window()->bounds());
+    delegate_->AsDispatcher()->window()->SchedulePaintInRect(
+        delegate_->AsDispatcher()->window()->bounds());
   }
 }
 
@@ -726,7 +727,7 @@ void WindowTreeHostX11::PostNativeEvent(
       xevent.xmotion.time = CurrentTime;
 
       gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
-      ConvertPointToNativeScreen(&point);
+      delegate_->AsDispatcher()->host()->ConvertPointToNativeScreen(&point);
       xevent.xmotion.x_root = point.x();
       xevent.xmotion.y_root = point.y();
     }
@@ -766,11 +767,14 @@ void WindowTreeHostX11::OnWindowInitialized(Window* window) {
 
 void WindowTreeHostX11::OnRootWindowInitialized(
     WindowEventDispatcher* d) {
-  // UpdateIsInternalDisplay relies on WED's kDisplayIdKey property being set
-  // available by the time WED::Init is called. (set in
-  // DisplayManager::CreateRootWindowForDisplay)
+  // UpdateIsInternalDisplay relies on:
+  // 1. delegate_ pointing to WindowEventDispatcher - available after
+  //    SetDelegate.
+  // 2. WED's kDisplayIdKey property set - available by the time
+  //    WED::Init is called.
+  //    (set in DisplayManager::CreateRootWindowForDisplay)
   // Ready when NotifyRootWindowInitialized is called from WED::Init.
-  if (d != dispatcher())
+  if (!delegate_ || d != dispatcher())
     return;
   UpdateIsInternalDisplay();
 
@@ -780,7 +784,7 @@ void WindowTreeHostX11::OnRootWindowInitialized(
 }
 
 ui::EventProcessor* WindowTreeHostX11::GetEventProcessor() {
-  return dispatcher();
+  return delegate_->GetEventProcessor();
 }
 
 void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
@@ -870,7 +874,7 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
           if (type == ui::ET_MOUSE_RELEASED)
             break;
           client::UserActionClient* gesture_client =
-              client::GetUserActionClient(window());
+              client::GetUserActionClient(delegate_->AsDispatcher()->window());
           if (gesture_client) {
             bool reverse_direction =
                 ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();

@@ -183,7 +183,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowBounds() const {
 void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
   if (active) {
-    OnHostActivated();
+    delegate_->OnHostActivated();
     open_windows().remove(xwindow_);
     open_windows().insert(open_windows().begin(), xwindow_);
   }
@@ -237,6 +237,7 @@ void DesktopWindowTreeHostX11::OnRootWindowCreated(
   dispatcher_->window()->SetProperty(kViewsWindowForRootWindow,
                                      content_window_);
   dispatcher_->window()->SetProperty(kHostForRootWindow, this);
+  delegate_ = dispatcher_;
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation
   // messages to us.
@@ -919,7 +920,7 @@ void DesktopWindowTreeHostX11::PrepareForShutdown() {
 // DesktopWindowTreeHostX11, ui::EventSource implementation:
 
 ui::EventProcessor* DesktopWindowTreeHostX11::GetEventProcessor() {
-  return dispatcher();
+  return delegate_->GetEventProcessor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1127,7 +1128,7 @@ void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
 void DesktopWindowTreeHostX11::OnCaptureReleased() {
   x11_capture_.reset();
   g_current_capture = NULL;
-  OnHostLostWindowCapture();
+  delegate_->OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
@@ -1340,9 +1341,9 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
     case FocusOut:
       if (xev->xfocus.mode != NotifyGrab) {
         ReleaseCapture();
-        OnHostLostWindowCapture();
+        delegate_->OnHostLostWindowCapture();
       } else {
-        dispatcher()->OnHostLostMouseGrab();
+        delegate_->OnHostLostMouseGrab();
       }
       break;
     case FocusIn:
@@ -1413,7 +1414,8 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
             int button = xievent->detail;
             if (button == kBackMouseButton || button == kForwardMouseButton) {
               aura::client::UserActionClient* gesture_client =
-                  aura::client::GetUserActionClient(window());
+                  aura::client::GetUserActionClient(
+                      delegate_->AsDispatcher()->window());
               if (gesture_client) {
                 bool reverse_direction =
                     ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
