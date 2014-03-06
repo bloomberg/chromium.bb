@@ -23,10 +23,12 @@ ConditionVariable::ConditionVariable(Lock* user_lock)
   int rv = 0;
   // http://crbug.com/293736
   // NaCl doesn't support monotonic clock based absolute deadlines.
-  // Android supports it through the non-standard
-  // pthread_cond_timedwait_monotonic_np.
+  // On older Android platform versions, it's supported through the
+  // non-standard pthread_cond_timedwait_monotonic_np. Newer platform
+  // versions have pthread_condattr_setclock.
   // Mac can use relative time deadlines.
-#if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_NACL) && \
+      !(defined(OS_ANDROID) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC))
   pthread_condattr_t attrs;
   rv = pthread_condattr_init(&attrs);
   DCHECK_EQ(0, rv);
@@ -93,12 +95,12 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   absolute_time.tv_nsec %= Time::kNanosecondsPerSecond;
   DCHECK_GE(absolute_time.tv_sec, now.tv_sec);  // Overflow paranoia
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC)
   int rv = pthread_cond_timedwait_monotonic_np(
       &condition_, user_mutex_, &absolute_time);
 #else
   int rv = pthread_cond_timedwait(&condition_, user_mutex_, &absolute_time);
-#endif  // OS_ANDROID
+#endif  // OS_ANDROID && HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC
 #endif  // OS_MACOSX
 
   DCHECK(rv == 0 || rv == ETIMEDOUT);
