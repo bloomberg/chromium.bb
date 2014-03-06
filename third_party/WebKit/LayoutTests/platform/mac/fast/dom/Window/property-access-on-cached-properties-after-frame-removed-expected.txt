@@ -22,6 +22,10 @@ PASS window.cached_navigator.product is window.navigator.product
 PASS window.cached_navigator.productSub is window.navigator.productSub
 PASS window.cached_navigator.userAgent is ''
 PASS window.cached_navigator.vendor is window.navigator.vendor
+PASS window.cached_navigator_battery.charging is true
+PASS window.cached_navigator_battery.chargingTime is Infinity
+PASS window.cached_navigator_battery.dischargingTime is Infinity
+PASS window.cached_navigator_battery.level is 1
 PASS window.cached_performance_timing.connectEnd is 0
 PASS window.cached_performance_timing.connectStart is 0
 PASS window.cached_performance_timing.domLoading is 0
