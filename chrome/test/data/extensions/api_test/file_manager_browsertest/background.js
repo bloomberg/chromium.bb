@@ -115,8 +115,8 @@ function repeatUntil(checkFunction) {
 
 /**
  * Waits until a window having the given ID prefix appears.
- * @param {string} windowIdPrefix ID prefix of the requested window.
- * @return {Promise} promise Promise to be fulfilled with a found window's ID.
+ * @param {string} appIdPrefix ID prefix of the requested window.
+ * @param {Promise} promise Promise to be fulfilled with a found window's ID.
  */
 function waitForWindow(windowIdPrefix) {
   return repeatUntil(function() {
@@ -128,40 +128,6 @@ function waitForWindow(windowIdPrefix) {
       return pending('Window with the prefix %s is not found.', windowIdPrefix);
     });
   });
-}
-
-/**
- * Closes a window and waits until the window is closed.
- *
- * @param {string} windowId ID of the window to close.
- * @return {Promise} promise Promise to be fulfilled with the result (true:
- *     success, false: failed).
- */
-function closeWindowAndWait(windowId) {
-  // Closes the window.
-  return callRemoteTestUtil('closeWindow', null, [windowId]).then(
-      function(result) {
-        // Returns false when the closing is failed.
-        if (!result)
-          return false;
-
-        return repeatUntil(function() {
-          return callRemoteTestUtil('getWindows', null, []).then(
-              function(windows) {
-                for (var id in windows) {
-                  if (id === windowId) {
-                    // Window is still available. Continues waiting.
-                    return pending('Window with the prefix %s is not found.',
-                                   windowId);
-                  }
-                }
-                // Window is not available. Closing is done successfully.
-                return true;
-              }
-          );
-        });
-      }
-  );
 }
 
 /**
