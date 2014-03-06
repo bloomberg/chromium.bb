@@ -36,6 +36,7 @@
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -54,13 +55,13 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
     v8::Isolate* isolate = toIsolate(executionContext);
     // A given object can only be used as a Custom Element prototype
     // once; see customElementIsInterfacePrototypeObject
-#define SET_HIDDEN_PROPERTY(Value, Name) \
-    ASSERT(getHiddenValue(isolate, prototype, "customElement" #Name).IsEmpty()); \
+#define SET_HIDDEN_VALUE(Value, Name) \
+    ASSERT(V8HiddenValue::getHiddenValue(isolate, prototype, V8HiddenValue::customElement##Name(isolate)).IsEmpty()); \
     if (!Value.IsEmpty()) \
-        setHiddenValue(isolate, prototype, "customElement" #Name, Value);
+        V8HiddenValue::setHiddenValue(isolate, prototype, V8HiddenValue::customElement##Name(isolate), Value);
 
-    CALLBACK_LIST(SET_HIDDEN_PROPERTY)
-#undef SET_HIDDEN_PROPERTY
+    CALLBACK_LIST(SET_HIDDEN_VALUE)
+#undef SET_HIDDEN_VALUE
 
     return adoptRef(new V8CustomElementLifecycleCallbacks(executionContext, prototype, created, attached, detached, attributeChanged));
 }

@@ -37,6 +37,7 @@
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -286,7 +287,7 @@ void UpdateDerivedTask::performTask(ExecutionContext* context)
     DOMRequestState::Scope scope(m_requestState);
     v8::Isolate* isolate = m_requestState.isolate();
     v8::Local<v8::Object> originatorValueObject = m_originatorValueObject.newLocal(isolate);
-    v8::Local<v8::Value> coercedAlready = getHiddenValue(isolate, originatorValueObject, "thenableHiddenPromise");
+    v8::Local<v8::Value> coercedAlready = V8HiddenValue::getHiddenValue(isolate, originatorValueObject, V8HiddenValue::thenableHiddenPromise(isolate));
     if (!coercedAlready.IsEmpty() && coercedAlready->IsObject()) {
         ASSERT(V8PromiseCustom::isPromise(coercedAlready.As<v8::Object>(), isolate));
         V8PromiseCustom::updateDerivedFromPromise(m_promise.newLocal(isolate), m_onFulfilled.newLocal(isolate), m_onRejected.newLocal(isolate), coercedAlready.As<v8::Object>(), isolate);
@@ -826,7 +827,7 @@ v8::Local<v8::Object> V8PromiseCustom::coerceThenable(v8::Handle<v8::Object> the
     if (V8ScriptRunner::callFunction(then, currentExecutionContext(isolate), thenable, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
         reject(promise, trycatch.Exception(), isolate);
     }
-    setHiddenValue(isolate, thenable, "thenableHiddenPromise", promise);
+    V8HiddenValue::setHiddenValue(isolate, thenable, V8HiddenValue::thenableHiddenPromise(isolate), promise);
     return promise;
 }
 

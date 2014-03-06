@@ -43,6 +43,7 @@
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
@@ -189,10 +190,10 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
-    setHiddenValue(isolate, m_constructor, "customElementDocument", toV8(document, m_context->Global(), isolate));
-    setHiddenValue(isolate, m_constructor, "customElementNamespaceURI", v8String(isolate, descriptor.namespaceURI()));
-    setHiddenValue(isolate, m_constructor, "customElementTagName", v8TagName);
-    setHiddenValue(isolate, m_constructor, "customElementType", v8Type);
+    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementDocument(isolate), toV8(document, m_context->Global(), isolate));
+    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementNamespaceURI(isolate), v8String(isolate, descriptor.namespaceURI()));
+    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementTagName(isolate), v8TagName);
+    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementType(isolate), v8Type);
 
     v8::Handle<v8::String> prototypeKey = v8String(isolate, "prototype");
     ASSERT(m_constructor->HasOwnProperty(prototypeKey));
@@ -205,7 +206,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     // property.
     m_constructor->ForceSet(prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
 
-    setHiddenValue(isolate, m_prototype, "customElementIsInterfacePrototypeObject", v8::True(isolate));
+    V8HiddenValue::setHiddenValue(isolate, m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(isolate), v8::True(isolate));
     m_prototype->ForceSet(v8String(isolate, "constructor"), m_constructor, v8::DontEnum);
 
     return true;
@@ -213,7 +214,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
 bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type, ExceptionState& exceptionState) const
 {
-    if (m_prototype->InternalFieldCount() || !getHiddenValue(m_context->GetIsolate(), m_prototype, "customElementIsInterfacePrototypeObject").IsEmpty()) {
+    if (m_prototype->InternalFieldCount() || !V8HiddenValue::getHiddenValue(m_context->GetIsolate(), m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(m_context->GetIsolate())).IsEmpty()) {
         CustomElementException::throwException(CustomElementException::PrototypeInUse, type, exceptionState);
         return false;
     }
@@ -268,10 +269,10 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
 
-    Document* document = V8Document::toNative(getHiddenValue(isolate, info.Callee(), "customElementDocument").As<v8::Object>());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, getHiddenValue(isolate, info.Callee(), "customElementNamespaceURI"));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, tagName, getHiddenValue(isolate, info.Callee(), "customElementTagName"));
-    v8::Handle<v8::Value> maybeType = getHiddenValue(isolate, info.Callee(), "customElementType");
+    Document* document = V8Document::toNative(V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementDocument(isolate)).As<v8::Object>());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementNamespaceURI(isolate)));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, tagName, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementTagName(isolate)));
+    v8::Handle<v8::Value> maybeType = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementType(isolate));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomElement", info.Holder(), info.GetIsolate());

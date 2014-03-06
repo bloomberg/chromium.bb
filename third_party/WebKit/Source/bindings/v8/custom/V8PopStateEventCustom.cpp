@@ -33,6 +33,7 @@
 
 #include "V8History.h"
 #include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/events/PopStateEvent.h"
 #include "core/frame/History.h"
 
@@ -41,13 +42,13 @@ namespace WebCore {
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return it, for convenience.
 static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8::Handle<v8::Value> state, v8::Isolate* isolate)
 {
-    setHiddenValue(isolate, popStateEvent, "state", state);
+    V8HiddenValue::setHiddenValue(isolate, popStateEvent, V8HiddenValue::state(isolate), state);
     return state;
 }
 
 void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> result = getHiddenValue(info.GetIsolate(), info.Holder(), "state");
+    v8::Handle<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -60,7 +61,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
         if (!event->serializedState()) {
             // If we're in an isolated world and the event was created in the main world,
             // we need to find the 'state' property on the main world wrapper and clone it.
-            v8::Local<v8::Value> mainWorldState = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, "state");
+            v8::Local<v8::Value> mainWorldState = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::state(info.GetIsolate()));
             if (!mainWorldState.IsEmpty())
                 event->setSerializedState(SerializedScriptValue::createAndSwallowExceptions(mainWorldState, info.GetIsolate()));
         }
@@ -83,14 +84,14 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
     if (isSameState) {
         v8::Handle<v8::Object> v8History = toV8(history, info.Holder(), info.GetIsolate()).As<v8::Object>();
         if (!history->stateChanged()) {
-            result = getHiddenValue(info.GetIsolate(), v8History, "state");
+            result = V8HiddenValue::getHiddenValue(info.GetIsolate(), v8History, V8HiddenValue::state(info.GetIsolate()));
             if (!result.IsEmpty()) {
                 v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
                 return;
             }
         }
         result = event->serializedState()->deserialize(info.GetIsolate());
-        setHiddenValue(info.GetIsolate(), v8History, "state", result);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), v8History, V8HiddenValue::state(info.GetIsolate()), result);
     } else {
         result = event->serializedState()->deserialize(info.GetIsolate());
     }

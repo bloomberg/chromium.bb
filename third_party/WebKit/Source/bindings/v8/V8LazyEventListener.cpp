@@ -38,6 +38,7 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
@@ -104,7 +105,7 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ExecutionContext*
 
 static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, getHiddenValue(info.GetIsolate(), info.Holder(), "toStringString"));
+    v8SetReturnValue(info, V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::toStringString(info.GetIsolate())));
 }
 
 void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
@@ -204,7 +205,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     v8::Local<v8::Function> toStringFunction = v8::Function::New(isolate, V8LazyEventListenerToString);
     ASSERT(!toStringFunction.IsEmpty());
     String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
-    setHiddenValue(isolate, wrappedFunction, "toStringString", v8String(isolate, toStringString));
+    V8HiddenValue::setHiddenValue(isolate, wrappedFunction, V8HiddenValue::toStringString(isolate), v8String(isolate, toStringString));
     wrappedFunction->Set(v8AtomicString(isolate, "toString"), toStringFunction);
     wrappedFunction->SetName(v8String(isolate, m_functionName));
 

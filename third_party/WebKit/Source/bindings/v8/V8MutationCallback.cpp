@@ -30,6 +30,7 @@
 #include "V8MutationRecord.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
@@ -41,7 +42,7 @@ V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, Execut
     , m_world(DOMWrapperWorld::current(isolate))
     , m_isolate(isolate)
 {
-    setHiddenValue(m_isolate, owner, "callback", callback);
+    V8HiddenValue::setHiddenValue(m_isolate, owner, V8HiddenValue::callback(m_isolate), callback);
     m_callback.setWeak(this, &setWeakCallback);
 }
 

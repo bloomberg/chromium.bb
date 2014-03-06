@@ -34,6 +34,7 @@
 #include "V8Window.h"
 #include "V8WorkerGlobalScope.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -71,12 +72,12 @@ ScriptState* ScriptState::forContext(v8::Handle<v8::Context> context)
 
     v8::Local<v8::Object> innerGlobal = v8::Local<v8::Object>::Cast(context->Global()->GetPrototype());
 
-    v8::Local<v8::Value> scriptStateWrapper = getHiddenValue(context->GetIsolate(), innerGlobal, "scriptState");
+    v8::Local<v8::Value> scriptStateWrapper = V8HiddenValue::getHiddenValue(context->GetIsolate(), innerGlobal, V8HiddenValue::scriptState(context->GetIsolate()));
     if (!scriptStateWrapper.IsEmpty() && scriptStateWrapper->IsExternal())
         return static_cast<ScriptState*>(v8::External::Cast(*scriptStateWrapper)->Value());
 
     ScriptState* scriptState = new ScriptState(context);
-    setHiddenValue(context->GetIsolate(), innerGlobal, "scriptState", v8::External::New(context->GetIsolate(), scriptState));
+    V8HiddenValue::setHiddenValue(context->GetIsolate(), innerGlobal, V8HiddenValue::scriptState(context->GetIsolate()), v8::External::New(context->GetIsolate(), scriptState));
     return scriptState;
 }
 

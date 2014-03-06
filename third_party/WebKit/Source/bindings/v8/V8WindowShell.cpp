@@ -40,6 +40,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCForContextDispose.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8Initializer.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8PerContextData.h"
@@ -363,7 +364,7 @@ void V8WindowShell::updateDocumentProperty()
     // We also stash a reference to the document on the inner global object so that
     // DOMWindow objects we obtain from JavaScript references are guaranteed to have
     // live Document objects.
-    setHiddenValue(m_isolate, toInnerGlobalObject(context), "document", documentWrapper);
+    V8HiddenValue::setHiddenValue(m_isolate, toInnerGlobalObject(context), V8HiddenValue::document(m_isolate), documentWrapper);
 }
 
 void V8WindowShell::clearDocumentProperty()

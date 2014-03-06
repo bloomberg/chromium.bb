@@ -63,6 +63,7 @@
 #include "V8WebGLVertexArrayObjectOES.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "bindings/v8/custom/V8Int16ArrayCustom.h"
@@ -259,7 +260,7 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
         return v8::Undefined(isolate);
     }
     ASSERT(!extensionObject.IsEmpty());
-    setHiddenValue(isolate, contextObject, referenceName, extensionObject);
+    V8HiddenValue::setHiddenValue(isolate, contextObject, v8AtomicString(isolate, referenceName), extensionObject);
     return extensionObject;
 }
 

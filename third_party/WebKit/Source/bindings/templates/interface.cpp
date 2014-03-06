@@ -536,7 +536,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
         return;
     }
 
-    setHiddenValue(info.GetIsolate(), info.This(), name, jsValue);
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.This(), name, jsValue);
 }
 
 static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -642,7 +642,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {% for attribute in any_type_attributes %}
         options.get("{{attribute.name}}", {{attribute.name}});
         if (!{{attribute.name}}.IsEmpty())
-            setHiddenValue(info.GetIsolate(), info.Holder(), "{{attribute.name}}", {{attribute.name}});
+            V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), {{attribute.name}});
         {% endfor %}
     }
     {% if is_constructor_raises_exception %}

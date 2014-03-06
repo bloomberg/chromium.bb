@@ -39,13 +39,14 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/ContextFeatures.h"
 
 namespace WebCore {
 
 void V8ErrorEvent::errorAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> error = getHiddenValue(info.GetIsolate(), info.Holder(), "error");
+    v8::Handle<v8::Value> error = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::error(info.GetIsolate()));
     if (!error.IsEmpty()) {
         v8SetReturnValue(info, error);
         return;

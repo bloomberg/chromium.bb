@@ -56,6 +56,7 @@
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8EventListenerList.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "core/css/MediaQueryListListener.h"
@@ -130,7 +131,7 @@ static void readOnlyTestObjectAttrAttributeGetter(const v8::PropertyCallbackInfo
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        setHiddenValue(info.GetIsolate(), info.Holder(), "readOnlyTestObjectAttr", wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "readOnlyTestObjectAttr"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -2009,14 +2010,14 @@ static void cachedDirtyableAttributeAttributeGetter(const v8::PropertyCallbackIn
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedDirtyableAttribute");
     TestObject* imp = V8TestObject::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        v8::Handle<v8::Value> jsValue = getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
+        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
         }
     }
     ScriptValue jsValue = imp->cachedDirtyableAttribute();
-    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 }
 
@@ -2032,7 +2033,7 @@ static void cachedDirtyableAttributeRaisesAttributeGetter(const v8::PropertyCall
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedDirtyableAttributeRaises");
     TestObject* imp = V8TestObject::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        v8::Handle<v8::Value> jsValue = getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
+        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
@@ -2042,7 +2043,7 @@ static void cachedDirtyableAttributeRaisesAttributeGetter(const v8::PropertyCall
     ScriptValue jsValue = imp->cachedDirtyableAttributeRaises(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 }
 
@@ -2449,7 +2450,7 @@ static void perWorldReadOnlyAttributeAttributeGetter(const v8::PropertyCallbackI
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        setHiddenValue(info.GetIsolate(), info.Holder(), "perWorldReadOnlyAttribute", wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "perWorldReadOnlyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -2469,7 +2470,7 @@ static void perWorldReadOnlyAttributeAttributeGetterForMainWorld(const v8::Prope
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        setHiddenValue(info.GetIsolate(), info.Holder(), "perWorldReadOnlyAttribute", wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "perWorldReadOnlyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }

@@ -37,6 +37,7 @@
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -249,7 +250,7 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "doNotCheckSecurityVoidMethod");
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -300,7 +301,7 @@ static void doNotCheckSecurityDoNotCheckSignatureVoidMethodOriginSafeMethodGette
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "doNotCheckSecurityDoNotCheckSignatureVoidMethod");
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityDoNotCheckSignatureVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -351,7 +352,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -402,7 +403,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -453,7 +454,7 @@ static void doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetter(const v8:
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "doNotCheckSecurityReadOnlyVoidMethod");
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityReadOnlyVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -504,7 +505,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "doNotCheckSecurityUnforgeableVoidMethod");
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -533,7 +534,7 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Strin
         return;
     }
 
-    setHiddenValue(info.GetIsolate(), info.This(), name, jsValue);
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.This(), name, jsValue);
 }
 
 static void TestInterfaceCheckSecurityOriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

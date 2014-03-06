@@ -39,6 +39,7 @@
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -123,7 +124,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
         // so that event listeners are retained.
         v8::Handle<v8::Value> cursor = toV8(impl->idbCursor(), creationContext, isolate);
         v8::Handle<v8::Value> request = toV8(impl->idbCursor()->request(), creationContext, isolate);
-        setHiddenValue(isolate, cursor->ToObject(), "idbCursorRequest", request);
+        V8HiddenValue::setHiddenValue(isolate, cursor->ToObject(), V8HiddenValue::idbCursorRequest(isolate), request);
         return cursor;
     }
     case IDBAny::IDBCursorWithValueType: {
@@ -131,7 +132,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
         // so that event listeners are retained.
         v8::Handle<v8::Value> cursor = toV8(impl->idbCursorWithValue(), creationContext, isolate);
         v8::Handle<v8::Value> request = toV8(impl->idbCursorWithValue()->request(), creationContext, isolate);
-        setHiddenValue(isolate, cursor->ToObject(), "idbCursorRequest", request);
+        V8HiddenValue::setHiddenValue(isolate, cursor->ToObject(), V8HiddenValue::idbCursorRequest(isolate), request);
         return cursor;
     }
     case IDBAny::IDBDatabaseType:

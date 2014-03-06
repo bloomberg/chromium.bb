@@ -35,6 +35,7 @@
 #include "V8EventTarget.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListenerList.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -107,22 +108,20 @@ void V8AbstractEventListener::invokeEventHandler(ExecutionContext* context, Even
     v8::Local<v8::Context> v8Context = toV8Context(context, world());
     if (v8Context.IsEmpty())
         return;
+    v8::Isolate* isolate = v8Context->GetIsolate();
 
-    // We push the event being processed into the global object, so that it can be exposed by DOMWindow's bindings.
-    v8::Handle<v8::String> eventSymbol = v8AtomicString(v8Context->GetIsolate(), "event");
     v8::Local<v8::Value> returnValue;
-
     {
         // Catch exceptions thrown in the event handler so they do not propagate to javascript code that caused the event to fire.
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
 
         // Save the old 'event' property so we can restore it later.
-        v8::Local<v8::Value> savedEvent = getHiddenValue(v8Context->GetIsolate(), v8Context->Global(), eventSymbol);
+        v8::Local<v8::Value> savedEvent = V8HiddenValue::getHiddenValue(v8Context->GetIsolate(), v8Context->Global(), V8HiddenValue::event(isolate));
         tryCatch.Reset();
 
         // Make the event available in the global object, so DOMWindow can expose it.
-        setHiddenValue(v8Context->GetIsolate(), v8Context->Global(), eventSymbol, jsEvent);
+        V8HiddenValue::setHiddenValue(v8Context->GetIsolate(), v8Context->Global(), V8HiddenValue::event(isolate), jsEvent);
         tryCatch.Reset();
 
         returnValue = callListenerFunction(context, jsEvent, event);
@@ -138,9 +137,9 @@ void V8AbstractEventListener::invokeEventHandler(ExecutionContext* context, Even
 
         // Restore the old event. This must be done for all exit paths through this method.
         if (savedEvent.IsEmpty())
-            setHiddenValue(v8Context->GetIsolate(), v8Context->Global(), eventSymbol, v8::Undefined(v8Context->GetIsolate()));
+            V8HiddenValue::setHiddenValue(v8Context->GetIsolate(), v8Context->Global(), V8HiddenValue::event(isolate), v8::Undefined(v8Context->GetIsolate()));
         else
-            setHiddenValue(v8Context->GetIsolate(), v8Context->Global(), eventSymbol, savedEvent);
+            V8HiddenValue::setHiddenValue(v8Context->GetIsolate(), v8Context->Global(), V8HiddenValue::event(isolate), savedEvent);
         tryCatch.Reset();
     }
 

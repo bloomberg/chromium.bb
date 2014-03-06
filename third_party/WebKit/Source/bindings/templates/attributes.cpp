@@ -29,7 +29,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     if (!imp->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Handle<v8::Value> jsValue = getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
+        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
@@ -93,7 +93,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, {{attribute.cpp_value}}.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, {{attribute.cpp_value}}.v8Value());
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
@@ -103,7 +103,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        setHiddenValue(info.GetIsolate(), info.Holder(), "{{attribute.name}}", wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), wrapper);
         {{attribute.v8_set_return_value}};
     }
     {% elif world_suffix %}
@@ -276,7 +276,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     exceptionState.throwIfNeeded();
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    deleteHiddenValue(info.GetIsolate(), info.Holder(), "{{attribute.name}}"); // Invalidate the cached value.
+    V8HiddenValue::deleteHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}
 }
 {% endfilter %}

@@ -34,6 +34,7 @@
 #include "V8Node.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptState.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 #include "wtf/OwnPtr.h"
@@ -43,7 +44,7 @@ namespace WebCore {
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : m_filter(isolate, filter)
 {
-    setHiddenValue(isolate, owner, "condition", filter);
+    V8HiddenValue::setHiddenValue(isolate, owner, V8HiddenValue::condition(isolate), filter);
     m_filter.setWeak(this, &setWeakCallback);
 }
 

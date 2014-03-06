@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/UnsafePersistent.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
@@ -96,6 +97,7 @@ public:
 #endif
 
     GCEventData* gcEventData() { return m_gcEventData.get(); }
+    V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
 
     v8::Handle<v8::FunctionTemplate> domTemplate(WrapperWorldType, void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
     v8::Handle<v8::FunctionTemplate> existingDOMTemplate(WrapperWorldType, void* domTemplateKey);
@@ -123,6 +125,7 @@ private:
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     OwnPtr<StringCache> m_stringCache;
 
+    OwnPtr<V8HiddenValue> m_hiddenValue;
     ScopedPersistent<v8::Value> m_liveRoot;
     ScopedPersistent<v8::Context> m_regexContext;
 

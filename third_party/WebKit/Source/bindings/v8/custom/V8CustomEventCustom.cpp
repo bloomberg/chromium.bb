@@ -38,13 +38,14 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/ContextFeatures.h"
 
 namespace WebCore {
 
 static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> customEvent, v8::Handle<v8::Value> detail, v8::Isolate* isolate)
 {
-    setHiddenValue(isolate, customEvent, "detail", detail);
+    V8HiddenValue::setHiddenValue(isolate, customEvent, V8HiddenValue::detail(isolate), detail);
     return detail;
 }
 
@@ -53,7 +54,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v
 {
     CustomEvent* event = V8CustomEvent::toNative(info.Holder());
 
-    v8::Handle<v8::Value> result = getHiddenValue(info.GetIsolate(), info.Holder(), "detail");
+    v8::Handle<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -63,7 +64,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v
     if (!event->serializedDetail()) {
         // If we're in an isolated world and the event was created in the main world,
         // we need to find the 'detail' property on the main world wrapper and clone it.
-        v8::Local<v8::Value> mainWorldDetail = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, "detail");
+        v8::Local<v8::Value> mainWorldDetail = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::detail(info.GetIsolate()));
         if (!mainWorldDetail.IsEmpty())
             event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(mainWorldDetail, info.GetIsolate()));
     }
@@ -90,7 +91,7 @@ void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v
     event->initEvent(typeArg, canBubbleArg, cancelableArg);
 
     if (!detailsArg.IsEmpty()) {
-        setHiddenValue(info.GetIsolate(), info.Holder(), "detail", detailsArg);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::detail(info.GetIsolate()), detailsArg);
         if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld())
             event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(detailsArg, info.GetIsolate()));
     }

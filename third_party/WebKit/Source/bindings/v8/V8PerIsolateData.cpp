@@ -30,6 +30,7 @@
 #include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "wtf/MainThread.h"
@@ -43,6 +44,7 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_isolateHolder(adoptPtr(new gin::IsolateHolder(m_isolate, v8ArrayBufferAllocator())))
     , m_isMainThread(WTF::isMainThread())
     , m_stringCache(adoptPtr(new StringCache()))
+    , m_hiddenValue(adoptPtr(new V8HiddenValue()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
 #ifndef NDEBUG

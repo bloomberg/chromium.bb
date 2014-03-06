@@ -44,6 +44,7 @@
 #include "bindings/v8/V8EventListener.h"
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8GCForContextDispose.h"
+#include "bindings/v8/V8HiddenValue.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/html/HTMLCollection.h"
@@ -166,7 +167,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
     if (context.IsEmpty())
         return;
 
-    v8::Handle<v8::Value> jsEvent = getHiddenValue(info.GetIsolate(), context->Global(), "event");
+    v8::Handle<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()));
     if (jsEvent.IsEmpty())
         return;
     v8SetReturnValue(info, jsEvent);
@@ -186,7 +187,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
     if (context.IsEmpty())
         return;
 
-    setHiddenValue(info.GetIsolate(), context->Global(), "event", value);
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()), value);
 }
 
 void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)

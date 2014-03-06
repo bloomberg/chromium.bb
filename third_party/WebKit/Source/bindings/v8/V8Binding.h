@@ -691,15 +691,6 @@ template<class Collection> static void indexedPropertyEnumerator(const v8::Prope
     v8SetReturnValue(info, properties);
 }
 
-v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*);
-v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
-bool setHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*, v8::Handle<v8::Value>);
-bool setHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>, v8::Handle<v8::Value>);
-bool deleteHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*);
-bool deleteHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
-v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, const char*);
-v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String>);
-
 // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
 void addHiddenValueToArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
 void removeHiddenValueFromArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
