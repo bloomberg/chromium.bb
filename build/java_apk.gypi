@@ -672,11 +672,11 @@
             'dex_input_paths': [ '<(emma_device_jar)' ],
           }],
         ],
-        'input_paths': [ '<(instr_stamp)' ],
         'dex_input_paths': [ '>@(library_dexed_jars_paths)' ],
         'dex_generated_input_dirs': [ '<(classes_final_dir)' ],
         'output_path': '<(dex_path)',
       },
+      'inputs': [ '<(instr_stamp)', ],
       'includes': [ 'android/dex_action.gypi' ],
     },
     {
