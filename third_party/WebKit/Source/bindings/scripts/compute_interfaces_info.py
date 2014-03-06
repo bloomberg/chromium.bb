@@ -98,7 +98,7 @@ interfaces_info = {}
 # Auxiliary variables (not visible to future build steps)
 partial_interface_files = {}
 parent_interfaces = {}
-extended_attributes_by_interface = {}  # interface name -> extended attributes
+inherited_extended_attributes_by_interface = {}  # interface name -> extended attributes
 
 
 class IdlInterfaceFileNotFoundError(Exception):
@@ -174,7 +174,9 @@ def compute_individual_info(idl_filename):
 
     interfaces_info[interface_name] = {
         'full_path': full_path,
+        'implemented_as': implemented_as,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
+        'include_path': this_include_path,
         'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
         # Interfaces that are referenced (used as types) and that we introspect
         # during code generation (beyond interface-level data ([ImplementedAs],
@@ -184,50 +186,37 @@ def compute_individual_info(idl_filename):
         # should be minimized; currently only targets of [PutForwards].
         'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
     }
-    if this_include_path:
-        interfaces_info[interface_name]['include_path'] = this_include_path
-    if implemented_as:
-        interfaces_info[interface_name]['implemented_as'] = implemented_as
 
-    # Record auxiliary information
-    extended_attributes_by_interface[interface_name] = extended_attributes
+    # Record inheritance information
+    inherited_extended_attributes_by_interface[interface_name] = dict(
+            (key, value)
+            for key, value in extended_attributes.iteritems()
+            if key in INHERITED_EXTENDED_ATTRIBUTES)
     parent = get_parent_interface(idl_file_contents)
     if parent:
         parent_interfaces[interface_name] = parent
 
 
 def compute_inheritance_info(interface_name):
-    """Computes inheritance information, namely ancestors and inherited extended attributes."""
-    interface_info = interfaces_info[interface_name]
-    interface_extended_attributes = extended_attributes_by_interface[interface_name]
-    inherited_extended_attributes = dict(
-            (key, value)
-            for key, value in interface_extended_attributes.iteritems()
-            if key in INHERITED_EXTENDED_ATTRIBUTES)
-
+    """Compute inheritance information, namely ancestors and inherited extended attributes."""
     def generate_ancestors(interface_name):
         while interface_name in parent_interfaces:
             interface_name = parent_interfaces[interface_name]
             yield interface_name
 
     ancestors = list(generate_ancestors(interface_name))
-    if not ancestors:
-        if inherited_extended_attributes:
-            interface_info['inherited_extended_attributes'] = inherited_extended_attributes
-        return
-
-    interface_info['ancestors'] = ancestors
+    inherited_extended_attributes = inherited_extended_attributes_by_interface[interface_name]
     for ancestor in ancestors:
-        # Extended attributes are missing if an ancestor is an interface that
-        # we're not processing, namely real IDL files if only processing test
-        # IDL files.
-        ancestor_extended_attributes = extended_attributes_by_interface.get(ancestor, {})
-        inherited_extended_attributes.update(dict(
-            (key, value)
-            for key, value in ancestor_extended_attributes.iteritems()
-            if key in INHERITED_EXTENDED_ATTRIBUTES))
-    if inherited_extended_attributes:
-        interface_info['inherited_extended_attributes'] = inherited_extended_attributes
+        # Ancestors may not be present, notably if an ancestor is a generated
+        # IDL file and we are running this script from run-bindings-tests,
+        # where we don't generate these files.
+        ancestor_extended_attributes = inherited_extended_attributes_by_interface.get(ancestor, {})
+        inherited_extended_attributes.update(ancestor_extended_attributes)
+
+    interfaces_info[interface_name].update({
+        'ancestors': ancestors,
+        'inherited_extended_attributes': inherited_extended_attributes,
+    })
 
 
 def compute_interfaces_info(idl_files):
@@ -259,16 +248,16 @@ def compute_interfaces_info(idl_files):
             implemented_interfaces_include_paths = [
                 interfaces_info[interface]['include_path']
                 for interface in implemented_interfaces
-                if 'include_path' in interfaces_info[interface]]
+                if interfaces_info[interface]['include_path']]
         except KeyError as key_name:
             raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following implemented interface is defined: %s' % key_name)
 
-        interface_info['dependencies_full_paths'] = (
-                partial_interfaces_full_paths +
-                implemented_interfaces_full_paths)
-        interface_info['dependencies_include_paths'] = (
-                partial_interfaces_include_paths +
-                implemented_interfaces_include_paths)
+        interface_info.update({
+            'dependencies_full_paths': (partial_interfaces_full_paths +
+                                        implemented_interfaces_full_paths),
+            'dependencies_include_paths': (partial_interfaces_include_paths +
+                                           implemented_interfaces_include_paths),
+        })
 
 
 ################################################################################

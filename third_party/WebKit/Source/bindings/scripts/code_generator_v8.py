@@ -89,7 +89,7 @@ class CodeGeneratorV8(object):
         v8_types.set_ancestors(dict(
             (interface_name, interface_info['ancestors'])
             for interface_name, interface_info in interfaces_info.iteritems()
-            if 'ancestors' in interface_info))
+            if interface_info['ancestors']))
         v8_types.set_callback_interfaces(set(
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
@@ -97,12 +97,11 @@ class CodeGeneratorV8(object):
         v8_types.set_implemented_as_interfaces(dict(
             (interface_name, interface_info['implemented_as'])
             for interface_name, interface_info in interfaces_info.iteritems()
-            if 'implemented_as' in interface_info))
+            if interface_info['implemented_as']))
         v8_types.set_will_be_garbage_collected_types(set(
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
-            if 'inherited_extended_attributes' in interface_info and
-                'WillBeGarbageCollected' in interface_info['inherited_extended_attributes']))
+            if 'WillBeGarbageCollected' in interface_info['inherited_extended_attributes']))
 
     def generate_code(self, definitions, interface_name):
         """Returns .h/.cpp code as (header_text, cpp_text)."""

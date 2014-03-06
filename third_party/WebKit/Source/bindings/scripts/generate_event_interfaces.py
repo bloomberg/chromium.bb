@@ -82,7 +82,7 @@ def write_event_interfaces_file(interfaces_info, destination_filename, only_if_c
         interface_name
         for interface_name, interface_info in interfaces_info.iteritems()
         if (interface_name == 'Event' or
-            ('ancestors' in interface_info and
+            (interface_info['ancestors'] and
              interface_info['ancestors'][-1] == 'Event')))
 
     def extended_attribute_string(name, value):
