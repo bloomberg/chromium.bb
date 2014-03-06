@@ -109,35 +109,35 @@ String TimedItemTiming::easing()
 void TimedItemTiming::setDelay(double delay)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setStartDelay(timing, delay);
+    TimingInput::setStartDelay(timing, delay);
     m_parent->updateSpecifiedTiming(timing);
 }
 
 void TimedItemTiming::setEndDelay(double endDelay)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setEndDelay(timing, endDelay);
+    TimingInput::setEndDelay(timing, endDelay);
     m_parent->updateSpecifiedTiming(timing);
 }
 
 void TimedItemTiming::setFill(String fill)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setFillMode(timing, fill);
+    TimingInput::setFillMode(timing, fill);
     m_parent->updateSpecifiedTiming(timing);
 }
 
 void TimedItemTiming::setIterationStart(double iterationStart)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setIterationStart(timing, iterationStart);
+    TimingInput::setIterationStart(timing, iterationStart);
     m_parent->updateSpecifiedTiming(timing);
 }
 
 void TimedItemTiming::setIterations(double iterations)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setIterationCount(timing, iterations);
+    TimingInput::setIterationCount(timing, iterations);
     m_parent->updateSpecifiedTiming(timing);
 }
 
@@ -146,7 +146,7 @@ bool TimedItemTiming::setDuration(String name, double duration)
     if (name != "duration")
         return false;
     Timing timing = m_parent->specifiedTiming();
-    Animation::setIterationDuration(timing, duration);
+    TimingInput::setIterationDuration(timing, duration);
     m_parent->updateSpecifiedTiming(timing);
     return true;
 }
@@ -154,21 +154,21 @@ bool TimedItemTiming::setDuration(String name, double duration)
 void TimedItemTiming::setPlaybackRate(double playbackRate)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setPlaybackRate(timing, playbackRate);
+    TimingInput::setPlaybackRate(timing, playbackRate);
     m_parent->updateSpecifiedTiming(timing);
 }
 
 void TimedItemTiming::setDirection(String direction)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setPlaybackDirection(timing, direction);
+    TimingInput::setPlaybackDirection(timing, direction);
     m_parent->updateSpecifiedTiming(timing);
 }
 
 void TimedItemTiming::setEasing(String easing)
 {
     Timing timing = m_parent->specifiedTiming();
-    Animation::setTimingFunction(timing, easing);
+    TimingInput::setTimingFunction(timing, easing);
     m_parent->updateSpecifiedTiming(timing);
 }
 

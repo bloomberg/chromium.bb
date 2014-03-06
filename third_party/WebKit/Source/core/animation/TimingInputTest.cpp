@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/Animation.h"
+#include "core/animation/TimingInput.h"
 
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/AnimationTestHelper.h"
@@ -13,17 +13,12 @@
 
 namespace WebCore {
 
-class AnimationAnimationTimingInputTest : public ::testing::Test {
+class AnimationTimingInputTest : public ::testing::Test {
 protected:
-    AnimationAnimationTimingInputTest()
+    AnimationTimingInputTest()
         : m_isolate(v8::Isolate::GetCurrent())
         , m_scope(V8BindingTestScope::create(m_isolate))
     {
-    }
-
-    void populateTiming(Timing& timing, Dictionary timingInputDictionary)
-    {
-        Animation::populateTiming(timing, timingInputDictionary);
     }
 
     Timing applyTimingInputNumber(String timingProperty, double timingPropertyValue)
@@ -31,9 +26,7 @@ protected:
         v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
         Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
-        Timing timing;
-        populateTiming(timing, timingInputDictionary);
-        return timing;
+        return TimingInput::convert(timingInputDictionary);
     }
 
     Timing applyTimingInputString(String timingProperty, String timingPropertyValue)
@@ -41,9 +34,7 @@ protected:
         v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
         Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
-        Timing timing;
-        populateTiming(timing, timingInputDictionary);
-        return timing;
+        return TimingInput::convert(timingInputDictionary);
     }
 
     v8::Isolate* m_isolate;
@@ -52,7 +43,7 @@ private:
     OwnPtr<V8BindingTestScope> m_scope;
 };
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputStartDelay)
+TEST_F(AnimationTimingInputTest, TimingInputStartDelay)
 {
     EXPECT_EQ(1.1, applyTimingInputNumber("delay", 1.1).startDelay);
     EXPECT_EQ(-1, applyTimingInputNumber("delay", -1).startDelay);
@@ -64,13 +55,13 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputStartDelay)
     EXPECT_EQ(0, applyTimingInputString("delay", "rubbish").startDelay);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputEndDelay)
+TEST_F(AnimationTimingInputTest, TimingInputEndDelay)
 {
     EXPECT_EQ(10, applyTimingInputNumber("endDelay", 10).endDelay);
     EXPECT_EQ(-2.5, applyTimingInputNumber("endDelay", -2.5).endDelay);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputFillMode)
+TEST_F(AnimationTimingInputTest, TimingInputFillMode)
 {
     Timing::FillMode defaultFillMode = Timing::FillModeAuto;
 
@@ -84,7 +75,7 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputFillMode)
     EXPECT_EQ(defaultFillMode, applyTimingInputNumber("fill", 2).fillMode);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputIterationStart)
+TEST_F(AnimationTimingInputTest, TimingInputIterationStart)
 {
     EXPECT_EQ(1.1, applyTimingInputNumber("iterationStart", 1.1).iterationStart);
     EXPECT_EQ(0, applyTimingInputNumber("iterationStart", -1).iterationStart);
@@ -94,7 +85,7 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputIterationStart)
     EXPECT_EQ(0, applyTimingInputString("iterationStart", "rubbish").iterationStart);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputIterationCount)
+TEST_F(AnimationTimingInputTest, TimingInputIterationCount)
 {
     EXPECT_EQ(2.1, applyTimingInputNumber("iterations", 2.1).iterationCount);
     EXPECT_EQ(0, applyTimingInputNumber("iterations", -1).iterationCount);
@@ -108,7 +99,7 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputIterationCount)
     EXPECT_EQ(1, applyTimingInputString("iterations", "rubbish").iterationCount);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputIterationDuration)
+TEST_F(AnimationTimingInputTest, TimingInputIterationDuration)
 {
     EXPECT_EQ(1.1, applyTimingInputNumber("duration", 1.1).iterationDuration);
     EXPECT_TRUE(std::isnan(applyTimingInputNumber("duration", -1).iterationDuration));
@@ -124,7 +115,7 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputIterationDuration)
     EXPECT_TRUE(std::isnan(applyTimingInputString("duration", "rubbish").iterationDuration));
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputPlaybackRate)
+TEST_F(AnimationTimingInputTest, TimingInputPlaybackRate)
 {
     EXPECT_EQ(2.1, applyTimingInputNumber("playbackRate", 2.1).playbackRate);
     EXPECT_EQ(-1, applyTimingInputNumber("playbackRate", -1).playbackRate);
@@ -134,7 +125,7 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputPlaybackRate)
     EXPECT_EQ(1, applyTimingInputString("playbackRate", "rubbish").playbackRate);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputDirection)
+TEST_F(AnimationTimingInputTest, TimingInputDirection)
 {
     Timing::PlaybackDirection defaultPlaybackDirection = Timing::PlaybackDirectionNormal;
 
@@ -146,7 +137,7 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputDirection)
     EXPECT_EQ(defaultPlaybackDirection, applyTimingInputNumber("direction", 2).direction);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputTimingFunction)
+TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
 {
     const RefPtr<TimingFunction> defaultTimingFunction = LinearTimingFunction::create();
 
@@ -169,14 +160,13 @@ TEST_F(AnimationAnimationTimingInputTest, TimingInputTimingFunction)
     EXPECT_EQ(*defaultTimingFunction, *applyTimingInputString("easing", "initial").timingFunction);
 }
 
-TEST_F(AnimationAnimationTimingInputTest, TimingInputEmpty)
+TEST_F(AnimationTimingInputTest, TimingInputEmpty)
 {
-    Timing updatedTiming;
     Timing controlTiming;
 
     v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
-    populateTiming(updatedTiming, timingInputDictionary);
+    Timing updatedTiming = TimingInput::convert(timingInputDictionary);
 
     EXPECT_EQ(controlTiming.startDelay, updatedTiming.startDelay);
     EXPECT_EQ(controlTiming.fillMode, updatedTiming.fillMode);

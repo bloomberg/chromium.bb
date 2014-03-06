@@ -12,6 +12,7 @@
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/Timing.h"
 
 #include <gtest/gtest.h>
 
@@ -40,19 +41,14 @@ protected:
     {
     }
 
-    PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
+    template<typename T>
+    static PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput)
     {
-        return Animation::createUnsafe(element, keyframeDictionaryVector, timingInput);
+        return Animation::create(element, EffectInput::convert(element, keyframeDictionaryVector, true), timingInput);
     }
-
-    PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
+    static PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector)
     {
-        return Animation::createUnsafe(element, keyframeDictionaryVector, timingInput);
-    }
-
-    PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector)
-    {
-        return Animation::createUnsafe(element, keyframeDictionaryVector);
+        return Animation::create(element, EffectInput::convert(element, keyframeDictionaryVector, true));
     }
 
     v8::Isolate* m_isolate;
@@ -128,11 +124,11 @@ TEST_F(AnimationAnimationV8Test, CanOmitSpecifiedDuration)
     EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
-TEST_F(AnimationAnimationV8Test, ClipNegativeDurationToZero)
+TEST_F(AnimationAnimationV8Test, NegativeDurationIsAuto)
 {
     Vector<Dictionary, 0> jsKeyframes;
     RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, -2);
-    EXPECT_EQ(0, animation->specifiedTiming().iterationDuration);
+    EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
 TEST_F(AnimationAnimationV8Test, SpecifiedGetters)

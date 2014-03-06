@@ -38,11 +38,8 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Player.h"
-#include "core/css/parser/BisonCSSParser.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/rendering/RenderLayer.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -51,270 +48,35 @@ PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtrWi
     return adoptRef(new Animation(target, effect, timing, priority, eventDelegate));
 }
 
-static bool checkDocumentAndRenderer(Element* element)
-{
-    if (!element->inActiveDocument())
-        return false;
-    element->document().updateStyleIfNeeded();
-    if (!element->renderer())
-        return false;
-    return true;
-}
-
-PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
+PassRefPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Dictionary& timingInputDictionary)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-
-    // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
-    // animation application time.
-    if (!checkDocumentAndRenderer(element))
-        return nullptr;
-
-    return createUnsafe(element, keyframeDictionaryVector, timingInput);
+    return create(element, effect, TimingInput::convert(timingInputDictionary));
 }
-
-PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
+PassRefPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-
-    // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
-    // animation application time.
-    if (!checkDocumentAndRenderer(element))
-        return nullptr;
-
-    return createUnsafe(element, keyframeDictionaryVector, timingInput);
+    return create(element, effect, TimingInput::convert(duration));
 }
-
-PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+PassRefPtr<Animation> Animation::create(Element* element, PassRefPtrWillBeRawPtr<AnimationEffect> effect)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-
-    // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
-    // animation application time.
-    if (!checkDocumentAndRenderer(element))
-        return nullptr;
-
-    return createUnsafe(element, keyframeDictionaryVector);
+    return create(element, effect, Timing());
 }
-
-void Animation::setStartDelay(Timing& timing, double startDelay)
+PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary)
 {
-    if (std::isfinite(startDelay))
-        timing.startDelay = startDelay;
-    else
-        timing.startDelay = Timing::defaults().startDelay;
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector), TimingInput::convert(timingInputDictionary));
 }
-
-void Animation::setEndDelay(Timing& timing, double endDelay)
+PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration)
 {
-    if (std::isfinite(endDelay))
-        timing.endDelay = endDelay;
-    else
-        timing.endDelay = Timing::defaults().endDelay;
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector), TimingInput::convert(duration));
 }
-
-void Animation::setFillMode(Timing& timing, String fillMode)
+PassRefPtr<Animation> Animation::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector)
 {
-    if (fillMode == "none") {
-        timing.fillMode = Timing::FillModeNone;
-    } else if (fillMode == "backwards") {
-        timing.fillMode = Timing::FillModeBackwards;
-    } else if (fillMode == "both") {
-        timing.fillMode = Timing::FillModeBoth;
-    } else if (fillMode == "forwards") {
-        timing.fillMode = Timing::FillModeForwards;
-    } else {
-        timing.fillMode = Timing::defaults().fillMode;
-    }
-}
-
-void Animation::setIterationStart(Timing& timing, double iterationStart)
-{
-    if (!std::isnan(iterationStart) && !std::isinf(iterationStart))
-        timing.iterationStart = std::max<double>(iterationStart, 0);
-    else
-        timing.iterationStart = Timing::defaults().iterationStart;
-}
-
-void Animation::setIterationCount(Timing& timing, double iterationCount)
-{
-    if (!std::isnan(iterationCount))
-        timing.iterationCount = std::max<double>(iterationCount, 0);
-    else
-        timing.iterationCount = Timing::defaults().iterationCount;
-}
-
-void Animation::setIterationDuration(Timing& timing, double iterationDuration)
-{
-    if (!std::isnan(iterationDuration) && iterationDuration >= 0)
-        timing.iterationDuration = iterationDuration;
-    else
-        timing.iterationDuration = Timing::defaults().iterationDuration;
-}
-
-void Animation::setPlaybackRate(Timing& timing, double playbackRate)
-{
-    if (!std::isnan(playbackRate) && !std::isinf(playbackRate))
-        timing.playbackRate = playbackRate;
-    else
-        timing.playbackRate = Timing::defaults().playbackRate;
-}
-
-void Animation::setPlaybackDirection(Timing& timing, String direction)
-{
-    if (direction == "reverse") {
-        timing.direction = Timing::PlaybackDirectionReverse;
-    } else if (direction == "alternate") {
-        timing.direction = Timing::PlaybackDirectionAlternate;
-    } else if (direction == "alternate-reverse") {
-        timing.direction = Timing::PlaybackDirectionAlternateReverse;
-    } else {
-        timing.direction = Timing::defaults().direction;
-    }
-}
-
-void Animation::setTimingFunction(Timing& timing, String timingFunctionString)
-{
-    RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
-    if (timingFunctionValue) {
-        RefPtr<TimingFunction> timingFunction = CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false);
-        if (timingFunction) {
-            timing.timingFunction = timingFunction;
-            return;
-        }
-    }
-    timing.timingFunction = Timing::defaults().timingFunction;
-}
-
-void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
-{
-    // FIXME: This method needs to be refactored to handle invalid
-    // null, NaN, Infinity values better.
-    // See: http://www.w3.org/TR/WebIDL/#es-double
-    double startDelay = 0;
-    timingInputDictionary.get("delay", startDelay);
-    setStartDelay(timing, startDelay);
-
-    double endDelay = 0;
-    timingInputDictionary.get("endDelay", endDelay);
-    setEndDelay(timing, endDelay);
-
-    String fillMode;
-    timingInputDictionary.get("fill", fillMode);
-    setFillMode(timing, fillMode);
-
-    double iterationStart = 0;
-    timingInputDictionary.get("iterationStart", iterationStart);
-    setIterationStart(timing, iterationStart);
-
-    double iterationCount = 1;
-    timingInputDictionary.get("iterations", iterationCount);
-    setIterationCount(timing, iterationCount);
-
-    v8::Local<v8::Value> iterationDurationValue;
-    if (timingInputDictionary.get("duration", iterationDurationValue)) {
-        double iterationDuration = iterationDurationValue->NumberValue();
-        setIterationDuration(timing, iterationDuration);
-    }
-
-    double playbackRate = 1;
-    timingInputDictionary.get("playbackRate", playbackRate);
-    setPlaybackRate(timing, playbackRate);
-
-    String direction;
-    timingInputDictionary.get("direction", direction);
-    setPlaybackDirection(timing, direction);
-
-    String timingFunctionString;
-    timingInputDictionary.get("easing", timingFunctionString);
-    setTimingFunction(timing, timingFunctionString);
-
-    timing.assertValid();
-}
-
-static PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* element, Vector<Dictionary> keyframeDictionaryVector)
-{
-    KeyframeEffectModel::KeyframeVector keyframes;
-    Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
-
-    for (size_t i = 0; i < keyframeDictionaryVector.size(); ++i) {
-        RefPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
-        propertySetVector.append(propertySet);
-
-        RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();
-        keyframes.append(keyframe);
-
-        double offset;
-        if (keyframeDictionaryVector[i].get("offset", offset)) {
-            keyframe->setOffset(offset);
-        }
-
-        String compositeString;
-        keyframeDictionaryVector[i].get("composite", compositeString);
-        if (compositeString == "add")
-            keyframe->setComposite(AnimationEffect::CompositeAdd);
-
-        String timingFunctionString;
-        if (keyframeDictionaryVector[i].get("easing", timingFunctionString)) {
-            RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
-            if (timingFunctionValue) {
-                keyframe->setEasing(CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false));
-            }
-        }
-
-        Vector<String> keyframeProperties;
-        keyframeDictionaryVector[i].getOwnPropertyNames(keyframeProperties);
-
-        for (size_t j = 0; j < keyframeProperties.size(); ++j) {
-            String property = keyframeProperties[j];
-            CSSPropertyID id = camelCaseCSSPropertyNameToID(property);
-
-            // FIXME: There is no way to store invalid properties or invalid values
-            // in a Keyframe object, so for now I just skip over them. Eventually we
-            // will need to support getFrames(), which should return exactly the
-            // keyframes that were input through the API. We will add a layer to wrap
-            // KeyframeEffectModel, store input keyframes and implement getFrames.
-            if (id == CSSPropertyInvalid || !CSSAnimations::isAnimatableProperty(id))
-                continue;
-
-            String value;
-            keyframeDictionaryVector[i].get(property, value);
-            propertySet->setProperty(id, value);
-        }
-    }
-
-    // FIXME: Replace this with code that just parses, when that code is available.
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
-    return effect;
-}
-
-PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
-{
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
-
-    Timing timing;
-    populateTiming(timing, timingInput);
-
-    return create(element, effect, timing);
-}
-
-PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
-{
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
-
-    Timing timing;
-    if (!std::isnan(timingInput))
-        timing.iterationDuration = std::max<double>(timingInput, 0);
-
-    return create(element, effect, timing);
-}
-
-PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionary> keyframeDictionaryVector)
-{
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
-    Timing timing;
-
-    return create(element, effect, timing);
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    return create(element, EffectInput::convert(element, keyframeDictionaryVector), Timing());
 }
 
 Animation::Animation(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
