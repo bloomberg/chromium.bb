@@ -42,6 +42,7 @@
 #include "core/svg/SVGFEImageElement.h"
 #include "core/svg/SVGImageElement.h"
 #include "core/svg/SVGSVGElement.h"
+#include "core/svg/animation/SMILTimeContainer.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/IntRect.h"
@@ -416,6 +417,17 @@ void SVGImage::resetAnimation()
     stopAnimation();
 }
 
+bool SVGImage::hasAnimations() const
+{
+    if (!m_page)
+        return false;
+    LocalFrame* frame = m_page->mainFrame();
+    SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
+    if (!rootElement)
+        return false;
+    return rootElement->timeContainer()->hasAnimations();
+}
+
 bool SVGImage::dataChanged(bool allDataReceived)
 {
     TRACE_EVENT0("webkit", "SVGImage::dataChanged");
@@ -438,12 +450,12 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // This will become an issue when SVGImage will be able to load other
         // SVGImage objects, but we're safe now, because SVGImage can only be
         // loaded by a top-level document.
-        m_page = adoptPtr(new Page(pageClients));
-        m_page->settings().setScriptEnabled(false);
-        m_page->settings().setPluginsEnabled(false);
-        m_page->settings().setAcceleratedCompositingEnabled(false);
+        OwnPtr<Page> page = adoptPtr(new Page(pageClients));
+        page->settings().setScriptEnabled(false);
+        page->settings().setPluginsEnabled(false);
+        page->settings().setAcceleratedCompositingEnabled(false);
 
-        RefPtr<LocalFrame> frame = LocalFrame::create(FrameInit::create(&m_page->frameHost(), dummyFrameLoaderClient));
+        RefPtr<LocalFrame> frame = LocalFrame::create(FrameInit::create(&page->frameHost(), dummyFrameLoaderClient));
         frame->setView(FrameView::create(frame.get()));
         frame->init();
         FrameLoader& loader = frame->loader();
@@ -452,6 +464,8 @@ bool SVGImage::dataChanged(bool allDataReceived)
         frame->view()->setScrollbarsSuppressed(true);
         frame->view()->setCanHaveScrollbars(false); // SVG Images will always synthesize a viewBox, if it's not available, and thus never see scrollbars.
         frame->view()->setTransparent(true); // SVG Images are transparent.
+
+        m_page = page.release();
 
         loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), "image/svg+xml", "UTF-8", KURL(), ForceSynchronousLoad)));
         // Set the intrinsic size before a container size is available.

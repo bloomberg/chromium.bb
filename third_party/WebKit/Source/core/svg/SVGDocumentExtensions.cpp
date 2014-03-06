@@ -83,6 +83,22 @@ RenderSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicStri
     return m_resources.get(id);
 }
 
+void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
+{
+    if (!document.svgExtensions())
+        return;
+    document.accessSVGExtensions().serviceAnimations(monotonicAnimationStartTime);
+}
+
+void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime)
+{
+    Vector<RefPtr<SVGSVGElement> > timeContainers;
+    timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
+    Vector<RefPtr<SVGSVGElement> >::iterator end = timeContainers.end();
+    for (Vector<RefPtr<SVGSVGElement> >::iterator itr = timeContainers.begin(); itr != end; ++itr)
+        (*itr)->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
+}
+
 void SVGDocumentExtensions::startAnimations()
 {
     // FIXME: Eventually every "Time Container" will need a way to latch on to some global timer
