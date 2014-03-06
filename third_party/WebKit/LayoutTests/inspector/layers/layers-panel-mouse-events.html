@@ -62,17 +62,16 @@ InspectorTest.dispatchMouseEventToLayerTree = function(eventType, button, layer)
 InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
 {
     // Caveat: this will blow if layers are transformed. We only take root layer scale into account.
-    var offsetX = 0;
-    var offsetY = 0;
-    for (var currentLayer = layer; currentLayer; currentLayer = currentLayer.parent()) {
-         offsetX += currentLayer.offsetX();
-         offsetY += currentLayer.offsetY();
-    }
     var layer3DView = WebInspector.panel("layers")._layers3DView;
+    const borderWidth = 1;
+    var offsetX = borderWidth;
+    var offsetY = borderWidth;
+    for (var currentLayer = layer; currentLayer && currentLayer.nodeId(); currentLayer = currentLayer.parent()) {
+         offsetX += Math.round(layer3DView._scale * currentLayer.offsetX()) + borderWidth;
+         offsetY += Math.round(layer3DView._scale * currentLayer.offsetY()) + borderWidth;
+    }
     var rootElement = layer3DView._elementForLayer(InspectorTest._layerTreeModel.contentRoot());
-    var screenOffsetX = Math.round(layer3DView._scale * offsetX) + 2;
-    var screenOffsetY = Math.round(layer3DView._scale * offsetY) + 2;
-    InspectorTest.dispatchMouseEvent(eventType, button, rootElement, screenOffsetX, screenOffsetY);
+    InspectorTest.dispatchMouseEvent(eventType, button, rootElement, offsetX, offsetY);
 }
 
 InspectorTest.dumpSelectedStyles = function(message, element)
@@ -159,8 +158,8 @@ function test()
 <div id="a" style="width: 200px; height: 200px" class="layer">
   <div class="layer" id="b1" style="width: 150px; height: 100px"></div>
   <div id="b2" class="layer" style="width: 140px; height: 110px">
-    <div id="c" class="layer" style="width: 100px; height: 90px"></div>
     <div id="b3" class="layer" style="width: 140px; height: 110px;"></div>
+    <div id="c" class="layer" style="width: 100px; height: 90px"></div>
   </div>
 </div>
 </body>
