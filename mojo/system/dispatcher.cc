@@ -11,6 +11,16 @@
 namespace mojo {
 namespace system {
 
+namespace test {
+
+// TODO(vtl): Maybe this should be defined in a test-only file instead.
+DispatcherTransport DispatcherTryStartTransport(
+    Dispatcher* dispatcher) {
+  return Dispatcher::CoreImplAccess::TryStartTransport(dispatcher);
+}
+
+}  // namespace test
+
 // Dispatcher ------------------------------------------------------------------
 
 // static

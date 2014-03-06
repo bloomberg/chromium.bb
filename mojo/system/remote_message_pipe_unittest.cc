@@ -1,9 +1,6 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// TODO(vtl): The POSIX-specific bits have been factored out. Apply this test to
-// non-POSIX once we have a non-POSIX implementation.
 
 #include <stdint.h>
 #include <string.h>

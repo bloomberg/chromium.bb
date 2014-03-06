@@ -182,7 +182,7 @@
         'system/message_pipe_unittest.cc',
         'system/multiprocess_message_pipe_unittest.cc',
         'system/raw_channel_unittest.cc',
-        'system/remote_message_pipe_posix_unittest.cc',
+        'system/remote_message_pipe_unittest.cc',
         'system/simple_dispatcher_unittest.cc',
         'system/test_utils.cc',
         'system/test_utils.h',

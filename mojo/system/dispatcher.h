@@ -30,10 +30,9 @@ class Waiter;
 
 namespace test {
 
-// Test helper.
-// TODO(vtl): We need to declare it here so we can friend it. We define it
-// inline below, but maybe it should be in a test-only file instead.
-DispatcherTransport DispatcherTryStartTransport(Dispatcher* dispatcher);
+// Test helper. We need to declare it here so we can friend it.
+MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport DispatcherTryStartTransport(
+    Dispatcher* dispatcher);
 
 }  // namespace test
 
@@ -326,14 +325,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport {
 
   // Copy and assign allowed.
 };
-
-namespace test {
-
-inline DispatcherTransport DispatcherTryStartTransport(Dispatcher* dispatcher) {
-  return Dispatcher::CoreImplAccess::TryStartTransport(dispatcher);
-}
-
-}  // namespace test
 
 }  // namespace system
 }  // namespace mojo
