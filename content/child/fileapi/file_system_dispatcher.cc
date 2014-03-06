@@ -390,7 +390,8 @@ void FileSystemDispatcher::OnDidReadDirectory(
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   dispatcher->DidReadDirectory(entries, has_more);
-  dispatchers_.Remove(request_id);
+  if (!has_more)
+    dispatchers_.Remove(request_id);
 }
 
 void FileSystemDispatcher::OnDidFail(
