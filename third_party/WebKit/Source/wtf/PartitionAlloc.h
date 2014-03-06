@@ -129,7 +129,8 @@ static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
 // Underlying partition storage pages are a power-of-two size. It is typical
 // for a partition page to be based on multiple system pages. Most references to
 // "page" refer to partition pages.
-// We also have the concept of "super pages" -- these are the underlying system // allocations we make. Super pages contain multiple partition pages inside them
+// We also have the concept of "super pages" -- these are the underlying system
+// allocations we make. Super pages contain multiple partition pages inside them
 // and include space for a small amount of metadata per partition page.
 // Inside super pages, we store "slot spans". A slot span is a continguous range
 // of one or more partition pages that stores allocations of the same size.
@@ -182,6 +183,7 @@ static const size_t kGenericNumBucketsPerOrder = 1 << kGenericNumBucketsPerOrder
 static const size_t kGenericSmallestBucket = 1 << (kGenericMinBucketedOrder - 1);
 static const size_t kGenericMaxBucketSpacing = 1 << ((kGenericMaxBucketedOrder - 1) - kGenericNumBucketsPerOrderBits);
 static const size_t kGenericMaxBucketed = (1 << (kGenericMaxBucketedOrder - 1)) + ((kGenericNumBucketsPerOrder - 1) * kGenericMaxBucketSpacing);
+static const size_t kGenericMinDirectMappedDownsize = 16 * kPartitionPageSize; // Limit when downsizing a direct mapping using realloc().
 static const size_t kGenericMaxDirectMapped = INT_MAX - kSystemPageSize;
 static const size_t kBitsPerSizet = sizeof(void*) * CHAR_BIT;
 

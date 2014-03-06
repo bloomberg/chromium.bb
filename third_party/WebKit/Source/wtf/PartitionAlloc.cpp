@@ -46,6 +46,7 @@ COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_super_page_m
 COMPILE_ASSERT(WTF::kSystemPageSize * 4 <= WTF::kPartitionPageSize, ok_partition_page_size);
 COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSystemPageSize), ok_partition_page_multiple);
 COMPILE_ASSERT(sizeof(WTF::PartitionPage) <= WTF::kPageMetadataSize, PartitionPage_not_too_big);
+COMPILE_ASSERT(sizeof(WTF::PartitionBucket) <= WTF::kPageMetadataSize, PartitionBucket_not_too_big);
 COMPILE_ASSERT(sizeof(WTF::PartitionSuperPageExtentEntry) <= WTF::kPageMetadataSize, PartitionSuperPageExtentEntry_not_too_big);
 COMPILE_ASSERT(WTF::kPageMetadataSize * WTF::kNumPartitionPagesPerSuperPage <= WTF::kSystemPageSize, page_metadata_fits_in_hole);
 // Check that some of our zanier calculations worked out as expected.
@@ -524,6 +525,16 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
     return false;
 }
 
+struct PartitionDirectMapExtent {
+    size_t mapSize; // Mapped size, not including guard pages and meta-data.
+};
+
+static ALWAYS_INLINE PartitionDirectMapExtent* partitionPageToDirectMapExtent(PartitionPage* page)
+{
+    ASSERT(partitionBucketIsDirectMapped(page->bucket));
+    return reinterpret_cast<PartitionDirectMapExtent*>(reinterpret_cast<char*>(page) + 2 * kPageMetadataSize);
+}
+
 static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags, size_t size)
 {
     size = partitionDirectMapSize(size);
@@ -581,17 +592,21 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     bucket->numSystemPagesPerSlotSpan = 0;
     bucket->numFullPages = 0;
 
+    PartitionDirectMapExtent* mapExtent = partitionPageToDirectMapExtent(page);
+    mapExtent->mapSize = mapSize - kPartitionPageSize - kSystemPageSize;
+
     return ret;
 }
 
 static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
 {
-    size_t unmapSize = page->bucket->slotSize;
+    size_t unmapSize = partitionPageToDirectMapExtent(page)->mapSize;
+
     // Add on the size of the trailing guard page and preceeding partition
-    // page, then round up to allocation granularity.
+    // page.
     unmapSize += kPartitionPageSize + kSystemPageSize;
-    unmapSize += kPageAllocationGranularityOffsetMask;
-    unmapSize &= kPageAllocationGranularityBaseMask;
+
+    ASSERT(!(unmapSize & kPageAllocationGranularityOffsetMask));
 
     char* ptr = reinterpret_cast<char*>(partitionPageToPointer(page));
     // Account for the mapping starting a partition page before the actual
@@ -763,6 +778,54 @@ void partitionFreeSlowPath(PartitionPage* page)
     }
 }
 
+bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPage* page, size_t newSize)
+{
+    ASSERT(partitionBucketIsDirectMapped(page->bucket));
+
+    newSize = partitionCookieSizeAdjustAdd(newSize);
+
+    // Note that the new size might be a bucketed size; this function is called
+    // whenever we're reallocating a direct mapped allocation.
+    newSize = partitionDirectMapSize(newSize);
+    if (newSize < kGenericMinDirectMappedDownsize)
+        return false;
+
+    // bucket->slotSize is the current size of the allocation.
+    size_t currentSize = page->bucket->slotSize;
+    if (newSize == currentSize)
+        return true;
+
+    char* charPtr = static_cast<char*>(partitionPageToPointer(page));
+
+    if (newSize < currentSize) {
+        // Shrink by decommitting unneeded pages and making them inaccessible.
+        size_t decommitSize = currentSize - newSize;
+        decommitSystemPages(charPtr + newSize, decommitSize);
+        setSystemPagesInaccessible(charPtr + newSize, decommitSize);
+    } else if (newSize <= partitionPageToDirectMapExtent(page)->mapSize) {
+        // Grow within the actually allocated memory. Just need to make the
+        // pages accessible again.
+        size_t recommitSize = newSize - currentSize;
+        setSystemPagesAccessible(charPtr + currentSize, recommitSize);
+
+#ifndef NDEBUG
+        memset(charPtr + currentSize, kUninitializedByte, recommitSize);
+#endif
+    } else {
+        // We can't perform the realloc in-place.
+        // TODO: support this too when possible.
+        return false;
+    }
+
+#ifndef NDEBUG
+    // Write a new trailing cookie.
+    partitionCookieWriteValue(charPtr + newSize - kCookieSize);
+#endif
+
+    page->bucket->slotSize = newSize;
+    return true;
+}
+
 void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newSize)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
@@ -775,7 +838,19 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
         return 0;
     }
 
+    RELEASE_ASSERT(newSize <= kGenericMaxDirectMapped);
+
     ASSERT(partitionPointerIsValid(partitionCookieFreePointerAdjust(ptr)));
+
+    PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr));
+
+    if (UNLIKELY(partitionBucketIsDirectMapped(page->bucket))) {
+        // We may be able to perform the realloc in place by changing the
+        // accessibility of memory pages and, if reducing the size, decommitting
+        // them.
+        if (partitionReallocDirectMappedInPlace(root, page, newSize))
+            return ptr;
+    }
 
     size_t actualNewSize = partitionAllocActualSize(root, newSize);
     size_t actualOldSize = partitionAllocGetSize(ptr);
@@ -787,8 +862,6 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
         // Trying to allocate a block of size newSize would give us a block of
         // the same size as the one we've already got, so no point in doing
         // anything here.
-        // TODO: for an upsize or downsize on a direct mapped allocation, we
-        // should really try and resize it in-place.
         return ptr;
     }
 

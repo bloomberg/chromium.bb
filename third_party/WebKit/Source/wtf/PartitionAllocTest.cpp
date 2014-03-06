@@ -692,6 +692,23 @@ TEST(WTF_PartitionAlloc, Realloc)
 
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
+    // Test that shrinking a direct mapped allocation happens in-place (even
+    // though the new size is smaller than kGenericMaxBucketed).
+    size = WTF::kGenericMaxBucketed + 16 * WTF::kSystemPageSize;
+    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    size_t actualSize = partitionAllocGetSize(ptr);
+    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, WTF::kGenericMaxBucketed - 16 * WTF::kSystemPageSize);
+    EXPECT_EQ(ptr, ptr2);
+    EXPECT_EQ(actualSize - 32 * WTF::kSystemPageSize, partitionAllocGetSize(ptr2));
+
+    // Test that a previously in-place shrunk direct mapped allocation can be
+    // expanded up again within its original size.
+    ptr = partitionReallocGeneric(genericAllocator.root(), ptr2, size - WTF::kSystemPageSize);
+    EXPECT_EQ(ptr2, ptr);
+    EXPECT_EQ(actualSize - WTF::kSystemPageSize, partitionAllocGetSize(ptr));
+
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
     TestShutdown();
 }
 
