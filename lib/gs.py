@@ -62,7 +62,14 @@ def GetGsURL(bucket, for_gsutil=False, public=True, suburl=''):
 
 
 class GSContextException(Exception):
-  """Thrown when expected google storage preconditions are not met."""
+  """Base exception for all exceptions thrown by GSContext."""
+
+
+# Since the underlying code uses RunCommand, some callers might be trying to
+# catch cros_build_lib.RunCommandError themselves.  Extend that class so that
+# code continues to work.
+class GSCommandError(GSContextException, cros_build_lib.RunCommandError):
+  """Thrown when an error happened we couldn't decode."""
 
 
 class GSContextPreconditionFailed(GSContextException):
@@ -539,10 +546,13 @@ class GSContext(object):
       logging.debug("%s: would've run: %s", self.__class__.__name__,
                     cros_build_lib.CmdToStr(cmd))
     else:
-      return retry_util.GenericRetry(self._RetryFilter,
-                                     retries, cros_build_lib.RunCommand,
-                                     cmd, sleep=self._sleep_time,
-                                     extra_env=extra_env, **kwargs)
+      try:
+        return retry_util.GenericRetry(self._RetryFilter,
+                                       retries, cros_build_lib.RunCommand,
+                                       cmd, sleep=self._sleep_time,
+                                       extra_env=extra_env, **kwargs)
+      except cros_build_lib.RunCommandError as e:
+        raise GSCommandError(e.msg, e.result, e.exception)
 
   def Copy(self, src_path, dest_path, acl=None, recursive=True, **kwargs):
     """Copy to/from GS bucket.

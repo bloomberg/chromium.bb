@@ -498,7 +498,15 @@ class GSContextTest(AbstractGSContextTest):
     gs.GSUTIL_URL = None
     gs.GSContext(cache_dir=self.tempdir)
 
+  def testUnknownError(self):
+    """Test that when gsutil fails in an unknown way, we do the right thing."""
+    self.gs_mock.AddCmdResult(['stat', '/asdf'], returncode=1)
+
+    ctx = gs.GSContext()
+    self.assertRaises(gs.GSCommandError, ctx.Exists, '/asdf')
+
   def testWaitForGsPathsAllPresent(self):
+    """Test for waiting when all paths exist already."""
     ctx = gs.GSContext()
     ctx.WaitForGsPaths(['/path1', '/path2'], 20)
 
@@ -506,6 +514,7 @@ class GSContextTest(AbstractGSContextTest):
   # GS files, but I can't figure out how to make the Mock do that.
 
   def testWaitForGsPathsTimeout(self):
+    """Test for waiting, but not all paths exist so we timeout."""
     self.gs_mock.AddCmdResult(['stat', '/path1'],
                               returncode=1,
                               error='GSResponseError code=NoSuchKey')
