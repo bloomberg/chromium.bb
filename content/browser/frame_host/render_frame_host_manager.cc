@@ -327,6 +327,9 @@ void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
     GURL transfer_url = pending_nav_params_->transfer_url_chain.back();
     pending_nav_params_->transfer_url_chain.pop_back();
 
+    // We use GetMainFrame here because this version of SwappedOut is only
+    // called for the main frame.  We will remove it in favor of the frame
+    // specific version.
     RenderFrameHostImpl* render_frame_host =
         static_cast<RenderFrameHostImpl*>(render_view_host->GetMainFrame());
 
@@ -340,7 +343,6 @@ void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
         pending_nav_params_->referrer,
         pending_nav_params_->page_transition,
         CURRENT_TAB,
-        pending_nav_params_->render_frame_id,
         pending_nav_params_->global_request_id,
         pending_nav_params_->should_replace_current_entry,
         true);
@@ -393,7 +395,6 @@ void RenderFrameHostManager::SwappedOutFrame(
         pending_nav_params_->referrer,
         pending_nav_params_->page_transition,
         CURRENT_TAB,
-        pending_nav_params_->render_frame_id,
         pending_nav_params_->global_request_id,
         false,
         true);

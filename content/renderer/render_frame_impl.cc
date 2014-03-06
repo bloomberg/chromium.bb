@@ -2593,7 +2593,6 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
   params.url = url;
   params.referrer = referrer;
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
-  params.frame_id = RenderFrameImpl::FromWebFrame(frame)->GetRoutingID();
   WebDataSource* ds = frame->provisionalDataSource();
   if (ds) {
     DocumentState* document_state = DocumentState::FromDataSource(ds);

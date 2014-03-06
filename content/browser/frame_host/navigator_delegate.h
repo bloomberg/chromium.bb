@@ -94,7 +94,8 @@ class CONTENT_EXPORT NavigatorDelegate {
 
   // Opens a URL with the given parameters. See PageNavigator::OpenURL, which
   // this forwards to.
-  virtual void RequestOpenURL(const OpenURLParams& params) {}
+  virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                              const OpenURLParams& params) {}
 };
 
 }  // namspace content

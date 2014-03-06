@@ -91,19 +91,16 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
 
   // The RenderFrameHostImpl has received a request to open a URL with the
   // specified |disposition|.
-  // TODO(creis): Update source_frame_id.
   virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                               const GURL& url,
                               const Referrer& referrer,
                               WindowOpenDisposition disposition,
-                              int64 source_frame_id,
                               bool should_replace_current_entry,
                               bool user_gesture) {}
 
   // The RenderFrameHostImpl wants to transfer the request to a new renderer.
   // |redirect_chain| contains any redirect URLs (excluding |url|) that happened
   // before the transfer.
-  // TODO(creis): Update source_frame_id.
   virtual void RequestTransferURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -111,7 +108,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const Referrer& referrer,
       PageTransition page_transition,
       WindowOpenDisposition disposition,
-      int64 source_frame_id,
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       bool user_gesture) {}

@@ -301,9 +301,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
 
-  // Navigate with source_frame_id 3, FrameTreeNode ID 4.
+  // Navigate with FrameTreeNode ID 4.
   const GURL url("http://foo");
-  OpenURLParams params(url, Referrer(), 3, 4, CURRENT_TAB, PAGE_TRANSITION_LINK,
+  OpenURLParams params(url, Referrer(), 4, CURRENT_TAB, PAGE_TRANSITION_LINK,
                        true);
   shell()->web_contents()->OpenURL(params);
 

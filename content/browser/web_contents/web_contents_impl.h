@@ -473,7 +473,8 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       NavigationController::ReloadType reload_type) OVERRIDE;
-  virtual void RequestOpenURL(const OpenURLParams& params) OVERRIDE;
+  virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                              const OpenURLParams& params) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

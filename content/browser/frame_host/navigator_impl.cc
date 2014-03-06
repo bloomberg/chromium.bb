@@ -543,7 +543,6 @@ void NavigatorImpl::RequestOpenURL(
     const GURL& url,
     const Referrer& referrer,
     WindowOpenDisposition disposition,
-    int64 source_frame_id,
     bool should_replace_current_entry,
     bool user_gesture) {
   SiteInstance* current_site_instance =
@@ -564,7 +563,7 @@ void NavigatorImpl::RequestOpenURL(
   std::vector<GURL> redirect_chain;
   RequestTransferURL(
       render_frame_host, url, redirect_chain, referrer, PAGE_TRANSITION_LINK,
-      disposition, source_frame_id, GlobalRequestID(),
+      disposition, GlobalRequestID(),
       should_replace_current_entry, user_gesture);
 }
 
@@ -575,7 +574,6 @@ void NavigatorImpl::RequestTransferURL(
     const Referrer& referrer,
     PageTransition page_transition,
     WindowOpenDisposition disposition,
-    int64 source_frame_id,
     const GlobalRequestID& transferred_global_request_id,
     bool should_replace_current_entry,
     bool user_gesture) {
@@ -588,19 +586,14 @@ void NavigatorImpl::RequestTransferURL(
     dest_url = GURL(kAboutBlankURL);
   }
 
-  // Look up the FrameTreeNode ID corresponding to source_frame_id.
   int64 frame_tree_node_id = -1;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
-      source_frame_id != -1) {
-    FrameTreeNode* source_node =
-        render_frame_host->frame_tree_node()->frame_tree()->FindByRoutingID(
-            source_frame_id, transferred_global_request_id.child_id);
-    if (source_node)
-      frame_tree_node_id = source_node->frame_tree_node_id();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    frame_tree_node_id =
+        render_frame_host->frame_tree_node()->frame_tree_node_id();
   }
   OpenURLParams params(
-      dest_url, referrer, source_frame_id, frame_tree_node_id, disposition,
-      page_transition, true /* is_renderer_initiated */);
+      dest_url, referrer, frame_tree_node_id, disposition, page_transition,
+      true /* is_renderer_initiated */);
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
   params.transferred_global_request_id = transferred_global_request_id;
@@ -628,7 +621,7 @@ void NavigatorImpl::RequestTransferURL(
   }
 
   if (delegate_)
-    delegate_->RequestOpenURL(params);
+    delegate_->RequestOpenURL(render_frame_host, params);
 }
 
 }  // namespace content

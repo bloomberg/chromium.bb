@@ -2026,6 +2026,14 @@ void WebContentsImpl::DidStartProvisionalLoad(
   if (is_main_frame)
     DidChangeLoadProgress(0);
 
+  // --site-per-process mode has a short-term hack allowing cross-process
+  // subframe pages to commit thinking they are top-level.  Correct it here to
+  // avoid confusing the observers.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      render_frame_host != GetMainFrame()) {
+    is_main_frame = false;
+  }
+
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(
@@ -2097,7 +2105,9 @@ void WebContentsImpl::DidStartNavigationToPendingEntry(
       DidStartNavigationToPendingEntry(url, reload_type));
 }
 
-void WebContentsImpl::RequestOpenURL(const OpenURLParams& params) {
+void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                                     const OpenURLParams& params) {
+  int source_render_frame_id = render_frame_host->GetRoutingID();
   WebContents* new_contents = OpenURL(params);
 
   if (new_contents) {
@@ -2108,7 +2118,7 @@ void WebContentsImpl::RequestOpenURL(const OpenURLParams& params) {
                                           params.referrer,
                                           params.disposition,
                                           params.transition,
-                                          params.source_frame_id));
+                                          source_render_frame_id));
   }
 }
 

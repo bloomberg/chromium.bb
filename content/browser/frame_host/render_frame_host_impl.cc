@@ -200,7 +200,7 @@ void RenderFrameHostImpl::OnOpenURL(
   GetProcess()->FilterURL(false, &validated_url);
 
   frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, params.referrer, params.disposition, params.frame_id,
+      this, validated_url, params.referrer, params.disposition,
       params.should_replace_current_entry, params.user_gesture);
 }
 
