@@ -764,9 +764,12 @@ audioPlayerInitializationQueue.run(function(callback) {
   var audioPlayerCreateOptions = Object.freeze({
       type: 'panel',
       hidden: true,
-      minHeight: newAudioPlayerEnabled ? 116 : (35 + 58),
+      minHeight:
+          newAudioPlayerEnabled ?
+              (44 + 73) :  // 44px: track, 73px: controller
+              (35 + 58),  // 35px: track, 58px: controller
       minWidth: newAudioPlayerEnabled ? 292 : 280,
-      height: newAudioPlayerEnabled ? 116 : (35 + 58),  // default collapsed
+      height: newAudioPlayerEnabled ? (44 + 73) : (35 + 58),  // collapsed
       width: newAudioPlayerEnabled ? 292 : 280,
   });
 

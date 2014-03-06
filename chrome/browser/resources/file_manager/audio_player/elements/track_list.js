@@ -92,8 +92,9 @@
     },
 
     /**
-     * Invoked when 'tracks' property is clicked.
-     * @param {Event} event Click event.
+     * Invoked when 'tracks' property is changed.
+     * @param {Array.<TrackInfo>} oldValue Old value.
+     * @param {Array.<TrackInfo>} newValue New value.
      */
     tracksChanged: function(oldValue, newValue) {
       // Note: Sometimes both oldValue and newValue are null though the actual
@@ -101,15 +102,19 @@
 
       // Re-register the observer of 'this.tracks'.
       this.tracksObserver_.close();
-      this.tracksObserver_ = new ArrayObserver(
-          this.tracks,
-          this.tracksValueChanged_.bind(this));
+      this.tracksObserver_ = new ArrayObserver(this.tracks);
+      this.tracksObserver_.open(this.tracksValueChanged_.bind(this));
 
-      // Reset play order and current index.
-      if (this.tracks.length !== 0)
+      if (this.tracks.length !== 0) {
+        // Restore the active track.
+        if (this.currentTrackIndex !== -1 &&
+            this.currentTrackIndex < this.tracks.length) {
+          this.tracks[this.currentTrackIndex].active = true;
+        }
+
+        // Reset play order and current index.
         this.generatePlayOrder(false /* no need to keep the current track */);
-
-      if (this.tracks.length === 0) {
+      } else {
         this.playOrder = [];
         this.currentTrackIndex = -1;
       }
@@ -154,10 +159,21 @@
       var trackSelector = '.track[index="' + trackIndex + '"]';
       var trackElement = this.impl.querySelector(trackSelector);
       if (trackElement) {
-        this.scrollTop = Math.max(
-            0,
-            (trackElement.offsetTop + trackElement.offsetHeight -
-             this.clientHeight));
+        var viewTop = this.scrollTop;
+        var viewHeight = this.clientHeight;
+        var elementTop = trackElement.offsetTop;
+        var elementHeight = trackElement.offsetHeight;
+
+        if (elementTop < viewTop) {
+          // Adjust the tops.
+          this.scrollTop = elementTop;
+        } else if (elementTop + elementHeight <= viewTop + viewHeight) {
+          // The entire element is in the viewport. Do nothing.
+        } else {
+          // Adjust the bottoms.
+          this.scrollTop = Math.max(0,
+                                    (elementTop + elementHeight - viewHeight));
+        }
       }
     },
 

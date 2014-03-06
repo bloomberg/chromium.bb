@@ -21,7 +21,6 @@ function AudioPlayer(container) {
     // Inverse arguments intentionally to match the Polymer way.
     this.onModelExpandedChanged(oldValue, newValue);
   }.bind(this));
-  this.trackListItems_ = [];
 
   this.entries_ = [];
   this.currentTrackIndex_ = -1;
@@ -38,7 +37,8 @@ function AudioPlayer(container) {
   this.isExpanded_ = null;  // Initial value is null. It'll be set in load().
 
   this.player_ = document.querySelector('audio-player');
-  this.player_.tracks = this.trackListItems_;
+  // TODO(yoshiki): Move tracks into the model.
+  this.player_.tracks = [];
   this.player_.model = this.model_;
   Platform.performMicrotaskCheckpoint();
 
@@ -103,6 +103,8 @@ AudioPlayer.prototype.load = function(playlist) {
   window.appState = JSON.parse(JSON.stringify(playlist));  // cloning
   util.saveAppState();
 
+  this.isExpanded_ = this.model_.expanded;
+
   // Resolving entries has to be done after the volume manager is initialized.
   this.volumeManager_.ensureInitialized(function() {
     util.URLsToEntries(playlist.items, function(entries) {
@@ -114,13 +116,15 @@ AudioPlayer.prototype.load = function(playlist) {
       if (this.entries_.length == 0)
         return;
 
-      this.trackListItems_.splice(0);
+      var newTracks = [];
 
       for (var i = 0; i != this.entries_.length; i++) {
         var entry = this.entries_[i];
         var onClick = this.select_.bind(this, i, false /* no restore */);
-        this.trackListItems_.push(new AudioPlayer.TrackInfo(entry, onClick));
+        newTracks.push(new AudioPlayer.TrackInfo(entry, onClick));
       }
+
+      this.player_.tracks = newTracks;
 
       // Makes it sure that the handler of the track list is called, before the
       // handler of the track index.
@@ -156,7 +160,7 @@ AudioPlayer.prototype.loadMetadata_ = function(track) {
  * @private
  */
 AudioPlayer.prototype.displayMetadata_ = function(track, metadata, opt_error) {
-  this.trackListItems_[track].setMetadata(metadata, opt_error);
+  this.player_.tracks[track].setMetadata(metadata, opt_error);
 };
 
 /**
@@ -268,7 +272,7 @@ AudioPlayer.prototype.onResize_ = function(event) {
  * @type {number}
  * @const
  */
-AudioPlayer.HEADER_HEIGHT = 28;
+AudioPlayer.HEADER_HEIGHT = 33;  // 32px + border 1px
 
 /**
  * Track height in pixels.
@@ -282,7 +286,7 @@ AudioPlayer.TRACK_HEIGHT = 44;
  * @type {number}
  * @const
  */
-AudioPlayer.CONTROLS_HEIGHT = 72;
+AudioPlayer.CONTROLS_HEIGHT = 73;  // 72px + border 1px
 
 /**
  * Default number of items in the expanded mode.
@@ -315,6 +319,10 @@ AudioPlayer.prototype.onModelExpandedChanged = function(oldValue, newValue) {
   if (this.isExpanded_ !== newValue) {
     this.isExpanded_ = newValue;
     this.syncHeight_();
+
+    // Saves new state.
+    window.appState.expanded = newValue;
+    util.saveAppState();
   }
 };
 
