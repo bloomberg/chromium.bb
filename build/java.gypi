@@ -344,9 +344,6 @@
         '--classes-dir=<(classes_dir)',
         '--jar-path=<(javac_jar_path)',
         '--excluded-classes=<(jar_excluded_classes)',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
     {
@@ -382,9 +379,6 @@
         'python', '<(DEPTH)/build/android/gyp/jar_toc.py',
         '--jar-path=<(jar_final_path)',
         '--toc-path=<(jar_final_path).TOC',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
     {

@@ -46,9 +46,6 @@ def main(argv):
       help='List of .class file patterns to exclude from the jar.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
-  # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-  parser.add_option('--ignore', help='Ignored.')
-
   options, _ = parser.parse_args()
 
   DoJar(options)

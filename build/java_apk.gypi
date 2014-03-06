@@ -592,10 +592,10 @@
       'action_name': 'jar_<(_target_name)',
       'message': 'Creating <(_target_name) jar',
       'inputs': [
-        '<(instr_stamp)',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/util/md5_check.py',
         '<(DEPTH)/build/android/gyp/jar.py',
+        '<(instr_stamp)',
       ],
       'outputs': [
         '<(jar_stamp)',
@@ -606,9 +606,6 @@
         '--jar-path=<(jar_path)',
         '--excluded-classes=<(jar_excluded_classes)',
         '--stamp=<(jar_stamp)',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
     {
