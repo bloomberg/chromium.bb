@@ -119,8 +119,7 @@
       '<(DEPTH)/third_party/jinja2/__init__.py',
       '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
     ],
-    'idl_compiler_files': [
-      'scripts/idl_compiler.py',
+    'idl_lexer_parser_files': [
       # PLY (Python Lex-Yacc)
       '<(DEPTH)/third_party/ply/lex.py',
       '<(DEPTH)/third_party/ply/yacc.py',
@@ -131,6 +130,10 @@
       # Blink IDL lexer/parser/constructor
       'scripts/blink_idl_lexer.py',
       'scripts/blink_idl_parser.py',
+    ],
+    'idl_compiler_files': [
+      'scripts/idl_compiler.py',
+      # Blink IDL front end (ex-lexer/parser)
       'scripts/idl_definitions.py',
       'scripts/idl_reader.py',
       'scripts/idl_validator.py',
@@ -281,6 +284,31 @@
   },
 ################################################################################
   {
+    # A separate pre-caching step is *not required* to use parse table caching
+    # in PLY, as the cache is concurrency-safe.
+    # However, pre-caching ensures that all compiler processes use the cached
+    # file (hence maximizing speed), instead of early processes building the
+    # table themselves (as it's not yet been written by the time they start).
+    'target_name': 'cached_yacc_tables',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'cache_yacc_tables',
+      'inputs': [
+        '<@(idl_lexer_parser_files)',
+      ],
+      'outputs': [
+        '<(bindings_output_dir)/parsetab.pickle',
+      ],
+      'action': [
+        'python',
+        'scripts/blink_idl_parser.py',
+        '<(bindings_output_dir)',
+      ],
+      'message': 'Caching PLY yacc parse tables',
+    }],
+  },
+################################################################################
+  {
     # A separate pre-caching step is *required* to use bytecode caching in
     # Jinja (which improves speed significantly), as the bytecode cache is
     # not concurrency-safe on write; details in code_generator_v8.py.
@@ -314,6 +342,7 @@
     'hard_dependency': 1,
     'dependencies': [
       'interfaces_info',
+      'cached_yacc_tables',
       'cached_jinja_templates',
       '../core/core_generated.gyp:generated_testing_idls',
     ],
@@ -325,7 +354,9 @@
       'extension': 'idl',
       'msvs_external_rule': 1,
       'inputs': [
+        '<@(idl_lexer_parser_files)',  # to be explicit (covered by parsetab)
         '<@(idl_compiler_files)',
+        '<(bindings_output_dir)/parsetab.pickle',
         '<(bindings_output_dir)/cached_jinja_templates.stamp',
         'IDLExtendedAttributes.txt',
         # If the dependency structure or public interface info (e.g.,

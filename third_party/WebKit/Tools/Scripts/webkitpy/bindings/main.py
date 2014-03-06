@@ -195,8 +195,9 @@ class BindingsTests(object):
                        os.path.join(self.output_directory, output_file))
                       for output_file in os.listdir(self.output_directory)
                       # Skip cache
-                      if (output_file != 'parsetab.py' and  # PLY cache
-                          not output_file.endswith('.cache'))]  # Jinja cache
+                      if not output_file.endswith(('.pickle',  # PLY yacc
+                                                   '.cache',  # Jinja
+                                                   ))]
         return all([self.identical_file(reference_filename, output_filename)
                     for (reference_filename, output_filename) in file_pairs])
 

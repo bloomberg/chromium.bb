@@ -402,14 +402,47 @@ class BlinkIDLParser(IDLParser):
                 keys.remove(production_name)
         return list(keys)
 
-    def __init__(self, lexer=None, verbose=False, debug=False, mute_error=False, outputdir=''):
+    def __init__(self,
+                 # common parameters
+                 debug=False,
+                 # idl_parser parameters
+                 lexer=None, verbose=False, mute_error=False,
+                 # yacc parameters
+                 outputdir='', optimize=True, write_tables=False,
+                 picklefile=None):
+        if debug:
+            # Turn off optimization and caching, and write out tables,
+            # to help debugging
+            optimize = False
+            outputdir = None
+            picklefile = None
+            write_tables = True
+        if outputdir:
+            picklefile = picklefile or os.path.join(outputdir, 'parsetab.pickle')
+
         lexer = lexer or BlinkIDLLexer()
         self.lexer = lexer
         self.tokens = lexer.KnownTokens()
         # Using SLR (instead of LALR) generates the table faster,
         # but produces the same output. This is ok b/c Web IDL (and Blink IDL)
         # is an SLR grammar (as is often the case for simple LL(1) grammars).
-        self.yaccobj = yacc.yacc(module=self, start=STARTING_SYMBOL, method='SLR', debug=debug, outputdir=outputdir)
+        #
+        # Optimized mode substantially decreases startup time (by disabling
+        # error checking), and also allows use of Python's optimized mode.
+        # See: Using Python's Optimized Mode
+        # http://www.dabeaz.com/ply/ply.html#ply_nn38
+        #
+        # |picklefile| allows simpler importing than |tabmodule| (parsetab.py),
+        # as we don't need to modify sys.path; virtually identical speed.
+        # See: CHANGES, Version 3.2
+        # http://ply.googlecode.com/svn/trunk/CHANGES
+        self.yaccobj = yacc.yacc(module=self,
+                                 start=STARTING_SYMBOL,
+                                 method='SLR',
+                                 debug=debug,
+                                 optimize=optimize,
+                                 write_tables=write_tables,
+                                 picklefile=picklefile)
         self.parse_debug = debug
         self.verbose = verbose
         self.mute_error = mute_error
@@ -420,6 +453,17 @@ class BlinkIDLParser(IDLParser):
         self._last_error_pos = 0
 
 
-# If run by itself, attempt to build the parser
+################################################################################
+
+def main(argv):
+    # If file itself executed, cache parse table
+    try:
+        outputdir = argv[1]
+    except IndexError as err:
+        print 'Usage: %s OUTPUT_DIR' % argv[0]
+        return 1
+    parser = BlinkIDLParser(outputdir=outputdir)
+
+
 if __name__ == '__main__':
-    parser = BlinkIDLParser()
+    sys.exit(main(sys.argv))
