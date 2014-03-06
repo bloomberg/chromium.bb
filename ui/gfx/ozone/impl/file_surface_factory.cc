@@ -21,7 +21,7 @@ void WriteDataToFile(const base::FilePath& location,
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
   base::WriteFile(location,
-                  static_cast<const char*>(vector_as_array(&png_data)),
+                  reinterpret_cast<const char*>(vector_as_array(&png_data)),
                   png_data.size());
 }
 
