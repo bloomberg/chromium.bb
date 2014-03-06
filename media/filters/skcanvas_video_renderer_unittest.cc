@@ -5,7 +5,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "media/filters/skcanvas_video_renderer.h"
 
@@ -19,19 +18,17 @@ static const gfx::Rect kNaturalRect(0, 0, kWidth, kHeight);
 
 // Helper for filling a |canvas| with a solid |color|.
 void FillCanvas(SkCanvas* canvas, SkColor color) {
-  const SkBitmap& bitmap = canvas->getDevice()->accessBitmap(true);
-  bitmap.lockPixels();
-  bitmap.eraseColor(color);
-  bitmap.unlockPixels();
+  canvas->clear(color);
 }
 
 // Helper for returning the color of a solid |canvas|.
 SkColor GetColorAt(SkCanvas* canvas, int x, int y) {
-  const SkBitmap& bitmap = canvas->getDevice()->accessBitmap(false);
-  bitmap.lockPixels();
-  SkColor c = bitmap.getColor(x, y);
-  bitmap.unlockPixels();
-  return c;
+  SkBitmap bitmap;
+  if (!bitmap.allocN32Pixels(1, 1))
+    return 0;
+  if (!canvas->readPixels(&bitmap, x, y))
+    return 0;
+  return bitmap.getColor(0, 0);
 }
 
 SkColor GetColor(SkCanvas* canvas) {
@@ -75,13 +72,21 @@ class SkCanvasVideoRendererTest : public testing::Test {
   scoped_refptr<VideoFrame> smaller_frame_;
   scoped_refptr<VideoFrame> cropped_frame_;
 
-  SkBitmapDevice fast_path_device_;
   SkCanvas fast_path_canvas_;
-  SkBitmapDevice slow_path_device_;
   SkCanvas slow_path_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);
 };
+
+static SkBitmap AllocBitmap(int width, int height, bool isOpaque) {
+  SkAlphaType alpha_type = isOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  SkBitmap bitmap;
+
+  bitmap.allocPixels(SkImageInfo::MakeN32(width, height, alpha_type));
+  if (!isOpaque)
+    bitmap.eraseColor(0);
+  return bitmap;
+}
 
 SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
     : natural_frame_(VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight))),
@@ -95,10 +100,8 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
           gfx::Rect(6, 6, 8, 6),
           gfx::Size(8, 6),
           base::TimeDelta::FromMilliseconds(4))),
-      fast_path_device_(SkBitmap::kARGB_8888_Config, kWidth, kHeight, true),
-      fast_path_canvas_(&fast_path_device_),
-      slow_path_device_(SkBitmap::kARGB_8888_Config, kWidth, kHeight, false),
-      slow_path_canvas_(&slow_path_device_) {
+      fast_path_canvas_(AllocBitmap(kWidth, kHeight, true)),
+      slow_path_canvas_(AllocBitmap(kWidth, kHeight, false)) {
   // Give each frame a unique timestamp.
   natural_frame_->SetTimestamp(base::TimeDelta::FromMilliseconds(1));
   larger_frame_->SetTimestamp(base::TimeDelta::FromMilliseconds(2));
