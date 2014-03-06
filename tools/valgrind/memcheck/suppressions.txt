@@ -6321,12 +6321,3 @@
    fun:_ZN7content9webcrypto12_GLOBAL__N_118ArrayBufferMatchesERKSt6vectorIhSaIhEERKN5blink14WebArrayBufferE
    fun:_ZN7content9webcrypto53SharedCryptoTest_AesKwRawSymkeyUnwrapCorruptData_Test8TestBodyEv
 }
-{
-   bug_349948
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN22DefaultSingletonTraitsIN12_GLOBAL__N_128MachineStatisticsInitializerEE3NewEv
-   fun:_ZN9SingletonIN12_GLOBAL__N_128MachineStatisticsInitializerE22DefaultSingletonTraitsIS1_ES1_E3getEv
-   fun:_ZN12_GLOBAL__N_128MachineStatisticsInitializer11GetInstanceEv
-   fun:_ZN12_GLOBAL__N_130CrosLanguageOptionsHandlerTestC1Ev
-}
