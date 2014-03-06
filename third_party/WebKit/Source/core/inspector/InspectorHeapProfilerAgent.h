@@ -79,6 +79,7 @@ private:
     void requestHeapStatsUpdate();
     void pushHeapStatsUpdate(const uint32_t* const data, const int size);
 
+    void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
 
     InjectedScriptManager* m_injectedScriptManager;
