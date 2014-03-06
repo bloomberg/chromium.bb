@@ -65,7 +65,12 @@ do_perftests() {
 do_gyp() {
   local gyp_defines="$(make_gyp_defines)"
   echo "Running gyp with GYP_DEFINES=$gyp_defines ..."
-  GYP_DEFINES="$gyp_defines" build/gyp_chromium mojo/mojo.gyp
+  GYP_DEFINES="$gyp_defines" build/gyp_chromium mojo/mojo.gyp || exit 1
+}
+
+do_sync() {
+  # Note: sync only (with hooks, but no gyp-ing).
+  GYP_CHROMIUM_NO_ACTION=1 gclient sync || exit 1
 }
 
 # Valid values: Debug, Release, or Debug_and_Release.
@@ -135,8 +140,7 @@ for arg in "$@"; do
       do_gyp
       ;;
     sync)
-      # Note: sync only (with hooks, but no gyp-ing).
-      GYP_CHROMIUM_NO_ACTION=1 gclient sync
+      do_sync
       ;;
     show-bash-alias)
       # You want to type something like:
