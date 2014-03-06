@@ -4,7 +4,7 @@ This test checks the following case:<br>
 * Set its location to about:blank<br>
 * In a setTimeout(), navigate to a non-blank page<br>
 The iframe navigations should not create new history entries, even though the non-blank navigation is after the load (there is only one history entry in the iframe context, and it is about:blank).
-<iframe id="i"></iframe>
+<iframe id="i" name="i"></iframe>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
