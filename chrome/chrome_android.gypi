@@ -23,10 +23,10 @@
         # This file must always be included in the shared_library step to ensure
         # JNI_OnLoad is exported.
         'app/android/chrome_jni_onload.cc',
-        'android/testshell/chrome_main_delegate_testshell_android.cc',
-        'android/testshell/chrome_main_delegate_testshell_android.h',
-        "android/testshell/testshell_google_location_settings_helper.cc",
-        "android/testshell/testshell_google_location_settings_helper.h",
+        'android/shell/chrome_main_delegate_testshell_android.cc',
+        'android/shell/chrome_main_delegate_testshell_android.h',
+        "android/shell/testshell_google_location_settings_helper.cc",
+        "android/shell/testshell_google_location_settings_helper.h",
       ],
       'include_dirs': [
         '../skia/config',
@@ -57,7 +57,7 @@
       'variables': {
         'apk_name': 'ChromiumTestShell',
         'manifest_package_name': 'org.chromium.chrome.shell',
-        'java_in_dir': 'android/testshell/java',
+        'java_in_dir': 'android/shell/java',
         'resource_dir': 'android/shell/res',
         'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
         'native_lib_target': 'libchromiumtestshell',
