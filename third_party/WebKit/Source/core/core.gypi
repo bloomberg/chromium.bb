@@ -3273,6 +3273,7 @@
             'css/DragUpdateTest.cpp',
             'css/HoverUpdateTest.cpp',
             'css/RuleSetTest.cpp',
+            'css/MediaQuerySetTest.cpp',
             'css/analyzer/DescendantInvalidationSetTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',

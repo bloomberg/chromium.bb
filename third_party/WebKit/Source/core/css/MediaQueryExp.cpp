@@ -77,9 +77,9 @@ static inline bool featureWithValidIdent(const AtomicString& mediaFeature, CSSVa
     return false;
 }
 
-static inline bool featureWithValidPositiveLenghtOrNumber(const AtomicString& mediaFeature, const CSSParserValue* value)
+static inline bool featureWithValidPositiveLength(const AtomicString& mediaFeature, const CSSParserValue* value)
 {
-    if (!(((value->unit >= CSSPrimitiveValue::CSS_EMS && value->unit <= CSSPrimitiveValue::CSS_PC) || value->unit == CSSPrimitiveValue::CSS_REMS) || value->unit == CSSPrimitiveValue::CSS_NUMBER) || value->fValue < 0)
+    if (!(((value->unit >= CSSPrimitiveValue::CSS_EMS && value->unit <= CSSPrimitiveValue::CSS_PC) || value->unit == CSSPrimitiveValue::CSS_REMS) || (value->unit == CSSPrimitiveValue::CSS_NUMBER && !(value->fValue))) || value->fValue < 0)
         return false;
 
     return mediaFeature == MediaFeatureNames::heightMediaFeature
@@ -225,7 +225,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& 
             } else if (featureWithValidDensity(mediaFeature, value)) {
                 // Media features that must have non-negative <density>, ie. dppx, dpi or dpcm.
                 cssValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes) value->unit);
-            } else if (featureWithValidPositiveLenghtOrNumber(mediaFeature, value)) {
+            } else if (featureWithValidPositiveLength(mediaFeature, value)) {
                 // Media features that must have non-negative <lenght> or number value.
                 cssValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes) value->unit);
             } else if (featureWithPositiveInteger(mediaFeature, value)) {
