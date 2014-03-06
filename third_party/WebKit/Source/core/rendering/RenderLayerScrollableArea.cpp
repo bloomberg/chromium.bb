@@ -1223,6 +1223,9 @@ void RenderLayerScrollableArea::updateResizerAreaSet()
 
 void RenderLayerScrollableArea::updateResizerStyle()
 {
+    if (!m_resizer && !m_box->canResize())
+        return;
+
     RenderObject* actualRenderer = rendererForScrollbar(m_box);
     RefPtr<RenderStyle> resizer = m_box->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<RenderStyle>(nullptr);
     if (resizer) {
