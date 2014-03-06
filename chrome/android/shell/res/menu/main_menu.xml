@@ -12,6 +12,8 @@
               android:title="@string/signin_sign_in" />
         <item android:id="@+id/print"
               android:title="@string/print_menu" />
+        <item android:id="@+id/distill_page"
+              android:title="@string/distill_page_menu" />
     </group>
 
     <group android:id="@+id/PHONE_ICON_MENU_ITEMS"

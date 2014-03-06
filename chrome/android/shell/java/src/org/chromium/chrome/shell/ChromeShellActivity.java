@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.shell.sync.SyncController;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
@@ -42,6 +43,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ChromeShellActivity extends Activity implements AppMenuPropertiesDelegate {
     private static final String TAG = "ChromeShellActivity";
+    private static final String CHROME_DISTILLER_SCHEME = "chrome-distiller";
 
     private WindowAndroid mWindow;
     private TabManager mTabManager;
@@ -233,6 +235,12 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                     mPrintingController.startPrint(new TabPrinter(getActiveTab()));
                 }
                 return true;
+            case R.id.distill_page:
+                TestShellTab activeTab = getActiveTab();
+                String viewUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
+                        CHROME_DISTILLER_SCHEME, getActiveTab().getUrl());
+                activeTab.loadUrlWithSanitization(viewUrl);
+                return true;
             case R.id.back_menu_id:
                 if (getActiveTab().canGoBack()) getActiveTab().goBack();
                 return true;
@@ -282,6 +290,9 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         }
 
         menu.findItem(R.id.print).setVisible(ApiCompatibilityUtils.isPrintingSupported());
+
+        menu.findItem(R.id.distill_page).setVisible(
+                CommandLine.getInstance().hasSwitch(TestShellSwitches.ENABLE_DOM_DISTILLER));
 
         menu.setGroupVisible(R.id.MAIN_MENU, true);
     }

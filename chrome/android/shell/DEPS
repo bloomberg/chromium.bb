@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/app",
   "+chrome/browser",
+  "+components/dom_distiller/android/java",
   "+content/public/android",
   "+content/public/browser",
   "+content/public/browser/android",
