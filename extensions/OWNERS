@@ -1,13 +1,13 @@
 # Extension and apps team owners. Use file history to guide reviewer selection
 # as this list is randomized. If editing, see chrome/browser/extensions/OWNERS
-koz@chromium.org
+finnur@chromium.org
+jyasskin@chromium.org
+kalman@chromium.org
+rdevlin.cronin@chromium.org
+benwells@chromium.org
+mek@chromium.org
 yoz@chromium.org
 asargent@chromium.org
 scheib@chromium.org
-jyasskin@chromium.org
-kalman@chromium.org
-mek@chromium.org
+koz@chromium.org
 miket@chromium.org
-finnur@chromium.org
-benwells@chromium.org
-
