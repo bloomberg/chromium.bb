@@ -28,21 +28,22 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/Touch.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class TouchList : public RefCounted<TouchList>, public ScriptWrappable {
+class TouchList : public RefCountedWillBeGarbageCollectedFinalized<TouchList>, public ScriptWrappable {
 public:
-    static PassRefPtr<TouchList> create()
+    static PassRefPtrWillBeRawPtr<TouchList> create()
     {
-        return adoptRef(new TouchList);
+        return adoptRefWillBeNoop(new TouchList);
     }
 
-    static PassRefPtr<TouchList> create(Vector<RefPtr<Touch> >& touches)
+    static PassRefPtrWillBeRawPtr<TouchList> create(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches)
     {
-        return adoptRef(new TouchList(touches));
+        return adoptRefWillBeNoop(new TouchList(touches));
     }
 
     unsigned length() const { return m_values.size(); }
@@ -50,7 +51,9 @@ public:
     Touch* item(unsigned);
     const Touch* item(unsigned) const;
 
-    void append(const PassRefPtr<Touch> touch) { m_values.append(touch); }
+    void append(const PassRefPtrWillBeRawPtr<Touch> touch) { m_values.append(touch); }
+
+    void trace(Visitor*);
 
 private:
     TouchList()
@@ -58,13 +61,13 @@ private:
         ScriptWrappable::init(this);
     }
 
-    TouchList(Vector<RefPtr<Touch> >& touches)
+    TouchList(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches)
     {
         m_values.swap(touches);
         ScriptWrappable::init(this);
     }
 
-    Vector<RefPtr<Touch> > m_values;
+    WillBeHeapVector<RefPtrWillBeMember<Touch> > m_values;
 };
 
 } // namespace WebCore

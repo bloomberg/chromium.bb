@@ -344,6 +344,8 @@ interface TestObjectPython {
     void voidMethodStringArgVariadicStringArg(DOMString stringArg, DOMString... variadicStringArgs);
     void voidMethodVariadicTestInterfaceEmptyArg(TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
     void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
+    // [WillBeGarbageCollected]
+    void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg(TestInterfaceWillBeGarbageCollected... variadicTestInterfaceWillBeGarbageCollectedArg);
 
     // Overloaded methods
     void overloadedMethodA(long longArg);
@@ -435,6 +437,9 @@ interface TestObjectPython {
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [Unforgeable] void unforgeableVoidMethod();
+    // [WillBeGarbageCollected]
+    void voidMethodSequenceTestInterfaceWillBeGarbageCollectedArg(sequence<TestInterfaceWillBeGarbageCollected> sequenceTestInterfaceWillBeGarbageCollectedArg);
+    void voidMethodArrayTestInterfaceWillBeGarbageCollectedArg(TestInterfaceWillBeGarbageCollected[] arrayTestInterfaceWillBeGarbageCollectedArg);
 
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)

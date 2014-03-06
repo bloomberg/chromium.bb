@@ -140,8 +140,10 @@ def generate_argument(interface, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
+    is_variadic_wrapper_type = argument.is_variadic and v8_types.is_wrapper_type(idl_type)
+    use_heap_vector_type = is_variadic_wrapper_type and v8_types.is_will_be_garbage_collected(idl_type)
     return {
-        'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_type': v8_types.cpp_type(idl_type, will_be_in_heap_object=use_heap_vector_type),
         'cpp_value': this_cpp_value,
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_default': 'Default' in extended_attributes,
@@ -152,7 +154,8 @@ def generate_argument(interface, method, argument, index):
         'is_nullable': argument.is_nullable,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
-        'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
+        'is_variadic_wrapper_type': is_variadic_wrapper_type,
+        'vector_type': 'WillBeHeapVector' if use_heap_vector_type else 'Vector',
         'is_wrapper_type': v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
@@ -222,8 +225,9 @@ def v8_value_to_local_cpp_value(argument, index):
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        return 'V8TRYCATCH_VOID(Vector<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
-                cpp_type=v8_types.cpp_type(idl_type), name=name, index=index)
+        vector_type = 'WillBeHeapVector' if v8_types.is_will_be_garbage_collected(idl_type) else 'Vector'
+        return 'V8TRYCATCH_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
+                cpp_type=v8_types.cpp_type(idl_type), name=name, index=index, vector_type=vector_type)
     # [Default=NullString]
     if (argument.is_optional and idl_type == 'DOMString' and
         extended_attributes.get('Default') == 'NullString'):

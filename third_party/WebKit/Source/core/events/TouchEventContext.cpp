@@ -33,9 +33,9 @@
 
 namespace WebCore {
 
-PassRefPtr<TouchEventContext> TouchEventContext::create()
+PassRefPtrWillBeRawPtr<TouchEventContext> TouchEventContext::create()
 {
-    return adoptRef(new TouchEventContext);
+    return adoptRefWillBeNoop(new TouchEventContext);
 }
 
 TouchEventContext::TouchEventContext()
@@ -56,6 +56,13 @@ void TouchEventContext::handleLocalEvents(Event* event) const
     touchEvent->setTouches(m_touches);
     touchEvent->setTargetTouches(m_targetTouches);
     touchEvent->setChangedTouches(m_changedTouches);
+}
+
+void TouchEventContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_touches);
+    visitor->trace(m_targetTouches);
+    visitor->trace(m_changedTouches);
 }
 
 }

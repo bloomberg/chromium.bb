@@ -248,8 +248,17 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 
 
-def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
-    """Returns C++ type corresponding to IDL type."""
+def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, will_be_in_heap_object=False):
+    """Returns C++ type corresponding to IDL type.
+
+    Args:
+        used_as_argument: bool, True if idl_type's raw/primitive C++ type
+        should be returned.
+        will_be_in_heap_object: bool, True if idl_type will be part
+        of a possibly heap allocated object (e.g., appears as an
+        element of a C++ heap vector type.) The C++ type of an
+        interface type changes, if so.
+    """
     def string_mode():
         # FIXME: the Web IDL spec requires 'EmptyString', not 'NullString',
         # but we use NullString for performance.
@@ -283,7 +292,9 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
                 for union_member_type in idl_type.union_member_types)
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
-        return cpp_template_type('Vector', cpp_type(this_array_or_sequence_type))
+        will_be_garbage_collected = is_will_be_garbage_collected(this_array_or_sequence_type)
+        vector_type = 'WillBeHeapVector' if will_be_garbage_collected else 'Vector'
+        return cpp_template_type(vector_type, cpp_type(this_array_or_sequence_type, will_be_in_heap_object=will_be_garbage_collected))
 
     if is_typed_array_type(idl_type) and used_as_argument:
         return idl_type + '*'
@@ -292,7 +303,8 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         if used_as_argument:
             return implemented_as_class + '*'
         if is_will_be_garbage_collected(idl_type):
-            return cpp_template_type('RefPtrWillBeRawPtr', implemented_as_class)
+            ref_ptr_type = 'RefPtrWillBeMember' if will_be_in_heap_object else 'RefPtrWillBeRawPtr'
+            return cpp_template_type(ref_ptr_type, implemented_as_class)
         return cpp_template_type('RefPtr', implemented_as_class)
     # Default, assume native type is a pointer with same type name as idl type
     return idl_type + '*'
@@ -471,12 +483,14 @@ def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_valu
     if (is_interface_type(this_array_or_sequence_type) and
         this_array_or_sequence_type != 'Dictionary'):
         this_cpp_type = None
-        expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {index}, info.GetIsolate()))'
+        ref_ptr_type = 'Member' if is_will_be_garbage_collected(this_array_or_sequence_type) else 'RefPtr'
+        expression_format = '(to{ref_ptr_type}NativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {index}, info.GetIsolate()))'
         add_includes_for_type(this_array_or_sequence_type)
     else:
+        ref_ptr_type = None
         this_cpp_type = cpp_type(this_array_or_sequence_type)
         expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {index}, info.GetIsolate())'
-    expression = expression_format.format(array_or_sequence_type=this_array_or_sequence_type, cpp_type=this_cpp_type, index=index, v8_value=v8_value)
+    expression = expression_format.format(array_or_sequence_type=this_array_or_sequence_type, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value)
     return expression
 
 

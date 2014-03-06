@@ -73,7 +73,7 @@ def cpp_type(idl_type):
         return 'void'
     # Callbacks use raw pointers, so used_as_argument=True
     usual_cpp_type = v8_types.cpp_type(idl_type, used_as_argument=True)
-    if usual_cpp_type.startswith('Vector'):
+    if usual_cpp_type.startswith(('Vector', 'WillBeHeapVector')):
         return 'const %s&' % usual_cpp_type
     return usual_cpp_type
 

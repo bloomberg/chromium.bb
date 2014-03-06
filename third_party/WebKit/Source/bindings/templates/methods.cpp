@@ -148,7 +148,7 @@ if (!std::isnan({{argument.name}}NativeValue))
 if (exceptionState.throwIfNeeded())
     return;
 {% elif argument.is_variadic_wrapper_type %}
-Vector<{{argument.cpp_type}} > {{argument.name}};
+{{argument.vector_type}}<{{argument.cpp_type}} > {{argument.name}};
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate())) {
         {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %

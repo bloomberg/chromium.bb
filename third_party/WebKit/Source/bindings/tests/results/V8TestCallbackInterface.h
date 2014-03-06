@@ -61,6 +61,8 @@ public:
     virtual void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) OVERRIDE;
     virtual void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) OVERRIDE;
     virtual void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) OVERRIDE;
+    virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg) OVERRIDE;
+    virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& arrayArg) OVERRIDE;
 private:
     V8TestCallbackInterface(v8::Handle<v8::Function>, ExecutionContext*);
 

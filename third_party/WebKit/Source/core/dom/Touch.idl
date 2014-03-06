@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface Touch {
+[
+    WillBeGarbageCollected,
+] interface Touch {
     readonly attribute long             clientX;
     readonly attribute long             clientY;
     readonly attribute long             screenX;

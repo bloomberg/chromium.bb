@@ -72,7 +72,7 @@ private:
     RefPtr<EventTarget> m_target;
     RefPtr<EventTarget> m_relatedTarget;
     RefPtr<NodeList> m_eventPath;
-    RefPtr<TouchEventContext> m_touchEventContext;
+    RefPtrWillBePersistent<TouchEventContext> m_touchEventContext;
 };
 
 #ifndef NDEBUG

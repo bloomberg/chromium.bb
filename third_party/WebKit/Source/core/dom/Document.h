@@ -50,6 +50,7 @@
 #include "core/page/FocusType.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/rendering/HitTestRequest.h"
+#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -929,8 +930,8 @@ public:
     bool isDelayingLoadEvent() const { return m_loadEventDelayCount; }
     void loadPluginsSoon();
 
-    PassRefPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force) const;
-    PassRefPtr<TouchList> createTouchList(Vector<RefPtr<Touch> >&) const;
+    PassRefPtrWillBeRawPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force) const;
+    PassRefPtrWillBeRawPtr<TouchList> createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch> >&) const;
 
     const DocumentTiming& timing() const { return m_documentTiming; }
 

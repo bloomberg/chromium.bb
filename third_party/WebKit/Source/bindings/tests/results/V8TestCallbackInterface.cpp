@@ -34,6 +34,7 @@
 #include "V8TestCallbackInterface.h"
 
 #include "V8TestInterfaceEmpty.h"
+#include "V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
 #include "core/dom/ExecutionContext.h"
@@ -238,6 +239,52 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
     v8::Handle<v8::Value> argv[] = { stringArgHandle };
 
     invokeCallback(m_callback.newLocal(m_isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, executionContext(), m_isolate);
+}
+
+void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg)
+{
+    if (!canInvokeCallback())
+        return;
+
+    v8::HandleScope handleScope(m_isolate);
+
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
+    if (v8Context.IsEmpty())
+        return;
+
+    v8::Context::Scope scope(v8Context);
+    v8::Handle<v8::Value> sequenceArgHandle = v8Array(sequenceArg, m_isolate);
+    if (sequenceArgHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return;
+    }
+    v8::Handle<v8::Value> argv[] = { sequenceArgHandle };
+
+    invokeCallback(m_callback.newLocal(m_isolate), 1, argv, executionContext(), m_isolate);
+}
+
+void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& arrayArg)
+{
+    if (!canInvokeCallback())
+        return;
+
+    v8::HandleScope handleScope(m_isolate);
+
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
+    if (v8Context.IsEmpty())
+        return;
+
+    v8::Context::Scope scope(v8Context);
+    v8::Handle<v8::Value> arrayArgHandle = v8Array(arrayArg, m_isolate);
+    if (arrayArgHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return;
+    }
+    v8::Handle<v8::Value> argv[] = { arrayArgHandle };
+
+    invokeCallback(m_callback.newLocal(m_isolate), 1, argv, executionContext(), m_isolate);
 }
 
 } // namespace WebCore

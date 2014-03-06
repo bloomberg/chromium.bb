@@ -88,6 +88,7 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
+#include "heap/Handle.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformTouchEvent.h"
@@ -3582,18 +3583,18 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     // for an overview of how these lists fit together.
 
     // Holds the complete set of touches on the screen and will be used as the 'touches' list in the JS event.
-    RefPtr<TouchList> touches = TouchList::create();
+    RefPtrWillBeRawPtr<TouchList> touches = TouchList::create();
 
     // A different view on the 'touches' list above, filtered and grouped by event target. Used for the
     // 'targetTouches' list in the JS event.
-    typedef HashMap<EventTarget*, RefPtr<TouchList> > TargetTouchesMap;
-    TargetTouchesMap touchesByTarget;
+    typedef WillBeHeapHashMap<EventTarget*, RefPtrWillBeMember<TouchList> > TargetTouchesHeapMap;
+    TargetTouchesHeapMap touchesByTarget;
 
     // Array of touches per state, used to assemble the 'changedTouches' list in the JS event.
     typedef HashSet<RefPtr<EventTarget> > EventTargetSet;
     struct {
         // The touches corresponding to the particular change state this struct instance represents.
-        RefPtr<TouchList> m_touches;
+        RefPtrWillBeRawPtr<TouchList> m_touches;
         // Set of targets involved in m_touches.
         EventTargetSet m_targets;
     } changedTouches[PlatformTouchPoint::TouchStateEnd];
@@ -3711,14 +3712,14 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         int adjustedRadiusX = lroundf(point.radiusX() / scaleFactor);
         int adjustedRadiusY = lroundf(point.radiusY() / scaleFactor);
 
-        RefPtr<Touch> touch = Touch::create(targetFrame, touchTarget.get(), point.id(),
+        RefPtrWillBeRawPtr<Touch> touch = Touch::create(targetFrame, touchTarget.get(), point.id(),
                                             point.screenPos().x(), point.screenPos().y(),
                                             adjustedPageX, adjustedPageY,
                                             adjustedRadiusX, adjustedRadiusY,
                                             point.rotationAngle(), point.force());
 
         // Ensure this target's touch list exists, even if it ends up empty, so it can always be passed to TouchEvent::Create below.
-        TargetTouchesMap::iterator targetTouchesIterator = touchesByTarget.find(touchTarget.get());
+        TargetTouchesHeapMap::iterator targetTouchesIterator = touchesByTarget.find(touchTarget.get());
         if (targetTouchesIterator == touchesByTarget.end()) {
             touchesByTarget.set(touchTarget.get(), TouchList::create());
             targetTouchesIterator = touchesByTarget.find(touchTarget.get());
@@ -3751,20 +3752,20 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
     // Now iterate the changedTouches list and m_targets within it, sending events to the targets as required.
     bool swallowedEvent = false;
-    RefPtr<TouchList> emptyList = TouchList::create();
+    RefPtrWillBeRawPtr<TouchList> emptyList = TouchList::create();
     for (unsigned state = 0; state != PlatformTouchPoint::TouchStateEnd; ++state) {
         if (!changedTouches[state].m_touches)
             continue;
 
         // When sending a touch cancel event, use empty touches and targetTouches lists.
         bool isTouchCancelEvent = (state == PlatformTouchPoint::TouchCancelled);
-        RefPtr<TouchList>& effectiveTouches(isTouchCancelEvent ? emptyList : touches);
+        RefPtrWillBeRawPtr<TouchList>& effectiveTouches(isTouchCancelEvent ? emptyList : touches);
         const AtomicString& stateName(eventNameForTouchPointState(static_cast<PlatformTouchPoint::State>(state)));
         const EventTargetSet& targetsForState = changedTouches[state].m_targets;
 
         for (EventTargetSet::const_iterator it = targetsForState.begin(); it != targetsForState.end(); ++it) {
             EventTarget* touchEventTarget = it->get();
-            RefPtr<TouchList> targetTouches(isTouchCancelEvent ? emptyList : touchesByTarget.get(touchEventTarget));
+            RefPtrWillBeRawPtr<TouchList> targetTouches(isTouchCancelEvent ? emptyList.get() : touchesByTarget.get(touchEventTarget));
             ASSERT(targetTouches);
 
             RefPtr<TouchEvent> touchEvent =

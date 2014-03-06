@@ -5699,6 +5699,27 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCa
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > variadicTestInterfaceWillBeGarbageCollectedArg;
+    for (int i = 0; i < info.Length(); ++i) {
+        if (!V8TestInterfaceWillBeGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'."), info.GetIsolate());
+            return;
+        }
+        variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(info[i])));
+    }
+    imp->voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg(variadicTestInterfaceWillBeGarbageCollectedArg);
+}
+
+static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObjectPython", info.Holder(), info.GetIsolate());
@@ -7246,6 +7267,42 @@ static void unforgeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void voidMethodSequenceTestInterfaceWillBeGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodSequenceTestInterfaceWillBeGarbageCollectedArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, sequenceTestInterfaceWillBeGarbageCollectedArg, (toMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    imp->voidMethodSequenceTestInterfaceWillBeGarbageCollectedArg(sequenceTestInterfaceWillBeGarbageCollectedArg);
+}
+
+static void voidMethodSequenceTestInterfaceWillBeGarbageCollectedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodSequenceTestInterfaceWillBeGarbageCollectedArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void voidMethodArrayTestInterfaceWillBeGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodArrayTestInterfaceWillBeGarbageCollectedArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, arrayTestInterfaceWillBeGarbageCollectedArg, (toMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    imp->voidMethodArrayTestInterfaceWillBeGarbageCollectedArg(arrayTestInterfaceWillBeGarbageCollectedArg);
+}
+
+static void voidMethodArrayTestInterfaceWillBeGarbageCollectedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodArrayTestInterfaceWillBeGarbageCollectedArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -7491,6 +7548,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodStringArgVariadicStringArg", TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 2},
     {"voidMethodVariadicTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCallback, 0, 2},
+    {"voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", TestObjectPythonV8Internal::voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethodCallback, 0, 1},
     {"overloadedMethodA", TestObjectPythonV8Internal::overloadedMethodAMethodCallback, 0, 1},
     {"overloadedMethodB", TestObjectPythonV8Internal::overloadedMethodBMethodCallback, 0, 1},
     {"overloadedMethodC", TestObjectPythonV8Internal::overloadedMethodCMethodCallback, 0, 1},
@@ -7550,6 +7608,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArg", TestObjectPythonV8Internal::strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"treatReturnedNullStringAsNullStringMethod", TestObjectPythonV8Internal::treatReturnedNullStringAsNullStringMethodMethodCallback, 0, 0},
     {"treatReturnedNullStringAsUndefinedStringMethod", TestObjectPythonV8Internal::treatReturnedNullStringAsUndefinedStringMethodMethodCallback, 0, 0},
+    {"voidMethodSequenceTestInterfaceWillBeGarbageCollectedArg", TestObjectPythonV8Internal::voidMethodSequenceTestInterfaceWillBeGarbageCollectedArgMethodCallback, 0, 1},
+    {"voidMethodArrayTestInterfaceWillBeGarbageCollectedArg", TestObjectPythonV8Internal::voidMethodArrayTestInterfaceWillBeGarbageCollectedArgMethodCallback, 0, 1},
 };
 
 static void configureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)

@@ -62,9 +62,9 @@ public:
     TouchList* targetTouches() const { return m_targetTouches.get(); }
     TouchList* changedTouches() const { return m_changedTouches.get(); }
 
-    void setTouches(PassRefPtr<TouchList> touches) { m_touches = touches; }
-    void setTargetTouches(PassRefPtr<TouchList> targetTouches) { m_targetTouches = targetTouches; }
-    void setChangedTouches(PassRefPtr<TouchList> changedTouches) { m_changedTouches = changedTouches; }
+    void setTouches(PassRefPtrWillBeRawPtr<TouchList> touches) { m_touches = touches; }
+    void setTargetTouches(PassRefPtrWillBeRawPtr<TouchList> targetTouches) { m_targetTouches = targetTouches; }
+    void setChangedTouches(PassRefPtrWillBeRawPtr<TouchList> changedTouches) { m_changedTouches = changedTouches; }
 
     virtual bool isTouchEvent() const OVERRIDE;
 
@@ -80,9 +80,9 @@ private:
             int pageY,
             bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
-    RefPtr<TouchList> m_touches;
-    RefPtr<TouchList> m_targetTouches;
-    RefPtr<TouchList> m_changedTouches;
+    RefPtrWillBePersistent<TouchList> m_touches;
+    RefPtrWillBePersistent<TouchList> m_targetTouches;
+    RefPtrWillBePersistent<TouchList> m_changedTouches;
 };
 
 class TouchEventDispatchMediator FINAL : public EventDispatchMediator {
