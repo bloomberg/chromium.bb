@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace policy {
@@ -24,6 +26,7 @@ UserCloudPolicyTokenForwarderFactory::UserCloudPolicyTokenForwarderFactory()
     : BrowserContextKeyedServiceFactory(
         "UserCloudPolicyTokenForwarder",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(UserCloudPolicyManagerFactoryChromeOS::GetInstance());
 }
@@ -38,9 +41,12 @@ BrowserContextKeyedService*
       UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (!token_service || !manager)
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  if (!signin_manager || !token_service || !manager)
     return NULL;
-  return new UserCloudPolicyTokenForwarder(manager, token_service);
+  return new UserCloudPolicyTokenForwarder(manager, token_service,
+                                           signin_manager);
 }
 
 bool UserCloudPolicyTokenForwarderFactory::

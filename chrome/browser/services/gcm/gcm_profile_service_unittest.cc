@@ -137,9 +137,11 @@ class FakeSigninManager : public SigninManagerBase {
   }
 
   void SignOut() {
+    std::string username = GetAuthenticatedUsername();
     clear_authenticated_username();
+    profile()->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 
-    GoogleServiceSignoutDetails details(GetAuthenticatedUsername());
+    GoogleServiceSignoutDetails details(username);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
         content::Source<Profile>(profile_),

@@ -23,6 +23,8 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -180,8 +182,12 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       ProfileOAuth2TokenService* token_service =
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
       ASSERT_TRUE(token_service);
+      SigninManagerBase* signin_manager =
+          SigninManagerFactory::GetForProfile(profile_);
+      ASSERT_TRUE(signin_manager);
       token_forwarder_.reset(
-          new UserCloudPolicyTokenForwarder(manager_.get(), token_service));
+          new UserCloudPolicyTokenForwarder(manager_.get(), token_service,
+                                            signin_manager));
     }
   }
 
@@ -535,7 +541,10 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
     static_cast<FakeProfileOAuth2TokenService*>(
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_));
   ASSERT_TRUE(token_service);
-  const std::string account_id = token_service->GetPrimaryAccountId();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  ASSERT_TRUE(signin_manager);
+  const std::string& account_id = signin_manager->GetAuthenticatedAccountId();
   EXPECT_FALSE(token_service->RefreshTokenIsAvailable(account_id));
   token_service->UpdateCredentials(account_id, "refresh_token");
   EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));

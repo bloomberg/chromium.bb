@@ -11,6 +11,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class ProfileOAuth2TokenService;
+class SigninManagerBase;
 
 namespace policy {
 
@@ -30,7 +31,8 @@ class UserCloudPolicyTokenForwarder : public BrowserContextKeyedService,
   // so this object will be Shutdown() first and these pointers can be used
   // until that point.
   UserCloudPolicyTokenForwarder(UserCloudPolicyManagerChromeOS* manager,
-                                ProfileOAuth2TokenService* token_service);
+                                ProfileOAuth2TokenService* token_service,
+                                SigninManagerBase* signin_manager);
   virtual ~UserCloudPolicyTokenForwarder();
 
   // BrowserContextKeyedService:
@@ -56,6 +58,7 @@ class UserCloudPolicyTokenForwarder : public BrowserContextKeyedService,
 
   UserCloudPolicyManagerChromeOS* manager_;
   ProfileOAuth2TokenService* token_service_;
+  SigninManagerBase* signin_manager_;
   scoped_ptr<OAuth2TokenService::Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarder);

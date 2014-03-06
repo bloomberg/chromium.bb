@@ -59,6 +59,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
@@ -458,10 +460,9 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
-    StringPrefMember google_services_username;
-    google_services_username.Init(prefs::kGoogleServicesUsername,
-                                  user_profile->GetPrefs());
-    google_services_username.SetValue(user_id);
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(user_profile);
+    signin_manager->SetAuthenticatedUsername(user_id);
   }
 }
 

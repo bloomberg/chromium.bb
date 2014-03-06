@@ -217,8 +217,6 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Authenticate sync client using GAIA credentials.
   service()->signin()->SetAuthenticatedUsername(username_);
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  username_);
   GoogleServiceSigninSuccessDetails details(username_, password_);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,

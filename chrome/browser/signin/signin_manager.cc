@@ -623,8 +623,6 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 void SigninManager::OnSignedIn(const std::string& username) {
   SetAuthenticatedUsername(username);
   possibly_invalid_username_.clear();
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  GetAuthenticatedUsername());
 
   // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
   // fixed.

@@ -89,11 +89,12 @@ void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
     return;
 #endif
   }
+  std::string pref_username = profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
+  DCHECK(pref_username.empty() ||
+      gaia::AreEmailsSame(username, pref_username));
   authenticated_username_ = username;
-  // TODO(tim): We could go further in ensuring kGoogleServicesUsername and
-  // authenticated_username_ are consistent once established (e.g. remove
-  // authenticated_username_ altogether). Bug 107160.
-
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
   NotifyDiagnosticsObservers(USERNAME, username);
 
   // Go ahead and update the last signed in username here as well. Once a
