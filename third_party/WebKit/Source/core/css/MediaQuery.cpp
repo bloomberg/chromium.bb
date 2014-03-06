@@ -29,7 +29,9 @@
 #include "config.h"
 #include "core/css/MediaQuery.h"
 
+#include "MediaTypeNames.h"
 #include "core/css/MediaQueryExp.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -55,7 +57,7 @@ String MediaQuery::serialize() const
         return result.toString();
     }
 
-    if (m_mediaType != "all" || m_restrictor != None) {
+    if (m_mediaType != MediaTypeNames::all || m_restrictor != None) {
         result.append(m_mediaType);
         result.append(" and ");
     }
@@ -73,9 +75,9 @@ static bool expressionCompare(const OwnPtrWillBeMember<MediaQueryExp>& a, const 
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-MediaQuery::MediaQuery(Restrictor r, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> expressions)
+MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> expressions)
     : m_restrictor(r)
-    , m_mediaType(mediaType.lower())
+    , m_mediaType(attemptStaticStringCreation(mediaType.lower()))
     , m_expressions(expressions)
 {
     if (!m_expressions) {

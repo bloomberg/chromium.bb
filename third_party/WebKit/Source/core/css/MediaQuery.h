@@ -47,12 +47,12 @@ public:
         Only, Not, None
     };
 
-    MediaQuery(Restrictor, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> exprs);
+    MediaQuery(Restrictor, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> exprs);
     ~MediaQuery();
 
     Restrictor restrictor() const { return m_restrictor; }
     const ExpressionHeapVector& expressions() const { return *m_expressions; }
-    const AtomicString& mediaType() const { return m_mediaType; }
+    const String& mediaType() const { return m_mediaType; }
     bool operator==(const MediaQuery& other) const;
     String cssText() const;
 
@@ -64,7 +64,7 @@ private:
     MediaQuery(const MediaQuery&);
 
     Restrictor m_restrictor;
-    AtomicString m_mediaType;
+    String m_mediaType;
     OwnPtrWillBeMember<ExpressionHeapVector> m_expressions;
     String m_serializationCache;
 

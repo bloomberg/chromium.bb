@@ -267,7 +267,7 @@ static void addResolutionWarningMessageToConsole(Document* document, const Strin
     document->addConsoleMessage(CSSMessageSource, DebugMessageLevel, message.toString());
 }
 
-static inline bool isResolutionMediaFeature(const AtomicString& mediaFeature)
+static inline bool isResolutionMediaFeature(const String& mediaFeature)
 {
     return mediaFeature == MediaFeatureNames::resolutionMediaFeature
         || mediaFeature == MediaFeatureNames::maxResolutionMediaFeature

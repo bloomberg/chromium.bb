@@ -33,7 +33,6 @@
 #include "core/css/CSSValue.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 class CSSParserValueList;
@@ -41,10 +40,10 @@ class CSSParserValueList;
 class MediaQueryExp : public NoBaseWillBeGarbageCollectedFinalized<MediaQueryExp> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtrWillBeRawPtr<MediaQueryExp> create(const AtomicString& mediaFeature, CSSParserValueList*);
+    static PassOwnPtrWillBeRawPtr<MediaQueryExp> create(const String& mediaFeature, CSSParserValueList*);
     ~MediaQueryExp();
 
-    AtomicString mediaFeature() const { return m_mediaFeature; }
+    const String& mediaFeature() const { return m_mediaFeature; }
 
     CSSValue* value() const { return m_value.get(); }
 
@@ -66,9 +65,9 @@ public:
     MediaQueryExp(const MediaQueryExp& other);
 
 private:
-    MediaQueryExp(const AtomicString& mediaFeature, PassRefPtrWillBeRawPtr<CSSValue>);
+    MediaQueryExp(const String&, PassRefPtrWillBeRawPtr<CSSValue>);
 
-    AtomicString m_mediaFeature;
+    String m_mediaFeature;
     RefPtrWillBeMember<CSSValue> m_value;
 };
 

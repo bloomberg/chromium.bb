@@ -369,7 +369,8 @@ bool threadSafeMatch(const String& localName, const QualifiedName& qName)
     return threadSafeEqual(localName.impl(), qName.localName().impl());
 }
 
-StringImpl* findStringIfStatic(const UChar* characters, unsigned length)
+template<typename CharType>
+inline StringImpl* findStringIfStatic(const CharType* characters, unsigned length)
 {
     // We don't need to try hashing if we know the string is too long.
     if (length > StringImpl::highestStaticStringLength())
@@ -389,6 +390,29 @@ StringImpl* findStringIfStatic(const UChar* characters, unsigned length)
     if (!equal(it->value, characters, length))
         return 0;
     return it->value;
+}
+
+String attemptStaticStringCreation(const LChar* characters, size_t size)
+{
+    String string(findStringIfStatic(characters, size));
+    if (string.impl())
+        return string;
+    return String(characters, size);
+}
+
+String attemptStaticStringCreation(const UChar* characters, size_t size, CharacterWidth width)
+{
+    String string(findStringIfStatic(characters, size));
+    if (string.impl())
+        return string;
+    if (width == Likely8Bit)
+        string = StringImpl::create8BitIfPossible(characters, size);
+    else if (width == Force8Bit)
+        string = String::make8BitFrom16BitSource(characters, size);
+    else
+        string = String(characters, size);
+
+    return string;
 }
 
 }

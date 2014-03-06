@@ -107,29 +107,29 @@ inline bool isNotHTMLSpace(CharType character)
 bool threadSafeMatch(const QualifiedName&, const QualifiedName&);
 bool threadSafeMatch(const String&, const QualifiedName&);
 
-StringImpl* findStringIfStatic(const UChar* characters, unsigned length);
-
 enum CharacterWidth {
     Likely8Bit,
     Force8Bit,
     Force16Bit
 };
 
-template<size_t inlineCapacity>
-static String attemptStaticStringCreation(const Vector<UChar, inlineCapacity>& vector, CharacterWidth width)
-{
-    String string(findStringIfStatic(vector.data(), vector.size()));
-    if (string.impl())
-        return string;
-    if (width == Likely8Bit)
-        string = StringImpl::create8BitIfPossible(vector);
-    else if (width == Force8Bit)
-        string = String::make8BitFrom16BitSource(vector);
-    else
-        string = String(vector);
+String attemptStaticStringCreation(const LChar*, size_t);
 
-    return string;
+String attemptStaticStringCreation(const UChar*, size_t, CharacterWidth);
+
+template<size_t inlineCapacity>
+inline static String attemptStaticStringCreation(const Vector<UChar, inlineCapacity>& vector, CharacterWidth width)
+{
+    return attemptStaticStringCreation(vector.data(), vector.size(), width);
 }
+
+inline static String attemptStaticStringCreation(const String str)
+{
+    if (!str.is8Bit())
+        return attemptStaticStringCreation(str.characters16(), str.length(), Force16Bit);
+    return attemptStaticStringCreation(str.characters8(), str.length());
+}
+
 
 }
 #endif
