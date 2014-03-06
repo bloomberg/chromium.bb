@@ -272,7 +272,7 @@
         'scripts/generate_event_interfaces.py',
         '--interfaces-info-file',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-        '--event-names-file',
+        '--event-interfaces-file',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
         '<@(write_file_only_if_changed)',
       ],

@@ -57,7 +57,6 @@ DEPENDENCY_IDL_FILES = set([
 all_input_directory = '.'  # Relative to Source/
 test_input_directory = os.path.join('bindings', 'tests', 'idls')
 reference_directory = os.path.join('bindings', 'tests', 'results')
-reference_event_names_filename = os.path.join(reference_directory, 'EventInterfaces.in')
 
 
 class ScopedTempFileProvider(object):
@@ -104,7 +103,6 @@ class BindingsTests(object):
             self.output_directory = reference_directory
         else:
             self.output_directory = provider.new_temp_dir()
-        self.event_names_filename = os.path.join(self.output_directory, 'EventInterfaces.in')
 
     def run_command(self, cmd):
         output = self.executive.run_command(cmd)
@@ -146,14 +144,6 @@ class BindingsTests(object):
             os.write(list_file, list_contents)
             return list_filename
 
-        def generate_event_interfaces(event_names_filename):
-            cmd = ['python',
-                   'bindings/scripts/generate_event_interfaces.py',
-                   '--interfaces-info-file', self.interfaces_info_filename,
-                   '--event-names-file', event_names_filename,
-                   '--write-file-only-if-changed', '0']
-            self.run_command(cmd)
-
         def compute_interfaces_info(idl_files_list_filename):
             cmd = ['python',
                    'bindings/scripts/compute_interfaces_info.py',
@@ -162,28 +152,18 @@ class BindingsTests(object):
                    '--write-file-only-if-changed', '0']
             self.run_command(cmd)
 
-        test_idl_files_list_filename = write_list_file(idl_paths(test_input_directory))
+        # We compute interfaces info for *all* IDL files, not just test IDL
+        # files, as code generator output depends on inheritance (both ancestor
+        # chain and inherited extended attributes), and some real interfaces
+        # are special-cased, such as Node.
+        #
+        # For example, when testing the behavior of interfaces that inherit
+        # from Node, we also need to know that these inherit from EventTarget,
+        # since this is also special-cased and Node inherits from EventTarget,
+        # but this inheritance information requires computing dependencies for
+        # the real Node.idl file.
         all_idl_files_list_filename = write_list_file(idl_paths_recursive(all_input_directory))
-
-        if self.reset_results and self.verbose:
-            print 'Reset results: EventInterfaces.in'
         try:
-            # We first compute interfaces info for testing files only,
-            # so we can compare EventInterfaces.in.
-            compute_interfaces_info(test_idl_files_list_filename)
-            generate_event_interfaces(self.event_names_filename)
-
-            # We then compute interfaces info for all IDL files, as code
-            # generator output depends on inheritance (both ancestor chain and
-            # inherited extended attributes), and some real interfaces are
-            # special-cased, such as Node.
-            # For example, when testing the behavior of interfaces that inherit
-            # from Node, we also need to know that these inherit from
-            # EventTarget, since this is also special-cased and Node inherits
-            # from EventTarget, but this inheritance information requires
-            # computing dependencies for the real Node.idl file.
-            #
-            # Don't overwrite the event names file generated for testing IDLs
             compute_interfaces_info(all_idl_files_list_filename)
         except ScriptError, e:
             print 'ERROR: compute_interfaces_info.py'
@@ -223,7 +203,6 @@ class BindingsTests(object):
     def no_excess_files(self):
         generated_files = set(os.listdir(self.output_directory))
         generated_files.add('.svn')  # Subversion working copy directory
-        generated_files.add('EventInterfaces.in')  # only in Perl, not Python
         excess_files = [output_file
                         for output_file in os.listdir(reference_directory)
                         if output_file not in generated_files]
@@ -255,9 +234,7 @@ class BindingsTests(object):
                 print 'Reset results: %s' % input_filename
 
         # Detect all changes
-        passed = self.identical_file(reference_event_names_filename,
-                                     self.event_names_filename)
-        passed &= self.identical_output_files()
+        passed = self.identical_output_files()
         passed &= self.no_excess_files()
         return passed
 
