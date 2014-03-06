@@ -48,9 +48,13 @@ content::WebContents* OpenURLFromTabInternal(
   // window.
   chrome::NavigateParams new_tab_params(
       static_cast<Browser*>(NULL), params.url, params.transition);
-  new_tab_params.disposition = params.disposition == NEW_BACKGROUND_TAB
-                                   ? params.disposition
-                                   : NEW_FOREGROUND_TAB;
+  if (params.disposition == NEW_BACKGROUND_TAB) {
+    new_tab_params.disposition = NEW_BACKGROUND_TAB;
+  } else {
+    new_tab_params.disposition = NEW_FOREGROUND_TAB;
+    new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  }
+
   new_tab_params.initiating_profile = Profile::FromBrowserContext(context);
   chrome::Navigate(&new_tab_params);
 
