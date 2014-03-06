@@ -435,24 +435,31 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   if not os.path.exists(installer_dir):
     os.mkdir(installer_dir)
 
-  # Copy the VS CRT DLLs to |build_dir| and |installer_dir|. This must be done
-  # before the general copy step below to ensure the CRT DLLs are added to the
-  # archive and marked as a dependency in the exe manifests generated below.
+  # Copy the VS CRT DLLs to |build_dir|. This must be done before the general
+  # copy step below to ensure the CRT DLLs are added to the archive and marked
+  # as a dependency in the exe manifests generated below.
   CopyVisualStudioRuntimeDLLs(target_arch, build_dir)
-  CopyVisualStudioRuntimeDLLs(target_arch, installer_dir)
 
-  # The set of component DLLs required by setup.exe (to be dropped in the
-  # archive in the |installer_dir|).
-  setup_component_dll_names = { 'base.dll',
+  # Explicitly list the component DLLs setup.exe depends on (this list may
+  # contain wildcards). These will be copied to |installer_dir| in the archive.
+  setup_component_dll_globs = [ 'base.dll',
                                 'crcrypto.dll',
                                 'crnspr.dll',
                                 'crnss.dll',
                                 'icui18n.dll',
-                                'icuuc.dll', }
+                                'icuuc.dll',
+                                'msvc*.dll' ]
+  for setup_component_dll_glob in setup_component_dll_globs:
+    setup_component_dlls = glob.glob(os.path.join(build_dir,
+                                                  setup_component_dll_glob))
+    for setup_component_dll in setup_component_dlls:
+      shutil.copy(setup_component_dll, installer_dir)
 
-  # Stage all the component DLLs found in |build_dir|. These are all the DLLs
-  # which have not already been added to the staged |version_dir| by virtue of
-  # chrome.release.
+  # Stage all the component DLLs found in |build_dir| to the |version_dir| (for
+  # the version assembly to be able to refer to them below and make sure
+  # chrome.exe can find them at runtime). The component DLLs are considered to
+  # be all the DLLs which have not already been added to the |version_dir| by
+  # virtue of chrome.release.
   build_dlls = glob.glob(os.path.join(build_dir, '*.dll'))
   staged_dll_basenames = [os.path.basename(staged_dll) for staged_dll in \
                           glob.glob(os.path.join(version_dir, '*.dll'))]
@@ -466,15 +473,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
     if component_dll_name.startswith('remoting_'):
       continue
     component_dll_filenames.append(component_dll_name)
-    # Copy each |component_dll| to the version_dir (for the version assembly to
-    # be able to refer to them below and make sure chrome.exe can find them at
-    # runtime).
     shutil.copy(component_dll, version_dir)
-    # Also copy the ones listed in |setup_component_dll_names| directly to the
-    # Installer directory for the installed setup.exe to be able to run (as it
-    # doesn't statically link in component DLLs).
-    if component_dll_name in setup_component_dll_names:
-      shutil.copy(component_dll, installer_dir)
 
   # Augment {version}.manifest to include all component DLLs as part of the
   # assembly it constitutes, which will allow dependents of this assembly to
