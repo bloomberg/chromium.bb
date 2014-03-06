@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -81,18 +80,18 @@ class SigninTrackerTest : public testing::Test {
   MockObserver observer_;
 };
 
+#if !defined(OS_CHROMEOS)
 TEST_F(SigninTrackerTest, SignInFails) {
-  // SIGNIN_FAILED notification should result in a SigninFailed callback.
   const GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+
+  // Signin failure should result in a SigninFailed callback.
   EXPECT_CALL(observer_, SigninSuccess()).Times(0);
   EXPECT_CALL(observer_, SigninFailed(error));
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-      content::Source<Profile>(profile_.get()),
-      content::Details<const GoogleServiceAuthError>(&error));
+  mock_signin_manager_->FailSignin(error);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(SigninTrackerTest, SignInSucceeds) {
   EXPECT_CALL(observer_, SigninSuccess());

@@ -74,6 +74,10 @@ void FakeSigninManager::SignIn(const std::string& username,
   CompletePendingSignin();
 }
 
+void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSigninFailed(error));
+}
+
 void FakeSigninManager::SignOut() {
   if (IsSignoutProhibited())
     return;

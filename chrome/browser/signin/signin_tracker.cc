@@ -4,19 +4,16 @@
 
 #include "chrome/browser/signin/signin_tracker.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/profile_management_switches.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #endif
 
 SigninTracker::SigninTracker(Profile* profile, Observer* observer)
@@ -26,6 +23,7 @@ SigninTracker::SigninTracker(Profile* profile, Observer* observer)
 }
 
 SigninTracker::~SigninTracker() {
+  SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
       RemoveObserver(this);
 
@@ -45,24 +43,15 @@ SigninTracker::~SigninTracker() {
 void SigninTracker::Initialize() {
   DCHECK(observer_);
 
-  // Register for notifications from the SigninManager.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-                 content::Source<Profile>(profile_));
-
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  signin_manager->AddObserver(this);
   OAuth2TokenService* token_service =
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   token_service->AddObserver(this);
 }
 
-void SigninTracker::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED, type);
-
-  // We should not get more than one of these notifications.
-  const GoogleServiceAuthError& error =
-      *(content::Details<const GoogleServiceAuthError>(details).ptr());
+void SigninTracker::GoogleSigninFailed(const GoogleServiceAuthError& error) {
   observer_->SigninFailed(error);
 }
 

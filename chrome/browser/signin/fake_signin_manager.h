@@ -48,6 +48,8 @@ class FakeSigninManager : public SigninManager {
 
   void SignIn(const std::string& username, const std::string& password);
 
+  void FailSignin(const GoogleServiceAuthError& error);
+
   virtual void SignOut() OVERRIDE;
 
   virtual void StartSignInWithCredentials(

@@ -16,6 +16,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
 class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
