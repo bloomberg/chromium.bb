@@ -484,6 +484,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if ([self isAnimationRunning]) {
     for (NSButton* button in buttons_.get())
       [button setNeedsDisplay:YES];
+    // Update the apps and other buttons explicitly, since they are not in the
+    // buttons_ array.
+    [appsPageShortcutButton_ setNeedsDisplay:YES];
+    [otherBookmarksButton_ setNeedsDisplay:YES];
   }
 }
 
