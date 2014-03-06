@@ -42,6 +42,7 @@
         'modules/file_module_provider.h',
         'modules/module_registry.cc',
         'modules/module_registry.h',
+        'modules/module_registry_observer.h',
         'modules/module_runner_delegate.cc',
         'modules/module_runner_delegate.h',
         'modules/timer.cc',

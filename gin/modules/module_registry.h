@@ -14,11 +14,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"
 
 namespace gin {
 
+class ModuleRegistryObserver;
 struct PendingModule;
 
 // This class implements the Asynchronous Module Definition (AMD) API.
@@ -42,6 +44,13 @@ class GIN_EXPORT ModuleRegistry {
 
   static void RegisterGlobals(v8::Isolate* isolate,
                               v8::Handle<v8::ObjectTemplate> templ);
+
+  // Installs the necessary functions needed for modules.
+  // WARNING: this may execute script in the page.
+  static void InstallGlobals(v8::Isolate* isolate, v8::Handle<v8::Object> obj);
+
+  void AddObserver(ModuleRegistryObserver* observer);
+  void RemoveObserver(ModuleRegistryObserver* observer);
 
   // The caller must have already entered our context.
   void AddBuiltinModule(v8::Isolate* isolate, const std::string& id,
@@ -89,6 +98,8 @@ class GIN_EXPORT ModuleRegistry {
 
   PendingModuleVector pending_modules_;
   v8::Persistent<v8::Object> modules_;
+
+  ObserverList<ModuleRegistryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleRegistry);
 };

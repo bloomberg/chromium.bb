@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/modules/module_registry_observer.h"
 #include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
@@ -112,6 +113,13 @@ void ModuleRegistry::RegisterGlobals(Isolate* isolate,
 }
 
 // static
+void ModuleRegistry::InstallGlobals(v8::Isolate* isolate,
+                                    v8::Handle<v8::Object> obj) {
+  obj->Set(StringToSymbol(isolate, "define"),
+           GetDefineTemplate(isolate)->GetFunction());
+}
+
+// static
 ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
   PerContextData* data = PerContextData::From(context);
   if (!data)
@@ -128,6 +136,14 @@ ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
   return registry_data->registry.get();
 }
 
+void ModuleRegistry::AddObserver(ModuleRegistryObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ModuleRegistry::RemoveObserver(ModuleRegistryObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void ModuleRegistry::AddBuiltinModule(Isolate* isolate, const std::string& id,
                                       v8::Handle<Value> module) {
   DCHECK(!id.empty());
@@ -136,7 +152,11 @@ void ModuleRegistry::AddBuiltinModule(Isolate* isolate, const std::string& id,
 
 void ModuleRegistry::AddPendingModule(Isolate* isolate,
                                       scoped_ptr<PendingModule> pending) {
+  const std::string pending_id = pending->id;
+  const std::vector<std::string> pending_dependencies = pending->dependencies;
   AttemptToLoad(isolate, pending.Pass());
+  FOR_EACH_OBSERVER(ModuleRegistryObserver, observer_list_,
+                    OnDidAddPendingModule(pending_id, pending_dependencies));
 }
 
 void ModuleRegistry::LoadModule(Isolate* isolate,
