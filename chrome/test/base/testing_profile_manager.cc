@@ -101,6 +101,11 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
 TestingProfile* TestingProfileManager::CreateGuestProfile() {
   DCHECK(called_set_up_);
 
+  // Set up a profile with an off the record profile.
+  TestingProfile::Builder otr_builder;
+  otr_builder.SetIncognito();
+  scoped_ptr<TestingProfile> otr_profile(otr_builder.Build());
+
   // Create the profile and register it.
   TestingProfile::Builder builder;
   builder.SetGuestSession();
@@ -109,6 +114,9 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   // Add the guest profile to the profile manager, but not to the info cache.
   TestingProfile* profile = builder.Build().release();
   profile->set_profile_name(kGuestProfileName);
+
+  otr_profile->SetOriginalProfile(profile);
+  profile->SetOffTheRecordProfile(otr_profile.PassAs<Profile>());
   profile_manager_->AddProfile(profile);  // Takes ownership.
   profile_manager_->SetGuestProfilePrefs(profile);
 

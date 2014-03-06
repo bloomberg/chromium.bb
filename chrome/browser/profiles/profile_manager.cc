@@ -383,9 +383,11 @@ void ProfileManager::CreateProfileAsync(
   if (!callback.is_null()) {
     if (iter != profiles_info_.end() && info->created) {
       Profile* profile = info->profile.get();
-      // If this was the guest profile, apply settings.
-      if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
+      // If this was the guest profile, apply settings and go OffTheRecord.
+      if (profile->GetPath() == ProfileManager::GetGuestProfilePath()) {
         SetGuestProfilePrefs(profile);
+        profile = profile->GetOffTheRecordProfile();
+      }
       // Profile has already been created. Run callback immediately.
       callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
     } else {
