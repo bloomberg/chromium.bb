@@ -57,6 +57,8 @@ void CSSRule::trace(Visitor* visitor)
     // some circumstances.
     if (m_parentIsRule)
         visitor->trace(m_parentRule);
+    else
+        visitor->trace(m_parentStyleSheet);
 }
 
 } // namespace WebCore

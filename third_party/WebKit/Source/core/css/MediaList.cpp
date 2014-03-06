@@ -176,7 +176,7 @@ MediaList::MediaList(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
 
 MediaList::MediaList(MediaQuerySet* mediaQueries, CSSRule* parentRule)
     : m_mediaQueries(mediaQueries)
-    , m_parentStyleSheet(0)
+    , m_parentStyleSheet(nullptr)
     , m_parentRule(parentRule)
 {
 }
@@ -239,6 +239,7 @@ void MediaList::reattach(MediaQuerySet* mediaQueries)
 void MediaList::trace(Visitor* visitor)
 {
     visitor->trace(m_mediaQueries);
+    visitor->trace(m_parentStyleSheet);
     visitor->trace(m_parentRule);
 }
 

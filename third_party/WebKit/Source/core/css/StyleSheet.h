@@ -22,6 +22,7 @@
 #define StyleSheet_h
 
 #include "core/css/CSSParserMode.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -33,7 +34,7 @@ class MediaList;
 class Node;
 class StyleSheet;
 
-class StyleSheet : public RefCounted<StyleSheet> {
+class StyleSheet : public RefCountedWillBeRefCountedGarbageCollected<StyleSheet> {
 public:
     virtual ~StyleSheet();
 
@@ -51,6 +52,8 @@ public:
     virtual KURL baseURL() const = 0;
     virtual bool isLoading() const = 0;
     virtual bool isCSSStyleSheet() const { return false; }
+
+    virtual void trace(Visitor*) = 0;
 };
 
 } // namespace

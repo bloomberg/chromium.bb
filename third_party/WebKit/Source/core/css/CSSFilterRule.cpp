@@ -84,8 +84,8 @@ void CSSFilterRule::reattach(StyleRuleBase* rule)
 
 void CSSFilterRule::trace(Visitor* visitor)
 {
-    CSSRule::trace(visitor);
     visitor->trace(m_filterRule);
+    CSSRule::trace(visitor);
 }
 
 } // namespace WebCore

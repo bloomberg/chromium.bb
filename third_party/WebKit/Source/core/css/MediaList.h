@@ -92,8 +92,12 @@ public:
     // Not part of CSSOM.
     CSSRule* parentRule() const { return m_parentRule; }
     CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
-    void clearParentStyleSheet() { ASSERT(m_parentStyleSheet); m_parentStyleSheet = 0; }
+
+#if !ENABLE(OILPAN)
+    void clearParentStyleSheet() { ASSERT(m_parentStyleSheet); m_parentStyleSheet = nullptr; }
     void clearParentRule() { ASSERT(m_parentRule); m_parentRule = nullptr; }
+#endif
+
     const MediaQuerySet* queries() const { return m_mediaQueries.get(); }
 
     void reattach(MediaQuerySet*);
@@ -106,8 +110,8 @@ private:
     MediaList(MediaQuerySet*, CSSRule* parentRule);
 
     RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
-    // Cleared in ~CSSStyleSheet destructor.
-    CSSStyleSheet* m_parentStyleSheet;
+    // Cleared in ~CSSStyleSheet destructor when oilpan is not enabled.
+    RawPtrWillBeMember<CSSStyleSheet> m_parentStyleSheet;
     // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors when oilpan is not enabled.
     RawPtrWillBeMember<CSSRule> m_parentRule;
 };
