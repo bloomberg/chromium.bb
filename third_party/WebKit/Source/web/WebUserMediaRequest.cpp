@@ -107,16 +107,22 @@ void WebUserMediaRequest::requestSucceeded(const WebMediaStream& streamDescripto
     m_private->succeed(streamDescriptor);
 }
 
-void WebUserMediaRequest::requestFailed(const WebString& description)
+void WebUserMediaRequest::requestDenied(const WebString& description)
 {
     ASSERT(!isNull());
-    m_private->fail(description);
+    m_private->failPermissionDenied(description);
 }
 
 void WebUserMediaRequest::requestFailedConstraint(const WebString& constraintName, const WebString& description)
 {
     ASSERT(!isNull());
     m_private->failConstraint(constraintName, description);
+}
+
+void WebUserMediaRequest::requestFailedUASpecific(const WebString& name, const WebString& constraintName, const WebString& description)
+{
+    ASSERT(!isNull());
+    m_private->failUASpecific(name, constraintName, description);
 }
 
 bool WebUserMediaRequest::equals(const WebUserMediaRequest& other) const

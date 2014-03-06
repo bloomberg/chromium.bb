@@ -60,8 +60,9 @@ public:
     void start();
 
     void succeed(PassRefPtr<MediaStreamDescriptor>);
-    void fail(const String& description);
-    void failConstraint(const String& constraintName, const String& description);
+    void failPermissionDenied(const String& message);
+    void failConstraint(const String& constraintName, const String& message);
+    void failUASpecific(const String& name, const String& message, const String& constraintName);
 
     bool audio() const;
     bool video() const;

@@ -33,18 +33,20 @@
 
 namespace WebCore {
 
-String NavigatorUserMediaError::name() const
+PassRefPtr<NavigatorUserMediaError> NavigatorUserMediaError::create(Name name, const String& message, const String& constraintName)
 {
-    switch (m_name) {
+    String nameString;
+    switch (name) {
     case NamePermissionDenied:
-        return "PermissionDeniedError";
+        nameString = "PermissionDeniedError";
+        break;
 
     case NameConstraintNotSatisfied:
-        return "ConstraintNotSatisfiedError";
+        nameString = "ConstraintNotSatisfiedError";
+        break;
     }
 
-    ASSERT_NOT_REACHED();
-    return String();
+    return adoptRef(new NavigatorUserMediaError(nameString, message, constraintName));
 }
 
 } // namespace WebCore

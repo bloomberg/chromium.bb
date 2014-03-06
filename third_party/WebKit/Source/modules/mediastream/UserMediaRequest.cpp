@@ -152,22 +152,32 @@ void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescripto
     m_successCallback->handleEvent(stream.get());
 }
 
-void UserMediaRequest::fail(const String& description)
+void UserMediaRequest::failPermissionDenied(const String& message)
 {
     if (!executionContext())
         return;
 
-    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, description, String());
+    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, message, String());
     m_errorCallback->handleEvent(error.get());
 }
 
-void UserMediaRequest::failConstraint(const String& constraintName, const String& description)
+void UserMediaRequest::failConstraint(const String& constraintName, const String& message)
 {
     ASSERT(!constraintName.isEmpty());
     if (!executionContext())
         return;
 
-    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, description, constraintName);
+    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, message, constraintName);
+    m_errorCallback->handleEvent(error.get());
+}
+
+void UserMediaRequest::failUASpecific(const String& name, const String& message, const String& constraintName)
+{
+    ASSERT(!name.isEmpty());
+    if (!executionContext())
+        return;
+
+    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(name, message, constraintName);
     m_errorCallback->handleEvent(error.get());
 }
 
