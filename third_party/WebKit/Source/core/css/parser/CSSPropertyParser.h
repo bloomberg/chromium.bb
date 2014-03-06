@@ -62,12 +62,11 @@ class UseCounter;
 // Outputs: Vector of CSSProperties
 
 class CSSPropertyParser {
+    STACK_ALLOCATED();
 public:
-    typedef Vector<CSSProperty, 256> ParsedPropertyVector;
-
     CSSPropertyParser(OwnPtr<CSSParserValueList>&,
         const CSSParserContext&, bool inViewport, bool savedImportant,
-        ParsedPropertyVector&, bool& hasFontFaceOnlyValues);
+        WillBeHeapVector<CSSProperty, 256>&, bool& hasFontFaceOnlyValues);
     ~CSSPropertyParser();
 
     // FIXME: Should this be on a separate ColorParser object?
@@ -381,14 +380,14 @@ private:
     const bool m_important; // FIXME: This is only used by font-face-src and unicode-range and undoubtably wrong!
 
     // Outputs:
-    ParsedPropertyVector& m_parsedProperties;
+    WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;
     bool m_hasFontFaceOnlyValues;
 
     // Locals during parsing:
     int m_inParseShorthand;
     CSSPropertyID m_currentShorthand;
     bool m_implicitShorthand;
-    RefPtrWillBePersistent<CSSCalcValue> m_parsedCalculation;
+    RefPtrWillBeRawPtr<CSSCalcValue> m_parsedCalculation;
 
     // FIXME: There is probably a small set of APIs we could expose for these
     // classes w/o needing to make them friends.

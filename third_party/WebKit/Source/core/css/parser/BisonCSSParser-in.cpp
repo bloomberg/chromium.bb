@@ -1224,7 +1224,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> BisonCSSParser::parseMediaQueryList(const 
     return m_mediaList.release();
 }
 
-static inline void filterProperties(bool important, const CSSPropertyParser::ParsedPropertyVector& input, Vector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
+static inline void filterProperties(bool important, const WillBeHeapVector<CSSProperty, 256>& input, WillBeHeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
     for (int i = input.size() - 1; i >= 0; --i) {
@@ -1243,7 +1243,7 @@ PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::createStylePropertySet()
 {
     BitArray<numCSSProperties> seenProperties;
     size_t unusedEntries = m_parsedProperties.size();
-    Vector<CSSProperty, 256> results(unusedEntries);
+    WillBeHeapVector<CSSProperty, 256> results(unusedEntries);
 
     // Important properties have higher priority, so add them first. Duplicate definitions can then be ignored when found.
     filterProperties(true, m_parsedProperties, results, unusedEntries, seenProperties);

@@ -53,8 +53,8 @@ public:
     const CSSValue* item(size_t index) const { return index < m_values.size() ? m_values[index].get() : 0; }
     CSSValue* itemWithoutBoundsCheck(size_t index) { return m_values[index].get(); }
 
-    void append(PassRefPtr<CSSValue> value) { m_values.append(value); }
-    void prepend(PassRefPtr<CSSValue> value) { m_values.prepend(value); }
+    void append(PassRefPtrWillBeRawPtr<CSSValue> value) { m_values.append(value); }
+    void prepend(PassRefPtrWillBeRawPtr<CSSValue> value) { m_values.prepend(value); }
     bool removeAll(CSSValue*);
     bool hasValue(CSSValue*) const;
     PassRefPtrWillBeRawPtr<CSSValueList> copy();
@@ -77,7 +77,7 @@ private:
     explicit CSSValueList(ValueListSeparator);
     explicit CSSValueList(CSSParserValueList*);
 
-    Vector<RefPtr<CSSValue>, 4> m_values;
+    WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4> m_values;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());
