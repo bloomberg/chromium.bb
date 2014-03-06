@@ -9,16 +9,25 @@ Given a storage object capable of storing and retrieving files,
 embellish with methods for storing and retrieving directories (using tar).
 """
 
+import collections
 import os
+import posixpath
+import subprocess
 import sys
 import tempfile
 
 import file_tools
-import subprocess
+import hashing_tools
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CYGTAR_PATH = os.path.join(SCRIPT_DIR, 'cygtar.py')
+
+
+DirectoryStorageItem = collections.namedtuple(
+    'DirectoryStorageItem',
+    ['name', 'hash', 'url']
+)
 
 
 class DirectoryStorageAdapter(object):
@@ -35,13 +44,18 @@ class DirectoryStorageAdapter(object):
     """
     self._storage = storage
 
-  def PutDirectory(self, path, key):
+  def PutDirectory(self, path, key, hasher=None):
     """Write a directory to storage.
 
     Args:
       path: Path of the directory to write.
       key: Key to store under.
+    Returns:
+      DirectoryStorageItem of the item stored, or None on errors.
     """
+    if hasher is None:
+      hasher = hashing_tools.HashFileContents
+
     handle, tmp_tgz = tempfile.mkstemp(prefix='dirstore', suffix='.tmp.tgz')
     try:
       os.close(handle)
@@ -50,18 +64,29 @@ class DirectoryStorageAdapter(object):
       subprocess.check_call([sys.executable, CYGTAR_PATH,
                              '-c', '-z', '-f', os.path.abspath(tmp_tgz), '.'],
                              cwd=os.path.abspath(path))
-      return self._storage.PutFile(tmp_tgz, key)
+
+      url = self._storage.PutFile(tmp_tgz, key)
+
+      name = posixpath.basename(key)
+      hash_value = hasher(tmp_tgz)
+
+      return DirectoryStorageItem(name, hash_value, url)
     finally:
       os.remove(tmp_tgz)
 
-  def GetDirectory(self, key, path):
+  def GetDirectory(self, key, path, hasher=None):
     """Read a directory from storage.
 
     Clobbers anything at the destination currently.
     Args:
       key: Key to fetch from.
       path: Path of the directory to write.
+    Returns:
+      DirectoryStorageItem of item retrieved, or None on errors.
     """
+    if hasher is None:
+      hasher = hashing_tools.HashFileContents
+
     file_tools.RemoveDirectoryIfPresent(path)
     os.mkdir(path)
     handle, tmp_tgz = tempfile.mkstemp(prefix='dirstore', suffix='.tmp.tgz')
@@ -75,6 +100,10 @@ class DirectoryStorageAdapter(object):
       subprocess.check_call([sys.executable, CYGTAR_PATH,
                              '-x', '-z', '-f', os.path.abspath(tmp_tgz)],
                              cwd=os.path.abspath(path))
-      return url
+
+      name = posixpath.basename(key)
+      hash_value = hasher(tmp_tgz)
+
+      return DirectoryStorageItem(name, hash_value, url)
     finally:
       os.remove(tmp_tgz)

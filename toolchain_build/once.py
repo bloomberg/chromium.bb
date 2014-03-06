@@ -70,6 +70,7 @@ class Once(object):
     self._directory_storage = directory_storage.DirectoryStorageAdapter(storage)
     self._use_cached_results = use_cached_results
     self._cache_results = cache_results
+    self._cached_dir_items = []
     self._print_url = print_url
     self._system_summary = system_summary
 
@@ -106,24 +107,28 @@ class Once(object):
       URL from which output was obtained if successful, or None if not.
     """
     key = self.KeyForOutput(package, out_hash)
-    url = self._directory_storage.GetDirectory(key, output)
-    if not url:
+    dir_item = self._directory_storage.GetDirectory(key, output)
+    if not dir_item:
       logging.debug('Failed to retrieve %s' % key)
       return None
     if hashing_tools.StableHashPath(output) != out_hash:
       logging.warning('Object does not match expected hash, '
                       'has hashing method changed?')
       return None
-    return url
+    return dir_item
 
-  def PrintDownloadURL(self, url):
-    """Print download URL if function was provided in the constructor.
+  def _ProcessCachedDir(self, dir_item):
+    """Processes cached directory storage items.
 
     Args:
-      urls: A list of urls to print.
+      dir_item: DirectoryStorageItem returned from directory_storage.
     """
+    # Store the cached URL as a tuple for book keeping.
+    self._cached_dir_items.append(dir_item)
+
+    # If a print URL function has been specified, print the URL now.
     if self._print_url is not None:
-      self._print_url(url)
+      self._print_url(dir_item.url)
 
   def WriteResultToCache(self, package, build_signature, output):
     """Cache a computed result by key.
@@ -143,10 +148,10 @@ class Once(object):
       wd = working_directory.TemporaryWorkingDirectory()
       with wd as work_dir:
         temp_output = os.path.join(work_dir, 'out')
-        url = self._directory_storage.GetDirectory(output_key, temp_output)
-        if url is None:
+        dir_item = self._directory_storage.GetDirectory(output_key, temp_output)
+        if dir_item is None:
           # Isn't present. Cache the computed result instead.
-          url = self._directory_storage.PutDirectory(output, output_key)
+          dir_item = self._directory_storage.PutDirectory(output, output_key)
           logging.info('Computed fresh result and cached it.')
         else:
           # Cached version is present. Replace the current output with that.
@@ -159,7 +164,7 @@ class Once(object):
       # Upload an entry mapping from computation input to output hash.
       self._storage.PutData(
           out_hash, self.KeyForBuildSignature(build_signature))
-      self.PrintDownloadURL(url)
+      self._ProcessCachedDir(dir_item)
     except gsd_storage.GSDStorageError:
       logging.info('Failed to cache result.')
       raise
@@ -180,12 +185,16 @@ class Once(object):
       out_hash = self._storage.GetData(
           self.KeyForBuildSignature(build_signature))
       if out_hash is not None:
-        url = self.WriteOutputFromHash(package, out_hash, output)
-        if url is not None:
+        dir_item = self.WriteOutputFromHash(package, out_hash, output)
+        if dir_item is not None:
           logging.info('Retrieved cached result.')
-          self.PrintDownloadURL(url)
+          self._ProcessCachedDir(dir_item)
           return True
     return False
+
+  def GetCachedDirItems(self):
+    """Returns the complete list of all cached directory items for this run."""
+    return self._cached_dir_items
 
   def Run(self, package, inputs, output, commands,
           working_dir=None, memoize=True, signature_file=None, subdir=None):

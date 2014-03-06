@@ -6,6 +6,7 @@
 """Tests of directory storage adapter."""
 
 import os
+import posixpath
 import unittest
 
 import directory_storage
@@ -49,10 +50,49 @@ class TestDirectoryStorage(unittest.TestCase):
       temp1 = os.path.join(work_dir, 'temp1')
       temp2 = os.path.join(work_dir, 'temp2')
       hashing_tools_test.GenerateTestTree('url_propagate', temp1)
-      url1 = self._dir_storage.PutDirectory(temp1, 'me')
-      url2 = self._dir_storage.GetDirectory('me', temp2)
+      url1 = self._dir_storage.PutDirectory(temp1, 'me').url
+      url2 = self._dir_storage.GetDirectory('me', temp2).url
       self.assertEqual(url1, url2)
       self.assertNotEqual(None, url1)
+
+  def test_DirectoryName(self):
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      temp1 = os.path.join(work_dir, 'temp1')
+      temp2 = os.path.join(work_dir, 'temp2')
+      hashing_tools_test.GenerateTestTree('directory_name', temp1)
+      key_name = 'name_test'
+      key_location = posixpath.join('name_parent', key_name)
+      result1 = self._dir_storage.PutDirectory(temp1, key_location)
+      result2 = self._dir_storage.GetDirectory(key_location, temp2)
+      self.assertNotEqual(None, result1)
+      self.assertNotEqual(None, result2)
+      self.assertEqual(key_name, result1.name)
+      self.assertEqual(key_name, result2.name)
+
+  def test_HashStable(self):
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      temp1 = os.path.join(work_dir, 'temp1')
+      temp2 = os.path.join(work_dir, 'temp2')
+      hashing_tools_test.GenerateTestTree('stable_hash', temp1)
+      result1 = self._dir_storage.PutDirectory(temp1, 'hash_test')
+      result2 = self._dir_storage.GetDirectory('hash_test', temp2)
+      self.assertNotEqual(None, result1)
+      self.assertNotEqual(None, result2)
+      self.assertEqual(result1.hash, result2.hash)
+
+  def test_CustomHasher(self):
+    hash_value = 'test_hash_value'
+    custom_hasher = lambda filename : hash_value
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      temp = os.path.join(work_dir, 'temp')
+      hashing_tools_test.GenerateTestTree('custom_hasher', temp)
+      result = self._dir_storage.PutDirectory(
+          temp,
+          'custom_hasher',
+          hasher=custom_hasher
+      )
+      self.assertNotEqual(None, result)
+      self.assertEqual(result.hash, hash_value)
 
   def test_BadWrite(self):
     def call(cmd):

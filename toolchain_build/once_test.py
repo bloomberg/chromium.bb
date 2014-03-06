@@ -15,7 +15,6 @@ import sys
 import unittest
 
 import command
-import directory_storage
 import fake_storage
 import file_tools
 import gsd_storage
@@ -81,6 +80,23 @@ class TestOnce(unittest.TestCase):
       self.assertEquals(1, self._tally)
       self.assertEquals(initial_url, self._url)
 
+  def test_CachedCommandRecorded(self):
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      self.GenerateTestData('CachedCommand', work_dir)
+      o = once.Once(storage=fake_storage.FakeStorage(), system_summary='test')
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
+      self.assertEquals(len(o.GetCachedDirItems()), 1)
+
+  def test_UncachedCommandsNotRecorded(self):
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      self.GenerateTestData('CachedCommand', work_dir)
+      o = once.Once(storage=fake_storage.FakeStorage(), system_summary='test',
+                   cache_results=False)
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
+      self.assertEquals(len(o.GetCachedDirItems()), 0)
+
   def FileLength(self, src, dst, **kwargs):
     """Command object to write the length of one file into another."""
     return command.Command([
@@ -96,7 +112,6 @@ class TestOnce(unittest.TestCase):
       # Setup test data in input0, input1 using memory storage.
       self.GenerateTestData('RecomputeHashMatches', work_dir)
       fs = fake_storage.FakeStorage()
-      ds = directory_storage.DirectoryStorageAdapter(storage=fs)
       o = once.Once(storage=fs, system_summary='test')
 
       # Run the computation (compute the length of a file) from input0 to
