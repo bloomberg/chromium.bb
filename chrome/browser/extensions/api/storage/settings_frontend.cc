@@ -13,17 +13,13 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/sync_or_local_value_store_cache.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
-#endif
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -138,13 +134,10 @@ void SettingsFrontend::Init(
           observers_,
           browser_context_path);
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  caches_[settings_namespace::MANAGED] =
-      new ManagedValueStoreCache(
-          browser_context_,
-          factory,
-          observers_);
-#endif
+  // Add any additional caches the embedder supports (for example, a cache
+  // for chrome.storage.managed).
+  ExtensionsAPIClient::Get()->AddAdditionalValueStoreCaches(
+      browser_context_, factory, observers_, &caches_);
 }
 
 SettingsFrontend::~SettingsFrontend() {

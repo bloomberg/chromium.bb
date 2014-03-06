@@ -9,6 +9,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
@@ -39,7 +40,8 @@
 
 namespace extensions {
 
-ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
+ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient()
+    : api_client_(new ChromeExtensionsAPIClient) {
   // Only set if it hasn't already been set (e.g. by a test).
   if (GetCurrentChannel() == GetDefaultChannel())
     SetCurrentChannel(chrome::VersionInfo::GetChannel());

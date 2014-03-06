@@ -20,6 +20,8 @@ class BrowserContext;
 
 namespace extensions {
 
+class ChromeExtensionsAPIClient;
+
 // Implementation of extensions::BrowserClient for Chrome, which includes
 // knowledge of Profiles, BrowserContexts and incognito.
 //
@@ -77,6 +79,9 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // Observer for Chrome-specific notifications.
   ChromeNotificationObserver notification_observer_;
+
+  // Client for API implementations.
+  scoped_ptr<ChromeExtensionsAPIClient> api_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };
