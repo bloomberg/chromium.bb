@@ -1731,12 +1731,7 @@ class ArchiveStageTest(AbstractStageTest):
     """Simple did-it-run test."""
     # TODO(davidjames): Test the individual archive steps as well.
     self.RunStage()
-    filenames = ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
-                 'LATEST-%s' % self.VERSION)
-    calls = [mock.call(mock.ANY, mock.ANY, filename, False,
-                       acl=mock.ANY) for filename in filenames]
     # pylint: disable=E1101
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
     self.assertTrue(commands.RemoveOldArchives.called)
 
   # TODO(build): This test is not actually testing anything real.  It confirms
@@ -2590,7 +2585,19 @@ class ReportStageTest(AbstractStageTest):
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
     self._SetupUpdateStreakCounter()
+    self.PatchObject(stages.ReportStage, '_UploadArchiveIndex',
+                     return_value={'any': 'dict'})
     self.RunStage()
+    filenames = (
+        'LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
+        'LATEST-%s' % BuilderRunMock.VERSION,
+    )
+    calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
+                       update_list=True, acl=mock.ANY)]
+    calls += [mock.call(mock.ANY, mock.ANY, filename, False,
+                        acl=mock.ANY) for filename in filenames]
+    # pylint: disable=E1101
+    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
   def testCommitQueueResults(self):
     """Check that commit queue patches get serialized"""

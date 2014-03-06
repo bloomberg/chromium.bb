@@ -208,7 +208,7 @@ class ArchivingStageMixin(object):
   @property
   def acl(self):
     """Retrieve GS ACL to use for uploads."""
-    return self.GetUploadACL(self._run.config)
+    return self.archive.upload_acl
 
   # TODO(mtennant): Get rid of this property.
   @property
@@ -241,15 +241,6 @@ class ArchivingStageMixin(object):
   def download_url(self):
     """The URL where artifacts for this run can be downloaded."""
     return self.archive.download_url
-
-  @classmethod
-  def GetUploadACL(cls, config):
-    """Get the ACL we should use to upload artifacts for a given config."""
-    if config.internal:
-      # Use the bucket default ACL.
-      return None
-
-    return 'public-read'
 
   @contextlib.contextmanager
   def ArtifactUploader(self, queue=None, archive=True, strict=True):
@@ -3649,23 +3640,9 @@ class ArchiveStage(ArchivingStage):
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)
 
-    def MarkAsLatest():
-      # Update and upload LATEST file.
-      verinfo = self._run.GetVersionInfo(self._build_root)
-      calc_version = self.release_tag or verinfo.VersionString()
-      filenames = ('LATEST-%s' % self._run.manifest_branch,
-                   'LATEST-%s' % calc_version)
-      for filename in filenames:
-        latest_path = os.path.join(self.bot_archive_root, filename)
-        osutils.WriteFile(latest_path, self.version, mode='w')
-        commands.UploadArchivedFile(
-            self.bot_archive_root, self.base_upload_url, filename,
-            debug, acl=self.acl)
-
     try:
       if not self._run.config.pgo_generate:
         BuildAndArchiveArtifacts()
-        MarkAsLatest()
     finally:
       commands.RemoveOldArchives(self.bot_archive_root,
                                  self._run.options.max_archive_builds)
@@ -4186,6 +4163,11 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
       run_archive_urls = self._UploadArchiveIndex(builder_run)
       if run_archive_urls:
         archive_urls.update(run_archive_urls)
+
+        # Also update the LATEST files, since this run did archive something.
+        archive = builder_run.GetArchive()
+        archive.UpdateLatestMarkers(builder_run.manifest_branch,
+                                    builder_run.debug)
 
     version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,

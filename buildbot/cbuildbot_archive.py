@@ -49,6 +49,15 @@ def GetBaseUploadURI(config, archive_base=None, bot_id=None,
     return config.gs_path
 
 
+def GetUploadACL(config):
+  """Get the ACL we should use to upload artifacts for a given config."""
+  if config.internal:
+    # Use the bucket default ACL.
+    return None
+
+  return 'public-read'
+
+
 class Archive(object):
   """Class to represent the archive for one builder run.
 
@@ -106,6 +115,11 @@ class Archive(object):
     return '%s/%s' % (base_upload_url, self.version)
 
   @property
+  def upload_acl(self):
+    """Get the ACL we should use to upload artifacts for a given config."""
+    return GetUploadACL(self._config)
+
+  @property
   def download_url(self):
     if self._options.buildbot or self._options.remote_trybot:
       # Translate the gs:// URI to the URL for downloading the same files.
@@ -140,3 +154,25 @@ class Archive(object):
                                       commands.UPLOADED_LIST_FILENAME))
 
     osutils.SafeMakedirs(self.archive_path)
+
+  def UpdateLatestMarkers(self, manifest_branch, debug):
+    """Update the LATEST markers in GS archive area.
+
+    Args:
+      manifest_branch: The name of the branch in the manifest for this run.
+      debug: Boolean debug value for this run.
+    """
+    # self.version will be one of these forms, shown through examples:
+    # R35-1234.5.6 or R35-1234.5.6-b123.  In either case, we want "1234.5.6".
+    version_marker = self.version.split('-')[1]
+
+    filenames = ('LATEST-%s' % manifest_branch,
+                 'LATEST-%s' % version_marker)
+    base_archive_path = os.path.dirname(self.archive_path)
+    base_upload_url = os.path.dirname(self.upload_url)
+    for filename in filenames:
+      latest_path = os.path.join(base_archive_path, filename)
+      osutils.WriteFile(latest_path, self.version, mode='w')
+      commands.UploadArchivedFile(
+          base_archive_path, base_upload_url, filename,
+          debug, acl=self.upload_acl)
