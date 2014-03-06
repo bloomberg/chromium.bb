@@ -21,10 +21,6 @@
 #define SVGTextMetricsBuilder_h
 
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
-#include "core/rendering/svg/SVGTextMetrics.h"
-#include "platform/fonts/WidthIterator.h"
-#include "platform/text/TextRun.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -36,27 +32,14 @@ struct MeasureTextData;
 class SVGTextMetricsBuilder {
     WTF_MAKE_NONCOPYABLE(SVGTextMetricsBuilder);
 public:
-    SVGTextMetricsBuilder();
+    SVGTextMetricsBuilder() { }
+
     void measureTextRenderer(RenderSVGInlineText*);
     void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
 
 private:
-    SVGTextMetrics computeMetricsForCurrentCharacter(unsigned textPosition);
-    SVGTextMetrics computeMetricsForCurrentCharacterSimple(unsigned textPosition);
-    SVGTextMetrics computeMetricsForCurrentCharacterComplex(unsigned textPosition);
-    bool currentCharacterStartsSurrogatePair(unsigned textPosition) const;
-
-    void initializeMeasurementWithTextRenderer(RenderSVGInlineText*);
     void walkTree(RenderObject*, RenderSVGInlineText* stopAtLeaf, MeasureTextData*);
     void measureTextRenderer(RenderSVGInlineText*, MeasureTextData*, bool processRenderer);
-
-    RenderSVGInlineText* m_text;
-    TextRun m_run;
-    bool m_isComplexText;
-    float m_totalWidth;
-
-    // Simple text only.
-    OwnPtr<WidthIterator> m_simpleWidthIterator;
 };
 
 } // namespace WebCore
