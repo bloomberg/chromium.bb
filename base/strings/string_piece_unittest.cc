@@ -192,20 +192,27 @@ TYPED_TEST(CommonStringPieceTest, CheckSTL) {
   ASSERT_GE(a.capacity(), a.size());
 }
 
-// STL stuff only supported by the std::string version
-TEST(StringPieceTest, CheckSTL) {
-  StringPiece a("abcdefghijklmnopqrstuvwxyz");
-  StringPiece b("abc");
-  StringPiece c("xyz");
-  StringPiece d("foobar");
-  d.clear();
-  StringPiece e;
-  std::string temp("123");
-  temp += '\0';
-  temp += "456";
-  StringPiece f(temp);
+TYPED_TEST(CommonStringPieceTest, CheckFind) {
+  typedef BasicStringPiece<TypeParam> Piece;
 
-  char buf[4] = { '%', '%', '%', '%' };
+  TypeParam alphabet(TestFixture::as_string("abcdefghijklmnopqrstuvwxyz"));
+  TypeParam abc(TestFixture::as_string("abc"));
+  TypeParam xyz(TestFixture::as_string("xyz"));
+  TypeParam foobar(TestFixture::as_string("foobar"));
+
+  BasicStringPiece<TypeParam> a(alphabet);
+  BasicStringPiece<TypeParam> b(abc);
+  BasicStringPiece<TypeParam> c(xyz);
+  BasicStringPiece<TypeParam> d(foobar);
+
+  d.clear();
+  Piece e;
+  TypeParam temp(TestFixture::as_string("123"));
+  temp.push_back('\0');
+  temp += TestFixture::as_string("456");
+  Piece f(temp);
+
+  typename TypeParam::value_type buf[4] = { '%', '%', '%', '%' };
   ASSERT_EQ(a.copy(buf, 4), 4U);
   ASSERT_EQ(buf[0], a[0]);
   ASSERT_EQ(buf[1], a[1]);
@@ -222,28 +229,29 @@ TEST(StringPieceTest, CheckSTL) {
   ASSERT_EQ(buf[2], c[2]);
   ASSERT_EQ(buf[3], a[3]);
 
-  ASSERT_EQ(StringPiece::npos, std::string::npos);
+  ASSERT_EQ(Piece::npos, TypeParam::npos);
 
   ASSERT_EQ(a.find(b), 0U);
-  ASSERT_EQ(a.find(b, 1), StringPiece::npos);
+  ASSERT_EQ(a.find(b, 1), Piece::npos);
   ASSERT_EQ(a.find(c), 23U);
   ASSERT_EQ(a.find(c, 9), 23U);
-  ASSERT_EQ(a.find(c, StringPiece::npos), StringPiece::npos);
-  ASSERT_EQ(b.find(c), StringPiece::npos);
-  ASSERT_EQ(b.find(c, StringPiece::npos), StringPiece::npos);
+  ASSERT_EQ(a.find(c, Piece::npos), Piece::npos);
+  ASSERT_EQ(b.find(c), Piece::npos);
+  ASSERT_EQ(b.find(c, Piece::npos), Piece::npos);
   ASSERT_EQ(a.find(d), 0U);
   ASSERT_EQ(a.find(e), 0U);
   ASSERT_EQ(a.find(d, 12), 12U);
   ASSERT_EQ(a.find(e, 17), 17U);
-  StringPiece g("xx not found bb");
-  ASSERT_EQ(a.find(g), StringPiece::npos);
+  TypeParam not_found(TestFixture::as_string("xx not found bb"));
+  Piece g(not_found);
+  ASSERT_EQ(a.find(g), Piece::npos);
   // empty string nonsense
-  ASSERT_EQ(d.find(b), StringPiece::npos);
-  ASSERT_EQ(e.find(b), StringPiece::npos);
-  ASSERT_EQ(d.find(b, 4), StringPiece::npos);
-  ASSERT_EQ(e.find(b, 7), StringPiece::npos);
+  ASSERT_EQ(d.find(b), Piece::npos);
+  ASSERT_EQ(e.find(b), Piece::npos);
+  ASSERT_EQ(d.find(b, 4), Piece::npos);
+  ASSERT_EQ(e.find(b, 7), Piece::npos);
 
-  size_t empty_search_pos = std::string().find(std::string());
+  size_t empty_search_pos = TypeParam().find(TypeParam());
   ASSERT_EQ(d.find(d), empty_search_pos);
   ASSERT_EQ(d.find(e), empty_search_pos);
   ASSERT_EQ(e.find(d), empty_search_pos);
@@ -256,42 +264,42 @@ TEST(StringPieceTest, CheckSTL) {
   ASSERT_EQ(a.find('a'), 0U);
   ASSERT_EQ(a.find('c'), 2U);
   ASSERT_EQ(a.find('z'), 25U);
-  ASSERT_EQ(a.find('$'), StringPiece::npos);
-  ASSERT_EQ(a.find('\0'), StringPiece::npos);
+  ASSERT_EQ(a.find('$'), Piece::npos);
+  ASSERT_EQ(a.find('\0'), Piece::npos);
   ASSERT_EQ(f.find('\0'), 3U);
   ASSERT_EQ(f.find('3'), 2U);
   ASSERT_EQ(f.find('5'), 5U);
   ASSERT_EQ(g.find('o'), 4U);
   ASSERT_EQ(g.find('o', 4), 4U);
   ASSERT_EQ(g.find('o', 5), 8U);
-  ASSERT_EQ(a.find('b', 5), StringPiece::npos);
+  ASSERT_EQ(a.find('b', 5), Piece::npos);
   // empty string nonsense
-  ASSERT_EQ(d.find('\0'), StringPiece::npos);
-  ASSERT_EQ(e.find('\0'), StringPiece::npos);
-  ASSERT_EQ(d.find('\0', 4), StringPiece::npos);
-  ASSERT_EQ(e.find('\0', 7), StringPiece::npos);
-  ASSERT_EQ(d.find('x'), StringPiece::npos);
-  ASSERT_EQ(e.find('x'), StringPiece::npos);
-  ASSERT_EQ(d.find('x', 4), StringPiece::npos);
-  ASSERT_EQ(e.find('x', 7), StringPiece::npos);
+  ASSERT_EQ(d.find('\0'), Piece::npos);
+  ASSERT_EQ(e.find('\0'), Piece::npos);
+  ASSERT_EQ(d.find('\0', 4), Piece::npos);
+  ASSERT_EQ(e.find('\0', 7), Piece::npos);
+  ASSERT_EQ(d.find('x'), Piece::npos);
+  ASSERT_EQ(e.find('x'), Piece::npos);
+  ASSERT_EQ(d.find('x', 4), Piece::npos);
+  ASSERT_EQ(e.find('x', 7), Piece::npos);
 
   ASSERT_EQ(a.rfind(b), 0U);
   ASSERT_EQ(a.rfind(b, 1), 0U);
   ASSERT_EQ(a.rfind(c), 23U);
-  ASSERT_EQ(a.rfind(c, 22U), StringPiece::npos);
-  ASSERT_EQ(a.rfind(c, 1U), StringPiece::npos);
-  ASSERT_EQ(a.rfind(c, 0U), StringPiece::npos);
-  ASSERT_EQ(b.rfind(c), StringPiece::npos);
-  ASSERT_EQ(b.rfind(c, 0U), StringPiece::npos);
-  ASSERT_EQ(a.rfind(d), (size_t) a.as_string().rfind(std::string()));
-  ASSERT_EQ(a.rfind(e), a.as_string().rfind(std::string()));
+  ASSERT_EQ(a.rfind(c, 22U), Piece::npos);
+  ASSERT_EQ(a.rfind(c, 1U), Piece::npos);
+  ASSERT_EQ(a.rfind(c, 0U), Piece::npos);
+  ASSERT_EQ(b.rfind(c), Piece::npos);
+  ASSERT_EQ(b.rfind(c, 0U), Piece::npos);
+  ASSERT_EQ(a.rfind(d), static_cast<size_t>(a.as_string().rfind(TypeParam())));
+  ASSERT_EQ(a.rfind(e), a.as_string().rfind(TypeParam()));
   ASSERT_EQ(a.rfind(d, 12), 12U);
   ASSERT_EQ(a.rfind(e, 17), 17U);
-  ASSERT_EQ(a.rfind(g), StringPiece::npos);
-  ASSERT_EQ(d.rfind(b), StringPiece::npos);
-  ASSERT_EQ(e.rfind(b), StringPiece::npos);
-  ASSERT_EQ(d.rfind(b, 4), StringPiece::npos);
-  ASSERT_EQ(e.rfind(b, 7), StringPiece::npos);
+  ASSERT_EQ(a.rfind(g), Piece::npos);
+  ASSERT_EQ(d.rfind(b), Piece::npos);
+  ASSERT_EQ(e.rfind(b), Piece::npos);
+  ASSERT_EQ(d.rfind(b, 4), Piece::npos);
+  ASSERT_EQ(e.rfind(b, 7), Piece::npos);
   // empty string nonsense
   ASSERT_EQ(d.rfind(d, 4), std::string().rfind(std::string()));
   ASSERT_EQ(e.rfind(d, 7), std::string().rfind(std::string()));
@@ -303,80 +311,82 @@ TEST(StringPieceTest, CheckSTL) {
   ASSERT_EQ(e.rfind(e), std::string().rfind(std::string()));
 
   ASSERT_EQ(g.rfind('o'), 8U);
-  ASSERT_EQ(g.rfind('q'), StringPiece::npos);
+  ASSERT_EQ(g.rfind('q'), Piece::npos);
   ASSERT_EQ(g.rfind('o', 8), 8U);
   ASSERT_EQ(g.rfind('o', 7), 4U);
-  ASSERT_EQ(g.rfind('o', 3), StringPiece::npos);
+  ASSERT_EQ(g.rfind('o', 3), Piece::npos);
   ASSERT_EQ(f.rfind('\0'), 3U);
   ASSERT_EQ(f.rfind('\0', 12), 3U);
   ASSERT_EQ(f.rfind('3'), 2U);
   ASSERT_EQ(f.rfind('5'), 5U);
   // empty string nonsense
-  ASSERT_EQ(d.rfind('o'), StringPiece::npos);
-  ASSERT_EQ(e.rfind('o'), StringPiece::npos);
-  ASSERT_EQ(d.rfind('o', 4), StringPiece::npos);
-  ASSERT_EQ(e.rfind('o', 7), StringPiece::npos);
+  ASSERT_EQ(d.rfind('o'), Piece::npos);
+  ASSERT_EQ(e.rfind('o'), Piece::npos);
+  ASSERT_EQ(d.rfind('o', 4), Piece::npos);
+  ASSERT_EQ(e.rfind('o', 7), Piece::npos);
 
-  ASSERT_EQ(
-      StringPiece("one,two:three;four").find_first_of(StringPiece(",:"), 1),
-      3U);
+  TypeParam one_two_three_four(TestFixture::as_string("one,two:three;four"));
+  TypeParam comma_colon(TestFixture::as_string(",:"));
+  ASSERT_EQ(3U, Piece(one_two_three_four).find_first_of(comma_colon));
   ASSERT_EQ(a.find_first_of(b), 0U);
   ASSERT_EQ(a.find_first_of(b, 0), 0U);
   ASSERT_EQ(a.find_first_of(b, 1), 1U);
   ASSERT_EQ(a.find_first_of(b, 2), 2U);
-  ASSERT_EQ(a.find_first_of(b, 3), StringPiece::npos);
+  ASSERT_EQ(a.find_first_of(b, 3), Piece::npos);
   ASSERT_EQ(a.find_first_of(c), 23U);
   ASSERT_EQ(a.find_first_of(c, 23), 23U);
   ASSERT_EQ(a.find_first_of(c, 24), 24U);
   ASSERT_EQ(a.find_first_of(c, 25), 25U);
-  ASSERT_EQ(a.find_first_of(c, 26), StringPiece::npos);
+  ASSERT_EQ(a.find_first_of(c, 26), Piece::npos);
   ASSERT_EQ(g.find_first_of(b), 13U);
   ASSERT_EQ(g.find_first_of(c), 0U);
-  ASSERT_EQ(a.find_first_of(f), StringPiece::npos);
-  ASSERT_EQ(f.find_first_of(a), StringPiece::npos);
+  ASSERT_EQ(a.find_first_of(f), Piece::npos);
+  ASSERT_EQ(f.find_first_of(a), Piece::npos);
   // empty string nonsense
-  ASSERT_EQ(a.find_first_of(d), StringPiece::npos);
-  ASSERT_EQ(a.find_first_of(e), StringPiece::npos);
-  ASSERT_EQ(d.find_first_of(b), StringPiece::npos);
-  ASSERT_EQ(e.find_first_of(b), StringPiece::npos);
-  ASSERT_EQ(d.find_first_of(d), StringPiece::npos);
-  ASSERT_EQ(e.find_first_of(d), StringPiece::npos);
-  ASSERT_EQ(d.find_first_of(e), StringPiece::npos);
-  ASSERT_EQ(e.find_first_of(e), StringPiece::npos);
+  ASSERT_EQ(a.find_first_of(d), Piece::npos);
+  ASSERT_EQ(a.find_first_of(e), Piece::npos);
+  ASSERT_EQ(d.find_first_of(b), Piece::npos);
+  ASSERT_EQ(e.find_first_of(b), Piece::npos);
+  ASSERT_EQ(d.find_first_of(d), Piece::npos);
+  ASSERT_EQ(e.find_first_of(d), Piece::npos);
+  ASSERT_EQ(d.find_first_of(e), Piece::npos);
+  ASSERT_EQ(e.find_first_of(e), Piece::npos);
 
   ASSERT_EQ(a.find_first_not_of(b), 3U);
   ASSERT_EQ(a.find_first_not_of(c), 0U);
-  ASSERT_EQ(b.find_first_not_of(a), StringPiece::npos);
-  ASSERT_EQ(c.find_first_not_of(a), StringPiece::npos);
+  ASSERT_EQ(b.find_first_not_of(a), Piece::npos);
+  ASSERT_EQ(c.find_first_not_of(a), Piece::npos);
   ASSERT_EQ(f.find_first_not_of(a), 0U);
   ASSERT_EQ(a.find_first_not_of(f), 0U);
   ASSERT_EQ(a.find_first_not_of(d), 0U);
   ASSERT_EQ(a.find_first_not_of(e), 0U);
   // empty string nonsense
-  ASSERT_EQ(d.find_first_not_of(a), StringPiece::npos);
-  ASSERT_EQ(e.find_first_not_of(a), StringPiece::npos);
-  ASSERT_EQ(d.find_first_not_of(d), StringPiece::npos);
-  ASSERT_EQ(e.find_first_not_of(d), StringPiece::npos);
-  ASSERT_EQ(d.find_first_not_of(e), StringPiece::npos);
-  ASSERT_EQ(e.find_first_not_of(e), StringPiece::npos);
+  ASSERT_EQ(d.find_first_not_of(a), Piece::npos);
+  ASSERT_EQ(e.find_first_not_of(a), Piece::npos);
+  ASSERT_EQ(d.find_first_not_of(d), Piece::npos);
+  ASSERT_EQ(e.find_first_not_of(d), Piece::npos);
+  ASSERT_EQ(d.find_first_not_of(e), Piece::npos);
+  ASSERT_EQ(e.find_first_not_of(e), Piece::npos);
 
-  StringPiece h("====");
-  ASSERT_EQ(h.find_first_not_of('='), StringPiece::npos);
-  ASSERT_EQ(h.find_first_not_of('=', 3), StringPiece::npos);
+  TypeParam equals(TestFixture::as_string("===="));
+  Piece h(equals);
+  ASSERT_EQ(h.find_first_not_of('='), Piece::npos);
+  ASSERT_EQ(h.find_first_not_of('=', 3), Piece::npos);
   ASSERT_EQ(h.find_first_not_of('\0'), 0U);
   ASSERT_EQ(g.find_first_not_of('x'), 2U);
   ASSERT_EQ(f.find_first_not_of('\0'), 0U);
   ASSERT_EQ(f.find_first_not_of('\0', 3), 4U);
   ASSERT_EQ(f.find_first_not_of('\0', 2), 2U);
   // empty string nonsense
-  ASSERT_EQ(d.find_first_not_of('x'), StringPiece::npos);
-  ASSERT_EQ(e.find_first_not_of('x'), StringPiece::npos);
-  ASSERT_EQ(d.find_first_not_of('\0'), StringPiece::npos);
-  ASSERT_EQ(e.find_first_not_of('\0'), StringPiece::npos);
+  ASSERT_EQ(d.find_first_not_of('x'), Piece::npos);
+  ASSERT_EQ(e.find_first_not_of('x'), Piece::npos);
+  ASSERT_EQ(d.find_first_not_of('\0'), Piece::npos);
+  ASSERT_EQ(e.find_first_not_of('\0'), Piece::npos);
 
-  //  StringPiece g("xx not found bb");
-  StringPiece i("56");
-  ASSERT_EQ(h.find_last_of(a), StringPiece::npos);
+  //  Piece g("xx not found bb");
+  TypeParam fifty_six(TestFixture::as_string("56"));
+  Piece i(fifty_six);
+  ASSERT_EQ(h.find_last_of(a), Piece::npos);
   ASSERT_EQ(g.find_last_of(a), g.size()-1);
   ASSERT_EQ(a.find_last_of(b), 2U);
   ASSERT_EQ(a.find_last_of(c), a.size()-1);
@@ -386,74 +396,74 @@ TEST(StringPieceTest, CheckSTL) {
   ASSERT_EQ(a.find_last_of('z'), 25U);
   ASSERT_EQ(a.find_last_of('a', 5), 0U);
   ASSERT_EQ(a.find_last_of('b', 5), 1U);
-  ASSERT_EQ(a.find_last_of('b', 0), StringPiece::npos);
+  ASSERT_EQ(a.find_last_of('b', 0), Piece::npos);
   ASSERT_EQ(a.find_last_of('z', 25), 25U);
-  ASSERT_EQ(a.find_last_of('z', 24), StringPiece::npos);
+  ASSERT_EQ(a.find_last_of('z', 24), Piece::npos);
   ASSERT_EQ(f.find_last_of(i, 5), 5U);
   ASSERT_EQ(f.find_last_of(i, 6), 6U);
-  ASSERT_EQ(f.find_last_of(a, 4), StringPiece::npos);
+  ASSERT_EQ(f.find_last_of(a, 4), Piece::npos);
   // empty string nonsense
-  ASSERT_EQ(f.find_last_of(d), StringPiece::npos);
-  ASSERT_EQ(f.find_last_of(e), StringPiece::npos);
-  ASSERT_EQ(f.find_last_of(d, 4), StringPiece::npos);
-  ASSERT_EQ(f.find_last_of(e, 4), StringPiece::npos);
-  ASSERT_EQ(d.find_last_of(d), StringPiece::npos);
-  ASSERT_EQ(d.find_last_of(e), StringPiece::npos);
-  ASSERT_EQ(e.find_last_of(d), StringPiece::npos);
-  ASSERT_EQ(e.find_last_of(e), StringPiece::npos);
-  ASSERT_EQ(d.find_last_of(f), StringPiece::npos);
-  ASSERT_EQ(e.find_last_of(f), StringPiece::npos);
-  ASSERT_EQ(d.find_last_of(d, 4), StringPiece::npos);
-  ASSERT_EQ(d.find_last_of(e, 4), StringPiece::npos);
-  ASSERT_EQ(e.find_last_of(d, 4), StringPiece::npos);
-  ASSERT_EQ(e.find_last_of(e, 4), StringPiece::npos);
-  ASSERT_EQ(d.find_last_of(f, 4), StringPiece::npos);
-  ASSERT_EQ(e.find_last_of(f, 4), StringPiece::npos);
+  ASSERT_EQ(f.find_last_of(d), Piece::npos);
+  ASSERT_EQ(f.find_last_of(e), Piece::npos);
+  ASSERT_EQ(f.find_last_of(d, 4), Piece::npos);
+  ASSERT_EQ(f.find_last_of(e, 4), Piece::npos);
+  ASSERT_EQ(d.find_last_of(d), Piece::npos);
+  ASSERT_EQ(d.find_last_of(e), Piece::npos);
+  ASSERT_EQ(e.find_last_of(d), Piece::npos);
+  ASSERT_EQ(e.find_last_of(e), Piece::npos);
+  ASSERT_EQ(d.find_last_of(f), Piece::npos);
+  ASSERT_EQ(e.find_last_of(f), Piece::npos);
+  ASSERT_EQ(d.find_last_of(d, 4), Piece::npos);
+  ASSERT_EQ(d.find_last_of(e, 4), Piece::npos);
+  ASSERT_EQ(e.find_last_of(d, 4), Piece::npos);
+  ASSERT_EQ(e.find_last_of(e, 4), Piece::npos);
+  ASSERT_EQ(d.find_last_of(f, 4), Piece::npos);
+  ASSERT_EQ(e.find_last_of(f, 4), Piece::npos);
 
   ASSERT_EQ(a.find_last_not_of(b), a.size()-1);
   ASSERT_EQ(a.find_last_not_of(c), 22U);
-  ASSERT_EQ(b.find_last_not_of(a), StringPiece::npos);
-  ASSERT_EQ(b.find_last_not_of(b), StringPiece::npos);
+  ASSERT_EQ(b.find_last_not_of(a), Piece::npos);
+  ASSERT_EQ(b.find_last_not_of(b), Piece::npos);
   ASSERT_EQ(f.find_last_not_of(i), 4U);
   ASSERT_EQ(a.find_last_not_of(c, 24), 22U);
   ASSERT_EQ(a.find_last_not_of(b, 3), 3U);
-  ASSERT_EQ(a.find_last_not_of(b, 2), StringPiece::npos);
+  ASSERT_EQ(a.find_last_not_of(b, 2), Piece::npos);
   // empty string nonsense
   ASSERT_EQ(f.find_last_not_of(d), f.size()-1);
   ASSERT_EQ(f.find_last_not_of(e), f.size()-1);
   ASSERT_EQ(f.find_last_not_of(d, 4), 4U);
   ASSERT_EQ(f.find_last_not_of(e, 4), 4U);
-  ASSERT_EQ(d.find_last_not_of(d), StringPiece::npos);
-  ASSERT_EQ(d.find_last_not_of(e), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of(d), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of(e), StringPiece::npos);
-  ASSERT_EQ(d.find_last_not_of(f), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of(f), StringPiece::npos);
-  ASSERT_EQ(d.find_last_not_of(d, 4), StringPiece::npos);
-  ASSERT_EQ(d.find_last_not_of(e, 4), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of(d, 4), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of(e, 4), StringPiece::npos);
-  ASSERT_EQ(d.find_last_not_of(f, 4), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of(f, 4), StringPiece::npos);
+  ASSERT_EQ(d.find_last_not_of(d), Piece::npos);
+  ASSERT_EQ(d.find_last_not_of(e), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of(d), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of(e), Piece::npos);
+  ASSERT_EQ(d.find_last_not_of(f), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of(f), Piece::npos);
+  ASSERT_EQ(d.find_last_not_of(d, 4), Piece::npos);
+  ASSERT_EQ(d.find_last_not_of(e, 4), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of(d, 4), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of(e, 4), Piece::npos);
+  ASSERT_EQ(d.find_last_not_of(f, 4), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of(f, 4), Piece::npos);
 
   ASSERT_EQ(h.find_last_not_of('x'), h.size() - 1);
-  ASSERT_EQ(h.find_last_not_of('='), StringPiece::npos);
+  ASSERT_EQ(h.find_last_not_of('='), Piece::npos);
   ASSERT_EQ(b.find_last_not_of('c'), 1U);
   ASSERT_EQ(h.find_last_not_of('x', 2), 2U);
-  ASSERT_EQ(h.find_last_not_of('=', 2), StringPiece::npos);
+  ASSERT_EQ(h.find_last_not_of('=', 2), Piece::npos);
   ASSERT_EQ(b.find_last_not_of('b', 1), 0U);
   // empty string nonsense
-  ASSERT_EQ(d.find_last_not_of('x'), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of('x'), StringPiece::npos);
-  ASSERT_EQ(d.find_last_not_of('\0'), StringPiece::npos);
-  ASSERT_EQ(e.find_last_not_of('\0'), StringPiece::npos);
+  ASSERT_EQ(d.find_last_not_of('x'), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of('x'), Piece::npos);
+  ASSERT_EQ(d.find_last_not_of('\0'), Piece::npos);
+  ASSERT_EQ(e.find_last_not_of('\0'), Piece::npos);
 
   ASSERT_EQ(a.substr(0, 3), b);
   ASSERT_EQ(a.substr(23), c);
   ASSERT_EQ(a.substr(23, 3), c);
   ASSERT_EQ(a.substr(23, 99), c);
   ASSERT_EQ(a.substr(0), a);
-  ASSERT_EQ(a.substr(3, 2), "de");
+  ASSERT_EQ(a.substr(3, 2), TestFixture::as_string("de"));
   // empty string nonsense
   ASSERT_EQ(a.substr(99, 2), e);
   ASSERT_EQ(d.substr(99), e);
@@ -561,11 +571,11 @@ TEST(StringPieceTest, CheckCustom) {
   ASSERT_TRUE(!e.ends_with(a));
 
   StringPiece c;
-  c.set(static_cast<const void*>("foobar"), 6);
+  c.set("foobar", 6);
   ASSERT_EQ(c, a);
-  c.set(static_cast<const void*>("foobar"), 0);
+  c.set("foobar", 0);
   ASSERT_EQ(c, e);
-  c.set(static_cast<const void*>("foobar"), 7);
+  c.set("foobar", 7);
   ASSERT_NE(c, a);
 }
 
