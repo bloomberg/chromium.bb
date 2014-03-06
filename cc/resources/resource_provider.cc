@@ -2147,10 +2147,12 @@ uint8_t* ResourceProvider::MapImage(const Resource* resource, int* stride) {
     DCHECK(resource->image_id);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
+    // MapImageCHROMIUM should be called prior to GetImageParameterivCHROMIUM.
+    uint8_t* pixels = static_cast<uint8_t*>(
+        gl->MapImageCHROMIUM(resource->image_id, GL_READ_WRITE));
     gl->GetImageParameterivCHROMIUM(
         resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, stride);
-    return static_cast<uint8_t*>(
-        gl->MapImageCHROMIUM(resource->image_id, GL_READ_WRITE));
+    return pixels;
   }
   DCHECK_EQ(Bitmap, resource->type);
   *stride = 0;

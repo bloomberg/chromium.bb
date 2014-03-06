@@ -3908,6 +3908,12 @@ void GLES2Implementation::GetImageParameterivCHROMIUMHelper(
     return;
   }
 
+  if (!gpu_buffer->IsMapped()) {
+    SetGLError(
+        GL_INVALID_OPERATION, "glGetImageParameterivCHROMIUM", "not mapped");
+    return;
+  }
+
   *params = gpu_buffer->GetStride();
 }
 
