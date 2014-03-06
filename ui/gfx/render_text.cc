@@ -718,29 +718,6 @@ void RenderText::DrawCursor(Canvas* canvas, const SelectionModel& position) {
   canvas->FillRect(GetCursorBounds(position, true), cursor_color_);
 }
 
-void RenderText::DrawSelectedTextForDrag(Canvas* canvas) {
-  EnsureLayout();
-  const std::vector<Rect> sel = GetSubstringBounds(selection());
-
-  // Override the selection color with black, and force the background to be
-  // transparent so that it's rendered without subpixel antialiasing.
-  const bool saved_background_is_transparent = background_is_transparent();
-  const SkColor saved_selection_color = selection_color();
-  set_background_is_transparent(true);
-  set_selection_color(SK_ColorBLACK);
-
-  for (size_t i = 0; i < sel.size(); ++i) {
-    canvas->Save();
-    canvas->ClipRect(sel[i]);
-    DrawVisualText(canvas);
-    canvas->Restore();
-  }
-
-  // Restore saved transparency and selection color.
-  set_selection_color(saved_selection_color);
-  set_background_is_transparent(saved_background_is_transparent);
-}
-
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
                                  bool insert_mode) {
   // TODO(ckocagil): Support multiline. This function should return the height

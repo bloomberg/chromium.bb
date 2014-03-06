@@ -18,10 +18,13 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -37,22 +40,22 @@
 #include "base/win/win_util.h"
 #endif
 
+namespace views {
+
 namespace {
 
 // Default placeholder text color.
 const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
 
-void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
+void ConvertRectToScreen(const View* src, gfx::Rect* r) {
   DCHECK(src);
 
   gfx::Point new_origin = r->origin();
-  views::View::ConvertPointToScreen(src, &new_origin);
+  View::ConvertPointToScreen(src, &new_origin);
   r->set_origin(new_origin);
 }
 
 }  // namespace
-
-namespace views {
 
 // static
 const char Textfield::kViewClassName[] = "Textfield";
@@ -827,40 +830,47 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, ContextMenuController overrides:
 
-void Textfield::ShowContextMenuForView(
-    View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
+void Textfield::ShowContextMenuForView(View* source,
+                                       const gfx::Point& point,
+                                       ui::MenuSourceType source_type) {
   UpdateContextMenu();
-  if (context_menu_runner_->RunMenuAt(GetWidget(), NULL,
-          gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT,
-          source_type,
-          MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
-      MenuRunner::MENU_DELETED)
-    return;
+  ignore_result(context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+      gfx::Rect(point, gfx::Size()), MenuItemView::TOPLEFT, source_type,
+      MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Textfield, views::DragController overrides:
+// Textfield, DragController overrides:
 
-void Textfield::WriteDragDataForView(views::View* sender,
+void Textfield::WriteDragDataForView(View* sender,
                                      const gfx::Point& press_pt,
                                      OSExchangeData* data) {
-  DCHECK_NE(ui::DragDropTypes::DRAG_NONE,
-            GetDragOperationsForView(sender, press_pt));
-  data->SetString(model_->GetSelectedText());
+  const base::string16& selected_text(GetSelectedText());
+  data->SetString(selected_text);
+  Label label(selected_text, GetFontList());
+  const SkColor background = GetBackgroundColor();
+  label.SetBackgroundColor(SkColorSetA(background, SK_AlphaTRANSPARENT));
+  gfx::Size size(label.GetPreferredSize());
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  gfx::Display display = gfx::Screen::GetScreenFor(native_view)->
+      GetDisplayNearestWindow(native_view);
+  size.SetToMin(gfx::Size(display.size().width(), height()));
+  label.SetBoundsRect(gfx::Rect(size));
   scoped_ptr<gfx::Canvas> canvas(
-      views::GetCanvasForDragImage(GetWidget(), size()));
-  GetRenderText()->DrawSelectedTextForDrag(canvas.get());
-  drag_utils::SetDragImageOnDataObject(*canvas, size(),
-                                       press_pt.OffsetFromOrigin(),
-                                       data);
+      GetCanvasForDragImage(GetWidget(), label.size()));
+  label.SetEnabledColor(GetTextColor());
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Desktop Linux Aura does not yet support transparency in drag images.
+  canvas->DrawColor(background);
+#endif
+  label.Paint(canvas.get());
+  const gfx::Vector2d kOffset(-15, 0);
+  drag_utils::SetDragImageOnDataObject(*canvas, label.size(), kOffset, data);
   if (controller_)
     controller_->OnWriteDragData(data);
 }
 
-int Textfield::GetDragOperationsForView(views::View* sender,
-                                        const gfx::Point& p) {
+int Textfield::GetDragOperationsForView(View* sender, const gfx::Point& p) {
   int drag_operations = ui::DragDropTypes::DRAG_COPY;
   if (!enabled() || text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD ||
       !GetRenderText()->IsPointInSelection(p)) {

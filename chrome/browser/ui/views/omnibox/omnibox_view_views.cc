@@ -868,10 +868,10 @@ void OmniboxViewViews::OnGetDragOperationsForTextfield(int* drag_operations) {
 }
 
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
-  base::string16 selected_text = GetSelectedText();
   GURL url;
   bool write_url;
   bool is_all_selected = IsSelectAll();
+  base::string16 selected_text = GetSelectedText();
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), is_all_selected,
                              &selected_text, &url, &write_url);
   data->SetString(selected_text);
