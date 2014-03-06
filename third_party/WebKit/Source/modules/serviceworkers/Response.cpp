@@ -8,6 +8,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "modules/serviceworkers/ResponseInit.h"
 #include "platform/NotImplemented.h"
+#include "public/platform/WebServiceWorkerResponse.h"
 
 namespace WebCore {
 
@@ -30,6 +31,13 @@ Dictionary* Response::headers()
 {
     // FIXME: Implement. Spec will eventually whitelist allowable headers.
     return &m_headers;
+}
+
+void Response::populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse& response)
+{
+    response.setStatusCode(statusCode());
+    response.setStatusText(statusText());
+    response.setMethod(method());
 }
 
 Response::Response(const ResponseInit& responseInit)

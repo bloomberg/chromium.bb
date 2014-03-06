@@ -37,6 +37,7 @@ namespace blink {
 
 class WebString;
 class WebServiceWorkerContextProxy;
+class WebServiceWorkerResponse;
 
 // This interface is implemented by the client. It is suppoed to be created
 // on the main thread and then passed on to the worker thread to be owned
@@ -77,6 +78,12 @@ public:
     // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
     // script context.
     virtual void didHandleInstallEvent(int installEventID) { }
+
+    // ServiceWorker specific methods. Called after FetchEvent is handled by the
+    // ServiceWorker's script context. When no response is provided, the browser
+    // should fallback to native fetch.
+    virtual void didHandleFetchEvent(int fetchEventID) { }
+    virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& response) { }
 };
 
 } // namespace blink

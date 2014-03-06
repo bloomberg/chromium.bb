@@ -37,6 +37,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/NotImplemented.h"
@@ -62,6 +63,14 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
     RefPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, eventID);
     observer->willDispatchEvent();
     m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit(), observer));
+    observer->didDispatchEvent();
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID)
+{
+    ASSERT(m_workerGlobalScope);
+    RefPtr<RespondWithObserver> observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
+    m_workerGlobalScope->dispatchEvent(FetchEvent::create(observer));
     observer->didDispatchEvent();
 }
 

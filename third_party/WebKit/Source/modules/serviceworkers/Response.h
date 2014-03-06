@@ -10,6 +10,8 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
+namespace blink { class WebServiceWorkerResponse; }
+
 namespace WebCore {
 
 struct ResponseInit;
@@ -31,6 +33,8 @@ public:
 
     Dictionary* headers();
     void headers(const Dictionary&);
+
+    void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
 private:
     explicit Response(const ResponseInit&);
