@@ -29,27 +29,28 @@ class UI_BASE_EXPORT CursorFactoryOzone {
   // Return the default cursor of the specified type. The types are listed in
   // ui/base/cursor/cursor.h. Default cursors are managed by the implementation
   // and must live indefinitely; there's no way to know when to free them.
-  PlatformCursor GetDefaultCursor(int type);
+  virtual PlatformCursor GetDefaultCursor(int type);
 
   // Return a image cursor from the specified image & hotspot. Image cursors
   // are referenced counted and have an initial refcount of 1. Therefore, each
   // CreateImageCursor call must be matched with a call to UnrefImageCursor.
-  PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
-                                   const gfx::Point& hotspot);
+  virtual PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
+                                           const gfx::Point& hotspot);
 
   // Increment platform image cursor refcount.
-  void RefImageCursor(PlatformCursor cursor);
+  virtual void RefImageCursor(PlatformCursor cursor);
 
   // Decrement platform image cursor refcount.
-  void UnrefImageCursor(PlatformCursor cursor);
+  virtual void UnrefImageCursor(PlatformCursor cursor);
 
   // Change the active cursor for an AcceleratedWidget.
   // TODO(spang): Move this.
-  void SetCursor(gfx::AcceleratedWidget widget, PlatformCursor cursor);
+  virtual void SetCursor(gfx::AcceleratedWidget widget, PlatformCursor cursor);
 
   // Warp the cursor within an AccelerateWidget.
   // TODO(spang): Move this.
-  void MoveCursorTo(gfx::AcceleratedWidget widget, const gfx::Point& location);
+  virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
+                            const gfx::Point& location);
 
  private:
   static CursorFactoryOzone* impl_;  // not owned
