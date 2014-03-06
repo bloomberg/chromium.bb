@@ -43,9 +43,6 @@ const int kVersionNumber = 2;
 
 typedef std::vector<std::string> StringVector;
 
-// Persist 200 MRU AlternateProtocolHostPortPairs.
-const int kMaxAlternateProtocolHostsToPersist = 200;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,14 +148,14 @@ void HttpServerPropertiesManager::SetSupportsSpdy(
 }
 
 bool HttpServerPropertiesManager::HasAlternateProtocol(
-    const net::HostPortPair& server) {
+    const net::HostPortPair& server) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return http_server_properties_impl_->HasAlternateProtocol(server);
 }
 
 net::PortAlternateProtocolPair
 HttpServerPropertiesManager::GetAlternateProtocol(
-    const net::HostPortPair& server) {
+    const net::HostPortPair& server) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return http_server_properties_impl_->GetAlternateProtocol(server);
 }
@@ -330,7 +327,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   scoped_ptr<net::PipelineCapabilityMap> pipeline_capability_map(
       new net::PipelineCapabilityMap);
   scoped_ptr<net::AlternateProtocolMap> alternate_protocol_map(
-      new net::AlternateProtocolMap(kMaxAlternateProtocolHostsToPersist));
+      new net::AlternateProtocolMap);
 
   for (base::DictionaryValue::Iterator it(*servers_dict); !it.IsAtEnd();
        it.Advance()) {
@@ -396,8 +393,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     }
 
     // Get alternate_protocol server.
-    DCHECK(alternate_protocol_map->Peek(server) ==
-           alternate_protocol_map->end());
+    DCHECK(!ContainsKey(*alternate_protocol_map, server));
     const base::DictionaryValue* port_alternate_protocol_dict = NULL;
     if (!server_pref_dict->GetDictionaryWithoutPathExpansion(
         "alternate_protocol", &port_alternate_protocol_dict)) {
@@ -431,7 +427,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       port_alternate_protocol.port = port;
       port_alternate_protocol.protocol = protocol;
 
-      alternate_protocol_map->Put(server, port_alternate_protocol);
+      (*alternate_protocol_map)[server] = port_alternate_protocol;
     } while (false);
   }
 
@@ -520,15 +516,9 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO(
   *spdy_settings_map = http_server_properties_impl_->spdy_settings_map();
 
   net::AlternateProtocolMap* alternate_protocol_map =
-      new net::AlternateProtocolMap(kMaxAlternateProtocolHostsToPersist);
-  const net::AlternateProtocolMap& map =
+      new net::AlternateProtocolMap;
+  *alternate_protocol_map =
       http_server_properties_impl_->alternate_protocol_map();
-  int count = 0;
-  for (net::AlternateProtocolMap::const_iterator it = map.begin();
-       it != map.end() && count < kMaxAlternateProtocolHostsToPersist;
-       ++it, ++count) {
-    alternate_protocol_map->Put(it->first, it->second);
-  }
 
   net::PipelineCapabilityMap* pipeline_capability_map =
       new net::PipelineCapabilityMap;
@@ -579,8 +569,6 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     net::PipelineCapabilityMap* pipeline_capability_map,
     const base::Closure& completion) {
 
-  // TODO(rtenneti): Fix ServerPrefMap to preserve MRU order of
-  // alternate_protocol_map and pipeline_capability_map.
   typedef std::map<net::HostPortPair, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map;
 
@@ -604,7 +592,8 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
   }
 
   // Add servers that have SpdySettings to server_pref_map.
-  for (net::SpdySettingsMap::iterator map_it = spdy_settings_map->begin();
+  for (net::SpdySettingsMap::iterator map_it =
+       spdy_settings_map->begin();
        map_it != spdy_settings_map->end(); ++map_it) {
     const net::HostPortPair& server = map_it->first;
 
@@ -619,7 +608,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
 
   // Add AlternateProtocol servers to server_pref_map.
   for (net::AlternateProtocolMap::const_iterator map_it =
-           alternate_protocol_map->begin();
+       alternate_protocol_map->begin();
        map_it != alternate_protocol_map->end(); ++map_it) {
     const net::HostPortPair& server = map_it->first;
     const net::PortAlternateProtocolPair& port_alternate_protocol =

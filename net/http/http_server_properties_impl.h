@@ -87,12 +87,12 @@ class NET_EXPORT HttpServerPropertiesImpl
                                bool support_spdy) OVERRIDE;
 
   // Returns true if |server| has an Alternate-Protocol header.
-  virtual bool HasAlternateProtocol(const HostPortPair& server) OVERRIDE;
+  virtual bool HasAlternateProtocol(const HostPortPair& server) const OVERRIDE;
 
   // Returns the Alternate-Protocol and port for |server|.
   // HasAlternateProtocol(server) must be true.
   virtual PortAlternateProtocolPair GetAlternateProtocol(
-      const HostPortPair& server) OVERRIDE;
+      const HostPortPair& server) const OVERRIDE;
 
   // Sets the Alternate-Protocol for |server|.
   virtual void SetAlternateProtocol(

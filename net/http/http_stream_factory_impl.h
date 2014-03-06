@@ -90,7 +90,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
 
   PortAlternateProtocolPair GetAlternateProtocolRequestFor(
       const GURL& original_url,
-      GURL* alternate_url);
+      GURL* alternate_url) const;
 
   // Detaches |job| from |request|.
   void OrphanJob(Job* job, const Request* request);
