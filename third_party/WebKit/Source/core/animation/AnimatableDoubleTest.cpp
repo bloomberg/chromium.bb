@@ -90,9 +90,9 @@ TEST(AnimationAnimatableDoubleTest, Add)
 
 TEST(AnimationAnimatableDoubleTest, Distance)
 {
-    RefPtrWillBeRawPtr<AnimatableDouble> first = AnimatableDouble::create(-1.5);
-    RefPtrWillBeRawPtr<AnimatableDouble> second = AnimatableDouble::create(2.25);
-    RefPtrWillBeRawPtr<AnimatableDouble> third = AnimatableDouble::create(3);
+    RefPtr<AnimatableDouble> first = AnimatableDouble::create(-1.5);
+    RefPtr<AnimatableDouble> second = AnimatableDouble::create(2.25);
+    RefPtr<AnimatableDouble> third = AnimatableDouble::create(3);
 
     EXPECT_DOUBLE_EQ(3.75, AnimatableValue::distance(first.get(), second.get()));
     EXPECT_DOUBLE_EQ(0.75, AnimatableValue::distance(second.get(), third.get()));
