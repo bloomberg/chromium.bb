@@ -70,6 +70,7 @@ v8.log
 /chrome/browser/internal
 /chrome/browser/performance_monitor/performance_monitor.xml
 /chrome/browser/protector/internal
+/chrome/browser/resources/chromeos/quickoffice
 /chrome/browser/resources/pdf/html_office
 /chrome/browser/resources/settings_internal/
 /chrome/browser/resources/software_rendering_list
