@@ -96,6 +96,8 @@ public:
     void cancelAnimationOnCompositor();
     bool hasActiveAnimationsOnCompositor();
 
+    static bool hasLowerPriority(Player*, Player*);
+
 private:
     Player(DocumentTimeline&, TimedItem*);
     double sourceEnd() const;
@@ -121,6 +123,8 @@ private:
 
     // This indicates timing information relevant to the player has changed
     bool m_outdated;
+
+    unsigned m_sequenceNumber;
 };
 
 } // namespace

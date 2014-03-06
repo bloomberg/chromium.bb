@@ -679,4 +679,30 @@ TEST_F(AnimationPlayerTest, AttachedPlayers)
     EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 
+TEST_F(AnimationPlayerTest, HasLowerPriority)
+{
+    // Note that start time defaults to null
+    RefPtr<Player> player1 = timeline->createPlayer(0);
+    RefPtr<Player> player2 = timeline->createPlayer(0);
+    player2->setStartTime(10);
+    RefPtr<Player> player3 = timeline->createPlayer(0);
+    RefPtr<Player> player4 = timeline->createPlayer(0);
+    player4->setStartTime(20);
+    RefPtr<Player> player5 = timeline->createPlayer(0);
+    player5->setStartTime(10);
+    RefPtr<Player> player6 = timeline->createPlayer(0);
+    player6->setStartTime(-10);
+    Vector<RefPtr<Player> > players;
+    players.append(player1);
+    players.append(player3);
+    players.append(player6);
+    players.append(player2);
+    players.append(player5);
+    players.append(player4);
+    for (size_t i = 0; i < players.size(); i++) {
+        for (size_t j = 0; j < players.size(); j++)
+            EXPECT_EQ(i < j, Player::hasLowerPriority(players[i].get(), players[j].get()));
+    }
+}
+
 }

@@ -95,15 +95,19 @@ void DocumentTimeline::serviceAnimations()
     m_timing->cancelWake();
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
-    Vector<Player*> playersToRemove;
-    for (HashSet<RefPtr<Player> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
-        Player* player = it->get();
-        if (!player->update())
-            playersToRemove.append(player);
-        timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
+    Vector<Player*> players;
+    for (HashSet<RefPtr<Player> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
+        players.append(it->get());
+
+    std::sort(players.begin(), players.end(), Player::hasLowerPriority);
+
+    for (size_t i = 0; i < players.size(); ++i) {
+        Player* player = players[i];
+        if (player->update())
+            timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
+        else
+            m_playersNeedingUpdate.remove(player);
     }
-    for (size_t i = 0; i < playersToRemove.size(); ++i)
-        m_playersNeedingUpdate.remove(playersToRemove[i]);
 
     ASSERT(!m_playersNeedingUpdate.isEmpty() || timeToNextEffect == std::numeric_limits<double>::infinity());
     if (timeToNextEffect < s_minimumDelay)

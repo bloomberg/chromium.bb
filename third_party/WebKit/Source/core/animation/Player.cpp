@@ -36,6 +36,16 @@
 
 namespace WebCore {
 
+namespace {
+
+static unsigned nextSequenceNumber()
+{
+    static unsigned next = 0;
+    return ++next;
+}
+
+}
+
 PassRefPtr<Player> Player::create(DocumentTimeline& timeline, TimedItem* content)
 {
     return adoptRef(new Player(timeline, content));
@@ -52,6 +62,7 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     , m_held(false)
     , m_isPausedForTesting(false)
     , m_outdated(false)
+    , m_sequenceNumber(nextSequenceNumber())
 {
     if (m_content) {
         if (m_content->player())
@@ -297,6 +308,17 @@ void Player::cancel()
     ASSERT(m_content->player() == this);
     m_content->detach();
     m_content = nullptr;
+}
+
+bool Player::hasLowerPriority(Player* player1, Player* player2)
+{
+    if (player1->m_startTime < player2->m_startTime)
+        return true;
+    if (player1->m_startTime > player2->m_startTime)
+        return false;
+    if (isNull(player1->m_startTime) != isNull(player2->m_startTime))
+        return isNull(player1->m_startTime);
+    return player1->m_sequenceNumber < player2->m_sequenceNumber;
 }
 
 void Player::pauseForTesting(double pauseTime)
