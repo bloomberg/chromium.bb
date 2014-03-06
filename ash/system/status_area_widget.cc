@@ -21,6 +21,10 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
+#endif
+
 namespace ash {
 
 namespace internal {
@@ -32,6 +36,9 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
       system_tray_(NULL),
       web_notification_tray_(NULL),
       logout_button_tray_(NULL),
+#if defined(OS_CHROMEOS)
+      virtual_keyboard_tray_(NULL),
+#endif
       login_status_(user::LOGGED_IN_NONE) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -51,6 +58,9 @@ void StatusAreaWidget::CreateTrayViews() {
   AddSystemTray();
   AddWebNotificationTray();
   AddLogoutButtonTray();
+#if defined(OS_CHROMEOS)
+  AddVirtualKeyboardTray();
+#endif
   SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
   DCHECK(delegate);
@@ -61,6 +71,10 @@ void StatusAreaWidget::CreateTrayViews() {
     web_notification_tray_->Initialize();
   if (logout_button_tray_)
     logout_button_tray_->Initialize();
+#if defined(OS_CHROMEOS)
+  if (virtual_keyboard_tray_)
+    virtual_keyboard_tray_->Initialize();
+#endif
   UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
 }
 
@@ -74,6 +88,10 @@ void StatusAreaWidget::Shutdown() {
   web_notification_tray_ = NULL;
   delete system_tray_;
   system_tray_ = NULL;
+#if defined(OS_CHROMEOS)
+  delete virtual_keyboard_tray_;
+  virtual_keyboard_tray_ = NULL;
+#endif
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
@@ -119,6 +137,13 @@ void StatusAreaWidget::AddLogoutButtonTray() {
   status_area_widget_delegate_->AddTray(logout_button_tray_);
 }
 
+#if defined(OS_CHROMEOS)
+void StatusAreaWidget::AddVirtualKeyboardTray() {
+  virtual_keyboard_tray_ = new VirtualKeyboardTray(this);
+  status_area_widget_delegate_->AddTray(virtual_keyboard_tray_);
+}
+#endif
+
 void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   status_area_widget_delegate_->set_alignment(alignment);
   if (system_tray_)
@@ -127,6 +152,10 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
     web_notification_tray_->SetShelfAlignment(alignment);
   if (logout_button_tray_)
     logout_button_tray_->SetShelfAlignment(alignment);
+#if defined(OS_CHROMEOS)
+  if (virtual_keyboard_tray_)
+    virtual_keyboard_tray_->SetShelfAlignment(alignment);
+#endif
   status_area_widget_delegate_->UpdateLayout();
 }
 

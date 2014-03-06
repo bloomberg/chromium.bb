@@ -217,6 +217,7 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN" file="cros/network/statusbar_vpn_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="cros/network/statusbar_network_vpn_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="cros/network/statusbar_wired.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD" file="cros/status/status_virtual_keyboard.png" />
       </if>
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE" file="cros/status/status_update.png" />

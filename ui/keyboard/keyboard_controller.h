@@ -79,6 +79,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   void set_lock_keyboard(bool lock) { lock_keyboard_ = lock; }
 
+  // Force the keyboard to show up if not showing and lock the keyboard.
+  void ShowAndLockKeyboard();
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;

@@ -524,6 +524,10 @@ Press Shift + Alt to switch.
         Previous menu
       </message>
 
+      <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
+        Show on-screen keyboard
+      </message>
+
       <message name="IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS" desc="The text shown in the notification icon for the unread count when the count is more than 9.">
         9+
       </message>

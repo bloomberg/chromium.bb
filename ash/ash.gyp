@@ -352,6 +352,8 @@
         'system/chromeos/tray_display.h',
         'system/chromeos/tray_tracing.cc',
         'system/chromeos/tray_tracing.h',
+        'system/chromeos/virtual_keyboard/virtual_keyboard_tray.cc',
+        'system/chromeos/virtual_keyboard/virtual_keyboard_tray.h',
         'system/date/clock_observer.h',
         'system/date/date_default_view.cc',
         'system/date/date_default_view.h',

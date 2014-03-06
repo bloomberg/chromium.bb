@@ -314,6 +314,11 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void KeyboardController::ShowAndLockKeyboard() {
+  set_lock_keyboard(true);
+  OnShowImeIfNeeded();
+}
+
 void KeyboardController::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (params.new_parent && params.target == container_.get())

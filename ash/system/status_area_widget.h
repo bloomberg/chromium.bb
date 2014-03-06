@@ -20,6 +20,9 @@ namespace internal {
 
 class LogoutButtonTray;
 class StatusAreaWidgetDelegate;
+#if defined(OS_CHROMEOS)
+class VirtualKeyboardTray;
+#endif
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
@@ -71,12 +74,18 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void AddSystemTray();
   void AddWebNotificationTray();
   void AddLogoutButtonTray();
+#if defined(OS_CHROMEOS)
+  void AddVirtualKeyboardTray();
+#endif
 
   // Weak pointers to View classes that are parented to StatusAreaWidget:
   internal::StatusAreaWidgetDelegate* status_area_widget_delegate_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
   LogoutButtonTray* logout_button_tray_;
+#if defined(OS_CHROMEOS)
+  VirtualKeyboardTray* virtual_keyboard_tray_;
+#endif
   user::LoginStatus login_status_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
