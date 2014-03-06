@@ -85,7 +85,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -724,7 +723,6 @@ Shell::~Shell() {
   event_client_.reset();
   nested_dispatcher_controller_.reset();
   toplevel_window_event_handler_.reset();
-  user_action_client_.reset();
   visibility_controller_.reset();
   // |shelf_item_delegate_manager_| observes |shelf_model_|. It must be
   // destroyed before |shelf_model_| is destroyed.
@@ -919,7 +917,6 @@ void Shell::Init() {
   // TODO(oshima): Move as many controllers before creating
   // RootWindowController as possible.
   visibility_controller_.reset(new AshVisibilityController);
-  user_action_client_.reset(delegate_->CreateUserActionClient());
 
   magnification_controller_.reset(
       MagnificationController::CreateInstance());
@@ -1071,8 +1068,6 @@ void Shell::InitRootWindow(aura::Window* root_window) {
     aura::client::SetDispatcherClient(root_window,
                                       nested_dispatcher_controller_.get());
   }
-  if (user_action_client_)
-    aura::client::SetUserActionClient(root_window, user_action_client_.get());
 }
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {

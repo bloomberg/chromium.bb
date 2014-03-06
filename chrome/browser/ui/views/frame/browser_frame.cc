@@ -29,6 +29,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -46,6 +47,10 @@
 #include "ash/session_state_delegate.h"
 #endif
 
+#if defined(USE_X11)
+#include "chrome/browser/ui/views/frame/browser_command_handler_x11.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
 
@@ -60,9 +65,16 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
   set_is_secondary_widget(false);
   // Don't focus anything on creation, selecting a tab will set the focus.
   set_focus_on_creation(false);
+
+#if defined(USE_X11)
+  browser_command_handler_.reset(
+      new BrowserCommandHandlerX11(browser_view_->browser()));
+#endif
 }
 
 BrowserFrame::~BrowserFrame() {
+  if (browser_command_handler_ && GetNativeView())
+    GetNativeView()->RemovePreTargetHandler(browser_command_handler_.get());
 }
 
 // static
@@ -139,6 +151,9 @@ void BrowserFrame::InitBrowserFrame() {
     DCHECK(non_client_view());
     non_client_view()->set_context_menu_controller(this);
   }
+
+  if (browser_command_handler_)
+    GetNativeWindow()->AddPreTargetHandler(browser_command_handler_.get());
 }
 
 void BrowserFrame::SetThemeProvider(scoped_ptr<ui::ThemeProvider> provider) {
