@@ -25,6 +25,7 @@
         # See comment below about gtest-internal-inl.h
         '$(NACL_SDK_ROOT)/include/gtest/internal',
       ],
+      'CXXFLAGS': ['-Wno-unused-const-variable'],
     }
   ],
   'HEADERS': [
