@@ -23,7 +23,7 @@ public:
     BatteryManager* batteryManager(Navigator&);
 
 private:
-    explicit NavigatorBattery();
+    NavigatorBattery();
     static const char* supplementName();
 
     RefPtr<BatteryManager> m_batteryManager;

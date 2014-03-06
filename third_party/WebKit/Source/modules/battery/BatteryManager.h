@@ -14,14 +14,15 @@ namespace WebCore {
 
 class Navigator;
 
-class BatteryManager : public ContextLifecycleObserver, public RefCounted<BatteryManager>, public EventTarget {
+class BatteryManager FINAL : public ContextLifecycleObserver, public RefCounted<BatteryManager>, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(BatteryManager);
 public:
     virtual ~BatteryManager();
     static PassRefPtr<BatteryManager> create(ExecutionContext*);
 
     // EventTarget implementation.
-    virtual const WTF::AtomicString& interfaceName() const { return EventTargetNames::BatteryManager; }
-    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ContextLifecycleObserver::executionContext(); }
+    virtual const WTF::AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::BatteryManager; }
+    virtual ExecutionContext* executionContext() const OVERRIDE { return ContextLifecycleObserver::executionContext(); }
 
     bool charging();
     double chargingTime();
@@ -35,21 +36,9 @@ public:
 
     void didChangeBatteryStatus(PassRefPtr<Event>, PassOwnPtr<BatteryStatus>);
 
-    using RefCounted<BatteryManager>::ref;
-    using RefCounted<BatteryManager>::deref;
-
-protected:
-    virtual EventTargetData* eventTargetData() { return &m_eventTargetData; }
-    virtual EventTargetData& ensureEventTargetData() { return m_eventTargetData; }
-
 private:
     explicit BatteryManager(ExecutionContext*);
 
-    // EventTarget implementation.
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-
-    EventTargetData m_eventTargetData;
     OwnPtr<BatteryStatus> m_batteryStatus;
 };
 
