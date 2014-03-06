@@ -29,6 +29,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/compositing/CompositingReasonFinder.h"
+#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 
@@ -340,6 +341,7 @@ private:
     // FIXME: This should absolutely not be mutable.
     mutable bool m_needsToRecomputeCompositingRequirements;
     bool m_needsToUpdateLayerTreeGeometry;
+    GraphicsLayerUpdater::UpdateType m_pendingUpdateType;
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
