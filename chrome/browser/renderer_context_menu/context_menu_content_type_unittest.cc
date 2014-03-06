@@ -84,6 +84,8 @@ TEST_F(ContextMenuContentTypeTest, CheckTypes) {
                     ContextMenuContentType::ITEM_GROUP_COPY));
     EXPECT_FALSE(content_type->SupportsGroup(
                     ContextMenuContentType::ITEM_GROUP_EDITABLE));
+    EXPECT_TRUE(content_type->SupportsGroup(
+                    ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER));
   }
 
   {

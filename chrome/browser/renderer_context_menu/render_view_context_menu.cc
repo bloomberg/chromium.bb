@@ -639,6 +639,11 @@ void RenderViewContextMenu::InitMenu() {
     AppendCopyItem();
   }
 
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER)) {
+    AppendSearchProvider();
+  }
+
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT))
     AppendPrintItem();
 
