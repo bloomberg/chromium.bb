@@ -222,12 +222,17 @@ void MarkupAccumulator::appendQuotedURLAttributeValue(StringBuilder& result, con
     result.append(quoteChar);
 }
 
-bool MarkupAccumulator::shouldAddNamespaceElement(const Element& element)
+bool MarkupAccumulator::shouldAddNamespaceElement(const Element& element, Namespaces& namespaces)
 {
     // Don't add namespace attribute if it is already defined for this elem.
     const AtomicString& prefix = element.prefix();
-    if (prefix.isEmpty())
-        return !element.hasAttribute(xmlnsAtom);
+    if (prefix.isEmpty()) {
+        if (element.hasAttribute(xmlnsAtom)) {
+            namespaces.set(emptyAtom.impl(), element.namespaceURI().impl());
+            return false;
+        }
+        return true;
+    }
 
     DEFINE_STATIC_LOCAL(String, xmlnsWithColon, ("xmlns:"));
     return !element.hasAttribute(xmlnsWithColon + prefix);
@@ -399,7 +404,7 @@ void MarkupAccumulator::appendOpenTag(StringBuilder& result, const Element& elem
 {
     result.append('<');
     result.append(nodeNamePreservingCase(element));
-    if (!element.document().isHTMLDocument() && namespaces && shouldAddNamespaceElement(element))
+    if (!element.document().isHTMLDocument() && namespaces && shouldAddNamespaceElement(element, *namespaces))
         appendNamespace(result, element.prefix(), element.namespaceURI(), *namespaces);
 }
 

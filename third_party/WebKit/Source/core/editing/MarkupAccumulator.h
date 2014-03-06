@@ -79,7 +79,7 @@ protected:
     void concatenateMarkup(StringBuilder&);
     void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
-    bool shouldAddNamespaceElement(const Element&);
+    bool shouldAddNamespaceElement(const Element&, Namespaces&);
     bool shouldAddNamespaceAttribute(const Attribute&, Namespaces&);
     void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
     EntityMask entityMaskForText(const Text&) const;
