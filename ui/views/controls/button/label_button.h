@@ -61,6 +61,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Call set_min_size(gfx::Size()) to clear the monotonically increasing size.
   void set_min_size(const gfx::Size& min_size) { min_size_ = min_size; }
+  void set_min_width(const int min_width) { min_size_.set_width(min_width); }
   void set_max_size(const gfx::Size& max_size) { max_size_ = max_size; }
 
   // Get or set the option to handle the return key; false by default.
