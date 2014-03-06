@@ -61,7 +61,7 @@ bool PmpTestUtil::WriteIndicatorFile(
   base::FilePath indicator_path = column_file_destination.Append(
       base::FilePath::FromUTF8Unsafe(table_name + "_0"));
 
-  return file_util::WriteFile(indicator_path, NULL, 0) == 0;
+  return base::WriteFile(indicator_path, NULL, 0) == 0;
 }
 
 template<class T>
@@ -78,7 +78,7 @@ bool PmpTestUtil::WriteColumnFileFromVector(
   std::vector<char> data = PmpTestUtil::MakeHeaderAndBody(
       field_type, elements_vector.size(), elements_vector);
 
-  size_t bytes_written = file_util::WriteFile(path, &data[0], data.size());
+  size_t bytes_written = base::WriteFile(path, &data[0], data.size());
   return (bytes_written == data.size());
 }
 

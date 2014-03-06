@@ -171,7 +171,7 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
       return false;
     }
     int size = base::checked_cast<int>(crl_set_bytes.size());
-    if (file_util::WriteFile(save_to, crl_set_bytes.data(), size) != size) {
+    if (base::WriteFile(save_to, crl_set_bytes.data(), size) != size) {
       LOG(WARNING) << "Failed to save new CRL set to disk";
       // We don't return false here because we can still use this CRL set. When
       // we restart we might revert to an older version, then we'll
@@ -187,7 +187,7 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
             << "->#" << new_crl_set->sequence();
     const std::string new_crl_set_bytes = new_crl_set->Serialize();
     int size = base::checked_cast<int>(new_crl_set_bytes.size());
-    if (file_util::WriteFile(save_to, new_crl_set_bytes.data(), size) != size) {
+    if (base::WriteFile(save_to, new_crl_set_bytes.data(), size) != size) {
       LOG(WARNING) << "Failed to save new CRL set to disk";
       // We don't return false here because we can still use this CRL set. When
       // we restart we might revert to an older version, then we'll

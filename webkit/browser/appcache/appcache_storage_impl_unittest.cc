@@ -1658,7 +1658,7 @@ class AppCacheStorageImplTest : public testing::Test {
       ASSERT_TRUE(base::CreateDirectory(disk_cache_directory));
       base::FilePath index_file = disk_cache_directory.AppendASCII("index");
       EXPECT_EQ(static_cast<int>(kCorruptData.length()),
-                file_util::WriteFile(
+                base::WriteFile(
                     index_file, kCorruptData.data(), kCorruptData.length()));
     }
 

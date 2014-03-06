@@ -137,7 +137,7 @@ class StartupTest : public UIPerfTest {
     subst.push_back(base::WideToUTF16(user_data_dir_w));
     const std::string prefs_string =
         UTF16ToASCII(ReplaceStringPlaceholders(format_string, subst, NULL));
-    EXPECT_TRUE(file_util::WriteFile(pref_path, prefs_string.c_str(),
+    EXPECT_TRUE(base::WriteFile(pref_path, prefs_string.c_str(),
                                      prefs_string.size()));
     file_util::EvictFileFromSystemCache(pref_path);
   }

@@ -487,7 +487,7 @@ bool SaveScreenSnapshotToDirectory(const base::FilePath& directory,
     if (ui::GrabDesktopSnapshot(bounds, &png_data) &&
         png_data.size() <= INT_MAX) {
       int bytes = static_cast<int>(png_data.size());
-      int written = file_util::WriteFile(
+      int written = base::WriteFile(
           out_path, reinterpret_cast<char*>(&png_data[0]), bytes);
       succeeded = (written == bytes);
     }

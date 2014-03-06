@@ -36,9 +36,8 @@ bool JSONFileValueSerializer::SerializeInternal(const base::Value& root,
     return false;
 
   int data_size = static_cast<int>(json_string.size());
-  if (file_util::WriteFile(json_file_path_,
-                           json_string.data(),
-                           data_size) != data_size)
+  if (base::WriteFile(json_file_path_, json_string.data(), data_size) !=
+      data_size)
     return false;
 
   return true;

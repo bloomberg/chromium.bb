@@ -386,7 +386,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
   base::FilePath existing_path = default_download_path().AppendASCII("foo");
   base::FilePath non_existent_path =
       default_download_path().AppendASCII("bar");
-  file_util::WriteFile(existing_path, kData, kDataLength);
+  base::WriteFile(existing_path, kData, kDataLength);
 
   scoped_ptr<content::MockDownloadItem> download_item(
       CreateActiveDownloadItem(1));

@@ -181,7 +181,7 @@ base::File::Error AsyncFileTestHelper::CreateFileWithData(
   if (!dir.CreateUniqueTempDir())
     return base::File::FILE_ERROR_FAILED;
   base::FilePath local_path = dir.path().AppendASCII("tmp");
-  if (buf_size != file_util::WriteFile(local_path, buf, buf_size))
+  if (buf_size != base::WriteFile(local_path, buf, buf_size))
     return base::File::FILE_ERROR_FAILED;
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;

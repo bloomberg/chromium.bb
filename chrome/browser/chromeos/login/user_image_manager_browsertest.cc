@@ -199,7 +199,7 @@ class UserImageManagerTest : public LoginManagerTest,
     scoped_refptr<base::RefCountedStaticMemory> image_data(
         ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
             resource_id, ui::SCALE_FACTOR_100P));
-    int written = file_util::WriteFile(
+    int written = base::WriteFile(
         image_path,
         reinterpret_cast<const char*>(image_data->front()),
         image_data->size());
@@ -599,7 +599,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     std::vector<uint8> user_key_bits;
     ASSERT_TRUE(user_policy_.GetSigningKey()->ExportPublicKey(&user_key_bits));
     ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-    ASSERT_EQ(file_util::WriteFile(
+    ASSERT_EQ(base::WriteFile(
                   user_key_file,
                   reinterpret_cast<const char*>(user_key_bits.data()),
                   user_key_bits.size()),

@@ -234,7 +234,7 @@ TEST_F(EnterpriseInstallAttributesTest, ReadCacheFile) {
                EnterpriseInstallAttributes::kAttrEnterpriseUser, kTestUser);
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
-            file_util::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
+            base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_.GetMode());
   EXPECT_EQ(kTestDomain, install_attributes_.GetDomain());
@@ -248,7 +248,7 @@ TEST_F(EnterpriseInstallAttributesTest, ReadCacheFileForConsumerKiosk) {
                EnterpriseInstallAttributes::kAttrConsumerKioskEnabled, "true");
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
-            file_util::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
+            base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
             install_attributes_.GetMode());

@@ -212,9 +212,8 @@ void SaveUptimeToFile(const base::FilePath& path,
 
   const std::string uptime_seconds = base::DoubleToString(uptime.InSecondsF());
   ASSERT_EQ(static_cast<int>(uptime_seconds.size()),
-            file_util::WriteFile(path,
-                                 uptime_seconds.c_str(),
-                                 uptime_seconds.size()));
+            base::WriteFile(path, uptime_seconds.c_str(),
+                            uptime_seconds.size()));
 }
 
 MockTimeSingleThreadTaskRunner::MockTimeSingleThreadTaskRunner() {
@@ -347,11 +346,10 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   const base::FilePath& temp_dir = temp_dir_.path();
   const base::FilePath uptime_file = temp_dir.Append("uptime");
   task_runner_->SetUptimeFile(uptime_file);
-  ASSERT_FALSE(file_util::WriteFile(uptime_file, NULL, 0));
+  ASSERT_FALSE(base::WriteFile(uptime_file, NULL, 0));
   update_reboot_needed_uptime_file_ =
       temp_dir.Append("update_reboot_needed_uptime");
-  ASSERT_FALSE(file_util::WriteFile(
-      update_reboot_needed_uptime_file_, NULL, 0));
+  ASSERT_FALSE(base::WriteFile(update_reboot_needed_uptime_file_, NULL, 0));
   ASSERT_TRUE(PathService::Override(chromeos::FILE_UPTIME, uptime_file));
   ASSERT_TRUE(PathService::Override(chromeos::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
                                     update_reboot_needed_uptime_file_));

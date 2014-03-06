@@ -42,7 +42,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   }
   const char *data = "#! testbundle\n";
   int len = strlen(data);
-  if (file_util::WriteFile(*executable, data, len) != len) {
+  if (base::WriteFile(*executable, data, len) != len) {
     return false;
   }
   if (chmod(executable->value().c_str(), 0555) != 0) {
@@ -77,7 +77,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
                          name.c_str(),
                          version_info.Version().c_str());
   len = info_plist_data.length();
-  if (file_util::WriteFile(info_plist, info_plist_data.c_str(), len) != len) {
+  if (base::WriteFile(info_plist, info_plist_data.c_str(), len) != len) {
     return false;
   }
   const UInt8* bundle_root_path =

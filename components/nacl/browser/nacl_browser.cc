@@ -88,7 +88,7 @@ void ReadCache(const base::FilePath& filename, std::string* data) {
 }
 
 void WriteCache(const base::FilePath& filename, const Pickle* pickle) {
-  file_util::WriteFile(filename, static_cast<const char*>(pickle->data()),
+  base::WriteFile(filename, static_cast<const char*>(pickle->data()),
                        pickle->size());
 }
 

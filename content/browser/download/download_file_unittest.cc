@@ -414,7 +414,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   ASSERT_FALSE(base::PathExists(path_5));
   static const char file_data[] = "xyzzy";
   ASSERT_EQ(static_cast<int>(sizeof(file_data) - 1),
-            file_util::WriteFile(path_5, file_data, sizeof(file_data) - 1));
+            base::WriteFile(path_5, file_data, sizeof(file_data) - 1));
   ASSERT_TRUE(base::PathExists(path_5));
   EXPECT_TRUE(base::ReadFileToString(path_5, &file_contents));
   EXPECT_EQ(std::string(file_data), file_contents);
@@ -442,7 +442,7 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
   ASSERT_FALSE(base::PathExists(path_1));
   static const char file_data[] = "xyzzy";
   ASSERT_EQ(static_cast<int>(sizeof(file_data)),
-            file_util::WriteFile(path_1, file_data, sizeof(file_data)));
+            base::WriteFile(path_1, file_data, sizeof(file_data)));
   ASSERT_TRUE(base::PathExists(path_1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, RenameAndUniquify(path_1, NULL));

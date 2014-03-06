@@ -97,7 +97,7 @@ class ParallelAuthenticatorTest : public testing::Test {
     base::FilePath out;
     FILE* tmp_file = base::CreateAndOpenTemporaryFile(&out);
     EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
-    EXPECT_EQ(file_util::WriteFile(out, data, data_len), data_len);
+    EXPECT_EQ(base::WriteFile(out, data, data_len), data_len);
     EXPECT_TRUE(base::CloseFile(tmp_file));
     return out;
   }

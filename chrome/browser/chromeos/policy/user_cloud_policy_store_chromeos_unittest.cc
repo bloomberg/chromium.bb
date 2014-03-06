@@ -127,9 +127,9 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   void StoreUserPolicyKey(const std::vector<uint8>& public_key) {
     ASSERT_TRUE(base::CreateDirectory(user_policy_key_file().DirName()));
     ASSERT_TRUE(
-        file_util::WriteFile(user_policy_key_file(),
-                             reinterpret_cast<const char*>(public_key.data()),
-                             public_key.size()));
+        base::WriteFile(user_policy_key_file(),
+                        reinterpret_cast<const char*>(public_key.data()),
+                        public_key.size()));
   }
 
   // Stores the current |policy_| and verifies that it is published.
@@ -400,12 +400,12 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationFull) {
   credentials.set_device_token(kLegacyToken);
   credentials.set_device_id(kLegacyDeviceId);
   ASSERT_TRUE(credentials.SerializeToString(&data));
-  ASSERT_NE(-1, file_util::WriteFile(token_file(), data.c_str(), data.size()));
+  ASSERT_NE(-1, base::WriteFile(token_file(), data.c_str(), data.size()));
 
   em::CachedCloudPolicyResponse cached_policy;
   cached_policy.mutable_cloud_policy()->CopyFrom(policy_.policy());
   ASSERT_TRUE(cached_policy.SerializeToString(&data));
-  ASSERT_NE(-1, file_util::WriteFile(policy_file(), data.c_str(), data.size()));
+  ASSERT_NE(-1, base::WriteFile(policy_file(), data.c_str(), data.size()));
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
@@ -432,7 +432,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoToken) {
   em::CachedCloudPolicyResponse cached_policy;
   cached_policy.mutable_cloud_policy()->CopyFrom(policy_.policy());
   ASSERT_TRUE(cached_policy.SerializeToString(&data));
-  ASSERT_NE(-1, file_util::WriteFile(policy_file(), data.c_str(), data.size()));
+  ASSERT_NE(-1, base::WriteFile(policy_file(), data.c_str(), data.size()));
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
@@ -457,7 +457,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoPolicy) {
   credentials.set_device_token(kLegacyToken);
   credentials.set_device_id(kLegacyDeviceId);
   ASSERT_TRUE(credentials.SerializeToString(&data));
-  ASSERT_NE(-1, file_util::WriteFile(token_file(), data.c_str(), data.size()));
+  ASSERT_NE(-1, base::WriteFile(token_file(), data.c_str(), data.size()));
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));
@@ -482,7 +482,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
   em::CachedCloudPolicyResponse cached_policy;
   cached_policy.mutable_cloud_policy()->CopyFrom(policy_.policy());
   ASSERT_TRUE(cached_policy.SerializeToString(&data));
-  ASSERT_NE(-1, file_util::WriteFile(policy_file(), data.c_str(), data.size()));
+  ASSERT_NE(-1, base::WriteFile(policy_file(), data.c_str(), data.size()));
 
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(""));

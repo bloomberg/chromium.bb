@@ -102,8 +102,8 @@ const char kTestFileContents[] = "test";
   saveAsFilename += ".jpg";
   base::FilePath toBeSaved = saveDir.Append(saveAsFilename);
   ASSERT_EQ(static_cast<int>(strlen(kTestFileContents)),
-            file_util::WriteFile(toBeSaved, kTestFileContents,
-                                 strlen(kTestFileContents)));
+            base::WriteFile(toBeSaved, kTestFileContents,
+                            strlen(kTestFileContents)));
 
   NSMutableDictionary* returnOptions =
       [NSMutableDictionary dictionaryWithDictionary:options];

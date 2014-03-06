@@ -131,7 +131,7 @@ class MediaFolderFinderTest : public testing::Test {
       dummy_data.resize(filesize);
 
       int bytes_written =
-          file_util::WriteFile(test_file, dummy_data.c_str(), filesize);
+          base::WriteFile(test_file, dummy_data.c_str(), filesize);
       ASSERT_GE(bytes_written, 0);
       ASSERT_EQ(filesize, static_cast<size_t>(bytes_written));
     }

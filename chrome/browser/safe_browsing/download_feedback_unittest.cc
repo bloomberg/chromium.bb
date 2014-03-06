@@ -119,8 +119,8 @@ class DownloadFeedbackTest : public testing::Test {
     upload_file_path_ = temp_dir_.path().AppendASCII("test file");
     upload_file_data_ = "data";
     ASSERT_EQ(static_cast<int>(upload_file_data_.size()),
-              file_util::WriteFile(upload_file_path_, upload_file_data_.data(),
-                                   upload_file_data_.size()));
+              base::WriteFile(upload_file_path_, upload_file_data_.data(),
+                              upload_file_data_.size()));
     TwoPhaseUploader::RegisterFactory(&two_phase_uploader_factory_);
   }
 

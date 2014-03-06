@@ -120,7 +120,7 @@ void FileHostedPromptMemento::StoreValueOnFileThread(
     const base::FilePath& memento_file_path,
     const std::string& value) {
   int retval =
-      file_util::WriteFile(memento_file_path, value.c_str(), value.size());
+      base::WriteFile(memento_file_path, value.c_str(), value.size());
   DCHECK_EQ(retval, (int)value.size());
 }
 

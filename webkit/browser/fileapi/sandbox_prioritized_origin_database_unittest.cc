@@ -123,8 +123,7 @@ TEST(SandboxPrioritizedOriginDatabaseTest, LostPrimaryOriginFileTest) {
   EXPECT_TRUE(database.GetPathForOrigin(kOrigin1, &path));
 
   // Corrupt the primary origin file.
-  file_util::WriteFile(
-      database.primary_origin_file(), kData.data(), kData.size());
+  base::WriteFile(database.primary_origin_file(), kData.data(), kData.size());
 
   // Reset the database.
   database.DropDatabase();
@@ -164,15 +163,15 @@ TEST(SandboxPrioritizedOriginDatabaseTest, MigrationTest) {
     old_dir_db_path1 = dir.path().Append(path1);
     ASSERT_TRUE(base::CreateDirectory(old_dir_db_path1));
     EXPECT_EQ(static_cast<int>(kFakeDirectoryData1.size()),
-              file_util::WriteFile(old_dir_db_path1.AppendASCII("dummy"),
-                                   kFakeDirectoryData1.data(),
-                                   kFakeDirectoryData1.size()));
+              base::WriteFile(old_dir_db_path1.AppendASCII("dummy"),
+                              kFakeDirectoryData1.data(),
+                              kFakeDirectoryData1.size()));
     old_dir_db_path2 = dir.path().Append(path2);
     ASSERT_TRUE(base::CreateDirectory(old_dir_db_path2));
     EXPECT_EQ(static_cast<int>(kFakeDirectoryData2.size()),
-              file_util::WriteFile(old_dir_db_path2.AppendASCII("dummy"),
-                                   kFakeDirectoryData2.data(),
-                                   kFakeDirectoryData2.size()));
+              base::WriteFile(old_dir_db_path2.AppendASCII("dummy"),
+                              kFakeDirectoryData2.data(),
+                              kFakeDirectoryData2.size()));
   }
 
   // Re-open the directory using sandboxPrioritizedOriginDatabase.

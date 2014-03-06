@@ -246,7 +246,7 @@ TEST_F(DeviceSettingsProviderTest, StatsReportingMigration) {
   base::FilePath consent_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &consent_file));
   consent_file = consent_file.AppendASCII("Consent To Send Stats");
-  ASSERT_EQ(1, file_util::WriteFile(consent_file, "0", 1));
+  ASSERT_EQ(1, base::WriteFile(consent_file, "0", 1));
 
   // This should trigger migration because the metrics policy isn't in the blob.
   device_settings_test_helper_.set_policy_blob(std::string());

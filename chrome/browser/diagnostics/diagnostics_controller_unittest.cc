@@ -75,7 +75,7 @@ class DiagnosticsControllerTest : public testing::Test {
     // Just write some random characters into the file tInvaludUsero "corrupt"
     // it.
     const char bogus_data[] = "wwZ2uNYNuyUVzFbDm3DL";
-    file_util::WriteFile(path, bogus_data, arraysize(bogus_data));
+    base::WriteFile(path, bogus_data, arraysize(bogus_data));
   }
 
   scoped_ptr<DiagnosticsModel> model_;

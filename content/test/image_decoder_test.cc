@@ -61,7 +61,7 @@ void SaveMD5Sum(const base::FilePath& path, const blink::WebImage& web_image) {
          &digest);
 
   // Write sum to disk.
-  int bytes_written = file_util::WriteFile(path,
+  int bytes_written = base::WriteFile(path,
       reinterpret_cast<const char*>(&digest), sizeof digest);
   ASSERT_EQ(sizeof digest, bytes_written);
   web_image.getSkBitmap().unlockPixels();

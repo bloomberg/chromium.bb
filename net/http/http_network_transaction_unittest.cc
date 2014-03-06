@@ -7861,7 +7861,7 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   base::FilePath temp_file;
   ASSERT_TRUE(base::CreateTemporaryFile(&temp_file));
   std::string temp_file_content("Unreadable file.");
-  ASSERT_TRUE(file_util::WriteFile(temp_file, temp_file_content.c_str(),
+  ASSERT_TRUE(base::WriteFile(temp_file, temp_file_content.c_str(),
                                    temp_file_content.length()));
   ASSERT_TRUE(file_util::MakeFileUnreadable(temp_file));
 

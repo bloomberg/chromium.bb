@@ -54,9 +54,8 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
                                            &old_log_data[0],
                                            kTruncatedInstallerLogFileSize);
         if (bytes_read > 0 &&
-            (bytes_read == file_util::WriteFile(log_file,
-                                                &old_log_data[0],
-                                                bytes_read) ||
+            (bytes_read == base::WriteFile(log_file, &old_log_data[0],
+                                           bytes_read) ||
              base::PathExists(log_file))) {
           result = LOGFILE_TRUNCATED;
         }

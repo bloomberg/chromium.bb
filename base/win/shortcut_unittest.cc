@@ -34,8 +34,7 @@ class ShortcutTest : public testing::Test {
     // Shortcut 1's properties
     {
       const FilePath target_file(temp_dir_.path().Append(L"Target 1.txt"));
-      file_util::WriteFile(target_file, kFileContents,
-                           arraysize(kFileContents));
+      WriteFile(target_file, kFileContents, arraysize(kFileContents));
 
       link_properties_.set_target(target_file);
       link_properties_.set_working_dir(temp_dir_.path());
@@ -49,11 +48,10 @@ class ShortcutTest : public testing::Test {
     // Shortcut 2's properties (all different from properties of shortcut 1).
     {
       const FilePath target_file_2(temp_dir_.path().Append(L"Target 2.txt"));
-      file_util::WriteFile(target_file_2, kFileContents2,
-                           arraysize(kFileContents2));
+      WriteFile(target_file_2, kFileContents2, arraysize(kFileContents2));
 
       FilePath icon_path_2;
-      base::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path_2);
+      CreateTemporaryFileInDir(temp_dir_.path(), &icon_path_2);
 
       link_properties_2_.set_target(target_file_2);
       link_properties_2_.set_working_dir(temp_dir_2_.path());

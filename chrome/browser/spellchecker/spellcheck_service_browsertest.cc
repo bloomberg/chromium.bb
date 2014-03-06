@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   base::FilePath bdict_path =
       chrome::spellcheck_common::GetVersionedFileName("en-US", dict_dir);
 
-  size_t actual = file_util::WriteFile(bdict_path,
+  size_t actual = base::WriteFile(bdict_path,
       reinterpret_cast<const char*>(kCorruptedBDICT),
       arraysize(kCorruptedBDICT));
   EXPECT_EQ(arraysize(kCorruptedBDICT), actual);

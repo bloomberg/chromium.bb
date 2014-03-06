@@ -161,9 +161,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
     DVLOG(1) << "Adjusting oom_score_adj of " << process << " to "
              << score_str;
     int score_len = static_cast<int>(score_str.length());
-    return (score_len == file_util::WriteFile(oom_file,
-                                              score_str.c_str(),
-                                              score_len));
+    return (score_len == WriteFile(oom_file, score_str.c_str(), score_len));
   }
 
   // If the oom_score_adj file doesn't exist, then we write the old
@@ -178,9 +176,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
     std::string score_str = IntToString(converted_score);
     DVLOG(1) << "Adjusting oom_adj of " << process << " to " << score_str;
     int score_len = static_cast<int>(score_str.length());
-    return (score_len == file_util::WriteFile(oom_file,
-                                              score_str.c_str(),
-                                              score_len));
+    return (score_len == WriteFile(oom_file, score_str.c_str(), score_len));
   }
 
   return false;

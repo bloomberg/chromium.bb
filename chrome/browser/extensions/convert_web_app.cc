@@ -149,7 +149,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
     const char* image_data_ptr = reinterpret_cast<const char*>(&image_data[0]);
     int size = base::checked_cast<int>(image_data.size());
-    if (file_util::WriteFile(icon_file, image_data_ptr, size) != size) {
+    if (base::WriteFile(icon_file, image_data_ptr, size) != size) {
       LOG(ERROR) << "Could not write icon file.";
       return NULL;
     }

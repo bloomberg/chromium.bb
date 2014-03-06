@@ -141,7 +141,7 @@ class IPhotoDataProviderTest : public InProcessBrowserTest {
   void WriteLibraryInternal() {
     std::string xml = GetLibraryString();
     ASSERT_EQ(static_cast<int>(xml.size()),
-              file_util::WriteFile(XmlFile(), xml.c_str(), xml.size()));
+              base::WriteFile(XmlFile(), xml.c_str(), xml.size()));
   }
 
   base::ScopedTempDir library_dir_;
@@ -451,7 +451,7 @@ class IPhotoDataProviderInvalidTest : public IPhotoDataProviderTest {
                    base::Unretained(data_provider()),
                    base::Bind(&IPhotoDataProviderInvalidTest::CheckInvalid,
                               base::Unretained(this))));
-    EXPECT_EQ(1L, file_util::WriteFile(XmlFile(), " ", 1));
+    EXPECT_EQ(1L, base::WriteFile(XmlFile(), " ", 1));
   }
 
   void CheckInvalid(bool is_valid) {

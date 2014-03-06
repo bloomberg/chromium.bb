@@ -235,15 +235,15 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
     return false;
   }
 
-  int written = file_util::WriteFile(directory.AppendASCII("ticket.xml"),
-                                     ticket.data(),
-                                     static_cast<int>(ticket.size()));
+  int written = base::WriteFile(directory.AppendASCII("ticket.xml"),
+                                ticket.data(),
+                                static_cast<int>(ticket.size()));
   if (static_cast<size_t>(written) != ticket.size()) {
     LOG(WARNING) << "Cannot save ticket.";
     return false;
   }
 
-  written = file_util::WriteFile(
+  written = base::WriteFile(
       directory.AppendASCII("data." + file_extension),
       content.data(), static_cast<int>(content.size()));
   if (static_cast<size_t>(written) != content.size()) {

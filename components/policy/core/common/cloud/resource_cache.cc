@@ -85,7 +85,7 @@ bool ResourceCache::Store(const std::string& key,
   int size = base::checked_cast<int>(data.size());
   return VerifyKeyPathAndGetSubkeyPath(key, true, subkey, &subkey_path) &&
          base::DeleteFile(subkey_path, false) &&
-         (file_util::WriteFile(subkey_path, data.data(), size) == size);
+         (base::WriteFile(subkey_path, data.data(), size) == size);
 }
 
 bool ResourceCache::Load(const std::string& key,

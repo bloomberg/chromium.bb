@@ -61,7 +61,7 @@ std::string ReadOrFail(const base::FilePath& file_name, const char* kind) {
 void WriteSinkToFile(const courgette::SinkStream *sink,
                      const base::FilePath& output_file) {
   int count =
-      file_util::WriteFile(output_file,
+      base::WriteFile(output_file,
                            reinterpret_cast<const char*>(sink->Buffer()),
                            static_cast<int>(sink->Length()));
   if (count == -1)

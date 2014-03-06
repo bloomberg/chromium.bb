@@ -32,7 +32,7 @@ void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
                                  base::StringPiece contents) {
   EXPECT_EQ(
       base::checked_cast<int>(contents.size()),
-      file_util::WriteFile(
+      base::WriteFile(
           dir_.path().Append(filename), contents.data(), contents.size()));
 }
 

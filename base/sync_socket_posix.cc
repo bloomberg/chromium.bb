@@ -36,7 +36,7 @@ size_t SendHelper(SyncSocket::Handle handle,
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(handle, SyncSocket::kInvalidHandle);
   const char* charbuffer = static_cast<const char*>(buffer);
-  const int len = file_util::WriteFileDescriptor(handle, charbuffer, length);
+  const int len = WriteFileDescriptor(handle, charbuffer, length);
   return len < 0 ? 0 : static_cast<size_t>(len);
 }
 

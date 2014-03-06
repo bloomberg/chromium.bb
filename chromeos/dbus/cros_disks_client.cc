@@ -485,7 +485,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
     const base::FilePath dummy_file_path =
         mounted_path.Append("SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt");
     const std::string dummy_file_content = "This is a dummy file.";
-    const int write_result = file_util::WriteFile(
+    const int write_result = base::WriteFile(
         dummy_file_path, dummy_file_content.data(), dummy_file_content.size());
     if (write_result != static_cast<int>(dummy_file_content.size())) {
       DLOG(ERROR) << "Failed to put a dummy file at "

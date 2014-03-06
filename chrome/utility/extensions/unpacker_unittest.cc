@@ -136,7 +136,7 @@ TEST_F(UnpackerTest, UnzipDirectoryError) {
   SetupUnpacker("good_package.crx");
   base::FilePath path =
       temp_dir_.path().AppendASCII(kTempExtensionName);
-  ASSERT_TRUE(file_util::WriteFile(path, "foo", 3));
+  ASSERT_TRUE(base::WriteFile(path, "foo", 3));
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(StartsWith(unpacker_->error_message(),
               ASCIIToUTF16(kExpected),

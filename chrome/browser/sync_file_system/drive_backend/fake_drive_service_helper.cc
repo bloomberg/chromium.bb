@@ -344,7 +344,7 @@ base::FilePath FakeDriveServiceHelper::WriteToTempFile(
   base::FilePath temp_file;
   EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_, &temp_file));
   EXPECT_EQ(static_cast<int>(content.size()),
-            file_util::WriteFile(temp_file, content.data(), content.size()));
+            base::WriteFile(temp_file, content.data(), content.size()));
   return temp_file;
 }
 

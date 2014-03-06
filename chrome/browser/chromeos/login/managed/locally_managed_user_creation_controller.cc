@@ -43,7 +43,7 @@ bool StoreManagedUserFiles(const std::string& token,
     base::CreateDirectory(base_path);
   }
   base::FilePath token_file = base_path.Append(kManagedUserTokenFilename);
-  int bytes = file_util::WriteFile(token_file, token.c_str(), token.length());
+  int bytes = base::WriteFile(token_file, token.c_str(), token.length());
   return bytes >= 0;
 }
 

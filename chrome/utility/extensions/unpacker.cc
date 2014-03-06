@@ -88,7 +88,7 @@ bool PathContainsParentDirectory(const base::FilePath& path) {
 bool WritePickle(const IPC::Message& pickle, const base::FilePath& dest_path) {
   int size = base::checked_cast<int>(pickle.size());
   const char* data = static_cast<const char*>(pickle.data());
-  int bytes_written = file_util::WriteFile(dest_path, data, size);
+  int bytes_written = base::WriteFile(dest_path, data, size);
   return (bytes_written == size);
 }
 

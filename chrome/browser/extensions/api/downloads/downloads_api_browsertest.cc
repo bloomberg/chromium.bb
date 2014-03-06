@@ -709,7 +709,7 @@ class HTML5FileWriter {
     // Create a temp file.
     base::FilePath temp_file;
     if (!base::CreateTemporaryFile(&temp_file) ||
-        file_util::WriteFile(temp_file, data, length) != length) {
+        base::WriteFile(temp_file, data, length) != length) {
       return false;
     }
     // Invoke the fileapi to copy it into the sandboxed filesystem.
@@ -1039,7 +1039,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   base::FilePath real_path = all_downloads[0]->GetTargetFilePath();
   base::FilePath fake_path = all_downloads[1]->GetTargetFilePath();
 
-  EXPECT_EQ(0, file_util::WriteFile(real_path, "", 0));
+  EXPECT_EQ(0, base::WriteFile(real_path, "", 0));
   ASSERT_TRUE(base::PathExists(real_path));
   ASSERT_FALSE(base::PathExists(fake_path));
 

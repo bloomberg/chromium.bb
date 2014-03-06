@@ -25,7 +25,7 @@ const char* kTestConfig =
 class JsonHostConfigTest : public testing::Test {
  protected:
   static void WriteTestFile(const base::FilePath& filename) {
-    file_util::WriteFile(filename, kTestConfig, std::strlen(kTestConfig));
+    base::WriteFile(filename, kTestConfig, std::strlen(kTestConfig));
   }
 
   // The temporary directory used to contain the test operations.

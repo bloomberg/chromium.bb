@@ -118,7 +118,7 @@ TEST(JSONValueSerializerTest, ReadProperJSONFromFile) {
   // Write it down in the file.
   FilePath temp_file(tempdir.path().AppendASCII("test.json"));
   ASSERT_EQ(static_cast<int>(strlen(kProperJSON)),
-            file_util::WriteFile(temp_file, kProperJSON, strlen(kProperJSON)));
+            WriteFile(temp_file, kProperJSON, strlen(kProperJSON)));
 
   // Try to deserialize it through the serializer.
   JSONFileValueSerializer file_deserializer(temp_file);
@@ -142,9 +142,8 @@ TEST(JSONValueSerializerTest, ReadJSONWithCommasFromFile) {
   // Write it down in the file.
   FilePath temp_file(tempdir.path().AppendASCII("test.json"));
   ASSERT_EQ(static_cast<int>(strlen(kProperJSONWithCommas)),
-            file_util::WriteFile(temp_file,
-                                 kProperJSONWithCommas,
-                                 strlen(kProperJSONWithCommas)));
+            WriteFile(temp_file, kProperJSONWithCommas,
+                      strlen(kProperJSONWithCommas)));
 
   // Try to deserialize it through the serializer.
   JSONFileValueSerializer file_deserializer(temp_file);

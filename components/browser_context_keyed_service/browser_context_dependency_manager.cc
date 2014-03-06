@@ -174,7 +174,7 @@ void BrowserContextDependencyManager::DumpBrowserContextDependencies(
     std::string contents = dependency_graph_.DumpAsGraphviz(
         "BrowserContext",
         base::Bind(&BrowserContextKeyedBaseFactoryGetNodeName));
-    file_util::WriteFile(dot_file, contents.c_str(), contents.size());
+    base::WriteFile(dot_file, contents.c_str(), contents.size());
   }
 }
 #endif  // NDEBUG

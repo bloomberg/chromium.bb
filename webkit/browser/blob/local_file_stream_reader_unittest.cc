@@ -66,7 +66,7 @@ class LocalFileStreamReaderTest : public testing::Test {
     ASSERT_TRUE(file_thread_.Start());
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-    file_util::WriteFile(test_path(), kTestData, kTestDataSize);
+    base::WriteFile(test_path(), kTestData, kTestDataSize);
     base::File::Info info;
     ASSERT_TRUE(base::GetFileInfo(test_path(), &info));
     test_file_modification_time_ = info.last_modified;

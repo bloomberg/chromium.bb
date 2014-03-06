@@ -860,7 +860,7 @@ bool CreateEULASentinel(BrowserDistribution* dist) {
   }
 
   return (base::CreateDirectory(eula_sentinel.DirName()) &&
-          file_util::WriteFile(eula_sentinel, "", 0) != -1);
+          base::WriteFile(eula_sentinel, "", 0) != -1);
 }
 
 void ActivateMetroChrome() {

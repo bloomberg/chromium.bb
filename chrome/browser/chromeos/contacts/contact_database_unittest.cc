@@ -319,7 +319,7 @@ TEST_F(ContactDatabaseTest, DeleteWhenCorrupt) {
       database_path(), false, base::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
-    file_util::WriteFile(path, " ", 1);
+    base::WriteFile(path, " ", 1);
   }
   CreateDatabase();
 

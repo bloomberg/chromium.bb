@@ -133,7 +133,7 @@ bool SaveDictionaryData(scoped_ptr<std::string> data,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   size_t bytes_written =
-      file_util::WriteFile(path, data->data(), data->length());
+      base::WriteFile(path, data->data(), data->length());
   if (bytes_written != data->length()) {
     bool success = false;
 #if defined(OS_WIN)
@@ -142,7 +142,7 @@ bool SaveDictionaryData(scoped_ptr<std::string> data,
     base::FilePath fallback_file_path =
         dict_dir.Append(path.BaseName());
     bytes_written =
-        file_util::WriteFile(fallback_file_path, data->data(), data->length());
+        base::WriteFile(fallback_file_path, data->data(), data->length());
     if (bytes_written == data->length())
       success = true;
 #endif

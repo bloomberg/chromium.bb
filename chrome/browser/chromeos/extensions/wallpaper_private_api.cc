@@ -72,8 +72,7 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
   base::FilePath file_path = data_dir.Append(file_name);
 
   return base::PathExists(file_path) ||
-         (file_util::WriteFile(file_path, data.c_str(),
-                               data.size()) != -1);
+         (base::WriteFile(file_path, data.c_str(), data.size()) != -1);
 }
 
 // Gets |file_name| from directory with |key|. Return false if the directory can

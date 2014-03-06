@@ -132,8 +132,8 @@ bool ProcessProxy::StopWatching() {
   // Signal Watcher that we are done. We use self-pipe trick to unblock watcher.
   // Anything may be written to the pipe.
   const char message[] = "q";
-  return file_util::WriteFileDescriptor(shutdown_pipe_[PIPE_END_WRITE],
-                                        message, sizeof(message));
+  return base::WriteFileDescriptor(shutdown_pipe_[PIPE_END_WRITE],
+                                   message, sizeof(message));
 }
 
 void ProcessProxy::Close() {
@@ -160,8 +160,8 @@ bool ProcessProxy::Write(const std::string& text) {
   // We don't want to write '\0' to the pipe.
   size_t data_size = text.length() * sizeof(*text.c_str());
   int bytes_written =
-      file_util::WriteFileDescriptor(pt_pair_[PT_MASTER_FD],
-                                     text.c_str(), data_size);
+      base::WriteFileDescriptor(pt_pair_[PT_MASTER_FD],
+                                text.c_str(), data_size);
   return (bytes_written == static_cast<int>(data_size));
 }
 

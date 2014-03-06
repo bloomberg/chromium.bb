@@ -118,14 +118,14 @@ public:
       if (test_cases[i].should_send_terminating_null)
         test_size += sizeof(*test_str.c_str());
       EXPECT_EQ(test_size,
-                file_util::WriteFileDescriptor(pt_pipe[1], test_str.c_str(),
-                                               test_size));
+                base::WriteFileDescriptor(pt_pipe[1], test_str.c_str(),
+                                          test_size));
     }
 
     all_data_received_->Wait();
 
     // Send stop signal. It is not important which string we send.
-    EXPECT_EQ(1, file_util::WriteFileDescriptor(stop_pipe[1], "q", 1));
+    EXPECT_EQ(1, base::WriteFileDescriptor(stop_pipe[1], "q", 1));
 
     EXPECT_NE(-1, IGNORE_EINTR(close(stop_pipe[1])));
     EXPECT_NE(-1, IGNORE_EINTR(close(pt_pipe[1])));

@@ -351,7 +351,7 @@ class CloudPrintServiceModule
     }
 
     if (new_contents != contents) {
-      size_t  written = file_util::WriteFile(file, new_contents.c_str(),
+      size_t  written = base::WriteFile(file, new_contents.c_str(),
                                               new_contents.size());
       if (written != new_contents.size()) {
         return ReportError(cloud_print::GetLastHResult(),

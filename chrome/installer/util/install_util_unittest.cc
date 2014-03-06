@@ -417,7 +417,7 @@ TEST_F(InstallUtilTest, ProgramCompare) {
   // Tests where the expected file exists.
   static const char data[] = "data";
   ASSERT_TRUE(base::CreateDirectory(some_long_dir));
-  ASSERT_NE(-1, file_util::WriteFile(expect, data, arraysize(data) - 1));
+  ASSERT_NE(-1, base::WriteFile(expect, data, arraysize(data) - 1));
   // Paths don't match.
   EXPECT_FALSE(InstallUtil::ProgramCompare(expect).Evaluate(
       L"\"" + other.value() + L"\""));

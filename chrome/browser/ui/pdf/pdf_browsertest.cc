@@ -186,7 +186,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
       std::vector<unsigned char> png_data;
       gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data);
       if (base::CreateTemporaryFile(&snapshot_filename_)) {
-        file_util::WriteFile(snapshot_filename_,
+        base::WriteFile(snapshot_filename_,
             reinterpret_cast<char*>(&png_data[0]), png_data.size());
       }
     }

@@ -282,7 +282,7 @@ void FileAccessProvider::DoWrite(const base::FilePath& path,
                                  const std::string& data,
                                  int* saved_errno,
                                  int* bytes_written) {
-  *bytes_written = file_util::WriteFile(path, data.data(), data.size());
+  *bytes_written = base::WriteFile(path, data.data(), data.size());
   *saved_errno = *bytes_written >= 0 ? 0 : errno;
 }
 

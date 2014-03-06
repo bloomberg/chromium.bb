@@ -96,7 +96,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
     return false;
 
   policy_key_ = server_data_dir_.path().Append(kSigningKeyFileName);
-  int bytes_written = file_util::WriteFile(
+  int bytes_written = base::WriteFile(
       policy_key_,
       reinterpret_cast<const char*>(vector_as_array(&signing_key_bits)),
       signing_key_bits.size());
@@ -107,7 +107,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
   // Write the signature data.
   base::FilePath signature_file = server_data_dir_.path().Append(
       kSigningKeySignatureFileName);
-  bytes_written = file_util::WriteFile(
+  bytes_written = base::WriteFile(
       signature_file,
       signature.c_str(),
       signature.size());
@@ -145,7 +145,7 @@ bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,
   base::FilePath policy_file = server_data_dir_.path().AppendASCII(
       base::StringPrintf("policy_%s.bin", selector.c_str()));
 
-  return file_util::WriteFile(policy_file, policy.c_str(), policy.size()) ==
+  return base::WriteFile(policy_file, policy.c_str(), policy.size()) ==
       static_cast<int>(policy.size());
 }
 
@@ -158,7 +158,7 @@ bool LocalPolicyTestServer::UpdatePolicyData(const std::string& type,
   base::FilePath data_file = server_data_dir_.path().AppendASCII(
       base::StringPrintf("policy_%s.data", selector.c_str()));
 
-  return file_util::WriteFile(data_file, data.c_str(), data.size()) ==
+  return base::WriteFile(data_file, data.c_str(), data.size()) ==
       static_cast<int>(data.size());
 }
 
@@ -249,7 +249,7 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
       base::JSONWriter::Write(&clients_, &json);
       base::FilePath client_state_file =
           server_data_dir_.path().Append(kClientStateFileName);
-      if (file_util::WriteFile(client_state_file, json.c_str(), json.size()) !=
+      if (base::WriteFile(client_state_file, json.c_str(), json.size()) !=
           static_cast<int>(json.size())) {
         return false;
       }

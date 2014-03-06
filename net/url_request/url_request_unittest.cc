@@ -738,7 +738,7 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   base::FilePath temp_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
+  EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64 file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
@@ -782,7 +782,7 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
   base::FilePath temp_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
+  EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64 file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
@@ -825,7 +825,7 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
   base::FilePath temp_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
+  EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64 file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
@@ -853,7 +853,7 @@ TEST_F(URLRequestTest, AllowFileURLs) {
   base::FilePath test_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &test_file));
   std::string test_data("monkey");
-  file_util::WriteFile(test_file, test_data.data(), test_data.size());
+  base::WriteFile(test_file, test_data.data(), test_data.size());
   GURL test_file_url = net::FilePathToFileURL(test_file);
 
   {

@@ -192,7 +192,7 @@ void SaveScreenshotInternal(const ShowNotificationCallback& callback,
   DCHECK(!local_path.empty());
   ScreenshotTakerObserver::Result result =
       ScreenshotTakerObserver::SCREENSHOT_SUCCESS;
-  if (static_cast<size_t>(file_util::WriteFile(
+  if (static_cast<size_t>(base::WriteFile(
           local_path,
           reinterpret_cast<char*>(&(png_data->data()[0])),
           png_data->size())) != png_data->size()) {

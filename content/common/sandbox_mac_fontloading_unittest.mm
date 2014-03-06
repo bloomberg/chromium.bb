@@ -114,7 +114,7 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
   EXPECT_GT(result.font_data_size, 0U);
   EXPECT_GT(result.font_id, 0U);
 
-  file_util::WriteFileDescriptor(fileno(temp_file),
+  base::WriteFileDescriptor(fileno(temp_file),
       static_cast<const char *>(result.font_data.memory()),
       result.font_data_size);
 

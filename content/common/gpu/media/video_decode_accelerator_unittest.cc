@@ -1370,7 +1370,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       base::FilePath filepath(test_video_files_[0]->file_name);
       filepath = filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails"));
       filepath = filepath.AddExtension(FILE_PATH_LITERAL(".png"));
-      int num_bytes = file_util::WriteFile(filepath,
+      int num_bytes = base::WriteFile(filepath,
                                            reinterpret_cast<char*>(&png[0]),
                                            png.size());
       ASSERT_EQ(num_bytes, static_cast<int>(png.size()));

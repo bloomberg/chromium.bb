@@ -568,7 +568,7 @@ bool CreateSentinel() {
   base::FilePath first_run_sentinel;
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
     return false;
-  return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
+  return base::WriteFile(first_run_sentinel, "", 0) != -1;
 }
 
 // -- Platform-specific functions --

@@ -128,9 +128,9 @@ bool PdfMetafileSkia::GetData(void* dst_buffer,
 bool PdfMetafileSkia::SaveTo(const base::FilePath& file_path) const {
   DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
   SkAutoDataUnref data(data_->pdf_stream_.copyToData());
-  if (file_util::WriteFile(file_path,
-                           reinterpret_cast<const char*>(data->data()),
-                           GetDataSize()) != static_cast<int>(GetDataSize())) {
+  if (base::WriteFile(file_path,
+                      reinterpret_cast<const char*>(data->data()),
+                      GetDataSize()) != static_cast<int>(GetDataSize())) {
     DLOG(ERROR) << "Failed to save file " << file_path.value().c_str();
     return false;
   }
@@ -203,9 +203,9 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
 
   bool result = true;
   SkAutoDataUnref data(data_->pdf_stream_.copyToData());
-  if (file_util::WriteFileDescriptor(fd.fd,
-                                     reinterpret_cast<const char*>(data->data()),
-                                     GetDataSize()) !=
+  if (base::WriteFileDescriptor(fd.fd,
+                                reinterpret_cast<const char*>(data->data()),
+                                GetDataSize()) !=
       static_cast<int>(GetDataSize())) {
     DLOG(ERROR) << "Failed to save file with fd " << fd.fd;
     result = false;

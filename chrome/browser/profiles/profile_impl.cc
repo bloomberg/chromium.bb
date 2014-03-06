@@ -217,8 +217,8 @@ void EnsureReadmeFile(const base::FilePath& base) {
   std::string product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   std::string readme_text = base::StringPrintf(
       kReadmeText, product_name.c_str(), product_name.c_str());
-  if (file_util::WriteFile(
-          readme_path, readme_text.data(), readme_text.size()) == -1) {
+  if (base::WriteFile(readme_path, readme_text.data(), readme_text.size()) ==
+      -1) {
     LOG(ERROR) << "Could not create README file.";
   }
 }

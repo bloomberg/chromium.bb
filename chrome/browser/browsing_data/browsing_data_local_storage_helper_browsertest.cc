@@ -60,7 +60,7 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
     };
     for (size_t i = 0; i < arraysize(kFilesToCreate); ++i) {
       base::FilePath file_path = storage_path.Append(kFilesToCreate[i]);
-      file_util::WriteFile(file_path, NULL, 0);
+      base::WriteFile(file_path, NULL, 0);
     }
   }
 

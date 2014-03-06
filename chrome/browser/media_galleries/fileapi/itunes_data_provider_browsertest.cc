@@ -193,7 +193,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
     }
     xml += "</dict></dict></plist>\n";
     ASSERT_EQ(static_cast<int>(xml.size()),
-              file_util::WriteFile(XmlFile(), xml.c_str(), xml.size()));
+              base::WriteFile(XmlFile(), xml.c_str(), xml.size()));
   }
 
   base::ScopedTempDir library_dir_;
@@ -343,7 +343,7 @@ class ITunesDataProviderInvalidTest : public ITunesDataProviderTest {
                    base::Unretained(data_provider()),
                    base::Bind(&ITunesDataProviderInvalidTest::CheckInvalid,
                               base::Unretained(this))));
-    ASSERT_EQ(1L, file_util::WriteFile(XmlFile(), " ", 1));
+    ASSERT_EQ(1L, base::WriteFile(XmlFile(), " ", 1));
   }
 
   void CheckInvalid(bool is_valid) {

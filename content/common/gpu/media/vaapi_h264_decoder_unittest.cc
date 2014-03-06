@@ -150,7 +150,7 @@ bool VaapiH264DecoderLoop::Initialize(base::FilePath input_file,
   // This creates or truncates output_file.
   // Without it, AppendToFile() will not work.
   if (!output_file.empty()) {
-    if (file_util::WriteFile(output_file, NULL, 0) != 0) {
+    if (base::WriteFile(output_file, NULL, 0) != 0) {
       return false;
     }
     output_file_ = output_file;

@@ -77,7 +77,7 @@ Value RunWriteFile(Scope* scope,
     return Value();
   }
   int int_size = static_cast<int>(contents_string.size());
-  if (file_util::WriteFile(file_path, contents_string.c_str(), int_size)
+  if (base::WriteFile(file_path, contents_string.c_str(), int_size)
       != int_size) {
     *err = Err(function->function(), "Unable to write file.",
                "I was writing \"" + FilePathToUTF8(file_path) + "\".");

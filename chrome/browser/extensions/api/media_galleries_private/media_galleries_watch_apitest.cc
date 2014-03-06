@@ -106,8 +106,8 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
     base::FilePath gallery_file =
         gallery_dir.Append(FILE_PATH_LITERAL("test1.txt"));
     std::string content("new content");
-    int write_size = file_util::WriteFile(gallery_file, content.c_str(),
-                                          content.length());
+    int write_size = base::WriteFile(gallery_file, content.c_str(),
+                                     content.length());
     return (write_size == static_cast<int>(content.length()));
   }
 

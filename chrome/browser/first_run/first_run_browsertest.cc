@@ -89,8 +89,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     ASSERT_TRUE(text_.get());
 
     ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
-    EXPECT_TRUE(file_util::WriteFile(prefs_file_, text_->c_str(),
-                                     text_->size()));
+    EXPECT_TRUE(base::WriteFile(prefs_file_, text_->c_str(), text_->size()));
     first_run::SetMasterPrefsPathForTesting(prefs_file_);
 
     // This invokes BrowserMain, and does the import, so must be done last.

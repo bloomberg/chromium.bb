@@ -132,7 +132,7 @@ TEST_F(FileUtilProxyTest, CreateOrOpen_Create) {
 
 TEST_F(FileUtilProxyTest, CreateOrOpen_Open) {
   // Creates a file.
-  file_util::WriteFile(test_path(), NULL, 0);
+  WriteFile(test_path(), NULL, 0);
   ASSERT_TRUE(PathExists(test_path()));
 
   // Opens the created file.
@@ -223,7 +223,7 @@ TEST_F(FileUtilProxyTest, CreateTemporary) {
 
 TEST_F(FileUtilProxyTest, GetFileInfo_File) {
   // Setup.
-  ASSERT_EQ(4, file_util::WriteFile(test_path(), "test", 4));
+  ASSERT_EQ(4, WriteFile(test_path(), "test", 4));
   File::Info expected_info;
   GetFileInfo(test_path(), &expected_info);
 
@@ -272,7 +272,7 @@ TEST_F(FileUtilProxyTest, Read) {
   const char expected_data[] = "bleh";
   int expected_bytes = arraysize(expected_data);
   ASSERT_EQ(expected_bytes,
-            file_util::WriteFile(test_path(), expected_data, expected_bytes));
+            WriteFile(test_path(), expected_data, expected_bytes));
 
   // Run.
   FileUtilProxy::Read(
@@ -354,7 +354,7 @@ TEST_F(FileUtilProxyTest, Touch) {
 TEST_F(FileUtilProxyTest, Truncate_Shrink) {
   // Setup.
   const char kTestData[] = "0123456789";
-  ASSERT_EQ(10, file_util::WriteFile(test_path(), kTestData, 10));
+  ASSERT_EQ(10, WriteFile(test_path(), kTestData, 10));
   File::Info info;
   GetFileInfo(test_path(), &info);
   ASSERT_EQ(10, info.size);
@@ -381,7 +381,7 @@ TEST_F(FileUtilProxyTest, Truncate_Shrink) {
 TEST_F(FileUtilProxyTest, Truncate_Expand) {
   // Setup.
   const char kTestData[] = "9876543210";
-  ASSERT_EQ(10, file_util::WriteFile(test_path(), kTestData, 10));
+  ASSERT_EQ(10, WriteFile(test_path(), kTestData, 10));
   File::Info info;
   GetFileInfo(test_path(), &info);
   ASSERT_EQ(10, info.size);

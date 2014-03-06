@@ -95,7 +95,7 @@ bool Process::SetProcessBackgrounded(bool background) {
     const base::FilePath file =
         background ?
             cgroups.Get().background_file : cgroups.Get().foreground_file;
-    return file_util::WriteFile(file, pid.c_str(), pid.size()) > 0;
+    return base::WriteFile(file, pid.c_str(), pid.size()) > 0;
   }
 #endif // OS_CHROMEOS
 

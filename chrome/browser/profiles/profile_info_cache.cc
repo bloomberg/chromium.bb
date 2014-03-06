@@ -135,9 +135,8 @@ void SaveBitmap(ImageData* data,
     return;
   }
 
-  if (file_util::WriteFile(image_path,
-                           reinterpret_cast<char*>(&(*data)[0]),
-                           data->size()) == -1) {
+  if (base::WriteFile(image_path, reinterpret_cast<char*>(&(*data)[0]),
+                      data->size()) == -1) {
     LOG(ERROR) << "Failed to save image to file.";
     return;
   }

@@ -148,7 +148,7 @@ class BlobURLRequestJobTest : public testing::Test {
 
     temp_file1_ = temp_dir_.path().AppendASCII("BlobFile1.dat");
     ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
-              file_util::WriteFile(temp_file1_, kTestFileData1,
+              base::WriteFile(temp_file1_, kTestFileData1,
                                    arraysize(kTestFileData1) - 1));
     base::File::Info file_info1;
     base::GetFileInfo(temp_file1_, &file_info1);
@@ -156,7 +156,7 @@ class BlobURLRequestJobTest : public testing::Test {
 
     temp_file2_ = temp_dir_.path().AppendASCII("BlobFile2.dat");
     ASSERT_EQ(static_cast<int>(arraysize(kTestFileData2) - 1),
-              file_util::WriteFile(temp_file2_, kTestFileData2,
+              base::WriteFile(temp_file2_, kTestFileData2,
                                    arraysize(kTestFileData2) - 1));
     base::File::Info file_info2;
     base::GetFileInfo(temp_file2_, &file_info2);
@@ -336,7 +336,7 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
   for (int i = 0; i < kBufferSize * 5; ++i)
     large_data.append(1, static_cast<char>(i % 256));
   ASSERT_EQ(static_cast<int>(large_data.size()),
-            file_util::WriteFile(large_temp_file, large_data.data(),
+            base::WriteFile(large_temp_file, large_data.data(),
                                  large_data.size()));
   blob_data_->AppendFile(large_temp_file, 0, -1, base::Time());
   TestSuccessNonrangeRequest(large_data, large_data.size());

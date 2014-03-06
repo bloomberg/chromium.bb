@@ -50,15 +50,15 @@ int main(int argc, char** argv) {
       i += 2;
       CHECK_LE(i, argc);
       std::string nacl_gdb_script(argv[i - 1]);
-      file_util::WriteFile(base::FilePath::FromUTF8Unsafe(nacl_gdb_script),
-                           kPass, strlen(kPass));
+      base::WriteFile(base::FilePath::FromUTF8Unsafe(nacl_gdb_script),
+                      kPass, strlen(kPass));
       continue;
     }
     // Unknown argument.
     NOTREACHED() << "Invalid argument " << argv[i];
   }
   CHECK_EQ(i, argc);
-  file_util::WriteFile(base::FilePath::FromUTF8Unsafe(mock_nacl_gdb_file),
-                       kPass, strlen(kPass));
+  base::WriteFile(base::FilePath::FromUTF8Unsafe(mock_nacl_gdb_file),
+                  kPass, strlen(kPass));
   return 0;
 }

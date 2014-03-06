@@ -272,7 +272,7 @@ bool ZipReader::ExtractCurrentEntryToFd(const int fd) {
     } else if (num_bytes_read > 0) {
       // Some data is read. Write it to the output file descriptor.
       if (num_bytes_read !=
-          file_util::WriteFileDescriptor(fd, buf, num_bytes_read)) {
+          base::WriteFileDescriptor(fd, buf, num_bytes_read)) {
         success = false;
         break;
       }

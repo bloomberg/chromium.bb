@@ -273,8 +273,8 @@ bool MockPrinter::SaveSource(
     return false;
   const uint8* source_data = pages_[page]->source_data();
   uint32 source_size = pages_[page]->source_size();
-  file_util::WriteFile(filepath, reinterpret_cast<const char*>(source_data),
-                       source_size);
+  base::WriteFile(filepath, reinterpret_cast<const char*>(source_data),
+                  source_size);
   return true;
 }
 

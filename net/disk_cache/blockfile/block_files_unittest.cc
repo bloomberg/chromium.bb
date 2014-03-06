@@ -270,7 +270,7 @@ TEST_F(DiskCacheTest, BlockFiles_InvalidFile) {
   char header[kBlockHeaderSize];
   memset(header, 'a', kBlockHeaderSize);
   EXPECT_EQ(kBlockHeaderSize,
-            file_util::WriteFile(filename, header, kBlockHeaderSize));
+            base::WriteFile(filename, header, kBlockHeaderSize));
 
   EXPECT_TRUE(NULL == files.GetFile(addr));
 

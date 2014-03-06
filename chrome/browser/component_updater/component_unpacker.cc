@@ -240,7 +240,7 @@ void ComponentUnpacker::EndPatching(Error error, int extended_error) {
 void ComponentUnpacker::Install() {
   // Write the fingerprint to disk.
   if (static_cast<int>(fingerprint_.size()) !=
-      file_util::WriteFile(
+      base::WriteFile(
           unpack_path_.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
           fingerprint_.c_str(),
           fingerprint_.size())) {

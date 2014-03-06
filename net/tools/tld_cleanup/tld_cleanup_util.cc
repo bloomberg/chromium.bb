@@ -61,7 +61,7 @@ bool WriteRules(const RuleMap& rules, const base::FilePath& outfile) {
 
   data.append("%%\n");
 
-  int written = file_util::WriteFile(outfile,
+  int written = base::WriteFile(outfile,
                                      data.data(),
                                      static_cast<int>(data.size()));
 

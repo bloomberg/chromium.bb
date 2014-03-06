@@ -180,7 +180,7 @@ crypto::RSAPrivateKey* ExtensionCreator::GenerateKey(const base::FilePath&
   }
 
   if (!output_private_key_path.empty()) {
-    if (-1 == file_util::WriteFile(output_private_key_path,
+    if (-1 == base::WriteFile(output_private_key_path,
         pem_output.c_str(), pem_output.size())) {
       error_message_ =
           l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT);

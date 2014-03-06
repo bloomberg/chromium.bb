@@ -186,7 +186,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
-    ASSERT_FALSE(file_util::WriteFile(
+    ASSERT_FALSE(base::WriteFile(
         desktop_path.AppendASCII(kTemplateFilename),
         "", 0));
     ShellIntegration::ShortcutLocations result =
@@ -209,7 +209,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_FALSE(file_util::WriteFile(
+    ASSERT_FALSE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
     ShellIntegration::ShortcutLocations result =
@@ -232,7 +232,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         kNoDisplayDesktopFile, strlen(kNoDisplayDesktopFile)));
     ShellIntegration::ShortcutLocations result =
@@ -258,12 +258,12 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
-    ASSERT_FALSE(file_util::WriteFile(
+    ASSERT_FALSE(base::WriteFile(
         desktop_path.AppendASCII(kTemplateFilename),
         "", 0));
     env.Set("XDG_DATA_HOME", temp_dir2.path().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_FALSE(file_util::WriteFile(
+    ASSERT_FALSE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
     ShellIntegration::ShortcutLocations result =
@@ -294,12 +294,12 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
     // Create a file in a non-applications directory. This should be ignored.
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir.path().AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir.path().AppendASCII("applications")
             .AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
@@ -319,7 +319,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     env.Set("HOME", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().AppendASCII(".local/share/applications")));
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir.path().AppendASCII(".local/share/applications")
             .AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
@@ -339,7 +339,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     env.Set("XDG_DATA_DIRS", temp_dir.path().value());
     ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir.path().AppendASCII("applications")
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
@@ -361,13 +361,13 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     env.Set("XDG_DATA_DIRS", temp_dir1.path().value() + ":" +
                              temp_dir2.path().value());
     // Create a file in a non-applications directory. This should be ignored.
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir1.path().AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     // Only create a findable desktop file in the second path.
     ASSERT_TRUE(base::CreateDirectory(
         temp_dir2.path().AppendASCII("applications")));
-    ASSERT_TRUE(file_util::WriteFile(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir2.path().AppendASCII("applications")
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
@@ -399,14 +399,14 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_EQ(0,
-            file_util::WriteFile(
+            base::WriteFile(
                 temp_dir.path().AppendASCII(kApp1Filename), "", 0));
   ASSERT_EQ(0,
-            file_util::WriteFile(
+            base::WriteFile(
                 temp_dir.path().AppendASCII(kApp2Filename), "", 0));
   // This file should not be returned in the results.
   ASSERT_EQ(0,
-            file_util::WriteFile(
+            base::WriteFile(
                 temp_dir.path().AppendASCII(kUnrelatedAppFilename), "", 0));
   std::vector<base::FilePath> paths =
       ShellIntegrationLinux::GetExistingProfileShortcutFilenames(

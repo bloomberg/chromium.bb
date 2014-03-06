@@ -215,7 +215,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
       return false;
     }
 
-    size_t bytes_written = file_util::WriteFile(
+    size_t bytes_written = base::WriteFile(
         path, reinterpret_cast<const char*>(&output[0]), output.size());
     if (bytes_written != output.size()) {
       LOG(ERROR) << "Wrote " << bytes_written << " byte(s) instead of "

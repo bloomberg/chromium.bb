@@ -172,8 +172,7 @@ class FilePathWatcherTest : public testing::Test {
 
   // Write |content| to |file|. Returns true on success.
   bool WriteFile(const FilePath& file, const std::string& content) {
-    int write_size = file_util::WriteFile(file, content.c_str(),
-                                          content.length());
+    int write_size = ::base::WriteFile(file, content.c_str(), content.length());
     return write_size == static_cast<int>(content.length());
   }
 

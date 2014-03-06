@@ -387,8 +387,8 @@ PrinterJobHandler::HandlePrintDataResponse(const net::URLFetcher* source,
   if (base::CreateTemporaryFile(&job_details_.print_data_file_path_)) {
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent", JOB_HANDLER_DATA,
                               JOB_HANDLER_MAX);
-    int ret = file_util::WriteFile(job_details_.print_data_file_path_,
-                                   data.c_str(), data.length());
+    int ret = base::WriteFile(job_details_.print_data_file_path_,
+                              data.c_str(), data.length());
     source->GetResponseHeaders()->GetMimeType(
         &job_details_.print_data_mime_type_);
     DCHECK(ret == static_cast<int>(data.length()));

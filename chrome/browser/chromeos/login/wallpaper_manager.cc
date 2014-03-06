@@ -1321,7 +1321,7 @@ void WallpaperManager::RecordUma(User::WallpaperType type, int index) {
 void WallpaperManager::SaveWallpaperInternal(const base::FilePath& path,
                                              const char* data,
                                              int size) {
-  int written_bytes = file_util::WriteFile(path, data, size);
+  int written_bytes = base::WriteFile(path, data, size);
   DCHECK(written_bytes == size);
 }
 

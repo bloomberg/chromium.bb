@@ -599,6 +599,38 @@ int ReadFile(const FilePath& filename, char* data, int size) {
   return -1;
 }
 
+int WriteFile(const FilePath& filename, const char* data, int size) {
+  ThreadRestrictions::AssertIOAllowed();
+  base::win::ScopedHandle file(CreateFile(filename.value().c_str(),
+                                          GENERIC_WRITE,
+                                          0,
+                                          NULL,
+                                          CREATE_ALWAYS,
+                                          0,
+                                          NULL));
+  if (!file) {
+    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
+                               << UTF16ToUTF8(filename.value());
+    return -1;
+  }
+
+  DWORD written;
+  BOOL result = ::WriteFile(file, data, size, &written, NULL);
+  if (result && static_cast<int>(written) == size)
+    return written;
+
+  if (!result) {
+    // WriteFile failed.
+    DLOG_GETLASTERROR(WARNING) << "writing file "
+                               << UTF16ToUTF8(filename.value()) << " failed";
+  } else {
+    // Didn't write all the bytes.
+    DLOG(WARNING) << "wrote" << written << " bytes to "
+                  << UTF16ToUTF8(filename.value()) << " expected " << size;
+  }
+  return -1;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -612,38 +644,6 @@ using base::kFileShareAll;
 FILE* OpenFile(const std::string& filename, const char* mode) {
   base::ThreadRestrictions::AssertIOAllowed();
   return _fsopen(filename.c_str(), mode, _SH_DENYNO);
-}
-
-int WriteFile(const FilePath& filename, const char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  base::win::ScopedHandle file(CreateFile(filename.value().c_str(),
-                                          GENERIC_WRITE,
-                                          0,
-                                          NULL,
-                                          CREATE_ALWAYS,
-                                          0,
-                                          NULL));
-  if (!file) {
-    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
-                               << filename.value();
-    return -1;
-  }
-
-  DWORD written;
-  BOOL result = ::WriteFile(file, data, size, &written, NULL);
-  if (result && static_cast<int>(written) == size)
-    return written;
-
-  if (!result) {
-    // WriteFile failed.
-    DLOG_GETLASTERROR(WARNING) << "writing file " << filename.value()
-                               << " failed";
-  } else {
-    // Didn't write all the bytes.
-    DLOG(WARNING) << "wrote" << written << " bytes to "
-                  << filename.value() << " expected " << size;
-  }
-  return -1;
 }
 
 int AppendToFile(const FilePath& filename, const char* data, int size) {

@@ -233,7 +233,7 @@ void DumpAccessibilityTreeTest::RunTest(
         base::FilePath(html_file.RemoveExtension().value() +
                        AccessibilityTreeFormatter::GetActualFileSuffix());
 
-    EXPECT_TRUE(file_util::WriteFile(
+    EXPECT_TRUE(base::WriteFile(
         actual_file, actual_contents.c_str(), actual_contents.size()));
 
     ADD_FAILURE() << "No expectation found. Create it by doing:\n"

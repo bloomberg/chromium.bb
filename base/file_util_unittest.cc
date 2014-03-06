@@ -703,7 +703,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndRead) {
 
   // Write file.
   EXPECT_EQ(static_cast<int>(kData.length()),
-            file_util::WriteFile(file_name, kData.data(), kData.length()));
+            WriteFile(file_name, kData.data(), kData.length()));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the file is readable.
@@ -742,7 +742,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
 
   // Write file.
   EXPECT_EQ(static_cast<int>(kData.length()),
-            file_util::WriteFile(file_name, kData.data(), kData.length()));
+            WriteFile(file_name, kData.data(), kData.length()));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the file is writable.
@@ -756,8 +756,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   EXPECT_TRUE(GetPosixFilePermissions(file_name, &mode));
   EXPECT_FALSE(mode & FILE_PERMISSION_WRITE_BY_USER);
   // Make sure the file can't be write.
-  EXPECT_EQ(-1,
-            file_util::WriteFile(file_name, kData.data(), kData.length()));
+  EXPECT_EQ(-1, WriteFile(file_name, kData.data(), kData.length()));
   EXPECT_FALSE(PathIsWritable(file_name));
 
   // Give read permission.
@@ -767,7 +766,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   EXPECT_TRUE(mode & FILE_PERMISSION_WRITE_BY_USER);
   // Make sure the file can be write.
   EXPECT_EQ(static_cast<int>(kData.length()),
-            file_util::WriteFile(file_name, kData.data(), kData.length()));
+            WriteFile(file_name, kData.data(), kData.length()));
   EXPECT_TRUE(PathIsWritable(file_name));
 
   // Delete the file.
@@ -787,7 +786,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   EXPECT_FALSE(PathExists(file_name));
   const std::string kData("hello");
   EXPECT_EQ(static_cast<int>(kData.length()),
-            file_util::WriteFile(file_name, kData.data(), kData.length()));
+            WriteFile(file_name, kData.data(), kData.length()));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the directory has the all permissions.
@@ -1950,7 +1949,7 @@ TEST_F(FileUtilTest, AppendToFile) {
   std::string data("hello");
   EXPECT_EQ(-1, file_util::AppendToFile(foobar, data.c_str(), data.length()));
   EXPECT_EQ(static_cast<int>(data.length()),
-            file_util::WriteFile(foobar, data.c_str(), data.length()));
+            WriteFile(foobar, data.c_str(), data.length()));
   EXPECT_EQ(static_cast<int>(data.length()),
             file_util::AppendToFile(foobar, data.c_str(), data.length()));
 
@@ -1965,7 +1964,7 @@ TEST_F(FileUtilTest, ReadFileToString) {
   FilePath file_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("ReadFileToStringTest"));
 
-  ASSERT_EQ(4, file_util::WriteFile(file_path, kTestData, 4));
+  ASSERT_EQ(4, WriteFile(file_path, kTestData, 4));
 
   EXPECT_TRUE(ReadFileToString(file_path, &data));
   EXPECT_EQ(kTestData, data);
@@ -2017,7 +2016,7 @@ TEST_F(FileUtilTest, TouchFile) {
 
   FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
   std::string data("hello");
-  ASSERT_TRUE(file_util::WriteFile(foobar, data.c_str(), data.length()));
+  ASSERT_TRUE(WriteFile(foobar, data.c_str(), data.length()));
 
   Time access_time;
   // This timestamp is divisible by one day (in local timezone),
@@ -2051,7 +2050,7 @@ TEST_F(FileUtilTest, IsDirectoryEmpty) {
 
   FilePath foo(empty_dir.Append(FILE_PATH_LITERAL("foo.txt")));
   std::string bar("baz");
-  ASSERT_TRUE(file_util::WriteFile(foo, bar.c_str(), bar.length()));
+  ASSERT_TRUE(WriteFile(foo, bar.c_str(), bar.length()));
 
   EXPECT_FALSE(IsDirectoryEmpty(empty_dir));
 }

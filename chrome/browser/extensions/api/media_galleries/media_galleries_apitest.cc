@@ -359,9 +359,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         &xml_contents, 0, std::string("$path2"), in_both_jpg.value());
 
     base::FilePath album_xml = iphoto_data_root.AppendASCII("AlbumData.xml");
-    ASSERT_NE(-1, file_util::WriteFile(album_xml,
-                                       xml_contents.c_str(),
-                                       xml_contents.size()));
+    ASSERT_NE(-1, base::WriteFile(album_xml,
+                                  xml_contents.c_str(), xml_contents.size()));
   }
 #endif  // defined(OS_MACOSX)
 
@@ -558,17 +557,17 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, MAYBE_Scan) {
   dummy_data.resize(1);
   ASSERT_TRUE(base::CreateDirectory(scan_root.path().AppendASCII("a/b")));
   ASSERT_EQ(static_cast<int>(dummy_data.size()),
-            file_util::WriteFile(scan_root.path().AppendASCII("a/b/c.jpg"),
-                                 dummy_data.c_str(), dummy_data.size()));
+            base::WriteFile(scan_root.path().AppendASCII("a/b/c.jpg"),
+                            dummy_data.c_str(), dummy_data.size()));
   ASSERT_TRUE(base::CreateDirectory(scan_root.path().AppendASCII("a/d")));
   dummy_data.resize(201 * 1024);  // 200k is the min size for the folder finder.
   ASSERT_EQ(static_cast<int>(dummy_data.size()),
-            file_util::WriteFile(scan_root.path().AppendASCII("a/d/e.txt"),
-                                 dummy_data.c_str(), dummy_data.size()));
+            base::WriteFile(scan_root.path().AppendASCII("a/d/e.txt"),
+                            dummy_data.c_str(), dummy_data.size()));
   ASSERT_TRUE(base::CreateDirectory(scan_root.path().AppendASCII("f")));
   ASSERT_EQ(static_cast<int>(dummy_data.size()),
-            file_util::WriteFile(scan_root.path().AppendASCII("f/g.jpg"),
-                                 dummy_data.c_str(), dummy_data.size()));
+            base::WriteFile(scan_root.path().AppendASCII("f/g.jpg"),
+                            dummy_data.c_str(), dummy_data.size()));
 
   ASSERT_TRUE(RunMediaGalleriesTest("scan")) << message_;
 }

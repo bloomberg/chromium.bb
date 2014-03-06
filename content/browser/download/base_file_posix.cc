@@ -18,7 +18,7 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
   // First check the file existence and create an empty file if it doesn't
   // exist.
   if (!base::PathExists(new_path)) {
-    int write_error = file_util::WriteFile(new_path, "", 0);
+    int write_error = base::WriteFile(new_path, "", 0);
     if (write_error < 0)
       return LogSystemError("WriteFile", errno);
   }

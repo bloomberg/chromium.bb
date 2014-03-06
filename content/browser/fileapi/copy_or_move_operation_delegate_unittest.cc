@@ -719,12 +719,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath source_path = temp_dir.path().AppendASCII("source");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-  file_util::WriteFile(source_path, kTestData,
-                       arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+  base::WriteFile(source_path, kTestData,
+                  arraysize(kTestData) - 1);  // Exclude trailing '\0'.
 
   base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
   // LocalFileWriter requires the file exists. So create an empty file here.
-  file_util::WriteFile(dest_path, "", 0);
+  base::WriteFile(dest_path, "", 0);
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -777,12 +777,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath source_path = temp_dir.path().AppendASCII("source");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-  file_util::WriteFile(source_path, kTestData,
-                       arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+  base::WriteFile(source_path, kTestData,
+                  arraysize(kTestData) - 1);  // Exclude trailing '\0'.
 
   base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
   // LocalFileWriter requires the file exists. So create an empty file here.
-  file_util::WriteFile(dest_path, "", 0);
+  base::WriteFile(dest_path, "", 0);
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -831,12 +831,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath source_path = temp_dir.path().AppendASCII("source");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-  file_util::WriteFile(source_path, kTestData,
-                       arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+  base::WriteFile(source_path, kTestData,
+                  arraysize(kTestData) - 1);  // Exclude trailing '\0'.
 
   base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
   // LocalFileWriter requires the file exists. So create an empty file here.
-  file_util::WriteFile(dest_path, "", 0);
+  base::WriteFile(dest_path, "", 0);
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");

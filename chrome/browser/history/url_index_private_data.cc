@@ -898,7 +898,7 @@ bool URLIndexPrivateData::SaveToFile(const base::FilePath& file_path) {
   }
 
   int size = data.size();
-  if (file_util::WriteFile(file_path, data.c_str(), size) != size) {
+  if (base::WriteFile(file_path, data.c_str(), size) != size) {
     LOG(WARNING) << "Failed to write " << file_path.value();
     return false;
   }

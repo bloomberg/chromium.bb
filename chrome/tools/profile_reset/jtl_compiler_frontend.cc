@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
   base::FilePath bytecode_path =
       MakeAbsoluteFilePath(cmd_line->GetSwitchValuePath(kOutputPath));
   int bytes_written =
-      file_util::WriteFile(cmd_line->GetSwitchValuePath(kOutputPath),
+      base::WriteFile(cmd_line->GetSwitchValuePath(kOutputPath),
                            bytecode.data(),
                            static_cast<int>(bytecode.size()));
   if (bytes_written != static_cast<int>(bytecode.size())) {

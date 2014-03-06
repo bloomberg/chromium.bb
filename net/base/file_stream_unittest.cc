@@ -47,7 +47,7 @@ class FileStreamTest : public PlatformTest {
     PlatformTest::SetUp();
 
     base::CreateTemporaryFile(&temp_file_path_);
-    file_util::WriteFile(temp_file_path_, kTestData, kTestDataSize);
+    base::WriteFile(temp_file_path_, kTestData, kTestDataSize);
   }
   virtual void TearDown() {
     EXPECT_TRUE(base::DeleteFile(temp_file_path_, false));
@@ -145,7 +145,7 @@ TEST_F(FileStreamTest, AsyncOpenExplicitCloseOrphaned) {
 TEST_F(FileStreamTest, FileHandleNotLeftOpen) {
   bool created = false;
   ASSERT_EQ(kTestDataSize,
-      file_util::WriteFile(temp_file_path(), kTestData, kTestDataSize));
+      base::WriteFile(temp_file_path(), kTestData, kTestDataSize));
   int flags = base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_READ;
   base::PlatformFile file = base::CreatePlatformFile(
       temp_file_path(), flags, &created, NULL);
@@ -169,7 +169,7 @@ TEST_F(FileStreamTest, UseFileHandle) {
 
   // 1. Test reading with a file handle.
   ASSERT_EQ(kTestDataSize,
-      file_util::WriteFile(temp_file_path(), kTestData, kTestDataSize));
+      base::WriteFile(temp_file_path(), kTestData, kTestDataSize));
   int flags = base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_READ;
   base::PlatformFile file = base::CreatePlatformFile(
       temp_file_path(), flags, &created, NULL);

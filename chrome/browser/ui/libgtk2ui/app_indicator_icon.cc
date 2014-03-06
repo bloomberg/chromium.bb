@@ -144,9 +144,8 @@ base::FilePath CreateTempImageFile(gfx::ImageSkia* image_ptr,
   new_file_path =
       temp_dir.Append(id + base::StringPrintf("_%d.png", icon_change_count));
   int bytes_written =
-      file_util::WriteFile(new_file_path,
-                           png_data->front_as<char>(),
-                           png_data->size());
+      base::WriteFile(new_file_path,
+                      png_data->front_as<char>(), png_data->size());
 
   if (bytes_written != static_cast<int>(png_data->size()))
     return base::FilePath();

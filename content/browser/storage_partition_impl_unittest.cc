@@ -179,9 +179,9 @@ class RemoveLocalStorageTester {
     base::CreateDirectory(storage_path);
 
     // Write some files.
-    file_util::WriteFile(storage_path.Append(kDomStorageOrigin1), NULL, 0);
-    file_util::WriteFile(storage_path.Append(kDomStorageOrigin2), NULL, 0);
-    file_util::WriteFile(storage_path.Append(kDomStorageOrigin3), NULL, 0);
+    base::WriteFile(storage_path.Append(kDomStorageOrigin1), NULL, 0);
+    base::WriteFile(storage_path.Append(kDomStorageOrigin2), NULL, 0);
+    base::WriteFile(storage_path.Append(kDomStorageOrigin3), NULL, 0);
 
     // Tweak their dates.
     base::Time now = base::Time::Now();

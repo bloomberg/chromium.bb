@@ -269,7 +269,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
         base::Int64ToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
     base::FilePath shutdown_ms_file = GetShutdownMsPath();
-    file_util::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
+    base::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }
 
 #if defined(OS_CHROMEOS)

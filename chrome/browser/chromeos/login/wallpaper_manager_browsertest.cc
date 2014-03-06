@@ -130,7 +130,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
     scoped_refptr<base::RefCountedStaticMemory> image_data(
         ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
             resource_id, ui::SCALE_FACTOR_100P));
-    int written = file_util::WriteFile(
+    int written = base::WriteFile(
         wallpaper_path,
         reinterpret_cast<const char*>(image_data->front()),
         image_data->size());

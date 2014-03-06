@@ -60,7 +60,7 @@ class ConnectorSettingsTest : public testing::Test {
     if (json) {
       std::string content = json;
       std::replace(content.begin(), content.end(), '\'', '"');
-      file_util::WriteFile(file_name, content.c_str(), content.size());
+      base::WriteFile(file_name, content.c_str(), content.size());
     }
     ServiceProcessPrefs* prefs =
         new ServiceProcessPrefs(file_name, message_loop_proxy_.get());

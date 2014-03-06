@@ -46,7 +46,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
     if (schema.empty()) {
       base::DeleteFile(schema_path, false);
     } else {
-      if (file_util::WriteFile(schema_path, schema.data(), schema.size()) !=
+      if (base::WriteFile(schema_path, schema.data(), schema.size()) !=
           static_cast<int>(schema.size())) {
         return NULL;
       }

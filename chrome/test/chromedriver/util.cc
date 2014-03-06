@@ -90,7 +90,7 @@ Status UnzipArchive(const base::FilePath& unzip_dir,
 
   base::FilePath archive = dir.path().AppendASCII("temp.zip");
   int length = bytes.length();
-  if (file_util::WriteFile(archive, bytes.c_str(), length) != length)
+  if (base::WriteFile(archive, bytes.c_str(), length) != length)
     return Status(kUnknownError, "could not write file to temp dir");
 
   if (!zip::Unzip(archive, unzip_dir))

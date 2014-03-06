@@ -70,7 +70,7 @@ bool Image::SaveToPng(const base::FilePath& filepath) const {
                                        &compressed);
   DCHECK(success && compressed.size());
   if (success) {
-    int write_bytes = file_util::WriteFile(
+    int write_bytes = base::WriteFile(
         filepath,
         reinterpret_cast<char*>(&*compressed.begin()),
         base::checked_cast<int>(compressed.size()));

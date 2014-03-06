@@ -359,7 +359,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
     // Write an empty data pak for locale data.
     const base::FilePath& locale_path = dir_path().Append(
         FILE_PATH_LITERAL("locale.pak"));
-    EXPECT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
+    EXPECT_EQ(base::WriteFile(locale_path, kEmptyPakContents,
                                    kEmptyPakSize),
               static_cast<int>(kEmptyPakSize));
 
@@ -386,7 +386,7 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak files.
-  ASSERT_EQ(file_util::WriteFile(data_path, kEmptyPakContents,
+  ASSERT_EQ(base::WriteFile(data_path, kEmptyPakContents,
       kEmptyPakSize), static_cast<int>(kEmptyPakSize));
 
   // Create a resource bundle from the file.
@@ -411,9 +411,9 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
       dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
   // Dump contents into the pak files.
-  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents,
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents,
       kSamplePakSize), static_cast<int>(kSamplePakSize));
-  ASSERT_EQ(file_util::WriteFile(data_2x_path, kSamplePakContents2x,
+  ASSERT_EQ(base::WriteFile(data_2x_path, kSamplePakContents2x,
       kSamplePakSize2x), static_cast<int>(kSamplePakSize2x));
 
   // Load the regular and 2x pak files.

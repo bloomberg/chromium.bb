@@ -75,7 +75,7 @@ bool SaveToFile(const base::FilePath& path, const PrinterState& state) {
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_str);
   int size = base::checked_cast<int>(json_str.size());
-  return (file_util::WriteFile(path, json_str.data(), size) == size);
+  return (base::WriteFile(path, json_str.data(), size) == size);
 }
 
 bool LoadFromFile(const base::FilePath& path, PrinterState* state) {

@@ -79,7 +79,7 @@ class LocalExtensionCacheTest : public testing::Test {
                   size_t size,
                   const base::Time& timestamp) {
     std::string data(size, 0);
-    EXPECT_EQ(file_util::WriteFile(file, data.data(), data.size()), int(size));
+    EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
     EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
   }
 

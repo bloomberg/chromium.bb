@@ -25,8 +25,8 @@ class FileMetaDataParserTest : public testing::Test {
 
     // Create the test file.
     std::string content = "content";
-    int write_size = file_util::WriteFile(test_file_, content.c_str(),
-                                          content.length());
+    int write_size = base::WriteFile(test_file_, content.c_str(),
+                                     content.length());
     ASSERT_EQ(static_cast<int>(content.length()), write_size);
   }
 

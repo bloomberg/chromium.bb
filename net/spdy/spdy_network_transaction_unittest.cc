@@ -449,7 +449,7 @@ class SpdyNetworkTransactionTest
       base::FilePath file_path;
       CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
-               file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
+               base::WriteFile(file_path, kUploadData, kUploadDataSize));
 
       ScopedVector<UploadElementReader> element_readers;
       element_readers.push_back(
@@ -476,7 +476,7 @@ class SpdyNetworkTransactionTest
     base::FilePath file_path;
     CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
     CHECK_EQ(static_cast<int>(kUploadDataSize),
-             file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
+             base::WriteFile(file_path, kUploadData, kUploadDataSize));
     CHECK(file_util::MakeFileUnreadable(file_path));
 
     ScopedVector<UploadElementReader> element_readers;
@@ -505,7 +505,7 @@ class SpdyNetworkTransactionTest
       base::FilePath file_path;
       CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
-               file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
+               base::WriteFile(file_path, kUploadData, kUploadDataSize));
 
       ScopedVector<UploadElementReader> element_readers;
       element_readers.push_back(

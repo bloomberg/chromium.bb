@@ -142,7 +142,7 @@ class ItunesFileUtilTest : public testing::Test {
     ASSERT_TRUE(fake_library_dir_.CreateUniqueTempDir());
     ASSERT_EQ(
         0,
-        file_util::WriteFile(
+        base::WriteFile(
             fake_library_dir_.path().AppendASCII(kITunesLibraryXML),
             NULL,
             0));
@@ -284,7 +284,7 @@ TEST_F(ItunesFileUtilTest, ItunesMediaDirectoryContentsAutoAdd) {
 
 TEST_F(ItunesFileUtilTest, ItunesAutoAddDirEnumerate) {
   data_provider()->SetProvideAutoAddDir(true);
-  ASSERT_EQ(0, file_util::WriteFile(
+  ASSERT_EQ(0, base::WriteFile(
       data_provider()->auto_add_path().AppendASCII("baz.ogg"), NULL, 0));
 
   FileSystemOperation::FileEntryList contents;
@@ -306,7 +306,7 @@ TEST_F(ItunesFileUtilTest, ItunesAutoAddDirEnumerateNested) {
       data_provider()->auto_add_path().AppendASCII("foo").AppendASCII("bar");
   ASSERT_TRUE(base::CreateDirectory(nested_dir));
   ASSERT_EQ(0,
-            file_util::WriteFile(nested_dir.AppendASCII("baz.ogg"), NULL, 0));
+            base::WriteFile(nested_dir.AppendASCII("baz.ogg"), NULL, 0));
 
   FileSystemOperation::FileEntryList contents;
   FileSystemURL url = CreateURL(

@@ -712,6 +712,33 @@ int ReadFile(const FilePath& filename, char* data, int size) {
   return bytes_read;
 }
 
+int WriteFile(const FilePath& filename, const char* data, int size) {
+  ThreadRestrictions::AssertIOAllowed();
+  int fd = HANDLE_EINTR(creat(filename.value().c_str(), 0666));
+  if (fd < 0)
+    return -1;
+
+  int bytes_written = WriteFileDescriptor(fd, data, size);
+  if (int ret = IGNORE_EINTR(close(fd)) < 0)
+    return ret;
+  return bytes_written;
+}
+
+int WriteFileDescriptor(const int fd, const char* data, int size) {
+  // Allow for partial writes.
+  ssize_t bytes_written_total = 0;
+  for (ssize_t bytes_written_partial = 0; bytes_written_total < size;
+       bytes_written_total += bytes_written_partial) {
+    bytes_written_partial =
+        HANDLE_EINTR(write(fd, data + bytes_written_total,
+                           size - bytes_written_total));
+    if (bytes_written_partial < 0)
+      return -1;
+  }
+
+  return bytes_written_total;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -750,40 +777,13 @@ FILE* OpenFile(const std::string& filename, const char* mode) {
   return OpenFile(FilePath(filename), mode);
 }
 
-int WriteFile(const FilePath& filename, const char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  int fd = HANDLE_EINTR(creat(filename.value().c_str(), 0666));
-  if (fd < 0)
-    return -1;
-
-  int bytes_written = WriteFileDescriptor(fd, data, size);
-  if (int ret = IGNORE_EINTR(close(fd)) < 0)
-    return ret;
-  return bytes_written;
-}
-
-int WriteFileDescriptor(const int fd, const char* data, int size) {
-  // Allow for partial writes.
-  ssize_t bytes_written_total = 0;
-  for (ssize_t bytes_written_partial = 0; bytes_written_total < size;
-       bytes_written_total += bytes_written_partial) {
-    bytes_written_partial =
-        HANDLE_EINTR(write(fd, data + bytes_written_total,
-                           size - bytes_written_total));
-    if (bytes_written_partial < 0)
-      return -1;
-  }
-
-  return bytes_written_total;
-}
-
 int AppendToFile(const FilePath& filename, const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_WRONLY | O_APPEND));
   if (fd < 0)
     return -1;
 
-  int bytes_written = WriteFileDescriptor(fd, data, size);
+  int bytes_written = base::WriteFileDescriptor(fd, data, size);
   if (int ret = IGNORE_EINTR(close(fd)) < 0)
     return ret;
   return bytes_written;

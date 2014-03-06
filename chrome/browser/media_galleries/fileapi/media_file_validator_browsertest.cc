@@ -123,7 +123,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     test_file_size_ = content.size();
     base::FilePath test_file = src_path.AppendASCII(filename);
     ASSERT_EQ(test_file_size_,
-              file_util::WriteFile(test_file, content.data(), test_file_size_));
+              base::WriteFile(test_file, content.data(), test_file_size_));
 
     base::FilePath dest_path = base.AppendASCII("dest_fs");
     ASSERT_TRUE(base::CreateDirectory(dest_path));

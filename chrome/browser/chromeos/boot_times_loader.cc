@@ -209,8 +209,7 @@ void BootTimesLoader::WriteTimes(
   }
   output += '\n';
 
-  file_util::WriteFile(
-      log_path.Append(base_name), output.data(), output.size());
+  base::WriteFile(log_path.Append(base_name), output.data(), output.size());
 }
 
 void BootTimesLoader::LoginDone() {

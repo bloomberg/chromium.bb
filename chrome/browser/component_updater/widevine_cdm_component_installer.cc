@@ -343,7 +343,7 @@ void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
   if (!base::ReadFileToString(adapter_version_path, &adapter_version) ||
       adapter_version != chrome_version ||
       !base::PathExists(adapter_install_path)) {
-    int bytes_written = file_util::WriteFile(
+    int bytes_written = base::WriteFile(
         adapter_version_path, chrome_version.data(), chrome_version.size());
     if (bytes_written < 0 ||
         static_cast<size_t>(bytes_written) != chrome_version.size()) {

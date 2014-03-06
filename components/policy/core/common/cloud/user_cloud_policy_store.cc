@@ -107,7 +107,7 @@ bool WriteStringToFile(const base::FilePath path, const std::string& data) {
   }
 
   int size = data.size();
-  if (file_util::WriteFile(path, data.c_str(), size) != size) {
+  if (base::WriteFile(path, data.c_str(), size) != size) {
     DLOG(WARNING) << "Failed to write " << path.value();
     return false;
   }

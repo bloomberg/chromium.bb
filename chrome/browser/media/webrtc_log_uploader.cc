@@ -301,8 +301,8 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
   contents += base::DoubleToString(time_now.ToDoubleT()) +
               "," + report_id + '\n';
 
-  int written = file_util::WriteFile(upload_list_path, &contents[0],
-                                     contents.size());
+  int written =
+      base::WriteFile(upload_list_path, &contents[0], contents.size());
   DPCHECK(written == static_cast<int>(contents.size()));
 }
 

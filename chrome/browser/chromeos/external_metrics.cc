@@ -90,7 +90,7 @@ void SetupProgressiveScanFieldTrial() {
 
   // Write the group to the file to be read by ChromeOS.
   int size = static_cast<int>(group_char.length());
-  if (file_util::WriteFile(group_file_path, group_char.c_str(), size) == size) {
+  if (base::WriteFile(group_file_path, group_char.c_str(), size) == size) {
     VLOG(1) << "Configured in group '" << trial->group_name()
             << "' ('" << group_char << "') for "
             << name_of_experiment << " field trial";

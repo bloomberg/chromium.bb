@@ -66,7 +66,7 @@ void UmaRecordIndexInitMethod(IndexInitMethod method,
 }
 
 bool WritePickleFile(Pickle* pickle, const base::FilePath& file_name) {
-  int bytes_written = file_util::WriteFile(
+  int bytes_written = base::WriteFile(
       file_name, static_cast<const char*>(pickle->data()), pickle->size());
   if (bytes_written != implicit_cast<int>(pickle->size())) {
     base::DeleteFile(file_name, /* recursive = */ false);

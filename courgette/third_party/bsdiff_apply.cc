@@ -200,7 +200,7 @@ BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
   }
 
   // Write the stream to disk.
-  int written = file_util::WriteFile(
+  int written = base::WriteFile(
       new_file_path,
       reinterpret_cast<const char*>(new_sink_stream.Buffer()),
       static_cast<int>(new_sink_stream.Length()));

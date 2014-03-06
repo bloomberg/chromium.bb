@@ -764,9 +764,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
       old_directory_db_path = data_dir_path().Append(path);
       ASSERT_TRUE(base::CreateDirectory(old_directory_db_path));
       EXPECT_EQ(static_cast<int>(kFakeDirectoryData.size()),
-                file_util::WriteFile(old_directory_db_path.AppendASCII("dummy"),
-                                     kFakeDirectoryData.data(),
-                                     kFakeDirectoryData.size()));
+                base::WriteFile(old_directory_db_path.AppendASCII("dummy"),
+                                kFakeDirectoryData.data(),
+                                kFakeDirectoryData.size()));
     }
 
     storage_policy_->AddIsolated(origin_);

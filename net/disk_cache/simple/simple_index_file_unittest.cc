@@ -170,9 +170,8 @@ TEST_F(SimpleIndexFileTest, LegacyIsIndexFileStale) {
       WrappedSimpleIndexFile::LegacyIsIndexFileStale(cache_mtime, index_path));
   const std::string kDummyData = "nothing to be seen here";
   EXPECT_EQ(static_cast<int>(kDummyData.size()),
-            file_util::WriteFile(index_path,
-                                 kDummyData.data(),
-                                 kDummyData.size()));
+            base::WriteFile(index_path,
+                            kDummyData.data(), kDummyData.size()));
   ASSERT_TRUE(simple_util::GetMTime(cache_path, &cache_mtime));
   EXPECT_FALSE(
       WrappedSimpleIndexFile::LegacyIsIndexFileStale(cache_mtime, index_path));
@@ -244,7 +243,7 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
   const std::string kDummyData = "nothing to be seen here";
   EXPECT_EQ(
       implicit_cast<int>(kDummyData.size()),
-      file_util::WriteFile(index_path, kDummyData.data(), kDummyData.size()));
+      base::WriteFile(index_path, kDummyData.data(), kDummyData.size()));
   base::Time fake_cache_mtime;
   ASSERT_TRUE(simple_util::GetMTime(simple_index_file.GetIndexFilePath(),
                                     &fake_cache_mtime));
@@ -287,9 +286,9 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   const base::FilePath old_index_file =
       cache_path.AppendASCII("the-real-index");
   ASSERT_EQ(implicit_cast<int>(index_file_contents.size()),
-            file_util::WriteFile(old_index_file,
-                                 index_file_contents.data(),
-                                 index_file_contents.size()));
+            base::WriteFile(old_index_file,
+                            index_file_contents.data(),
+                            index_file_contents.size()));
 
   // Upgrade the cache.
   ASSERT_TRUE(disk_cache::UpgradeSimpleCacheOnDisk(cache_path));

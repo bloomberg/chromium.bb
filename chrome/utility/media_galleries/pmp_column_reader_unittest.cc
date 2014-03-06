@@ -30,7 +30,7 @@ bool InitColumnReaderFromBytes(
     return false;
 
   // Explicit conversion from signed to unsigned.
-  size_t bytes_written = file_util::WriteFile(temp_path, &data[0], data.size());
+  size_t bytes_written = base::WriteFile(temp_path, &data[0], data.size());
   if (bytes_written != data.size())
     return false;
 

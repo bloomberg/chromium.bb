@@ -1433,7 +1433,7 @@ TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
   std::string data(10000, '?');  // Meant to be larger than simple.html.
   file_path_ = temp_dir.path().AppendASCII(kFileToFetch);
   ASSERT_EQ(static_cast<int>(data.size()),
-            file_util::WriteFile(file_path_, data.data(), data.size()));
+            base::WriteFile(file_path_, data.data(), data.size()));
   ASSERT_TRUE(base::PathExists(file_path_));
   expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
   ASSERT_FALSE(base::ContentsEqual(file_path_, expected_file_));

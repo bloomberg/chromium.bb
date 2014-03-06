@@ -229,11 +229,11 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin2)))));
-    EXPECT_EQ(1, file_util::WriteFile(
+    EXPECT_EQ(1, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
-    EXPECT_EQ(2, file_util::WriteFile(
+    EXPECT_EQ(2, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa", 2));
-    EXPECT_EQ(3, file_util::WriteFile(
+    EXPECT_EQ(3, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin2, kDB3), "aaa", 3));
     tracker->DatabaseModified(kOrigin1, kDB1);
     tracker->DatabaseModified(kOrigin2, kDB2);
@@ -261,7 +261,7 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin1)))));
-    EXPECT_EQ(1, file_util::WriteFile(
+    EXPECT_EQ(1, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
     tracker->DatabaseModified(kOrigin1, kDB1);
 
@@ -357,11 +357,11 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin2)))));
-    EXPECT_EQ(1, file_util::WriteFile(
+    EXPECT_EQ(1, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
-    EXPECT_EQ(2, file_util::WriteFile(
+    EXPECT_EQ(2, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa", 2));
-    EXPECT_EQ(4, file_util::WriteFile(
+    EXPECT_EQ(4, base::WriteFile(
         tracker->GetFullDBFilePath(kOrigin1, kDB3), "aaaa", 4));
     tracker->DatabaseModified(kOrigin1, kDB1);
     CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1);

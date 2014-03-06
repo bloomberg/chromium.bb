@@ -143,8 +143,8 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesNoUnderscores) {
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("some_file.txt"),
-                                   data.c_str(), data.length()));
+  ASSERT_TRUE(base::WriteFile(src_path.AppendASCII("some_file.txt"),
+                              data.c_str(), data.length()));
   std::string error;
   EXPECT_TRUE(extension_file_util::CheckForIllegalFilenames(temp.path(),
                                                             &error));
@@ -272,7 +272,7 @@ TEST_F(ExtensionFileUtilTest, ValidateThemeUTF8) {
   std::string non_ascii_file = "\xC3\xA0\xC3\xA8\xC3\xB2.png";
   base::FilePath non_ascii_path =
       temp.path().Append(base::FilePath::FromUTF8Unsafe(non_ascii_file));
-  file_util::WriteFile(non_ascii_path, "", 0);
+  base::WriteFile(non_ascii_path, "", 0);
 
   std::string kManifest =
       base::StringPrintf(
@@ -361,16 +361,16 @@ TEST_F(ExtensionFileUtilTest, FindPrivateKeyFiles) {
   base::FilePath src_path = temp.path().AppendASCII("some_dir");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("a_key.pem"),
-                                   private_key, arraysize(private_key)));
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("second_key.pem"),
-                                   private_key, arraysize(private_key)));
+  ASSERT_TRUE(base::WriteFile(src_path.AppendASCII("a_key.pem"),
+                              private_key, arraysize(private_key)));
+  ASSERT_TRUE(base::WriteFile(src_path.AppendASCII("second_key.pem"),
+                              private_key, arraysize(private_key)));
   // Shouldn't find a key with a different extension.
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("key.diff_ext"),
-                                   private_key, arraysize(private_key)));
+  ASSERT_TRUE(base::WriteFile(src_path.AppendASCII("key.diff_ext"),
+                              private_key, arraysize(private_key)));
   // Shouldn't find a key that isn't parsable.
-  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("unparsable_key.pem"),
-                                   private_key, arraysize(private_key) - 30));
+  ASSERT_TRUE(base::WriteFile(src_path.AppendASCII("unparsable_key.pem"),
+                              private_key, arraysize(private_key) - 30));
   std::vector<base::FilePath> private_keys =
       extension_file_util::FindPrivateKeyFiles(temp.path());
   EXPECT_EQ(2U, private_keys.size());
@@ -394,10 +394,10 @@ TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
       "  \"manifest_version\": 2,\n"
       "  \"description\": \"The first extension that I made.\"\n"
       "}\n";
-  ASSERT_TRUE(file_util::WriteFile(ext_path.AppendASCII("manifest.json"),
-                                   manifest, strlen(manifest)));
-  ASSERT_TRUE(file_util::WriteFile(ext_path.AppendASCII("a_key.pem"),
-                                   private_key, strlen(private_key)));
+  ASSERT_TRUE(base::WriteFile(ext_path.AppendASCII("manifest.json"),
+                              manifest, strlen(manifest)));
+  ASSERT_TRUE(base::WriteFile(ext_path.AppendASCII("a_key.pem"),
+                              private_key, strlen(private_key)));
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(

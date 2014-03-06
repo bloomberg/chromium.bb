@@ -81,9 +81,9 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, SomeFilesZip) {
   const int kRandomDataSize = 100000;
   const std::string kRandomData = base::RandBytesAsString(kRandomDataSize);
   base::CreateDirectory(zip_base_dir().Append(kDir1));
-  file_util::WriteFile(zip_base_dir().Append(kFile1), "123", 3);
-  file_util::WriteFile(zip_base_dir().Append(kFile2),
-                       kRandomData.c_str(), kRandomData.size());
+  base::WriteFile(zip_base_dir().Append(kFile1), "123", 3);
+  base::WriteFile(zip_base_dir().Append(kFile2),
+                  kRandomData.c_str(), kRandomData.size());
 
   base::RunLoop run_loop;
   TestObserver observer(content::GetQuitTaskForRunLoop(&run_loop));

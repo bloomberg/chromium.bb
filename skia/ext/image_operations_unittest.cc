@@ -204,7 +204,7 @@ void SaveBitmapToPNG(const SkBitmap& bmp, const char* path) {
 
   const base::FilePath fpath(path);
   const int num_written =
-      file_util::WriteFile(fpath, reinterpret_cast<const char*>(&png[0]),
+      base::WriteFile(fpath, reinterpret_cast<const char*>(&png[0]),
                            png.size());
   if (num_written != static_cast<int>(png.size())) {
     FAIL() << "Failed to write dest \"" << path << '"';

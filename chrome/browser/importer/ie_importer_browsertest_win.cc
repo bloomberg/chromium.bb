@@ -203,7 +203,7 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
     return false;
 
   // Write dummy favicon image data in NTFS alternate data stream.
-  return favicon_url.empty() || (file_util::WriteFile(
+  return favicon_url.empty() || (base::WriteFile(
       file.ReplaceExtension(kFaviconStreamSuffix), kDummyFaviconImageData,
       sizeof kDummyFaviconImageData) != -1);
 }
@@ -498,8 +498,8 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
       L"http://www.links-sublink.com/"));
   ASSERT_TRUE(CreateUrlFile(path.AppendASCII("IEDefaultLink.url"),
                             L"http://go.microsoft.com/fwlink/?linkid=140813"));
-  file_util::WriteFile(path.AppendASCII("InvalidUrlFile.url"), "x", 1);
-  file_util::WriteFile(path.AppendASCII("PlainTextFile.txt"), "x", 1);
+  base::WriteFile(path.AppendASCII("InvalidUrlFile.url"), "x", 1);
+  base::WriteFile(path.AppendASCII("PlainTextFile.txt"), "x", 1);
 
   const base::char16* root_links[] = {
     L"Links",

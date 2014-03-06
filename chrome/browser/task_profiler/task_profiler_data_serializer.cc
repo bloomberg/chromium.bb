@@ -164,7 +164,7 @@ bool TaskProfilerDataSerializer::WriteToFile(const base::FilePath& path) {
   serializer.Serialize(*root);
   int data_size = static_cast<int>(output.size());
 
-  return data_size == file_util::WriteFile(path, output.data(), data_size);
+  return data_size == base::WriteFile(path, output.data(), data_size);
 }
 
 }  // namespace task_profiler

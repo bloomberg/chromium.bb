@@ -346,7 +346,7 @@ bool ParsePpdCapabilities(
     return false;
 
   int data_size = printer_capabilities.length();
-  if (data_size != file_util::WriteFile(
+  if (data_size != base::WriteFile(
                        ppd_file_path,
                        printer_capabilities.data(),
                        data_size)) {

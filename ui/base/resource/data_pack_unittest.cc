@@ -28,7 +28,7 @@ TEST(DataPackTest, LoadFromPath) {
   base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
             static_cast<int>(kSamplePakSize));
 
   // Load the file through the data pack API.
@@ -60,7 +60,7 @@ TEST(DataPackTest, LoadFromFile) {
   base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
+  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
             static_cast<int>(kSamplePakSize));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);

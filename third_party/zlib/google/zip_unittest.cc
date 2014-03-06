@@ -139,7 +139,7 @@ class ZipTest : public PlatformTest {
     now_parts.millisecond = 0;
     base::Time now_time = base::Time::FromLocalExploded(now_parts);
 
-    EXPECT_EQ(1, file_util::WriteFile(src_file, "1", 1));
+    EXPECT_EQ(1, base::WriteFile(src_file, "1", 1));
     EXPECT_TRUE(base::TouchFile(src_file, base::Time::Now(), test_mtime));
 
     EXPECT_TRUE(zip::Zip(src_dir, zip_file, true));

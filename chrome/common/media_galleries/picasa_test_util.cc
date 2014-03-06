@@ -99,17 +99,17 @@ void WriteTestAlbumsImagesIndex(const base::FilePath& test_folder_1_path,
       "[InSecondAlbumOnly.jpg]\n"
       "albums=uid5\n";
   ASSERT_TRUE(
-      file_util::WriteFile(test_folder_1_path.AppendASCII(kPicasaINIFilename),
-                           folder_1_test_ini,
-                           arraysize(folder_1_test_ini)));
+      base::WriteFile(test_folder_1_path.AppendASCII(kPicasaINIFilename),
+                      folder_1_test_ini,
+                      arraysize(folder_1_test_ini)));
 
   const char folder_2_test_ini[] =
       "[InFirstAlbumOnly.jpg]\n"
       "albums=uid3\n";
   ASSERT_TRUE(
-      file_util::WriteFile(test_folder_2_path.AppendASCII(kPicasaINIFilename),
-                           folder_2_test_ini,
-                           arraysize(folder_2_test_ini)));
+      base::WriteFile(test_folder_2_path.AppendASCII(kPicasaINIFilename),
+                      folder_2_test_ini,
+                      arraysize(folder_2_test_ini)));
 }
 
 }  // namespace picasa

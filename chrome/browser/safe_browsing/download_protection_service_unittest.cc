@@ -710,7 +710,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
   std::string file_contents = "dummy file";
-  ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
+  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
       zip_source_dir.path().Append(FILE_PATH_LITERAL("file.txt")),
       file_contents.data(), file_contents.size()));
   ASSERT_TRUE(zip::Zip(zip_source_dir.path(), a_tmp, false));
@@ -725,7 +725,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   Mock::VerifyAndClearExpectations(signature_util_.get());
 
   // Now check with an executable in the zip file as well.
-  ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
+  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
       zip_source_dir.path().Append(FILE_PATH_LITERAL("file.exe")),
       file_contents.data(), file_contents.size()));
   ASSERT_TRUE(zip::Zip(zip_source_dir.path(), a_tmp, false));
@@ -787,7 +787,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
   EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
 
   std::string file_contents = "corrupt zip file";
-  ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
+  ASSERT_EQ(static_cast<int>(file_contents.size()), base::WriteFile(
       a_tmp, file_contents.data(), file_contents.size()));
 
   download_service_->CheckClientDownload(

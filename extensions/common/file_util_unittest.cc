@@ -66,9 +66,9 @@ TEST_F(FileUtilTest, ExtensionResourceURLToFilePath) {
 
   const char data[] = "Test Data";
   base::FilePath resource_path = api_path.Append(FILE_PATH_LITERAL("test.js"));
-  ASSERT_TRUE(file_util::WriteFile(resource_path, data, sizeof(data)));
+  ASSERT_TRUE(base::WriteFile(resource_path, data, sizeof(data)));
   resource_path = api_path.Append(FILE_PATH_LITERAL("escape spaces.js"));
-  ASSERT_TRUE(file_util::WriteFile(resource_path, data, sizeof(data)));
+  ASSERT_TRUE(base::WriteFile(resource_path, data, sizeof(data)));
 
 #ifdef FILE_PATH_USES_WIN_SEPARATORS
 #define SEP "\\"

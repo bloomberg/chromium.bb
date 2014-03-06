@@ -150,7 +150,7 @@ class DownloadFeedbackServiceTest : public testing::Test {
     base::FilePath upload_file_path(
         temp_dir_.path().AppendASCII("test file " + base::IntToString(n)));
     const std::string upload_file_data = "data";
-    int wrote = file_util::WriteFile(
+    int wrote = base::WriteFile(
         upload_file_path, upload_file_data.data(), upload_file_data.size());
     EXPECT_EQ(static_cast<int>(upload_file_data.size()), wrote);
     return upload_file_path;

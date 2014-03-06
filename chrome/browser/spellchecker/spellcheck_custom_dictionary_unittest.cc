@@ -226,7 +226,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LegacyEmptyDictionaryShouldBeConverted) {
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content;
-  file_util::WriteFile(path, content.c_str(), content.length());
+  base::WriteFile(path, content.c_str(), content.length());
   WordList loaded_custom_words = LoadDictionaryFile(path);
   EXPECT_TRUE(loaded_custom_words.empty());
 }
@@ -239,7 +239,7 @@ TEST_F(SpellcheckCustomDictionaryTest,
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content = "foo\nbar\nfoo\n";
-  file_util::WriteFile(path, content.c_str(), content.length());
+  base::WriteFile(path, content.c_str(), content.length());
   WordList loaded_custom_words = LoadDictionaryFile(path);
   WordList expected;
   expected.push_back("bar");
@@ -257,7 +257,7 @@ TEST_F(SpellcheckCustomDictionaryTest,
   std::string content = "foo\n foo bar \n\n \nbar\n"
       "01234567890123456789012345678901234567890123456789"
       "01234567890123456789012345678901234567890123456789";
-  file_util::WriteFile(path, content.c_str(), content.length());
+  base::WriteFile(path, content.c_str(), content.length());
   WordList loaded_custom_words = LoadDictionaryFile(path);
   WordList expected;
   expected.push_back("bar");
@@ -274,7 +274,7 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content = "foo\nbar";
-  file_util::WriteFile(path, content.c_str(), content.length());
+  base::WriteFile(path, content.c_str(), content.length());
   WordList loaded_custom_words = LoadDictionaryFile(path);
   WordList expected;
   expected.push_back("bar");
@@ -287,7 +287,7 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
   content.clear();
   base::ReadFileToString(path, &content);
   content.append("corruption");
-  file_util::WriteFile(path, content.c_str(), content.length());
+  base::WriteFile(path, content.c_str(), content.length());
   loaded_custom_words = LoadDictionaryFile(path);
   EXPECT_EQ(expected, loaded_custom_words);
 }

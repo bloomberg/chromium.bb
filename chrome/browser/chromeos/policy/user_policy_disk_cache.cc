@@ -131,7 +131,7 @@ void UserPolicyDiskCache::StoreOnFileThread(
   }
 
   int size = data.size();
-  if (file_util::WriteFile(backing_file_path_, data.c_str(), size) != size) {
+  if (base::WriteFile(backing_file_path_, data.c_str(), size) != size) {
     LOG(WARNING) << "Failed to write " << backing_file_path_.value();
     UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
                               kMetricPolicyStoreFailed,

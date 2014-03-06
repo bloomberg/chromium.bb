@@ -218,7 +218,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   base::FilePath local_path;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &local_path));
   ASSERT_EQ(kTestFileDataSize,
-            file_util::WriteFile(local_path, kTestFileData, kTestFileDataSize));
+            base::WriteFile(local_path, kTestFileData, kTestFileDataSize));
 
   // Run PrepareForProcessRemoteChange for kFile.
   SyncFileMetadata expected_metadata;

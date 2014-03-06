@@ -57,7 +57,7 @@ void RunAndQuit(base::RunLoop* run_loop, const base::Closure& closure) {
 
 bool WriteStringToFile(const base::FilePath& file_path,
                        const std::string& content) {
-  int result = file_util::WriteFile(
+  int result = base::WriteFile(
       file_path, content.data(), static_cast<int>(content.size()));
   return content.size() == static_cast<size_t>(result);
 }

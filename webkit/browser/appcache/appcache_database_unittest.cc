@@ -57,7 +57,7 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   const base::FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
   const base::FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
   EXPECT_TRUE(base::CreateDirectory(kNestedDir));
-  EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
 
   AppCacheDatabase db(kDbFile);
   EXPECT_FALSE(db.LazyOpen(false));
@@ -90,7 +90,7 @@ TEST(AppCacheDatabaseTest, QuickIntegrityCheck) {
 
   const base::FilePath kDbFile = mock_dir.AppendASCII("appcache.db");
   const base::FilePath kOtherFile = mock_dir.AppendASCII("other_file");
-  EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
 
   // First create a valid db file.
   AppCacheDatabase db(kDbFile);
@@ -150,7 +150,7 @@ TEST(AppCacheDatabaseTest, ExperimentalFlags) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
   const base::FilePath kOtherFile =  temp_dir.path().AppendASCII("other_file");
-  EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
   EXPECT_TRUE(base::PathExists(kOtherFile));
 
   AppCacheDatabase db(kDbFile);

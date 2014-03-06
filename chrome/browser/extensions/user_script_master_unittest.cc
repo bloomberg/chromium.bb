@@ -232,7 +232,7 @@ TEST_F(UserScriptMasterTest, Parse8) {
 TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
   base::FilePath path = temp_dir_.path().AppendASCII("script.user.js");
   const std::string content("\xEF\xBB\xBF alert('hello');");
-  size_t written = file_util::WriteFile(path, content.c_str(), content.size());
+  size_t written = base::WriteFile(path, content.c_str(), content.size());
   ASSERT_EQ(written, content.size());
 
   UserScript user_script;
@@ -255,7 +255,7 @@ TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
 TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
   base::FilePath path = temp_dir_.path().AppendASCII("script.user.js");
   const std::string content("alert('here's a BOOM: \xEF\xBB\xBF');");
-  size_t written = file_util::WriteFile(path, content.c_str(), content.size());
+  size_t written = base::WriteFile(path, content.c_str(), content.size());
   ASSERT_EQ(written, content.size());
 
   UserScript user_script;

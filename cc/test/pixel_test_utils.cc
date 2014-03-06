@@ -23,7 +23,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path,
       base::CreateDirectory(file_path.DirName())) {
     char* data = reinterpret_cast<char*>(&png_data[0]);
     int size = static_cast<int>(png_data.size());
-    return file_util::WriteFile(file_path, data, size) == size;
+    return base::WriteFile(file_path, data, size) == size;
   }
   return false;
 }

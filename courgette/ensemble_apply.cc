@@ -416,7 +416,7 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
   // Write the patched data to |new_file_name|.
   base::FilePath new_file_path(new_file_name);
   int written =
-      file_util::WriteFile(
+      base::WriteFile(
           new_file_path,
           reinterpret_cast<const char*>(new_sink_stream.Buffer()),
           static_cast<int>(new_sink_stream.Length()));

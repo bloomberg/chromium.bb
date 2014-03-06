@@ -58,8 +58,8 @@ void SaveIconToLocalOnBlockingPool(
     CHECK(base::CreateDirectory(dir));
 
   CHECK_EQ(static_cast<int>(raw_icon->size()),
-           file_util::WriteFile(icon_path,
-                                raw_icon->data().c_str(), raw_icon->size()));
+           base::WriteFile(icon_path,
+                           raw_icon->data().c_str(), raw_icon->size()));
 }
 
 // Returns true for valid kiosk app manifest.

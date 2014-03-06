@@ -379,7 +379,7 @@ VEAClient::VEAClient(const TestStream& test_stream,
     base::FilePath out_filename(test_stream_.out_filename);
     // This creates or truncates out_filename.
     // Without it, AppendToFile() will not work.
-    EXPECT_EQ(0, file_util::WriteFile(out_filename, NULL, 0));
+    EXPECT_EQ(0, base::WriteFile(out_filename, NULL, 0));
   }
 
   thread_checker_.DetachFromThread();

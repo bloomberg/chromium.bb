@@ -108,7 +108,7 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
   const char dummy_data[] = "All your base are belong to us!";
   // Dump something real into the file.
   ASSERT_EQ(static_cast<int>(arraysize(dummy_data)),
-      file_util::WriteFile(dummy_file_path, dummy_data, arraysize(dummy_data)));
+            WriteFile(dummy_file_path, dummy_data, arraysize(dummy_data)));
   NSString* fileURLString =
       [NSString stringWithUTF8String:dummy_file_path.value().c_str()];
   NSURL* fileURL = [NSURL URLWithString:fileURLString];

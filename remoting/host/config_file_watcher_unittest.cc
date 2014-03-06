@@ -96,7 +96,7 @@ void ConfigFileWatcherTest::TearDown() {
 // Verifies that the initial notification is delivered.
 TEST_F(ConfigFileWatcherTest, Basic) {
   std::string data("test");
-  EXPECT_NE(file_util::WriteFile(config_file_, data.c_str(),
+  EXPECT_NE(base::WriteFile(config_file_, data.c_str(),
                                  static_cast<int>(data.size())), -1);
 
   EXPECT_CALL(delegate_, OnConfigUpdated(_))
@@ -125,7 +125,7 @@ TEST_F(ConfigFileWatcherTest, Update) {
 
   // Modify the watched file.
   std::string data("test");
-  EXPECT_NE(file_util::WriteFile(config_file_, data.c_str(),
+  EXPECT_NE(base::WriteFile(config_file_, data.c_str(),
                                  static_cast<int>(data.size())), -1);
 
   run_loop_.Run();

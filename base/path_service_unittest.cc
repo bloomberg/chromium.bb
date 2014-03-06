@@ -179,12 +179,12 @@ TEST_F(PathServiceTest, OverrideMultiple) {
   base::FilePath fake_cache_dir1(temp_dir.path().AppendASCII("1"));
   EXPECT_TRUE(PathService::Override(my_special_key, fake_cache_dir1));
   EXPECT_TRUE(base::PathExists(fake_cache_dir1));
-  ASSERT_EQ(1, file_util::WriteFile(fake_cache_dir1.AppendASCII("t1"), ".", 1));
+  ASSERT_EQ(1, base::WriteFile(fake_cache_dir1.AppendASCII("t1"), ".", 1));
 
   base::FilePath fake_cache_dir2(temp_dir.path().AppendASCII("2"));
   EXPECT_TRUE(PathService::Override(my_special_key + 1, fake_cache_dir2));
   EXPECT_TRUE(base::PathExists(fake_cache_dir2));
-  ASSERT_EQ(1, file_util::WriteFile(fake_cache_dir2.AppendASCII("t2"), ".", 1));
+  ASSERT_EQ(1, base::WriteFile(fake_cache_dir2.AppendASCII("t2"), ".", 1));
 
   base::FilePath result;
   EXPECT_TRUE(PathService::Get(my_special_key, &result));

@@ -328,20 +328,22 @@ BASE_EXPORT bool TruncateFile(FILE* file);
 // the number of read bytes, or -1 on error.
 BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int size);
 
+// Writes the given buffer into the file, overwriting any data that was
+// previously there.  Returns the number of bytes written, or -1 on error.
+BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
+                          int size);
+
+#if defined(OS_POSIX)
+// Append the data to |fd|. Does not close |fd| when done.
+BASE_EXPORT int WriteFileDescriptor(const int fd, const char* data, int size);
+#endif
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
 
 namespace file_util {
 
-// Writes the given buffer into the file, overwriting any data that was
-// previously there.  Returns the number of bytes written, or -1 on error.
-BASE_EXPORT int WriteFile(const base::FilePath& filename, const char* data,
-                          int size);
-#if defined(OS_POSIX)
-// Append the data to |fd|. Does not close |fd| when done.
-BASE_EXPORT int WriteFileDescriptor(const int fd, const char* data, int size);
-#endif
 // Append the given buffer into the file. Returns the number of bytes written,
 // or -1 on error.
 BASE_EXPORT int AppendToFile(const base::FilePath& filename,

@@ -31,7 +31,7 @@ std::string EncodePath(const base::FilePath& path) {
 }
 
 void TouchFile(const base::FilePath& file) {
-  ASSERT_EQ(1, file_util::WriteFile(file, " ", 1));
+  ASSERT_EQ(1, base::WriteFile(file, " ", 1));
 }
 
 class ITunesFinderWinTest : public InProcessBrowserTest {
@@ -63,8 +63,8 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
         app_data_dir().AppendASCII("Apple Computer").AppendASCII("iTunes");
     ASSERT_TRUE(base::CreateDirectory(pref_dir));
     ASSERT_EQ(data.size(),
-              file_util::WriteFile(pref_dir.AppendASCII("iTunesPrefs.xml"),
-                                   data.data(), data.size()));
+              base::WriteFile(pref_dir.AppendASCII("iTunesPrefs.xml"),
+                              data.data(), data.size()));
   }
 
   void TouchDefault() {

@@ -39,7 +39,7 @@ bool WriteFakeIndexFileV5(const base::FilePath& cache_path) {
   data.unused_must_be_zero2 = 0;
   const base::FilePath file_name = cache_path.AppendASCII("index");
   return sizeof(data) ==
-         file_util::WriteFile(
+         base::WriteFile(
              file_name, reinterpret_cast<const char*>(&data), sizeof(data));
 }
 
@@ -55,7 +55,7 @@ TEST(SimpleVersionUpgradeTest, FailsToMigrateBackwards) {
   data.unused_must_be_zero2 = 0;
   const base::FilePath file_name = cache_path.AppendASCII(kFakeIndexFileName);
   ASSERT_EQ(implicit_cast<int>(sizeof(data)),
-            file_util::WriteFile(
+            base::WriteFile(
                 file_name, reinterpret_cast<const char*>(&data), sizeof(data)));
   EXPECT_FALSE(disk_cache::UpgradeSimpleCacheOnDisk(cache_dir.path()));
 }
@@ -69,7 +69,7 @@ TEST(SimpleVersionUpgradeTest, FakeIndexVersionGetsUpdated) {
   const std::string file_contents("incorrectly serialized data");
   const base::FilePath index_file = cache_path.AppendASCII(kIndexFileName);
   ASSERT_EQ(implicit_cast<int>(file_contents.size()),
-            file_util::WriteFile(
+            base::WriteFile(
                 index_file, file_contents.data(), file_contents.size()));
 
   // Upgrade.
@@ -96,7 +96,7 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
   const std::string file_contents("incorrectly serialized data");
   const base::FilePath index_file = cache_path.AppendASCII(kIndexFileName);
   ASSERT_EQ(implicit_cast<int>(file_contents.size()),
-            file_util::WriteFile(
+            base::WriteFile(
                 index_file, file_contents.data(), file_contents.size()));
 
   // Create a few entry-like files.
@@ -109,7 +109,7 @@ TEST(SimpleVersionUpgradeTest, UpgradeV5V6IndexMustDisappear) {
           file_contents +
           base::StringPrintf(" %" PRIx64, implicit_cast<uint64>(entry_hash));
       ASSERT_EQ(implicit_cast<int>(entry_contents.size()),
-                file_util::WriteFile(cache_path.AppendASCII(file_name),
+                base::WriteFile(cache_path.AppendASCII(file_name),
                                      entry_contents.data(),
                                      entry_contents.size()));
     }

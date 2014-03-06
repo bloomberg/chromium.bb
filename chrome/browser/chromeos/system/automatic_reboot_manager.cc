@@ -117,9 +117,8 @@ void SaveUpdateRebootNeededUptime() {
 
   std::string update_reboot_needed_uptime =
       base::DoubleToString(uptime.InSecondsF());
-  file_util::WriteFileDescriptor(fd,
-                                 update_reboot_needed_uptime.c_str(),
-                                 update_reboot_needed_uptime.size());
+  base::WriteFileDescriptor(fd, update_reboot_needed_uptime.c_str(),
+                            update_reboot_needed_uptime.size());
 }
 
 }  // namespace

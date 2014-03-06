@@ -1502,8 +1502,8 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
         new ProxyConfigServiceLinux(env));
     ProxyConfig config;
     // Overwrite the kioslaverc file.
-    file_util::WriteFile(kioslaverc_, tests[i].kioslaverc.c_str(),
-                         tests[i].kioslaverc.length());
+    base::WriteFile(kioslaverc_, tests[i].kioslaverc.c_str(),
+                    tests[i].kioslaverc.length());
     sync_config_getter.SetupAndInitialFetch();
     ProxyConfigService::ConfigAvailability availability =
         sync_config_getter.SyncGetLatestProxyConfig(&config);
@@ -1526,7 +1526,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   GURL slaverc4_pac_url("http://wpad/wpad.dat");
 
   // Overwrite the .kde kioslaverc file.
-  file_util::WriteFile(kioslaverc_, slaverc3.c_str(), slaverc3.length());
+  base::WriteFile(kioslaverc_, slaverc3.c_str(), slaverc3.length());
 
   // If .kde4 exists it will mess up the first test. It should not, as
   // we created the directory for $HOME in the test setup.
@@ -1549,7 +1549,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   // Now create .kde4 and put a kioslaverc in the config directory.
   // Note that its timestamp will be at least as new as the .kde one.
   base::CreateDirectory(kde4_config_);
-  file_util::WriteFile(kioslaverc4_, slaverc4.c_str(), slaverc4.length());
+  base::WriteFile(kioslaverc4_, slaverc4.c_str(), slaverc4.length());
   CHECK(base::PathExists(kioslaverc4_));
 
   { SCOPED_TRACE("KDE4, .kde4 directory present, use it");

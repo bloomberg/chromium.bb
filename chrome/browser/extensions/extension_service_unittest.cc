@@ -2252,7 +2252,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   // Try packing with an invalid manifest.
   std::string invalid_manifest_content = "I am not a manifest.";
-  ASSERT_TRUE(file_util::WriteFile(
+  ASSERT_TRUE(base::WriteFile(
       temp_dir2.path().Append(extensions::kManifestFilename),
       invalid_manifest_content.c_str(), invalid_manifest_content.size()));
   creator.reset(new ExtensionCreator());
@@ -4456,7 +4456,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
-  EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
+  EXPECT_EQ(0, base::WriteFile(lso_file_path, NULL, 0));
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
@@ -4572,7 +4572,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
-  EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
+  EXPECT_EQ(0, base::WriteFile(lso_file_path, NULL, 0));
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by

@@ -71,7 +71,7 @@ TEST_F(OwnerKeyUtilTest, ImportPublicKey) {
   std::vector<uint8> public_key(kTestKeyData,
                                 kTestKeyData + sizeof(kTestKeyData));
   ASSERT_EQ(static_cast<int>(public_key.size()),
-            file_util::WriteFile(
+            base::WriteFile(
                 key_file_,
                 reinterpret_cast<const char*>(vector_as_array(&public_key)),
                 public_key.size()));
@@ -91,7 +91,7 @@ TEST_F(OwnerKeyUtilTest, ImportPublicKeyFailed) {
 
   // Next try empty file. This should fail and the array should be empty.
   from_disk.resize(10);
-  ASSERT_EQ(0, file_util::WriteFile(key_file_, "", 0));
+  ASSERT_EQ(0, base::WriteFile(key_file_, "", 0));
   EXPECT_TRUE(util_->IsPublicKeyPresent());
   EXPECT_FALSE(util_->ImportPublicKey(&from_disk));
   EXPECT_FALSE(from_disk.size());

@@ -137,9 +137,9 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
                                              &temp_file));
   ASSERT_EQ(static_cast<int>(file_redirect_contents.size()),
-            file_util::WriteFile(temp_file,
-                                 file_redirect_contents.data(),
-                                 file_redirect_contents.size()));
+            base::WriteFile(temp_file,
+                            file_redirect_contents.data(),
+                            file_redirect_contents.size()));
 
   // Navigate to the file through the browser. The client redirect will appear
   // as two page visits in the browser.

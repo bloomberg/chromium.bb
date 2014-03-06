@@ -290,6 +290,6 @@ void SaveTraces(const base::FilePath& file_name) {
   out << "]}";
 
   std::string out_str = out.str();
-  file_util::WriteFile(file_name, out_str.data(),
+  base::WriteFile(file_name, out_str.data(),
                        static_cast<int>(out_str.size()));
 }

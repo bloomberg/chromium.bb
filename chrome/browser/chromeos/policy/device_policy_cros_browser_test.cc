@@ -50,9 +50,9 @@ void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
   const std::string install_attrs_blob(
       install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(install_attrs_blob.size()),
-            file_util::WriteFile(install_attrs_file,
-                                 install_attrs_blob.c_str(),
-                                 install_attrs_blob.size()));
+            base::WriteFile(install_attrs_file,
+                            install_attrs_blob.c_str(),
+                            install_attrs_blob.size()));
   ASSERT_TRUE(PathService::Override(chromeos::FILE_INSTALL_ATTRIBUTES,
                                     install_attrs_file));
 }
@@ -62,8 +62,7 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
   std::vector<uint8> owner_key_bits;
   ASSERT_TRUE(
       device_policy()->GetSigningKey()->ExportPublicKey(&owner_key_bits));
-  ASSERT_EQ(
-      file_util::WriteFile(
+  ASSERT_EQ(base::WriteFile(
           owner_key_file,
           reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
           owner_key_bits.size()),

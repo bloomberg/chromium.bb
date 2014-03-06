@@ -49,7 +49,7 @@ base::Time::Exploded test_date_exploded = { 2013, 4, 0, 16, 0, 0, 0, 0 };
 
 bool WriteJPEGHeader(const base::FilePath& path) {
   const char kJpegHeader[] = "\xFF\xD8\xFF";  // Per HTML5 specification.
-  return file_util::WriteFile(path, kJpegHeader, arraysize(kJpegHeader)) != -1;
+  return base::WriteFile(path, kJpegHeader, arraysize(kJpegHeader)) != -1;
 }
 
 class TestFolder {
@@ -84,7 +84,7 @@ class TestFolder {
     for (unsigned int i = 0; i < non_image_files_; ++i) {
       base::FilePath path = folder_dir_.path().AppendASCII(
           base::StringPrintf("hello%05d.txt", i));
-      if (file_util::WriteFile(path, NULL, 0) == -1)
+      if (base::WriteFile(path, NULL, 0) == -1)
         return false;
     }
 

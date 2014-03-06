@@ -389,7 +389,7 @@ void SetupDialog::Install(const base::string16& user,
   if (contents.empty())
     return ShowError(IDS_ERROR_FAILED_CREATE_CONFIG);
 
-  size_t written = file_util::WriteFile(file, contents.c_str(),
+  size_t written = base::WriteFile(file, contents.c_str(),
                                         contents.size());
   if (written != contents.size()) {
     DWORD last_error = GetLastError();

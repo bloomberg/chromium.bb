@@ -468,7 +468,7 @@ void PRegTestHarness::SetUp() {
   base::win::SetDomainStateForTesting(false);
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   preg_file_path_ = temp_dir_.path().Append(PolicyLoaderWin::kPRegFileName);
-  ASSERT_TRUE(file_util::WriteFile(preg_file_path_,
+  ASSERT_TRUE(base::WriteFile(preg_file_path_,
                                    preg_parser::kPRegFileHeader,
                                    arraysize(preg_parser::kPRegFileHeader)));
 

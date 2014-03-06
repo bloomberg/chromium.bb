@@ -55,8 +55,8 @@ TEST(ExtensionResourceTest, ResourcesOutsideOfPath) {
   ASSERT_TRUE(base::CreateDirectory(sub_dir));
   base::FilePath inner_file = inner_dir.AppendASCII("inner");
   base::FilePath outer_file = temp.path().AppendASCII("outer");
-  ASSERT_TRUE(file_util::WriteFile(outer_file, "X", 1));
-  ASSERT_TRUE(file_util::WriteFile(inner_file, "X", 1));
+  ASSERT_TRUE(base::WriteFile(outer_file, "X", 1));
+  ASSERT_TRUE(base::WriteFile(inner_file, "X", 1));
   std::string extension_id = id_util::GenerateId("test");
 
 #if defined(OS_POSIX)
@@ -123,7 +123,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   const char* filename = "res.ico";
   base::FilePath root_resource = temp.path().AppendASCII(filename);
   std::string data = "some foo";
-  ASSERT_TRUE(file_util::WriteFile(root_resource, data.c_str(), data.length()));
+  ASSERT_TRUE(base::WriteFile(root_resource, data.c_str(), data.length()));
 
   // Create l10n resources (for current locale and its parents).
   base::FilePath l10n_path =
@@ -138,7 +138,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
     base::FilePath make_path;
     make_path = l10n_path.AppendASCII(locales[i]);
     ASSERT_TRUE(base::CreateDirectory(make_path));
-    ASSERT_TRUE(file_util::WriteFile(make_path.AppendASCII(filename),
+    ASSERT_TRUE(base::WriteFile(make_path.AppendASCII(filename),
         data.c_str(), data.length()));
   }
 

@@ -171,9 +171,9 @@ bool SaveImage(const UserImage& user_image, const base::FilePath& image_path) {
   }
 
   if (!encoded_image->size() ||
-      file_util::WriteFile(image_path,
-                           reinterpret_cast<const char*>(&(*encoded_image)[0]),
-                           encoded_image->size()) == -1) {
+      base::WriteFile(image_path,
+                      reinterpret_cast<const char*>(&(*encoded_image)[0]),
+                      encoded_image->size()) == -1) {
     LOG(ERROR) << "Failed to save image to file.";
     return false;
   }

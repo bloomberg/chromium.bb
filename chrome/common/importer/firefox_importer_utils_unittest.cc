@@ -107,9 +107,9 @@ TEST(FirefoxImporterUtilsTest, GetFirefoxImporterName) {
   const base::FilePath app_ini_file(
       temp_dir.path().AppendASCII("application.ini"));
   for (size_t i = 0; i < arraysize(GetFirefoxImporterNameCases); ++i) {
-    file_util::WriteFile(app_ini_file,
-                         GetFirefoxImporterNameCases[i].app_ini_content.c_str(),
-                         GetFirefoxImporterNameCases[i].app_ini_content.size());
+    base::WriteFile(app_ini_file,
+                    GetFirefoxImporterNameCases[i].app_ini_content.c_str(),
+                    GetFirefoxImporterNameCases[i].app_ini_content.size());
     EXPECT_EQ(GetFirefoxImporterName(temp_dir.path()),
         l10n_util::GetStringUTF16(GetFirefoxImporterNameCases[i].resource_id));
   }

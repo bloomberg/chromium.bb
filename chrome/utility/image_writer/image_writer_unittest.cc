@@ -38,7 +38,7 @@ class ImageWriterUtilityTest : public testing::Test {
     scoped_ptr<char[]> buffer(new char[kTestFileSize]);
     memset(buffer.get(), pattern, kTestFileSize);
 
-    ASSERT_TRUE(file_util::WriteFile(path, buffer.get(), kTestFileSize));
+    ASSERT_TRUE(base::WriteFile(path, buffer.get(), kTestFileSize));
   }
 
   void FillDefault(const base::FilePath& path) { FillFile(path, kTestPattern); }

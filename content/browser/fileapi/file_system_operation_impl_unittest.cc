@@ -717,7 +717,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
   base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
   int data_size = ARRAYSIZE_UNSAFE(test_data);
-  file_util::WriteFile(src_local_disk_file_path, test_data, data_size);
+  base::WriteFile(src_local_disk_file_path, test_data, data_size);
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
@@ -749,7 +749,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileFailureByQuota) {
   base::FilePath src_local_disk_file_path;
   base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
-  file_util::WriteFile(src_local_disk_file_path, test_data,
+  base::WriteFile(src_local_disk_file_path, test_data,
                        ARRAYSIZE_UNSAFE(test_data));
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -1037,7 +1037,7 @@ TEST_F(FileSystemOperationImplTest, TestTruncate) {
   char test_data[] = "test data";
   int data_size = static_cast<int>(sizeof(test_data));
   EXPECT_EQ(data_size,
-            file_util::WriteFile(platform_path, test_data, data_size));
+            base::WriteFile(platform_path, test_data, data_size));
 
   // Check that its length is the size of the data written.
   operation_runner()->GetMetadata(file, RecordMetadataCallback());

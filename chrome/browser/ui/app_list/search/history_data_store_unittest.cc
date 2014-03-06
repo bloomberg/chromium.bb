@@ -72,7 +72,7 @@ class HistoryDataStoreTest : public testing::Test {
 
   void WriteDataFile(const std::string& file_name,
                      const std::string& data) {
-    file_util::WriteFile(
+    base::WriteFile(
         temp_dir_.path().AppendASCII(file_name), data.c_str(), data.size());
   }
 

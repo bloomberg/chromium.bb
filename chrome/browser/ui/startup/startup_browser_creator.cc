@@ -240,8 +240,8 @@ void DumpBrowserHistograms(const base::FilePath& output_file) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string output_string(base::StatisticsRecorder::ToJSON(std::string()));
-  file_util::WriteFile(output_file, output_string.data(),
-                       static_cast<int>(output_string.size()));
+  base::WriteFile(output_file, output_string.data(),
+                  static_cast<int>(output_string.size()));
 }
 
 }  // namespace

@@ -108,9 +108,9 @@ bool CreateSiteSpecificLogo(const SkBitmap& bitmap,
     return false;
 
   *logo_path = logo_dir.Append(tile_id).ReplaceExtension(L".png");
-  return file_util::WriteFile(*logo_path,
-                              reinterpret_cast<char*>(&logo_png[0]),
-                              logo_png.size()) > 0;
+  return base::WriteFile(*logo_path,
+                         reinterpret_cast<char*>(&logo_png[0]),
+                         logo_png.size()) > 0;
 }
 
 // Get the path to the backup logo. If the backup logo already exists in

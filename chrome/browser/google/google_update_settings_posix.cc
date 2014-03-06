@@ -48,7 +48,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
          !google_update::posix_guid().empty())) {
       const char* c_str = google_update::posix_guid().c_str();
       int size = google_update::posix_guid().size();
-      return file_util::WriteFile(consent_file, c_str, size) == size;
+      return base::WriteFile(consent_file, c_str, size) == size;
     }
   } else {
     google_update::posix_guid().clear();

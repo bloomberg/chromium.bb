@@ -103,9 +103,9 @@ std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
                    << width << ".";
       continue;
     }
-    int bytes_written = file_util::WriteFile(temp_file_path,
-                                             png_data->front_as<char>(),
-                                             png_data->size());
+    int bytes_written = base::WriteFile(temp_file_path,
+                                        png_data->front_as<char>(),
+                                        png_data->size());
 
     if (bytes_written != static_cast<int>(png_data->size()))
       return std::string();
@@ -155,8 +155,8 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
     return false;
   }
 
-  ssize_t bytes_written = file_util::WriteFileDescriptor(fd, contents.data(),
-                                                         contents.length());
+  ssize_t bytes_written = base::WriteFileDescriptor(fd, contents.data(),
+                                                    contents.length());
   if (IGNORE_EINTR(close(fd)) < 0)
     PLOG(ERROR) << "close";
 
@@ -196,9 +196,9 @@ bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
   if (!directory_filename.empty()) {
     temp_directory_path = temp_dir.path().Append(directory_filename);
 
-    int bytes_written = file_util::WriteFile(temp_directory_path,
-                                             directory_contents.data(),
-                                             directory_contents.length());
+    int bytes_written = base::WriteFile(temp_directory_path,
+                                        directory_contents.data(),
+                                        directory_contents.length());
 
     if (bytes_written != static_cast<int>(directory_contents.length()))
       return false;
@@ -206,8 +206,8 @@ bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
 
   base::FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
 
-  int bytes_written = file_util::WriteFile(temp_file_path, contents.data(),
-                                           contents.length());
+  int bytes_written = base::WriteFile(temp_file_path, contents.data(),
+                                      contents.length());
 
   if (bytes_written != static_cast<int>(contents.length()))
     return false;

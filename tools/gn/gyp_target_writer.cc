@@ -102,7 +102,7 @@ void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
   file << "  ],\n}\n";
 
   std::string contents = file.str();
-  file_util::WriteFile(gyp_file_path, contents.c_str(),
+  base::WriteFile(gyp_file_path, contents.c_str(),
                        static_cast<int>(contents.size()));
 }
 

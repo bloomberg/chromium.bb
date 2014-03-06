@@ -30,7 +30,7 @@ class UploadFileElementReaderTest : public PlatformTest {
                                                &temp_file_path_));
     ASSERT_EQ(
         static_cast<int>(bytes_.size()),
-        file_util::WriteFile(temp_file_path_, &bytes_[0], bytes_.size()));
+        base::WriteFile(temp_file_path_, &bytes_[0], bytes_.size()));
 
     reader_.reset(
         new UploadFileElementReader(base::MessageLoopProxy::current().get(),

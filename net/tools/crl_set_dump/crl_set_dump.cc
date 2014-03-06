@@ -62,8 +62,7 @@ int main(int argc, char** argv) {
 
   if (!output_filename.empty()) {
     const std::string out = final_crl_set->Serialize();
-    if (file_util::WriteFile(output_filename, out.data(),
-                               out.size()) == -1) {
+    if (base::WriteFile(output_filename, out.data(), out.size()) == -1) {
       fprintf(stderr, "Failed to write resulting CRL set\n");
       return 1;
     }

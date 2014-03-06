@@ -108,7 +108,7 @@ bool WriteEULAtoTempFile(base::FilePath* eula_path) {
   std::string terms = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
   return (!terms.empty() &&
           base::CreateTemporaryFile(eula_path) &&
-          file_util::WriteFile(*eula_path, terms.data(), terms.size()) != -1);
+          base::WriteFile(*eula_path, terms.data(), terms.size()) != -1);
 }
 
 // Creates the sentinel indicating that the EULA was required and has been
@@ -119,7 +119,7 @@ bool CreateEULASentinel() {
     return false;
 
   return (base::CreateDirectory(eula_sentinel.DirName()) &&
-          file_util::WriteFile(eula_sentinel, "", 0) != -1);
+          base::WriteFile(eula_sentinel, "", 0) != -1);
 }
 
 }  // namespace

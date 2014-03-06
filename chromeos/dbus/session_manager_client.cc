@@ -611,7 +611,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                                     const std::string& data) {
     const int size = static_cast<int>(data.size());
     if (!base::CreateDirectory(path.DirName()) ||
-        file_util::WriteFile(path, data.data(), size) != size) {
+        base::WriteFile(path, data.data(), size) != size) {
       LOG(WARNING) << "Failed to write policy key to " << path.value();
     }
   }

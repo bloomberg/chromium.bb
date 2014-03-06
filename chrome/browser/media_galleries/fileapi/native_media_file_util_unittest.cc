@@ -102,7 +102,7 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
     } else {
       ASSERT_TRUE(test_cases[i].content != NULL);
       int len = strlen(test_cases[i].content);
-      ASSERT_EQ(len, file_util::WriteFile(path, test_cases[i].content, len));
+      ASSERT_EQ(len, base::WriteFile(path, test_cases[i].content, len));
     }
   }
 }
@@ -330,7 +330,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
     base::FilePath src_path = root_path().AppendASCII("foo.jpg");
     FileSystemURL src_url = CreateURL(FPL("foo.jpg"));
     static const char kDummyData[] = "dummy";
-    ASSERT_TRUE(file_util::WriteFile(src_path, kDummyData, strlen(kDummyData)));
+    ASSERT_TRUE(base::WriteFile(src_path, kDummyData, strlen(kDummyData)));
 
     for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
       if (loop_count == 0 && kFilteringTestCases[i].is_directory) {
@@ -441,7 +441,7 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
       FileSystemURL src_url = CreateURL(FPL("foo.jpg"));
       static const char kDummyData[] = "dummy";
       ASSERT_TRUE(
-          file_util::WriteFile(src_path, kDummyData, strlen(kDummyData)));
+          base::WriteFile(src_path, kDummyData, strlen(kDummyData)));
 
       FileSystemURL root_url = CreateURL(FPL(""));
       FileSystemURL url = CreateURL(kFilteringTestCases[i].path);

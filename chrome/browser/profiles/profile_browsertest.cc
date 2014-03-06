@@ -38,7 +38,7 @@ void CreatePrefsFileInDirectory(const base::FilePath& directory_path) {
   ASSERT_TRUE(file != base::kInvalidPlatformFileValue);
   ASSERT_TRUE(base::ClosePlatformFile(file));
   std::string data("{}");
-  ASSERT_TRUE(file_util::WriteFile(pref_path, data.c_str(), data.size()));
+  ASSERT_TRUE(base::WriteFile(pref_path, data.c_str(), data.size()));
 }
 
 void CheckChromeVersion(Profile *profile, bool is_new) {

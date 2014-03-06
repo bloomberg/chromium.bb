@@ -543,9 +543,9 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
     if (!resource_loader.Load(&kSetupEx_[0], &kBl[0], &resource_data))
       return false;
     int written =
-        file_util::WriteFile(setup_ex_,
-                             reinterpret_cast<const char*>(resource_data.first),
-                             static_cast<int>(resource_data.second));
+        base::WriteFile(setup_ex_,
+                        reinterpret_cast<const char*>(resource_data.first),
+                        static_cast<int>(resource_data.second));
     if (written != resource_data.second) {
       LOG(DFATAL) << "Failed writing \"" << setup_ex_.value() << "\"";
       return false;
@@ -555,9 +555,9 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
     if (!resource_loader.Load(&kChromePacked7z[0], &kB7[0], &resource_data))
       return false;
     written =
-        file_util::WriteFile(chrome_packed_7z,
-                             reinterpret_cast<const char*>(resource_data.first),
-                             static_cast<int>(resource_data.second));
+        base::WriteFile(chrome_packed_7z,
+                        reinterpret_cast<const char*>(resource_data.first),
+                        static_cast<int>(resource_data.second));
     if (written != resource_data.second) {
       LOG(DFATAL) << "Failed writing \"" << chrome_packed_7z.value() << "\"";
       return false;

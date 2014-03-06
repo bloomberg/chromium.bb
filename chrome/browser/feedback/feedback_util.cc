@@ -254,8 +254,8 @@ bool ZipString(const base::FilePath& filename,
   // another temporary file to receive the zip file in.
   if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &temp_path))
     return false;
-  if (file_util::WriteFile(temp_path.Append(filename),
-                           data.c_str(), data.size()) == -1)
+  if (base::WriteFile(temp_path.Append(filename), data.c_str(), data.size()) ==
+      -1)
     return false;
 
   bool succeed = base::CreateTemporaryFile(&zip_file) &&

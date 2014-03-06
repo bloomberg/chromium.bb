@@ -32,7 +32,7 @@ void DestroyPartitionsOperation::StartImpl() {
   scoped_ptr<char[]> buffer(new char[kPartitionTableSize]);
   memset(buffer.get(), 0, kPartitionTableSize);
 
-  if (file_util::WriteFile(image_path_, buffer.get(), kPartitionTableSize) !=
+  if (base::WriteFile(image_path_, buffer.get(), kPartitionTableSize) !=
       kPartitionTableSize) {
     Error(error::kTempFileError);
     return;
