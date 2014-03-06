@@ -92,6 +92,7 @@ class ServicesCustomizationExternalLoader
   // Used by the ServicesCustomizationDocument to update the current apps.
   void SetCurrentApps(scoped_ptr<base::DictionaryValue> prefs) {
     apps_.Swap(prefs.get());
+    is_apps_set_ = true;
     StartLoading();
   }
 
