@@ -1182,6 +1182,7 @@ _PEPPER_INTERFACES = [
   {'name': 'ChromiumEnableFeature', 'dev': False},
   {'name': 'ChromiumMapSub', 'dev': False},
   {'name': 'Query', 'dev': False},
+  {'name': 'DrawBuffers', 'dev': True},
 ]
 
 # This table specifies types and other special data for the commands that
@@ -2289,6 +2290,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'unit_test': False,
     'extension': True,
+    'pepper_interface': 'DrawBuffers',
   },
   'DrawElementsInstancedANGLE': {
     'type': 'Manual',

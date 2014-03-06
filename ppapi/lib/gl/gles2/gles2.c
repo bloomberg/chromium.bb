@@ -1055,3 +1055,10 @@ void GL_APIENTRY glVertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   if (ext)
     ext->VertexAttribDivisorANGLE(glGetCurrentContextPPAPI(), index, divisor);
 }
+void GL_APIENTRY glDrawBuffersEXT(GLsizei count, const GLenum* bufs) {
+  const struct PPB_OpenGLES2DrawBuffers_Dev* ext =
+      glGetDrawBuffersInterfacePPAPI();
+  if (ext)
+    ext->DrawBuffersEXT(glGetCurrentContextPPAPI(), count, bufs);
+}
+

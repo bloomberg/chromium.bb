@@ -1566,6 +1566,13 @@ void VertexAttribDivisorANGLE(PP_Resource context_id,
   }
 }
 
+void DrawBuffersEXT(PP_Resource context_id, GLsizei count, const GLenum* bufs) {
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DrawBuffersEXT(count, bufs);
+  }
+}
+
 }  // namespace
 const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
   static const struct PPB_OpenGLES2 ppb_opengles2 = {
@@ -1678,6 +1685,12 @@ const PPB_OpenGLES2Query* PPB_OpenGLES2_Shared::GetQueryInterface() {
   static const struct PPB_OpenGLES2Query ppb_opengles2 = {
       &GenQueriesEXT, &DeleteQueriesEXT, &IsQueryEXT,          &BeginQueryEXT,
       &EndQueryEXT,   &GetQueryivEXT,    &GetQueryObjectuivEXT};
+  return &ppb_opengles2;
+}
+const PPB_OpenGLES2DrawBuffers_Dev*
+PPB_OpenGLES2_Shared::GetDrawBuffersInterface() {  // NOLINT
+  static const struct PPB_OpenGLES2DrawBuffers_Dev ppb_opengles2 = {
+      &DrawBuffersEXT};
   return &ppb_opengles2;
 }
 }  // namespace ppapi

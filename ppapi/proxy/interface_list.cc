@@ -239,8 +239,12 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetChromiumMapSubInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_QUERY_INTERFACE_1_0,
          PPB_OpenGLES2_Shared::GetQueryInterface(), PERMISSION_NONE);
+  AddPPB(PPB_OPENGLES2_DRAWBUFFERS_DEV_INTERFACE_1_0,
+         PPB_OpenGLES2_Shared::GetDrawBuffersInterface(),
+         PERMISSION_DEV);
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0,
-         PPB_Var_Shared::GetVarArrayBufferInterface1_0(), PERMISSION_NONE);
+         PPB_Var_Shared::GetVarArrayBufferInterface1_0(),
+         PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_2,
          PPB_Var_Shared::GetVarInterface1_2(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_1,

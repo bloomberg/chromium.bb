@@ -15,4 +15,15 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_opengles2.h"
 
+#define PPB_OPENGLES2_DRAWBUFFERS_DEV_INTERFACE_1_0 \
+  "PPB_OpenGLES2DrawBuffers(Dev);1.0"
+#define PPB_OPENGLES2_DRAWBUFFERS_DEV_INTERFACE \
+  PPB_OPENGLES2_DRAWBUFFERS_DEV_INTERFACE_1_0  // NOLINT
+
+struct PPB_OpenGLES2DrawBuffers_Dev {
+  void (*DrawBuffersEXT)(PP_Resource context,
+                         GLsizei count,
+                         const GLenum* bufs);
+};
+
 #endif  // PPAPI_C_DEV_PPB_OPENGLES2EXT_DEV_H_

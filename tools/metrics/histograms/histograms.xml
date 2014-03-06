@@ -32085,6 +32085,7 @@ other types of suffix sets.
   <int value="910782902" label="PPB_AudioFrame;0.1"/>
   <int value="913922409" label="PPB_NetworkProxy;1.0"/>
   <int value="916446405" label="PPB_URLUtil(Dev);0.6"/>
+  <int value="930528031" label="PPB_OpenGLES2DrawBuffers(Dev);1.0"/>
   <int value="930786862" label="PPB_Flash_Clipboard;5.0"/>
   <int value="941275733" label="PPB_Flash;12.6"/>
   <int value="944161065" label="PPB_Flash_DRM;1.1"/>
