@@ -25,13 +25,13 @@ class WebView;
 }
 
 namespace content {
+class AccessibilityController;
 class GamepadController;
 class TextInputController;
 }
 
 namespace WebTestRunner {
 
-class AccessibilityController;
 class EventSender;
 class TestRunner;
 class WebTestDelegate;
@@ -53,7 +53,7 @@ public:
     void windowOpened(WebTestProxyBase*);
     void windowClosed(WebTestProxyBase*);
 
-    AccessibilityController* accessibilityController();
+    content::AccessibilityController* accessibilityController();
     EventSender* eventSender();
     TestRunner* testRunner();
     WebTestDelegate* delegate();
@@ -62,7 +62,7 @@ public:
     blink::WebThemeEngine* themeEngine();
 
 private:
-    scoped_ptr<AccessibilityController> m_accessibilityController;
+    scoped_ptr<content::AccessibilityController> m_accessibilityController;
     scoped_ptr<EventSender> m_eventSender;
     scoped_ptr<content::GamepadController> m_gamepadController;
     scoped_ptr<content::TextInputController> m_textInputController;
