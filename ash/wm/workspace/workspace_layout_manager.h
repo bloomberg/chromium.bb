@@ -103,18 +103,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   // has changed.
   void UpdateFullscreenState();
 
-  // Updates the bounds of the window for a stte type change from
-  // |old_show_type|.
-  void UpdateBoundsFromStateType(wm::WindowState* window_state,
-                                 wm::WindowStateType old_state_type);
-
-  // If |window_state| is maximized or fullscreen the bounds of the
-  // window are set and true is returned. Does nothing otherwise.
-  bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
-
-  // Animates the window bounds to |bounds|.
-  void SetChildBoundsAnimated(aura::Window* child, const gfx::Rect& bounds);
-
   internal::ShelfLayoutManager* shelf_;
   aura::Window* window_;
   aura::Window* root_window_;

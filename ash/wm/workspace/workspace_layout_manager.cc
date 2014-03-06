@@ -50,8 +50,12 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   if (root_window_)
     root_window_->RemoveObserver(this);
-  for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
+  for (WindowSet::const_iterator i = windows_.begin();
+       i != windows_.end();
+       ++i) {
     (*i)->RemoveObserver(this);
+    wm::GetWindowState(*i)->RemoveObserver(this);
+  }
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
