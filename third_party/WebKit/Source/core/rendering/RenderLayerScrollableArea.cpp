@@ -601,6 +601,9 @@ void RenderLayerScrollableArea::updateAfterLayout()
         if (m_box->hasAutoVerticalScrollbar())
             setHasVerticalScrollbar(hasVerticalOverflow);
 
+        if (hasVerticalOverflow || hasHorizontalOverflow)
+            updateScrollCornerStyle();
+
         layer()->updateSelfPaintingLayer();
 
         // Force an update since we know the scrollbars have changed things.
@@ -958,6 +961,11 @@ bool RenderLayerScrollableArea::scrollsOverflow() const
 
 void RenderLayerScrollableArea::updateScrollCornerStyle()
 {
+    if (!m_scrollCorner && !hasScrollbar())
+        return;
+    if (!m_scrollCorner && hasOverlayScrollbars())
+        return;
+
     RenderObject* actualRenderer = rendererForScrollbar(m_box);
     RefPtr<RenderStyle> corner = m_box->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(nullptr);
     if (corner) {
