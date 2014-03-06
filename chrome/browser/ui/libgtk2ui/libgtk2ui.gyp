@@ -17,6 +17,7 @@
         '../../../../build/linux/system.gyp:gconf',
         '../../../../build/linux/system.gyp:gtk',
         '../../../../build/linux/system.gyp:gtkprint',
+        '../../../../printing/printing.gyp:cups',
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/base/strings/ui_strings.gyp:ui_strings',
         '../../../../ui/resources/ui_resources.gyp:ui_resources',
@@ -29,7 +30,6 @@
       ],
       'defines': [
         'LIBGTK2UI_IMPLEMENTATION',
-        'USE_CUPS',
       ],
       # Several of our source files are named _gtk2.cc. This isn't to
       # differentiate them from their source files (ninja and make are sane
