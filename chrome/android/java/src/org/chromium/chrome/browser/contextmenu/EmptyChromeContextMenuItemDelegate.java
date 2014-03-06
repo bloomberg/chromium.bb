@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
+import org.chromium.content_public.Referrer;
+
 /**
  * An empty implementation of {@link ChromeContextMenuItemDelegate} to make overriding subsets of
  * the delegate methods easier.
@@ -30,7 +32,7 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
-    public void onOpenInNewTab(String url) {
+    public void onOpenInNewTab(String url, Referrer referrer) {
     }
 
     @Override
@@ -38,11 +40,11 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
-    public void onOpenImageUrl(String url) {
+    public void onOpenImageUrl(String url, Referrer referrer) {
     }
 
     @Override
-    public void onOpenImageInNewTab(String url) {
+    public void onOpenImageInNewTab(String url, Referrer referrer) {
     }
 
     @Override

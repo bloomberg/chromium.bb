@@ -34,6 +34,16 @@ public final class TestHttpServerClient {
     }
 
     /**
+     * Construct a URL for loading a test data file with HTTP authentication fields.
+     *
+     * @param path path relative to the document root.
+     * @return an HTTP url.
+     */
+    public static String getUrl(String path, String username, String password) {
+        return "http://" + username + ":" + password + "@localhost:" + SERVER_PORT + "/" + path;
+    }
+
+    /**
      * Establishes a connection with the test server at default URL and verifies that it is running.
      */
     public static void checkServerIsUp() {

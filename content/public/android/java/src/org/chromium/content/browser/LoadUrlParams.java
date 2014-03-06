@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content_public.Referrer;
 
 import java.util.Locale;
 import java.util.Map;
@@ -37,9 +38,10 @@ public class LoadUrlParams {
     String mUrl;
     int mLoadUrlType;
     int mTransitionType;
-    int mUaOverrideOption;
+    Referrer mReferrer;
     private Map<String, String> mExtraHeaders;
     private String mVerbatimHeaders;
+    int mUaOverrideOption;
     byte[] mPostData;
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
@@ -222,11 +224,17 @@ public class LoadUrlParams {
     }
 
     /**
-     * Set user agent override option of this load. Defaults to UA_OVERRIDE_INHERIT.
-     * @param uaOption One of UA_OVERRIDE static constants above.
+     * @return the referrer of this load
      */
-    public void setOverrideUserAgent(int uaOption) {
-        mUaOverrideOption = uaOption;
+    public void setReferrer(Referrer referrer) {
+        mReferrer = referrer;
+    }
+
+    /**
+     * Sets the referrer of this load.
+     */
+    public Referrer getReferrer() {
+        return mReferrer;
     }
 
     /**
@@ -289,6 +297,14 @@ public class LoadUrlParams {
      */
     public String getVerbatimHeaders() {
         return mVerbatimHeaders;
+    }
+
+    /**
+     * Set user agent override option of this load. Defaults to UA_OVERRIDE_INHERIT.
+     * @param uaOption One of UA_OVERRIDE static constants above.
+     */
+    public void setOverrideUserAgent(int uaOption) {
+        mUaOverrideOption = uaOption;
     }
 
     /**

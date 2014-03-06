@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.content_public.Referrer;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -102,7 +103,7 @@ public class TestShellTab extends Tab {
     protected ContextMenuPopulator createContextMenuPopulator() {
         return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate() {
             @Override
-            public void onOpenImageUrl(String url) {
+            public void onOpenImageUrl(String url, Referrer referrer) {
                 loadUrlWithSanitization(url);
             }
         });

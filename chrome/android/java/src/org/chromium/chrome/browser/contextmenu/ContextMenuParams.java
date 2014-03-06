@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content_public.Referrer;
 
 import java.util.ArrayList;
 
@@ -43,6 +44,7 @@ public class ContextMenuParams {
     private final String mUnfilteredLinkUrl;
     private final String mSrcUrl;
     private final boolean mIsEditable;
+    private final Referrer mReferrer;
 
     private final boolean mIsAnchor;
     private final boolean mIsSelectedText;
@@ -121,6 +123,13 @@ public class ContextMenuParams {
     }
 
     /**
+     * @return the referrer associated with the frame on which the menu is invoked
+     */
+    public Referrer getReferrer() {
+        return mReferrer;
+    }
+
+    /**
      * @return Whether or not the context menu is being shown for an anchor.
      */
     public boolean isAnchor() {
@@ -149,12 +158,14 @@ public class ContextMenuParams {
     }
 
     private ContextMenuParams(int mediaType, String linkUrl, String linkText,
-            String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable) {
+            String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable,
+            Referrer referrer) {
         mLinkUrl = linkUrl;
         mLinkText = linkText;
         mUnfilteredLinkUrl = unfilteredLinkUrl;
         mSrcUrl = srcUrl;
         mIsEditable = isEditable;
+        mReferrer = referrer;
 
         mIsAnchor = !TextUtils.isEmpty(linkUrl);
         mIsSelectedText = !TextUtils.isEmpty(selectionText);
@@ -164,9 +175,12 @@ public class ContextMenuParams {
 
     @CalledByNative
     private static ContextMenuParams create(int mediaType, String linkUrl, String linkText,
-            String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable) {
+            String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable,
+            String sanitizedReferrer, int referrerPolicy) {
+        Referrer referrer = TextUtils.isEmpty(sanitizedReferrer) ?
+                null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, linkUrl, linkText, unfilteredLinkUrl, srcUrl,
-                selectionText, isEditable);
+                selectionText, isEditable, referrer);
     }
 
     @CalledByNative
