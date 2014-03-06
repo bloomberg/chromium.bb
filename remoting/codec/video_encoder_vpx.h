@@ -22,6 +22,7 @@ class VideoEncoderVpx : public VideoEncoder {
  public:
   // Create encoder for the specified protocol.
   static scoped_ptr<VideoEncoderVpx> CreateForVP8();
+  static scoped_ptr<VideoEncoderVpx> CreateForVP9();
 
   virtual ~VideoEncoderVpx();
 
