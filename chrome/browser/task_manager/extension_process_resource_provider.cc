@@ -53,15 +53,16 @@ class ExtensionProcessResource : public Resource {
   virtual void Inspect() const OVERRIDE;
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
   // Returns the pid of the extension process.
   int process_id() const { return pid_; }
 
-  // Returns true if the associated extension has a background page.
-  virtual bool IsBackground() const OVERRIDE;
-
  private:
+  const extensions::Extension* GetExtension() const;
+
+  // Returns true if the associated extension has a background page.
+  bool IsBackground() const;
+
   // The icon painted for the extension process.
   static gfx::ImageSkia* default_icon_;
 

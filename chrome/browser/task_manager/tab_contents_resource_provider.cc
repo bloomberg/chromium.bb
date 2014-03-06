@@ -79,7 +79,6 @@ class TabContentsResource : public RendererResource {
   virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
   // Returns true if contains content rendered by an extension.
@@ -153,16 +152,6 @@ gfx::ImageSkia TabContentsResource::GetIcon() const {
 
 WebContents* TabContentsResource::GetWebContents() const {
   return web_contents_;
-}
-
-const Extension* TabContentsResource::GetExtension() const {
-  if (HostsExtension()) {
-    ExtensionService* extension_service = profile_->GetExtensionService();
-    return extension_service->extensions()->GetByID(
-        web_contents_->GetURL().host());
-  }
-
-  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

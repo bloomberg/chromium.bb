@@ -159,10 +159,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   int GetIdleWakeupsPerSecond(int index) const;
   base::ProcessId GetProcessId(int index) const;
   base::ProcessHandle GetProcess(int index) const;
-  int GetResourceUniqueId(int index) const;
-  // Returns the index of resource that has the given |unique_id|. Returns -1 if
-  // no resouce has the |unique_id|.
-  int GetResourceIndexByUniqueId(const int unique_id) const;
 
   // Catchall method that calls off to the appropriate GetResourceXXX method
   // based on |col_id|. |col_id| is an IDS_ value used to identify the column.
@@ -254,10 +250,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   bool IsResourceFirstInGroup(int index) const;
   bool IsResourceLastInGroup(int index) const;
 
-  // Returns true if the resource runs in the background (not visible to the
-  // user, e.g. extension background pages and BackgroundContents).
-  bool IsBackgroundResource(int index) const;
-
   // Returns icon to be used for resource (for example a favicon).
   gfx::ImageSkia GetResourceIcon(int index) const;
 
@@ -286,9 +278,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Returns WebContents of given resource or NULL if not applicable.
   content::WebContents* GetResourceWebContents(int index) const;
-
-  // Returns Extension of given resource or NULL if not applicable.
-  const extensions::Extension* GetResourceExtension(int index) const;
 
   void AddResource(task_manager::Resource* resource);
   void RemoveResource(task_manager::Resource* resource);
@@ -565,9 +554,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // A salt lick for the goats.
   uint64 goat_salt_;
-
-  // Resource identifier that is unique within single session.
-  int last_unique_id_;
 
   // Buffer for coalescing BytesReadParam so we don't have to post a task on
   // each NotifyBytesRead() call.

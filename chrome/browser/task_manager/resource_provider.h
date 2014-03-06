@@ -73,9 +73,6 @@ class Resource {
   virtual bool ReportsSqliteMemoryUsed() const;
   virtual size_t SqliteMemoryUsedBytes() const;
 
-  // Return extension associated with the resource, or NULL if not applicable.
-  virtual const extensions::Extension* GetExtension() const;
-
   virtual bool ReportsV8MemoryStats() const;
   virtual size_t GetV8MemoryAllocated() const;
   virtual size_t GetV8MemoryUsed() const;
@@ -114,10 +111,6 @@ class Resource {
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                  size_t v8_memory_used) {}
 
-  // Returns true if this resource is not visible to the user because it lives
-  // in the background (e.g. extension background page, background contents).
-  virtual bool IsBackground() const;
-
   static const char* GetResourceTypeAsString(const Type type) {
     switch (type) {
       TASKMANAGER_RESOURCE_TYPE_LIST(TASKMANAGER_RESOURCE_TYPE_LIST_AS_STRING)
@@ -125,17 +118,10 @@ class Resource {
     }
   }
 
-  // Returns resource identifier that is unique within single task manager
-  // session (between StartUpdating and StopUpdating).
-  int get_unique_id() { return unique_id_; }
-
  protected:
-  Resource() : unique_id_(0) {}
+  Resource() {}
 
  private:
-  friend class ::TaskManagerModel;
-  int unique_id_;
-
   DISALLOW_COPY_AND_ASSIGN(Resource);
 };
 

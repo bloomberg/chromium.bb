@@ -44,10 +44,6 @@ size_t Resource::SqliteMemoryUsedBytes() const {
   return 0;
 }
 
-const extensions::Extension* Resource::GetExtension() const {
-  return NULL;
-}
-
 bool Resource::ReportsV8MemoryStats() const {
   return false;
 }
@@ -70,10 +66,6 @@ bool Resource::CanInspect() const {
 
 content::WebContents* Resource::GetWebContents() const {
   return NULL;
-}
-
-bool Resource::IsBackground() const {
-  return false;
 }
 
 }  // namespace task_manager

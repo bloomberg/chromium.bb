@@ -48,7 +48,6 @@ class BackgroundContentsResource : public RendererResource {
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual bool IsBackground() const OVERRIDE;
 
   const base::string16& application_name() const { return application_name_; }
  private:
@@ -113,10 +112,6 @@ base::string16 BackgroundContentsResource::GetProfileName() const {
 
 gfx::ImageSkia BackgroundContentsResource::GetIcon() const {
   return *default_icon_;
-}
-
-bool BackgroundContentsResource::IsBackground() const {
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

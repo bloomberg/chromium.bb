@@ -41,7 +41,6 @@ class PanelResource : public RendererResource {
   virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
   Panel* panel_;
@@ -57,11 +56,12 @@ PanelResource::PanelResource(Panel* panel)
         panel->GetWebContents()->GetRenderProcessHost()->GetHandle(),
         panel->GetWebContents()->GetRenderViewHost()),
       panel_(panel) {
+  ExtensionService* service = panel_->profile()->GetExtensionService();
   message_prefix_id_ = util::GetMessagePrefixID(
-      GetExtension()->is_app(),
+      service->extensions()->GetByID(panel_->extension_id())->is_app(),
       true,  // is_extension
-      panel->profile()->IsOffTheRecord(),
-      false,  // is_prerender
+      panel_->profile()->IsOffTheRecord(),
+      false,   // is_prerender
       false);  // is_background
 }
 
@@ -98,12 +98,6 @@ gfx::ImageSkia PanelResource::GetIcon() const {
 
 WebContents* PanelResource::GetWebContents() const {
   return panel_->GetWebContents();
-}
-
-const Extension* PanelResource::GetExtension() const {
-  ExtensionService* extension_service =
-      panel_->profile()->GetExtensionService();
-  return extension_service->extensions()->GetByID(panel_->extension_id());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

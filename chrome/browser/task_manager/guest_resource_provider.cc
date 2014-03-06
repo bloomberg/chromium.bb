@@ -43,7 +43,6 @@ class GuestResource : public RendererResource {
   virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestResource);
@@ -93,10 +92,6 @@ gfx::ImageSkia GuestResource::GetIcon() const {
 
 WebContents* GuestResource::GetWebContents() const {
   return WebContents::FromRenderViewHost(render_view_host());
-}
-
-const Extension* GuestResource::GetExtension() const {
-  return NULL;
 }
 
 GuestResourceProvider::GuestResourceProvider(TaskManager* task_manager)

@@ -243,8 +243,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       update_requests_(0),
       listen_requests_(0),
       update_state_(IDLE),
-      goat_salt_(base::RandUint64()),
-      last_unique_id_(0) {
+      goat_salt_(base::RandUint64()) {
   AddResourceProvider(
       new task_manager::BrowserProcessResourceProvider(task_manager));
   AddResourceProvider(
@@ -316,19 +315,6 @@ base::ProcessId TaskManagerModel::GetProcessId(int index) const {
 
 base::ProcessHandle TaskManagerModel::GetProcess(int index) const {
   return GetResource(index)->GetProcess();
-}
-
-int TaskManagerModel::GetResourceUniqueId(int index) const {
-  return GetResource(index)->get_unique_id();
-}
-
-int TaskManagerModel::GetResourceIndexByUniqueId(const int unique_id) const {
-  for (int resource_index = 0; resource_index < ResourceCount();
-       ++resource_index) {
-    if (GetResourceUniqueId(resource_index) == unique_id)
-      return resource_index;
-  }
-  return -1;
 }
 
 base::string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
@@ -766,10 +752,6 @@ bool TaskManagerModel::IsResourceLastInGroup(int index) const {
   return (group->back() == resource);
 }
 
-bool TaskManagerModel::IsBackgroundResource(int index) const {
-  return GetResource(index)->IsBackground();
-}
-
 gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
   gfx::ImageSkia icon = GetResource(index)->GetIcon();
   if (!icon.isNull())
@@ -978,14 +960,7 @@ WebContents* TaskManagerModel::GetResourceWebContents(int index) const {
   return GetResource(index)->GetWebContents();
 }
 
-const extensions::Extension* TaskManagerModel::GetResourceExtension(
-    int index) const {
-  return GetResource(index)->GetExtension();
-}
-
 void TaskManagerModel::AddResource(Resource* resource) {
-  resource->unique_id_ = ++last_unique_id_;
-
   base::ProcessHandle process = resource->GetProcess();
 
   ResourceList* group_entries = NULL;
@@ -1179,7 +1154,6 @@ void TaskManagerModel::Clear() {
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnItemsRemoved(0, size));
   }
-  last_unique_id_ = 0;
 }
 
 void TaskManagerModel::ModelChanged() {
