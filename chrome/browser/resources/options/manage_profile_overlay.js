@@ -485,7 +485,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-manage').hidden = true;
       $('manage-profile-overlay-delete').hidden = false;
       $('delete-profile-icon').style.content =
-          imageset(profileInfo.iconURL + '@scalefactorx');
+          getProfileAvatarIcon(profileInfo.iconURL);
       $('delete-profile-text').textContent =
           loadTimeData.getStringF('deleteProfileMessage',
                                   elide(profileInfo.name, /* maxLength */ 50));

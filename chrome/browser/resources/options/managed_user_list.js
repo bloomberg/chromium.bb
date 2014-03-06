@@ -62,8 +62,7 @@ cr.define('options.managedUserOptions', function() {
       // Add the avatar.
       var iconElement = this.ownerDocument.createElement('img');
       iconElement.className = 'profile-img';
-      iconElement.style.content =
-          imageset(managedUser.iconURL + '@scalefactorx');
+      iconElement.style.content = getProfileAvatarIcon(managedUser.iconURL);
       this.appendChild(iconElement);
 
       // Add the profile name.
