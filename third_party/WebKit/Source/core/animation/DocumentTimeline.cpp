@@ -93,6 +93,7 @@ void DocumentTimeline::serviceAnimations()
     TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
     m_timing->cancelWake();
+    m_hasOutdatedPlayer = false;
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
     Vector<Player*> players;
@@ -115,7 +116,7 @@ void DocumentTimeline::serviceAnimations()
     else if (timeToNextEffect != std::numeric_limits<double>::infinity())
         m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
 
-    m_hasOutdatedPlayer = false;
+    ASSERT(!m_hasOutdatedPlayer);
 }
 
 void DocumentTimeline::setZeroTime(double zeroTime)

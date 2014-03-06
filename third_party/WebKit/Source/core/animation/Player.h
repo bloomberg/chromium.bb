@@ -121,7 +121,8 @@ private:
     bool m_held;
     bool m_isPausedForTesting;
 
-    // This indicates timing information relevant to the player has changed
+    // This indicates timing information relevant to the player has changed by
+    // means other than the ordinary progression of time
     bool m_outdated;
 
     unsigned m_sequenceNumber;

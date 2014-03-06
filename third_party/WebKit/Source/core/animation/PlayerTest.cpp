@@ -113,6 +113,19 @@ TEST_F(AnimationPlayerTest, InitialState)
 }
 
 
+TEST_F(AnimationPlayerTest, CurrentTimeDoesNotSetOutdated)
+{
+    EXPECT_FALSE(player->outdated());
+    EXPECT_EQ(0, player->currentTime());
+    EXPECT_FALSE(player->outdated());
+    // FIXME: We should split updateTimeline into a version that doesn't update
+    // the player and one that does, as most of the tests don't require update()
+    // to be called.
+    document->animationClock().updateTime(10);
+    EXPECT_EQ(10, player->currentTime());
+    EXPECT_FALSE(player->outdated());
+}
+
 TEST_F(AnimationPlayerTest, SetCurrentTime)
 {
     player->setCurrentTime(10);

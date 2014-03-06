@@ -109,26 +109,31 @@ double Player::currentTimeWithLag() const
 void Player::updateTimingState(double newCurrentTime)
 {
     ASSERT(!isNull(newCurrentTime));
+    bool oldHeld = m_held;
     m_held = m_paused || !m_playbackRate || limited(newCurrentTime);
     if (m_held) {
+        if (!oldHeld || m_holdTime != newCurrentTime)
+            setOutdated();
         m_holdTime = newCurrentTime;
         m_storedTimeLag = nullValue();
     } else {
         m_holdTime = nullValue();
         m_storedTimeLag = currentTimeWithoutLag() - newCurrentTime;
+        setOutdated();
     }
-    setOutdated();
 }
 
 void Player::updateCurrentTimingState()
 {
     if (m_held) {
         updateTimingState(m_holdTime);
-    } else {
-        updateTimingState(currentTimeWithLag());
-        if (m_held && limited(m_holdTime))
-            m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
+        return;
     }
+    if (!limited(currentTimeWithLag()))
+        return;
+    m_held = true;
+    m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
+    m_storedTimeLag = nullValue();
 }
 
 double Player::currentTime()
@@ -152,8 +157,10 @@ void Player::setStartTime(double newStartTime)
         return;
     updateCurrentTimingState(); // Update the value of held
     m_startTime = newStartTime;
-    if (!m_held)
-        updateCurrentTimingState();
+    if (m_held)
+        return;
+    updateCurrentTimingState();
+    setOutdated();
 }
 
 void Player::setSource(TimedItem* newSource)
@@ -275,15 +282,12 @@ void Player::cancelAnimationOnCompositor()
 
 bool Player::update()
 {
-    if (!m_timeline)
+    m_outdated = false;
+
+    if (!m_timeline || !m_content)
         return false;
 
     double inheritedTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
-    m_outdated = false;
-
-    if (!m_content)
-        return false;
-
     m_content->updateInheritedTime(inheritedTime);
 
     ASSERT(!m_outdated);
