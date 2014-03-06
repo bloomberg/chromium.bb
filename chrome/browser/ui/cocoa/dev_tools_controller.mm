@@ -9,7 +9,6 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,19 +18,8 @@
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 #include "ui/gfx/size_conversions.h"
-
-namespace {
-
-bool CoreAnimationIsEnabled() {
-  static bool is_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCoreAnimation);
-  return is_enabled;
-}
-
-}
 
 using content::WebContents;
 
@@ -68,28 +56,13 @@ using content::WebContents;
   DCHECK_EQ(1u, [subviews count]);
   contentsView_ = [subviews objectAtIndex:0];
   devToolsView_ = devToolsView;
-  if (CoreAnimationIsEnabled()) {
-    // Make sure we do not draw any transient arrangements of views.
-    gfx::ScopedNSDisableScreenUpdates disabler;
-    [self replaceSubview:contentsView_ with:devToolsView_];
-    [devToolsView_ addSubview:contentsView_];
-  } else {
-    // Place DevTools under contents.
-    [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
-  }
+  // Place DevTools under contents.
+  [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
 }
 
 - (void)hideDevTools {
-  if (CoreAnimationIsEnabled()) {
-    // Make sure we do not draw any transient arrangements of views.
-    gfx::ScopedNSDisableScreenUpdates disabler;
-    DCHECK_EQ(1u, [[self subviews] count]);
-    [contentsView_ removeFromSuperview];
-    [self replaceSubview:devToolsView_ with:contentsView_];
-  } else {
-    DCHECK_EQ(2u, [[self subviews] count]);
-    [devToolsView_ removeFromSuperview];
-  }
+  DCHECK_EQ(2u, [[self subviews] count]);
+  [devToolsView_ removeFromSuperview];
   contentsView_ = nil;
   devToolsView_ = nil;
 }
@@ -105,11 +78,7 @@ using content::WebContents;
     return;
   }
 
-  if (CoreAnimationIsEnabled()) {
-    DCHECK_EQ(1u, [[self subviews] count]);
-  } else {
-    DCHECK_EQ(2u, [[self subviews] count]);
-  }
+  DCHECK_EQ(2u, [[self subviews] count]);
 
   gfx::Rect new_devtools_bounds;
   gfx::Rect new_contents_bounds;
