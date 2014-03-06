@@ -341,9 +341,9 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     computeUsedBreadthOfGridTracks(direction, sizingData, availableLogicalSpace);
 }
 
-static bool gridElementIsShrinkToFit(const RenderStyle& style)
+bool RenderGrid::gridElementIsShrinkToFit()
 {
-    return style.isFloating() || style.position() == AbsolutePosition;
+    return isFloatingOrOutOfFlowPositioned();
 }
 
 void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
@@ -379,7 +379,7 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         availableLogicalSpace -= tracks[i].m_usedBreadth;
     }
 
-    const bool hasUndefinedRemainingSpace = (direction == ForRows) ? style()->logicalHeight().isAuto() : gridElementIsShrinkToFit(*style());
+    const bool hasUndefinedRemainingSpace = (direction == ForRows) ? style()->logicalHeight().isAuto() : gridElementIsShrinkToFit();
 
     if (!hasUndefinedRemainingSpace && availableLogicalSpace <= 0)
         return;

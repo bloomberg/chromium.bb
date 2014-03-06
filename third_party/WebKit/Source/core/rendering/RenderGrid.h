@@ -72,6 +72,7 @@ private:
 
     class GridIterator;
     struct GridSizingData;
+    bool gridElementIsShrinkToFit();
     void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&);
     void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);
     LayoutUnit computeUsedBreadthOfMinLength(GridTrackSizingDirection, const GridLength&) const;
