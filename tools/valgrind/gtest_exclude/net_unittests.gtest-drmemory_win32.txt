@@ -22,7 +22,3 @@ ClientSocketPoolBaseTest.DisableCleanupTimer
 
 # Flaky, see http://crbug.com/108422
 SSLClientSocketTest.*
-
-# Crashes in light mode
-# http://crbug.com/349443
-ProxyResolverV8TracingTest.*
