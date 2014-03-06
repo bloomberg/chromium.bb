@@ -21,14 +21,14 @@ const int kIntMax = std::numeric_limits<int>::max();
 
 namespace remoting {
 
-TEST(VideoEncoderVp8Test, TestVideoEncoder) {
+TEST(VideoEncoderVpxTest, TestVideoEncoder) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
   TestVideoEncoder(encoder.get(), false);
 }
 
 // Test that calling Encode with a differently-sized media::ScreenCaptureData
 // does not leak memory.
-TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
+TEST(VideoEncoderVpxTest, TestSizeChangeNoLeak) {
   int height = 1000;
   int width = 1000;
 
@@ -49,7 +49,7 @@ TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
 
 // Test that the DPI information is correctly propagated from the
 // media::ScreenCaptureData to the VideoPacket.
-TEST(VideoEncoderVp8Test, TestDpiPropagation) {
+TEST(VideoEncoderVpxTest, TestDpiPropagation) {
   int height = 32;
   int width = 32;
 
