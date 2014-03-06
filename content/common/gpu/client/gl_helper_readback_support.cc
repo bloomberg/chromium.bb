@@ -37,7 +37,8 @@ void GLHelperReadbackSupport::CheckForReadbackSupport(
       supports_format = SupportsFormat(GL_RGB, GL_UNSIGNED_SHORT_5_6_5);
       break;
     case SkBitmap::kARGB_8888_Config:
-      supports_format = SupportsFormat(GL_RGBA, GL_UNSIGNED_BYTE);
+      // This is the baseline, assume always true.
+      supports_format = true;
       break;
     case SkBitmap::kARGB_4444_Config:
       supports_format = false;
