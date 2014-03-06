@@ -554,7 +554,8 @@ class GSContext(object):
       except cros_build_lib.RunCommandError as e:
         raise GSCommandError(e.msg, e.result, e.exception)
 
-  def Copy(self, src_path, dest_path, acl=None, recursive=True, **kwargs):
+  def Copy(self, src_path, dest_path, acl=None, recursive=True,
+           skip_symlinks=True, **kwargs):
     """Copy to/from GS bucket.
 
     Canned ACL permissions can be specified on the gsutil cp command line.
@@ -568,6 +569,7 @@ class GSContext(object):
                  file.
       acl: One of the google storage canned_acls to apply.
       recursive: Whether to copy recursively.
+      skip_symlinks: Skip symbolic links when copying recursively.
 
     Returns:
       Return the CommandResult from the run.
@@ -578,6 +580,8 @@ class GSContext(object):
     cmd = ['cp']
     if recursive:
       cmd.append('-r')
+      if skip_symlinks:
+        cmd.append('-e')
 
     acl = self.acl if acl is None else acl
     if acl is not None:
