@@ -6,7 +6,6 @@ import logging
 import os
 import unittest
 
-from measurements import endure
 from telemetry import test
 from telemetry.core import discover
 from telemetry.page import page_measurement
@@ -38,17 +37,15 @@ class MeasurementUnitTest(unittest.TestCase):
         # benchmarks are usually long-running benchmarks.
         continue
 
-      if benchmark.test == endure.Endure:
-        # Endure is too long running for a smoke test.
-        continue
-
       if hasattr(benchmark, 'generated_profile_archive'):
         # We'd like to test these, but don't know how yet.
         continue
 
-      # Ensure we only benchmark a single page.
+      # Only measure a single page so that this test cycles reasonably quickly.
       benchmark.options['pageset_repeat_iters'] = 1
       benchmark.options['page_repeat_iters'] = 1
+      benchmark.options['page_repeat_secs'] = 1
+
       class SinglePageBenchmark(benchmark):  # pylint: disable=W0232
         def CreatePageSet(self, options):
           # pylint: disable=E1002
