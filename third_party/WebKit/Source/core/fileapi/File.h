@@ -33,6 +33,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class ExecutionContext;
 struct FileMetadata;
 class KURL;
@@ -88,8 +89,8 @@ public:
     }
 
     virtual unsigned long long size() const OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const OVERRIDE;
-    virtual void close(ExecutionContext*) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start, long long end, const String& contentType, ExceptionState&) const OVERRIDE;
+    virtual void close(ExecutionContext*, ExceptionState&) OVERRIDE;
 
     virtual bool isFile() const OVERRIDE { return true; }
     virtual bool hasBackingFile() const OVERRIDE { return m_hasBackingFile; }

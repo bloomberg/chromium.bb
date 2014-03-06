@@ -26,6 +26,8 @@
 #include "config.h"
 #include "core/fileapi/File.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/FileMetadata.h"
 #include "platform/MIMETypeRegistry.h"
 #include "public/platform/Platform.h"
@@ -181,10 +183,15 @@ unsigned long long File::size() const
     return static_cast<unsigned long long>(size);
 }
 
-PassRefPtrWillBeRawPtr<Blob> File::slice(long long start, long long end, const String& contentType) const
+PassRefPtrWillBeRawPtr<Blob> File::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
 {
+    if (hasBeenClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, "File has been closed.");
+        return nullptr;
+    }
+
     if (!m_hasBackingFile)
-        return Blob::slice(start, end, contentType);
+        return Blob::slice(start, end, contentType, exceptionState);
 
     // FIXME: This involves synchronous file operation. We need to figure out how to make it asynchronous.
     long long size;
@@ -225,19 +232,22 @@ void File::captureSnapshot(long long& snapshotSize, double& snapshotModification
     snapshotModificationTime = metadata.modificationTime;
 }
 
-void File::close(ExecutionContext* executionContext)
+void File::close(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    if (!hasBeenClosed()) {
-        // Reset the File to its closed representation, an empty
-        // Blob. The name isn't cleared, as it should still be
-        // available.
-        m_hasBackingFile = false;
-        m_path = String();
-        m_fileSystemURL = KURL();
-        invalidateSnapshotMetadata();
-        m_relativePath = String();
-        Blob::close(executionContext);
+    if (hasBeenClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");
+        return;
     }
+
+    // Reset the File to its closed representation, an empty
+    // Blob. The name isn't cleared, as it should still be
+    // available.
+    m_hasBackingFile = false;
+    m_path = String();
+    m_fileSystemURL = KURL();
+    invalidateSnapshotMetadata();
+    m_relativePath = String();
+    Blob::close(executionContext, exceptionState);
 }
 
 void File::appendTo(BlobData& blobData) const

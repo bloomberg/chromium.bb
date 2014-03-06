@@ -19,4 +19,6 @@ shouldBeEqualToString("blob.type", "text/plain");
 shouldBe("sliced1.size", "3");
 var sliced2 = sliced1.slice(2);
 shouldBe("sliced2.size", "1");
+shouldThrow("blob.slice(2)");
+shouldThrow("blob.close()");
 </script>

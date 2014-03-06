@@ -59,7 +59,7 @@ public:
         return adoptRefWillBeNoop(new DOMURL(url, base->m_url, exceptionState));
     }
 
-    static String createObjectURL(ExecutionContext*, Blob*);
+    static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
     static void revokeObjectURL(ExecutionContext*, const String&);
 
     static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());

@@ -63,10 +63,14 @@ void DOMURL::setInput(const String& value)
     }
 }
 
-String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob)
+String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
 {
     if (!executionContext || !blob)
         return String();
+    if (blob->hasBeenClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
+        return String();
+    }
     return createPublicURL(executionContext, blob, blob->uuid());
 }
 

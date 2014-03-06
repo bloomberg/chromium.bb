@@ -91,24 +91,19 @@ function testRevokeAfterClose()
     img.src = blobURL1;
 }
 
-function testRegisterAfterClose()
+function testCreateAfterClose()
 {
     debug("Test creating object URLs on closed Blobs");
     blob = new Blob(["body{background: green}"], {type: "text/css"});
-    blobURL1 = window.URL.createObjectURL(blob);
     blob.close();
-    // Verifies createObjectURL() still works and returns a valid (non-empty) URL
-    // without throwing an error. See http://crbug.com/344820 for this requirement.
-    blobURL2 = window.URL.createObjectURL(blob);
-    shouldBeTrue("blobURL1 !== blobURL2");
-    shouldBeTrue("blobURL2.length > 0");
+    shouldThrow("window.URL.createObjectURL(blob);");
     runNextTest();
 }
 
 var tests = [
     testRevokeAfterClose,
     testRevokeAfterCloseWorkers,
-    testRegisterAfterClose ];
+    testCreateAfterClose ];
 
 function runNextTest()
 {

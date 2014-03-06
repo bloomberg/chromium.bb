@@ -31,7 +31,9 @@
 #include "config.h"
 #include "core/fileapi/Blob.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/DOMURL.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "platform/blob/BlobRegistry.h"
@@ -104,8 +106,13 @@ void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
         end = size;
 }
 
-PassRefPtrWillBeRawPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
+PassRefPtrWillBeRawPtr<Blob> Blob::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
 {
+    if (hasBeenClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");
+        return nullptr;
+    }
+
     long long size = this->size();
     clampSliceOffsets(size, start, end);
 
@@ -116,23 +123,26 @@ PassRefPtrWillBeRawPtr<Blob> Blob::slice(long long start, long long end, const S
     return Blob::create(BlobDataHandle::create(blobData.release(), length));
 }
 
-void Blob::close(ExecutionContext* executionContext)
+void Blob::close(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    if (!hasBeenClosed()) {
-        // Dereferencing a Blob that has been closed should result in
-        // a network error. Revoke URLs registered against it through
-        // its UUID.
-        DOMURL::revokeObjectUUID(executionContext, uuid());
-
-        // A closed Blob should have size zero, which most consumers
-        // will treat as an empty Blob. The exception being the FileReader
-        // read operations which will throw.
-        // FIXME: spec not yet set in stone in this regard, track updates to it (http://crbug.com/344820.)
-        OwnPtr<BlobData> blobData = BlobData::create();
-        blobData->setContentType(type());
-        m_blobDataHandle = BlobDataHandle::create(blobData.release(), 0);
-        m_hasBeenClosed = true;
+    if (hasBeenClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");
+        return;
     }
+
+    // Dereferencing a Blob that has been closed should result in
+    // a network error. Revoke URLs registered against it through
+    // its UUID.
+    DOMURL::revokeObjectUUID(executionContext, uuid());
+
+    // A Blob enters a 'readability state' of closed, where it will report its
+    // size as zero. Blob and FileReader operations now throws on
+    // being passed a Blob in that state. Downstream uses of closed Blobs
+    // (e.g., XHR.send()) consider them as empty.
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(type());
+    m_blobDataHandle = BlobDataHandle::create(blobData.release(), 0);
+    m_hasBeenClosed = true;
 }
 
 void Blob::appendTo(BlobData& blobData) const

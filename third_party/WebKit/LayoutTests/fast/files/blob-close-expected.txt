@@ -12,6 +12,8 @@ PASS blob.close(); blob.size is 0
 PASS blob.type is "text/plain"
 PASS sliced1.size is 3
 PASS sliced2.size is 1
+PASS blob.slice(2) threw exception InvalidStateError: Failed to execute 'slice' on 'Blob': Blob has been closed..
+PASS blob.close() threw exception InvalidStateError: Failed to execute 'close' on 'Blob': Blob has been closed..
 PASS successfullyParsed is true
 
 TEST COMPLETE

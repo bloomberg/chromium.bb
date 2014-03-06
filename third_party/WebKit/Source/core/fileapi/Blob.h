@@ -42,6 +42,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class ExecutionContext;
 
 class Blob : public RefCountedWillBeGarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
@@ -59,8 +60,23 @@ public:
     virtual ~Blob();
 
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
-    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
-    virtual void close(ExecutionContext*);
+    virtual PassRefPtrWillBeRawPtr<Blob> slice(long long start, long long end, const String& contentType, ExceptionState&) const;
+
+    // To allow ExceptionState to be passed in last, manually enumerate the optional argument overloads.
+    PassRefPtrWillBeRawPtr<Blob> slice(ExceptionState& exceptionState) const
+    {
+        return slice(0, std::numeric_limits<long long>::max(), String(), exceptionState);
+    }
+    PassRefPtrWillBeRawPtr<Blob> slice(long long start, ExceptionState& exceptionState) const
+    {
+        return slice(start, std::numeric_limits<long long>::max(), String(), exceptionState);
+    }
+    PassRefPtrWillBeRawPtr<Blob> slice(long long start, long long end, ExceptionState& exceptionState) const
+    {
+        return slice(start, end, String(), exceptionState);
+    }
+
+    virtual void close(ExecutionContext*, ExceptionState&);
 
     String type() const { return m_blobDataHandle->type(); }
     String uuid() const { return m_blobDataHandle->uuid(); }

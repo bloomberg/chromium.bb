@@ -17,8 +17,7 @@ PASS Error triggered on starting Worker from a closed Blob.
 PASS Error triggered on starting Worker from a closed Blob.
 PASS Error triggered on starting Worker from a closed Blob.
 Test creating object URLs on closed Blobs
-PASS blobURL1 !== blobURL2 is true
-PASS blobURL2.length > 0 is true
+PASS window.URL.createObjectURL(blob); threw exception InvalidStateError: Failed to execute 'createObjectURL' on 'URL': Blob has been closed..
 PASS successfullyParsed is true
 
 TEST COMPLETE
