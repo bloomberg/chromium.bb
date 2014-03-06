@@ -61,10 +61,6 @@ blink::WebTimeRanges WebSourceBufferImpl::buffered() {
   return result;
 }
 
-void WebSourceBufferImpl::append(const unsigned char* data, unsigned length) {
-  append(data, length, NULL);
-}
-
 void WebSourceBufferImpl::append(
     const unsigned char* data,
     unsigned length,
