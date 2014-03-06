@@ -46,7 +46,6 @@ inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     addToPropertyMap(m_dx);
     addToPropertyMap(m_dy);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFEOffsetElement();
 }
 
 PassRefPtr<SVGFEOffsetElement> SVGFEOffsetElement::create(Document& document)

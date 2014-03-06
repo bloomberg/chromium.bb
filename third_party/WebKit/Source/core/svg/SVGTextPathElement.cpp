@@ -69,7 +69,6 @@ inline SVGTextPathElement::SVGTextPathElement(Document& document)
     addToPropertyMap(m_startOffset);
     addToPropertyMap(m_method);
     addToPropertyMap(m_spacing);
-    registerAnimatedPropertiesForSVGTextPathElement();
 }
 
 PassRefPtr<SVGTextPathElement> SVGTextPathElement::create(Document& document)

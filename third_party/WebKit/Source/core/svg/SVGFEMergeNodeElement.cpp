@@ -38,7 +38,6 @@ inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFEMergeNodeElement();
 }
 
 PassRefPtr<SVGFEMergeNodeElement> SVGFEMergeNodeElement::create(Document& document)

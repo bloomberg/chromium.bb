@@ -64,7 +64,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_filterUnits);
     addToPropertyMap(m_primitiveUnits);
     addToPropertyMap(m_filterRes);
-    registerAnimatedPropertiesForSVGFilterElement();
 }
 
 PassRefPtr<SVGFilterElement> SVGFilterElement::create(Document& document)

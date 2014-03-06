@@ -63,7 +63,6 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     addToPropertyMap(m_fx);
     addToPropertyMap(m_fy);
     addToPropertyMap(m_fr);
-    registerAnimatedPropertiesForSVGRadialGradientElement();
 }
 
 PassRefPtr<SVGRadialGradientElement> SVGRadialGradientElement::create(Document& document)

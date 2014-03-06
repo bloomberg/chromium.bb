@@ -45,7 +45,6 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
     addToPropertyMap(m_cx);
     addToPropertyMap(m_cy);
     addToPropertyMap(m_r);
-    registerAnimatedPropertiesForSVGCircleElement();
 }
 
 PassRefPtr<SVGCircleElement> SVGCircleElement::create(Document& document)

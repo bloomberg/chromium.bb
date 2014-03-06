@@ -41,7 +41,6 @@ inline SVGFETileElement::SVGFETileElement(Document& document)
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFETileElement();
 }
 
 PassRefPtr<SVGFETileElement> SVGFETileElement::create(Document& document)

@@ -44,7 +44,6 @@ inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& do
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFEComponentTransferElement();
 }
 
 PassRefPtr<SVGFEComponentTransferElement> SVGFEComponentTransferElement::create(Document& document)

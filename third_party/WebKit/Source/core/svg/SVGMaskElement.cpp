@@ -62,7 +62,6 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
     addToPropertyMap(m_height);
     addToPropertyMap(m_maskUnits);
     addToPropertyMap(m_maskContentUnits);
-    registerAnimatedPropertiesForSVGMaskElement();
 }
 
 PassRefPtr<SVGMaskElement> SVGMaskElement::create(Document& document)

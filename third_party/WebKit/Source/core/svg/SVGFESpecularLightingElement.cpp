@@ -52,7 +52,6 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& docu
     addToPropertyMap(m_surfaceScale);
     addToPropertyMap(m_kernelUnitLength);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFESpecularLightingElement();
 }
 
 PassRefPtr<SVGFESpecularLightingElement> SVGFESpecularLightingElement::create(Document& document)

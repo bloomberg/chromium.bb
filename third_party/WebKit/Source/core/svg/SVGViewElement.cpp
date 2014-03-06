@@ -38,7 +38,6 @@ inline SVGViewElement::SVGViewElement(Document& document)
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_viewTarget);
-    registerAnimatedPropertiesForSVGViewElement();
 }
 
 PassRefPtr<SVGViewElement> SVGViewElement::create(Document& document)

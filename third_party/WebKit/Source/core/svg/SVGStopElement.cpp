@@ -40,7 +40,6 @@ inline SVGStopElement::SVGStopElement(Document& document)
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_offset);
-    registerAnimatedPropertiesForSVGStopElement();
 }
 
 PassRefPtr<SVGStopElement> SVGStopElement::create(Document& document)

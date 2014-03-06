@@ -47,7 +47,6 @@ inline SVGEllipseElement::SVGEllipseElement(Document& document)
     addToPropertyMap(m_cy);
     addToPropertyMap(m_rx);
     addToPropertyMap(m_ry);
-    registerAnimatedPropertiesForSVGEllipseElement();
 }
 
 PassRefPtr<SVGEllipseElement> SVGEllipseElement::create(Document& document)

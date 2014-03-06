@@ -64,7 +64,6 @@ inline SVGPathElement::SVGPathElement(Document& document)
 
     addToPropertyMap(m_pathLength);
     addToPropertyMap(m_pathSegList);
-    registerAnimatedPropertiesForSVGPathElement();
 }
 
 PassRefPtr<SVGPathElement> SVGPathElement::create(Document& document)

@@ -30,93 +30,16 @@
 
 namespace WebCore {
 
-// SVGSynchronizableAnimatedProperty implementation
-template<typename PropertyType>
-struct SVGSynchronizableAnimatedProperty {
-    SVGSynchronizableAnimatedProperty()
-        : value(SVGPropertyTraits<PropertyType>::initialValue())
-        , shouldSynchronize(false)
-    {
-    }
-
-    template<typename ConstructorParameter1>
-    SVGSynchronizableAnimatedProperty(const ConstructorParameter1& value1)
-        : value(value1)
-        , shouldSynchronize(false)
-    {
-    }
-
-    template<typename ConstructorParameter1, typename ConstructorParameter2>
-    SVGSynchronizableAnimatedProperty(const ConstructorParameter1& value1, const ConstructorParameter2& value2)
-        : value(value1, value2)
-        , shouldSynchronize(false)
-    {
-    }
-
-    void synchronize(Element* ownerElement, const QualifiedName& attrName, const AtomicString& value)
-    {
-        ownerElement->setSynchronizedLazyAttribute(attrName, value);
-    }
-
-    PropertyType value;
-    bool shouldSynchronize : 1;
-};
-
 // Property registration helpers
-#define BEGIN_REGISTER_ANIMATED_PROPERTIES(OwnerType) \
-SVGAttributeToPropertyMap& OwnerType::attributeToPropertyMap() \
-{ \
-    DEFINE_STATIC_LOCAL(SVGAttributeToPropertyMap, s_attributeToPropertyMap, ()); \
-    return s_attributeToPropertyMap; \
-} \
-\
-SVGAttributeToPropertyMap& OwnerType::localAttributeToPropertyMap() const \
-{ \
-    return attributeToPropertyMap(); \
-} \
-\
-void OwnerType::registerAnimatedPropertiesFor##OwnerType() \
-{ \
-    OwnerType::m_cleanupAnimatedPropertiesCaller.setOwner(this); \
-    SVGAttributeToPropertyMap& map = OwnerType::attributeToPropertyMap(); \
-    if (!map.isEmpty()) \
-        return; \
-    typedef OwnerType UseOwnerType;
-
-#define REGISTER_LOCAL_ANIMATED_PROPERTY(LowerProperty) \
-     map.addProperty(UseOwnerType::LowerProperty##PropertyInfo());
-
-#define REGISTER_PARENT_ANIMATED_PROPERTIES(ClassName) \
-     map.addProperties(ClassName::attributeToPropertyMap()); \
-
-#define END_REGISTER_ANIMATED_PROPERTIES }
+#define BEGIN_REGISTER_ANIMATED_PROPERTIES(OwnerType)
+#define REGISTER_LOCAL_ANIMATED_PROPERTY(LowerProperty)
+#define REGISTER_PARENT_ANIMATED_PROPERTIES(ClassName)
+#define END_REGISTER_ANIMATED_PROPERTIES
 
 // Property declaration helpers (used in SVG*.h files)
-#define BEGIN_DECLARE_ANIMATED_PROPERTIES(OwnerType) \
-public: \
-    static SVGAttributeToPropertyMap& attributeToPropertyMap(); \
-    virtual SVGAttributeToPropertyMap& localAttributeToPropertyMap() const; \
-    void registerAnimatedPropertiesFor##OwnerType(); \
-    typedef OwnerType UseOwnerType;
-
-#define DECLARE_ANIMATED_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty) \
-public: \
-    static const SVGPropertyInfo* LowerProperty##PropertyInfo(); \
-    bool LowerProperty##Specified() const; \
-    PropertyType& LowerProperty##CurrentValue() const; \
-    PropertyType& LowerProperty##BaseValue() const; \
-    void set##UpperProperty##BaseValue(const PropertyType& type); \
-    PassRefPtr<TearOffType> LowerProperty(); \
-\
-private: \
-    void synchronize##UpperProperty(); \
-    static PassRefPtr<SVGAnimatedProperty> lookupOrCreate##UpperProperty##Wrapper(SVGElement* maskedOwnerType); \
-    static void synchronize##UpperProperty(SVGElement* maskedOwnerType); \
-\
-    mutable SVGSynchronizableAnimatedProperty<PropertyType> m_##LowerProperty;
-
-#define END_DECLARE_ANIMATED_PROPERTIES \
-    CleanUpAnimatedPropertiesCaller m_cleanupAnimatedPropertiesCaller;
+#define BEGIN_DECLARE_ANIMATED_PROPERTIES(OwnerType)
+#define DECLARE_ANIMATED_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty)
+#define END_DECLARE_ANIMATED_PROPERTIES
 
 }
 

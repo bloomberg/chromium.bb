@@ -45,7 +45,6 @@ inline SVGCursorElement::SVGCursorElement(Document& document)
 
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
-    registerAnimatedPropertiesForSVGCursorElement();
 }
 
 PassRefPtr<SVGCursorElement> SVGCursorElement::create(Document& document)

@@ -46,7 +46,6 @@ inline SVGLineElement::SVGLineElement(Document& document)
     addToPropertyMap(m_y1);
     addToPropertyMap(m_x2);
     addToPropertyMap(m_y2);
-    registerAnimatedPropertiesForSVGLineElement();
 }
 
 PassRefPtr<SVGLineElement> SVGLineElement::create(Document& document)

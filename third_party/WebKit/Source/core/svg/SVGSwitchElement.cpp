@@ -38,7 +38,6 @@ inline SVGSwitchElement::SVGSwitchElement(Document& document)
     : SVGGraphicsElement(SVGNames::switchTag, document)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGSwitchElement();
 
     UseCounter::count(document, UseCounter::SVGSwitchElement);
 }

@@ -40,7 +40,6 @@ inline SVGClipPathElement::SVGClipPathElement(Document& document)
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_clipPathUnits);
-    registerAnimatedPropertiesForSVGClipPathElement();
 }
 
 PassRefPtr<SVGClipPathElement> SVGClipPathElement::create(Document& document)

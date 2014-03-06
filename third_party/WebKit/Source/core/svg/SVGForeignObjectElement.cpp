@@ -49,7 +49,6 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    registerAnimatedPropertiesForSVGForeignObjectElement();
 }
 
 PassRefPtr<SVGForeignObjectElement> SVGForeignObjectElement::create(Document& document)

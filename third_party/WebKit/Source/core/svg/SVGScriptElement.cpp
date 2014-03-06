@@ -46,7 +46,6 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
     , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGScriptElement();
 }
 
 PassRefPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)

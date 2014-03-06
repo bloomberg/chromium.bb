@@ -37,7 +37,6 @@ inline SVGDefsElement::SVGDefsElement(Document& document)
     : SVGGraphicsElement(SVGNames::defsTag, document)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGDefsElement();
 }
 
 PassRefPtr<SVGDefsElement> SVGDefsElement::create(Document& document)

@@ -59,7 +59,6 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tagName, Document& doc
     addToPropertyMap(m_pointsAtZ);
     addToPropertyMap(m_specularExponent);
     addToPropertyMap(m_limitingConeAngle);
-    registerAnimatedPropertiesForSVGFELightElement();
 }
 
 SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement* svgElement)

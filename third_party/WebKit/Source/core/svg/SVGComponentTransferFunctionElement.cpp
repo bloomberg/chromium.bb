@@ -68,7 +68,6 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(const Q
     addToPropertyMap(m_exponent);
     addToPropertyMap(m_offset);
     addToPropertyMap(m_type);
-    registerAnimatedPropertiesForSVGComponentTransferFunctionElement();
 }
 
 bool SVGComponentTransferFunctionElement::isSupportedAttribute(const QualifiedName& attrName)

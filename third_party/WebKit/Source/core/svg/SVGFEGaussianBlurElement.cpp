@@ -45,7 +45,6 @@ inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
 
     addToPropertyMap(m_stdDeviation);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFEGaussianBlurElement();
 }
 
 PassRefPtr<SVGFEGaussianBlurElement> SVGFEGaussianBlurElement::create(Document& document)

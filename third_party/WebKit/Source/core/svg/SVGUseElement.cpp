@@ -76,7 +76,6 @@ inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    registerAnimatedPropertiesForSVGUseElement();
 }
 
 PassRefPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInsertedByParser)

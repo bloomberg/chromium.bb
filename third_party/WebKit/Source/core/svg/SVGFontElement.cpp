@@ -45,7 +45,6 @@ inline SVGFontElement::SVGFontElement(Document& document)
     , m_isGlyphCacheValid(false)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGFontElement();
 
     UseCounter::count(document, UseCounter::SVGFontElement);
 }

@@ -69,7 +69,6 @@ inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
     addToPropertyMap(m_svgOperator);
-    registerAnimatedPropertiesForSVGFECompositeElement();
 }
 
 PassRefPtr<SVGFECompositeElement> SVGFECompositeElement::create(Document& document)

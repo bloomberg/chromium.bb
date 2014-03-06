@@ -40,7 +40,6 @@ inline SVGMPathElement::SVGMPathElement(Document& document)
     , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGMPathElement();
 }
 
 PassRefPtr<SVGMPathElement> SVGMPathElement::create(Document& document)

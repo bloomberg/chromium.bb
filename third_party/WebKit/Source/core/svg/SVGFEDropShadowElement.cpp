@@ -49,7 +49,6 @@ inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
     addToPropertyMap(m_dy);
     addToPropertyMap(m_stdDeviation);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFEDropShadowElement();
 }
 
 PassRefPtr<SVGFEDropShadowElement> SVGFEDropShadowElement::create(Document& document)

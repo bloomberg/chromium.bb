@@ -44,7 +44,6 @@ SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tagName, Document& d
     , m_transform(SVGAnimatedTransformList::create(this, SVGNames::transformAttr, SVGTransformList::create()))
 {
     addToPropertyMap(m_transform);
-    registerAnimatedPropertiesForSVGGraphicsElement();
 }
 
 SVGGraphicsElement::~SVGGraphicsElement()

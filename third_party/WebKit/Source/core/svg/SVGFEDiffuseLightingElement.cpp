@@ -49,7 +49,6 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& docume
     addToPropertyMap(m_surfaceScale);
     addToPropertyMap(m_kernelUnitLength);
     addToPropertyMap(m_in1);
-    registerAnimatedPropertiesForSVGFEDiffuseLightingElement();
 }
 
 PassRefPtr<SVGFEDiffuseLightingElement> SVGFEDiffuseLightingElement::create(Document& document)

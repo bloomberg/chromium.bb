@@ -67,7 +67,6 @@ inline SVGAElement::SVGAElement(Document& document)
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_svgTarget);
-    registerAnimatedPropertiesForSVGAElement();
 }
 
 PassRefPtr<SVGAElement> SVGAElement::create(Document& document)

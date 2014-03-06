@@ -40,7 +40,6 @@ SVGGElement::SVGGElement(Document& document, ConstructionType constructionType)
     : SVGGraphicsElement(SVGNames::gTag, document, constructionType)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGGElement();
 }
 
 PassRefPtr<SVGGElement> SVGGElement::create(Document& document)

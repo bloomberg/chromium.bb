@@ -75,7 +75,6 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     addToPropertyMap(m_order);
     addToPropertyMap(m_targetX);
     addToPropertyMap(m_targetY);
-    registerAnimatedPropertiesForSVGFEConvolveMatrixElement();
 }
 
 PassRefPtr<SVGFEConvolveMatrixElement> SVGFEConvolveMatrixElement::create(Document& document)

@@ -52,7 +52,6 @@ SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagNam
     addToPropertyMap(m_dx);
     addToPropertyMap(m_dy);
     addToPropertyMap(m_rotate);
-    registerAnimatedPropertiesForSVGTextPositioningElement();
 }
 
 bool SVGTextPositioningElement::isSupportedAttribute(const QualifiedName& attrName)

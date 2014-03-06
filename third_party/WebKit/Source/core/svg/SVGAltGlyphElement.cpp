@@ -46,7 +46,6 @@ inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGAltGlyphElement();
 }
 
 PassRefPtr<SVGAltGlyphElement> SVGAltGlyphElement::create(Document& document)

@@ -59,7 +59,6 @@ inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     addToPropertyMap(m_values);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_type);
-    registerAnimatedPropertiesForSVGFEColorMatrixElement();
 }
 
 PassRefPtr<SVGFEColorMatrixElement> SVGFEColorMatrixElement::create(Document& document)

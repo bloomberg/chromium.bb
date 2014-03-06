@@ -43,7 +43,6 @@ inline SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
     , m_dy(0)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGGlyphRefElement();
 }
 
 PassRefPtr<SVGGlyphRefElement> SVGGlyphRefElement::create(Document& document)

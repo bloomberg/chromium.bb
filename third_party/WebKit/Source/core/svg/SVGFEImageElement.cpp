@@ -47,7 +47,6 @@ inline SVGFEImageElement::SVGFEImageElement(Document& document)
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_preserveAspectRatio);
-    registerAnimatedPropertiesForSVGFEImageElement();
 }
 
 PassRefPtr<SVGFEImageElement> SVGFEImageElement::create(Document& document)

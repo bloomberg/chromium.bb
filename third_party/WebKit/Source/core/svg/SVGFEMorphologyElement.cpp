@@ -57,7 +57,6 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     addToPropertyMap(m_radius);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_svgOperator);
-    registerAnimatedPropertiesForSVGFEMorphologyElement();
 }
 
 PassRefPtr<SVGFEMorphologyElement> SVGFEMorphologyElement::create(Document& document)

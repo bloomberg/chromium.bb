@@ -41,7 +41,6 @@ SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document& document)
     , m_points(SVGAnimatedPointList::create(this, SVGNames::pointsAttr, SVGPointList::create()))
 {
     addToPropertyMap(m_points);
-    registerAnimatedPropertiesForSVGPolyElement();
 }
 
 bool SVGPolyElement::isSupportedAttribute(const QualifiedName& attrName)

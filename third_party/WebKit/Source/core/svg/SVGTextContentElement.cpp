@@ -89,7 +89,6 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Docum
 
     addToPropertyMap(m_textLength);
     addToPropertyMap(m_lengthAdjust);
-    registerAnimatedPropertiesForSVGTextContentElement();
 }
 
 unsigned SVGTextContentElement::getNumberOfChars()

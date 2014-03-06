@@ -63,7 +63,6 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& d
     addToPropertyMap(m_gradientTransform);
     addToPropertyMap(m_spreadMethod);
     addToPropertyMap(m_gradientUnits);
-    registerAnimatedPropertiesForSVGGradientElement();
 }
 
 bool SVGGradientElement::isSupportedAttribute(const QualifiedName& attrName)

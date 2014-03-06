@@ -59,7 +59,6 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_patternTransform);
     addToPropertyMap(m_patternUnits);
     addToPropertyMap(m_patternContentUnits);
-    registerAnimatedPropertiesForSVGPatternElement();
 }
 
 PassRefPtr<SVGPatternElement> SVGPatternElement::create(Document& document)

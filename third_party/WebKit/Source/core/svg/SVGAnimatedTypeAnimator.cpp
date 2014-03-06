@@ -74,7 +74,6 @@ SVGElementAnimatedPropertyList SVGAnimatedTypeAnimator::findAnimatedPropertiesFo
     SVGElementAnimatedPropertyList propertiesByInstance;
 
     Vector<RefPtr<SVGAnimatedProperty> > targetProperties;
-    targetElement->localAttributeToPropertyMap().animatedPropertiesForAttribute(targetElement, attributeName, targetProperties);
 
     if (!supportsAnimVal(m_type))
         return SVGElementAnimatedPropertyList();
@@ -90,8 +89,8 @@ SVGElementAnimatedPropertyList SVGAnimatedTypeAnimator::findAnimatedPropertiesFo
             continue;
 
         Vector<RefPtr<SVGAnimatedProperty> > instanceProperties;
-        targetElement->localAttributeToPropertyMap().animatedPropertiesForAttribute(shadowTreeElement, attributeName, instanceProperties);
-
+        // FIXME: This |instanceProperties| is not used, so it is OK to pass empty vector here.
+        //        This will be removed in further refactoring.
         SVGElementAnimatedProperties instancePropertiesPair(shadowTreeElement, instanceProperties);
         propertiesByInstance.append(instancePropertiesPair);
     }

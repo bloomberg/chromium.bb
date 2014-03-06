@@ -90,7 +90,6 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-    registerAnimatedPropertiesForSVGSVGElement();
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
 }

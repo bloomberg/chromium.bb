@@ -58,7 +58,6 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(const
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
     addToPropertyMap(m_result);
-    registerAnimatedPropertiesForSVGFilterPrimitiveStandardAttributes();
 }
 
 bool SVGFilterPrimitiveStandardAttributes::isSupportedAttribute(const QualifiedName& attrName)

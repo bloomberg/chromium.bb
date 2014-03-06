@@ -55,9 +55,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-
     addToPropertyMap(m_preserveAspectRatio);
-    registerAnimatedPropertiesForSVGImageElement();
 }
 
 PassRefPtr<SVGImageElement> SVGImageElement::create(Document& document)

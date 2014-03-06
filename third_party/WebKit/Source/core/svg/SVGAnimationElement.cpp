@@ -56,7 +56,6 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document&
     , m_animationMode(NoAnimation)
 {
     ScriptWrappable::init(this);
-    registerAnimatedPropertiesForSVGAnimationElement();
 
     UseCounter::count(document, UseCounter::SVGAnimationElement);
 }

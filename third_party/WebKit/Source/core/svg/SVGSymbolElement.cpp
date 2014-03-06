@@ -39,8 +39,6 @@ inline SVGSymbolElement::SVGSymbolElement(Document& document)
     , SVGFitToViewBox(this)
 {
     ScriptWrappable::init(this);
-
-    registerAnimatedPropertiesForSVGSymbolElement();
 }
 
 PassRefPtr<SVGSymbolElement> SVGSymbolElement::create(Document& document)

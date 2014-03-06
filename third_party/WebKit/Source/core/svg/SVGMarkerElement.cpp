@@ -67,8 +67,6 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     addToPropertyMap(m_markerHeight);
     addToPropertyMap(m_orientAngle);
     addToPropertyMap(m_markerUnits);
-
-    registerAnimatedPropertiesForSVGMarkerElement();
 }
 
 PassRefPtr<SVGMarkerElement> SVGMarkerElement::create(Document& document)

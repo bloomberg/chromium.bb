@@ -62,7 +62,6 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& docume
     addToPropertyMap(m_in2);
     addToPropertyMap(m_xChannelSelector);
     addToPropertyMap(m_yChannelSelector);
-    registerAnimatedPropertiesForSVGFEDisplacementMapElement();
 }
 
 PassRefPtr<SVGFEDisplacementMapElement> SVGFEDisplacementMapElement::create(Document& document)

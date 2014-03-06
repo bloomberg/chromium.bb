@@ -185,25 +185,6 @@ protected:
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
 
-    class CleanUpAnimatedPropertiesCaller {
-    public:
-        CleanUpAnimatedPropertiesCaller()
-        :   m_owner(0)
-        {
-        }
-
-        ~CleanUpAnimatedPropertiesCaller()
-        {
-            ASSERT(m_owner);
-            m_owner->cleanupAnimatedProperties();
-        }
-
-        void setOwner(SVGElement* owner) { m_owner = owner; }
-
-    private:
-        SVGElement* m_owner;
-    };
-
 private:
     friend class SVGElementInstance;
 
@@ -232,7 +213,6 @@ private:
 #if !ASSERT_DISABLED
     bool m_inRelativeLengthClientsInvalidation;
 #endif
-    unsigned m_animatedPropertiesDestructed : 1;
     unsigned m_isContextElement : 1;
     unsigned m_hasSVGRareData : 1;
 

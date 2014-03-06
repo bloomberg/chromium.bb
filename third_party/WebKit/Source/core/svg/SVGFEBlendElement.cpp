@@ -59,7 +59,6 @@ inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
     addToPropertyMap(m_mode);
-    registerAnimatedPropertiesForSVGFEBlendElement();
 }
 
 PassRefPtr<SVGFEBlendElement> SVGFEBlendElement::create(Document& document)

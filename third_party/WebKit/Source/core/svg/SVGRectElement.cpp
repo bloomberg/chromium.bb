@@ -51,8 +51,6 @@ inline SVGRectElement::SVGRectElement(Document& document)
     addToPropertyMap(m_height);
     addToPropertyMap(m_rx);
     addToPropertyMap(m_ry);
-
-    registerAnimatedPropertiesForSVGRectElement();
 }
 
 PassRefPtr<SVGRectElement> SVGRectElement::create(Document& document)

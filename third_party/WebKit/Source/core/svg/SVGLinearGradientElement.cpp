@@ -54,7 +54,6 @@ inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     addToPropertyMap(m_y1);
     addToPropertyMap(m_x2);
     addToPropertyMap(m_y2);
-    registerAnimatedPropertiesForSVGLinearGradientElement();
 }
 
 PassRefPtr<SVGLinearGradientElement> SVGLinearGradientElement::create(Document& document)

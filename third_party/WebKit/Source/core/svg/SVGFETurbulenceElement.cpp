@@ -71,7 +71,6 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     addToPropertyMap(m_stitchTiles);
     addToPropertyMap(m_type);
     addToPropertyMap(m_numOctaves);
-    registerAnimatedPropertiesForSVGFETurbulenceElement();
 }
 
 PassRefPtr<SVGFETurbulenceElement> SVGFETurbulenceElement::create(Document& document)
