@@ -802,9 +802,6 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
         ASSERT(m_scrollingContentsLayer);
         RenderBox* renderBox = toRenderBox(renderer());
         IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
-        // FIXME: We should make RenderBox::clientBoxRect consider scrollbar placement.
-        if (style->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-            clientBox.move(renderBox->verticalScrollbarWidth(), 0);
 
         IntSize adjustedScrollOffset = m_owningLayer->scrollableArea()->adjustedScrollOffset();
         m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_subpixelAccumulation)));

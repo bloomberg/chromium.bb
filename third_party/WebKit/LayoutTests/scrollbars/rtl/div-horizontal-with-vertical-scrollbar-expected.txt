@@ -13,6 +13,7 @@ PASS innerLTR.clientWidth == innerRTL.clientWidth is true
 PASS innerLTR.scrollWidth == innerRTL.scrollWidth is true
 Verify the width of the vertical scrollbar of the outer RTL element is the same as the one of the outer LTR element regardless of their scrollbar positions.
 PASS scrollbarWidthLTR == scrollbarWidthRTL is true
+PASS outerRTL.clientLeft == scrollbarWidthRTL is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

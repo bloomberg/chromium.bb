@@ -4281,8 +4281,12 @@ void RenderBox::addContentsVisualOverflow(const LayoutRect& rect)
         return;
     }
 
-    if (!m_overflow)
-        m_overflow = adoptPtr(new RenderOverflow(clientBoxRect(), borderBoxRect()));
+    if (!m_overflow) {
+        LayoutRect clientBox = clientBoxRect();
+        if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+            clientBox.move(-verticalScrollbarWidth(), 0);
+        m_overflow = adoptPtr(new RenderOverflow(clientBox, borderBoxRect()));
+    }
     m_overflow->addContentsVisualOverflow(rect);
 }
 

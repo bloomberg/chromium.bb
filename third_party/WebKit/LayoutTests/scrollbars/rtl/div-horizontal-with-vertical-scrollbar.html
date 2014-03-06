@@ -34,6 +34,7 @@ debug('Verify the width of the vertical scrollbar of the outer RTL element is th
 var scrollbarWidthLTR = outerLTR.offsetWidth - outerLTR.clientWidth;
 var scrollbarWidthRTL = outerRTL.offsetWidth - outerRTL.clientWidth;
 shouldBeTrue('scrollbarWidthLTR == scrollbarWidthRTL');
+shouldBeTrue('outerRTL.clientLeft == scrollbarWidthRTL');
 </script>
 </body>
 </html>
