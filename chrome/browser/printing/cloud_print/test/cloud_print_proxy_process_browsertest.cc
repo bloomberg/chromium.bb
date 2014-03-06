@@ -432,7 +432,9 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
   ipc_file_list.push_back(std::make_pair(
       startup_channel_->TakeClientFileDescriptor(),
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
-  base::ProcessHandle handle = SpawnChild(name, ipc_file_list, false);
+  base::LaunchOptions options;
+  options.fds_to_remap = &ipc_file_list;
+  base::ProcessHandle handle = SpawnChildWithOptions(name, options, false);
 #else
   base::ProcessHandle handle = SpawnChild(name, false);
 #endif

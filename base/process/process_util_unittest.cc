@@ -505,8 +505,10 @@ int ProcessUtilTest::CountOpenFDsInChild() {
 
   base::FileHandleMappingVector fd_mapping_vec;
   fd_mapping_vec.push_back(std::pair<int, int>(fds[1], kChildPipe));
-  base::ProcessHandle handle = this->SpawnChild(
-      "ProcessUtilsLeakFDChildProcess", fd_mapping_vec, false);
+  base::LaunchOptions options;
+  options.fds_to_remap = &fd_mapping_vec;
+  base::ProcessHandle handle = this->SpawnChildWithOptions(
+      "ProcessUtilsLeakFDChildProcess", options, false);
   CHECK(handle);
   int ret = IGNORE_EINTR(close(fds[1]));
   DPCHECK(ret == 0);

@@ -32,17 +32,6 @@ ProcessHandle MultiProcessTest::SpawnChildWithOptions(
 }
 #endif
 
-#if defined(OS_POSIX)
-ProcessHandle MultiProcessTest::SpawnChild(
-    const std::string& procname,
-    const FileHandleMappingVector& fds_to_map,
-    bool debug_on_start) {
-  LaunchOptions options;
-  options.fds_to_remap = &fds_to_map;
-  return SpawnChildWithOptions(procname, options, debug_on_start);
-}
-#endif
-
 CommandLine MultiProcessTest::MakeCmdLine(const std::string& procname,
                                           bool debug_on_start) {
   CommandLine cl(*CommandLine::ForCurrentProcess());

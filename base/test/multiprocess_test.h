@@ -63,14 +63,6 @@ class MultiProcessTest : public PlatformTest {
                                       const LaunchOptions& options,
                                       bool debug_on_start);
 
-#if defined(OS_POSIX)
-  // TODO(vtl): Remove this in favor of |SpawnChildWithOptions()|. Probably keep
-  // the no-options |SpawnChild()| around for ease-of-use.
-  ProcessHandle SpawnChild(const std::string& procname,
-                           const FileHandleMappingVector& fds_to_map,
-                           bool debug_on_start);
-#endif
-
   // Set up the command line used to spawn the child process.
   virtual CommandLine MakeCmdLine(const std::string& procname,
                                   bool debug_on_start);

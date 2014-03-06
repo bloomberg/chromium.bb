@@ -100,7 +100,7 @@ bool IPCTestBase::StartClient() {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
 
 #if defined(OS_WIN)
-  client_process_ = MultiProcessTest::SpawnChild(test_main, debug_on_start);
+  client_process_ = SpawnChild(test_main, debug_on_start);
 #elif defined(OS_POSIX)
   base::FileHandleMappingVector fds_to_map;
   const int ipcfd = channel_.get() ? channel_->GetClientFileDescriptor() :
@@ -108,10 +108,9 @@ bool IPCTestBase::StartClient() {
   if (ipcfd > -1)
     fds_to_map.push_back(std::pair<int, int>(ipcfd,
         kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
-
-  client_process_ = MultiProcessTest::SpawnChild(test_main,
-                                                 fds_to_map,
-                                                 debug_on_start);
+  base::LaunchOptions options;
+  options.fds_to_remap = &fds_to_map;
+  client_process_ = SpawnChildWithOptions(test_main, options, debug_on_start);
 #endif
 
   return client_process_ != base::kNullProcessHandle;
