@@ -84,17 +84,14 @@ bool QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad,
   DCHECK(shared_quad_state_list_->back() == current_shared_quad_state_);
 
   gfx::Rect culled_rect;
-  bool impl_draw_transform_is_unknown = false;
-
   if (for_surface_) {
     culled_rect = occlusion_tracker_.UnoccludedContributingSurfaceContentRect(
         layer_, false, draw_quad->visible_rect);
   } else {
-    culled_rect = occlusion_tracker_.UnoccludedContentRect(
-        layer_->render_target(),
-        draw_quad->visible_rect,
-        draw_quad->quadTransform(),
-        impl_draw_transform_is_unknown);
+    culled_rect =
+        occlusion_tracker_.UnoccludedContentRect(layer_->render_target(),
+                                                 draw_quad->visible_rect,
+                                                 draw_quad->quadTransform());
   }
 
   return AppendQuadInternal(draw_quad.Pass(),

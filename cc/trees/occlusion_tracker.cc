@@ -504,15 +504,12 @@ template <typename LayerType>
 bool OcclusionTracker<LayerType>::Occluded(
     const LayerType* render_target,
     const gfx::Rect& content_rect,
-    const gfx::Transform& draw_transform,
-    bool impl_draw_transform_is_unknown) const {
+    const gfx::Transform& draw_transform) const {
   DCHECK(!stack_.empty());
   if (stack_.empty())
     return false;
   if (content_rect.IsEmpty())
     return true;
-  if (impl_draw_transform_is_unknown)
-    return false;
 
   // For tests with no render target.
   if (!render_target)
@@ -552,14 +549,11 @@ template <typename LayerType>
 gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
     const LayerType* render_target,
     const gfx::Rect& content_rect,
-    const gfx::Transform& draw_transform,
-    bool impl_draw_transform_is_unknown) const {
+    const gfx::Transform& draw_transform) const {
   DCHECK(!stack_.empty());
   if (stack_.empty())
     return content_rect;
   if (content_rect.IsEmpty())
-    return content_rect;
-  if (impl_draw_transform_is_unknown)
     return content_rect;
 
   // For tests with no render target.

@@ -817,12 +817,9 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
                                        &append_quads_data);
     } else if (it.represents_itself() && it->DrawsContent() &&
                !it->visible_content_rect().IsEmpty()) {
-      bool impl_draw_transform_is_unknown = false;
-      bool occluded = occlusion_tracker.Occluded(
-              it->render_target(),
-              it->visible_content_rect(),
-              it->draw_transform(),
-              impl_draw_transform_is_unknown);
+      bool occluded = occlusion_tracker.Occluded(it->render_target(),
+                                                 it->visible_content_rect(),
+                                                 it->draw_transform());
       if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
 

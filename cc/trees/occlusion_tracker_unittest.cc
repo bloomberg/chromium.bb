@@ -73,13 +73,6 @@ class TestContentLayerImpl : public LayerImpl {
   gfx::Rect opaque_contents_rect_;
 };
 
-static inline bool LayerImplDrawTransformIsUnknown(const Layer* layer) {
-  return layer->draw_transform_is_animating();
-}
-static inline bool LayerImplDrawTransformIsUnknown(const LayerImpl* layer) {
-  return false;
-}
-
 template <typename LayerType>
 class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
  public:
@@ -93,10 +86,8 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
   bool OccludedLayer(const LayerType* layer,
                      const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_content_rect().Contains(content_rect));
-    return this->Occluded(layer->render_target(),
-                          content_rect,
-                          layer->draw_transform(),
-                          LayerImplDrawTransformIsUnknown(layer));
+    return this->Occluded(
+        layer->render_target(), content_rect, layer->draw_transform());
   }
 
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
@@ -105,10 +96,7 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
                                        const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_content_rect().Contains(content_rect));
     return this->UnoccludedContentRect(
-        layer->render_target(),
-        content_rect,
-        layer->draw_transform(),
-        LayerImplDrawTransformIsUnknown(layer));
+        layer->render_target(), content_rect, layer->draw_transform());
   }
 };
 
@@ -628,23 +616,13 @@ class OcclusionTrackerTestQuadsMismatchLayer
 
     EXPECT_TRUE(occlusion.UnoccludedContentRect(parent,
                                                 gfx::Rect(0, 0, 10, 10),
-                                                quad_transform,
-                                                false).IsEmpty());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 10, 10),
-                   occlusion.UnoccludedContentRect(parent,
-                                                   gfx::Rect(0, 0, 10, 10),
-                                                   quad_transform,
-                                                   true));
+                                                quad_transform).IsEmpty());
     EXPECT_RECT_EQ(gfx::Rect(40, 40, 10, 10),
-                   occlusion.UnoccludedContentRect(parent,
-                                                   gfx::Rect(40, 40, 10, 10),
-                                                   quad_transform,
-                                                   false));
+                   occlusion.UnoccludedContentRect(
+                       parent, gfx::Rect(40, 40, 10, 10), quad_transform));
     EXPECT_RECT_EQ(gfx::Rect(40, 30, 5, 10),
-                   occlusion.UnoccludedContentRect(parent,
-                                                   gfx::Rect(35, 30, 10, 10),
-                                                   quad_transform,
-                                                   false));
+                   occlusion.UnoccludedContentRect(
+                       parent, gfx::Rect(35, 30, 10, 10), quad_transform));
   }
 };
 
@@ -2449,84 +2427,63 @@ class OcclusionTrackerTestAnimationTranslateOnMainThread
 
     this->LeaveContributingSurface(surface2, &occlusion);
     this->EnterLayer(surface_child2, &occlusion);
-
     // surface_child2 is moving in screen space but not relative to its target,
     // so occlusion should happen in its target space only.  It also means that
     // things occluding from outside the target (e.g. surface2) cannot occlude
     // this layer.
     EXPECT_EQ(gfx::Rect().ToString(),
               occlusion.occlusion_from_outside_target().ToString());
-
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 300),
-                   occlusion.UnoccludedLayerContentRect(
-                       surface_child2, gfx::Rect(0, 0, 100, 300)));
-    EXPECT_FALSE(
-        occlusion.OccludedLayer(surface_child, gfx::Rect(0, 0, 50, 300)));
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
 
     this->LeaveLayer(surface_child2, &occlusion);
     this->EnterLayer(surface_child, &occlusion);
-    EXPECT_FALSE(
-        occlusion.OccludedLayer(surface_child, gfx::Rect(0, 0, 100, 300)));
+    // surface_child2 added to the occlusion since it is not moving relative
+    // to its target.
     EXPECT_EQ(gfx::Rect().ToString(),
               occlusion.occlusion_from_outside_target().ToString());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(),
               occlusion.occlusion_from_inside_target().ToString());
-    EXPECT_RECT_EQ(gfx::Rect(100, 0, 200, 300),
-                   occlusion.UnoccludedLayerContentRect(
-                       surface, gfx::Rect(0, 0, 300, 300)));
-
-    // The surface_child is occluded by the surface_child2, but is moving
-    // relative its target, so it can't be occluded.
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 300),
-                   occlusion.UnoccludedLayerContentRect(
-                       surface_child, gfx::Rect(0, 0, 200, 300)));
-    EXPECT_FALSE(
-        occlusion.OccludedLayer(surface_child, gfx::Rect(0, 0, 50, 300)));
 
     this->LeaveLayer(surface_child, &occlusion);
-    this->EnterLayer(surface, &occlusion);
-    // The surface_child is moving in screen space but not relative to its
-    // target, so occlusion should happen from within the target only.
+    // surface_child is moving relative to its target, so it does not add
+    // occlusion.
     EXPECT_EQ(gfx::Rect().ToString(),
               occlusion.occlusion_from_outside_target().ToString());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(),
               occlusion.occlusion_from_inside_target().ToString());
-    EXPECT_RECT_EQ(gfx::Rect(100, 0, 200, 300),
-                   occlusion.UnoccludedLayerContentRect(
-                       surface, gfx::Rect(0, 0, 300, 300)));
+
+    this->EnterLayer(surface, &occlusion);
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 300).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
 
     this->LeaveLayer(surface, &occlusion);
     // The surface's owning layer is moving in screen space but not relative to
-    // its target, so occlusion should happen within the target only.
+    // its target, so it adds to the occlusion.
     EXPECT_EQ(gfx::Rect().ToString(),
               occlusion.occlusion_from_outside_target().ToString());
     EXPECT_EQ(gfx::Rect(0, 0, 300, 300).ToString(),
               occlusion.occlusion_from_inside_target().ToString());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0),
-                   occlusion.UnoccludedLayerContentRect(
-                       surface, gfx::Rect(0, 0, 300, 300)));
 
     this->EnterContributingSurface(surface, &occlusion);
-    // The contributing |surface| is animating so it can't be occluded.
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 300),
-                   occlusion.UnoccludedContributingSurfaceContentRect(
-                       surface, false, gfx::Rect(0, 0, 300, 300)));
     this->LeaveContributingSurface(surface, &occlusion);
-
-    this->EnterLayer(layer, &occlusion);
     // The |surface| is moving in the screen and in its target, so all occlusion
-    // within the surface is lost when leaving it.
-    EXPECT_RECT_EQ(gfx::Rect(50, 0, 250, 300),
-                   occlusion.UnoccludedLayerContentRect(
-                       parent, gfx::Rect(0, 0, 300, 300)));
-    this->LeaveLayer(layer, &occlusion);
+    // within the surface is lost when leaving it. Only the |surface2| occlusion
+    // is left.
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
 
-    this->EnterLayer(parent, &occlusion);
+    this->VisitLayer(layer, &occlusion);
     // The |layer| is animating in the screen and in its target, so no occlusion
     // is added.
-    EXPECT_RECT_EQ(gfx::Rect(50, 0, 250, 300),
-                   occlusion.UnoccludedLayerContentRect(
-                       parent, gfx::Rect(0, 0, 300, 300)));
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(0, 0, 50, 300).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
   }
 };
 
