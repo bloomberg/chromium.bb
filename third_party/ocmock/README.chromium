@@ -26,3 +26,8 @@ Chromium alters all NSLogging of -[NSArray count] to compile under both 32 and
 
 Chromium also patches in e8a9cc97936bfa8be97706c5092110603745e708 for fixing
 unit tests broken with Xcode 5 due to the lack of copyWithZone: selector.
+
+Chromium also patches in 77400c22b5bafd8aaaa75f90a1d997838204577a that fixes
+the comparison of types between invocation return type description (which
+changed from "c" to "B" on arm64) and NSValue objCType (which didn't change)
+on arm64 for BOOL values.

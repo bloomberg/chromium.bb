@@ -10,7 +10,10 @@
 
 - (void)handleInvocation:(NSInvocation *)anInvocation
 {
-	if(strcmp([[anInvocation methodSignature] methodReturnType], [(NSValue *)returnValue objCType]) != 0)
+	const char* returnType = [[anInvocation methodSignature] methodReturnType];
+	const char* valueType = [(NSValue *)returnValue objCType];
+	// ARM64 uses 'B' for BOOLS in method signatures but 'c' in NSValue; that case should match.
+	if(strcmp(returnType, valueType) != 0 && !(strcmp(returnType, "B") == 0 && strcmp(valueType, "c") == 0))
 		@throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Return value does not match method signature." userInfo:nil];
 	void *buffer = malloc([[anInvocation methodSignature] methodReturnLength]);
 	[returnValue getValue:buffer];
