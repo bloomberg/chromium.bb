@@ -64,7 +64,6 @@ public:
     virtual ~InputType();
 
     static bool canChangeFromAnotherType(const AtomicString& normalizedTypeName);
-    static bool themeSupportsDataListUI(InputType*);
 
     virtual const AtomicString& formControlType() const = 0;
 

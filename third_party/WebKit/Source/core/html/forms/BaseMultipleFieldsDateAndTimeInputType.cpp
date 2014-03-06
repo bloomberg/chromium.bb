@@ -343,18 +343,11 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     container->appendChild(ClearButtonElement::create(document, *this));
     container->appendChild(SpinButtonElement::create(document, *this));
 
-    bool shouldAddPickerIndicator = false;
-    if (InputType::themeSupportsDataListUI(this))
-        shouldAddPickerIndicator = true;
-    if (RenderTheme::theme().supportsCalendarPicker(formControlType())) {
-        shouldAddPickerIndicator = true;
+    if (RenderTheme::theme().supportsCalendarPicker(formControlType()))
         m_pickerIndicatorIsAlwaysVisible = true;
-    }
-    if (shouldAddPickerIndicator) {
-        container->appendChild(PickerIndicatorElement::create(document, *this));
-        m_pickerIndicatorIsVisible = true;
-        updatePickerIndicatorVisibility();
-    }
+    container->appendChild(PickerIndicatorElement::create(document, *this));
+    m_pickerIndicatorIsVisible = true;
+    updatePickerIndicatorVisibility();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()

@@ -177,7 +177,7 @@ bool BaseDateAndTimeInputType::supportsReadOnly() const
 
 bool BaseDateAndTimeInputType::shouldRespectListAttribute()
 {
-    return InputType::themeSupportsDataListUI(this);
+    return true;
 }
 
 bool BaseDateAndTimeInputType::valueMissing(const String& value) const

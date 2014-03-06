@@ -1118,20 +1118,6 @@ bool RenderTheme::shouldOpenPickerWithF4Key() const
     return false;
 }
 
-bool RenderTheme::supportsDataListUI(const AtomicString& type) const
-{
-    return type == InputTypeNames::text || type == InputTypeNames::search || type == InputTypeNames::url
-        || type == InputTypeNames::tel || type == InputTypeNames::email || type == InputTypeNames::number
-        || type == InputTypeNames::color
-        || type == InputTypeNames::date
-        || type == InputTypeNames::datetime
-        || type == InputTypeNames::datetime_local
-        || type == InputTypeNames::month
-        || type == InputTypeNames::week
-        || type == InputTypeNames::time
-        || type == InputTypeNames::range;
-}
-
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 bool RenderTheme::supportsCalendarPicker(const AtomicString& type) const
 {

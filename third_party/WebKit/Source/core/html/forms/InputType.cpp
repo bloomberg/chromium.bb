@@ -147,11 +147,6 @@ InputType::~InputType()
 {
 }
 
-bool InputType::themeSupportsDataListUI(InputType* type)
-{
-    return RenderTheme::theme().supportsDataListUI(type->formControlType());
-}
-
 bool InputType::isTextField() const
 {
     return false;

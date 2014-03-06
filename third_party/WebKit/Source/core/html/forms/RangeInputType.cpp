@@ -317,7 +317,7 @@ void RangeInputType::disabledAttributeChanged()
 
 bool RangeInputType::shouldRespectListAttribute()
 {
-    return InputType::themeSupportsDataListUI(this);
+    return true;
 }
 
 inline SliderThumbElement* RangeInputType::sliderThumbElement() const
