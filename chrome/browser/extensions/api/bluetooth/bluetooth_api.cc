@@ -636,24 +636,18 @@ void BluetoothStartDiscoveryFunction::OnSuccessCallback() {
 
 void BluetoothStartDiscoveryFunction::OnErrorCallback() {
   SetError(kStartDiscoveryFailed);
-  GetEventRouter(browser_context())->SetResponsibleForDiscovery(false);
   SendResponse(false);
   GetEventRouter(browser_context())->OnListenerRemoved();
 }
 
 bool BluetoothStartDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
-  GetEventRouter(browser_context())->SetSendDiscoveryEvents(true);
-
-  // If this profile is already discovering devices, there should be nothing
-  // else to do.
-  if (!GetEventRouter(browser_context())->IsResponsibleForDiscovery()) {
-    GetEventRouter(browser_context())->SetResponsibleForDiscovery(true);
-    GetEventRouter(browser_context())->OnListenerAdded();
-    adapter->StartDiscovering(
-        base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
-        base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
-  }
+  GetEventRouter(browser_context())->OnListenerAdded();
+  GetEventRouter(browser_context())->StartDiscoverySession(
+      adapter,
+      extension_id(),
+      base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
+      base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
 
   return true;
 }
@@ -665,19 +659,17 @@ void BluetoothStopDiscoveryFunction::OnSuccessCallback() {
 
 void BluetoothStopDiscoveryFunction::OnErrorCallback() {
   SetError(kStopDiscoveryFailed);
-  GetEventRouter(browser_context())->SetResponsibleForDiscovery(true);
   SendResponse(false);
   GetEventRouter(browser_context())->OnListenerRemoved();
 }
 
 bool BluetoothStopDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
-  GetEventRouter(browser_context())->SetSendDiscoveryEvents(false);
-  if (GetEventRouter(browser_context())->IsResponsibleForDiscovery()) {
-    adapter->StopDiscovering(
-        base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
-        base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
-  }
+  GetEventRouter(browser_context())->StopDiscoverySession(
+      adapter,
+      extension_id(),
+      base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
+      base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
 
   return true;
 }

@@ -22,6 +22,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "extensions/browser/event_router.h"
@@ -45,9 +46,7 @@ struct ExtensionBluetoothProfileRecord {
 
 ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(
     content::BrowserContext* context)
-    : send_discovery_events_(false),
-      responsible_for_discovery_(false),
-      browser_context_(context),
+    : browser_context_(context),
       adapter_(NULL),
       num_event_listeners_(0),
       next_socket_id_(1),
@@ -71,6 +70,11 @@ ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
        iter != bluetooth_profile_map_.end();
        ++iter) {
     iter->second.profile->Unregister();
+  }
+  for (DiscoverySessionMap::iterator iter = discovery_session_map_.begin();
+       iter != discovery_session_map_.end();
+       ++iter) {
+    delete iter->second;
   }
 }
 
@@ -145,6 +149,50 @@ bool ExtensionBluetoothEventRouter::HasProfile(const std::string& uuid) const {
   return bluetooth_profile_map_.find(uuid) != bluetooth_profile_map_.end();
 }
 
+void ExtensionBluetoothEventRouter::StartDiscoverySession(
+    device::BluetoothAdapter* adapter,
+    const std::string& extension_id,
+    const base::Closure& callback,
+    const base::Closure& error_callback) {
+  if (adapter != adapter_.get()) {
+    error_callback.Run();
+    return;
+  }
+  DiscoverySessionMap::iterator iter =
+      discovery_session_map_.find(extension_id);
+  if (iter != discovery_session_map_.end() && iter->second->IsActive()) {
+    DVLOG(1) << "An active discovery session exists for extension.";
+    error_callback.Run();
+    return;
+  }
+  adapter->StartDiscoverySession(
+      base::Bind(&ExtensionBluetoothEventRouter::OnStartDiscoverySession,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 extension_id,
+                 callback),
+      error_callback);
+}
+
+void ExtensionBluetoothEventRouter::StopDiscoverySession(
+    device::BluetoothAdapter* adapter,
+    const std::string& extension_id,
+    const base::Closure& callback,
+    const base::Closure& error_callback) {
+  if (adapter != adapter_.get()) {
+    error_callback.Run();
+    return;
+  }
+  DiscoverySessionMap::iterator iter =
+      discovery_session_map_.find(extension_id);
+  if (iter == discovery_session_map_.end() || !iter->second->IsActive()) {
+    DVLOG(1) << "No active discovery session exists for extension.";
+    error_callback.Run();
+    return;
+  }
+  device::BluetoothDiscoverySession* session = iter->second;
+  session->Stop(callback, error_callback);
+}
+
 device::BluetoothProfile* ExtensionBluetoothEventRouter::GetProfile(
     const std::string& uuid) const {
   BluetoothProfileMap::const_iterator iter = bluetooth_profile_map_.find(uuid);
@@ -160,29 +208,6 @@ ExtensionBluetoothEventRouter::GetSocket(int id) {
   if (socket_entry == socket_map_.end())
     return NULL;
   return socket_entry->second.socket;
-}
-
-void ExtensionBluetoothEventRouter::SetResponsibleForDiscovery(
-    bool responsible) {
-  responsible_for_discovery_ = responsible;
-}
-
-bool ExtensionBluetoothEventRouter::IsResponsibleForDiscovery() const {
-  return responsible_for_discovery_;
-}
-
-void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
-  // At the transition into sending devices, also send past devices that
-  // were discovered as they will not be discovered again.
-  if (should_send && !send_discovery_events_) {
-    for (DeviceList::const_iterator i = discovered_devices_.begin();
-        i != discovered_devices_.end(); ++i) {
-      DispatchDeviceEvent(extensions::event_names::kBluetoothOnDeviceDiscovered,
-                          **i);
-    }
-  }
-
-  send_discovery_events_ = should_send;
 }
 
 void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
@@ -243,9 +268,19 @@ void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
   }
 
   if (!discovering) {
-    send_discovery_events_ = false;
-    responsible_for_discovery_ = false;
-    discovered_devices_.clear();
+    // If any discovery sessions are inactive, clean them up.
+    DiscoverySessionMap active_session_map;
+    for (DiscoverySessionMap::iterator iter = discovery_session_map_.begin();
+         iter != discovery_session_map_.end();
+         ++iter) {
+      device::BluetoothDiscoverySession* session = iter->second;
+      if (session->IsActive()) {
+        active_session_map[iter->first] = session;
+        continue;
+      }
+      delete session;
+    }
+    discovery_session_map_.swap(active_session_map);
   }
 
   DispatchAdapterStateEvent();
@@ -263,10 +298,6 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
       new bluetooth::Device();
   bluetooth::BluetoothDeviceToApiDevice(
       *device, extension_device);
-  discovered_devices_.push_back(extension_device);
-
-  if (!send_discovery_events_)
-    return;
 
   DispatchDeviceEvent(extensions::event_names::kBluetoothOnDeviceDiscovered,
                       *extension_device);
@@ -331,6 +362,27 @@ void ExtensionBluetoothEventRouter::CleanUpForExtension(
       ReleaseSocket(socket_id);
     }
   }
+
+  // Remove any discovery session initiated by the extension.
+  DiscoverySessionMap::iterator session_iter =
+      discovery_session_map_.find(extension_id);
+  if (session_iter == discovery_session_map_.end())
+    return;
+  delete session_iter->second;
+  discovery_session_map_.erase(session_iter);
+}
+
+void ExtensionBluetoothEventRouter::OnStartDiscoverySession(
+    const std::string& extension_id,
+    const base::Closure& callback,
+    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+  // Clean up any existing session instance for the extension.
+  DiscoverySessionMap::iterator iter =
+      discovery_session_map_.find(extension_id);
+  if (iter != discovery_session_map_.end())
+    delete iter->second;
+  discovery_session_map_[extension_id] = discovery_session.release();
+  callback.Run();
 }
 
 void ExtensionBluetoothEventRouter::Observe(
