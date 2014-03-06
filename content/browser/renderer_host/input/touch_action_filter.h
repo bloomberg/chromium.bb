@@ -37,6 +37,8 @@ public:
   // renderer. It may be called multiple times during this interval.
   void ResetTouchAction();
 
+  TouchAction allowed_touch_action() const { return allowed_touch_action_; }
+
   // Return the intersection of two TouchAction values.
   static TouchAction Intersect(TouchAction ta1, TouchAction ta2);
 
@@ -61,7 +63,7 @@ private:
   bool allow_current_double_tap_event_;
 
   // What touch actions are currently permitted.
-  content::TouchAction allowed_touch_action_;
+  TouchAction allowed_touch_action_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };

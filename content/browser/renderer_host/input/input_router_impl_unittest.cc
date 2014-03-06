@@ -288,6 +288,12 @@ class InputRouterImplTest : public testing::Test {
     return count;
   }
 
+  static void Wait(base::TimeDelta delay) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitClosure(), delay);
+    base::MessageLoop::current()->Run();
+  }
+
   scoped_ptr<MockRenderProcessHost> process_;
   scoped_ptr<MockInputRouterClient> client_;
   scoped_ptr<MockInputAckHandler> ack_handler_;
@@ -992,12 +998,39 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
 }
 
 // Test that touch ack timeout behavior is properly configured via the command
-// line, and toggled by the view update flags.
+// line, and toggled by view update flags and allowed touch actions.
 TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
+  // Unless explicitly supported via the command-line, the touch timeout should
+  // be disabled.
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTouchAckTimeoutDelayMs, "5");
   TearDown();
   SetUp();
+  ASSERT_TRUE(TouchEventTimeoutEnabled());
+
+  // Verify that the touch ack timeout fires upon the delayed ack.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  Wait(base::TimeDelta::FromMilliseconds(15));
+
+  // The timed-out event should have been ack'ed.
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // Ack'ing the timed-out event should fire a TouchCancel.
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // The remainder of the touch sequence should be dropped.
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   ASSERT_TRUE(TouchEventTimeoutEnabled());
 
   // A fixed page scale or mobile viewport should disable the touch timeout.
@@ -1016,6 +1049,99 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   input_router()->OnViewUpdated(InputRouter::VIEW_FLAGS_NONE);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
+
+  // TOUCH_ACTION_NONE (and no other touch-action) should disable the timeout.
+  OnHasTouchEventHandlers(true);
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  OnSetTouchAction(TOUCH_ACTION_PAN_Y);
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // As the touch-action is reset by a new touch sequence, the timeout behavior
+  // should be restored.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
+}
+
+// Test that a touch sequenced preceded by TOUCH_ACTION_NONE is not affected by
+// the touch timeout.
+TEST_F(InputRouterImplTest,
+       TouchAckTimeoutDisabledForTouchSequenceAfterTouchActionNone) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kTouchAckTimeoutDelayMs, "5");
+  TearDown();
+  SetUp();
+  ASSERT_TRUE(TouchEventTimeoutEnabled());
+  OnHasTouchEventHandlers(true);
+
+  // Start a touch sequence.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+
+  // TOUCH_ACTION_NONE should disable the timeout.
+  OnSetTouchAction(TOUCH_ACTION_NONE);
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+
+  // End the touch sequence.
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_FALSE(TouchEventTimeoutEnabled());
+  ack_handler_->GetAndResetAckCount();
+  GetSentMessageCountAndResetSink();
+
+  // Start another touch sequence.  While this does restore the touch timeout
+  // the timeout will not apply until the *next* touch sequence. This affords a
+  // touch-action response from the renderer without racing against the timeout.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Delay the ack.  The timeout should *not* fire.
+  Wait(base::TimeDelta::FromMilliseconds(15));
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // Finally send the ack.  The touch sequence should not have been cancelled.
+  SendInputEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // End the sequence.
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // A new touch sequence should (finally) be subject to the timeout.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_TRUE(TouchEventTimeoutEnabled());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Wait for the touch ack timeout to fire.
+  Wait(base::TimeDelta::FromMilliseconds(15));
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 }
 
 // Test that TouchActionFilter::ResetTouchAction is called before the

@@ -528,8 +528,10 @@ void TouchEventQueue::FlushQueue() {
   DCHECK(!dispatching_touch_);
   if (touch_filtering_state_ != DROP_ALL_TOUCHES)
     touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
-  while (!touch_queue_.empty())
-    PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, LatencyInfo());
+  while (!touch_queue_.empty()) {
+    PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                          LatencyInfo());
+  }
 }
 
 void TouchEventQueue::PopTouchEventToClient(

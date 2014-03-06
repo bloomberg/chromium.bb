@@ -142,8 +142,9 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       move_caret_pending_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
-      touch_ack_timeout_enabled_(false),
+      touch_ack_timeout_supported_(false),
       touch_ack_timeout_delay_ms_(std::numeric_limits<size_t>::max()),
+      current_view_flags_(0),
       current_ack_source_(ACK_SOURCE_NONE),
       gesture_event_queue_(new GestureEventQueue(this, this)) {
   DCHECK(sender);
@@ -151,10 +152,9 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
   DCHECK(ack_handler);
   touch_event_queue_.reset(new TouchEventQueue(
       this, GetTouchScrollingMode(), GetTouchMoveSlopSuppressionLengthDips()));
-  touch_ack_timeout_enabled_ =
+  touch_ack_timeout_supported_ =
       GetTouchAckTimeoutDelayMs(&touch_ack_timeout_delay_ms_);
-  touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled_,
-                                           touch_ack_timeout_delay_ms_);
+  UpdateTouchAckTimeoutEnabled();
 }
 
 InputRouterImpl::~InputRouterImpl() {}
@@ -287,8 +287,14 @@ void InputRouterImpl::SendMouseEventImmediately(
 
 void InputRouterImpl::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch_event) {
-  if (WebTouchEventTraits::IsTouchSequenceStart(touch_event.event))
+  if (WebTouchEventTraits::IsTouchSequenceStart(touch_event.event)) {
     touch_action_filter_.ResetTouchAction();
+    // Note that if the previous touch-action was TOUCH_ACTION_NONE, enabling
+    // the timeout here will not take effect until the *following* touch
+    // sequence.  This is a desirable side-effect, giving the renderer a chance
+    // to send a touch-action response without racing against the ack timeout.
+    UpdateTouchAckTimeoutEnabled();
+  }
 
   FilterAndSendWebInputEvent(touch_event.event, touch_event.latency, false);
 }
@@ -310,11 +316,10 @@ bool InputRouterImpl::ShouldForwardTouchEvent() const {
 }
 
 void InputRouterImpl::OnViewUpdated(int view_flags) {
-  bool fixed_page_scale = (view_flags & FIXED_PAGE_SCALE) != 0;
-  bool mobile_viewport = (view_flags & MOBILE_VIEWPORT) != 0;
-  touch_event_queue_->SetAckTimeoutEnabled(
-      touch_ack_timeout_enabled_ && !(fixed_page_scale || mobile_viewport),
-      touch_ack_timeout_delay_ms_);
+  current_view_flags_ = view_flags;
+
+  // A fixed page scale or mobile viewport should disable the touch ack timeout.
+  UpdateTouchAckTimeoutEnabled();
 }
 
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
@@ -344,6 +349,7 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
   if (WebTouchEventTraits::IsTouchSequenceStart(event.event) &&
       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
     touch_action_filter_.ResetTouchAction();
+    UpdateTouchAckTimeoutEnabled();
   }
   ack_handler_->OnTouchEventAck(event, ack_result);
 }
@@ -559,12 +565,14 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   client_->OnHasTouchEventHandlers(has_handlers);
 }
 
-void InputRouterImpl::OnSetTouchAction(
-    content::TouchAction touch_action) {
+void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
   // Synthetic touchstart events should get filtered out in RenderWidget.
   DCHECK(touch_event_queue_->IsPendingAckTouchStart());
 
   touch_action_filter_.OnSetTouchAction(touch_action);
+
+  // TOUCH_ACTION_NONE should disable the touch ack timeout.
+  UpdateTouchAckTimeoutEnabled();
 }
 
 void InputRouterImpl::ProcessInputEventAck(
@@ -772,6 +780,30 @@ void InputRouterImpl::SimulateTouchGestureWithMouse(
     case WebMouseEvent::ButtonNone:
       break;
   }
+}
+
+void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
+  if (!touch_ack_timeout_supported_) {
+    touch_event_queue_->SetAckTimeoutEnabled(false, 0);
+    return;
+  }
+
+  // Mobile sites tend to be well-behaved with respect to touch handling, so
+  // they have less need for the touch timeout fallback.
+  const bool fixed_page_scale = (current_view_flags_ & FIXED_PAGE_SCALE) != 0;
+  const bool mobile_viewport = (current_view_flags_ & MOBILE_VIEWPORT) != 0;
+
+  // TOUCH_ACTION_NONE will prevent scrolling, in which case the timeout serves
+  // little purpose. It's also a strong signal that touch handling is critical
+  // to page functionality, so the timeout could do more harm than good.
+  const bool touch_action_none =
+      touch_action_filter_.allowed_touch_action() == TOUCH_ACTION_NONE;
+
+  const bool touch_ack_timeout_enabled = !fixed_page_scale &&
+                                         !mobile_viewport &&
+                                         !touch_action_none;
+  touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled,
+                                           touch_ack_timeout_delay_ms_);
 }
 
 bool InputRouterImpl::IsInOverscrollGesture() const {

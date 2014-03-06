@@ -125,7 +125,7 @@ private:
   void OnMsgMoveCaretAck();
   void OnSelectRangeAck();
   void OnHasTouchEventHandlers(bool has_handlers);
-  void OnSetTouchAction(content::TouchAction touch_action);
+  void OnSetTouchAction(TouchAction touch_action);
 
   // Indicates the source of an ack provided to |ProcessInputEventAck()|.
   // The source is tracked by |current_ack_source_|, which aids in ack routing.
@@ -173,6 +173,12 @@ private:
 
   void SimulateTouchGestureWithMouse(
       const MouseEventWithLatencyInfo& mouse_event);
+
+  // Called when a touch timeout-affecting bit has changed, in turn toggling the
+  // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input
+  // to that determination includes current view properties, the allowed touch
+  // action and the command-line configured |touch_ack_timeout_supported_|.
+  void UpdateTouchAckTimeoutEnabled();
 
   bool IsInOverscrollGesture() const;
 
@@ -232,8 +238,11 @@ private:
   KeyQueue key_queue_;
 
   // Whether touch ack timeout handling has been enabled via the command line.
-  bool touch_ack_timeout_enabled_;
+  bool touch_ack_timeout_supported_;
   size_t touch_ack_timeout_delay_ms_;
+
+  // Cached flags from |OnViewUpdated()|, defaults to 0.
+  int current_view_flags_;
 
   // The source of the ack within the scope of |ProcessInputEventAck()|.
   // Defaults to ACK_SOURCE_NONE.
