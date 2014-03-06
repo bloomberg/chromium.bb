@@ -275,14 +275,29 @@ void SyncEngine::SetSyncEnabled(bool enabled) {
       OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
 }
 
-SyncStatusCode SyncEngine::SetConflictResolutionPolicy(
+SyncStatusCode SyncEngine::SetDefaultConflictResolutionPolicy(
     ConflictResolutionPolicy policy) {
-  conflict_resolution_policy_ = policy;
+  default_conflict_resolution_policy_ = policy;
   return SYNC_STATUS_OK;
 }
 
-ConflictResolutionPolicy SyncEngine::GetConflictResolutionPolicy() const {
-  return conflict_resolution_policy_;
+SyncStatusCode SyncEngine::SetConflictResolutionPolicy(
+    const GURL& origin,
+    ConflictResolutionPolicy policy) {
+  NOTIMPLEMENTED();
+  default_conflict_resolution_policy_ = policy;
+  return SYNC_STATUS_OK;
+}
+
+ConflictResolutionPolicy SyncEngine::GetDefaultConflictResolutionPolicy()
+    const {
+  return default_conflict_resolution_policy_;
+}
+
+ConflictResolutionPolicy SyncEngine::GetConflictResolutionPolicy(
+    const GURL& origin) const {
+  NOTIMPLEMENTED();
+  return default_conflict_resolution_policy_;
 }
 
 void SyncEngine::GetRemoteVersions(
@@ -441,7 +456,8 @@ SyncEngine::SyncEngine(
       should_check_remote_change_(true),
       listing_remote_changes_(false),
       sync_enabled_(false),
-      conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
+      default_conflict_resolution_policy_(
+          CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       network_available_(false),
       weak_ptr_factory_(this) {
 }

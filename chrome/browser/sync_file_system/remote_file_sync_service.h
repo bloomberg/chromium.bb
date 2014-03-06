@@ -206,11 +206,17 @@ class RemoteFileSyncService {
   // Sets the conflict resolution policy. Returns SYNC_STATUS_OK on success,
   // or returns an error code if the given policy is not supported or had
   // an error.
+  virtual SyncStatusCode SetDefaultConflictResolutionPolicy(
+      ConflictResolutionPolicy policy) = 0;
   virtual SyncStatusCode SetConflictResolutionPolicy(
+      const GURL& origin,
       ConflictResolutionPolicy policy) = 0;
 
   // Gets the conflict resolution policy.
-  virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const = 0;
+  virtual ConflictResolutionPolicy GetDefaultConflictResolutionPolicy()
+      const = 0;
+  virtual ConflictResolutionPolicy GetConflictResolutionPolicy(
+      const GURL& origin) const = 0;
 
   // Returns a list of remote versions with their metadata.
   // This method is typically called for a file which is in conflicting state.

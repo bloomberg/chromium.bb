@@ -381,14 +381,15 @@ void SyncFileSystemService::RemoveSyncEventObserver(
   observers_.RemoveObserver(observer);
 }
 
-ConflictResolutionPolicy
-SyncFileSystemService::GetConflictResolutionPolicy() const {
-  return remote_service_->GetConflictResolutionPolicy();
+ConflictResolutionPolicy SyncFileSystemService::GetConflictResolutionPolicy(
+    const GURL& origin) const {
+  return remote_service_->GetConflictResolutionPolicy(origin);
 }
 
 SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
+    const GURL& origin,
     ConflictResolutionPolicy policy) {
-  return remote_service_->SetConflictResolutionPolicy(policy);
+  return remote_service_->SetConflictResolutionPolicy(origin, policy);
 }
 
 LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(

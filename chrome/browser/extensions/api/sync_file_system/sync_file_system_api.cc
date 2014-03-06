@@ -353,7 +353,8 @@ bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
   sync_file_system::SyncFileSystemService* service =
       GetSyncFileSystemService(GetProfile());
   DCHECK(service);
-  SyncStatusCode status = service->SetConflictResolutionPolicy(policy);
+  SyncStatusCode status = service->SetConflictResolutionPolicy(
+      source_url().GetOrigin(), policy);
   if (status != sync_file_system::SYNC_STATUS_OK) {
     SetError(ErrorToString(status));
     return false;
@@ -367,7 +368,7 @@ bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
   DCHECK(service);
   api::sync_file_system::ConflictResolutionPolicy policy =
       ConflictResolutionPolicyToExtensionEnum(
-          service->GetConflictResolutionPolicy());
+          service->GetConflictResolutionPolicy(source_url().GetOrigin()));
   SetResult(new base::StringValue(
           api::sync_file_system::ToString(policy)));
   return true;

@@ -53,10 +53,14 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(GetOriginStatusMap,
                void(RemoteFileSyncService::OriginStatusMap* status_map));
   MOCK_METHOD1(SetSyncEnabled, void(bool enabled));
-  MOCK_METHOD1(SetConflictResolutionPolicy,
+  MOCK_METHOD1(SetDefaultConflictResolutionPolicy,
                SyncStatusCode(ConflictResolutionPolicy));
-  MOCK_CONST_METHOD0(GetConflictResolutionPolicy,
+  MOCK_METHOD2(SetConflictResolutionPolicy,
+               SyncStatusCode(const GURL&, ConflictResolutionPolicy));
+  MOCK_CONST_METHOD0(GetDefaultConflictResolutionPolicy,
                      ConflictResolutionPolicy());
+  MOCK_CONST_METHOD1(GetConflictResolutionPolicy,
+                     ConflictResolutionPolicy(const GURL&));
   MOCK_METHOD2(GetRemoteVersions,
                void(const fileapi::FileSystemURL&,
                     const RemoteVersionsCallback&));
@@ -92,9 +96,14 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       const GURL& origin, UninstallFlag flag,
       const SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(const SyncFileCallback& callback);
-  SyncStatusCode SetConflictResolutionPolicyStub(
+  SyncStatusCode SetDefaultConflictResolutionPolicyStub(
       ConflictResolutionPolicy policy);
-  ConflictResolutionPolicy GetConflictResolutionPolicyStub() const;
+  SyncStatusCode SetConflictResolutionPolicyStub(
+      const GURL& origin,
+      ConflictResolutionPolicy policy);
+  ConflictResolutionPolicy GetDefaultConflictResolutionPolicyStub() const;
+  ConflictResolutionPolicy GetConflictResolutionPolicyStub(
+      const GURL& origin) const;
   RemoteServiceState GetCurrentStateStub() const;
 
   // For default implementation.

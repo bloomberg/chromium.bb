@@ -39,9 +39,15 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
       .WillByDefault(Return(false));
   ON_CALL(*this, GetCurrentState())
       .WillByDefault(Invoke(this, &self::GetCurrentStateStub));
-  ON_CALL(*this, SetConflictResolutionPolicy(_))
+  ON_CALL(*this, SetDefaultConflictResolutionPolicy(_))
+      .WillByDefault(
+          Invoke(this, &self::SetDefaultConflictResolutionPolicyStub));
+  ON_CALL(*this, SetConflictResolutionPolicy(_, _))
       .WillByDefault(Invoke(this, &self::SetConflictResolutionPolicyStub));
-  ON_CALL(*this, GetConflictResolutionPolicy())
+  ON_CALL(*this, GetDefaultConflictResolutionPolicy())
+      .WillByDefault(
+          Invoke(this, &self::GetDefaultConflictResolutionPolicyStub));
+  ON_CALL(*this, GetConflictResolutionPolicy(_))
       .WillByDefault(Invoke(this, &self::GetConflictResolutionPolicyStub));
 }
 
@@ -118,14 +124,28 @@ void MockRemoteFileSyncService::ProcessRemoteChangeStub(
                  fileapi::FileSystemURL()));
 }
 
+SyncStatusCode
+MockRemoteFileSyncService::SetDefaultConflictResolutionPolicyStub(
+    ConflictResolutionPolicy policy) {
+  conflict_resolution_policy_ = policy;
+  return SYNC_STATUS_OK;
+}
+
 SyncStatusCode MockRemoteFileSyncService::SetConflictResolutionPolicyStub(
+    const GURL& origin,
     ConflictResolutionPolicy policy) {
   conflict_resolution_policy_ = policy;
   return SYNC_STATUS_OK;
 }
 
 ConflictResolutionPolicy
-MockRemoteFileSyncService::GetConflictResolutionPolicyStub() const {
+MockRemoteFileSyncService::GetDefaultConflictResolutionPolicyStub() const {
+  return conflict_resolution_policy_;
+}
+
+ConflictResolutionPolicy
+MockRemoteFileSyncService::GetConflictResolutionPolicyStub(
+    const GURL& origin) const {
   return conflict_resolution_policy_;
 }
 

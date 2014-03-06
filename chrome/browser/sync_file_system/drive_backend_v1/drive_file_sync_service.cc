@@ -268,14 +268,26 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
       OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
 }
 
+SyncStatusCode DriveFileSyncService::SetDefaultConflictResolutionPolicy(
+    ConflictResolutionPolicy policy) {
+  conflict_resolution_resolver_.set_policy(policy);
+  return SYNC_STATUS_OK;
+}
+
 SyncStatusCode DriveFileSyncService::SetConflictResolutionPolicy(
+    const GURL& origin,
     ConflictResolutionPolicy policy) {
   conflict_resolution_resolver_.set_policy(policy);
   return SYNC_STATUS_OK;
 }
 
 ConflictResolutionPolicy
-DriveFileSyncService::GetConflictResolutionPolicy() const {
+DriveFileSyncService::GetDefaultConflictResolutionPolicy() const {
+  return conflict_resolution_resolver_.policy();
+}
+
+ConflictResolutionPolicy
+DriveFileSyncService::GetConflictResolutionPolicy(const GURL& origin) const {
   return conflict_resolution_resolver_.policy();
 }
 

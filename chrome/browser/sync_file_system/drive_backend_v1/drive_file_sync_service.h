@@ -106,12 +106,18 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual SyncStatusCode SetConflictResolutionPolicy(
+  virtual SyncStatusCode SetDefaultConflictResolutionPolicy(
       ConflictResolutionPolicy policy) OVERRIDE;
-  virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const OVERRIDE;
-  virtual void GetRemoteVersions(
-      const fileapi::FileSystemURL& url,
-      const RemoteVersionsCallback& callback) OVERRIDE;
+  virtual SyncStatusCode SetConflictResolutionPolicy(
+      const GURL& origin,
+      ConflictResolutionPolicy policy) OVERRIDE;
+  virtual ConflictResolutionPolicy GetDefaultConflictResolutionPolicy() const
+      OVERRIDE;
+  virtual ConflictResolutionPolicy GetConflictResolutionPolicy(
+      const GURL& origin) const OVERRIDE;
+  virtual void GetRemoteVersions(const fileapi::FileSystemURL& url,
+                                 const RemoteVersionsCallback& callback)
+      OVERRIDE;
   virtual void DownloadRemoteVersion(
       const fileapi::FileSystemURL& url,
       const std::string& version_id,

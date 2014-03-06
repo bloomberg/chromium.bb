@@ -85,9 +85,15 @@ class SyncEngine : public RemoteFileSyncService,
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual SyncStatusCode SetConflictResolutionPolicy(
+  virtual SyncStatusCode SetDefaultConflictResolutionPolicy(
       ConflictResolutionPolicy policy) OVERRIDE;
-  virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const OVERRIDE;
+  virtual SyncStatusCode SetConflictResolutionPolicy(
+      const GURL& origin,
+      ConflictResolutionPolicy policy) OVERRIDE;
+  virtual ConflictResolutionPolicy GetDefaultConflictResolutionPolicy()
+      const OVERRIDE;
+  virtual ConflictResolutionPolicy GetConflictResolutionPolicy(
+      const GURL& origin) const OVERRIDE;
   virtual void GetRemoteVersions(
       const fileapi::FileSystemURL& url,
       const RemoteVersionsCallback& callback) OVERRIDE;
@@ -197,7 +203,7 @@ class SyncEngine : public RemoteFileSyncService,
   base::TimeTicks time_to_check_changes_;
 
   bool sync_enabled_;
-  ConflictResolutionPolicy conflict_resolution_policy_;
+  ConflictResolutionPolicy default_conflict_resolution_policy_;
   bool network_available_;
 
   scoped_ptr<SyncTaskManager> task_manager_;
