@@ -41,11 +41,6 @@ SVGColor::SVGColor(ClassType classType, const SVGColorType& colorType)
 {
 }
 
-PassRefPtrWillBeRawPtr<RGBColor> SVGColor::rgbColor() const
-{
-    return RGBColor::create(m_color.rgb());
-}
-
 StyleColor SVGColor::colorFromRGBColorString(const String& colorString)
 {
     // FIXME: Rework css parser so it is more SVG aware.
@@ -54,23 +49,6 @@ StyleColor SVGColor::colorFromRGBColorString(const String& colorString)
         return StyleColor(color);
     // FIXME: This branch catches the string currentColor, but we should error if we have an illegal color value.
     return StyleColor::currentColor();
-}
-
-void SVGColor::setRGBColor(const String&, ExceptionState& exceptionState)
-{
-    // The whole SVGColor interface is deprecated in SVG 1.1 (2nd edition).
-    // The setters are the most problematic part so we remove the support for those first.
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
-}
-
-void SVGColor::setRGBColorICCColor(const String&, const String&, ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
-}
-
-void SVGColor::setColor(unsigned short, const String&, const String&, ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 String SVGColor::customCSSText() const

@@ -396,14 +396,6 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle->strokeDashOffset()->value(lengthContext));
 }
 
-bool SVGRenderSupport::isEmptySVGInlineText(const RenderObject* object)
-{
-    // RenderSVGInlineText performs whitespace filtering in order to support xml:space
-    // (http://www.w3.org/TR/SVG/struct.html#LangSpaceAttrs), and can end up with an empty string
-    // even when its original constructor argument is non-empty.
-    return object->isSVGInlineText() && toRenderSVGInlineText(object)->hasEmptyText();
-}
-
 bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)
 {
     ASSERT(object->isText());

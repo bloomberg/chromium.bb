@@ -95,9 +95,6 @@ public:
     const SVGPaintType& paintType() const { return m_paintType; }
     String uri() const { return m_uri; }
 
-    void setUri(const String&);
-    void setPaint(unsigned short paintType, const String& uri, const String& rgbColor, const String& iccColor, ExceptionState&);
-
     String customCSSText() const;
 
     PassRefPtrWillBeRawPtr<SVGPaint> cloneForCSSOM() const;

@@ -57,17 +57,6 @@ SVGPaint::SVGPaint(const SVGPaintType& paintType, const String& uri)
 {
 }
 
-void SVGPaint::setUri(const String&)
-{
-    // The whole SVGPaint interface is deprecated in SVG 1.1 (2nd edition).
-    // The setters are the most problematic part so we remove the support for those first.
-}
-
-void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
-}
-
 String SVGPaint::customCSSText() const
 {
     switch (m_paintType) {

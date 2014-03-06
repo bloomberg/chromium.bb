@@ -64,13 +64,8 @@ public:
 
     const Color& color() const { return m_color; }
     const SVGColorType& colorType() const { return m_colorType; }
-    PassRefPtrWillBeRawPtr<RGBColor> rgbColor() const;
 
     static StyleColor colorFromRGBColorString(const String&);
-
-    void setRGBColor(const String& rgbColor, ExceptionState&);
-    void setRGBColorICCColor(const String& rgbColor, const String& iccColor, ExceptionState&);
-    void setColor(unsigned short colorType, const String& rgbColor, const String& iccColor, ExceptionState&);
 
     String customCSSText() const;
 
