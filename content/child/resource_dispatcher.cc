@@ -359,12 +359,12 @@ void ResourceDispatcher::OnReceivedResponse(
 
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
-  SiteIsolationPolicy::OnReceivedResponse(request_id,
-                                          request_info->frame_origin,
-                                          request_info->response_url,
-                                          request_info->resource_type,
-                                          request_info->origin_pid,
-                                          renderer_response_info);
+  request_info->site_isolation_metadata =
+      SiteIsolationPolicy::OnReceivedResponse(request_info->frame_origin,
+                                              request_info->response_url,
+                                              request_info->resource_type,
+                                              request_info->origin_pid,
+                                              renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
@@ -432,13 +432,18 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     CHECK(data_ptr + data_offset);
 
     // Check whether this response data is compliant with our cross-site
-    // document blocking policy.
+    // document blocking policy. We only do this for the first packet.
     std::string alternative_data;
-    bool blocked_response = SiteIsolationPolicy::ShouldBlockResponse(
-        request_id, data_ptr + data_offset, data_length, &alternative_data);
+    if (request_info->site_isolation_metadata.get()) {
+      request_info->blocked_response =
+          SiteIsolationPolicy::ShouldBlockResponse(
+              request_info->site_isolation_metadata, data_ptr + data_offset,
+              data_length, &alternative_data);
+      request_info->site_isolation_metadata.reset();
+    }
 
     // When the response is not blocked.
-    if (!blocked_response) {
+    if (!request_info->blocked_response) {
       request_info->peer->OnReceivedData(
           data_ptr + data_offset, data_length, encoded_data_length);
     } else if (alternative_data.size() > 0) {
@@ -521,7 +526,6 @@ void ResourceDispatcher::OnRequestComplete(
     int request_id,
     const ResourceMsg_RequestCompleteData& request_complete_data) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnRequestComplete");
-  SiteIsolationPolicy::OnRequestComplete(request_id);
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -572,7 +576,6 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   if (it == pending_requests_.end())
     return false;
 
-  SiteIsolationPolicy::OnRequestComplete(request_id);
   PendingRequestInfo& request_info = it->second;
   ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
   pending_requests_.erase(it);
@@ -625,6 +628,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
       resource_type(ResourceType::SUB_RESOURCE),
       is_deferred(false),
+      blocked_response(false),
       buffer_size(0) {
 }
 
@@ -641,7 +645,8 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
-      request_start(base::TimeTicks::Now()) {
+      request_start(base::TimeTicks::Now()),
+      blocked_response(false) {
 }
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {}

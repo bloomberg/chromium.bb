@@ -9,44 +9,17 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "content/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "webkit/common/resource_response_info.h"
 
 using base::StringPiece;
-using blink::WebDocument;
-using blink::WebString;
-using blink::WebURL;
-using blink::WebURLResponse;
-using blink::WebURLRequest;
 
 namespace content {
 
 namespace {
-
-// Maintain the bookkeeping data between OnReceivedResponse and
-// OnReceivedData. The key is a request id maintained by ResourceDispatcher.
-static base::LazyInstance<SiteIsolationPolicy::RequestIdToMetaDataMap>
-    g_metadata_map = LAZY_INSTANCE_INITIALIZER;
-
-// Maintain the bookkeeping data for OnReceivedData. Blocking decision is made
-// when OnReceivedData is called for the first time for a request, and the
-// decision will remain the same for following data. This map maintains the
-// decision. The key is a request id maintained by ResourceDispatcher.
-static base::LazyInstance<SiteIsolationPolicy::RequestIdToResultMap>
-    g_result_map = LAZY_INSTANCE_INITIALIZER;
 
 // The cross-site document blocking/UMA data collection is deactivated by
 // default, and only activated in renderer processes.
@@ -123,7 +96,7 @@ void IncrementHistogramEnum(const std::string& name,
 
 void HistogramCountBlockedResponse(
     const std::string& bucket_prefix,
-    const SiteIsolationPolicy::ResponseMetaData& resp_data,
+    linked_ptr<SiteIsolationResponseMetaData>& resp_data,
     bool nosniff_block) {
   std::string block_label(nosniff_block ? ".NoSniffBlocked" : ".Blocked");
   IncrementHistogramCount(bucket_prefix + block_label);
@@ -138,12 +111,12 @@ void HistogramCountBlockedResponse(
   // (e.g, 404). 3) the renderer is expected not to use the cross-site
   // document content for purposes other than JS/CSS (e.g, XHR).
   bool renderable_status_code =
-      IsRenderableStatusCode(resp_data.http_status_code);
+      IsRenderableStatusCode(resp_data->http_status_code);
 
   if (renderable_status_code) {
     IncrementHistogramEnum(
         bucket_prefix + block_label + ".RenderableStatusCode",
-        resp_data.resource_type,
+        resp_data->resource_type,
         ResourceType::LAST_TYPE);
   } else {
     IncrementHistogramCount(bucket_prefix + block_label +
@@ -160,21 +133,21 @@ void HistogramCountNotBlockedResponse(const std::string& bucket_prefix,
 
 }  // namespace
 
-SiteIsolationPolicy::ResponseMetaData::ResponseMetaData() {}
+SiteIsolationResponseMetaData::SiteIsolationResponseMetaData() {}
 
 void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
   g_policy_enabled = enabled;
 }
 
-void SiteIsolationPolicy::OnReceivedResponse(
-    int request_id,
+linked_ptr<SiteIsolationResponseMetaData>
+SiteIsolationPolicy::OnReceivedResponse(
     const GURL& frame_origin,
     const GURL& response_url,
     ResourceType::Type resource_type,
     int origin_pid,
     const webkit_glue::ResourceResponseInfo& info) {
   if (!g_policy_enabled)
-    return;
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
   // if |origin_pid| is non-zero, it means that this response is for a plugin
   // spawned from this renderer process. We exclude responses for plugins for
@@ -182,26 +155,26 @@ void SiteIsolationPolicy::OnReceivedResponse(
   // the browser process so that we don't apply cross-site document blocking to
   // them.
   if (origin_pid)
-    return;
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
   UMA_HISTOGRAM_COUNTS("SiteIsolation.AllResponses", 1);
 
   // See if this is for navigation. If it is, don't block it, under the
   // assumption that we will put it in an appropriate process.
   if (ResourceType::IsFrame(resource_type))
-    return;
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
   if (!IsBlockableScheme(response_url))
-    return;
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
   if (IsSameSite(frame_origin, response_url))
-    return;
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
-  SiteIsolationPolicy::ResponseMetaData::CanonicalMimeType canonical_mime_type =
+  SiteIsolationResponseMetaData::CanonicalMimeType canonical_mime_type =
       GetCanonicalMimeType(info.mime_type);
 
-  if (canonical_mime_type == SiteIsolationPolicy::ResponseMetaData::Others)
-    return;
+  if (canonical_mime_type == SiteIsolationResponseMetaData::Others)
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
   // Every CORS request should have the Access-Control-Allow-Origin header even
   // if it is preceded by a pre-flight request. Therefore, if this is a CORS
@@ -213,62 +186,35 @@ void SiteIsolationPolicy::OnReceivedResponse(
   info.headers->EnumerateHeader(
       NULL, "access-control-allow-origin", &access_control_origin);
   if (IsValidCorsHeaderSet(frame_origin, response_url, access_control_origin))
-    return;
+    return linked_ptr<SiteIsolationResponseMetaData>();
 
   // Real XSD data collection starts from here.
   std::string no_sniff;
   info.headers->EnumerateHeader(NULL, "x-content-type-options", &no_sniff);
 
-  ResponseMetaData resp_data;
-  resp_data.frame_origin = frame_origin.spec();
-  resp_data.response_url = response_url;
-  resp_data.resource_type = resource_type;
-  resp_data.canonical_mime_type = canonical_mime_type;
-  resp_data.http_status_code = info.headers->response_code();
-  resp_data.no_sniff = LowerCaseEqualsASCII(no_sniff, "nosniff");
+  linked_ptr<SiteIsolationResponseMetaData> resp_data(
+      new SiteIsolationResponseMetaData);
+  resp_data->frame_origin = frame_origin.spec();
+  resp_data->response_url = response_url;
+  resp_data->resource_type = resource_type;
+  resp_data->canonical_mime_type = canonical_mime_type;
+  resp_data->http_status_code = info.headers->response_code();
+  resp_data->no_sniff = LowerCaseEqualsASCII(no_sniff, "nosniff");
 
-  (g_metadata_map.Get())[request_id] = resp_data;
+  return resp_data;
 }
 
 bool SiteIsolationPolicy::ShouldBlockResponse(
-    int request_id,
+    linked_ptr<SiteIsolationResponseMetaData>& resp_data,
     const char* raw_data,
     int raw_length,
     std::string* alternative_data) {
   if (!g_policy_enabled)
     return false;
 
-  RequestIdToMetaDataMap& metadata_map = g_metadata_map.Get();
-  RequestIdToResultMap& result_map = g_result_map.Get();
-
-  // If there's an entry for |request_id| in blocked_map, this request's first
-  // data packet has already been examined. We can return the result here.
-  if (result_map.count(request_id) != 0) {
-    if (result_map[request_id]) {
-      // Here, the blocking result has been set for the previous run of
-      // ShouldBlockResponse(), so we set alternative data to an empty string so
-      // that ResourceDispatcher doesn't call its peer's onReceivedData() with
-      // the alternative data.
-      alternative_data->erase();
-      return true;
-    }
-    return false;
-  }
-
-  // If result_map doesn't have an entry for |request_id|, we're receiving the
-  // first data packet for request_id. If request_id is not registered, this
-  // request is identified as a non-target of our policy. So we return true.
-  if (metadata_map.count(request_id) == 0) {
-    // We set request_id to true so that we always return true for this request.
-    result_map[request_id] = false;
-    return false;
-  }
+  DCHECK(resp_data.get());
 
   StringPiece data(raw_data, raw_length);
-
-  // We now look at the first data packet received for request_id.
-  ResponseMetaData resp_data = metadata_map[request_id];
-  metadata_map.erase(request_id);
 
   // Record the length of the first received network packet to see if it's
   // enough for sniffing.
@@ -278,8 +224,8 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
   // type (text/html, text/xml, etc).
   UMA_HISTOGRAM_ENUMERATION(
       "SiteIsolation.XSD.MimeType",
-      resp_data.canonical_mime_type,
-      SiteIsolationPolicy::ResponseMetaData::MaxCanonicalMimeType);
+      resp_data->canonical_mime_type,
+      SiteIsolationResponseMetaData::MaxCanonicalMimeType);
 
   // Store the result of cross-site document blocking analysis.
   bool is_blocked = false;
@@ -289,32 +235,32 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
   // type claims it to be. For example, we apply a HTML sniffer for a document
   // tagged with text/html here. Whenever this check becomes true, we'll block
   // the response.
-  if (resp_data.canonical_mime_type !=
-          SiteIsolationPolicy::ResponseMetaData::Plain) {
+  if (resp_data->canonical_mime_type !=
+          SiteIsolationResponseMetaData::Plain) {
     std::string bucket_prefix;
     bool sniffed_as_target_document = false;
-    if (resp_data.canonical_mime_type ==
-            SiteIsolationPolicy::ResponseMetaData::HTML) {
+    if (resp_data->canonical_mime_type ==
+            SiteIsolationResponseMetaData::HTML) {
       bucket_prefix = "SiteIsolation.XSD.HTML";
       sniffed_as_target_document = SniffForHTML(data);
-    } else if (resp_data.canonical_mime_type ==
-                   SiteIsolationPolicy::ResponseMetaData::XML) {
+    } else if (resp_data->canonical_mime_type ==
+                   SiteIsolationResponseMetaData::XML) {
       bucket_prefix = "SiteIsolation.XSD.XML";
       sniffed_as_target_document = SniffForXML(data);
-    } else if (resp_data.canonical_mime_type ==
-                   SiteIsolationPolicy::ResponseMetaData::JSON) {
+    } else if (resp_data->canonical_mime_type ==
+                   SiteIsolationResponseMetaData::JSON) {
       bucket_prefix = "SiteIsolation.XSD.JSON";
       sniffed_as_target_document = SniffForJSON(data);
     } else {
       NOTREACHED() << "Not a blockable mime type: "
-                   << resp_data.canonical_mime_type;
+                   << resp_data->canonical_mime_type;
     }
 
     if (sniffed_as_target_document) {
       is_blocked = true;
       HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
     } else {
-      if (resp_data.no_sniff) {
+      if (resp_data->no_sniff) {
         is_blocked = true;
         HistogramCountBlockedResponse(bucket_prefix, resp_data, true);
       } else {
@@ -336,7 +282,7 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
     if (bucket_prefix.size() > 0) {
       is_blocked = true;
       HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
-    } else if (resp_data.no_sniff) {
+    } else if (resp_data->no_sniff) {
       is_blocked = true;
       HistogramCountBlockedResponse("SiteIsolation.XSD.Plain", resp_data, true);
     } else {
@@ -348,48 +294,40 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kBlockCrossSiteDocuments))
     is_blocked = false;
-  result_map[request_id] = is_blocked;
 
   if (is_blocked) {
     alternative_data->erase();
     alternative_data->insert(0, " ");
-    LOG(ERROR) << resp_data.response_url
+    LOG(ERROR) << resp_data->response_url
                << " is blocked as an illegal cross-site document from "
-               << resp_data.frame_origin;
+               << resp_data->frame_origin;
   }
   return is_blocked;
 }
 
-void SiteIsolationPolicy::OnRequestComplete(int request_id) {
-  if (!g_policy_enabled)
-    return;
-  g_metadata_map.Get().erase(request_id);
-  g_result_map.Get().erase(request_id);
-}
-
-SiteIsolationPolicy::ResponseMetaData::CanonicalMimeType
+SiteIsolationResponseMetaData::CanonicalMimeType
 SiteIsolationPolicy::GetCanonicalMimeType(const std::string& mime_type) {
   if (LowerCaseEqualsASCII(mime_type, kTextHtml)) {
-    return SiteIsolationPolicy::ResponseMetaData::HTML;
+    return SiteIsolationResponseMetaData::HTML;
   }
 
   if (LowerCaseEqualsASCII(mime_type, kTextPlain)) {
-    return SiteIsolationPolicy::ResponseMetaData::Plain;
+    return SiteIsolationResponseMetaData::Plain;
   }
 
   if (LowerCaseEqualsASCII(mime_type, kAppJson) ||
       LowerCaseEqualsASCII(mime_type, kTextJson) ||
       LowerCaseEqualsASCII(mime_type, kTextXjson)) {
-    return SiteIsolationPolicy::ResponseMetaData::JSON;
+    return SiteIsolationResponseMetaData::JSON;
   }
 
   if (LowerCaseEqualsASCII(mime_type, kTextXml) ||
       LowerCaseEqualsASCII(mime_type, xAppRssXml) ||
       LowerCaseEqualsASCII(mime_type, kAppXml)) {
-    return SiteIsolationPolicy::ResponseMetaData::XML;
+    return SiteIsolationResponseMetaData::XML;
   }
 
- return SiteIsolationPolicy::ResponseMetaData::Others;
+ return SiteIsolationResponseMetaData::Others;
 }
 
 bool SiteIsolationPolicy::IsBlockableScheme(const GURL& url) {

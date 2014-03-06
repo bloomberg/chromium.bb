@@ -9,12 +9,16 @@
 #include <utility>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "webkit/common/resource_response_info.h"
 #include "webkit/common/resource_type.h"
+
+class GURL;
+
+namespace webkit_glue {
+struct ResourceResponseInfo;
+}
 
 namespace content {
 
@@ -52,58 +56,48 @@ namespace content {
 // SiteIsolation.XSD.[%MIMETYPE].NotBlocked.MaybeJS :
 //   # of responses that are plausibly sniffed to be JavaScript.
 
+struct SiteIsolationResponseMetaData {
+
+  enum CanonicalMimeType {
+    HTML = 0,
+    XML = 1,
+    JSON = 2,
+    Plain = 3,
+    Others = 4,
+    MaxCanonicalMimeType,
+  };
+
+  SiteIsolationResponseMetaData();
+
+  std::string frame_origin;
+  GURL response_url;
+  ResourceType::Type resource_type;
+  CanonicalMimeType canonical_mime_type;
+  int http_status_code;
+  bool no_sniff;
+};
+
 class CONTENT_EXPORT SiteIsolationPolicy {
  public:
   // Set activation flag for the UMA data collection for this renderer process.
   static void SetPolicyEnabled(bool enabled);
 
-  // Records the bookkeeping data about the HTTP header information for the
-  // request identified by |request_id|. The bookkeeping data is used by
-  // ShouldBlockResponse. We have to make sure to call OnRequestComplete to free
-  // the bookkeeping data.
-  static void OnReceivedResponse(int request_id,
-                                 const GURL& frame_origin,
-                                 const GURL& response_url,
-                                 ResourceType::Type resource_type,
-                                 int origin_pid,
-                                 const webkit_glue::ResourceResponseInfo& info);
+  // Returns any bookkeeping data about the HTTP header information for the
+  // request identified by |request_id|. Any data returned should then be
+  // passed to ShouldBlockResponse with the first packet.
+  static linked_ptr<SiteIsolationResponseMetaData> OnReceivedResponse(
+      const GURL& frame_origin, const GURL& response_url,
+      ResourceType::Type resource_type, int origin_pid,
+      const webkit_glue::ResourceResponseInfo& info);
 
   // Examines the first network packet in case response_url is registered as a
   // cross-site document by DidReceiveResponse().  In case that this response is
   // blocked, it returns an alternative data to be sent to the renderer in
   // |alternative_data|. This records various kinds of UMA data stats. This
   // function is called only if the length of received data is non-zero.
-  static bool ShouldBlockResponse(int request_id,
-                                  const char* payload,
-                                  int length,
-                                  std::string* alternative_data);
-
-  // Clean up booking data registered by OnReceiveResponse and OnReceivedData.
-  static void OnRequestComplete(int request_id);
-
-  struct ResponseMetaData {
-
-    enum CanonicalMimeType {
-      HTML = 0,
-      XML = 1,
-      JSON = 2,
-      Plain = 3,
-      Others = 4,
-      MaxCanonicalMimeType,
-    };
-
-    ResponseMetaData();
-
-    std::string frame_origin;
-    GURL response_url;
-    ResourceType::Type resource_type;
-    CanonicalMimeType canonical_mime_type;
-    int http_status_code;
-    bool no_sniff;
-  };
-
-  typedef std::map<int, ResponseMetaData> RequestIdToMetaDataMap;
-  typedef std::map<int, bool> RequestIdToResultMap;
+  static bool ShouldBlockResponse(
+      linked_ptr<SiteIsolationResponseMetaData>& resp_data, const char* payload,
+      int length, std::string* alternative_data);
 
 private:
   FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsBlockableScheme);
@@ -117,7 +111,7 @@ private:
   // Returns the representative mime type enum value of the mime type of
   // response. For example, this returns the same value for all text/xml mime
   // type families such as application/xml, application/rss+xml.
-  static ResponseMetaData::CanonicalMimeType GetCanonicalMimeType(
+  static SiteIsolationResponseMetaData::CanonicalMimeType GetCanonicalMimeType(
       const std::string& mime_type);
 
   // Returns whether this scheme is a target of cross-site document
