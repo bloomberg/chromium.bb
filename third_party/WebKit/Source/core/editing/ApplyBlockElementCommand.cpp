@@ -111,7 +111,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         insertNodeAt(blockquote, start);
         RefPtr<Element> placeholder = createBreakElement(document());
         appendNode(placeholder, blockquote);
-        setEndingSelection(VisibleSelection(positionBeforeNode(placeholder.get()), DOWNSTREAM, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(positionBeforeNode(*placeholder), DOWNSTREAM, endingSelection().isDirectional()));
         return;
     }
 

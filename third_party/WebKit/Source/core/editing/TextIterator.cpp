@@ -983,7 +983,7 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
     // The currPos.isNotNull() check is needed because positions in non-HTML content
     // (like SVG) do not have visible positions, and we don't want to emit for them either.
     VisiblePosition startPos = VisiblePosition(Position(m_startContainer, m_startOffset, Position::PositionIsOffsetInAnchor), DOWNSTREAM);
-    VisiblePosition currPos = VisiblePosition(positionBeforeNode(m_node), DOWNSTREAM);
+    VisiblePosition currPos = VisiblePosition(positionBeforeNode(*m_node), DOWNSTREAM);
     return startPos.isNotNull() && currPos.isNotNull() && !inSameLine(startPos, currPos);
 }
 
@@ -1196,7 +1196,7 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
         // instead of calling countChildren() to avoid traversing the children twice.
         if (Node* childAtOffset = endNode->traverseToChildAt(endOffset - 1)) {
             endNode = childAtOffset;
-            endOffset = lastOffsetInNode(endNode);
+            endOffset = lastOffsetInNode(*endNode);
         }
     }
 

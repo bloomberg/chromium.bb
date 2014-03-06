@@ -470,12 +470,12 @@ static Position adjustPositionForEnd(const Position& currentPosition, Node* star
 
     if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.containerNode())) {
         if (ancestor->contains(startContainerNode))
-            return positionAfterNode(ancestor);
-        return positionBeforeNode(ancestor);
+            return positionAfterNode(*ancestor);
+        return positionBeforeNode(*ancestor);
     }
 
     if (Node* lastChild = treeScope.rootNode().lastChild())
-        return positionAfterNode(lastChild);
+        return positionAfterNode(*lastChild);
 
     return Position();
 }
@@ -488,12 +488,12 @@ static Position adjustPositionForStart(const Position& currentPosition, Node* en
 
     if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.containerNode())) {
         if (ancestor->contains(endContainerNode))
-            return positionBeforeNode(ancestor);
-        return positionAfterNode(ancestor);
+            return positionBeforeNode(*ancestor);
+        return positionAfterNode(*ancestor);
     }
 
     if (Node* firstChild = treeScope.rootNode().firstChild())
-        return positionBeforeNode(firstChild);
+        return positionBeforeNode(*firstChild);
 
     return Position();
 }
@@ -567,13 +567,13 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
             Position p = previousVisuallyDistinctCandidate(m_end);
             Node* shadowAncestor = endRoot ? endRoot->shadowHost() : 0;
             if (p.isNull() && shadowAncestor)
-                p = positionAfterNode(shadowAncestor);
+                p = positionAfterNode(*shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.containerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
                 Node* root = editableRootForPosition(p);
                 shadowAncestor = root ? root->shadowHost() : 0;
                 p = isAtomicNode(p.containerNode()) ? positionInParentBeforeNode(*p.containerNode()) : previousVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
-                    p = positionAfterNode(shadowAncestor);
+                    p = positionAfterNode(*shadowAncestor);
             }
             VisiblePosition previous(p);
 
@@ -596,13 +596,13 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
             Position p = nextVisuallyDistinctCandidate(m_start);
             Node* shadowAncestor = startRoot ? startRoot->shadowHost() : 0;
             if (p.isNull() && shadowAncestor)
-                p = positionBeforeNode(shadowAncestor);
+                p = positionBeforeNode(*shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.containerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
                 Node* root = editableRootForPosition(p);
                 shadowAncestor = root ? root->shadowHost() : 0;
                 p = isAtomicNode(p.containerNode()) ? positionInParentAfterNode(*p.containerNode()) : nextVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
-                    p = positionBeforeNode(shadowAncestor);
+                    p = positionBeforeNode(*shadowAncestor);
             }
             VisiblePosition next(p);
 

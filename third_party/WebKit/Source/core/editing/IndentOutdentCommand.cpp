@@ -81,7 +81,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     if (end.anchorNode() == selectedListItem.get() || end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
         moveParagraphWithClones(VisiblePosition(start), VisiblePosition(end), newList.get(), selectedListItem.get());
     } else {
-        moveParagraphWithClones(VisiblePosition(start), VisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList.get(), selectedListItem.get());
+        moveParagraphWithClones(VisiblePosition(start), VisiblePosition(positionAfterNode(*selectedListItem->lastChild())), newList.get(), selectedListItem.get());
         removeNode(selectedListItem.get());
     }
 
@@ -187,7 +187,7 @@ void IndentOutdentCommand::outdentParagraph()
     }
     RefPtr<Node> placeholder = createBreakElement(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
-    moveParagraph(startOfParagraph(visibleStartOfParagraph), endOfParagraph(visibleEndOfParagraph), VisiblePosition(positionBeforeNode(placeholder.get())), true);
+    moveParagraph(startOfParagraph(visibleStartOfParagraph), endOfParagraph(visibleEndOfParagraph), VisiblePosition(positionBeforeNode(*placeholder)), true);
 }
 
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection

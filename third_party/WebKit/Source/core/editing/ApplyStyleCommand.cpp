@@ -848,7 +848,7 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* r
         // We don't consider m_isInlineElementToRemoveFunction here because we never apply style when m_isInlineElementToRemoveFunction is specified
         if (!style->styleIsPresentInComputedStyleOfNode(node))
             return true;
-        if (m_styledInlineElement && !enclosingNodeWithTag(positionBeforeNode(node), m_styledInlineElement->tagQName()))
+        if (m_styledInlineElement && !enclosingNodeWithTag(positionBeforeNode(*node), m_styledInlineElement->tagQName()))
             return true;
     }
     return false;
@@ -1213,7 +1213,7 @@ void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Pos
         newEnd = end;
 
     splitTextNodeContainingElement(start.containerText(), start.offsetInContainerNode());
-    updateStartEnd(positionBeforeNode(start.containerNode()), newEnd);
+    updateStartEnd(positionBeforeNode(*start.containerNode()), newEnd);
 }
 
 void ApplyStyleCommand::splitTextElementAtEnd(const Position& start, const Position& end)
@@ -1231,7 +1231,7 @@ void ApplyStyleCommand::splitTextElementAtEnd(const Position& start, const Posit
         return;
 
     Position newStart = shouldUpdateStart ? Position(toText(firstTextNode), start.offsetInContainerNode()) : start;
-    updateStartEnd(newStart, positionAfterNode(firstTextNode));
+    updateStartEnd(newStart, positionAfterNode(*firstTextNode));
 }
 
 bool ApplyStyleCommand::shouldSplitTextElement(Element* element, EditingStyle* style)
@@ -1399,11 +1399,12 @@ void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtr<N
 
 Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtr<Node> startNode, RefPtr<Node>& dummyElement)
 {
+    ASSERT(startNode);
     // It's okay to obtain the style at the startNode because we've removed all relevant styles from the current run.
     if (!startNode->isElementNode()) {
         dummyElement = createStyleSpanElement(document());
-        insertNodeAt(dummyElement, positionBeforeNode(startNode.get()));
-        return positionBeforeNode(dummyElement.get());
+        insertNodeAt(dummyElement, positionBeforeNode(*startNode));
+        return positionBeforeNode(*dummyElement);
     }
 
     return firstPositionInOrBeforeNode(startNode.get());

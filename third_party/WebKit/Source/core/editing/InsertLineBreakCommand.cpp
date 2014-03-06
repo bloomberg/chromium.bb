@@ -97,13 +97,13 @@ void InsertLineBreakCommand::doApply()
         if (needExtraLineBreak)
             insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert);
 
-        VisiblePosition endingPosition(positionBeforeNode(nodeToInsert.get()));
+        VisiblePosition endingPosition(positionBeforeNode(*nodeToInsert));
         setEndingSelection(VisibleSelection(endingPosition, endingSelection().isDirectional()));
     } else if (pos.deprecatedEditingOffset() <= caretMinOffset(pos.deprecatedNode())) {
         insertNodeAt(nodeToInsert.get(), pos);
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraph(VisiblePosition(positionBeforeNode(nodeToInsert.get()))))
+        if (!isStartOfParagraph(VisiblePosition(positionBeforeNode(*nodeToInsert))))
             insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert.get());
 
         setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), DOWNSTREAM, endingSelection().isDirectional()));

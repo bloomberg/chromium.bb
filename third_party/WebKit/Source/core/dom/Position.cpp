@@ -181,7 +181,7 @@ int Position::computeOffsetInContainerNode() const
     case PositionIsBeforeChildren:
         return 0;
     case PositionIsAfterChildren:
-        return lastOffsetInNode(m_anchorNode.get());
+        return lastOffsetInNode(*m_anchorNode);
     case PositionIsOffsetInAnchor:
         return minOffsetForNode(m_anchorNode.get(), m_offset);
     case PositionIsBeforeAnchor:
@@ -315,9 +315,9 @@ Position Position::previous(PositionMoveType moveType) const
         case CodePoint:
             return createLegacyEditingPosition(node, offset - 1);
         case Character:
-            return createLegacyEditingPosition(node, uncheckedPreviousOffset(node, offset));
+            return createLegacyEditingPosition(node, uncheckedPreviousOffset(*node, offset));
         case BackwardDeletion:
-            return createLegacyEditingPosition(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
+            return createLegacyEditingPosition(node, uncheckedPreviousOffsetForBackwardDeletion(*node, offset));
         }
     }
 
@@ -347,7 +347,7 @@ Position Position::next(PositionMoveType moveType) const
         //      Going forward one character at a time is correct.
         //   2) The new offset is a bogus offset like (<br>, 1), and there is no child.
         //      Going from 0 to 1 is correct.
-        return createLegacyEditingPosition(node, (moveType == Character) ? uncheckedNextOffset(node, offset) : offset + 1);
+        return createLegacyEditingPosition(node, (moveType == Character) ? uncheckedNextOffset(*node, offset) : offset + 1);
     }
 
     if (ContainerNode* parent = node->parentNode())
@@ -355,19 +355,19 @@ Position Position::next(PositionMoveType moveType) const
     return *this;
 }
 
-int Position::uncheckedPreviousOffset(const Node* n, int current)
+int Position::uncheckedPreviousOffset(const Node& n, int current)
 {
-    return n->renderer() ? n->renderer()->previousOffset(current) : current - 1;
+    return n.renderer() ? n.renderer()->previousOffset(current) : current - 1;
 }
 
-int Position::uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
+int Position::uncheckedPreviousOffsetForBackwardDeletion(const Node& n, int current)
 {
-    return n->renderer() ? n->renderer()->previousOffsetForBackwardDeletion(current) : current - 1;
+    return n.renderer() ? n.renderer()->previousOffsetForBackwardDeletion(current) : current - 1;
 }
 
-int Position::uncheckedNextOffset(const Node* n, int current)
+int Position::uncheckedNextOffset(const Node& n, int current)
 {
-    return n->renderer() ? n->renderer()->nextOffset(current) : current + 1;
+    return n.renderer() ? n.renderer()->nextOffset(current) : current + 1;
 }
 
 bool Position::atFirstEditingPositionForNode() const
@@ -640,7 +640,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
         // Return position after tables and nodes which have content that can be ignored.
         if (editingIgnoresContent(currentNode) || isRenderedTableElement(currentNode)) {
             if (currentPos.atEndOfNode())
-                return positionAfterNode(currentNode);
+                return positionAfterNode(*currentNode);
             continue;
         }
 
