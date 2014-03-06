@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -54,7 +53,6 @@ namespace Copy = api::bookmark_manager_private::Copy;
 namespace Cut = api::bookmark_manager_private::Cut;
 namespace Drop = api::bookmark_manager_private::Drop;
 namespace GetSubtree = api::bookmark_manager_private::GetSubtree;
-namespace manager_keys = bookmark_manager_api_constants;
 namespace GetMetaInfo = api::bookmark_manager_private::GetMetaInfo;
 namespace Paste = api::bookmark_manager_private::Paste;
 namespace RedoInfo = api::bookmark_manager_private::GetRedoInfo;
@@ -97,74 +95,72 @@ bool GetNodesFromVector(BookmarkModel* model,
   return true;
 }
 
-// Recursively adds a node to a list. This is by used |BookmarkNodeDataToJSON|
-// when the data comes from the current profile. In this case we have a
-// BookmarkNode since we got the data from the current profile.
-void AddNodeToList(base::ListValue* list, const BookmarkNode& node) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-
+// Recursively create a bookmark_manager_private::BookmarkNodeDataElement from
+// a bookmark node. This is by used |BookmarkNodeDataToJSON| when the data comes
+// from the current profile. In this case we have a BookmarkNode since we got
+// the data from the current profile.
+linked_ptr<bookmark_manager_private::BookmarkNodeDataElement>
+CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
+  linked_ptr<bookmark_manager_private::BookmarkNodeDataElement> element(
+      new bookmark_manager_private::BookmarkNodeDataElement);
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
-  std::string id_string = base::Int64ToString(node.id());
-  dict->SetString(bookmark_keys::kIdKey, id_string);
-
-  std::string parent_id_string = base::Int64ToString(node.parent()->id());
-  dict->SetString(bookmark_keys::kParentIdKey, parent_id_string);
+  element->id.reset(new std::string(base::Int64ToString(node.id())));
+  element->parent_id.reset(
+      new std::string(base::Int64ToString(node.parent()->id())));
 
   if (node.is_url())
-    dict->SetString(bookmark_keys::kUrlKey, node.url().spec());
+    element->url.reset(new std::string(node.url().spec()));
 
-  dict->SetString(bookmark_keys::kTitleKey, node.GetTitle());
+  element->title = base::UTF16ToUTF8(node.GetTitle());
+  for (int i = 0; i < node.child_count(); ++i) {
+    element->children.push_back(
+        CreateNodeDataElementFromBookmarkNode(*node.GetChild(i)));
+  }
 
-  base::ListValue* children = new base::ListValue();
-  for (int i = 0; i < node.child_count(); ++i)
-    AddNodeToList(children, *node.GetChild(i));
-  dict->Set(bookmark_keys::kChildrenKey, children);
-
-  list->Append(dict);
+  return element;
 }
 
-// Recursively adds an element to a list. This is used by
-// |BookmarkNodeDataToJSON| when the data comes from a different profile. When
-// the data comes from a different profile we do not have any IDs or parent IDs.
-void AddElementToList(base::ListValue* list,
-                      const BookmarkNodeData::Element& element) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+// Recursively create a bookmark_manager_private::BookmarkNodeDataElement from
+// a BookmarkNodeData::Element. This is used by |BookmarkNodeDataToJSON| when
+// the data comes from a different profile. When the data comes from a different
+// profile we do not have any IDs or parent IDs.
+linked_ptr<bookmark_manager_private::BookmarkNodeDataElement>
+CreateApiNodeDataElement(const BookmarkNodeData::Element& element) {
+  linked_ptr<bookmark_manager_private::BookmarkNodeDataElement> node_element(
+      new bookmark_manager_private::BookmarkNodeDataElement);
 
   if (element.is_url)
-    dict->SetString(bookmark_keys::kUrlKey, element.url.spec());
+    node_element->url.reset(new std::string(element.url.spec()));
+  node_element->title = base::UTF16ToUTF8(element.title);
+  for (size_t i = 0; i < element.children.size(); ++i) {
+    node_element->children.push_back(
+        CreateApiNodeDataElement(element.children[i]));
+  }
 
-  dict->SetString(bookmark_keys::kTitleKey, element.title);
-
-  base::ListValue* children = new base::ListValue();
-  for (size_t i = 0; i < element.children.size(); ++i)
-    AddElementToList(children, element.children[i]);
-  dict->Set(bookmark_keys::kChildrenKey, children);
-
-  list->Append(dict);
+  return node_element;
 }
 
-// Builds the JSON structure based on the BookmarksDragData.
-void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
-                            base::ListValue* args) {
-  bool same_profile = data.IsFromProfile(profile);
-  base::DictionaryValue* value = new base::DictionaryValue();
-  value->SetBoolean(manager_keys::kSameProfileKey, same_profile);
+// Creates a bookmark_manager_private::BookmarkNodeData from a BookmarkNodeData.
+scoped_ptr<bookmark_manager_private::BookmarkNodeData>
+CreateApiBookmarkNodeData(Profile* profile, const BookmarkNodeData& data) {
+  scoped_ptr<bookmark_manager_private::BookmarkNodeData> node_data(
+      new bookmark_manager_private::BookmarkNodeData);
+  node_data->same_profile = data.IsFromProfile(profile);
 
-  base::ListValue* list = new base::ListValue();
-  if (same_profile) {
+  if (node_data->same_profile) {
     std::vector<const BookmarkNode*> nodes = data.GetNodes(profile);
-    for (size_t i = 0; i < nodes.size(); ++i)
-      AddNodeToList(list, *nodes[i]);
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      node_data->elements.push_back(
+          CreateNodeDataElementFromBookmarkNode(*nodes[i]));
+    }
   } else {
-    // We do not have an node IDs when the data comes from a different profile.
+    // We do not have a node IDs when the data comes from a different profile.
     std::vector<BookmarkNodeData::Element> elements = data.elements;
     for (size_t i = 0; i < elements.size(); ++i)
-      AddElementToList(list, elements[i]);
+      node_data->elements.push_back(CreateApiNodeDataElement(elements[i]));
   }
-  value->Set(manager_keys::kElementsKey, list);
-
-  args->Append(value);
+  return node_data.Pass();
 }
 
 }  // namespace
@@ -196,20 +192,13 @@ void BookmarkManagerPrivateEventRouter::DispatchEvent(
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
-void BookmarkManagerPrivateEventRouter::DispatchDragEvent(
-    const BookmarkNodeData& data,
-    const std::string& event_name) {
-  if (data.size() == 0)
-    return;
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  BookmarkNodeDataToJSON(profile_, data, args.get());
-  DispatchEvent(event_name, args.Pass());
-}
-
 void BookmarkManagerPrivateEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
-  DispatchDragEvent(data, bookmark_manager_private::OnDragEnter::kEventName);
+  if (data.size() == 0)
+    return;
+  DispatchEvent(bookmark_manager_private::OnDragEnter::kEventName,
+                bookmark_manager_private::OnDragEnter::Create(
+                    *CreateApiBookmarkNodeData(profile_, data)));
 }
 
 void BookmarkManagerPrivateEventRouter::OnDragOver(
@@ -220,11 +209,19 @@ void BookmarkManagerPrivateEventRouter::OnDragOver(
 
 void BookmarkManagerPrivateEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
-  DispatchDragEvent(data, bookmark_manager_private::OnDragLeave::kEventName);
+  if (data.size() == 0)
+    return;
+  DispatchEvent(bookmark_manager_private::OnDragLeave::kEventName,
+                bookmark_manager_private::OnDragLeave::Create(
+                    *CreateApiBookmarkNodeData(profile_, data)));
 }
 
 void BookmarkManagerPrivateEventRouter::OnDrop(const BookmarkNodeData& data) {
-  DispatchDragEvent(data, bookmark_manager_private::OnDrop::kEventName);
+  if (data.size() == 0)
+    return;
+  DispatchEvent(bookmark_manager_private::OnDrop::kEventName,
+                bookmark_manager_private::OnDrop::Create(
+                    *CreateApiBookmarkNodeData(profile_, data)));
 
   // Make a copy that is owned by this instance.
   ClearBookmarkNodeData();

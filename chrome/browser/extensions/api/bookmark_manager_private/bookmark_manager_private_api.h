@@ -48,9 +48,6 @@ class BookmarkManagerPrivateEventRouter
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> args);
 
-  void DispatchDragEvent(const BookmarkNodeData& data,
-                         const std::string& event_name);
-
   Profile* profile_;
   content::WebContents* web_contents_;
   BookmarkNodeData bookmark_drag_data_;

@@ -196,47 +196,40 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
                                             int old_index,
                                             const BookmarkNode* new_parent,
                                             int new_index) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  args->Append(new base::StringValue(base::Int64ToString(node->id())));
-  base::DictionaryValue* object_args = new base::DictionaryValue();
-  object_args->SetString(keys::kParentIdKey,
-                         base::Int64ToString(new_parent->id()));
-  object_args->SetInteger(keys::kIndexKey, new_index);
-  object_args->SetString(keys::kOldParentIdKey,
-                         base::Int64ToString(old_parent->id()));
-  object_args->SetInteger(keys::kOldIndexKey, old_index);
-  args->Append(object_args);
+  bookmarks::OnMoved::MoveInfo move_info;
+  move_info.parent_id = base::Int64ToString(new_parent->id());
+  move_info.index = new_index;
+  move_info.old_parent_id = base::Int64ToString(old_parent->id());
+  move_info.old_index = old_index;
 
-  DispatchEvent(bookmarks::OnMoved::kEventName, args.Pass());
+  DispatchEvent(
+      bookmarks::OnMoved::kEventName,
+      bookmarks::OnMoved::Create(base::Int64ToString(node->id()), move_info));
 }
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
   const BookmarkNode* node = parent->GetChild(index);
-  args->Append(new base::StringValue(base::Int64ToString(node->id())));
   scoped_ptr<BookmarkTreeNode> tree_node(
       bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
-  args->Append(tree_node->ToValue().release());
-
-  DispatchEvent(bookmarks::OnCreated::kEventName, args.Pass());
+  DispatchEvent(bookmarks::OnCreated::kEventName,
+                bookmarks::OnCreated::Create(base::Int64ToString(node->id()),
+                                             *tree_node));
 }
 
 void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
                                               const BookmarkNode* parent,
                                               int index,
                                               const BookmarkNode* node) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::StringValue(base::Int64ToString(node->id())));
-  base::DictionaryValue* object_args = new base::DictionaryValue();
-  object_args->SetString(keys::kParentIdKey,
-                         base::Int64ToString(parent->id()));
-  object_args->SetInteger(keys::kIndexKey, index);
-  args->Append(object_args);
+  bookmarks::OnRemoved::RemoveInfo remove_info;
+  remove_info.parent_id = base::Int64ToString(parent->id());
+  remove_info.index = index;
 
-  DispatchEvent(bookmarks::OnRemoved::kEventName, args.Pass());
+  DispatchEvent(bookmarks::OnRemoved::kEventName,
+                bookmarks::OnRemoved::Create(base::Int64ToString(node->id()),
+                                             remove_info));
 }
 
 void BookmarkEventRouter::BookmarkAllNodesRemoved(BookmarkModel* model) {
@@ -248,21 +241,18 @@ void BookmarkEventRouter::BookmarkAllNodesRemoved(BookmarkModel* model) {
 
 void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
                                               const BookmarkNode* node) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::StringValue(base::Int64ToString(node->id())));
-
   // TODO(erikkay) The only three things that BookmarkModel sends this
   // notification for are title, url and favicon.  Since we're currently
   // ignoring favicon and since the notification doesn't say which one anyway,
   // for now we only include title and url.  The ideal thing would be to change
   // BookmarkModel to indicate what changed.
-  base::DictionaryValue* object_args = new base::DictionaryValue();
-  object_args->SetString(keys::kTitleKey, node->GetTitle());
-  if (node->is_url())
-    object_args->SetString(keys::kUrlKey, node->url().spec());
-  args->Append(object_args);
+  bookmarks::OnChanged::ChangeInfo change_info;
+  change_info.title = base::UTF16ToUTF8(node->GetTitle());
+  change_info.url.reset(new std::string(node->url().spec()));
 
-  DispatchEvent(bookmarks::OnChanged::kEventName, args.Pass());
+  DispatchEvent(bookmarks::OnChanged::kEventName,
+                bookmarks::OnChanged::Create(base::Int64ToString(node->id()),
+                                             change_info));
 }
 
 void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -273,32 +263,27 @@ void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
 void BookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::StringValue(base::Int64ToString(node->id())));
+  bookmarks::OnChildrenReordered::ReorderInfo reorder_info;
   int childCount = node->child_count();
-  base::ListValue* children = new base::ListValue();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    base::Value* child_id =
-        new base::StringValue(base::Int64ToString(child->id()));
-    children->Append(child_id);
+    reorder_info.child_ids.push_back(base::Int64ToString(child->id()));
   }
-  base::DictionaryValue* reorder_info = new base::DictionaryValue();
-  reorder_info->Set(keys::kChildIdsKey, children);
-  args->Append(reorder_info);
 
-  DispatchEvent(bookmarks::OnChildrenReordered::kEventName, args.Pass());
+  DispatchEvent(bookmarks::OnChildrenReordered::kEventName,
+                bookmarks::OnChildrenReordered::Create(
+                    base::Int64ToString(node->id()), reorder_info));
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
     BookmarkModel* model) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  DispatchEvent(bookmarks::OnImportBegan::kEventName, args.Pass());
+  DispatchEvent(bookmarks::OnImportBegan::kEventName,
+                bookmarks::OnImportBegan::Create());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  DispatchEvent(bookmarks::OnImportEnded::kEventName, args.Pass());
+  DispatchEvent(bookmarks::OnImportEnded::kEventName,
+                bookmarks::OnImportEnded::Create());
 }
 
 BookmarksAPI::BookmarksAPI(BrowserContext* context)
