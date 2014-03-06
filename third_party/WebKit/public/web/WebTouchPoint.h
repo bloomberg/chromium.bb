@@ -32,7 +32,7 @@
 #define WebTouchPoint_h
 
 #include "../platform/WebCommon.h"
-#include "../platform/WebPoint.h"
+#include "../platform/WebFloatPoint.h"
 
 namespace blink {
 
@@ -59,11 +59,11 @@ public:
 
     int id;
     State state;
-    WebPoint screenPosition;
-    WebPoint position;
+    WebFloatPoint screenPosition;
+    WebFloatPoint position;
 
-    int radiusX;
-    int radiusY;
+    float radiusX;
+    float radiusY;
     float rotationAngle;
     float force;
 };

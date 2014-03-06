@@ -407,7 +407,7 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTo
     m_id = point.id;
     m_state = toPlatformTouchPointState(point.state);
     m_pos = widget->convertFromContainingWindow(IntPoint((point.position.x - offset.width()) / scale, (point.position.y - offset.height()) / scale));
-    m_screenPos = point.screenPosition;
+    m_screenPos = IntPoint(point.screenPosition.x, point.screenPosition.y);
     m_radiusY = point.radiusY / scale;
     m_radiusX = point.radiusX / scale;
     m_rotationAngle = point.rotationAngle;
@@ -704,7 +704,7 @@ static void addTouchPoints(const Widget* widget, const AtomicString& touchType, 
 
         WebTouchPoint point;
         point.id = touch->identifier();
-        point.screenPosition = WebPoint(touch->screenX(), touch->screenY());
+        point.screenPosition = WebFloatPoint(touch->screenX(), touch->screenY());
         point.position = convertAbsoluteLocationForRenderObject(touch->absoluteLocation(), *renderObject);
         point.radiusX = touch->webkitRadiusX();
         point.radiusY = touch->webkitRadiusY();

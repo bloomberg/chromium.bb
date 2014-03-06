@@ -222,12 +222,19 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         webTouchEvent.type = WebInputEvent::TouchMove;
         webTouchEvent.touchesLength = 1;
         webTouchEvent.touches[0].state = WebTouchPoint::StateMoved;
-        webTouchEvent.touches[0].screenPosition.x = 10;
-        webTouchEvent.touches[0].screenPosition.y = 10;
-        webTouchEvent.touches[0].position.x = 10;
-        webTouchEvent.touches[0].position.y = 10;
-        webTouchEvent.touches[0].radiusX = 10;
-        webTouchEvent.touches[0].radiusY = 10;
+        webTouchEvent.touches[0].screenPosition.x = 10.6f;
+        webTouchEvent.touches[0].screenPosition.y = 10.4f;
+        webTouchEvent.touches[0].position.x = 10.6f;
+        webTouchEvent.touches[0].position.y = 10.4f;
+        webTouchEvent.touches[0].radiusX = 10.6f;
+        webTouchEvent.touches[0].radiusY = 10.4f;
+
+        EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].screenPosition.x);
+        EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].screenPosition.y);
+        EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].position.x);
+        EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].position.y);
+        EXPECT_FLOAT_EQ(10.6f, webTouchEvent.touches[0].radiusX);
+        EXPECT_FLOAT_EQ(10.4f, webTouchEvent.touches[0].radiusY);
 
         PlatformTouchEventBuilder platformTouchBuilder(view, webTouchEvent);
         EXPECT_EQ(10, platformTouchBuilder.touchPoints()[0].screenPos().x());
