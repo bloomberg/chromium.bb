@@ -19,6 +19,8 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -284,6 +286,15 @@ void PrivetNotificationService::PrivetRemoveNotification() {
 }
 
 void PrivetNotificationService::Start() {
+#if defined(CHROMEOS)
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(
+          Profile::FromBrowserContext(profile_));
+
+  if (!signin_manager || signin_manager->GetAuthenticatedUsername().empty())
+    return;
+#endif
+
   enable_privet_notification_member_.Init(
       prefs::kLocalDiscoveryNotificationsEnabled,
       Profile::FromBrowserContext(profile_)->GetPrefs(),
