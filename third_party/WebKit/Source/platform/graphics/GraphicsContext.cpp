@@ -950,20 +950,16 @@ void GraphicsContext::drawRect(const IntRect& rect)
     if (fillcolorNotTransparent)
         drawRect(skRect, immutableState()->fillPaint());
 
-    if (immutableState()->strokeData().style() != NoStroke && (immutableState()->strokeData().color().rgb() & 0xFF000000)) {
-        // We do a fill of four rects to simulate the stroke of a border.
+    if (immutableState()->strokeData().style() != NoStroke
+        && immutableState()->strokeData().color().alpha()) {
+        // Stroke a width: 1 inset border
         SkPaint paint(immutableState()->fillPaint());
-        // need to jam in the strokeColor
-        paint.setColor(immutableState()->effectiveStrokeColor());
+        paint.setColor(effectiveStrokeColor());
+        paint.setStyle(SkPaint::kStroke_Style);
+        paint.setStrokeWidth(1);
 
-        SkRect topBorder = { skRect.fLeft, skRect.fTop, skRect.fRight, skRect.fTop + 1 };
-        drawRect(topBorder, paint);
-        SkRect bottomBorder = { skRect.fLeft, skRect.fBottom - 1, skRect.fRight, skRect.fBottom };
-        drawRect(bottomBorder, paint);
-        SkRect leftBorder = { skRect.fLeft, skRect.fTop + 1, skRect.fLeft + 1, skRect.fBottom - 1 };
-        drawRect(leftBorder, paint);
-        SkRect rightBorder = { skRect.fRight - 1, skRect.fTop + 1, skRect.fRight, skRect.fBottom - 1 };
-        drawRect(rightBorder, paint);
+        skRect.inset(0.5f, 0.5f);
+        drawRect(skRect, paint);
     }
 }
 
