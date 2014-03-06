@@ -27,7 +27,6 @@ class Rect;
 }
 
 namespace ui {
-class EventHandler;
 class MenuModel;
 class ThemeProvider;
 }
@@ -138,8 +137,6 @@ class BrowserFrame
 
   // Whether the custom Chrome frame preference is set.
   BooleanPrefMember use_custom_frame_pref_;
-
-  scoped_ptr<ui::EventHandler> browser_command_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };

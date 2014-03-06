@@ -49,6 +49,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
   virtual NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual MediaDelegate* CreateMediaDelegate() OVERRIDE;
+  virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root,
       ash::ShelfItemDelegate* item_delegate,

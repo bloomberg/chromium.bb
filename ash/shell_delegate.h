@@ -19,6 +19,9 @@ class AppListViewDelegate;
 namespace aura {
 class RootWindow;
 class Window;
+namespace client {
+class UserActionClient;
+}
 }
 
 namespace content {
@@ -119,6 +122,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;
+
+  // Creates a user action client. Shell takes ownership of the object.
+  virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
 
   // Creates a menu model of the context for the |root_window|.
   // When a ContextMenu is used for an item created by ShelfWindowWatcher,
