@@ -902,11 +902,3 @@ crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [
 
 # Temporary until the Web Notification API test-runner changes finished.
 crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
-
-#Test cases need to rebaseline as reported in crbug.com/349222
-crbug.com/349222 fullscreen/full-screen-iframe-zIndex.html [ NeedsRebaseline ]
-crbug.com/349222 fullscreen/full-screen-remove-ancestor-after.html [ NeedsRebaseline ]
-crbug.com/349222 fullscreen/full-screen-zIndex-after.html [ NeedsRebaseline ]
-crbug.com/349222 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ NeedsRebaseline ]
-crbug.com/349222 virtual/android/fullscreen/full-screen-zIndex-after.html [ NeedsRebaseline ]
-crbug.com/349222 virtual/android/fullscreen/full-screen-remove-ancestor-after.html [ NeedsRebaseline ]
