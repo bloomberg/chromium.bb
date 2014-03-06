@@ -6314,3 +6314,10 @@
    fun:_ZN3WTFL16threadEntryPointEPv
    fun:_ZN3WTFL19wtfThreadEntryPointEPv
 }
+{
+   bug_349939
+   Memcheck:Uninitialized
+   fun:_ZN4base9HexEncodeEPKvm
+   fun:_ZN7content9webcrypto12_GLOBAL__N_118ArrayBufferMatchesERKSt6vectorIhSaIhEERKN5blink14WebArrayBufferE
+   fun:_ZN7content9webcrypto53SharedCryptoTest_AesKwRawSymkeyUnwrapCorruptData_Test8TestBodyEv
+}
