@@ -1024,7 +1024,7 @@
         'browser/install_verification/win/module_list_unittest.cc',
         'browser/install_verification/win/module_verification_test.cc',
         'browser/install_verification/win/module_verification_test.h',
-        'browser/invalidation/gcm_network_channel_delegate_impl_unittest.cc',
+        'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
         'browser/invalidation/invalidation_logger_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
         'browser/invalidation/invalidation_service_test_template.cc',
@@ -2576,7 +2576,7 @@
             'browser/ui/autofill/autofill_popup_controller_unittest.cc',
 
             # Android uses a different invaliator.
-            'browser/invalidation/gcm_network_channel_delegate_impl_unittest.cc',
+            'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
             'browser/invalidation/ticl_invalidation_service_unittest.cc',
 
             # The importer code is not used on Android.

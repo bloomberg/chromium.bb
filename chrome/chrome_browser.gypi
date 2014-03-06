@@ -978,8 +978,8 @@
         'browser/invalidation/invalidation_logger.h',
         'browser/invalidation/fake_invalidation_service.cc',
         'browser/invalidation/fake_invalidation_service.h',
-        'browser/invalidation/gcm_network_channel_delegate_impl.cc',
-        'browser/invalidation/gcm_network_channel_delegate_impl.h',
+        'browser/invalidation/gcm_invalidation_bridge.cc',
+        'browser/invalidation/gcm_invalidation_bridge.h',
         'browser/invalidation/invalidation_controller_android.cc',
         'browser/invalidation/invalidation_controller_android.h',
         'browser/invalidation/invalidation_service.h',
@@ -3337,8 +3337,8 @@
             'test/base/test_switches.cc',
 
             # Android uses a different invalidation service
-            'browser/invalidation/gcm_network_channel_delegate_impl.cc',
-            'browser/invalidation/gcm_network_channel_delegate_impl.h',
+            'browser/invalidation/gcm_invalidation_bridge.cc',
+            'browser/invalidation/gcm_invalidation_bridge.h',
             'browser/invalidation/ticl_invalidation_service.cc',
             'browser/invalidation/ticl_invalidation_service.h',
 

@@ -26,6 +26,7 @@ class Invalidator;
 }
 
 namespace invalidation {
+class GCMInvalidationBridge;
 
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
@@ -121,6 +122,8 @@ class TiclInvalidationService : public base::NonThreadSafe,
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
   base::OneShotTimer<TiclInvalidationService> request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
+
+  scoped_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
 
   // The invalidation logger object we use to record state changes
   // and invalidations.

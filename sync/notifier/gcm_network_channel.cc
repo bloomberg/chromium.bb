@@ -49,6 +49,7 @@ GCMNetworkChannel::GCMNetworkChannel(
       delegate_(delegate.Pass()),
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
       weak_factory_(this) {
+  delegate_->Initialize();
   Register();
 }
 

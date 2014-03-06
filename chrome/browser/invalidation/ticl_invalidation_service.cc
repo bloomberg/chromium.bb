@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/invalidation/gcm_network_channel_delegate_impl.h"
+#include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_logger.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -356,12 +356,11 @@ void TiclInvalidationService::StartInvalidator(
       break;
     }
     case GCM_NETWORK_CHANNEL: {
-      scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate;
-      delegate.reset(new GCMNetworkChannelDelegateImpl(profile_));
+      gcm_invalidation_bridge_.reset(new GCMInvalidationBridge(profile_));
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
               profile_->GetRequestContext(),
-              delegate.Pass());
+              gcm_invalidation_bridge_->CreateDelegate().Pass());
       break;
     }
     default: {
@@ -398,6 +397,7 @@ void TiclInvalidationService::UpdateInvalidatorCredentials() {
 
 void TiclInvalidationService::StopInvalidator() {
   DCHECK(invalidator_);
+  gcm_invalidation_bridge_.reset();
   invalidator_->UnregisterHandler(this);
   invalidator_.reset();
 }

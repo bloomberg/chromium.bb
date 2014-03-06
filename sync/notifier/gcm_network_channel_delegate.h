@@ -31,6 +31,7 @@ class GCMNetworkChannelDelegate {
 
   virtual ~GCMNetworkChannelDelegate() {}
 
+  virtual void Initialize() = 0;
   // Request access token. Callback should be called either with access token or
   // error code.
   virtual void RequestToken(RequestTokenCallback callback) = 0;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/invalidation/gcm_network_channel_delegate_impl.h"
+#include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -18,11 +18,11 @@
 namespace invalidation {
 namespace {
 
-class GCMNetworkChannelDelegateImplTest : public ::testing::Test {
+class GCMInvalidationBridgeTest : public ::testing::Test {
  protected:
-  GCMNetworkChannelDelegateImplTest() {}
+  GCMInvalidationBridgeTest() {}
 
-  virtual ~GCMNetworkChannelDelegateImplTest() {}
+  virtual ~GCMInvalidationBridgeTest() {}
 
   virtual void SetUp() OVERRIDE {
     TestingProfile::Builder builder;
@@ -36,7 +36,12 @@ class GCMNetworkChannelDelegateImplTest : public ::testing::Test {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     token_service->IssueRefreshTokenForUser("", "refresh_token");
 
-    delegate_.reset(new GCMNetworkChannelDelegateImpl(profile_.get()));
+    bridge_.reset(new GCMInvalidationBridge(profile_.get()));
+
+    delegate_ = bridge_->CreateDelegate();
+    delegate_->Initialize();
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
 
  public:
@@ -56,14 +61,15 @@ class GCMNetworkChannelDelegateImplTest : public ::testing::Test {
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;
 
-  scoped_ptr<GCMNetworkChannelDelegateImpl> delegate_;
+  scoped_ptr<GCMInvalidationBridge> bridge_;
+  scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate_;
 };
 
-TEST_F(GCMNetworkChannelDelegateImplTest, RequestToken) {
+TEST_F(GCMInvalidationBridgeTest, RequestToken) {
   // Make sure that call to RequestToken reaches OAuth2TokenService and gets
   // back to callback.
   delegate_->RequestToken(
-      base::Bind(&GCMNetworkChannelDelegateImplTest::RequestTokenFinished,
+      base::Bind(&GCMInvalidationBridgeTest::RequestTokenFinished,
                  base::Unretained(this)));
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -72,14 +78,14 @@ TEST_F(GCMNetworkChannelDelegateImplTest, RequestToken) {
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(), request_token_errors_[0]);
 }
 
-TEST_F(GCMNetworkChannelDelegateImplTest, RequestTokenTwoConcurrentRequests) {
+TEST_F(GCMInvalidationBridgeTest, RequestTokenTwoConcurrentRequests) {
   // First call should finish with REQUEST_CANCELLED error.
   delegate_->RequestToken(
-      base::Bind(&GCMNetworkChannelDelegateImplTest::RequestTokenFinished,
+      base::Bind(&GCMInvalidationBridgeTest::RequestTokenFinished,
                  base::Unretained(this)));
   // Second request should succeed.
   delegate_->RequestToken(
-      base::Bind(&GCMNetworkChannelDelegateImplTest::RequestTokenFinished,
+      base::Bind(&GCMInvalidationBridgeTest::RequestTokenFinished,
                  base::Unretained(this)));
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

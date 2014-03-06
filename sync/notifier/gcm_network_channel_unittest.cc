@@ -17,6 +17,8 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
   TestGCMNetworkChannelDelegate()
       : register_call_count_(0) {}
 
+  virtual void Initialize() OVERRIDE {}
+
   virtual void RequestToken(RequestTokenCallback callback) OVERRIDE {
     request_token_callback = callback;
   }
