@@ -15,15 +15,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_observer.h"
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
-#include "ui/aura/window_tree_host_observer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 class PrefService;
 typedef union _XEvent XEvent;
-
-namespace aura {
-class RootWindow;
-}
 
 namespace chromeos {
 class KeyboardDrivenEventRewriter;
@@ -31,8 +26,7 @@ namespace input_method {
 class XKeyboard;
 }
 
-class EventRewriter : public aura::WindowTreeHostObserver,
-                      public DeviceHierarchyObserver,
+class EventRewriter : public DeviceHierarchyObserver,
                       public base::MessagePumpObserver {
  public:
   enum DeviceType {
@@ -68,10 +62,6 @@ class EventRewriter : public aura::WindowTreeHostObserver,
  private:
   friend class EventRewriterAshTest;
   friend class EventRewriterTest;
-
-  // aura::WindowTreeHostObserver overrides:
-  virtual void OnKeyboardMappingChanged(
-      const aura::WindowTreeHost* host) OVERRIDE;
 
   // base::MessagePumpObserver overrides:
   virtual base::EventStatus WillProcessEvent(

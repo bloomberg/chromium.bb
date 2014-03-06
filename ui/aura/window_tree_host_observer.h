@@ -27,9 +27,6 @@ class AURA_EXPORT WindowTreeHostObserver {
   // Called when the native window system sends the host request to close.
   virtual void OnHostCloseRequested(const WindowTreeHost* host) {}
 
-  // Called when the keyboard mapping has changed.
-  virtual void OnKeyboardMappingChanged(const WindowTreeHost* host) {}
-
  protected:
   virtual ~WindowTreeHostObserver() {}
 };

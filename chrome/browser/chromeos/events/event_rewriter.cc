@@ -14,7 +14,6 @@
 
 #include <vector>
 
-#include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -31,7 +30,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -141,10 +139,6 @@ EventRewriter::EventRewriter()
       xkeyboard_for_testing_(NULL),
       keyboard_driven_event_rewriter_(new KeyboardDrivenEventRewriter),
       pref_service_for_testing_(NULL) {
-  // The ash shell isn't instantiated for our unit tests.
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
-  }
   base::MessageLoopForUI::current()->AddObserver(this);
   if (base::SysInfo::IsRunningOnChromeOS()) {
     XInputHierarchyChangedEventListener::GetInstance()->AddObserver(this);
@@ -154,9 +148,6 @@ EventRewriter::EventRewriter()
 
 EventRewriter::~EventRewriter() {
   base::MessageLoopForUI::current()->RemoveObserver(this);
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
-  }
   if (base::SysInfo::IsRunningOnChromeOS()) {
     XInputHierarchyChangedEventListener::GetInstance()->RemoveObserver(this);
   }
@@ -194,17 +185,19 @@ void EventRewriter::RewriteForTesting(XEvent* event) {
   Rewrite(event);
 }
 
-void EventRewriter::OnKeyboardMappingChanged(const aura::WindowTreeHost* host) {
-  RefreshKeycodes();
-}
-
 base::EventStatus EventRewriter::WillProcessEvent(
     const base::NativeEvent& event) {
   XEvent* xevent = event;
-  if (xevent->type == KeyPress || xevent->type == KeyRelease)
+  if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     Rewrite(xevent);
-  else if (xevent->type == GenericEvent)
+  } else if (xevent->type == GenericEvent) {
     RewriteLocatedEvent(xevent);
+  } else if (xevent->type == MappingNotify) {
+    if (xevent->xmapping.request == MappingModifier ||
+        xevent->xmapping.request == MappingKeyboard) {
+      RefreshKeycodes();
+    }
+  }
   return base::EVENT_CONTINUE;
 }
 

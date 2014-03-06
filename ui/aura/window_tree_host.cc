@@ -290,11 +290,6 @@ void WindowTreeHost::OnHostCloseRequested() {
                     OnHostCloseRequested(this));
 }
 
-void WindowTreeHost::OnKeyboardMappingChanged() {
-  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
-                    OnKeyboardMappingChanged(this));
-}
-
 void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
                                           const gfx::Point& host_location) {
   MoveCursorToNative(host_location);

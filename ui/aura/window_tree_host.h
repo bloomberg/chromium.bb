@@ -185,7 +185,6 @@ class AURA_EXPORT WindowTreeHost {
   void OnHostMoved(const gfx::Point& new_location);
   void OnHostResized(const gfx::Size& new_size);
   void OnHostCloseRequested();
-  void OnKeyboardMappingChanged();
 
   // Sets the currently displayed cursor.
   virtual void SetCursorNative(gfx::NativeCursor cursor) = 0;
