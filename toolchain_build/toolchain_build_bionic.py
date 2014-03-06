@@ -27,7 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = 'df3ce8a8fbb8c3a1f6380616695ec7a2f8dfd7d9'
+BIONIC_VERSION = 'afaa67249847f7b61925d6a9f633d54453aace62'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -383,6 +383,9 @@ INS_ROOT=$(ins_path)
 NACL_ARCH=$NACL
 GCC_ARCH=$GCC
 
+MAKEFILE_DEPS:=$(build_tc_path)/tc_bionic.mk
+MAKEFILE_DEPS+=$(src_path)/Makefile
+
 include $(build_tc_path)/tc_bionic.mk
 include $(src_path)/Makefile
 """
@@ -434,7 +437,7 @@ def ConfigureAndBuildCXX(clobber=False):
   ConfigureAndBuildArmCXX(clobber)
 
 
-def ConfigureAndBuildTests(clobber=False):
+def ConfigureAndBuildTests(clobber=False, run=False):
   for arch in ARCHES:
     workpath = os.path.join(TOOLCHAIN_BUILD_OUT,
                             ReplaceArch('bionic_$GCC_test_work', arch))
@@ -446,7 +449,11 @@ def ConfigureAndBuildTests(clobber=False):
       Rmdir(inspath)
     Mkdir(workpath)
     Mkdir(inspath)
-    ConfigureAndBuild(arch, 'bionic/tests', workpath, inspath)
+    if run:
+      ConfigureAndBuild(arch, 'bionic/tests', workpath, inspath,
+                         target='run')
+    else:
+      ConfigureAndBuild(arch, 'bionic/tests', workpath, inspath)
 
 
 def ArchiveAndUpload(version, zipname, zippath):
@@ -558,8 +565,7 @@ def main(argv):
   ConfigureAndBuildLinker()
 
   # Can not test on buildot until sel_ldr, irt, etc.. are built
-  if not options.buildbot:
-    ConfigureAndBuildTests(clobber=False)
+  ConfigureAndBuildTests(clobber=False, run=not options.buildbot)
 
   if options.buildbot or options.upload:
     zipname = 'naclsdk_linux_arm_bionic.tgz'
