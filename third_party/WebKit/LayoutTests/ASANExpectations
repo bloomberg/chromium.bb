@@ -60,7 +60,6 @@ crbug.com/14885 [ Linux ] fast/js/JSON-stringify.html [ Failure ]
 # These tests flakily timeout on the ASAN bot
 crbug.com/247466 [ Linux ] inspector/debugger/live-edit-breakpoints.html [ Pass Timeout ]
 crbug.com/247466 [ Linux ] inspector/debugger/reveal-not-skipped.html [ Pass Timeout ]
-crbug.com/247466 [ Linux ] inspector/debugger/script-formatter-breakpoints.html [ Pass Timeout ]
 crbug.com/247466 [ Linux ] inspector/profiler/heap-snapshot-summary-sorting-fields.html [ Pass Timeout ]
 
 # These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):

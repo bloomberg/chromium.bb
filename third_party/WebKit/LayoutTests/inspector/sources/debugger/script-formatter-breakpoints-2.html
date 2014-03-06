@@ -1,0 +1,98 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/unformatted.js"></script>
+
+<script>
+
+function f1()
+{
+    var a=0;var b=1;var c=3;var d=4;var e=5;
+    var f=0;
+    return 0;
+}
+
+var test = function()
+{
+    WebInspector.breakpointManager._storage._breakpoints = {};
+    var panel = WebInspector.showPanel("sources");
+    var scriptFormatter = InspectorTest.scriptFormatter();
+    var sourceFrame;
+    var formattedSourceFrame;
+
+    InspectorTest.runDebuggerTestSuite([
+        function testBreakpointsSetAndRemoveInFormattedSource(next)
+        {
+            InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                sourceFrame = frame;
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
+            }
+                
+            function uiSourceCodeScriptFormatted()
+            {
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
+                InspectorTest.waitUntilPaused(pausedInF2);
+                InspectorTest.evaluateInPageWithTimeout("f2()");
+            }
+
+            function pausedInF2(callFrames)
+            {
+                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 3);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(next);
+            }
+        },
+
+        function testBreakpointSetInOriginalAndRemovedInFormatted(next)
+        {
+            InspectorTest.showScriptSource("script-formatter-breakpoints-2.html", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                sourceFrame = frame;
+                InspectorTest.addResult("Adding breakpoint.");
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
+            }
+
+            function breakpointResolved()
+            {
+                InspectorTest.addResult("Formatting.");
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
+            }
+
+            function uiSourceCodeScriptFormatted()
+            {
+                InspectorTest.addResult("Removing breakpoint.");
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 16);
+                InspectorTest.addResult("Unformatting.");
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+                var breakpoints = WebInspector.breakpointManager._storage._setting.get();
+                InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
+                next();
+            }
+        }
+    ]);
+
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests the script formatting is working fine with breakpoints.
+</p>
+
+</body>
+</html>
