@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 from telemetry import test
 
+from benchmarks import silk_flags
 from measurements import thread_times
+
 
 class ThreadTimesKeySilkCases(test.Test):
   """Measures timeline metrics while performing smoothness action on key silk
@@ -11,6 +13,18 @@ class ThreadTimesKeySilkCases(test.Test):
   test = thread_times.ThreadTimes
   page_set = 'page_sets/key_silk_cases.json'
   options = {"report_silk_results": True}
+
+
+class ThreadTimesFastPathKeySilkCases(test.Test):
+  """Measures timeline metrics while performing smoothness action on key silk
+  cases using bleeding edge rendering fast paths."""
+  tag = 'fast_path'
+  test = thread_times.ThreadTimes
+  page_set = 'page_sets/key_silk_cases.json'
+  options = {"report_silk_results": True}
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForFastPath(options)
+
 
 class LegacySilkBenchmark(ThreadTimesKeySilkCases):
   """Same as thread_times.key_silk_cases but with the old name."""

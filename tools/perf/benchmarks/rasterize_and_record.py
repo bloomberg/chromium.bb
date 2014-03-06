@@ -4,6 +4,7 @@
 
 from telemetry import test
 
+from benchmarks import silk_flags
 from measurements import rasterize_and_record
 
 
@@ -35,3 +36,16 @@ class RasterizeAndRecordSilk(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record.RasterizeAndRecord
   page_set = 'page_sets/key_silk_cases.json'
+
+
+class RasterizeAndRecordFastPathSilk(test.Test):
+  """Measures rasterize and record performance on the silk sites.
+
+  Uses bleeding edge rendering fast paths.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  tag = 'fast_path'
+  test = rasterize_and_record.RasterizeAndRecord
+  page_set = 'page_sets/key_silk_cases.json'
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForFastPath(options)

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from benchmarks import silk_flags
 from measurements import smoothness
 from telemetry import test
 
@@ -39,6 +40,17 @@ class SmoothnessKeySilkCases(test.Test):
   """
   test = smoothness.Smoothness
   page_set = 'page_sets/key_silk_cases.json'
+
+
+class SmoothnessFastPathKeySilkCases(test.Test):
+  """Measures rendering statistics for the key silk cases without GPU
+  rasterization using bleeding edge rendering fast paths.
+  """
+  tag = 'fast_path'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/key_silk_cases.json'
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
 class SmoothnessGpuRasterizationTop25(test.Test):
@@ -79,6 +91,20 @@ class SmoothnessGpuRasterizationKeySilkCases(test.Test):
     options.AppendExtraBrowserArgs('--force-compositing-mode')
     options.AppendExtraBrowserArgs('--enable-impl-side-painting')
     options.AppendExtraBrowserArgs('--enable-gpu-rasterization')
+
+
+class SmoothnessFastPathGpuRasterizationKeySilkCases(
+    SmoothnessGpuRasterizationKeySilkCases):
+  """Measures rendering statistics for the key silk cases with GPU rasterization
+  using bleeding edge rendering fast paths.
+  """
+  tag = 'fast_path_gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/key_silk_cases.json'
+  def CustomizeBrowserOptions(self, options):
+    super(SmoothnessFastPathGpuRasterizationKeySilkCases, self). \
+        CustomizeBrowserOptions(options)
+    silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
 @test.Enabled('android')
