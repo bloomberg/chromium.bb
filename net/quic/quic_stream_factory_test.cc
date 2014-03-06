@@ -90,6 +90,16 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
 
 
   int GetSourcePortForNewSession(const HostPortProxyPair& destination) {
+    return GetSourcePortForNewSessionInner(destination, false);
+  }
+
+  int GetSourcePortForNewSessionAndGoAway(
+      const HostPortProxyPair& destination) {
+    return GetSourcePortForNewSessionInner(destination, true);
+  }
+
+  int GetSourcePortForNewSessionInner(const HostPortProxyPair& destination,
+                                      bool goaway_received) {
     // Should only be called if there is no active session for this destination.
     EXPECT_EQ(NULL, factory_.CreateIfSessionExists(destination,
                                                    net_log_).get());
@@ -128,6 +138,10 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     socket_factory_.
         udp_client_sockets()[socket_count]->GetLocalAddress(&endpoint);
     int port = endpoint.port();
+    if (goaway_received) {
+      QuicGoAwayFrame goaway(QUIC_NO_ERROR, 1, "");
+      session->OnGoAway(goaway);
+    }
 
     factory_.OnSessionClosed(session);
     EXPECT_EQ(NULL, factory_.CreateIfSessionExists(destination,
@@ -672,6 +686,16 @@ TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
 
   int original_port = GetSourcePortForNewSession(host_port_proxy_pair_);
   EXPECT_NE(original_port, GetSourcePortForNewSession(host_port_proxy_pair2));
+  EXPECT_EQ(original_port, GetSourcePortForNewSession(host_port_proxy_pair_));
+}
+
+TEST_P(QuicStreamFactoryTest, GoAwayDisablesConsistentEphemeralPort) {
+  // Get a session to the host using the port suggester.
+  int original_port =
+      GetSourcePortForNewSessionAndGoAway(host_port_proxy_pair_);
+  // Verify that the port is different after the goaway.
+  EXPECT_NE(original_port, GetSourcePortForNewSession(host_port_proxy_pair_));
+  // Since the previous session did not goaway we should see the original port.
   EXPECT_EQ(original_port, GetSourcePortForNewSession(host_port_proxy_pair_));
 }
 

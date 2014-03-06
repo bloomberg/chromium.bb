@@ -230,6 +230,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Map from IP address to sessions which are connected to this address.
   IPAliasMap ip_aliases_;
 
+  // Origins which have gone away recently.
+  AliasSet gone_away_aliases_;
+
   // Contains owning pointers to QuicCryptoClientConfig. QuicCryptoClientConfig
   // contains configuration and cached state about servers.
   // TODO(rtenneti): Persist all_crypto_configs_ to disk and decide when to

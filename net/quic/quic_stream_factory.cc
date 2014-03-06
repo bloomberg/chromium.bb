@@ -430,6 +430,12 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
        ++it) {
     DCHECK(active_sessions_.count(*it));
     DCHECK_EQ(session, active_sessions_[*it]);
+    // Track sessions which have recently gone away so that we can disable
+    // port suggestions.
+    if (session->goaway_received()) {
+      gone_away_aliases_.insert(*it);
+    }
+
     active_sessions_.erase(*it);
     if (!http_server_properties_)
       continue;
@@ -535,11 +541,21 @@ int QuicStreamFactory::CreateSession(
     const AddressList& address_list,
     const BoundNetLog& net_log,
     QuicClientSession** session) {
+  bool enable_port_selection = enable_port_selection_;
+  if (enable_port_selection &&
+      ContainsKey(gone_away_aliases_, host_port_proxy_pair)) {
+    // Disable port selection when the server is going away.
+    // There is no point in trying to return to the same server, if
+    // that server is no longer handling requests.
+    enable_port_selection = false;
+    gone_away_aliases_.erase(host_port_proxy_pair);
+  }
+
   QuicConnectionId connection_id = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
   scoped_refptr<PortSuggester> port_suggester =
       new PortSuggester(host_port_proxy_pair.first, port_seed_);
-  DatagramSocket::BindType bind_type = enable_port_selection_ ?
+  DatagramSocket::BindType bind_type = enable_port_selection ?
       DatagramSocket::RANDOM_BIND :  // Use our callback.
       DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
   scoped_ptr<DatagramClientSocket> socket(
@@ -552,7 +568,7 @@ int QuicStreamFactory::CreateSession(
     return rv;
   UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
                        port_suggester->call_count());
-  if (enable_port_selection_) {
+  if (enable_port_selection) {
     DCHECK_LE(1u, port_suggester->call_count());
   } else {
     DCHECK_EQ(0u, port_suggester->call_count());
