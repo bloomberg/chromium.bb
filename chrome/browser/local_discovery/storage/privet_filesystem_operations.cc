@@ -149,14 +149,14 @@ void PrivetFileSystemListOperation::OnStorageListResult(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   list_operation_.reset();
 
-  attribute_cache_->AddFileInfoFromJSON(full_path_, value);
-
-  fileapi::AsyncFileUtil::EntryList entry_list;
-
   if (!value) {
     SignalError();
     return;
   }
+
+  attribute_cache_->AddFileInfoFromJSON(full_path_, value);
+
+  fileapi::AsyncFileUtil::EntryList entry_list;
 
   const base::ListValue* entries;
   if (!value->GetList(kPrivetListEntries, &entries)) {
