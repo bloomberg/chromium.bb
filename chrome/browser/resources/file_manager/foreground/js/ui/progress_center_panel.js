@@ -41,6 +41,25 @@ function ProgressCenterItemElement(document) {
 }
 
 /**
+ * Ensures the animation triggers.
+ *
+ * @param {function()} callback Function to set the transition end properties.
+ * @return {function()} Function to cancel the request.
+ * @private
+ */
+ProgressCenterItemElement.safelySetAnimation_ = function(callback) {
+  var requestId = requestAnimationFrame(function() {
+    // The transitoin start properties currently set are rendered at this frame.
+    // And the transition end properties set by the callback is rendered at the
+    // next frame.
+    requestId = requestAnimationFrame(callback);
+  });
+  return function() {
+    cancelAnimationFrame(requestId);
+  };
+};
+
+/**
  * Event triggered when the item should be dismissed.
  * @type {string}
  * @const
@@ -55,20 +74,15 @@ ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT = 'progressAnimationEnd';
 ProgressCenterItemElement.decorate = function(element) {
   element.__proto__ = ProgressCenterItemElement.prototype;
   element.state_ = ProgressItemState.PROGRESSING;
-  element.timeoutId_ = null;
   element.track_ = element.querySelector('.progress-track');
   element.track_.addEventListener('webkitTransitionEnd',
                                   element.onTransitionEnd_.bind(element));
-  element.nextWidthRate_ = null;
-  element.timeoutId_ = null;
+  element.cancelTransition_ = null;
   return element;
 };
 
 ProgressCenterItemElement.prototype = {
   __proto__: HTMLDivElement.prototype,
-  get animated() {
-    return !!(this.timeoutId_ || this.track_.classList.contains('animated'));
-  },
   get quiet() {
     return this.classList.contains('quiet');
   }
@@ -97,24 +111,29 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
     this.querySelector('label').textContent = '';
   }
 
+  // Cancel the previous property set.
+  if (this.cancelTransition_) {
+    this.cancelTransition_();
+    this.cancelTransition_ = null;
+  }
+
   // Set track width.
-  this.nextWidthRate_ = item.progressRateInPercent;
-  var setWidth = function() {
-    this.timeoutId_ = null;
+  var setWidth = function(nextWidthFrame) {
     var currentWidthRate = parseInt(this.track_.style.width);
     // Prevent assigning the same width to avoid stopping the animation.
     // animated == false may be intended to cancel the animation, so in that
     // case, the assignment should be done.
-    if (currentWidthRate === this.nextWidthRate_ && animated)
+    if (currentWidthRate === nextWidthFrame && animated)
       return;
     this.track_.hidden = false;
-    this.track_.style.width = this.nextWidthRate_ + '%';
+    this.track_.style.width = nextWidthFrame + '%';
     this.track_.classList.toggle('animated', animated);
-  }.bind(this);
+  }.bind(this, item.progressRateInPercent);
+
   if (animated) {
-    this.timeoutId_ = this.timeoutId_ || setTimeout(setWidth);
+    this.cancelTransition_ =
+        ProgressCenterItemElement.safelySetAnimation_(setWidth);
   } else {
-    clearTimeout(this.timeoutId_);
     // For animated === false, we should call setWidth immediately to cancel the
     // animation, otherwise the animation may complete before canceling it.
     setWidth();
