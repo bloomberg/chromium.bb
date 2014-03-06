@@ -83,8 +83,10 @@ void ParseTxtRecord(NSData* record, std::vector<std::string>* output) {
   if (record == nil || [record length] <= 1)
     return;
 
-  const uint8* record_bytes = reinterpret_cast<const uint8*>([record bytes]);
-  const uint8* const record_end = record_bytes + [record length];
+  VLOG(1) << "ParseTxtRecord: " << [record length];
+
+  const char* record_bytes = reinterpret_cast<const char*>([record bytes]);
+  const char* const record_end = record_bytes + [record length];
   // TODO(justinlin): More strict bounds checking.
   while (record_bytes < record_end) {
     uint8 size = *record_bytes++;
@@ -92,6 +94,8 @@ void ParseTxtRecord(NSData* record, std::vector<std::string>* output) {
       continue;
 
     if (record_bytes + size <= record_end) {
+      VLOG(1) << "TxtRecord: "
+              << std::string(record_bytes, static_cast<size_t>(size));
       output->push_back(
           [[[NSString alloc] initWithBytes:record_bytes
                              length:size
@@ -109,6 +113,7 @@ ServiceDiscoveryClientMac::~ServiceDiscoveryClientMac() {}
 scoped_ptr<ServiceWatcher> ServiceDiscoveryClientMac::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
+  VLOG(1) << "CreateServiceWatcher: " << service_type;
   return scoped_ptr<ServiceWatcher>(new ServiceWatcherImplMac(service_type,
                                                               callback));
 }
@@ -116,6 +121,7 @@ scoped_ptr<ServiceWatcher> ServiceDiscoveryClientMac::CreateServiceWatcher(
 scoped_ptr<ServiceResolver> ServiceDiscoveryClientMac::CreateServiceResolver(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback) {
+  VLOG(1) << "CreateServiceResolver: " << service_name;
   return scoped_ptr<ServiceResolver>(new ServiceResolverImplMac(service_name,
                                                                 callback));
 }
@@ -126,6 +132,7 @@ ServiceDiscoveryClientMac::CreateLocalDomainResolver(
     net::AddressFamily address_family,
     const LocalDomainResolver::IPAddressCallback& callback) {
   NOTIMPLEMENTED();  // TODO(justinlin): Implement.
+  VLOG(1) << "CreateLocalDomainResolver: " << domain;
   return scoped_ptr<LocalDomainResolver>();
 }
 
@@ -138,6 +145,7 @@ ServiceWatcherImplMac::~ServiceWatcherImplMac() {}
 
 void ServiceWatcherImplMac::Start() {
   DCHECK(!started_);
+  VLOG(1) << "ServiceWatcherImplMac::Start";
   delegate_.reset([[NetServiceBrowserDelegate alloc]
                         initWithServiceWatcher:this]);
   browser_.reset([[NSNetServiceBrowser alloc] init]);
@@ -148,7 +156,7 @@ void ServiceWatcherImplMac::Start() {
 // TODO(justinlin): Implement flushing DNS cache to respect parameter.
 void ServiceWatcherImplMac::DiscoverNewServices(bool force_update) {
   DCHECK(started_);
-
+  VLOG(1) << "ServiceWatcherImplMac::DiscoverNewServices";
   std::string instance;
   std::string type;
   std::string domain;
@@ -167,6 +175,7 @@ void ServiceWatcherImplMac::DiscoverNewServices(bool force_update) {
 void ServiceWatcherImplMac::SetActivelyRefreshServices(
     bool actively_refresh_services) {
   DCHECK(started_);
+  VLOG(1) << "ServiceWatcherImplMac::SetActivelyRefreshServices";
   // TODO(noamsml): Implement this method.
 }
 
@@ -176,6 +185,8 @@ std::string ServiceWatcherImplMac::GetServiceType() const {
 
 void ServiceWatcherImplMac::OnServicesUpdate(ServiceWatcher::UpdateType update,
                                              const std::string& service) {
+  VLOG(1) << "ServiceWatcherImplMac::OnServicesUpdate: "
+          << service + "." + service_type_;
   callback_.Run(update, service + "." + service_type_);
 }
 
@@ -188,6 +199,7 @@ ServiceResolverImplMac::ServiceResolverImplMac(
   std::string domain;
 
   if (ExtractServiceInfo(service_name, true, &instance, &type, &domain)) {
+    VLOG(1) << "ServiceResolverImplMac::ServiceResolverImplMac: Success";
     delegate_.reset([[NetServiceDelegate alloc] initWithServiceResolver:this]);
     service_.reset(
         [[NSNetService alloc]
@@ -196,6 +208,11 @@ ServiceResolverImplMac::ServiceResolverImplMac(
             name:[[NSString alloc] initWithUTF8String:instance.c_str()]]);
     [service_ setDelegate:delegate_];
   }
+  VLOG(1) << "ServiceResolverImplMac::ServiceResolverImplMac: "
+          << service_name
+          << ", instance: " << instance
+          << ", type: " << type
+          << ", domain: " << domain;
 }
 
 ServiceResolverImplMac::~ServiceResolverImplMac() {}
@@ -204,7 +221,7 @@ void ServiceResolverImplMac::StartResolving() {
   if (!service_.get())
     return;
 
-  DVLOG(1) << "Resolving service " << service_name_;
+  VLOG(1) << "Resolving service " << service_name_;
   [service_ resolveWithTimeout:kResolveTimeout];
 }
 
@@ -213,6 +230,8 @@ std::string ServiceResolverImplMac::GetName() const {
 }
 
 void ServiceResolverImplMac::OnResolveUpdate(RequestStatus status) {
+  VLOG(1) << "ServiceResolverImplMac::OnResolveUpdate: " << service_name_
+          << ", " << status;
   if (status == STATUS_SUCCESS) {
     service_description_.service_name = service_name_;
 
