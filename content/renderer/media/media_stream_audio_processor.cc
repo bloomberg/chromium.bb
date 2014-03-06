@@ -279,7 +279,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // Return immediately if no audio processing component is enabled.
   if (!enable_aec && !enable_experimental_aec && !enable_ns &&
       !enable_high_pass_filter && !enable_typing_detection && !enable_agc &&
-      !audio_mirroring_ && !enable_experimental_ns) {
+      !enable_experimental_ns) {
     return;
   }
 

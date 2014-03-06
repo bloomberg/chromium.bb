@@ -466,7 +466,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
 
   // Notify the tracks on when the format changes. This will do nothing if
   // |tracks_to_notify_format| is empty.
-  media::AudioParameters output_params = audio_processor_->OutputFormat();
+  media::AudioParameters output_params = audio_processor->OutputFormat();
   for (TrackList::ItemList::const_iterator it = tracks_to_notify_format.begin();
        it != tracks_to_notify_format.end(); ++it) {
     (*it)->OnSetFormat(output_params);
