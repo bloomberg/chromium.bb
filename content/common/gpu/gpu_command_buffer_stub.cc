@@ -778,6 +778,8 @@ void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
 }
 
 bool GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
+  if (!sync_point)
+    return true;
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   if (manager->sync_point_manager()->IsSyncPointRetired(sync_point))
     return true;
