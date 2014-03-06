@@ -2574,6 +2574,7 @@ TEST(HeapTest, EmbeddedInVector)
 {
     HeapStats initialStats;
     clearOutOldGarbage(&initialStats);
+    SimpleFinalizedObject::s_destructorCalls = 0;
     {
         PersistentHeapVector<VectorObject, 2> inlineVector;
         PersistentHeapVector<VectorObject> outlineVector;
