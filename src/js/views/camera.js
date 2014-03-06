@@ -384,6 +384,13 @@ camera.views.Camera = function(context, router) {
   this.staleEffectsRefreshIndex_ = 0;
 
   /**
+   * Timer used for a multi-shot.
+   * @type {number?}
+   * @private
+   */
+  this.multiShotInterval_ = null;
+
+  /**
    * Timer used to countdown before taking the picture.
    * @type {number?}
    * @private
@@ -1282,20 +1289,14 @@ camera.views.Camera.prototype.takePicture_ = function() {
     tickCounter--;
     if (tickCounter == 0) {
       var takePicture = function() {
-        // If in timer mode, but the timer got cancelled, then do not continue.
-        if (!this.takePictureTimer_)
-          return;
-        this.takePictureImmediately_(function() {
-          multiShotCounter--;
-          if (!multiShotCounter) {
-            // Reset the controls.
-            this.resetTakePicture_();
-          } else {
-            setTimeout(takePicture, 250);
-          }
-        }.bind(this));
+        this.takePictureImmediately_();
+        multiShotCounter--;
+        if (!multiShotCounter)
+          this.resetTakePicture_();
       }.bind(this);
       takePicture();
+      if (multiShotCounter)
+        this.multiShotInterval_ = setInterval(takePicture, 250);
     } else {
       this.takePictureTimer_ = setTimeout(onTimerTick, 1000);
       this.tickSound_.play();
@@ -1320,6 +1321,10 @@ camera.views.Camera.prototype.resetTakePicture_ = function() {
   if (this.takePictureTimer_) {
     clearTimeout(this.takePictureTimer_);
     this.takePictureTimer_ = null;
+  }
+  if (this.multiShotInterval_) {
+    clearTimeout(this.multiShotInterval_);
+    this.multiShotInterval_ = null;
   }
   var toggleTimer = document.querySelector('#toggle-timer');
   toggleTimer.classList.remove('animate');
