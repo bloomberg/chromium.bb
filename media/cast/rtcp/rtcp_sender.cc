@@ -23,12 +23,6 @@ namespace {
 // 12 bits.
 const int64 kMaxWireFormatTimeDeltaMs = GG_INT64_C(0xfff);
 
-// We limit the size of receiver logs to avoid queuing up packets. We also
-// do not need the amount of redundancy that results from filling up every
-// RTCP packet with log messages. This number should give a redundancy of
-// about 2-3 per log message.
-const size_t kMaxReceiverLogBytes = 200;
-
 // Converts a log event type to an integer value.
 // NOTE: We have only allocated 4 bits to represent the type of event over the
 // wire. Therefore, this function can only return values from 0 to 15.
@@ -88,8 +82,7 @@ bool BuildRtcpReceiverLogMessage(
     size_t* number_of_frames,
     size_t* total_number_of_messages_to_send,
     size_t* rtcp_log_size) {
-  size_t remaining_space =
-      std::min(kMaxReceiverLogBytes, kMaxIpPacketSize - start_size);
+  size_t remaining_space = kMaxIpPacketSize - start_size;
   if (remaining_space < kRtcpCastLogHeaderSize + kRtcpReceiverFrameLogSize +
                             kRtcpReceiverEventLogSize) {
     return false;
