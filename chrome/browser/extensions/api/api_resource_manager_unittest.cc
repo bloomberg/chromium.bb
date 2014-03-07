@@ -4,13 +4,13 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/api_resource.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -21,17 +21,16 @@ using content::BrowserThread;
 
 namespace extensions {
 
+// TODO(rockot): Move these tests to src/extensions.
 class ApiResourceManagerUnitTest : public BrowserWithTestWindowTest {
  public:
-  virtual void SetUp() {
-    BrowserWithTestWindowTest::SetUp();
-  }
+  virtual void SetUp() { BrowserWithTestWindowTest::SetUp(); }
 };
 
 class FakeApiResource : public ApiResource {
  public:
-  explicit FakeApiResource(const std::string& owner_extension_id) :
-      ApiResource(owner_extension_id) {}
+  explicit FakeApiResource(const std::string& owner_extension_id)
+      : ApiResource(owner_extension_id) {}
   virtual ~FakeApiResource() {}
   static const BrowserThread::ID kThreadId = BrowserThread::UI;
 };

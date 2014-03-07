@@ -4,13 +4,13 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,12 +40,12 @@ TEST_F(SocketUnitTest, Create) {
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
 
   // Create SocketCreateFunction and put it on BrowserThread
-  SocketCreateFunction *function = new SocketCreateFunction();
+  SocketCreateFunction* function = new SocketCreateFunction();
   function->set_work_thread_id(id);
 
   // Run tests
-  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
-      function, "[\"tcp\"]"));
+  scoped_ptr<base::DictionaryValue> result(
+      RunFunctionAndReturnDictionary(function, "[\"tcp\"]"));
   ASSERT_TRUE(result.get());
 }
 

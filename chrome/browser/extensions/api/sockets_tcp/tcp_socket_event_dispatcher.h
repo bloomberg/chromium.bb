@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_TCP_SOCKET_EVENT_DISPATCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_TCP_SOCKET_EVENT_DISPATCHER_H_
 
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
+#include "extensions/browser/api/api_resource_manager.h"
 
 namespace content {
 class BrowserContext;
@@ -46,9 +46,7 @@ class TCPSocketEventDispatcher
   typedef ApiResourceManager<ResumableTCPSocket>::ApiResourceData SocketData;
   friend class BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher>;
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "TCPSocketEventDispatcher";
-  }
+  static const char* service_name() { return "TCPSocketEventDispatcher"; }
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 

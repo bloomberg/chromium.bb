@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 #include "chrome/common/extensions/api/cast_channel.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
@@ -39,7 +39,8 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // Returns a new CastSocket that connects to |url| and is to be owned by
   // |extension_id|.
   scoped_ptr<cast_channel::CastSocket> CreateCastSocket(
-      const std::string& extension_id, const GURL& gurl);
+      const std::string& extension_id,
+      const GURL& gurl);
 
   // Sets the CastSocket instance to be returned by CreateCastSocket for
   // testing.
@@ -58,9 +59,7 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
                          const cast_channel::MessageInfo& message) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "CastChannelAPI";
-  }
+  static const char* service_name() { return "CastChannelAPI"; }
 
   content::BrowserContext* const browser_context_;
   scoped_ptr<cast_channel::CastSocket> socket_for_test_;
@@ -105,8 +104,7 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
 
  private:
   // Sets the function result from |channel_info|.
-  void SetResultFromChannelInfo(
-      const cast_channel::ChannelInfo& channel_info);
+  void SetResultFromChannelInfo(const cast_channel::ChannelInfo& channel_info);
 
   // The API resource manager for CastSockets.
   ApiResourceManager<cast_channel::CastSocket>* manager_;

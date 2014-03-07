@@ -168,6 +168,9 @@
       'sources': [
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
+        'browser/api/api_resource.cc',
+        'browser/api/api_resource.h',
+        'browser/api/api_resource_manager.h',
         'browser/api/async_api_function.cc',
         'browser/api/async_api_function.h',
         'browser/api/extensions_api_client.cc',

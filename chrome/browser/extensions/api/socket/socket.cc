@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -29,8 +29,7 @@ ApiResourceManager<Socket>::GetFactoryInstance() {
 }
 
 Socket::Socket(const std::string& owner_extension_id)
-    : ApiResource(owner_extension_id), is_connected_(false) {
-}
+    : ApiResource(owner_extension_id), is_connected_(false) {}
 
 Socket::~Socket() {
   // Derived destructors should make sure the socket has been closed.
@@ -53,12 +52,12 @@ void Socket::WriteData() {
   WriteRequest& request = write_queue_.front();
 
   DCHECK(request.byte_count >= request.bytes_written);
-  io_buffer_write_ = new net::WrappedIOBuffer(
-      request.io_buffer->data() + request.bytes_written);
-  int result = WriteImpl(
-      io_buffer_write_.get(),
-      request.byte_count - request.bytes_written,
-      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
+  io_buffer_write_ = new net::WrappedIOBuffer(request.io_buffer->data() +
+                                              request.bytes_written);
+  int result =
+      WriteImpl(io_buffer_write_.get(),
+                request.byte_count - request.bytes_written,
+                base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
 
   if (result != net::ERR_IO_PENDING)
     OnWriteComplete(result);
@@ -86,15 +85,13 @@ void Socket::OnWriteComplete(int result) {
     WriteData();
 }
 
-bool Socket::SetKeepAlive(bool enable, int delay) {
-  return false;
-}
+bool Socket::SetKeepAlive(bool enable, int delay) { return false; }
 
-bool Socket::SetNoDelay(bool no_delay) {
-  return false;
-}
+bool Socket::SetNoDelay(bool no_delay) { return false; }
 
-int Socket::Listen(const std::string& address, int port, int backlog,
+int Socket::Listen(const std::string& address,
+                   int port,
+                   int backlog,
                    std::string* error_msg) {
   *error_msg = kSocketTypeNotSupported;
   return net::ERR_FAILED;
@@ -148,9 +145,8 @@ Socket::WriteRequest::WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
     : io_buffer(io_buffer),
       byte_count(byte_count),
       callback(callback),
-      bytes_written(0) {
-}
+      bytes_written(0) {}
 
-Socket::WriteRequest::~WriteRequest() { }
+Socket::WriteRequest::~WriteRequest() {}
 
 }  // namespace extensions

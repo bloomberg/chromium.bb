@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "extensions/browser/api/api_resource.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -30,19 +30,16 @@ typedef base::Callback<void(int)> CompletionCallback;
 typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
     ReadCompletionCallback;
 typedef base::Callback<
-  void(int, scoped_refptr<net::IOBuffer> io_buffer, const std::string&, int)>
-      RecvFromCompletionCallback;
-typedef base::Callback<
-  void(int, net::TCPClientSocket*)> AcceptCompletionCallback;
+    void(int, scoped_refptr<net::IOBuffer> io_buffer, const std::string&, int)>
+    RecvFromCompletionCallback;
+typedef base::Callback<void(int, net::TCPClientSocket*)>
+    AcceptCompletionCallback;
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.
 class Socket : public ApiResource {
  public:
-  enum SocketType {
-    TYPE_TCP,
-    TYPE_UDP,
-  };
+  enum SocketType { TYPE_TCP, TYPE_UDP, };
 
   virtual ~Socket();
   virtual void Connect(const std::string& address,
@@ -53,8 +50,7 @@ class Socket : public ApiResource {
 
   // The |callback| will be called with the number of bytes read into the
   // buffer, or a negative number if an error occurred.
-  virtual void Read(int count,
-                    const ReadCompletionCallback& callback) = 0;
+  virtual void Read(int count, const ReadCompletionCallback& callback) = 0;
 
   // The |callback| will be called with |byte_count| or a negative number if an
   // error occurred.
@@ -72,9 +68,11 @@ class Socket : public ApiResource {
 
   virtual bool SetKeepAlive(bool enable, int delay);
   virtual bool SetNoDelay(bool no_delay);
-  virtual int Listen(const std::string& address, int port, int backlog,
+  virtual int Listen(const std::string& address,
+                     int port,
+                     int backlog,
                      std::string* error_msg);
-  virtual void Accept(const AcceptCompletionCallback &callback);
+  virtual void Accept(const AcceptCompletionCallback& callback);
 
   virtual bool IsConnected() = 0;
 
@@ -107,9 +105,7 @@ class Socket : public ApiResource {
 
  private:
   friend class ApiResourceManager<Socket>;
-  static const char* service_name() {
-    return "SocketManager";
-  }
+  static const char* service_name() { return "SocketManager"; }
 
   struct WriteRequest {
     WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,

@@ -4,7 +4,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,9 +31,9 @@ class SocketsTcpUnitTest : public ExtensionApiUnittest {
   virtual void SetUp() {
     ExtensionApiUnittest::SetUp();
 
-    ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance()->
-        SetTestingFactoryAndUse(browser()->profile(),
-                                ApiResourceManagerTestFactory);
+    ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance()
+        ->SetTestingFactoryAndUse(browser()->profile(),
+                                  ApiResourceManagerTestFactory);
   }
 };
 
@@ -43,7 +43,7 @@ TEST_F(SocketsTcpUnitTest, Create) {
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
 
   // Create SocketCreateFunction and put it on BrowserThread
-  SocketsTcpCreateFunction *function = new SocketsTcpCreateFunction();
+  SocketsTcpCreateFunction* function = new SocketsTcpCreateFunction();
   function->set_work_thread_id(id);
 
   // Run tests

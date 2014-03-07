@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/common/extensions/api/usb.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/api_resource.h"
 
 using content::BrowserThread;
 
@@ -35,7 +35,8 @@ UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
     : ApiResource(owner_extension_id), device_(device) {}
 
 UsbDeviceResource::~UsbDeviceResource() {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
                           base::Bind(&UsbDeviceHandle::Close, device_));
 }
 

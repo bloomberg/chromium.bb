@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/hid/hid_connection.h"
+#include "extensions/browser/api/api_resource.h"
+#include "extensions/browser/api/api_resource_manager.h"
 
 namespace extensions {
 

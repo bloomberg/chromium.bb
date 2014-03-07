@@ -4,7 +4,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/api/sockets_udp/sockets_udp_api.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,9 +34,9 @@ class SocketsUdpUnitTest : public ExtensionApiUnittest {
   virtual void SetUp() {
     ExtensionApiUnittest::SetUp();
 
-    ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance()->
-        SetTestingFactoryAndUse(browser()->profile(),
-                                ApiResourceManagerTestFactory);
+    ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance()
+        ->SetTestingFactoryAndUse(browser()->profile(),
+                                  ApiResourceManagerTestFactory);
   }
 };
 
@@ -46,7 +46,7 @@ TEST_F(SocketsUdpUnitTest, Create) {
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
 
   // Create SocketCreateFunction and put it on BrowserThread
-  SocketsUdpCreateFunction *function = new SocketsUdpCreateFunction();
+  SocketsUdpCreateFunction* function = new SocketsUdpCreateFunction();
   function->set_work_thread_id(id);
 
   // Run tests

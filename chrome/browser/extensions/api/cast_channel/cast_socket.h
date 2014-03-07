@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/cast_channel.h"
+#include "extensions/browser/api/api_resource.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -59,12 +59,12 @@ class CastSocket : public ApiResource,
    public:
     // An error occurred on the channel.
     // It is fine to delete the socket in this callback.
-    virtual void OnError(const CastSocket* socket,
-                         ChannelError error) = 0;
+    virtual void OnError(const CastSocket* socket, ChannelError error) = 0;
     // A message was received on the channel.
     // Do NOT delete the socket in this callback.
     virtual void OnMessage(const CastSocket* socket,
                            const MessageInfo& message) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -126,9 +126,7 @@ class CastSocket : public ApiResource,
   friend class ApiResourceManager<CastSocket>;
   friend class CastSocketTest;
 
-  static const char* service_name() {
-    return "CastSocketManager";
-  }
+  static const char* service_name() { return "CastSocketManager"; }
 
   // Internal connection states.
   enum ConnectionState {

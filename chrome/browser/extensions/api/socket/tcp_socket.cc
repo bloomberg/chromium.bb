@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 
-#include "chrome/browser/extensions/api/api_resource.h"
+#include "extensions/browser/api/api_resource.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -40,9 +40,7 @@ ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance() {
 }
 
 TCPSocket::TCPSocket(const std::string& owner_extension_id)
-    : Socket(owner_extension_id),
-      socket_mode_(UNKNOWN) {
-}
+    : Socket(owner_extension_id), socket_mode_(UNKNOWN) {}
 
 TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
                      const std::string& owner_extension_id,
@@ -57,8 +55,7 @@ TCPSocket::TCPSocket(net::TCPServerSocket* tcp_server_socket,
                      const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       server_socket_(tcp_server_socket),
-      socket_mode_(SERVER) {
-}
+      socket_mode_(SERVER) {}
 
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
@@ -75,9 +72,7 @@ TCPSocket* TCPSocket::CreateServerSocketForTesting(
   return new TCPSocket(tcp_server_socket, owner_extension_id);
 }
 
-TCPSocket::~TCPSocket() {
-  Disconnect();
-}
+TCPSocket::~TCPSocket() { Disconnect(); }
 
 void TCPSocket::Connect(const std::string& address,
                         int port,
@@ -103,12 +98,12 @@ void TCPSocket::Connect(const std::string& address,
       break;
     }
 
-    socket_.reset(new net::TCPClientSocket(address_list, NULL,
-                                           net::NetLog::Source()));
+    socket_.reset(
+        new net::TCPClientSocket(address_list, NULL, net::NetLog::Source()));
 
     connect_callback_ = callback;
-    result = socket_->Connect(base::Bind(
-        &TCPSocket::OnConnectComplete, base::Unretained(this)));
+    result = socket_->Connect(
+        base::Bind(&TCPSocket::OnConnectComplete, base::Unretained(this)));
   } while (false);
 
   if (result != net::ERR_IO_PENDING)
@@ -130,8 +125,7 @@ int TCPSocket::Bind(const std::string& address, int port) {
   return net::ERR_FAILED;
 }
 
-void TCPSocket::Read(int count,
-                     const ReadCompletionCallback& callback) {
+void TCPSocket::Read(int count, const ReadCompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
   if (socket_mode_ != CLIENT) {
@@ -156,9 +150,11 @@ void TCPSocket::Read(int count,
 
   read_callback_ = callback;
   scoped_refptr<net::IOBuffer> io_buffer = new net::IOBuffer(count);
-  int result = socket_->Read(io_buffer.get(), count,
-      base::Bind(&TCPSocket::OnReadComplete, base::Unretained(this),
-          io_buffer));
+  int result = socket_->Read(
+      io_buffer.get(),
+      count,
+      base::Bind(
+          &TCPSocket::OnReadComplete, base::Unretained(this), io_buffer));
 
   if (result != net::ERR_IO_PENDING)
     OnReadComplete(io_buffer, result);
@@ -189,7 +185,9 @@ bool TCPSocket::SetNoDelay(bool no_delay) {
   return socket_->SetNoDelay(no_delay);
 }
 
-int TCPSocket::Listen(const std::string& address, int port, int backlog,
+int TCPSocket::Listen(const std::string& address,
+                      int port,
+                      int backlog,
                       std::string* error_msg) {
   if (socket_mode_ == CLIENT) {
     *error_msg = kTCPSocketTypeInvalidError;
@@ -203,8 +201,7 @@ int TCPSocket::Listen(const std::string& address, int port, int backlog,
     return net::ERR_INVALID_ARGUMENT;
 
   if (!server_socket_.get()) {
-    server_socket_.reset(new net::TCPServerSocket(NULL,
-                                                  net::NetLog::Source()));
+    server_socket_.reset(new net::TCPServerSocket(NULL, net::NetLog::Source()));
   }
   int result = server_socket_->Listen(*bind_address, backlog);
   if (result)
@@ -212,7 +209,7 @@ int TCPSocket::Listen(const std::string& address, int port, int backlog,
   return result;
 }
 
-void TCPSocket::Accept(const AcceptCompletionCallback &callback) {
+void TCPSocket::Accept(const AcceptCompletionCallback& callback) {
   if (socket_mode_ != SERVER || !server_socket_.get()) {
     callback.Run(net::ERR_FAILED, NULL);
     return;
@@ -224,8 +221,9 @@ void TCPSocket::Accept(const AcceptCompletionCallback &callback) {
     return;
   }
 
-  int result = server_socket_->Accept(&accept_socket_, base::Bind(
-      &TCPSocket::OnAccept, base::Unretained(this)));
+  int result = server_socket_->Accept(
+      &accept_socket_,
+      base::Bind(&TCPSocket::OnAccept, base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     accept_callback_ = callback;
   } else if (result == net::OK) {
@@ -257,9 +255,7 @@ bool TCPSocket::GetLocalAddress(net::IPEndPoint* address) {
   }
 }
 
-Socket::SocketType TCPSocket::GetSocketType() const {
-  return Socket::TYPE_TCP;
-}
+Socket::SocketType TCPSocket::GetSocketType() const { return Socket::TYPE_TCP; }
 
 int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
@@ -273,8 +269,10 @@ int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
 }
 
 void TCPSocket::RefreshConnectionStatus() {
-  if (!is_connected_) return;
-  if (server_socket_) return;
+  if (!is_connected_)
+    return;
+  if (server_socket_)
+    return;
   if (!socket_->IsConnected()) {
     Disconnect();
   }
@@ -310,8 +308,7 @@ ResumableTCPSocket::ResumableTCPSocket(const std::string& owner_extension_id)
     : TCPSocket(owner_extension_id),
       persistent_(false),
       buffer_size_(0),
-      paused_(false) {
-}
+      paused_(false) {}
 
 ResumableTCPSocket::ResumableTCPSocket(net::TCPClientSocket* tcp_client_socket,
                                        const std::string& owner_extension_id,
@@ -319,22 +316,14 @@ ResumableTCPSocket::ResumableTCPSocket(net::TCPClientSocket* tcp_client_socket,
     : TCPSocket(tcp_client_socket, owner_extension_id, is_connected),
       persistent_(false),
       buffer_size_(0),
-      paused_(false) {
-}
+      paused_(false) {}
 
-bool ResumableTCPSocket::IsPersistent() const {
-  return persistent();
-}
+bool ResumableTCPSocket::IsPersistent() const { return persistent(); }
 
 ResumableTCPServerSocket::ResumableTCPServerSocket(
     const std::string& owner_extension_id)
-    : TCPSocket(owner_extension_id),
-      persistent_(false),
-      paused_(false) {
-}
+    : TCPSocket(owner_extension_id), persistent_(false), paused_(false) {}
 
-bool ResumableTCPServerSocket::IsPersistent() const {
-  return persistent();
-}
+bool ResumableTCPServerSocket::IsPersistent() const { return persistent(); }
 
 }  // namespace extensions

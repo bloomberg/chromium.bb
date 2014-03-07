@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/hid.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/io_buffer.h"
 
@@ -56,9 +56,7 @@ bool HidAsyncApiFunction::PrePrepare() {
   return true;
 }
 
-bool HidAsyncApiFunction::Respond() {
-  return error_.empty();
-}
+bool HidAsyncApiFunction::Respond() { return error_.empty(); }
 
 HidConnectionResource* HidAsyncApiFunction::GetHidConnectionResource(
     int api_resource_id) {
@@ -173,8 +171,7 @@ void HidReceiveFunction::AsyncWorkStart() {
 
   buffer_ = new net::IOBufferWithSize(parameters_->size);
   resource->connection()->Read(
-      buffer_,
-      base::Bind(&HidReceiveFunction::OnFinished, this));
+      buffer_, base::Bind(&HidReceiveFunction::OnFinished, this));
 }
 
 void HidReceiveFunction::OnFinished(bool success, size_t bytes) {
@@ -208,9 +205,7 @@ void HidSendFunction::AsyncWorkStart() {
 
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(parameters_->data.size()));
-  memcpy(buffer->data(),
-         parameters_->data.c_str(),
-         parameters_->data.size());
+  memcpy(buffer->data(), parameters_->data.c_str(), parameters_->data.size());
   resource->connection()->Write(static_cast<uint8_t>(parameters_->report_id),
                                 buffer,
                                 base::Bind(&HidSendFunction::OnFinished, this));

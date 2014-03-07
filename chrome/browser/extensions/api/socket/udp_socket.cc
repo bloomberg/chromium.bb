@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "chrome/browser/extensions/api/api_resource.h"
+#include "extensions/browser/api/api_resource.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/udp/datagram_socket.h"
@@ -30,12 +30,9 @@ UDPSocket::UDPSocket(const std::string& owner_extension_id)
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),
               NULL,
-              net::NetLog::Source()) {
-}
+              net::NetLog::Source()) {}
 
-UDPSocket::~UDPSocket() {
-  Disconnect();
-}
+UDPSocket::~UDPSocket() { Disconnect(); }
 
 void UDPSocket::Connect(const std::string& address,
                         int port,
@@ -78,8 +75,7 @@ void UDPSocket::Disconnect() {
   multicast_groups_.clear();
 }
 
-void UDPSocket::Read(int count,
-                     const ReadCompletionCallback& callback) {
+void UDPSocket::Read(int count, const ReadCompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
   if (!read_callback_.is_null()) {
@@ -103,9 +99,11 @@ void UDPSocket::Read(int count,
     }
 
     io_buffer = new net::IOBuffer(count);
-    result = socket_.Read(io_buffer.get(), count,
-        base::Bind(&UDPSocket::OnReadComplete, base::Unretained(this),
-            io_buffer));
+    result = socket_.Read(
+        io_buffer.get(),
+        count,
+        base::Bind(
+            &UDPSocket::OnReadComplete, base::Unretained(this), io_buffer));
   } while (false);
 
   if (result != net::ERR_IO_PENDING)
@@ -148,14 +146,13 @@ void UDPSocket::RecvFrom(int count,
 
     io_buffer = new net::IOBuffer(count);
     address = new IPEndPoint();
-    result = socket_.RecvFrom(
-        io_buffer.get(),
-        count,
-        &address->data,
-        base::Bind(&UDPSocket::OnRecvFromComplete,
-                   base::Unretained(this),
-                   io_buffer,
-                   address));
+    result = socket_.RecvFrom(io_buffer.get(),
+                              count,
+                              &address->data,
+                              base::Bind(&UDPSocket::OnRecvFromComplete,
+                                         base::Unretained(this),
+                                         io_buffer,
+                                         address));
   } while (false);
 
   if (result != net::ERR_IO_PENDING)
@@ -182,7 +179,7 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
   do {
     net::IPEndPoint ip_end_point;
     if (!StringAndPortToIPEndPoint(address, port, &ip_end_point)) {
-      result =  net::ERR_ADDRESS_INVALID;
+      result = net::ERR_ADDRESS_INVALID;
       break;
     }
 
@@ -202,9 +199,7 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
     OnSendToComplete(result);
 }
 
-bool UDPSocket::IsConnected() {
-  return is_connected_;
-}
+bool UDPSocket::IsConnected() { return is_connected_; }
 
 bool UDPSocket::GetPeerAddress(net::IPEndPoint* address) {
   return !socket_.GetPeerAddress(address);
@@ -214,9 +209,7 @@ bool UDPSocket::GetLocalAddress(net::IPEndPoint* address) {
   return !socket_.GetLocalAddress(address);
 }
 
-Socket::SocketType UDPSocket::GetSocketType() const {
-  return Socket::TYPE_UDP;
-}
+Socket::SocketType UDPSocket::GetSocketType() const { return Socket::TYPE_UDP; }
 
 void UDPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
                                int result) {
@@ -244,9 +237,7 @@ void UDPSocket::OnSendToComplete(int result) {
   send_to_callback_.Reset();
 }
 
-bool UDPSocket::IsBound() {
-  return socket_.is_connected();
-}
+bool UDPSocket::IsBound() { return socket_.is_connected(); }
 
 int UDPSocket::JoinGroup(const std::string& address) {
   net::IPAddressNumber ip;
@@ -254,10 +245,8 @@ int UDPSocket::JoinGroup(const std::string& address) {
     return net::ERR_ADDRESS_INVALID;
 
   std::string normalized_address = net::IPAddressToString(ip);
-  std::vector<std::string>::iterator find_result =
-        std::find(multicast_groups_.begin(),
-                  multicast_groups_.end(),
-                  normalized_address);
+  std::vector<std::string>::iterator find_result = std::find(
+      multicast_groups_.begin(), multicast_groups_.end(), normalized_address);
   if (find_result != multicast_groups_.end())
     return net::ERR_ADDRESS_INVALID;
 
@@ -273,10 +262,8 @@ int UDPSocket::LeaveGroup(const std::string& address) {
     return net::ERR_ADDRESS_INVALID;
 
   std::string normalized_address = net::IPAddressToString(ip);
-  std::vector<std::string>::iterator find_result =
-      std::find(multicast_groups_.begin(),
-                multicast_groups_.end(),
-                normalized_address);
+  std::vector<std::string>::iterator find_result = std::find(
+      multicast_groups_.begin(), multicast_groups_.end(), normalized_address);
   if (find_result == multicast_groups_.end())
     return net::ERR_ADDRESS_INVALID;
 
@@ -302,11 +289,8 @@ ResumableUDPSocket::ResumableUDPSocket(const std::string& owner_extension_id)
     : UDPSocket(owner_extension_id),
       persistent_(false),
       buffer_size_(0),
-      paused_(false) {
-}
+      paused_(false) {}
 
-bool ResumableUDPSocket::IsPersistent() const {
-  return persistent();
-}
+bool ResumableUDPSocket::IsPersistent() const { return persistent(); }
 
 }  // namespace extensions

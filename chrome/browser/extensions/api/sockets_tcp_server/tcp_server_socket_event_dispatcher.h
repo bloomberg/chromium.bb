@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
 
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
 #include "chrome/browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api.h"
+#include "extensions/browser/api/api_resource_manager.h"
 
 namespace content {
 class BrowserContext;
@@ -50,9 +50,7 @@ class TCPServerSocketEventDispatcher
       ClientSocketData;
   friend class BrowserContextKeyedAPIFactory<TCPServerSocketEventDispatcher>;
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "TCPServerSocketEventDispatcher";
-  }
+  static const char* service_name() { return "TCPServerSocketEventDispatcher"; }
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
@@ -79,11 +77,10 @@ class TCPServerSocketEventDispatcher
   // Called when socket accepts a new connection.
   static void AcceptCallback(const AcceptParams& params,
                              int result_code,
-                             net::TCPClientSocket *socket);
+                             net::TCPClientSocket* socket);
 
   // Post an extension event from |thread_id| to UI thread
-  static void PostEvent(const AcceptParams& params,
-                        scoped_ptr<Event> event);
+  static void PostEvent(const AcceptParams& params, scoped_ptr<Event> event);
 
   // Dispatch an extension event on to EventRouter instance on UI thread.
   static void DispatchEvent(void* browser_context_id,

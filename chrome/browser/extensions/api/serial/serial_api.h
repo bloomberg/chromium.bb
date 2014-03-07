@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/serial.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 
 namespace extensions {

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_API_RESOURCE_MANAGER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_API_RESOURCE_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_API_API_RESOURCE_MANAGER_H_
+#define EXTENSIONS_BROWSER_API_API_RESOURCE_MANAGER_H_
 
 #include <map>
 
@@ -76,14 +76,12 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
  public:
   explicit ApiResourceManager(content::BrowserContext* context)
       : thread_id_(T::kThreadId), data_(new ApiResourceData(thread_id_)) {
-    registrar_.Add(
-      this,
-      chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      content::NotificationService::AllSources());
-    registrar_.Add(
-      this,
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                   content::NotificationService::AllSources());
   }
 
   // For Testing.
@@ -98,10 +96,10 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
   virtual ~ApiResourceManager() {
     DCHECK(CalledOnValidThread());
-    DCHECK(content::BrowserThread::IsMessageLoopValid(thread_id_)) <<
-        "A unit test is using an ApiResourceManager but didn't provide "
-        "the thread message loop needed for that kind of resource. "
-        "Please ensure that the appropriate message loop is operational.";
+    DCHECK(content::BrowserThread::IsMessageLoopValid(thread_id_))
+        << "A unit test is using an ApiResourceManager but didn't provide "
+           "the thread message loop needed for that kind of resource. "
+           "Please ensure that the appropriate message loop is operational.";
 
     data_->InititateCleanup();
   }
@@ -116,9 +114,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   }
 
   // Takes ownership.
-  int Add(T* api_resource) {
-    return data_->Add(api_resource);
-  }
+  int Add(T* api_resource) { return data_->Add(api_resource); }
 
   void Remove(const std::string& extension_id, int api_resource_id) {
     data_->Remove(extension_id, api_resource_id);
@@ -139,9 +135,8 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-        std::string id =
-            content::Details<extensions::UnloadedExtensionInfo>(details)->
-                extension->id();
+        std::string id = content::Details<extensions::UnloadedExtensionInfo>(
+                             details)->extension->id();
         data_->InitiateExtensionUnloadedCleanup(id);
         break;
       }
@@ -160,9 +155,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   friend class api::UDPSocketEventDispatcher;
   friend class BrowserContextKeyedAPIFactory<ApiResourceManager<T> >;
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return T::service_name();
-  }
+  static const char* service_name() { return T::service_name(); }
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
@@ -175,9 +168,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     typedef std::map<std::string, base::hash_set<int> > ExtensionToResourceMap;
 
     explicit ApiResourceData(const content::BrowserThread::ID thread_id)
-        : next_id_(1),
-          thread_id_(thread_id) {
-    }
+        : next_id_(1), thread_id_(thread_id) {}
 
     int Add(T* api_resource) {
       DCHECK(content::BrowserThread::CurrentlyOn(thread_id_));
@@ -193,9 +184,9 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
         }
         extension_resource_map_[extension_id].insert(id);
 
-       return id;
-     }
-     return 0;
+        return id;
+      }
+      return 0;
     }
 
     void Remove(const std::string& extension_id, int api_resource_id) {
@@ -219,20 +210,26 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     void InitiateExtensionUnloadedCleanup(const std::string& extension_id) {
-      content::BrowserThread::PostTask(thread_id_, FROM_HERE,
+      content::BrowserThread::PostTask(
+          thread_id_,
+          FROM_HERE,
           base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
-                     this, extension_id));
+                     this,
+                     extension_id));
     }
 
     void InitiateExtensionSuspendedCleanup(const std::string& extension_id) {
-      content::BrowserThread::PostTask(thread_id_, FROM_HERE,
+      content::BrowserThread::PostTask(
+          thread_id_,
+          FROM_HERE,
           base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
-                     this, extension_id));
+                     this,
+                     extension_id));
     }
 
     void InititateCleanup() {
-      content::BrowserThread::PostTask(thread_id_, FROM_HERE,
-          base::Bind(&ApiResourceData::Cleanup, this));
+      content::BrowserThread::PostTask(
+          thread_id_, FROM_HERE, base::Bind(&ApiResourceData::Cleanup, this));
     }
 
    private:
@@ -240,8 +237,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
     virtual ~ApiResourceData() {}
 
-    T* GetOwnedResource(const std::string& extension_id,
-                        int api_resource_id) {
+    T* GetOwnedResource(const std::string& extension_id, int api_resource_id) {
       linked_ptr<T> ptr = api_resource_map_[api_resource_id];
       T* resource = ptr.get();
       if (resource && extension_id == resource->owner_extension_id())
@@ -279,10 +275,9 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
       // Remove all resources, or the non persistent ones only if |remove_all|
       // is false.
-      base::hash_set<int>& resource_ids =
-          extension_resource_map_[extension_id];
+      base::hash_set<int>& resource_ids = extension_resource_map_[extension_id];
       for (base::hash_set<int>::iterator it = resource_ids.begin();
-            it != resource_ids.end(); ) {
+           it != resource_ids.end();) {
         bool erase = false;
         if (remove_all) {
           erase = true;
@@ -313,9 +308,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
       extension_resource_map_.clear();
     }
 
-    int GenerateId() {
-      return next_id_++;
-    }
+    int GenerateId() { return next_id_++; }
 
     int next_id_;
     const content::BrowserThread::ID thread_id_;
@@ -330,4 +323,4 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_API_RESOURCE_MANAGER_H_
+#endif  // EXTENSIONS_BROWSER_API_API_RESOURCE_MANAGER_H_

@@ -10,15 +10,14 @@
 #include "base/lazy_instance.h"
 #include "base/platform_file.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/serial.h"
+#include "extensions/browser/api/api_resource_manager.h"
 
 namespace extensions {
 
 namespace {
 
 const int kDefaultBufferSize = 4096;
-
 }
 
 static base::LazyInstance<
@@ -53,9 +52,7 @@ SerialConnection::~SerialConnection() {
   Close();
 }
 
-bool SerialConnection::IsPersistent() const {
-  return persistent();
-}
+bool SerialConnection::IsPersistent() const { return persistent(); }
 
 void SerialConnection::set_buffer_size(int buffer_size) {
   buffer_size_ = buffer_size;
@@ -81,7 +78,8 @@ void SerialConnection::Open(const OpenCompleteCallback& callback) {
   DCHECK(open_complete_.is_null());
   open_complete_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+      BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&SerialConnection::StartOpen, base::Unretained(this)));
 }
 
@@ -91,7 +89,8 @@ void SerialConnection::Close() {
   if (file_ != base::kInvalidPlatformFileValue) {
     base::PlatformFile file = file_;
     file_ = base::kInvalidPlatformFileValue;
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
                             base::Bind(&SerialConnection::DoClose, file));
   }
 }
@@ -178,7 +177,8 @@ void SerialConnection::StartOpen() {
               base::PLATFORM_FILE_TERMINAL_DEVICE;
   file = base::CreatePlatformFile(path, flags, NULL, NULL);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&SerialConnection::FinishOpen, base::Unretained(this), file));
 }
 
@@ -248,9 +248,7 @@ void SerialConnection::OnAsyncWriteComplete(int bytes_sent,
 
 SerialConnection::TimeoutTask::TimeoutTask(const base::Closure& closure,
                                            const base::TimeDelta& delay)
-    : weak_factory_(this),
-      closure_(closure),
-      delay_(delay) {
+    : weak_factory_(this), closure_(closure), delay_(delay) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TimeoutTask::Run, weak_factory_.GetWeakPtr()),
@@ -259,8 +257,6 @@ SerialConnection::TimeoutTask::TimeoutTask(const base::Closure& closure,
 
 SerialConnection::TimeoutTask::~TimeoutTask() {}
 
-void SerialConnection::TimeoutTask::Run() const {
-  closure_.Run();
-}
+void SerialConnection::TimeoutTask::Run() const { closure_.Run(); }
 
 }  // namespace extensions

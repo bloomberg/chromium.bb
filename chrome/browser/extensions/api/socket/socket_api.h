@@ -7,8 +7,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/socket.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/extension_function.h"
 #include "net/base/address_list.h"
@@ -39,34 +39,31 @@ class SocketResourceManagerInterface {
   virtual ~SocketResourceManagerInterface() {}
 
   virtual bool SetBrowserContext(content::BrowserContext* context) = 0;
-  virtual int Add(Socket *socket) = 0;
-  virtual Socket* Get(const std::string& extension_id,
-                      int api_resource_id) = 0;
-  virtual void Remove(const std::string& extension_id,
-                      int api_resource_id) = 0;
+  virtual int Add(Socket* socket) = 0;
+  virtual Socket* Get(const std::string& extension_id, int api_resource_id) = 0;
+  virtual void Remove(const std::string& extension_id, int api_resource_id) = 0;
   virtual base::hash_set<int>* GetResourceIds(
       const std::string& extension_id) = 0;
 };
 
 // Implementation of SocketResourceManagerInterface using an
 // ApiResourceManager<T> instance (where T derives from Socket).
-template<typename T>
+template <typename T>
 class SocketResourceManager : public SocketResourceManagerInterface {
  public:
-  SocketResourceManager()
-      : manager_(NULL) {
-  }
+  SocketResourceManager() : manager_(NULL) {}
 
   virtual bool SetBrowserContext(content::BrowserContext* context) OVERRIDE {
     manager_ = ApiResourceManager<T>::Get(context);
-    DCHECK(manager_) << "There is no socket manager. "
-      "If this assertion is failing during a test, then it is likely that "
-      "TestExtensionSystem is failing to provide an instance of "
-      "ApiResourceManager<Socket>.";
+    DCHECK(manager_)
+        << "There is no socket manager. "
+           "If this assertion is failing during a test, then it is likely that "
+           "TestExtensionSystem is failing to provide an instance of "
+           "ApiResourceManager<Socket>.";
     return manager_ != NULL;
   }
 
-  virtual int Add(Socket *socket) OVERRIDE {
+  virtual int Add(Socket* socket) OVERRIDE {
     // Note: Cast needed here, because "T" may be a subclass of "Socket".
     return manager_->Add(static_cast<T*>(socket));
   }
@@ -81,8 +78,8 @@ class SocketResourceManager : public SocketResourceManagerInterface {
     manager_->Remove(extension_id, api_resource_id);
   }
 
-  virtual base::hash_set<int>* GetResourceIds(
-      const std::string& extension_id) OVERRIDE {
+  virtual base::hash_set<int>* GetResourceIds(const std::string& extension_id)
+      OVERRIDE {
     return manager_->GetResourceIds(extension_id);
   }
 
@@ -151,11 +148,7 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketUnitTest, Create);
-  enum SocketType {
-    kSocketTypeInvalid = -1,
-    kSocketTypeTCP,
-    kSocketTypeUDP
-  };
+  enum SocketType { kSocketTypeInvalid = -1, kSocketTypeTCP, kSocketTypeUDP };
 
   scoped_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;
@@ -265,7 +258,7 @@ class SocketAcceptFunction : public SocketAsyncApiFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  void OnAccept(int result_code, net::TCPClientSocket *socket);
+  void OnAccept(int result_code, net::TCPClientSocket* socket);
   scoped_ptr<api::socket::Accept::Params> params_;
 };
 
