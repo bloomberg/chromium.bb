@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
@@ -61,6 +62,8 @@ SyncServiceState RemoteStateToSyncServiceState(
       return SYNC_SERVICE_AUTHENTICATION_REQUIRED;
     case REMOTE_SERVICE_DISABLED:
       return SYNC_SERVICE_DISABLED;
+    case REMOTE_SERVICE_STATE_MAX:
+      NOTREACHED();
   }
   NOTREACHED() << "Unknown remote service state: " << state;
   return SYNC_SERVICE_DISABLED;
@@ -389,6 +392,8 @@ ConflictResolutionPolicy SyncFileSystemService::GetConflictResolutionPolicy(
 SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
     const GURL& origin,
     ConflictResolutionPolicy policy) {
+  UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.ConflictResolutionPolicy",
+                            policy, CONFLICT_RESOLUTION_POLICY_MAX);
   return GetRemoteService(origin)->SetConflictResolutionPolicy(origin, policy);
 }
 
@@ -474,6 +479,10 @@ void SyncFileSystemService::DidRegisterOrigin(
             "DidInitializeForApp (registered the origin): %s: %s",
             app_origin.spec().c_str(),
             SyncStatusCodeToString(status));
+
+  UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.RegisterOriginResult",
+                            GetRemoteService(app_origin)->GetCurrentState(),
+                            REMOTE_SERVICE_STATE_MAX);
 
   if (status == SYNC_STATUS_FAILED) {
     // If we got generic error return the service status information.

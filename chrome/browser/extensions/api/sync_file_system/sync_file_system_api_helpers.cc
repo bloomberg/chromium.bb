@@ -97,6 +97,9 @@ ConflictResolutionPolicyToExtensionEnum(
         return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN;
     case sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL:
       return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL;
+    case sync_file_system::CONFLICT_RESOLUTION_POLICY_MAX:
+      NOTREACHED();
+      return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
   }
   NOTREACHED() << "Invalid conflict resolution policy: " << policy;
   return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;

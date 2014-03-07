@@ -41,7 +41,7 @@ enum RemoteServiceState {
   // Remote service is up and running, or has not seen any errors yet.
   // The consumer of this service can make new requests while the
   // service is in this state.
-  REMOTE_SERVICE_OK,
+  REMOTE_SERVICE_OK = 0,
 
   // Remote service is temporarily unavailable due to network,
   // authentication or some other temporary failure.
@@ -63,6 +63,8 @@ enum RemoteServiceState {
   // Any new requests will immediately fail when the service is in
   // this state.
   REMOTE_SERVICE_DISABLED,
+
+  REMOTE_SERVICE_STATE_MAX,
 };
 
 // This class represents a backing service of the sync filesystem.

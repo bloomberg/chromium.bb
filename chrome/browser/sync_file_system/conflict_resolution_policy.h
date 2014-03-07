@@ -9,7 +9,7 @@ namespace sync_file_system {
 
 enum ConflictResolutionPolicy {
   // Resolution policy unknown or not initialized. Usually indicates an error.
-  CONFLICT_RESOLUTION_POLICY_UNKNOWN,
+  CONFLICT_RESOLUTION_POLICY_UNKNOWN = 0,
 
   // The service automatically resolves a conflict by choosing the one
   // that is updated more recently.
@@ -18,6 +18,8 @@ enum ConflictResolutionPolicy {
   // The service does nothing and just leaves conflicting files in
   // 'conflicted' state.
   CONFLICT_RESOLUTION_POLICY_MANUAL,
+
+  CONFLICT_RESOLUTION_POLICY_MAX,
 };
 
 }  // namespace sync_file_system

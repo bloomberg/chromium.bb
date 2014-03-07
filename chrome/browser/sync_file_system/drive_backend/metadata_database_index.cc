@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 
@@ -58,6 +59,11 @@ MetadataDatabaseIndex::MetadataDatabaseIndex(DatabaseContents* content) {
   for (size_t i = 0; i < content->file_trackers.size(); ++i)
     StoreFileTracker(make_scoped_ptr(content->file_trackers[i]));
   content->file_trackers.weak_clear();
+
+  UMA_HISTOGRAM_COUNTS("SyncFileSystem.MetadataNumber", metadata_by_id_.size());
+  UMA_HISTOGRAM_COUNTS("SyncFileSystem.TrackerNumber", tracker_by_id_.size());
+  UMA_HISTOGRAM_COUNTS_100("SyncFileSystem.RegisteredAppNumber",
+                           app_root_by_app_id_.size());
 }
 
 MetadataDatabaseIndex::~MetadataDatabaseIndex() {}
