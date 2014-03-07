@@ -26,7 +26,7 @@ class InvertingObserver;
 // (200ms).
 class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
  public:
-  explicit ScopedLayerAnimationSettings(LayerAnimator* animator);
+  explicit ScopedLayerAnimationSettings(scoped_refptr<LayerAnimator> animator);
   virtual ~ScopedLayerAnimationSettings();
 
   void AddObserver(ImplicitAnimationObserver* observer);
@@ -55,7 +55,7 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   void AddInverselyAnimatedLayer(Layer* inverse_layer);
 
  private:
-  LayerAnimator* animator_;
+  scoped_refptr<LayerAnimator> animator_;
   bool old_is_transition_duration_locked_;
   base::TimeDelta old_transition_duration_;
   gfx::Tween::Type old_tween_type_;

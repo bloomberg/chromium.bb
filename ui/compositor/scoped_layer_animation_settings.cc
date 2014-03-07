@@ -77,9 +77,9 @@ class InvertingObserver : public ImplicitAnimationObserver {
 };
 
 
-// ScoperLayerAnimationSettings ------------------------------------------------
+// ScopedLayerAnimationSettings ------------------------------------------------
 ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
-    LayerAnimator* animator)
+    scoped_refptr<LayerAnimator> animator)
     : animator_(animator),
       old_is_transition_duration_locked_(
           animator->is_transition_duration_locked_),

@@ -77,17 +77,12 @@ class OverlayDismissAnimator
   // the object deletes itself along with the layer.
   void Animate() {
     DCHECK(layer_.get());
-    // Hold on to LayerAnimator to ensure it is not deleted before animation
-    // settings. Without this LayerAnimator would be deleted from SetOpacity if
-    // the animation duration is 0.
-    scoped_refptr<ui::LayerAnimator> animator(layer_->GetAnimator());
-    {
-      // This makes SetOpacity() animate with default duration (which could be
-      // zero, e.g. when running tests).
-      ui::ScopedLayerAnimationSettings settings(animator);
-      animator->AddObserver(this);
-      layer_->SetOpacity(0);
-    }
+    ui::LayerAnimator* animator = layer_->GetAnimator();
+    // This makes SetOpacity() animate with default duration (which could be
+    // zero, e.g. when running tests).
+    ui::ScopedLayerAnimationSettings settings(animator);
+    animator->AddObserver(this);
+    layer_->SetOpacity(0);
   }
 
   // Overridden from ui::LayerAnimationObserver
