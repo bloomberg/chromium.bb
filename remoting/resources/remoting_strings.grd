@@ -204,7 +204,7 @@
         <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDS_DESCRIPTION_HOME">
           Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
         </message>
-        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED">
+        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED" formatter_data="android_java">
           Authentication failed. Please sign in to Chrome Remote Desktop again.
         </message>
         <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
