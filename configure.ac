@@ -133,7 +133,6 @@ AC_CONFIG_FILES([Makefile
 		 doc/publican/Makefile
 		 doc/doxygen/Makefile
 		 doc/man/Makefile
-		 src/Makefile
 		 src/wayland-server-uninstalled.pc
 		 src/wayland-client-uninstalled.pc
 		 src/wayland-scanner-uninstalled.pc

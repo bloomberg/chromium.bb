@@ -46,9 +46,9 @@ os_wrappers_test_SOURCES = 			\
 
 AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
-LDADD = $(top_builddir)/src/libwayland-util.la \
-	$(top_builddir)/src/libwayland-client.la \
-	$(top_builddir)/src/libwayland-server.la \
+LDADD = ../libwayland-util.la \
+	../libwayland-client.la \
+	../libwayland-server.la \
 	-lrt -ldl $(FFI_LIBS)
 
 exec_fd_leak_checker_SOURCES =			\
