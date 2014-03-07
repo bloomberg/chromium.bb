@@ -777,6 +777,7 @@ public:
     template<typename T> static Address reallocate(void* previous, size_t);
 
     static void collectGarbage(ThreadState::StackState, GCType = Normal);
+    static void collectAllGarbage(ThreadState::StackState, GCType = Normal);
 
     static void prepareForGC();
 

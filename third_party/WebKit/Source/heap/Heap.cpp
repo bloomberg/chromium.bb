@@ -1301,6 +1301,17 @@ void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
     s_markingStack->assertIsEmpty();
 }
 
+void Heap::collectAllGarbage(ThreadState::StackState stackState, GCType gcType)
+{
+    // FIXME: oilpan: we should perform a single GC and everything
+    // should die. Unfortunately it is not the case for all objects
+    // because the hierarchy was not completely moved to the heap and
+    // some heap allocated objects own objects that contain persistents
+    // pointing to other heap allocated objects.
+    for (int i = 0; i < 5; i++)
+        collectGarbage(stackState, gcType);
+}
+
 void Heap::getStats(HeapStats* stats)
 {
     stats->clear();

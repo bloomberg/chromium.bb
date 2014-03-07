@@ -298,13 +298,7 @@ void ThreadState::cleanup()
     // After this GC we expect heap to be empty because
     // preCleanup tasks should have cleared all persistent
     // handles that were externally owned.
-    // FIXME: oilpan: we should perform a single GC and everything
-    // should die. Unfortunately it is not the case for all objects
-    // because the hierarchy was not completely moved to the heap and
-    // some heap allocated objects own objects that contain persistents
-    // pointing to other heap allocated objects.
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
 
     // Verify that all heaps are empty now.
     for (int i = 0; i < NumberOfHeaps; i++)
@@ -319,6 +313,8 @@ void ThreadState::cleanup()
 void ThreadState::detach()
 {
     ThreadState* state = current();
+    state->cleanup();
+
     // Enter safe point before trying to acquire threadAttachMutex
     // to avoid dead lock if another thread is preparing for GC, has acquired
     // threadAttachMutex and waiting for other threads to pause or reach a

@@ -238,15 +238,6 @@ public:
     // It also has to periodically check for safepoints.
     static void attach();
 
-    // When ThreadState is detaching from non-main thread its
-    // heap is expected to be empty (because it is going away).
-    // Perform registered cleanup tasks and garbage collection
-    // to sweep away any objects that are left on this heap.
-    // We assert that nothing must remain after this cleanup.
-    // If assertion does not hold we crash as we are potentially
-    // in the dangling pointer situation.
-    void cleanup();
-
     // Disassociate attached ThreadState from the current thread. The thread
     // can no longer use the garbage collected heap after this call.
     static void detach();
@@ -500,6 +491,15 @@ private:
         m_safePointStackCopy.clear();
         m_safePointScopeMarker = 0;
     }
+
+    // When ThreadState is detaching from non-main thread its
+    // heap is expected to be empty (because it is going away).
+    // Perform registered cleanup tasks and garbage collection
+    // to sweep away any objects that are left on this heap.
+    // We assert that nothing must remain after this cleanup.
+    // If assertion does not hold we crash as we are potentially
+    // in the dangling pointer situation.
+    void cleanup();
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;

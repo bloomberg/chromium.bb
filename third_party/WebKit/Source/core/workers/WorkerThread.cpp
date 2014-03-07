@@ -137,23 +137,21 @@ void WorkerThread::workerThread()
 
     ThreadIdentifier threadID = m_threadID;
 
+#if !ENABLE_OILPAN
     ASSERT(m_workerGlobalScope->hasOneRef());
+#endif
 
     // The below assignment will destroy the context, which will in turn notify messaging proxy.
     // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
     m_workerGlobalScope = nullptr;
 
-    // Cleanup thread heap which causes all objects to be finalized.
-    // After this call thread heap must be empty.
-    ThreadState::current()->cleanup();
+    ThreadState::detach();
 
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();
 
     // The thread object may be already destroyed from notification now, don't try to access "this".
     detachThread(threadID);
-
-    ThreadState::detach();
 }
 
 void WorkerThread::runEventLoop()
