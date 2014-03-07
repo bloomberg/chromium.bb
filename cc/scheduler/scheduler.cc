@@ -122,6 +122,11 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   ProcessScheduledActions();
 }
 
+void Scheduler::NotifyBeginMainFrameStarted() {
+  TRACE_EVENT0("cc", "Scheduler::NotifyBeginMainFrameStarted");
+  state_machine_.NotifyBeginMainFrameStarted();
+}
+
 base::TimeTicks Scheduler::AnticipatedDrawTime() const {
   if (!last_set_needs_begin_impl_frame_ ||
       last_begin_impl_frame_args_.interval <= base::TimeDelta())
@@ -184,7 +189,7 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
     // crbug.com/317430 for an example of a swap ack being held on commit. Thus
     // we set a repeating timer to poll on ProcessScheduledActions until we
     // successfully reach BeginImplFrame.
-    if (state_machine_.IsCommitStateWaiting())
+    if (IsBeginMainFrameSentOrStarted())
       needs_advance_commit_state_timer = true;
   }
   if (needs_advance_commit_state_timer !=
@@ -411,6 +416,13 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
                TracedValue::FromValue(StateAsValue().release()));
 
   return estimated_draw_time < last_begin_impl_frame_args_.deadline;
+}
+
+bool Scheduler::IsBeginMainFrameSentOrStarted() const {
+  return (state_machine_.commit_state() ==
+              SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT ||
+          state_machine_.commit_state() ==
+              SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED);
 }
 
 }  // namespace cc

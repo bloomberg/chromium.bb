@@ -84,8 +84,10 @@ const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
   switch (state) {
     case COMMIT_STATE_IDLE:
       return "COMMIT_STATE_IDLE";
-    case COMMIT_STATE_FRAME_IN_PROGRESS:
-      return "COMMIT_STATE_FRAME_IN_PROGRESS";
+    case COMMIT_STATE_BEGIN_MAIN_FRAME_SENT:
+      return "COMMIT_STATE_BEGIN_MAIN_FRAME_SENT";
+    case COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED:
+      return "COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED";
     case COMMIT_STATE_READY_TO_COMMIT:
       return "COMMIT_STATE_READY_TO_COMMIT";
     case COMMIT_STATE_WAITING_FOR_FIRST_DRAW:
@@ -515,10 +517,6 @@ bool SchedulerStateMachine::ShouldCommit() const {
   return commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
 }
 
-bool SchedulerStateMachine::IsCommitStateWaiting() const {
-  return commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS;
-}
-
 bool SchedulerStateMachine::ShouldManageTiles() const {
   // ManageTiles only really needs to be called immediately after commit
   // and then periodically after that. Use a funnel to make sure we average
@@ -593,7 +591,7 @@ void SchedulerStateMachine::UpdateState(Action action) {
       DCHECK(!has_pending_tree_);
       DCHECK(visible_ ||
              readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME);
-      commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
+      commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
       needs_commit_ = false;
       if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME)
         readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
@@ -757,9 +755,9 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
     // We are blocking commits from the main thread until after this draw, so
     // we should not have a pending tree.
     DCHECK(!has_pending_tree_);
-    // We transition to COMMIT_STATE_FRAME_IN_PROGRESS because there is a
+    // We transition to COMMIT_STATE_BEGIN_MAIN_FRAME_SENT because there is a
     // pending BeginMainFrame behind the readback request.
-    commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
+    commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
     readback_state_ = READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT;
   } else if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW) {
     DCHECK_EQ(commit_state_, COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
@@ -974,7 +972,8 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
   // If there's a commit in progress it must either be from the previous frame
   // or it started after the impl thread's deadline. In either case the main
   // thread is in high latency mode.
-  if (commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS ||
+  if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT ||
+      commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED ||
       commit_state_ == COMMIT_STATE_READY_TO_COMMIT)
     return true;
 
@@ -1091,12 +1090,12 @@ void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
          readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT);
 
   // If there is already a commit in progress when we get the readback request
-  // (we are in COMMIT_STATE_FRAME_IN_PROGRESS), then we don't need to send a
-  // BeginMainFrame for the replacement commit, since there's already a
+  // (we are in COMMIT_STATE_BEGIN_MAIN_FRAME_SENT), then we don't need to send
+  // a BeginMainFrame for the replacement commit, since there's already a
   // BeginMainFrame behind the readback request. In that case, we can skip
   // READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME and go directly to
   // READBACK_STATE_WAITING_FOR_COMMIT
-  if (commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS) {
+  if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT) {
     readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
   } else {
     // Set needs_commit_ to true to trigger scheduling BeginMainFrame().
@@ -1106,12 +1105,12 @@ void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
 }
 
 void SchedulerStateMachine::FinishCommit() {
-  DCHECK(commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS) << *AsValue();
+  DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED) << *AsValue();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
 }
 
 void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
-  DCHECK_EQ(commit_state_, COMMIT_STATE_FRAME_IN_PROGRESS);
+  DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
   if (did_handle) {
     bool commit_was_aborted = true;
     UpdateStateOnCommit(commit_was_aborted);
@@ -1151,6 +1150,11 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
     needs_commit_ = true;
   }
   did_create_and_initialize_first_output_surface_ = true;
+}
+
+void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
+  DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
+  commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED;
 }
 
 bool SchedulerStateMachine::HasInitializedOutputSurface() const {

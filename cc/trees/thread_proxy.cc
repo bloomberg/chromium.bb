@@ -1001,6 +1001,10 @@ void ThreadProxy::StartCommitOnImplThread(
     return;
   }
 
+  // Ideally, we should inform to impl thread when BeginMainFrame is started.
+  // But, we can avoid a PostTask in here.
+  impl().scheduler->NotifyBeginMainFrameStarted();
+
   if (offscreen_context_provider.get())
     offscreen_context_provider->BindToCurrentThread();
   impl().layer_tree_host_impl->SetOffscreenContextProvider(

@@ -30,7 +30,7 @@ class CC_EXPORT DelayBasedTimeSource : public TimeSource {
   virtual base::TimeTicks SetActive(bool active) OVERRIDE;
   virtual bool Active() const OVERRIDE;
 
-  // Get the last and next tick times. nextTimeTime() returns null when
+  // Get the last and next tick times. NextTickTime() returns null when
   // inactive.
   virtual base::TimeTicks LastTickTime() OVERRIDE;
   virtual base::TimeTicks NextTickTime() OVERRIDE;

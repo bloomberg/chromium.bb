@@ -104,6 +104,8 @@ class CC_EXPORT Scheduler {
 
   base::TimeTicks AnticipatedDrawTime() const;
 
+  void NotifyBeginMainFrameStarted();
+
   base::TimeTicks LastBeginImplFrameTime();
 
   void BeginImplFrame(const BeginFrameArgs& args);
@@ -131,6 +133,8 @@ class CC_EXPORT Scheduler {
 
   bool CanCommitAndActivateBeforeDeadline() const;
   void AdvanceCommitStateIfPossible();
+
+  bool IsBeginMainFrameSentOrStarted() const;
 
   const SchedulerSettings settings_;
   SchedulerClient* client_;

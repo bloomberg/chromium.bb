@@ -60,7 +60,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   enum CommitState {
     COMMIT_STATE_IDLE,
-    COMMIT_STATE_FRAME_IN_PROGRESS,
+    COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
+    COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED,
     COMMIT_STATE_READY_TO_COMMIT,
     COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
   };
@@ -95,7 +96,8 @@ class CC_EXPORT SchedulerStateMachine {
       ForcedRedrawOnTimeoutState state);
 
   bool CommitPending() const {
-    return commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS ||
+    return commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT ||
+           commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED ||
            commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
   }
 
@@ -221,6 +223,9 @@ class CC_EXPORT SchedulerStateMachine {
   // when such behavior would be undesirable.
   void SetCanDraw(bool can);
 
+  // Indicates that scheduled BeginMainFrame is started.
+  void NotifyBeginMainFrameStarted();
+
   // Indicates that the pending tree is ready for activation.
   void NotifyReadyToActivate();
 
@@ -236,7 +241,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool SupportsProactiveBeginImplFrame() const;
 
-  bool IsCommitStateWaiting() const;
+  CommitState commit_state() const { return commit_state_; }
 
  protected:
   bool BeginImplFrameNeededToDraw() const;
