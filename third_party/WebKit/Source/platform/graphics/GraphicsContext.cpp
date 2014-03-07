@@ -739,11 +739,9 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
     // probably worth the speed up of no square root, which also won't be exact.
     FloatSize disp = p2 - p1;
     int length = SkScalarRoundToInt(disp.width() + disp.height());
-    SkPaint paint(immutableState()->strokePaint());
+    SkPaint paint(immutableState()->strokePaint(length));
 
     if (strokeStyle() == DottedStroke || strokeStyle() == DashedStroke) {
-        immutableState()->strokeData().setupPaintDashPathEffect(&paint, length);
-
         // Do a rect fill of our endpoints.  This ensures we always have the
         // appearance of being a border.  We then draw the actual dotted/dashed line.
         SkRect r1, r2;
@@ -1404,6 +1402,8 @@ void GraphicsContext::strokeRect(const FloatRect& rect, float lineWidth)
 
     SkPaint paint(immutableState()->strokePaint());
     paint.setStrokeWidth(WebCoreFloatToSkScalar(lineWidth));
+    // Reset the dash effect to account for the width
+    immutableState()->strokeData().setupPaintDashPathEffect(&paint, 0);
     // strokerect has special rules for CSS when the rect is degenerate:
     // if width==0 && height==0, do nothing
     // if width==0 || height==0, then just draw line for the other dimension

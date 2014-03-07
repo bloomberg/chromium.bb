@@ -61,10 +61,11 @@ void GraphicsContextState::copy(GraphicsContextState* source)
     m_shouldClampToSourceRect = source->m_shouldClampToSourceRect;
 }
 
-const SkPaint& GraphicsContextState::strokePaint() const
+const SkPaint& GraphicsContextState::strokePaint(int strokedPathLength) const
 {
     if (m_strokeData.gradient() && m_strokeData.gradient()->shaderChanged())
         m_strokePaint.setShader(m_strokeData.gradient()->shader());
+    m_strokeData.setupPaintDashPathEffect(&m_strokePaint, strokedPathLength);
     return m_strokePaint;
 }
 
@@ -78,14 +79,12 @@ const SkPaint& GraphicsContextState::fillPaint() const
 void GraphicsContextState::setStrokeStyle(StrokeStyle style)
 {
     m_strokeData.setStyle(style);
-    m_strokeData.setupPaintDashPathEffect(&m_strokePaint, 0);
 }
 
 void GraphicsContextState::setStrokeThickness(float thickness)
 {
     m_strokeData.setThickness(thickness);
     m_strokePaint.setStrokeWidth(SkFloatToScalar(thickness));
-    m_strokeData.setupPaintDashPathEffect(&m_strokePaint, 0);
 }
 
 void GraphicsContextState::setStrokeColor(const Color& color)
@@ -219,7 +218,6 @@ void GraphicsContextState::setAlphaAsFloat(float alpha)
 void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset)
 {
     m_strokeData.setLineDash(dashes, dashOffset);
-    m_strokeData.setupPaintDashPathEffect(&m_strokePaint, 0);
 }
 
 void GraphicsContextState::setColorFilter(PassRefPtr<SkColorFilter> colorFilter)

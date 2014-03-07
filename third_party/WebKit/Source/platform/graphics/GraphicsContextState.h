@@ -54,9 +54,9 @@ public:
 
     void copy(GraphicsContextState*);
 
-    // SkPaint objects that reflect the current state, except:
-    // - Dashed and Dotted strokes.
-    const SkPaint& strokePaint() const;
+    // SkPaint objects that reflect the current state. If the length of the
+    // path to be stroked is known, pass it in for correct dash or dot placement.
+    const SkPaint& strokePaint(int strokedPathLength = 0) const;
     const SkPaint& fillPaint() const;
 
     uint16_t saveCount() const { return m_saveCount; }
