@@ -899,3 +899,5 @@ crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [
 
 # Temporary until the Web Notification API test-runner changes finished.
 crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
+
+crbug.com/350543 [ Linux ] svg/animations/reset-animation-crash.html [ Crash Pass ]
