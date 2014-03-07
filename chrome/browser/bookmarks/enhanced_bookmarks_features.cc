@@ -40,9 +40,6 @@ bool IsBookmarksExtensionInstalled(
 }
 
 bool OptInIntoBookmarksExperiment(BookmarksExperimentState state) {
-  if (base::FieldTrialList::FindFullName(kFieldTrialName) != "Default")
-    return false;
-
   // Opt-in user into Finch group.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (state == kBookmarksExperimentEnabledUserOptOut)
