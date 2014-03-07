@@ -1934,6 +1934,8 @@ bool equal(const StringImpl* a, const StringImpl* b)
         return true;
     if (!a || !b)
         return false;
+    if (a->isAtomic() && b->isAtomic())
+        return false;
 
     return stringImplContentEqual(a, b);
 }
