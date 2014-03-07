@@ -182,7 +182,6 @@ extern const char kEnableHttp2Draft04[];
 extern const char kEnableWebBasedSignin[];
 extern const char kEnableIPv6[];
 extern const char kEnableLinkableEphemeralApps[];
-extern const char kEnableLocalFirstLoadNTP[];
 extern const char kEnableManagedStorage[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableMetricsReportingForTesting[];

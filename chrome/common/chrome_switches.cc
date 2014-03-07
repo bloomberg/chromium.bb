@@ -627,9 +627,6 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 
-// Enable always using the local NTP for the first NTP load of a new window.
-const char kEnableLocalFirstLoadNTP[] = "enable-local-first-load-ntp";
-
 // Make the values returned to window.performance.memory more granular and more
 // up to date. Without this flag, the memory information is still available, but
 // it is bucketized and updated less frequently.
