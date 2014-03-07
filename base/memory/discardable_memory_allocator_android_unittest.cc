@@ -271,8 +271,6 @@ TEST_F(DiscardableMemoryAllocatorTest, UseMultipleAshmemRegions) {
 
 TEST_F(DiscardableMemoryAllocatorTest,
        HighestAllocatedChunkPointerIsUpdatedWhenHighestChunkGetsSplit) {
-  DiscardableMemoryAllocator allocator_(kAllocatorName, 32 * kPageSize);
-
   // Prevents the ashmem region from getting closed when |memory2| gets freed.
   scoped_ptr<DiscardableMemory> memory1(allocator_.Allocate(kPageSize));
   ASSERT_TRUE(memory1);

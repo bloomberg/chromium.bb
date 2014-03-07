@@ -193,6 +193,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
   ~AshmemRegion() {
     const bool result = CloseAshmemRegion(fd_, size_, base_);
     DCHECK(result);
+    DCHECK(!highest_allocated_chunk_);
   }
 
   // Returns a new instance of DiscardableMemory whose size is greater or equal
@@ -210,17 +211,29 @@ class DiscardableMemoryAllocator::AshmemRegion {
                                                 size_t actual_size) {
     DCHECK_LE(client_requested_size, actual_size);
     allocator_->lock_.AssertAcquired();
+
+    // Check that the |highest_allocated_chunk_| field doesn't contain a stale
+    // pointer. It should point to either a free chunk or a used chunk.
+    DCHECK(!highest_allocated_chunk_ ||
+           address_to_free_chunk_map_.find(highest_allocated_chunk_) !=
+               address_to_free_chunk_map_.end() ||
+           used_to_previous_chunk_map_.find(highest_allocated_chunk_) !=
+               used_to_previous_chunk_map_.end());
+
     scoped_ptr<DiscardableMemory> memory = ReuseFreeChunk_Locked(
         client_requested_size, actual_size);
     if (memory)
       return memory.Pass();
+
     if (size_ - offset_ < actual_size) {
       // This region does not have enough space left to hold the requested size.
       return scoped_ptr<DiscardableMemory>();
     }
+
     void* const address = static_cast<char*>(base_) + offset_;
     memory.reset(
         new DiscardableAshmemChunk(this, fd_, address, offset_, actual_size));
+
     used_to_previous_chunk_map_.insert(
         std::make_pair(address, highest_allocated_chunk_));
     highest_allocated_chunk_ = address;
@@ -249,7 +262,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
         : previous_chunk(previous_chunk),
           start(start),
           size(size) {
-      DCHECK_NE(previous_chunk, start);
+      DCHECK_LT(previous_chunk, start);
     }
 
     void* const previous_chunk;
@@ -353,25 +366,34 @@ class DiscardableMemoryAllocator::AshmemRegion {
     DCHECK(previous_chunk_it != used_to_previous_chunk_map_.end());
     void* previous_chunk = previous_chunk_it->second;
     used_to_previous_chunk_map_.erase(previous_chunk_it);
+
     if (previous_chunk) {
       const FreeChunk free_chunk = RemoveFreeChunk_Locked(previous_chunk);
       if (!free_chunk.is_null()) {
         new_free_chunk_size += free_chunk.size;
         first_free_chunk = previous_chunk;
+        if (chunk == highest_allocated_chunk_)
+          highest_allocated_chunk_ = previous_chunk;
+
         // There should not be more contiguous previous free chunks.
         previous_chunk = free_chunk.previous_chunk;
         DCHECK(!address_to_free_chunk_map_.count(previous_chunk));
       }
     }
+
     // Merge with the next chunk if free and present.
     void* next_chunk = static_cast<char*>(chunk) + size;
     const FreeChunk next_free_chunk = RemoveFreeChunk_Locked(next_chunk);
     if (!next_free_chunk.is_null()) {
       new_free_chunk_size += next_free_chunk.size;
+      if (next_free_chunk.start == highest_allocated_chunk_)
+        highest_allocated_chunk_ = first_free_chunk;
+
       // Same as above.
       DCHECK(!address_to_free_chunk_map_.count(static_cast<char*>(next_chunk) +
                                                next_free_chunk.size));
     }
+
     const bool whole_ashmem_region_is_free =
         used_to_previous_chunk_map_.empty();
     if (!whole_ashmem_region_is_free) {
@@ -379,11 +401,14 @@ class DiscardableMemoryAllocator::AshmemRegion {
           FreeChunk(previous_chunk, first_free_chunk, new_free_chunk_size));
       return;
     }
+
     // The whole ashmem region is free thus it can be deleted.
     DCHECK_EQ(base_, first_free_chunk);
+    DCHECK_EQ(base_, highest_allocated_chunk_);
     DCHECK(free_chunks_.empty());
     DCHECK(address_to_free_chunk_map_.empty());
     DCHECK(used_to_previous_chunk_map_.empty());
+    highest_allocated_chunk_ = NULL;
     allocator_->DeleteAshmemRegion_Locked(this);  // Deletes |this|.
   }
 
@@ -432,6 +457,8 @@ class DiscardableMemoryAllocator::AshmemRegion {
   const size_t size_;
   void* const base_;
   DiscardableMemoryAllocator* const allocator_;
+  // Points to the chunk with the highest address in the region. This pointer
+  // needs to be carefully updated when chunks are merged/split.
   void* highest_allocated_chunk_;
   // Points to the end of |highest_allocated_chunk_|.
   size_t offset_;
