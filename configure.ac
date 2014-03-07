@@ -20,7 +20,7 @@ AC_SUBST([WAYLAND_VERSION], [wayland_version])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz subdir-objects])
 
 AM_SILENT_RULES([yes])
 
@@ -127,7 +127,6 @@ fi
 AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
 
 AC_CONFIG_FILES([Makefile
-		 cursor/Makefile
 		 cursor/wayland-cursor.pc
 		 cursor/wayland-cursor-uninstalled.pc
 		 doc/Makefile
