@@ -311,10 +311,9 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-b
 # Also svg/hixie/text/001.xml and fullscreen/parent-flow-inline-with-block-child.html but they have other lines in this file.
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
-crbug.com/14885 [ Linux ] fast/js/JSON-stringify.html [ Failure Pass ]
-crbug.com/14885 [ Win Release ] fast/js/JSON-stringify.html [ Failure Pass ]
-crbug.com/306929 [ Mac ] fast/js/JSON-stringify.html [ Failure ]
-crbug.com/306929 [ Win Debug ] fast/js/JSON-stringify.html [ Failure ]
+crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
+crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
+crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
