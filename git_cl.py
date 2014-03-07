@@ -2335,6 +2335,8 @@ def CMDformat(parser, args):
                     help='Reformat the full content of all touched files')
   parser.add_option('--dry-run', action='store_true',
                     help='Don\'t modify any file on disk.')
+  parser.add_option('--diff', action='store_true',
+                    help='Print diff to stdout rather than modifying files.')
   opts, args = parser.parse_args(args)
 
   # git diff generates paths against the root of the repository.  Change
@@ -2399,9 +2401,11 @@ def CMDformat(parser, args):
       print "Nothing to format."
       return 0
     cmd = [clang_format_tool]
-    if not opts.dry_run:
+    if not opts.dry_run and not opts.diff:
       cmd.append('-i')
     stdout = RunCommand(cmd + files, cwd=top_dir)
+    if opts.diff:
+      sys.stdout.write(stdout)
   else:
     env = os.environ.copy()
     env['PATH'] = os.path.dirname(clang_format_tool)
@@ -2413,10 +2417,12 @@ def CMDformat(parser, args):
       DieWithError(e)
 
     cmd = [sys.executable, script, '-p0']
-    if not opts.dry_run:
+    if not opts.dry_run and not opts.diff:
       cmd.append('-i')
 
     stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
+    if opts.diff:
+      sys.stdout.write(stdout)
     if opts.dry_run and len(stdout) > 0:
       return 2
 
