@@ -405,6 +405,14 @@
     'native_client_sdk': {
       'filepath': '^native_client_sdk/',
     },
+    'navigation': {
+      'filepath': 'content/browser/frame_host|'\
+                  'content/browser/renderer_host/render_process_host.*|'\
+                  'content/browser/renderer_host/render_view_host.*|'\
+                  'content/browser/web_contents/web_contents_impl.*|'\
+                  'content/renderer/render_frame.*|'\
+                  'content/renderer/render_view.*'
+    },
     'net': {
       'filepath': 'net/',
     },
@@ -796,6 +804,7 @@
     'mouse_lock': ['scheib+watch@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['sbc@chromium.org', 'binji@chromium.org'],
+    'navigation': ['creis+watch@chromium.org', 'nasko+codewatch@chromium.org'],
     'net': ['cbentzel+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
@@ -835,7 +844,8 @@
                        'jsbell+serviceworker@chromium.org',
                        'michaeln@chromium.org',
                        'serviceworker-reviews@chromium.org'],
-    'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
+    'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org',
+                      'nasko+codewatch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp@chromium.org',
                    'rouslan+spellwatch@chromium.org'],
