@@ -22,6 +22,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
@@ -52,8 +53,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-using base::Time;
 using base::Thread;
+using base::Time;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
@@ -61,10 +62,10 @@ using history::HistoryBackend;
 using history::URLID;
 using history::URLRow;
 using syncer::syncable::WriteTransaction;
-using testing::_;
 using testing::DoAll;
 using testing::Return;
 using testing::SetArgumentPointee;
+using testing::_;
 
 namespace {
 // Visits with this timestamp are treated as expired.
@@ -191,8 +192,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
+    invalidation::InvalidationServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), invalidation::FakeInvalidationService::Build);
     history_backend_ = new HistoryBackendMock();
     history_service_ = static_cast<HistoryServiceMock*>(
         HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(

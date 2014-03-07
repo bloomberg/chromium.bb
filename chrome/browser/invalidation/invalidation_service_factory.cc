@@ -9,7 +9,6 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_android.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
-#include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/invalidation/ticl_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -41,7 +40,7 @@ InvalidationServiceFactory::InvalidationServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "InvalidationService",
         BrowserContextDependencyManager::GetInstance()),
-      build_fake_invalidators_(false) {
+      testing_factory_(NULL) {
 #if !defined(OS_ANDROID)
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
@@ -51,41 +50,17 @@ InvalidationServiceFactory::InvalidationServiceFactory()
 
 InvalidationServiceFactory::~InvalidationServiceFactory() {}
 
-namespace {
-
-BrowserContextKeyedService* BuildP2PInvalidationService(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  return new P2PInvalidationService(profile);
-}
-
-BrowserContextKeyedService* BuildFakeInvalidationService(
-    content::BrowserContext* context) {
-  return new FakeInvalidationService();
-}
-
-}  // namespace
-
-void InvalidationServiceFactory::SetBuildOnlyFakeInvalidatorsForTest(
-    bool test_mode_enabled) {
-  build_fake_invalidators_ = test_mode_enabled;
-}
-
-P2PInvalidationService*
-InvalidationServiceFactory::BuildAndUseP2PInvalidationServiceForTest(
-    content::BrowserContext* context) {
-  BrowserContextKeyedService* service =
-      SetTestingFactoryAndUse(context, BuildP2PInvalidationService);
-  return static_cast<P2PInvalidationService*>(service);
+void InvalidationServiceFactory::RegisterTestingFactory(
+    TestingFactoryFunction testing_factory) {
+  testing_factory_ = testing_factory;
 }
 
 BrowserContextKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  if (build_fake_invalidators_) {
-    return BuildFakeInvalidationService(context);
-  }
+  if (testing_factory_)
+    return testing_factory_(context);
 
 #if defined(OS_ANDROID)
   InvalidationServiceAndroid* service = new InvalidationServiceAndroid(

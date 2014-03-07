@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -38,8 +39,8 @@ ACTION(ReturnNewDataTypeManager) {
                                                arg5);
 }
 
-using testing::_;
 using testing::StrictMock;
+using testing::_;
 
 class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
  public:
@@ -98,7 +99,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
+        RegisterTestingFactory(invalidation::FakeInvalidationService::Build);
 
     profile_ = builder.Build().Pass();
   }

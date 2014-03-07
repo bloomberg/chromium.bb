@@ -162,7 +162,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
     command_line->AppendSwitch(switches::kEnablePolicyKeyVerification);
 
     invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
+        RegisterTestingFactory(invalidation::FakeInvalidationService::Build);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

@@ -48,8 +48,8 @@
 #include "chrome/browser/managed_mode/managed_user_constants.h"
 #endif
 
-using syncer::sessions::SyncSessionSnapshot;
 using invalidation::P2PInvalidationService;
+using syncer::sessions::SyncSessionSnapshot;
 
 // The amount of time for which we wait for a sync operation to complete.
 // TODO(sync): This timeout must eventually be made less than the default 45

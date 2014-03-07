@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -73,8 +74,8 @@ using browser_sync::SyncBackendHost;
 using content::BrowserThread;
 using content::WebContents;
 using syncer::ChangeRecord;
-using testing::_;
 using testing::Return;
+using testing::_;
 
 namespace browser_sync {
 
@@ -142,8 +143,8 @@ class ProfileSyncServiceSessionTest
     // Don't want the profile to create a real ProfileSyncService.
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(), NULL);
     scoped_ptr<TestingProfile> profile(builder.Build());
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
+    invalidation::InvalidationServiceFactory::GetInstance()->SetTestingFactory(
+        profile.get(), invalidation::FakeInvalidationService::Build);
     return profile.release();
   }
 

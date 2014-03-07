@@ -105,6 +105,12 @@ void SetProxyConfigCallback(
   done->Signal();
 }
 
+BrowserContextKeyedService* BuildP2PInvalidationService(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return new invalidation::P2PInvalidationService(profile);
+}
+
 SyncTest::SyncTest(TestType test_type)
     : test_type_(test_type),
       server_type_(SERVER_TYPE_UNDECIDED),
@@ -314,8 +320,9 @@ void SyncTest::InitializeInstance(int index) {
                                           << index << ".";
 
   invalidation::P2PInvalidationService* p2p_invalidation_service =
-      InvalidationServiceFactory::GetInstance()->
-          BuildAndUseP2PInvalidationServiceForTest(GetProfile(index));
+      static_cast<invalidation::P2PInvalidationService*>(
+          InvalidationServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              GetProfile(index), BuildP2PInvalidationService));
   p2p_invalidation_service->UpdateCredentials(username_, password_);
 
   // Make sure the ProfileSyncService has been created before creating the

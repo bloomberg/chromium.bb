@@ -15,6 +15,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -51,9 +52,9 @@ using browser_sync::GenericChangeProcessor;
 using browser_sync::SharedChangeProcessor;
 using browser_sync::UIDataTypeController;
 using syncer::ChangeRecord;
-using testing::_;
 using testing::Invoke;
 using testing::Return;
+using testing::_;
 
 typedef std::map<const std::string, const base::Value*> PreferenceValues;
 
@@ -130,8 +131,8 @@ class ProfileSyncServicePreferenceTest
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
+    invalidation::InvalidationServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), invalidation::FakeInvalidationService::Build);
     prefs_ = profile_->GetTestingPrefService();
 
     prefs_->registry()->RegisterStringPref(
