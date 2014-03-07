@@ -266,4 +266,9 @@ interface PPB_NaCl_Private {
 
   /* Performs internal cleanup when an instance is destroyed. */
   void InstanceDestroyed([in] PP_Instance instance);
+
+  /* Return true if the NaCl debug stub is enabled and the loaded app
+   * will be attached to a debugger.
+   */
+  PP_Bool NaClDebugStubEnabled();
 };

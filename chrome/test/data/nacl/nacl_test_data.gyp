@@ -30,6 +30,7 @@
           'bad/ppapi_bad_manifest_bad_files.nmf',
           'bad/ppapi_bad_manifest_nexe_arch.nmf',
           'crash/ppapi_crash.html',
+          'load_util.js',
           'manifest_file/test_file.txt',
         ],
       },
@@ -694,6 +695,32 @@
       ],
     },
     {
+      'target_name': 'pnacl_debug_url_test',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'pnacl_debug_url',
+        'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        # No need to translate these AOT, when we just need the pexe.
+        'enable_x86_32': 0,
+        'enable_x86_64': 0,
+        'enable_arm': 0,
+        'generate_nmf': 0,
+        'sources': [
+          'simple.cc',
+        ],
+        'test_files': [
+          'pnacl_debug_url/pnacl_debug_url.html',
+          'pnacl_debug_url/pnacl_has_debug.nmf',
+          'pnacl_debug_url/pnacl_has_debug_flag_off.nmf',
+          'pnacl_debug_url/pnacl_no_debug.nmf',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ]
+    },
+    {
       'target_name': 'pnacl_error_handling_test',
       'type': 'none',
       'variables': {
@@ -745,6 +772,7 @@
         'enable_x86_32': 0,
         'enable_x86_64': 0,
         'enable_arm': 0,
+        'generate_nmf': 0,
         'sources': [
           'simple.cc',
         ],

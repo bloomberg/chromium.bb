@@ -3166,6 +3166,11 @@ static void Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed(PP_Instance instance) {
   iface->InstanceDestroyed(instance);
 }
 
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled(void) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->NaClDebugStubEnabled();
+}
+
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
 
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
@@ -5051,7 +5056,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
     .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
-    .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed
+    .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
+    .NaClDebugStubEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

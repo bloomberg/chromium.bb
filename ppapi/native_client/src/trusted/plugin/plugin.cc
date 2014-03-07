@@ -1137,10 +1137,12 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   // Determine whether lookups should use portable (i.e., pnacl versions)
   // rather than platform-specific files.
   bool is_pnacl = (mime_type() == kPnaclMIMEType);
+  bool pnacl_debug = GetNaClInterface()->NaClDebugStubEnabled();
   nacl::scoped_ptr<JsonManifest> json_manifest(
       new JsonManifest(url_util_,
                        manifest_base_url(),
-                       (is_pnacl ? kPortableISA : GetSandboxISA())));
+                       (is_pnacl ? kPortableISA : GetSandboxISA()),
+                       pnacl_debug));
   if (!json_manifest->Init(manifest_json, error_info)) {
     return false;
   }

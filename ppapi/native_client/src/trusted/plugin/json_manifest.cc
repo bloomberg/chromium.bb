@@ -37,6 +37,7 @@ const char* const kArmKey =         "arm";
 const char* const kPortableKey =    "portable";
 
 // Url Resolution keys
+const char* const kPnaclDebugKey =     "pnacl-debug";
 const char* const kPnaclTranslateKey = "pnacl-translate";
 const char* const kUrlKey =            "url";
 
@@ -74,8 +75,11 @@ const char* const kOptLevelKey = "optlevel";
 //   "program": {
 //     "portable": {
 //       "pnacl-translate": {
-//         "url": "myprogram.pexe",
-//         "optlevel": 0
+//         "url": "myprogram.pexe"
+//       },
+//       "pnacl-debug": {
+//         "url": "myprogram.debug.pexe",
+//         "opt_level": 0
 //       }
 //     }
 //   },
@@ -213,21 +217,26 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
   return true;
 }
 
-// Validate a "pnacl-translate" dictionary, assuming it was resolved from
-// container_key. E.g., "container_key" : { "pnacl_translate" : URLSpec }
+// Validate a "pnacl-translate" or "pnacl-debug" dictionary, assuming
+// it was resolved from container_key.
+// E.g., "container_key" : { "pnacl-translate" : URLSpec }
 bool IsValidPnaclTranslateSpec(const Json::Value& pnacl_spec,
                                const nacl::string& container_key,
                                const nacl::string& parent_key,
                                const nacl::string& sandbox_isa,
                                nacl::string* error_string) {
-  static const char* kManifestPnaclSpecProperties[] = {
+  static const char* kManifestPnaclSpecValid[] = {
+    kPnaclDebugKey,
+    kPnaclTranslateKey
+  };
+  static const char* kManifestPnaclSpecRequired[] = {
     kPnaclTranslateKey
   };
   if (!IsValidDictionary(pnacl_spec, container_key, parent_key,
-                         kManifestPnaclSpecProperties,
-                         NACL_ARRAY_SIZE(kManifestPnaclSpecProperties),
-                         kManifestPnaclSpecProperties,
-                         NACL_ARRAY_SIZE(kManifestPnaclSpecProperties),
+                         kManifestPnaclSpecValid,
+                         NACL_ARRAY_SIZE(kManifestPnaclSpecValid),
+                         kManifestPnaclSpecRequired,
+                         NACL_ARRAY_SIZE(kManifestPnaclSpecRequired),
                          error_string)) {
     return false;
   }
@@ -295,8 +304,9 @@ bool IsValidISADictionary(const Json::Value& dictionary,
                              isaPropertiesLength)) {
       // For NaCl, arch entries can only be
       //     "arch/portable" : URLSpec
-      // For PNaCl arch in "program" dictionary entries can only be
+      // For PNaCl arch in "program" dictionary entries can be
       //     "portable" : { "pnacl-translate": URLSpec }
+      //  or "portable" : { "pnacl-debug": URLSpec }
       // For PNaCl arch elsewhere, dictionary entries can only be
       //     "portable" : URLSpec
       if ((sandbox_isa != kPortableKey &&
@@ -361,6 +371,7 @@ void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
                             nacl::string* url,
                             PnaclOptions* pnacl_options) {
   *url = url_spec[kUrlKey].asString();
+  pnacl_options->set_translate(true);
   if (url_spec.isMember(kOptLevelKey)) {
     int32_t opt_raw = url_spec[kOptLevelKey].asInt();
     // set_opt_level will normalize the values.
@@ -502,12 +513,14 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
     chosen_isa = sandbox_isa_;
   }
   const Json::Value& isa_spec = dictionary[chosen_isa];
-  // Check if this requires a pnacl-translate, otherwise just grab the URL.
-  // We may have pnacl-translate for isa-specific bitcode for CPU tuning.
-  if (isa_spec.isMember(kPnaclTranslateKey)) {
-    // PNaCl
+  // If the PNaCl debug flag is turned on, look for pnacl-debug entries first.
+  // If found, mark that it is a debug URL. Otherwise, fall back to
+  // checking for pnacl-translate URLs, etc. and don't mark it as a debug URL.
+  if (pnacl_debug_ && isa_spec.isMember(kPnaclDebugKey)) {
+    GrabUrlAndPnaclOptions(isa_spec[kPnaclDebugKey], url, pnacl_options);
+    pnacl_options->set_debug(true);
+  } else if (isa_spec.isMember(kPnaclTranslateKey)) {
     GrabUrlAndPnaclOptions(isa_spec[kPnaclTranslateKey], url, pnacl_options);
-    pnacl_options->set_translate(true);
   } else {
     // NaCl
     *url = isa_spec[kUrlKey].asString();
