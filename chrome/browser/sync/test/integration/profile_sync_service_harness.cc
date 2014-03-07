@@ -11,7 +11,6 @@
 #include <sstream>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -32,8 +31,10 @@
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
+#include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -172,7 +173,6 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     P2PInvalidationService* p2p_invalidation_service)
     : profile_(profile),
       service_(ProfileSyncServiceFactory::GetForProfile(profile)),
-      progress_marker_partner_(NULL),
       username_(username),
       password_(password),
       oauth2_refesh_token_number_(0),
@@ -353,14 +353,8 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
 // an in-process C++ server, this function can be reimplemented without relying
 // on progress markers.
 bool ProfileSyncServiceHarness::AwaitCommitActivityCompletion() {
-  DVLOG(1) << GetClientInfoString("AwaitCommitActivityCompletion");
-  CallbackStatusChecker latest_progress_markers_checker(
-      service(),
-      base::Bind(&ProfileSyncServiceHarness::HasLatestProgressMarkers,
-                 base::Unretained(this)),
-      "HasLatestProgressMarkers");
-  AwaitStatusChange(&latest_progress_markers_checker);
-  return HasLatestProgressMarkers();
+  UpdatedProgressMarkerChecker progress_marker_checker(service());
+  return AwaitStatusChange(&progress_marker_checker);
 }
 
 bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
@@ -384,77 +378,36 @@ bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion() {
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceHarness* partner) {
-  DVLOG(1) << GetClientInfoString("AwaitMutualSyncCycleCompletion");
-  if (!AwaitCommitActivityCompletion())
-    return false;
-  return partner->WaitUntilProgressMarkersMatch(this);
+  std::vector<ProfileSyncServiceHarness*> harnesses;
+  harnesses.push_back(this);
+  harnesses.push_back(partner);
+  return AwaitQuiescence(harnesses);
 }
 
 bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
     std::vector<ProfileSyncServiceHarness*>& partners) {
-  DVLOG(1) << GetClientInfoString("AwaitGroupSyncCycleCompletion");
-  if (!AwaitCommitActivityCompletion())
-    return false;
-  bool return_value = true;
-  for (std::vector<ProfileSyncServiceHarness*>::iterator it =
-      partners.begin(); it != partners.end(); ++it) {
-    if ((this != *it) && (!(*it)->IsSyncDisabled())) {
-      return_value = return_value &&
-          (*it)->WaitUntilProgressMarkersMatch(this);
-    }
-  }
-  return return_value;
+  return AwaitQuiescence(partners);
 }
 
 // static
 bool ProfileSyncServiceHarness::AwaitQuiescence(
     std::vector<ProfileSyncServiceHarness*>& clients) {
-  DVLOG(1) << "AwaitQuiescence.";
-  bool return_value = true;
-  for (std::vector<ProfileSyncServiceHarness*>::iterator it =
-      clients.begin(); it != clients.end(); ++it) {
-    if (!(*it)->IsSyncDisabled()) {
-      return_value = return_value &&
-          (*it)->AwaitGroupSyncCycleCompletion(clients);
-    }
+  std::vector<ProfileSyncService*> services;
+  if (clients.empty()) {
+    return true;
   }
-  return return_value;
-}
 
-bool ProfileSyncServiceHarness::WaitUntilProgressMarkersMatch(
-    ProfileSyncServiceHarness* partner) {
-  DVLOG(1) << GetClientInfoString("WaitUntilProgressMarkersMatch");
-
-  // TODO(rsimha): Replace the mechanism of matching up progress markers with
-  // one that doesn't require every client to have the same progress markers.
-  DCHECK(!progress_marker_partner_);
-  progress_marker_partner_ = partner;
-  bool return_value = false;
-  if (MatchesPartnerClient()) {
-    // Progress markers already match; don't wait.
-    return_value = true;
-  } else {
-    partner->service()->AddObserver(this);
-    CallbackStatusChecker matches_other_client_checker(
-        service(),
-        base::Bind(&ProfileSyncServiceHarness::MatchesPartnerClient,
-                   base::Unretained(this)),
-        "MatchesPartnerClient");
-    return_value = AwaitStatusChange(&matches_other_client_checker);
-    partner->service()->RemoveObserver(this);
+  for (std::vector<ProfileSyncServiceHarness*>::iterator it = clients.begin();
+       it != clients.end(); ++it) {
+    services.push_back((*it)->service());
   }
-  progress_marker_partner_ = NULL;
-  return return_value;
+  QuiesceStatusChangeChecker checker(services);
+  return clients[0]->AwaitStatusChange(&checker);
 }
 
 bool ProfileSyncServiceHarness::AwaitStatusChange(
     StatusChangeChecker* checker) {
   DVLOG(1) << GetClientInfoString("AwaitStatusChange");
-
-  if (IsSyncDisabled()) {
-    LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
-    return false;
-  }
 
   DCHECK(checker);
   if (checker->IsExitConditionSatisfied()) {
@@ -519,14 +472,6 @@ bool ProfileSyncServiceHarness::HasAuthError() const {
              GoogleServiceAuthError::REQUEST_CANCELED;
 }
 
-// TODO(sync): Remove this method once we stop relying on self notifications and
-// comparing progress markers.
-bool ProfileSyncServiceHarness::HasLatestProgressMarkers() const {
-  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  return snap.model_neutral_state().num_successful_commits == 0 &&
-         !service()->HasUnsyncedItems();
-}
-
 void ProfileSyncServiceHarness::FinishSyncSetup() {
   service()->SetSetupInProgress(false);
   service()->SetSyncSetupCompleted();
@@ -534,43 +479,6 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
 
 bool ProfileSyncServiceHarness::AutoStartEnabled() {
   return service()->auto_start_enabled();
-}
-
-bool ProfileSyncServiceHarness::MatchesPartnerClient() const {
-  DCHECK(progress_marker_partner_);
-
-  // Only look for a match if we have at least one enabled datatype in
-  // common with the partner client.
-  const syncer::ModelTypeSet common_types =
-      Intersection(service()->GetActiveDataTypes(),
-                   progress_marker_partner_->service()->GetActiveDataTypes());
-
-  DVLOG(2) << profile_debug_name_ << ", "
-           << progress_marker_partner_->profile_debug_name_
-           << ": common types are "
-           << syncer::ModelTypeSetToString(common_types);
-
-  for (syncer::ModelTypeSet::Iterator i = common_types.First();
-       i.Good(); i.Inc()) {
-    const std::string marker = GetSerializedProgressMarker(i.Get());
-    const std::string partner_marker =
-        progress_marker_partner_->GetSerializedProgressMarker(i.Get());
-    if (marker != partner_marker) {
-      if (VLOG_IS_ON(2)) {
-        std::string marker_base64, partner_marker_base64;
-        base::Base64Encode(marker, &marker_base64);
-        base::Base64Encode(partner_marker, &partner_marker_base64);
-        DVLOG(2) << syncer::ModelTypeToString(i.Get()) << ": "
-                 << profile_debug_name_ << " progress marker = "
-                 << marker_base64 << ", "
-                 << progress_marker_partner_->profile_debug_name_
-                 << " partner progress marker = "
-                 << partner_marker_base64;
-      }
-      return false;
-    }
-  }
-  return true;
 }
 
 SyncSessionSnapshot ProfileSyncServiceHarness::GetLastSessionSnapshot() const {

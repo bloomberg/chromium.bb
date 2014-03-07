@@ -2372,6 +2372,8 @@
         'browser/sync/test/integration/preferences_helper.h',
         'browser/sync/test/integration/profile_sync_service_harness.cc',
         'browser/sync/test/integration/profile_sync_service_harness.h',
+        'browser/sync/test/integration/quiesce_status_change_checker.cc',
+        'browser/sync/test/integration/quiesce_status_change_checker.h',
         'browser/sync/test/integration/retry_verifier.cc',
         'browser/sync/test/integration/retry_verifier.h',
         'browser/sync/test/integration/search_engines_helper.cc',
@@ -2396,6 +2398,8 @@
         'browser/sync/test/integration/themes_helper.h',
         'browser/sync/test/integration/typed_urls_helper.cc',
         'browser/sync/test/integration/typed_urls_helper.h',
+        'browser/sync/test/integration/updated_progress_marker_checker.cc',
+        'browser/sync/test/integration/updated_progress_marker_checker.h',
       ],
       'conditions': [
         ['OS=="mac"', {

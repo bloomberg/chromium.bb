@@ -9,7 +9,7 @@
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
 class ProfileSyncService;
-class ProfileSyncServiceObserver;
+class ProfileSyncServiceHarness;
 
 // This class provides some common functionality for StatusChangeCheckers that
 // observe only one ProfileSyncService.  This class is abstract.  Its
@@ -22,8 +22,8 @@ class SingleClientStatusChangeChecker : public StatusChangeChecker {
   // StatusChangeChecker implementations and stubs.
   virtual bool IsExitConditionSatisfied() = 0;
   virtual std::string GetDebugMessage() const = 0;
-  virtual void InitObserver(ProfileSyncServiceObserver*) OVERRIDE;
-  virtual void UninitObserver(ProfileSyncServiceObserver*) OVERRIDE;
+  virtual void InitObserver(ProfileSyncServiceHarness* obs) OVERRIDE;
+  virtual void UninitObserver(ProfileSyncServiceHarness* obs) OVERRIDE;
 
  protected:
   ProfileSyncService* service() { return service_; }

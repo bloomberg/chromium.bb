@@ -88,10 +88,6 @@ class ProfileSyncServiceHarness
   // true if sync setup is complete.
   bool AwaitSyncSetupCompletion();
 
-  // Blocks the caller until this harness has observed that the sync engine
-  // has downloaded all the changes seen by the |partner| harness's client.
-  bool WaitUntilProgressMarkersMatch(ProfileSyncServiceHarness* partner);
-
   // Calling this acts as a barrier and blocks the caller until |this| and
   // |partner| have both completed a sync cycle.  When calling this method,
   // the |partner| should be the passive responder who responds to the actions
@@ -187,10 +183,6 @@ class ProfileSyncServiceHarness
   // available), annotated with |message|. Useful for logging.
   std::string GetClientInfoString(const std::string& message) const;
 
-  // Returns true if this client has downloaded all the items that the
-  // other client has.
-  bool MatchesPartnerClient() const;
-
  private:
   ProfileSyncServiceHarness(
       Profile* profile,
@@ -210,10 +202,6 @@ class ProfileSyncServiceHarness
   // found.
   std::string GetSerializedProgressMarker(syncer::ModelType model_type) const;
 
-  // Returns true if a client has nothing left to commit and its progress
-  // markers are up to date.
-  bool HasLatestProgressMarkers() const;
-
   // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
 
@@ -225,10 +213,6 @@ class ProfileSyncServiceHarness
 
   // An bridge between the ProfileSyncService and P2PInvalidationService.
   scoped_ptr<P2PInvalidationForwarder> p2p_invalidation_forwarder_;
-
-  // The harness of the client whose update progress marker we're expecting
-  // eventually match.
-  ProfileSyncServiceHarness* progress_marker_partner_;
 
   // Credentials used for GAIA authentication.
   std::string username_;

@@ -7,7 +7,7 @@
 
 #include <string>
 
-class ProfileSyncServiceObserver;
+class ProfileSyncServiceHarness;
 
 // Interface for a helper class that can be used to check if a desired change in
 // the state of the sync engine has taken place. Used by the desktop sync
@@ -29,8 +29,8 @@ class StatusChangeChecker {
   // or "AwaitMigrationDone(BOOKMARKS)".
   virtual std::string GetDebugMessage() const = 0;
 
-  virtual void InitObserver(ProfileSyncServiceObserver*) = 0;
-  virtual void UninitObserver(ProfileSyncServiceObserver*) = 0;
+  virtual void InitObserver(ProfileSyncServiceHarness*) = 0;
+  virtual void UninitObserver(ProfileSyncServiceHarness*) = 0;
 
  protected:
   virtual ~StatusChangeChecker();
