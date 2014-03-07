@@ -45,15 +45,15 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
       return FILE_ERROR_NOT_EMPTY;
   }
 
+  error = cache->Remove(*local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   *changed_directory_path = metadata->GetFilePath(*local_id).DirName();
 
   // Move to the trash.
   entry.set_parent_local_id(util::kDriveTrashDirLocalId);
-  error = metadata->RefreshEntry(entry);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  return cache->Remove(*local_id);
+  return metadata->RefreshEntry(entry);
 }
 
 }  // namespace
