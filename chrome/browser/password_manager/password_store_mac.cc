@@ -838,14 +838,15 @@ PasswordStoreMac::PasswordStoreMac(
 
 PasswordStoreMac::~PasswordStoreMac() {}
 
-bool PasswordStoreMac::Init() {
+bool PasswordStoreMac::Init(
+    const syncer::SyncableService::StartSyncFlare& flare) {
   thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
 
   if (!thread_->Start()) {
     thread_.reset(NULL);
     return false;
   }
-  return PasswordStore::Init();
+  return PasswordStore::Init(flare);
 }
 
 // Mac stores passwords in the system keychain, which can block for an

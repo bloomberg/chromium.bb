@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "sync/api/syncable_service.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;
@@ -113,7 +114,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
   // Reimplement this to add custom initialization. Always call this too.
-  virtual bool Init();
+  virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare);
 
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const autofill::PasswordForm& form);
@@ -283,7 +284,8 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   // Creates PasswordSyncableService instance on the background thread.
-  void InitSyncableService();
+  void InitSyncableService(
+      const syncer::SyncableService::StartSyncFlare& flare);
 
   // Deletes PasswordSyncableService instance on the background thread.
   void DestroySyncableService();

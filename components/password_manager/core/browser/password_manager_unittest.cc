@@ -95,7 +95,7 @@ class PasswordManagerTest : public testing::Test {
                                            true);
 
     store_ = new MockPasswordStore;
-    CHECK(store_->Init());
+    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
     EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
     EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(&prefs_));

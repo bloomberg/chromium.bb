@@ -260,7 +260,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
                          base::MessageLoopProxy::current(),
                          login_db_.release(),
                          GetBackend()));
-  store->Init();
+  store->Init(syncer::SyncableService::StartSyncFlare());
 
   PasswordFormData form_data =
   { PasswordForm::SCHEME_HTML,
@@ -365,7 +365,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
                          base::MessageLoopProxy::current(),
                          login_db_.release(),
                          GetBackend()));
-  store->Init();
+  store->Init(syncer::SyncableService::StartSyncFlare());
 
   MockPasswordStoreConsumer consumer;
 

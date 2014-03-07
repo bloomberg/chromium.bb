@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_syncable_service.h"
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
 #include "components/password_manager/core/browser/password_syncable_service.h"
@@ -75,10 +76,10 @@ PasswordStore::PasswordStore(
       observers_(new ObserverListThreadSafe<Observer>()),
       shutdown_called_(false) {}
 
-bool PasswordStore::Init() {
+bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
   ReportMetrics();
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
-  ScheduleTask(base::Bind(&PasswordStore::InitSyncableService, this));
+  ScheduleTask(base::Bind(&PasswordStore::InitSyncableService, this, flare));
 #endif
   return true;
 }
@@ -239,10 +240,12 @@ void PasswordStore::NotifyLoginsChanged(
 }
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
-void PasswordStore::InitSyncableService() {
+void PasswordStore::InitSyncableService(
+    const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   DCHECK(!syncable_service_);
   syncable_service_.reset(new PasswordSyncableService(this));
+  syncable_service_->InjectStartSyncFlare(flare);
 }
 
 void PasswordStore::DestroySyncableService() {

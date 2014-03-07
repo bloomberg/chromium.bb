@@ -55,6 +55,11 @@ class PasswordSyncableService : public syncer::SyncableService,
   // Notifies sync of changes to the password database.
   void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
 
+  // Provides a StartSyncFlare to the SyncableService. See
+  // sync_start_util for more.
+  void InjectStartSyncFlare(
+      const syncer::SyncableService::StartSyncFlare& flare);
+
  private:
   typedef std::vector<autofill::PasswordForm*> PasswordForms;
   // Map from password sync tag to password form.
@@ -102,7 +107,13 @@ class PasswordSyncableService : public syncer::SyncableService,
   // The password store that adds/updates/deletes password entries.
   PasswordStore* const password_store_;
 
+  // A signal to start sync as soon as possible.
+  syncer::SyncableService::StartSyncFlare flare_;
+
+  // True if processing sync changes is in progress.
   bool is_processing_sync_changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordSyncableService);
 };
 
 // Converts the |password| into a SyncData object.

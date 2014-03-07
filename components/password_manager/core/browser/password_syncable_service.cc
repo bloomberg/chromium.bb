@@ -278,9 +278,18 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
 void PasswordSyncableService::ActOnPasswordStoreChanges(
     const PasswordStoreChangeList& local_changes) {
   DCHECK(CalledOnValidThread());
+
+  if (!sync_processor_) {
+    if (!flare_.is_null()) {
+      flare_.Run(syncer::PASSWORDS);
+      flare_.Reset();
+    }
+    return;
+  }
+
   // ActOnPasswordStoreChanges() can be called from ProcessSyncChanges(). Do
   // nothing in this case.
-  if (!sync_processor_ || is_processing_sync_changes_)
+  if (is_processing_sync_changes_)
     return;
   syncer::SyncChangeList sync_changes;
   for (PasswordStoreChangeList::const_iterator it = local_changes.begin();
@@ -292,6 +301,12 @@ void PasswordSyncableService::ActOnPasswordStoreChanges(
                            SyncDataFromPassword(it->form())));
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
+}
+
+void PasswordSyncableService::InjectStartSyncFlare(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  DCHECK(CalledOnValidThread());
+  flare_ = flare;
 }
 
 bool PasswordSyncableService::ReadFromPasswordStore(

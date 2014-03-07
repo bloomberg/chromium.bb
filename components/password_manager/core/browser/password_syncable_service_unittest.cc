@@ -86,6 +86,8 @@ class MockPasswordSyncableService : public PasswordSyncableService {
 
   MOCK_METHOD1(NotifyPasswordStoreOfLoginChanges,
                void (const PasswordStoreChangeList&));
+
+  MOCK_METHOD1(StartSyncFlare, void(syncer::ModelType));
 };
 
 // Class to verify the arguments passed to |PasswordStore|.
@@ -608,6 +610,25 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
       other_service_data,
       other_service_wrapper.ReleaseSyncableService(),
       scoped_ptr<syncer::SyncErrorFactory>());
+}
+
+// Calls ActOnPasswordStoreChanges without SyncChangeProcessor. StartSyncFlare
+// should be called.
+TEST_F(PasswordSyncableServiceTest, StartSyncFlare) {
+  autofill::PasswordForm form;
+  form.signon_realm = "abc";
+  PasswordStoreChangeList list;
+  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+
+  // No flare and no SyncChangeProcessor, the call shouldn't crash.
+  service()->ActOnPasswordStoreChanges(list);
+
+  // Set the flare. It should be called as there is no SyncChangeProcessor.
+  service()->InjectStartSyncFlare(
+      base::Bind(&MockPasswordSyncableService::StartSyncFlare,
+                 base::Unretained(service())));
+  EXPECT_CALL(*service(), StartSyncFlare(syncer::PASSWORDS));
+  service()->ActOnPasswordStoreChanges(list);
 }
 
 }  // namespace

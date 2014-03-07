@@ -29,6 +29,14 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
                void(const std::vector<PasswordForm*>&));
 };
 
+class StartSyncFlareMock {
+ public:
+  StartSyncFlareMock() {}
+  ~StartSyncFlareMock() {}
+
+  MOCK_METHOD1(StartSyncFlare, void(syncer::ModelType));
+};
+
 }  // namespace
 
 class PasswordStoreTest : public testing::Test {
@@ -58,7 +66,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
       base::MessageLoopProxy::current(),
       base::MessageLoopProxy::current(),
       login_db_.release()));
-  store->Init();
+  store->Init(syncer::SyncableService::StartSyncFlare());
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
   // The passwords are all empty because PasswordStoreDefault doesn't store the
@@ -179,6 +187,24 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   base::MessageLoop::current()->RunUntilIdle();
 
   STLDeleteElements(&all_forms);
+  store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(PasswordStoreTest, StartSyncFlare) {
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::MessageLoopProxy::current(),
+      base::MessageLoopProxy::current(),
+      login_db_.release()));
+  StartSyncFlareMock mock;
+  store->Init(base::Bind(&StartSyncFlareMock::StartSyncFlare,
+                         base::Unretained(&mock)));
+  {
+    PasswordForm form;
+    EXPECT_CALL(mock, StartSyncFlare(syncer::PASSWORDS));
+    store->AddLogin(form);
+    base::MessageLoop::current()->RunUntilIdle();
+  }
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
 }

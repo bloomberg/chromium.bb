@@ -1043,7 +1043,7 @@ class PasswordStoreMacTest : public testing::Test {
         base::MessageLoopProxy::current(),
         keychain_,
         login_db_);
-    ASSERT_TRUE(store_->Init());
+    ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
   }
 
   virtual void TearDown() {

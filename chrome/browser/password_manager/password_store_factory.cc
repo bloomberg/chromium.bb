@@ -8,6 +8,7 @@
 #include "base/environment.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -220,7 +221,8 @@ BrowserContextKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #else
   NOTIMPLEMENTED();
 #endif
-  if (!ps || !ps->Init()) {
+  if (!ps || !ps->Init(
+          sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
     NOTREACHED() << "Could not initialize password manager.";
     return NULL;
   }
