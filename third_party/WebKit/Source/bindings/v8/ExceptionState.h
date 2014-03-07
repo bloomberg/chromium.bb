@@ -58,14 +58,6 @@ public:
         UnknownContext, // FIXME: Remove this once we've flipped over to the new API.
     };
 
-    explicit ExceptionState(const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
-        : m_code(0)
-        , m_context(UnknownContext)
-        , m_propertyName(0)
-        , m_interfaceName(0)
-        , m_creationContext(creationContext)
-        , m_isolate(isolate) { }
-
     ExceptionState(Context context, const char* propertyName, const char* interfaceName, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
         , m_context(context)
@@ -131,7 +123,7 @@ private:
 // Used if exceptions can/should not be directly thrown.
 class NonThrowableExceptionState FINAL : public ExceptionState {
 public:
-    NonThrowableExceptionState(): ExceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    NonThrowableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE;
     virtual void throwTypeError(const String& message = String()) OVERRIDE;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
@@ -140,7 +132,7 @@ public:
 // Used if any exceptions thrown are ignorable.
 class TrackExceptionState FINAL : public ExceptionState {
 public:
-    TrackExceptionState(): ExceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    TrackExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE;
     virtual void throwTypeError(const String& message = String()) OVERRIDE;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
