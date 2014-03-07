@@ -7,6 +7,8 @@ PASS: 'postMessage("data")' threw DataCloneError: Failed to execute 'postMessage
 PASS: 'postMessage(uint8Array)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is neutered and could not be cloned.
 PASS: 'postMessage(window)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An object could not be cloned.
 PASS: 'postMessage(({get a() { throw "x" }}))' threw x
+PASS: 'postMessage(blob.close(); blob)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': A Blob object has been closed, and could therefore not be cloned.
+PASS: 'postMessage(constructedFile.close(); constructedFile)' threw DataCloneError: Failed to execute 'postMessage' on 'Window': A File object has been closed, and could therefore not be cloned.
 PASS: 'postMessage((function() {return {get a() { throw "accessor-exn"; }};})())' threw accessor-exn
 PASS: 'postMessage((function() {var obja = {get p() { throw "accessor-exn"; }}; return {get a() { return obja; }};})())' threw accessor-exn
 PASS: lastIndex initially correct: was 3
@@ -47,6 +49,8 @@ PASS: eventData is [object ImageData] of type object
 PASS: eventData is [object Uint8ClampedArray] of type object
 PASS: eventData is [object ImageData] of type object
 PASS: eventData is [object Uint8ClampedArray] of type object
+PASS: Cloned Blob size equal to the original size.
+PASS: Cloned File size equal to the original size.
 PASS: eventData is 42 of type number
 PASS: eventData is 42 of type number
 PASS: evalThunk OK

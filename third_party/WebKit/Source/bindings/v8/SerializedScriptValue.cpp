@@ -1052,13 +1052,16 @@ private:
         m_writer.writeBooleanObject(booleanObject->ValueOf());
     }
 
-    void writeBlob(v8::Handle<v8::Value> value)
+    StateBase* writeBlob(v8::Handle<v8::Value> value, StateBase* next)
     {
         Blob* blob = V8Blob::toNative(value.As<v8::Object>());
         if (!blob)
-            return;
+            return 0;
+        if (blob->hasBeenClosed())
+            return handleError(DataCloneError, "A Blob object has been closed, and could therefore not be cloned.", next);
         m_writer.writeBlob(blob->uuid(), blob->type(), blob->size());
         m_blobDataHandles.add(blob->uuid(), blob->blobDataHandle());
+        return 0;
     }
 
     StateBase* writeDOMFileSystem(v8::Handle<v8::Value> value, StateBase* next)
@@ -1072,13 +1075,16 @@ private:
         return 0;
     }
 
-    void writeFile(v8::Handle<v8::Value> value)
+    StateBase* writeFile(v8::Handle<v8::Value> value, StateBase* next)
     {
         File* file = V8File::toNative(value.As<v8::Object>());
         if (!file)
-            return;
+            return 0;
+        if (file->hasBeenClosed())
+            return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
         m_writer.writeFile(*file);
         m_blobDataHandles.add(file->uuid(), file->blobDataHandle());
+        return 0;
     }
 
     void writeFileList(v8::Handle<v8::Value> value)
@@ -1280,9 +1286,9 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
         else if (value->IsArray()) {
             return startArrayState(value.As<v8::Array>(), next);
         } else if (V8File::hasInstance(value, m_isolate))
-            writeFile(value);
+            return writeFile(value, next);
         else if (V8Blob::hasInstance(value, m_isolate))
-            writeBlob(value);
+            return writeBlob(value, next);
         else if (V8DOMFileSystem::hasInstance(value, m_isolate))
             return writeDOMFileSystem(value, next);
         else if (V8FileList::hasInstance(value, m_isolate))
