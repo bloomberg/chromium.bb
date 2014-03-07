@@ -189,7 +189,7 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 
 PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     const GURL& original_url,
-    GURL* alternate_url) const {
+    GURL* alternate_url) {
   if (!use_alternate_protocols())
     return kNoAlternateProtocol;
 
@@ -199,7 +199,7 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
   HostPortPair origin = HostPortPair(original_url.HostNoBrackets(),
                                      original_url.EffectiveIntPort());
 
-  const HttpServerProperties& http_server_properties =
+  HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
   if (!http_server_properties.HasAlternateProtocol(origin))
     return kNoAlternateProtocol;

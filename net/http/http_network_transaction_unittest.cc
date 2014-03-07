@@ -8144,7 +8144,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   HostPortPair http_host_port_pair("www.google.com", 80);
-  const HttpServerProperties& http_server_properties =
+  HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   EXPECT_FALSE(
       http_server_properties.HasAlternateProtocol(http_host_port_pair));

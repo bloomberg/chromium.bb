@@ -206,12 +206,26 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   HostPortPair test_host_port_pair2("foo2", 80);
   impl_.SetAlternateProtocol(test_host_port_pair2, 443, NPN_SPDY_3);
 
-  AlternateProtocolMap alternate_protocol_map;
+  AlternateProtocolMap alternate_protocol_map(
+      AlternateProtocolMap::NO_AUTO_EVICT);
   PortAlternateProtocolPair port_alternate_protocol_pair;
   port_alternate_protocol_pair.port = 123;
   port_alternate_protocol_pair.protocol = NPN_SPDY_3;
-  alternate_protocol_map[test_host_port_pair2] = port_alternate_protocol_pair;
+  alternate_protocol_map.Put(test_host_port_pair2,
+                             port_alternate_protocol_pair);
+  HostPortPair test_host_port_pair3("foo3", 80);
+  port_alternate_protocol_pair.port = 1234;
+  alternate_protocol_map.Put(test_host_port_pair3,
+                             port_alternate_protocol_pair);
   impl_.InitializeAlternateProtocolServers(&alternate_protocol_map);
+
+  // Verify test_host_port_pair3 is the MRU server.
+  const net::AlternateProtocolMap& map = impl_.alternate_protocol_map();
+  net::AlternateProtocolMap::const_iterator it = map.begin();
+  it = map.begin();
+  EXPECT_TRUE(it->first.Equals(test_host_port_pair3));
+  EXPECT_EQ(1234, it->second.port);
+  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
 
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair1));
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair2));
@@ -222,6 +236,49 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
       impl_.GetAlternateProtocol(test_host_port_pair2);
   EXPECT_EQ(123, port_alternate_protocol_pair.port);
   EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol_pair.protocol);
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, MRUOfHasAlternateProtocol) {
+  HostPortPair test_host_port_pair1("foo1", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair1, 443, NPN_SPDY_3);
+  HostPortPair test_host_port_pair2("foo2", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair2, 1234, NPN_SPDY_3);
+
+  const net::AlternateProtocolMap& map = impl_.alternate_protocol_map();
+  net::AlternateProtocolMap::const_iterator it = map.begin();
+  EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
+  EXPECT_EQ(1234, it->second.port);
+  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+
+  // HasAlternateProtocol should reoder the AlternateProtocol map.
+  ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair1));
+  it = map.begin();
+  EXPECT_TRUE(it->first.Equals(test_host_port_pair1));
+  EXPECT_EQ(443, it->second.port);
+  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
+  HostPortPair test_host_port_pair1("foo1", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair1, 443, NPN_SPDY_3);
+  HostPortPair test_host_port_pair2("foo2", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair2, 1234, NPN_SPDY_3);
+
+  const net::AlternateProtocolMap& map = impl_.alternate_protocol_map();
+  net::AlternateProtocolMap::const_iterator it = map.begin();
+  EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
+  EXPECT_EQ(1234, it->second.port);
+  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
+
+  // GetAlternateProtocol should reoder the AlternateProtocol map.
+  PortAlternateProtocolPair alternate =
+      impl_.GetAlternateProtocol(test_host_port_pair1);
+  EXPECT_EQ(443, alternate.port);
+  EXPECT_EQ(NPN_SPDY_3, alternate.protocol);
+  it = map.begin();
+  EXPECT_TRUE(it->first.Equals(test_host_port_pair1));
+  EXPECT_EQ(443, it->second.port);
+  EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
