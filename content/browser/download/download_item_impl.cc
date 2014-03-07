@@ -1424,6 +1424,7 @@ void DownloadItemImpl::OnResumeRequestStarted(
 // An error occurred somewhere.
 void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, reason);
 
   // Somewhat counter-intuitively, it is possible for us to receive an
   // interrupt after we've already been interrupted.  The generation of
@@ -1443,11 +1444,15 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   ResumeMode resume_mode = GetResumeMode();
 
   if (state_ == IN_PROGRESS_INTERNAL) {
-    // Cancel (delete file) if we're going to restart; no point in leaving
-    // data around we aren't going to use.  Also cancel if resumption isn't
-    // enabled for the same reason.
+    // Cancel (delete file) if:
+    // 1) we're going to restart.
+    // 2) Resumption isn't possible (download was cancelled or blocked due to
+    //    security restrictions).
+    // 3) Resumption isn't enabled.
+    // No point in leaving data around we aren't going to use.
     ReleaseDownloadFile(resume_mode == RESUME_MODE_IMMEDIATE_RESTART ||
                         resume_mode == RESUME_MODE_USER_RESTART ||
+                        resume_mode == RESUME_MODE_INVALID ||
                         !IsDownloadResumptionEnabled());
 
     // Cancel the originating URL request.

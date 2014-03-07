@@ -459,6 +459,37 @@ TEST_F(DownloadItemTest, RestartAfterInterrupted) {
   CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
 }
 
+// Check we do correct cleanup for RESUME_MODE_INVALID interrupts.
+TEST_F(DownloadItemTest, UnresumableInterrupt) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+
+  DownloadItemImpl* item = CreateDownloadItem();
+  MockObserver observer(item);
+  DownloadItemImplDelegate::DownloadTargetCallback callback;
+  MockDownloadFile* download_file =
+      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+
+  // Fail final rename with unresumable reason.
+  EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*download_file, RenameAndAnnotate(base::FilePath(kDummyPath), _))
+      .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
+                                       base::FilePath(kDummyPath)));
+  EXPECT_CALL(*download_file, Cancel());
+
+  // Complete download to trigger final rename.
+  item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
+  RunAllPendingInMessageLoops();
+
+  ASSERT_TRUE(observer.CheckUpdated());
+  // Should not try to auto-resume.
+  ASSERT_EQ(1, observer.GetInterruptCount());
+  ASSERT_EQ(0, observer.GetResumeCount());
+
+  CleanupItem(item, download_file, DownloadItem::INTERRUPTED);
+}
+
 TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
