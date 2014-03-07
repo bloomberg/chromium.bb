@@ -50,6 +50,10 @@ _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
 _AUTOTEST_RPC_HOSTNAME = 'master2'
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
+# For sorting through VM test results.
+_TEST_REPORT_FILENAME = 'test_report.log'
+_TEST_PASSED = 'PASSED'
+_TEST_FAILED = 'FAILED'
 
 
 class TestFailure(results_lib.StepFailure):
@@ -547,39 +551,116 @@ def RunCrosVMTest(board, image_dir):
   test.Run()
 
 
-def ArchiveTestResults(buildroot, test_results_dir, test_basename):
-  """Archives the test results into a tarball.
+def ListFailedTests(results_path):
+  """Returns a list of failed tests.
+
+  Parse the test report logs from autotest to find failed tests.
+
+  Args:
+    results_path: Path to the directory of test results.
+
+  Returns:
+    A lists of (test_name, relative/path/to/failed/tests)
+  """
+  # TODO: we don't have to parse the log to find failed tests once
+  # crbug.com/350520 is fixed.
+  reports = []
+  for path, _, filenames in os.walk(results_path):
+    reports.extend([os.path.join(path, x) for x in filenames
+                    if x == _TEST_REPORT_FILENAME])
+
+  failed_tests = []
+  processed_tests = []
+  for report in reports:
+    # Format used in the report:
+    #   /path/to/base/dir/test_harness/all/SimpleTestUpdateAndVerify/ \
+    #     2_autotest_tests/results-01-security_OpenSSLBlacklist [  FAILED  ]
+    #   /path/to/base/dir/test_harness/all/SimpleTestUpdateAndVerify/ \
+    #     2_autotest_tests/results-01-security_OpenSSLBlacklist/ \
+    #     security_OpenBlacklist [  FAILED  ]
+    with open(report) as f:
+      failed_re = re.compile(r'([\./\w-]*)\s*\[\s*(\S+?)\s*\]')
+      test_name_re = re.compile(r'results-[\d]+?-([\.\w_]*)')
+      for line in f:
+        r = failed_re.search(line)
+        if r and r.group(2) == _TEST_FAILED:
+          # Process only failed tests.
+          file_path = r.group(1)
+          match = test_name_re.search(file_path)
+          if match:
+            test_name = match.group(1)
+          else:
+            # If no match is found (due to format change or other
+            # reasons), simply use the last component of file_path.
+            test_name = os.path.basename(file_path)
+
+          # A test may have subtests. We don't want to list all subtests.
+          if test_name not in processed_tests:
+            base_dirname = os.path.basename(results_path)
+            # Get the relative path from the test_results directory. Note
+            # that file_path is a chroot path, while results_path is a
+            # non-chroot path, so we cannot use os.path.relpath directly.
+            rel_path = file_path.split(base_dirname)[1].lstrip(os.path.sep)
+            failed_tests.append((test_name, rel_path))
+            processed_tests.append(test_name)
+
+    return failed_tests
+
+
+def GetTestResultsDir(buildroot, test_results_dir):
+  """Returns the test results directory located in chroot.
 
   Args:
     buildroot: Root directory where build occurs.
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
-    test_basename: The basename of the tarball.
-
-  Returns:
-    The path to the tarball.
   """
   test_results_dir = test_results_dir.lstrip('/')
-  chroot = os.path.join(buildroot, 'chroot')
-  results_path = os.path.join(chroot, test_results_dir)
+  return os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR, test_results_dir)
+
+
+def ArchiveTestResults(results_path, archive_dir):
+  """Archives the test results to |archive_dir|.
+
+  Args:
+    results_path: Path to test results.
+    archive_dir: Local directory to archive to.
+  """
   cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
                                 print_cmd=False)
+  if os.path.exists(archive_dir):
+    osutils.RmDir(archive_dir)
 
-  test_tarball = os.path.join(buildroot, test_basename)
-  if os.path.exists(test_tarball):
-    os.remove(test_tarball)
+  def _ShouldIgnore(dirname, file_list):
+    # Note: We exclude VM disk and memory images. Instead, they are
+    # archived via ArchiveVMFiles. Also skip any symlinks. gsutil
+    # hangs on broken symlinks.
+    return [x for x in file_list if
+            x.startswith(constants.VM_DISK_PREFIX) or
+            x.startswith(constants.VM_MEM_PREFIX) or
+            os.path.islink(os.path.join(dirname, x))]
 
-  # Note: to keep the test results tarball small, we exclude VM disk
-  # and memory images from the tarball. Instead, they are archived via
-  # ArchiveVMFiles.
+  shutil.copytree(results_path, archive_dir, symlinks=False,
+                  ignore=_ShouldIgnore)
+
+
+def BuildAndArchiveTestResultsTarball(src_dir, buildroot):
+  """Create a compressed tarball of test results.
+
+  Args:
+    src_dir: The directory containing the test results.
+    buildroot: Build root directory.
+
+  Returns:
+    The name of the tarball.
+  """
+  target = '%s.tgz' % src_dir.rstrip(os.path.sep)
+  chroot = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   cros_build_lib.CreateTarball(
-      test_tarball, results_path, compression=cros_build_lib.COMP_GZIP,
-      chroot=chroot, extra_args=\
-        ['--exclude=*%s*' % constants.VM_DISK_PREFIX,
-         '--exclude=*%s*' % constants.VM_MEM_PREFIX])
+      target, src_dir, compression=cros_build_lib.COMP_GZIP,
+      chroot=chroot)
+  return os.path.basename(target)
 
-  osutils.RmDir(results_path)
-  return test_tarball
 
 def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   """Archives the VM memory and disk images into tarballs.
@@ -736,14 +817,14 @@ def HaveCQHWTestsBeenAborted(version, suite=''):
   return gs.GSContext().Exists(_GetAbortCQHWTestsURL(version, suite))
 
 
-def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
+def GenerateStackTraces(buildroot, board, test_results_dir,
                         archive_dir, got_symbols):
   """Generates stack traces for logs in |gzipped_test_tarball|
 
   Args:
     buildroot: Root directory where build occurs.
     board: Name of the board being worked on.
-    gzipped_test_tarball: Path to the gzipped test tarball.
+    test_results_dir: Directory of the test results.
     archive_dir: Local directory for archiving.
     got_symbols: True if breakpad symbols have been generated.
 
@@ -751,26 +832,11 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
     List of stack trace file names.
   """
   stack_trace_filenames = []
-  chroot = os.path.join(buildroot, 'chroot')
-  gzip = cros_build_lib.FindCompressor(cros_build_lib.COMP_GZIP, chroot=chroot)
-  chroot_tmp = os.path.join(chroot, 'tmp')
-  temp_dir = tempfile.mkdtemp(prefix='cbuildbot_dumps', dir=chroot_tmp)
   asan_log_signaled = False
 
-  # We need to unzip the test results tarball first because we cannot update
-  # a compressed tarball.
-  gzipped_test_tarball = os.path.abspath(gzipped_test_tarball)
-  cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball],
-                            debug_level=logging.DEBUG)
-  test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
-
-  # Extract minidump and asan files from the tarball and symbolize them.
-  cmd = ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir, '--wildcards']
-  cros_build_lib.RunCommand(cmd + ['*.dmp', '*asan_log.*'],
-                            debug_level=logging.DEBUG, error_code_ok=True)
   board_path = cros_build_lib.GetSysroot(board=board)
   symbol_dir = os.path.join(board_path, 'usr', 'lib', 'debug', 'breakpad')
-  for curr_dir, _subdirs, files in os.walk(temp_dir):
+  for curr_dir, _subdirs, files in os.walk(test_results_dir):
     for curr_file in files:
       full_file_path = os.path.join(curr_dir, curr_file)
       processed_file_path = '%s.txt' % full_file_path
@@ -822,13 +888,6 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
       # Append the processed file to archive.
       filename = ArchiveFile(processed_file_path, archive_dir)
       stack_trace_filenames.append(filename)
-  cmd = ['tar', 'uf', test_tarball, '.']
-  cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG, cwd=temp_dir)
-  cros_build_lib.RunCommand('%s -c %s > %s'
-                            % (gzip, test_tarball, gzipped_test_tarball),
-                            shell=True, debug_level=logging.DEBUG)
-  os.unlink(test_tarball)
-  osutils.RmDir(temp_dir)
 
   return stack_trace_filenames
 

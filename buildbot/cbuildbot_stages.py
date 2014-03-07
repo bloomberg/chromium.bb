@@ -269,15 +269,18 @@ class ArchivingStageMixin(object):
                                        processes=self.PROCESSES) as bg_queue:
       yield bg_queue
 
-  def PrintDownloadLink(self, filename, prefix=''):
+  def PrintDownloadLink(self, filename, prefix='', text_to_display=None):
     """Print a link to an artifact in Google Storage.
 
     Args:
       filename: The filename of the uploaded file.
       prefix: The prefix to put in front of the filename.
+      text_to_display: Text to display. If None, use |prefix| + |filename|.
     """
     url = '%s/%s' % (self.download_url.rstrip('/'), filename)
-    cros_build_lib.PrintBuildbotLink(prefix + filename, url)
+    if not text_to_display:
+      text_to_display = '%s%s' % (prefix, filename)
+    cros_build_lib.PrintBuildbotLink(text_to_display, url)
 
   def UploadArtifact(self, path, archive=True, strict=True):
     """Upload generated artifact to Google Storage.
@@ -2728,21 +2731,55 @@ class VMTestStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   option_name = 'tests'
   config_name = 'vm_tests'
 
-  def _ArchiveTestResults(self, test_results_dir, test_basename):
-    """Archives test results to Google Storage."""
-    test_tarball = commands.ArchiveTestResults(
-        self._build_root, test_results_dir, test_basename)
+  def _PrintFailedTests(self, results_path, test_basename):
+    """Print links to failed tests.
 
-    # Wait for breakpad symbols.
+    Args:
+      results_path: Path to directory containing the test results.
+      test_basename: The basename that the tests are archived to.
+    """
+    test_list = commands.ListFailedTests(results_path)
+    for test_name, path in test_list:
+      self.PrintDownloadLink(
+          os.path.join(test_basename, path), text_to_display=test_name)
+
+  def _ArchiveTestResults(self, test_results_dir, test_basename):
+    """Archives test results to Google Storage.
+
+    Args:
+      test_results_dir: Name of the directory containing the test results.
+      test_basename: The basename to archive the tests.
+    """
+    results_path = commands.GetTestResultsDir(
+        self._build_root, test_results_dir)
+
+    # Skip archiving if results_path does not exist or is an empty directory.
+    if not os.path.isdir(results_path) or not os.listdir(results_path):
+      return
+
+    archived_results_dir = os.path.join(self.archive_path, test_basename)
+    # Copy relevant files to archvied_results_dir.
+    commands.ArchiveTestResults(results_path, archived_results_dir)
+    upload_paths = [os.path.basename(archived_results_dir)]
+    # Create the compressed tarball to upload.
+    # TODO: We should revisit whether uploading the tarball is necessary.
+    test_tarball = commands.BuildAndArchiveTestResultsTarball(
+        archived_results_dir, self._build_root)
+    upload_paths.append(test_tarball)
+
     got_symbols = False
     if self._run.options.archive:
       got_symbols = self.GetParallel('breakpad_symbols_generated',
                                      pretty_name='breakpad symbols')
-    filenames = commands.GenerateStackTraces(
-        self._build_root, self._current_board, test_tarball, self.archive_path,
-        got_symbols)
-    filenames.append(commands.ArchiveFile(test_tarball, self.archive_path))
-    self._Upload(filenames)
+    upload_paths += commands.GenerateStackTraces(
+        self._build_root, self._current_board, test_results_dir,
+        self.archive_path, got_symbols)
+
+    self._Upload(upload_paths)
+    self._PrintFailedTests(results_path, test_basename)
+
+    # Remove the test results directory.
+    osutils.RmDir(results_path, ignore_missing=True, sudo=True)
 
   def _ArchiveVMFiles(self, test_results_dir):
     vm_files = commands.ArchiveVMFiles(

@@ -214,19 +214,13 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     """Test if we can generate stack traces for minidumps."""
     os.makedirs(os.path.join(self._chroot, 'tmp'))
     dump_file = os.path.join(self._chroot, 'tmp', 'test.dmp')
-    tarfile = os.path.join(self.tempdir, 'vm_test_results.tar')
-    osutils.Touch(tarfile)
     dump_file_dir, dump_file_name = os.path.split(dump_file)
     ret = [(dump_file_dir, [''], [dump_file_name])]
     with mock.patch('os.walk', return_value=ret):
-      gzipped_test_tarball = os.path.join(self.tempdir, 'vm_test_results.tgz')
+      test_results_dir = os.path.join(self.tempdir, 'test_results')
       commands.GenerateStackTraces(self._buildroot, self._board,
-                                   gzipped_test_tarball, self.tempdir, True)
-      self.assertCommandContains([gzipped_test_tarball])
-      self.assertCommandContains(['tar', 'xf', tarfile, '*.dmp'])
+                                   test_results_dir, self.tempdir, True)
       self.assertCommandContains(['minidump_stackwalk'])
-      self.assertCommandContains(['tar', 'uf', tarfile])
-      self.assertFalse(os.path.exists(tarfile))
 
   def testUprevAllPackages(self):
     """Test if we get None in revisions.pfq indicating Full Builds."""
@@ -455,14 +449,47 @@ class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
 class UnmockedTests(cros_test_lib.TempDirTestCase):
   """Test cases which really run tests, instead of using mocks."""
 
+  def testListFaliedTests(self):
+    """Tests if we can list failed tests."""
+    test_report = """
+/tmp/taco/taste_tests/all/results-01-has_salsa              [  PASSED  ]
+/tmp/taco/taste_tests/all/results-01-has_salsa/has_salsa    [  PASSED  ]
+/tmp/taco/taste_tests/all/results-02-has_cheese             [  FAILED  ]
+/tmp/taco/taste_tests/all/results-02-has_cheese/has_cheese  [  FAILED  ]
+/tmp/taco/taste_tests/all/results-02-has_cheese/has_cheese   FAIL: No cheese.
+"""
+    results_path = os.path.join(self.tempdir, 'tmp/taco')
+    os.makedirs(results_path)
+    # Create two reports with the same content to test that we don't
+    # list the same test twice.
+    osutils.WriteFile(
+        os.path.join(results_path, 'all', 'test_report.log'),
+        test_report, makedirs=True)
+    osutils.WriteFile(
+        os.path.join(results_path, 'failed', 'test_report.log'),
+        test_report, makedirs=True)
+    self.assertEquals(
+        commands.ListFailedTests(results_path),
+        [('has_cheese', 'taste_tests/all/results-02-has_cheese')])
+
   def testArchiveTestResults(self):
     """Test if we can archive a test results dir."""
     test_results_dir = 'tmp/taco'
-    abs_results_dir = os.path.join(self.tempdir, 'chroot', test_results_dir)
-    os.makedirs(abs_results_dir)
-    osutils.Touch(os.path.join(abs_results_dir, 'foo.txt'))
-    res = commands.ArchiveTestResults(self.tempdir, test_results_dir, 'foo.tgz')
-    cros_test_lib.VerifyTarball(res, ['./', 'foo.txt'])
+    results_path = os.path.join(self.tempdir, 'chroot', test_results_dir)
+    archive_dir = os.path.join(self.tempdir, 'archived_taco')
+    os.makedirs(results_path)
+    os.makedirs(archive_dir)
+    # File that should be archived.
+    osutils.Touch(os.path.join(results_path, 'foo.txt'))
+    # Flies that should be ignored.
+    osutils.Touch(os.path.join(results_path,
+                               'chromiumos_qemu_disk.bin.foo'))
+    os.symlink('/src/foo', os.path.join(results_path, 'taco_link'))
+    commands.ArchiveTestResults(results_path, archive_dir)
+    self.assertExists(os.path.join(archive_dir, 'foo.txt'))
+    self.assertNotExists(
+        os.path.join(archive_dir, 'chromiumos_qemu_disk.bin.foo'))
+    self.assertNotExists(os.path.join(archive_dir, 'taco_link'))
 
   def testBuildFirmwareArchive(self):
     """Verifies that firmware archiver includes proper files"""
