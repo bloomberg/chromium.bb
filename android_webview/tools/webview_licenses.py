@@ -119,7 +119,7 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('out/Release')
   # 'Copyright' appears in license agreements
   excluded_dirs_list.append('chrome/app/resources')
-  # Quickoffice js files from internal src used on buildbots
+  # Quickoffice js files from internal src used on buildbots. crbug.com/350472.
   excluded_dirs_list.append('chrome/browser/resources/chromeos/quickoffice')
   # This is a test output directory
   excluded_dirs_list.append('chrome/tools/test/reference_build')
@@ -210,6 +210,9 @@ def _FindThirdPartyDirs():
   # as they will end up included in Android WebView snapshot.
   # Instead, add them into known_issues.py.
   prune_paths = [
+    # Temporary until we figure out how not to check out quickoffice on the
+    # Android license check bot. Tracked in crbug.com/350472.
+    os.path.join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
     # Placeholder directory, no third-party code.
     os.path.join('third_party', 'adobe'),
     # Apache 2.0 license. See
