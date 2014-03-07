@@ -283,7 +283,7 @@ void MTPDeviceDelegateImplLinux::CreateSnapshotFile(
 }
 
 bool MTPDeviceDelegateImplLinux::IsStreaming() {
-  return false;
+  return true;
 }
 
 void MTPDeviceDelegateImplLinux::ReadBytes(
