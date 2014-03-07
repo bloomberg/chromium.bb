@@ -5,19 +5,17 @@
 
 """Class capturing a command invocation as data."""
 
-
-# Done first to setup python module path.
-import toolchain_env
-
 import inspect
 import hashlib
 import os
 import shutil
 import sys
 
-import file_tools
-import log_tools
-import repo_tools
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.file_tools
+import pynacl.log_tools
+import pynacl.repo_tools
+
 import substituter
 
 
@@ -37,15 +35,12 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 COMMAND_CODE_FILES = [os.path.join(SCRIPT_DIR, f)
                       for f in ('command.py', 'once.py', 'substituter.py',
-                                'pnacl_commands.py', 'toolchain_env.py',
-                                'toolchain_main.py')]
-COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'build', f)
-                       for f in ('directory_storage.py', 'file_tools.py',
-                                 'gsd_storage.py', 'hashing_tools.py',
-                                 'local_storage_cache.py', 'log_tools.py',
-                                 'repo_tools.py')]
+                                'pnacl_commands.py', 'toolchain_main.py',)]
 COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'pynacl', f)
-                       for f in ('platform.py',)]
+                       for f in ('platform.py','directory_storage.py',
+                                 'file_tools.py', 'gsd_storage.py',
+                                 'hashing_tools.py', 'local_storage_cache.py',
+                                 'log_tools.py', 'repo_tools.py',)]
 
 def HashBuildSystemSources():
   """Read the build source files to use in hashes for Callbacks."""
@@ -204,12 +199,12 @@ def Command(command, stdout=None, **kwargs):
     else:
       command = [subst.Substitute(arg) for arg in command]
       paths = check_call_kwargs['env']['PATH'].split(os.pathsep)
-      command[0] = file_tools.Which(command[0], paths=paths)
+      command[0] = pynacl.file_tools.Which(command[0], paths=paths)
 
     if stdout is not None:
       stdout = subst.SubstituteAbsPaths(stdout)
 
-    log_tools.CheckCall(command, stdout=stdout, **check_call_kwargs)
+    pynacl.log_tools.CheckCall(command, stdout=stdout, **check_call_kwargs)
 
   return Runnable(runcmd, command, stdout, **kwargs)
 
@@ -252,7 +247,7 @@ def CopyTree(src, dst, exclude=[]):
         return exclude
       else:
         return []
-    file_tools.RemoveDirectoryIfPresent(dst)
+    pynacl.file_tools.RemoveDirectoryIfPresent(dst)
     shutil.copytree(src, dst, symlinks=True, ignore=ignoreExcludes)
   return Runnable(copyTree, src, dst, exclude)
 
@@ -260,7 +255,7 @@ def CopyTree(src, dst, exclude=[]):
 def RemoveDirectory(path):
   """Convenience method for generating a command to remove a directory tree."""
   def remove(subst, path):
-    file_tools.RemoveDirectoryIfPresent(subst.SubstituteAbsPaths(path))
+    pynacl.file_tools.RemoveDirectoryIfPresent(subst.SubstituteAbsPaths(path))
   return Runnable(remove, path)
 
 
@@ -291,8 +286,8 @@ def WriteData(data, dst):
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
                 pathspec=None):
   def sync(subst, url, dest, rev, reclone, clean, pathspec):
-    repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
-                           reclone, clean, pathspec)
+    pynacl.repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
+                                  reclone, clean, pathspec)
   return Runnable(sync, url, destination, revision, reclone, clean, pathspec)
 
 
@@ -301,7 +296,7 @@ def CleanGitWorkingDir(directory, path):
   def clean(subst, directory, path):
     directory = subst.SubstituteAbsPaths(directory)
     if os.path.exists(directory) and len(os.listdir(directory)) > 0:
-      repo_tools.CleanGitWorkingDir(directory, path)
+      pynacl.repo_tools.CleanGitWorkingDir(directory, path)
   return Runnable(clean, directory, path)
 
 
@@ -337,10 +332,13 @@ def GenerateGitPatches(git_dir, info):
                   '--no-ext-diff', '--no-color', '--no-renames',
                   '--no-textconv', '--text', src_prefix, dst_prefix,
                   src_rev, dst_rev]
-      log_tools.CheckCall(repo_tools.GitCmd() + git_args, stdout=patch_file)
+      pynacl.log_tools.CheckCall(
+          pynacl.repo_tools.GitCmd() + git_args,
+          stdout=patch_file
+      )
 
     def revParse(args):
-      output = repo_tools.CheckGitOutput([git_dir_flag] + args)
+      output = pynacl.repo_tools.CheckGitOutput([git_dir_flag] + args)
       lines = output.splitlines()
       if len(lines) != 1:
         raise Exception('"git %s" did not yield a single commit' %

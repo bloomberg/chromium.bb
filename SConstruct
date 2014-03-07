@@ -2045,8 +2045,7 @@ def MakeBaseTrustedEnv(platform=None):
 
   base_env.Append(BUILD_SCONSCRIPTS = [
       # KEEP THIS SORTED PLEASE
-      'build/build.scons',
-      'toolchain_build/build.scons',
+      'pynacl/build.scons',
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
       'src/shared/ldr/build.scons',
@@ -2105,6 +2104,7 @@ def MakeBaseTrustedEnv(platform=None):
       'tests/unittests/trusted/bits/build.scons',
       'tests/unittests/trusted/platform_qualify/build.scons',
       'tests/unittests/trusted/service_runtime/build.scons',
+      'toolchain_build/build.scons',
   ])
 
   base_env.AddMethod(SDKInstallBin)

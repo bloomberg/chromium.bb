@@ -10,7 +10,6 @@ of the build process.
 """
 
 import hashlib
-import http_download
 import os.path
 import re
 import shutil
@@ -18,8 +17,8 @@ import sys
 import time
 import urllib2
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import pynacl.platform
+import http_download
+import platform
 
 SOURCE_STAMP = 'SOURCE_URL'
 HASH_STAMP = 'SOURCE_SHA1'
@@ -127,7 +126,7 @@ def Retry(op, *args):
   # immediately, etc.
   # Virus checkers can also accidently prevent files from being deleted, but
   # that shouldn't be a problem on the bots.
-  if pynacl.platform.IsWindows():
+  if platform.IsWindows():
     count = 0
     while True:
       try:

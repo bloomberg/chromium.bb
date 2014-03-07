@@ -12,9 +12,6 @@
    The real entry plumbing and CLI flags are also in toolchain_main.py.
 """
 
-# Done first to set up python module path
-import toolchain_env
-
 import base64
 import fnmatch
 import logging
@@ -26,16 +23,15 @@ import subprocess
 import sys
 import zipfile
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.gsd_storage
+import pynacl.platform
+import pynacl.repo_tools
+
 import command
-import file_tools
-import gsd_storage
 import pnacl_commands
 import pnacl_targetlibs
-import repo_tools
 import toolchain_main
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import pynacl.platform
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -287,7 +283,7 @@ def HostLibs(host):
 def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
-    return component_name + '_' + gsd_storage.LegalizeName(host)
+    return component_name + '_' + pynacl.gsd_storage.LegalizeName(host)
   def IsHost64(host):
     return fnmatch.fnmatch(host, 'x86_64*')
   def HostSubdir(host):
@@ -448,11 +444,12 @@ def SyncPNaClRepos(revisions):
     # the newlib repo on checkout (while silently blowing away any local
     # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
     is_newlib = repo == 'nacl-newlib'
-    repo_tools.SyncGitRepo(
+    pynacl.repo_tools.SyncGitRepo(
         GIT_BASE_URL + GIT_REPOS[repo],
         destination,
         revision,
-        clean=is_newlib)
+        clean=is_newlib
+    )
 
     # For testing LLVM, Clang, etc. changes on the trybots, look for a
     # Git bundle file created by llvm_change_try_helper.sh.
@@ -465,15 +462,21 @@ def SyncPNaClRepos(revisions):
       base64.decode(input_fh, output_fh)
       input_fh.close()
       output_fh.close()
-      subprocess.check_call(repo_tools.GitCmd() + ['fetch'], cwd=destination)
-      subprocess.check_call(repo_tools.GitCmd() + ['bundle', 'unbundle',
-                                                   bundle_file],
-                            cwd=destination)
+      subprocess.check_call(
+          pynacl.repo_tools.GitCmd() + ['fetch'],
+          cwd=destination
+      )
+      subprocess.check_call(
+          pynacl.repo_tools.GitCmd() + ['bundle', 'unbundle', bundle_file],
+          cwd=destination
+      )
       commit_id_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
                                     '%s_commit_id' % repo)
       commit_id = open(commit_id_file, 'r').readline().strip()
-      subprocess.check_call(repo_tools.GitCmd() + ['checkout', commit_id],
-                            cwd=destination)
+      subprocess.check_call(
+          pynacl.repo_tools.GitCmd() + ['checkout', commit_id],
+          cwd=destination
+      )
 
 
 def InstallMinGWHostCompiler():
@@ -487,7 +490,7 @@ def InstallMinGWHostCompiler():
   Then extract the zip file and create the install file.
   """
   if not os.path.isfile(os.path.join(MINGW_PATH, MINGW_VERSION + '.installed')):
-    downloader = gsd_storage.GSDStorage([], ['nativeclient-mingw'])
+    downloader = pynacl.gsd_storage.GSDStorage([], ['nativeclient-mingw'])
     zipfilename = MINGW_VERSION + '.zip'
     zipfilepath = os.path.join(NACL_DIR, zipfilename)
     # If the zip file is not present, try to download it from Google Storage.

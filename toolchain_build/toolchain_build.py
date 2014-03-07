@@ -14,16 +14,17 @@ import os
 import re
 import sys
 
-import command
-import gsd_storage
-import toolchain_main
-import repo_tools
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.gsd_storage
 import pynacl.platform
+
+import command
+import toolchain_main
+
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
+
 
 # See command.GenerateGitPatches for the schema of entries in this dict.
 # Additionally, each may contain a 'repo' key whose value is the name
@@ -438,7 +439,7 @@ def WithDepsOptions(options, component=None):
 # to Google Storage are constrained.  GNU configuration tuples contain
 # dashes, which we translate to underscores.
 def ForHost(component_name, host):
-  return component_name + '_' + gsd_storage.LegalizeName(host)
+  return component_name + '_' + pynacl.gsd_storage.LegalizeName(host)
 
 
 # These are libraries that go into building the compiler itself.

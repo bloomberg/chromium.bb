@@ -6,7 +6,7 @@
 
 Import('env')
 
-node = env.CommandTest('run_build_tests.out',
-                       command=['${PYTHON}', env.File('run_build_tests.py')],
+node = env.CommandTest('run_pynacl_tests.out',
+                       command=['${PYTHON}', env.File('run_pynacl_tests.py')],
                        direct_emulation=False)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_build_tests')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_pynacl_tests')

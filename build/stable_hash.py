@@ -9,16 +9,18 @@ Compute a sha1 hash of a file/directory.
 Ignore timestamps.
 """
 
+import os
 import sys
 
-import hashing_tools
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.hashing_tools
 
 
 def Main(args):
   if len(args) != 1:
     sys.stderr.write('Usage: %s <path>\n' % sys.argv[0])
     sys.exit(1)
-  print hashing_tools.StableHashPath(args[0])
+  print pynacl.hashing_tools.StableHashPath(args[0])
 
 
 if __name__ == '__main__':

@@ -6,15 +6,16 @@
 """Runnables for toolchain_build_pnacl.py
 """
 
-# Done first to set up python module path
-import toolchain_env
 import os
 import shutil
 import stat
-
-import file_tools
-import repo_tools
 import subprocess
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.file_tools
+import pynacl.repo_tools
+
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -34,7 +35,7 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
                          host_64bit=False, extra_config=[]):
   srcdir = subst.SubstituteAbsPaths(srcdir)
   dstdir = subst.SubstituteAbsPaths(dstdir)
-  file_tools.MakeDirectoryIfAbsent(os.path.join(dstdir, 'pydir'))
+  pynacl.file_tools.MakeDirectoryIfAbsent(os.path.join(dstdir, 'pydir'))
   for name in DRIVER_TOOLS + DRIVER_UTILS:
     shutil.copy(os.path.join(srcdir, name), os.path.join(dstdir, 'pydir'))
   # Install redirector sh/bat scripts
@@ -62,9 +63,9 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
   # Install the REV file
   with open(os.path.join(dstdir, 'REV'), 'w') as f:
     try:
-      url, rev = repo_tools.GitRevInfo(NACL_DIR)
+      url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
       repotype = 'GIT'
     except subprocess.CalledProcessError:
-      url, rev = repo_tools.SvnRevInfo(NACL_DIR)
+      url, rev = pynacl.repo_tools.SvnRevInfo(NACL_DIR)
       repotype = 'SVN'
     print >> f, '[%s] %s: %s' % (repotype, url, rev)

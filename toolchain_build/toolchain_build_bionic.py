@@ -8,19 +8,19 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
-# Done first to setup python module path.
-import toolchain_env
-
 import fnmatch
-import hashing_tools
 import os
 import optparse
 import process
-import repo_tools
 import stat
 import shutil
 import StringIO
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.hashing_tools
+import pynacl.repo_tools
+
 import toolchain_build
 import toolchain_main
 
@@ -108,9 +108,9 @@ def FetchAndBuildGCC():
 def FetchBionicSources():
   project = 'bionic'
   url = '%s/nacl-%s.git' % (toolchain_build.GIT_BASE_URL, project)
-  repo_tools.SyncGitRepo(url,
-                         os.path.join(TOOLCHAIN_BUILD_SRC, project),
-                         BIONIC_VERSION)
+  pynacl.repo_tools.SyncGitRepo(url,
+                                os.path.join(TOOLCHAIN_BUILD_SRC, project),
+                                BIONIC_VERSION)
 
 
 def CreateBasicToolchain():
@@ -483,7 +483,7 @@ def ArchiveAndUpload(version, zipname, zippath):
 
   hashzipname = zipname + '.sha1hash'
   hashzipurl = zipurl + '.sha1hash'
-  hashval = hashing_tools.HashFileContents(zipname)
+  hashval = pynacl.hashing_tools.HashFileContents(zipname)
 
   with open(hashzipname, 'w') as f:
     f.write(hashval)

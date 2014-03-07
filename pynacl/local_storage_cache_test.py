@@ -9,13 +9,13 @@ Tests a local disk cache wrapping access to storage with a interface like that
 of gsd_storage.GSDStorage.
 """
 
+import os
+import unittest
+
 import fake_storage
 import file_tools
 import local_storage_cache
 import working_directory
-
-import os
-import unittest
 
 
 class TestLocalStorageCache(unittest.TestCase):

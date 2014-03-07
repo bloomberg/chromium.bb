@@ -22,10 +22,10 @@ if sys.platform == 'win32':
   sys.stdout.flush()
   subprocess.check_call([os.path.join(NACL_DIR, 'buildbot', 'mingw_env.bat')])
 
-print '@@@BUILD_STEP run_build_tests.py@@@'
+print '@@@BUILD_STEP run_pynacl_tests.py@@@'
 sys.stdout.flush()
 subprocess.check_call([
-    sys.executable, os.path.join(NACL_DIR, 'build', 'run_build_tests.py')])
+    sys.executable, os.path.join(NACL_DIR, 'pynacl', 'run_pynacl_tests.py')])
 
 # Toolchain build emits its own annotator stages.
 sys.stdout.flush()

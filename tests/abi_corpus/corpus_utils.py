@@ -20,11 +20,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TESTS_DIR = os.path.dirname(SCRIPT_DIR)
 NACL_DIR = os.path.dirname(TESTS_DIR)
 
-# Imports from the build directory.
-sys.path.insert(0, os.path.join(NACL_DIR, 'build'))
-from download_utils import RemoveDir
-
-
 class DownloadError(Exception):
   """Indicates a download failed."""
   pass

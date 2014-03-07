@@ -5,21 +5,19 @@
 
 """Build NativeClient toolchain packages."""
 
-# Done first to setup python module path.
-import toolchain_env
-
 import logging
 import optparse
 import os
 import sys
 import textwrap
 
-import file_tools
-import gsd_storage
-import log_tools
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.file_tools
+import pynacl.gsd_storage
+import pynacl.log_tools
+import pynacl.local_storage_cache
+
 import once
-import repo_tools
-import local_storage_cache
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -123,11 +121,11 @@ class PackageBuilder(object):
 
   def Main(self):
     """Main entry point."""
-    file_tools.MakeDirectoryIfAbsent(self._options.source)
-    file_tools.MakeDirectoryIfAbsent(self._options.output)
-    log_tools.SetupLogging(self._options.verbose,
-                           open(os.path.join(self._options.output,
-                                             'toolchain_build.log'), 'w'))
+    pynacl.file_tools.MakeDirectoryIfAbsent(self._options.source)
+    pynacl.file_tools.MakeDirectoryIfAbsent(self._options.output)
+    pynacl.log_tools.SetupLogging(self._options.verbose,
+                                  open(os.path.join(self._options.output,
+                                                   'toolchain_build.log'), 'w'))
     self.BuildAll()
 
   def GetOutputDir(self, package, use_subdir):
@@ -200,15 +198,15 @@ class PackageBuilder(object):
     work_dir = os.path.join(self._options.output, package + '_work')
     if self._options.clobber:
       logging.debug('Clobbering working directory %s' % work_dir)
-      file_tools.RemoveDirectoryIfPresent(work_dir)
-    file_tools.MakeDirectoryIfAbsent(work_dir)
+      pynacl.file_tools.RemoveDirectoryIfPresent(work_dir)
+    pynacl.file_tools.MakeDirectoryIfAbsent(work_dir)
 
     output = self.GetOutputDir(package, False)
     output_subdir = self.GetOutputDir(package, True)
 
     if not is_source_target or self._options.clobber_source:
       logging.debug('Clobbering output directory %s' % output)
-      file_tools.RemoveDirectoryIfPresent(output)
+      pynacl.file_tools.RemoveDirectoryIfPresent(output)
       os.makedirs(output_subdir)
 
     commands = package_info.get('commands', [])
@@ -227,7 +225,7 @@ class PackageBuilder(object):
 
     if not is_source_target and self._options.install:
       logging.debug('Installing output to %s' % self._options.install)
-      file_tools.CopyTree(output, self._options.install)
+      pynacl.file_tools.CopyTree(output, self._options.install)
 
   def BuildOrder(self, targets):
     """Find what needs to be built in what order to build all targets.
@@ -369,19 +367,19 @@ class PackageBuilder(object):
       A storage object (GSDStorage).
     """
     if self._options.buildbot:
-      return gsd_storage.GSDStorage(
+      return pynacl.gsd_storage.GSDStorage(
           write_bucket='nativeclient-once',
           read_buckets=['nativeclient-once'])
     elif self._options.trybot:
-      return gsd_storage.GSDStorage(
+      return pynacl.gsd_storage.GSDStorage(
           write_bucket='nativeclient-once-try',
           read_buckets=['nativeclient-once', 'nativeclient-once-try'])
     else:
       read_buckets = []
       if self._options.use_remote_cache:
         read_buckets += ['nativeclient-once']
-      return local_storage_cache.LocalStorageCache(
+      return pynacl.local_storage_cache.LocalStorageCache(
           cache_path=self._options.cache,
-          storage=gsd_storage.GSDStorage(
+          storage=pynacl.gsd_storage.GSDStorage(
               write_bucket=None,
               read_buckets=read_buckets))

@@ -9,9 +9,6 @@ Caches computations described in terms of command lines and inputs directories
 or files, which yield a set of output file.
 """
 
-# Done first to setup python module path.
-import toolchain_env
-
 import hashlib
 import logging
 import os
@@ -20,13 +17,15 @@ import shutil
 import subprocess
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.directory_storage
+import pynacl.file_tools
+import pynacl.gsd_storage
+import pynacl.hashing_tools
+import pynacl.working_directory
+
 import command
-import directory_storage
-import file_tools
-import gsd_storage
-import hashing_tools
 import substituter
-import working_directory
 
 
 class HumanReadableSignature(object):
@@ -67,7 +66,9 @@ class Once(object):
                  or None.
     """
     self._storage = storage
-    self._directory_storage = directory_storage.DirectoryStorageAdapter(storage)
+    self._directory_storage = pynacl.directory_storage.DirectoryStorageAdapter(
+        storage
+    )
     self._use_cached_results = use_cached_results
     self._cache_results = cache_results
     self._cached_dir_items = []
@@ -111,7 +112,7 @@ class Once(object):
     if not dir_item:
       logging.debug('Failed to retrieve %s' % key)
       return None
-    if hashing_tools.StableHashPath(output) != out_hash:
+    if pynacl.hashing_tools.StableHashPath(output) != out_hash:
       logging.warning('Object does not match expected hash, '
                       'has hashing method changed?')
       return None
@@ -141,11 +142,11 @@ class Once(object):
     """
     if not self._cache_results:
       return
-    out_hash = hashing_tools.StableHashPath(output)
+    out_hash = pynacl.hashing_tools.StableHashPath(output)
     try:
       output_key = self.KeyForOutput(package, out_hash)
       # Try to get an existing copy in a temporary directory.
-      wd = working_directory.TemporaryWorkingDirectory()
+      wd = pynacl.working_directory.TemporaryWorkingDirectory()
       with wd as work_dir:
         temp_output = os.path.join(work_dir, 'out')
         dir_item = self._directory_storage.GetDirectory(output_key, temp_output)
@@ -156,7 +157,7 @@ class Once(object):
         else:
           # Cached version is present. Replace the current output with that.
           if self._use_cached_results:
-            file_tools.RemoveDirectoryIfPresent(output)
+            pynacl.file_tools.RemoveDirectoryIfPresent(output)
             shutil.move(temp_output, output)
             logging.info(
                 'Recomputed result matches cached value, '
@@ -165,7 +166,7 @@ class Once(object):
       self._storage.PutData(
           out_hash, self.KeyForBuildSignature(build_signature))
       self._ProcessCachedDir(dir_item)
-    except gsd_storage.GSDStorageError:
+    except pynacl.gsd_storage.GSDStorageError:
       logging.info('Failed to cache result.')
       raise
 
@@ -212,11 +213,11 @@ class Once(object):
               substituter's output path. Must be a subdirectory of output.
     """
     if working_dir is None:
-      wdm = working_directory.TemporaryWorkingDirectory()
+      wdm = pynacl.working_directory.TemporaryWorkingDirectory()
     else:
-      wdm = working_directory.FixedWorkingDirectory(working_dir)
+      wdm = pynacl.working_directory.FixedWorkingDirectory(working_dir)
 
-    file_tools.MakeDirectoryIfAbsent(output)
+    pynacl.file_tools.MakeDirectoryIfAbsent(output)
 
     nonpath_subst = { 'package': package }
 
@@ -264,7 +265,7 @@ class Once(object):
       assert len(sys.platform) != 0, len(platform.machine()) != 0
       # Use environment from command so we can access MinGW on windows.
       env = command.PlatformEnvironment([])
-      gcc = file_tools.Which('gcc', paths=env['PATH'].split(os.pathsep))
+      gcc = pynacl.file_tools.Which('gcc', paths=env['PATH'].split(os.pathsep))
       p = subprocess.Popen(
           [gcc, '-v'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
       _, gcc_version = p.communicate()
@@ -304,5 +305,5 @@ class Once(object):
       h.update(str(command))
     for key in sorted(inputs.keys()):
       h.update('item_name:' + key + '\x00')
-      h.update('item:' + hashing_tools.StableHashPath(inputs[key]))
+      h.update('item:' + pynacl.hashing_tools.StableHashPath(inputs[key]))
     return h.hexdigest()

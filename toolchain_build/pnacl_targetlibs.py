@@ -5,23 +5,22 @@
 
 """Recipes for PNaCl target libs."""
 
-# Done first to set up python module path
-import toolchain_env
-
+import fnmatch
 import os
 import re
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.gsd_storage
+import pynacl.platform
+
 import command
-import fnmatch
-import gsd_storage
 import pnacl_commands
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import pynacl.platform
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
+
 
 # Return the path to the local copy of the driver script.
 # msys should be false if the path will be called directly rather than passed to
@@ -56,7 +55,7 @@ def MakeCommand():
 # a host triple. GNU configuration triples contain dashes, which are converted
 # to underscores so the names are legal for Google Storage.
 def Mangle(component_name, extra):
-  return component_name + '_' + gsd_storage.LegalizeName(extra)
+  return component_name + '_' + pynacl.gsd_storage.LegalizeName(extra)
 
 def TripleIsWindows(t):
   return fnmatch.fnmatch(t, '*-mingw32*') or fnmatch.fnmatch(t, '*cygwin*')

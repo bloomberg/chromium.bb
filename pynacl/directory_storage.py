@@ -20,8 +20,10 @@ import file_tools
 import hashing_tools
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CYGTAR_PATH = os.path.join(SCRIPT_DIR, 'cygtar.py')
+PYNACL_DIR = os.path.dirname(os.path.abspath(__file__))
+NACL_DIR = os.path.dirname(PYNACL_DIR)
+BUILD_DIR = os.path.join(NACL_DIR, 'build')
+CYGTAR_PATH = os.path.join(BUILD_DIR, 'cygtar.py')
 
 
 DirectoryStorageItem = collections.namedtuple(

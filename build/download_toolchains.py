@@ -9,7 +9,6 @@ This module downloads multiple tgz's and expands them.
 """
 
 import cygtar
-import download_utils
 import optparse
 import os
 import re
@@ -17,9 +16,11 @@ import sys
 import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.download_utils
 import pynacl.platform
 
 import toolchainbinaries
+
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
@@ -173,7 +174,7 @@ def GetUpdatedDEPS(options, versions):
     names = FlavorComponentNames(flavor)
     urls = FlavorUrls(options, versions, flavor)
     for name, url in zip(names, urls):
-      new_deps[name] = download_utils.HashUrl(url)
+      new_deps[name] = pynacl.download_utils.HashUrl(url)
   return new_deps
 
 
@@ -214,7 +215,7 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
       full_path = os.path.join(toolchain_dir, path)
       try:
         print 'Cleaning up %s...' % full_path
-        download_utils.RemoveDir(full_path)
+        pynacl.download_utils.RemoveDir(full_path)
       except Exception, e:
         print 'Failed cleanup with: ' + str(e)
 
@@ -239,10 +240,10 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
     filepath = os.path.join(download_dir, '.'.join([filepath, ext]))
     filepaths.append(filepath)
     # If we did not need to synchronize, then we are done
-    if download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
-                              min_time=min_time, hash_val=hash_val,
-                              stamp_index=index,
-                              keep=keep, verbose=verbose):
+    if pynacl.download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
+                                     min_time=min_time, hash_val=hash_val,
+                                     stamp_index=index,
+                                     keep=keep, verbose=verbose):
       need_sync = True
     index += 1
 
@@ -252,7 +253,7 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
   # Compute the new hashes for each file.
   new_hashes = []
   for filepath in filepaths:
-    new_hashes.append(download_utils.HashFile(filepath))
+    new_hashes.append(pynacl.download_utils.HashFile(filepath))
 
   untar_dir = tempfile.mkdtemp(
       suffix=suffix, prefix=prefix, dir=toolchain_dir)
@@ -279,15 +280,15 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
       src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
     else:
       src = os.path.join(untar_dir, 'toolchain', flavor)
-    download_utils.MoveDirCleanly(src, dst)
+    pynacl.download_utils.MoveDirCleanly(src, dst)
   finally:
     try:
-      download_utils.RemoveDir(untar_dir)
+      pynacl.download_utils.RemoveDir(untar_dir)
     except Exception, e:
       print 'Failed cleanup with: ' + str(e)
       print 'Continuing on original exception...'
-  download_utils.WriteSourceStamp(dst, '\n'.join(urls))
-  download_utils.WriteHashStamp(dst, '\n'.join(new_hashes))
+  pynacl.download_utils.WriteSourceStamp(dst, '\n'.join(urls))
+  pynacl.download_utils.WriteHashStamp(dst, '\n'.join(new_hashes))
   return True
 
 
@@ -367,8 +368,8 @@ def ParseArgs(args):
 
 def ScriptDependencyTimestamp():
   """Determine the timestamp for the most recently changed script."""
-  src_list = ['download_toolchains.py', 'download_utils.py',
-              'cygtar.py', 'http_download.py']
+  src_list = ['download_toolchains.py', '../pynacl/download_utils.py',
+              'cygtar.py', '../pynacl/http_download.py']
   srcs = [os.path.join(SCRIPT_DIR, src) for src in src_list]
   src_times = []
 
@@ -420,7 +421,7 @@ def main(args):
         print flavor_name + ': updated to version ' + version + '.'
       else:
         print flavor_name + ': already up to date.'
-    except download_utils.HashError, e:
+    except pynacl.download_utils.HashError, e:
       print str(e)
       print '-' * 70
       print 'You probably want to update the %s hashes to:' % version_files[0]

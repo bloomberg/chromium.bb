@@ -5,18 +5,17 @@
 
 import logging
 import os
+import subprocess
 import sys
 
 import file_tools
 import log_tools
-import subprocess
+import platform
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import pynacl.platform
 
 def GitCmd():
   """Return the git command to execute for the host platform."""
-  if pynacl.platform.IsWindows():
+  if platform.IsWindows():
     # On windows, we want to use the depot_tools version of git, which has
     # git.bat as an entry point. When running through the msys command
     # prompt, subprocess does not handle batch files. Explicitly invoking
@@ -36,7 +35,7 @@ def CheckGitOutput(args):
 
 def SvnCmd():
   """Return the svn command to execute for the host platform."""
-  if pynacl.platform.IsWindows():
+  if platform.IsWindows():
     return ['cmd.exe', '/c', 'svn.bat']
   else:
     return ['svn']
