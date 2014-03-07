@@ -3094,4 +3094,54 @@ TEST_F(BluetoothChromeOSTest, RemovePairingDelegateDuringPairing) {
   EXPECT_FALSE(device->IsPaired());
 }
 
+TEST_F(BluetoothChromeOSTest, DeviceId) {
+  GetAdapter();
+
+  // Use the built-in paired device for this test, grab its Properties
+  // structure so we can adjust the underlying modalias property.
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  ASSERT_TRUE(device != NULL);
+  ASSERT_TRUE(properties != NULL);
+
+  // Valid USB IF-assigned identifier.
+  ASSERT_EQ("usb:v05ACp030Dd0306", properties->modalias.value());
+
+  EXPECT_EQ(0x05ac, device->GetVendorID());
+  EXPECT_EQ(0x030d, device->GetProductID());
+  EXPECT_EQ(0x0306, device->GetDeviceID());
+
+  // Valid Bluetooth SIG-assigned identifier.
+  properties->modalias.ReplaceValue("bluetooth:v00E0p2400d0400");
+
+  EXPECT_EQ(0x00e0, device->GetVendorID());
+  EXPECT_EQ(0x2400, device->GetProductID());
+  EXPECT_EQ(0x0400, device->GetDeviceID());
+
+  // Invalid USB IF-assigned identifier.
+  properties->modalias.ReplaceValue("usb:x00E0p2400d0400");
+
+  EXPECT_EQ(0, device->GetVendorID());
+  EXPECT_EQ(0, device->GetProductID());
+  EXPECT_EQ(0, device->GetDeviceID());
+
+  // Invalid Bluetooth SIG-assigned identifier.
+  properties->modalias.ReplaceValue("bluetooth:x00E0p2400d0400");
+
+  EXPECT_EQ(0, device->GetVendorID());
+  EXPECT_EQ(0, device->GetProductID());
+  EXPECT_EQ(0, device->GetDeviceID());
+
+  // Unknown vendor specification identifier.
+  properties->modalias.ReplaceValue("chrome:v00E0p2400d0400");
+
+  EXPECT_EQ(0, device->GetVendorID());
+  EXPECT_EQ(0, device->GetProductID());
+  EXPECT_EQ(0, device->GetDeviceID());
+}
+
 }  // namespace chromeos
