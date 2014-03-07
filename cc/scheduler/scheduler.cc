@@ -122,9 +122,7 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   ProcessScheduledActions();
 }
 
-base::TimeTicks Scheduler::AnticipatedDrawTime() {
-  TRACE_EVENT0("cc", "Scheduler::AnticipatedDrawTime");
-
+base::TimeTicks Scheduler::AnticipatedDrawTime() const {
   if (!last_set_needs_begin_impl_frame_ ||
       last_begin_impl_frame_args_.interval <= base::TimeDelta())
     return base::TimeTicks();
@@ -321,7 +319,7 @@ void Scheduler::ProcessScheduledActions() {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "SchedulerStateMachine",
                  "state",
-                 TracedValue::FromValue(state_machine_.AsValue().release()));
+                 TracedValue::FromValue(StateAsValue().release()));
     state_machine_.UpdateState(action);
     base::AutoReset<SchedulerStateMachine::Action>
         mark_inside_action(&inside_action_, action);
@@ -376,6 +374,26 @@ bool Scheduler::WillDrawIfNeeded() const {
   return !state_machine_.PendingDrawsShouldBeAborted();
 }
 
+scoped_ptr<base::Value> Scheduler::StateAsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+  state->Set("state_machine", state_machine_.AsValue().release());
+  state->SetDouble(
+      "time_until_anticipated_draw_time_ms",
+      (AnticipatedDrawTime() - base::TimeTicks::Now()).InMillisecondsF());
+
+  scoped_ptr<base::DictionaryValue> client_state(new base::DictionaryValue);
+  client_state->SetDouble("draw_duration_estimate_ms",
+                          client_->DrawDurationEstimate().InMillisecondsF());
+  client_state->SetDouble(
+      "begin_main_frame_to_commit_duration_estimate_ms",
+      client_->BeginMainFrameToCommitDurationEstimate().InMillisecondsF());
+  client_state->SetDouble(
+      "commit_to_activate_duration_estimate_ms",
+      client_->CommitToActivateDurationEstimate().InMillisecondsF());
+  state->Set("client_state", client_state.release());
+  return state.PassAs<base::Value>();
+}
+
 bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
   // Check if the main thread computation and commit can be finished before the
   // impl thread's deadline.
@@ -383,6 +401,14 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
       last_begin_impl_frame_args_.frame_time +
       client_->BeginMainFrameToCommitDurationEstimate() +
       client_->CommitToActivateDurationEstimate();
+
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+               "CanCommitAndActivateBeforeDeadline",
+               "time_left_after_drawing_ms",
+               (last_begin_impl_frame_args_.deadline - estimated_draw_time)
+                   .InMillisecondsF(),
+               "state",
+               TracedValue::FromValue(StateAsValue().release()));
 
   return estimated_draw_time < last_begin_impl_frame_args_.deadline;
 }

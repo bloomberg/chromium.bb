@@ -102,7 +102,7 @@ class CC_EXPORT Scheduler {
 
   bool WillDrawIfNeeded() const;
 
-  base::TimeTicks AnticipatedDrawTime();
+  base::TimeTicks AnticipatedDrawTime() const;
 
   base::TimeTicks LastBeginImplFrameTime();
 
@@ -110,9 +110,7 @@ class CC_EXPORT Scheduler {
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
 
-  scoped_ptr<base::Value> StateAsValue() {
-    return state_machine_.AsValue().Pass();
-  }
+  scoped_ptr<base::Value> StateAsValue() const;
 
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
