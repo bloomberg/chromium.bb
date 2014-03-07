@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/message_bundle.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
@@ -18,6 +19,9 @@ I18NCustomBindings::I18NCustomBindings(Dispatcher* dispatcher,
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetL10nMessage",
       base::Bind(&I18NCustomBindings::GetL10nMessage, base::Unretained(this)));
+  RouteFunction("GetL10nUILanguage",
+                base::Bind(&I18NCustomBindings::GetL10nUILanguage,
+                           base::Unretained(this)));
 }
 
 void I18NCustomBindings::GetL10nMessage(
@@ -82,6 +86,12 @@ void I18NCustomBindings::GetL10nMessage(
   args.GetReturnValue().Set(
       v8::String::NewFromUtf8(isolate, ReplaceStringPlaceholders(
         message, substitutions, NULL).c_str()));
+}
+
+void I18NCustomBindings::GetL10nUILanguage(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  args.GetReturnValue().Set(v8::String::NewFromUtf8(
+      args.GetIsolate(), content::RenderThread::Get()->GetLocale().c_str()));
 }
 
 }  // namespace extensions

@@ -11,7 +11,7 @@
       {
         "name": "getAcceptLanguages",
         "type": "function",
-        "description": "Gets the accept-languages of the browser. This is different from the locale used by the browser; to get the locale, use <code>window.navigator.language</code>.",
+        "description": "Gets the accept-languages of the browser. This is different from the locale used by the browser; to get the locale, use $ref:i18n.getUILanguage.",
         "parameters": [
           {
             "type": "function",
@@ -43,6 +43,17 @@
         "returns": {
           "type": "string",
           "description": "Message localized for current locale."
+        }
+      },
+      {
+        "name": "getUILanguage",
+        "type": "function",
+        "nocompile": true,
+        "description": "Gets the browser UI language of the browser. This is different from $ref:i18n.getAcceptLanguages which returns the preferred user languages.",
+        "parameters": [],
+        "returns": {
+          "type": "string",
+          "description": "The browser UI language code such as en-US or fr-FR."
         }
       }
     ],

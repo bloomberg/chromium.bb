@@ -54,6 +54,10 @@ chrome.test.getConfig(function(config) {
         url: TEST_FILE_URL
       });
       chrome.test.succeed();
+    },
+    function getUILanguage() {
+      chrome.test.assertEq('en-US', chrome.i18n.getUILanguage());
+      chrome.test.succeed();
     }
   ]);
 });

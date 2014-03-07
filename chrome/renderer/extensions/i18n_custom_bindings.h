@@ -16,6 +16,7 @@ class I18NCustomBindings : public ChromeV8Extension {
 
  private:
   void GetL10nMessage(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetL10nUILanguage(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

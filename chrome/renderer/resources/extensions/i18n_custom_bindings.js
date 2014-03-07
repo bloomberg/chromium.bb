@@ -8,6 +8,7 @@ var binding = require('binding').Binding.create('i18n');
 
 var i18nNatives = requireNative('i18n');
 var GetL10nMessage = i18nNatives.GetL10nMessage;
+var GetL10nUILanguage = i18nNatives.GetL10nUILanguage;
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -30,6 +31,10 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest('getMessage',
                                 function(messageName, substitutions) {
     return GetL10nMessage(messageName, substitutions, extensionId);
+  });
+
+  apiFunctions.setHandleRequest('getUILanguage', function() {
+    return GetL10nUILanguage();
   });
 });
 
