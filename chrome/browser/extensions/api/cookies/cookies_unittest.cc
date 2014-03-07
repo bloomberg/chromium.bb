@@ -40,12 +40,9 @@ class ExtensionCookiesTest : public testing::Test {
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
   TestingProfile::Builder profile_builder;
-  TestingProfile::Builder otr_profile_builder;
-  otr_profile_builder.SetIncognito();
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
-  scoped_ptr<TestingProfile> otr_profile = otr_profile_builder.Build();
-  otr_profile->SetOriginalProfile(profile.get());
-  profile->SetOffTheRecordProfile(otr_profile.PassAs<Profile>());
+  // Trigger early creation of off-the-record profile.
+  EXPECT_TRUE(profile->GetOffTheRecordProfile());
 
   EXPECT_EQ(std::string("0"),
             cookies_helpers::GetStoreIdFromProfile(profile.get()));

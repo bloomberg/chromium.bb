@@ -373,14 +373,6 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
     builder.SetGuestSession();
     builder.SetPath(file_path);
     TestingProfile* testing_profile = builder.Build().release();
-
-    TestingProfile::Builder incognito_builder;
-    incognito_builder.SetIncognito();
-    incognito_builder.SetGuestSession();
-    incognito_builder.SetPath(ProfileManager::GetGuestProfilePath());
-    testing_profile->SetOffTheRecordProfile(
-        incognito_builder.Build().PassAs<Profile>());
-
     return testing_profile;
   }
 };
@@ -538,14 +530,6 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
   EXPECT_EQ(IncognitoModePrefs::ENABLED,
             IncognitoModePrefs::GetAvailability(prefs));
 
-  // Attach an incognito Profile to the TestingProfile.
-  ASSERT_FALSE(profile->GetOffTheRecordProfile());
-  TestingProfile::Builder builder;
-  builder.SetIncognito();
-  scoped_ptr<TestingProfile> incognito_profile = builder.Build();
-  EXPECT_TRUE(incognito_profile->IsOffTheRecord());
-  TestingProfile* testing_profile = static_cast<TestingProfile*>(profile);
-  testing_profile->SetOffTheRecordProfile(incognito_profile.PassAs<Profile>());
   ASSERT_TRUE(profile->GetOffTheRecordProfile());
 
   IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::DISABLED);

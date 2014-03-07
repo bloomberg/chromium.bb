@@ -240,16 +240,8 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   ASSERT_TRUE(testing_profile_manager.SetUp());
 
   // Set up a profile with an off the record profile.
-  TestingProfile::Builder otr_builder;
-  otr_builder.SetIncognito();
-  scoped_ptr<TestingProfile> otr_profile(otr_builder.Build());
-
   TestingProfile::Builder normal_builder;
   scoped_ptr<TestingProfile> original_profile = normal_builder.Build();
-  otr_profile->SetOriginalProfile(original_profile.get());
-  EXPECT_EQ(otr_profile->GetOriginalProfile(), original_profile.get());
-
-  original_profile->SetOffTheRecordProfile(otr_profile.PassAs<Profile>());
 
   // Create a new browser based on the off the record profile.
   Browser::CreateParams profile_params(

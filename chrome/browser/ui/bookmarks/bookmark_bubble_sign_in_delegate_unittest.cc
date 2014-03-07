@@ -76,14 +76,6 @@ TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
 }
 
 TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClickedIncognito) {
-  // Create an incognito browser.
-  TestingProfile::Builder incognito_profile_builder;
-  incognito_profile_builder.SetIncognito();
-  scoped_ptr<TestingProfile> incognito_profile =
-      incognito_profile_builder.Build();
-  incognito_profile->SetOriginalProfile(profile());
-  profile()->SetOffTheRecordProfile(incognito_profile.PassAs<Profile>());
-
   scoped_ptr<BrowserWindow> incognito_window;
   incognito_window.reset(CreateBrowserWindow());
   Browser::CreateParams params(browser()->profile()->GetOffTheRecordProfile(),

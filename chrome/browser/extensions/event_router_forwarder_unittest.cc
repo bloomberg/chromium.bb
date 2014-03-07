@@ -110,16 +110,6 @@ class EventRouterForwarderTest : public testing::Test {
     profile2_ = profile_manager_.CreateTestingProfile("two");
   }
 
-  TestingProfile* CreateIncognitoProfile(TestingProfile* base) {
-    TestingProfile::Builder builder;
-    builder.SetIncognito();
-    scoped_ptr<TestingProfile> incognito = builder.Build();
-    TestingProfile* incognito_ptr = incognito.get();
-    // Incognito profile now owned by |base|
-    base->SetOffTheRecordProfile(incognito.PassAs<Profile>());
-    return incognito_ptr;
-  }
-
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
@@ -146,7 +136,7 @@ TEST_F(EventRouterForwarderTest, BroadcastRendererUIIncognito) {
       new MockEventRouterForwarder);
   using ::testing::_;
   GURL url;
-  Profile* incognito = CreateIncognitoProfile(profile1_);
+  Profile* incognito = profile1_->GetOffTheRecordProfile();
   EXPECT_CALL(*event_router.get(),
               CallEventRouter(profile1_, "", kEventName, profile1_, url));
   EXPECT_CALL(*event_router.get(), CallEventRouter(incognito, _, _, _, _))
@@ -196,7 +186,7 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIRestricted) {
 TEST_F(EventRouterForwarderTest, UnicastRendererUIRestrictedIncognito1) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito = CreateIncognitoProfile(profile1_);
+  Profile* incognito = profile1_->GetOffTheRecordProfile();
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router.get(),
@@ -212,7 +202,7 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIRestrictedIncognito1) {
 TEST_F(EventRouterForwarderTest, UnicastRendererUIRestrictedIncognito2) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito = CreateIncognitoProfile(profile1_);
+  Profile* incognito = profile1_->GetOffTheRecordProfile();
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router.get(), CallEventRouter(profile1_, _, _, _, _))
@@ -241,7 +231,7 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIUnrestricted) {
 TEST_F(EventRouterForwarderTest, UnicastRendererUIUnrestrictedIncognito) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito = CreateIncognitoProfile(profile1_);
+  Profile* incognito = profile1_->GetOffTheRecordProfile();
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router.get(),

@@ -598,6 +598,13 @@ void TestingProfile::SetOriginalProfile(Profile* profile) {
 Profile* TestingProfile::GetOffTheRecordProfile() {
   if (IsOffTheRecord())
     return this;
+  if (!incognito_profile_) {
+    TestingProfile::Builder builder;
+    builder.SetIncognito();
+    scoped_ptr<TestingProfile> incognito_test_profile(builder.Build());
+    incognito_test_profile->SetOriginalProfile(this);
+    SetOffTheRecordProfile(incognito_test_profile.PassAs<Profile>());
+  }
   return incognito_profile_.get();
 }
 
