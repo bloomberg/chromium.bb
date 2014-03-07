@@ -364,9 +364,8 @@ void RuleFeatureSet::computeStyleInvalidation(Document& document)
 {
     Vector<AtomicString> invalidationClasses;
     if (Element* documentElement = document.documentElement()) {
-        if (documentElement->childNeedsStyleInvalidation()) {
+        if (documentElement->childNeedsStyleInvalidation())
             invalidateStyleForClassChange(documentElement, invalidationClasses, false);
-        }
     }
     document.clearChildNeedsStyleInvalidation();
     document.clearNeedsStyleInvalidation();
@@ -381,6 +380,8 @@ bool RuleFeatureSet::invalidateStyleForClassChangeOnChildren(Element* element, V
             bool childRecalced = invalidateStyleForClassChange(child, invalidationClasses, foundInvalidationSet);
             someChildrenNeedStyleRecalc = someChildrenNeedStyleRecalc || childRecalced;
         }
+        root->clearChildNeedsStyleInvalidation();
+        root->clearNeedsStyleInvalidation();
     }
     for (Element* child = ElementTraversal::firstWithin(*element); child; child = ElementTraversal::nextSibling(*child)) {
         bool childRecalced = invalidateStyleForClassChange(child, invalidationClasses, foundInvalidationSet);
