@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_tokenizer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/test_extension_service.h"
@@ -53,6 +54,14 @@ const char kTestingAppId[] = "TestApp1";
 const char kTestingAppId2[] = "TestApp2";
 const char kUserId[] = "user1";
 const char kUserId2[] = "user2";
+
+std::vector<std::string> ToSenderList(const std::string& sender_ids) {
+  std::vector<std::string> senders;
+  base::StringTokenizer tokenizer(sender_ids, ",");
+  while (tokenizer.GetNext())
+    senders.push_back(tokenizer.token());
+  return senders;
+}
 
 // Helper class for asynchrnous waiting.
 class Waiter {
@@ -1065,9 +1074,12 @@ TEST_F(GCMProfileServiceSingleProfileTest, SendError) {
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, MessageReceived) {
+  consumer()->Register(kTestingAppId, ToSenderList("sender"));
+  WaitUntilCompleted();
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
+  message.sender_id = "sender";
   consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
   WaitUntilCompleted();
   EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
@@ -1075,12 +1087,60 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessageReceived) {
   EXPECT_EQ(kTestingAppId, consumer()->gcm_event_router()->app_id());
   EXPECT_TRUE(message.data == consumer()->gcm_event_router()->message().data);
   EXPECT_TRUE(consumer()->gcm_event_router()->message().collapse_key.empty());
+  EXPECT_EQ(message.sender_id,
+            consumer()->gcm_event_router()->message().sender_id);
+}
+
+TEST_F(GCMProfileServiceSingleProfileTest,
+       MessageNotReceivedFromNotRegisteredSender) {
+  // Explicitly not registering the sender2 here, so that message gets dropped.
+  consumer()->Register(kTestingAppId, ToSenderList("sender1"));
+  WaitUntilCompleted();
+  GCMClient::IncomingMessage message;
+  message.data["key1"] = "value1";
+  message.data["key2"] = "value2";
+  message.sender_id = "sender2";
+  consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
+  PumpUILoop();
+  EXPECT_EQ(FakeGCMEventRouter::NO_EVENT,
+            consumer()->gcm_event_router()->received_event());
+  consumer()->gcm_event_router()->clear_results();
+
+  // Register for sender2 and try to receive the message again, which should
+  // work with no problems.
+  consumer()->Register(kTestingAppId, ToSenderList("sender1,sender2"));
+  WaitUntilCompleted();
+  consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
+  WaitUntilCompleted();
+  EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
+            consumer()->gcm_event_router()->received_event());
+  consumer()->gcm_event_router()->clear_results();
+
+  // Making sure that sender1 can receive the message as well.
+  message.sender_id = "sender1";
+  consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
+  WaitUntilCompleted();
+  EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
+            consumer()->gcm_event_router()->received_event());
+  consumer()->gcm_event_router()->clear_results();
+
+  // Register for sender1 only and make sure it is not possible  to receive the
+  // message again from from sender1.
+  consumer()->Register(kTestingAppId, ToSenderList("sender2"));
+  WaitUntilCompleted();
+  consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
+  PumpUILoop();
+  EXPECT_EQ(FakeGCMEventRouter::NO_EVENT,
+            consumer()->gcm_event_router()->received_event());
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, MessageWithCollapseKeyReceived) {
+  consumer()->Register(kTestingAppId, ToSenderList("sender"));
+  WaitUntilCompleted();
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.collapse_key = "collapse_key_value";
+  message.sender_id = "sender";
   consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
   WaitUntilCompleted();
   EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
@@ -1209,15 +1269,24 @@ TEST_F(GCMProfileServiceMultiProfileTest, Send) {
 }
 
 TEST_F(GCMProfileServiceMultiProfileTest, MessageReceived) {
+  consumer()->Register(kTestingAppId, ToSenderList("sender"));
+  WaitUntilCompleted();
+  consumer2()->Register(kTestingAppId, ToSenderList("sender"));
+  WaitUntilCompleted();
+  consumer2()->Register(kTestingAppId2, ToSenderList("sender2"));
+  WaitUntilCompleted();
+
   // Trigger an incoming message for an app in one profile.
   GCMClient::IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
+  message.sender_id = "sender";
   consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
 
   // Trigger an incoming message for the same app in another profile.
   GCMClient::IncomingMessage message2;
   message2.data["foo"] = "bar";
+  message2.sender_id = "sender";
   consumer2()->GetGCMClient()->ReceiveMessage(kTestingAppId, message2);
 
   WaitUntilCompleted();
@@ -1227,16 +1296,19 @@ TEST_F(GCMProfileServiceMultiProfileTest, MessageReceived) {
             consumer()->gcm_event_router()->received_event());
   EXPECT_EQ(kTestingAppId, consumer()->gcm_event_router()->app_id());
   EXPECT_TRUE(message.data == consumer()->gcm_event_router()->message().data);
+  EXPECT_EQ("sender", consumer()->gcm_event_router()->message().sender_id);
 
   EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
             consumer2()->gcm_event_router()->received_event());
   EXPECT_EQ(kTestingAppId, consumer2()->gcm_event_router()->app_id());
   EXPECT_TRUE(message2.data == consumer2()->gcm_event_router()->message().data);
+  EXPECT_EQ("sender", consumer2()->gcm_event_router()->message().sender_id);
 
   // Trigger another incoming message for a different app in another profile.
   GCMClient::IncomingMessage message3;
   message3.data["bar1"] = "foo1";
   message3.data["bar2"] = "foo2";
+  message3.sender_id = "sender2";
   consumer2()->GetGCMClient()->ReceiveMessage(kTestingAppId2, message3);
 
   WaitUntilCompleted();
@@ -1245,6 +1317,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, MessageReceived) {
             consumer2()->gcm_event_router()->received_event());
   EXPECT_EQ(kTestingAppId2, consumer2()->gcm_event_router()->app_id());
   EXPECT_TRUE(message3.data == consumer2()->gcm_event_router()->message().data);
+  EXPECT_EQ("sender2", consumer2()->gcm_event_router()->message().sender_id);
 }
 
 // Test a set of GCM operations on multiple profiles.
@@ -1305,6 +1378,7 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   GCMClient::IncomingMessage in_message;
   in_message.data["in1"] = "in_data1";
   in_message.data["in1_2"] = "in_data1_2";
+  in_message.sender_id = "sender1";
   consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, in_message);
 
   WaitUntilCompleted();
@@ -1319,11 +1393,13 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   // profile.
   GCMClient::IncomingMessage in_message2;
   in_message2.data["in2"] = "in_data2";
+  in_message2.sender_id = "sender3";
   consumer2()->GetGCMClient()->ReceiveMessage(kTestingAppId2, in_message2);
 
   GCMClient::IncomingMessage in_message3;
   in_message3.data["in3"] = "in_data3";
   in_message3.data["in3_2"] = "in_data3_2";
+  in_message3.sender_id = "foo";
   consumer2()->GetGCMClient()->ReceiveMessage(kTestingAppId, in_message3);
 
   consumer2()->gcm_event_router()->clear_results();
@@ -1412,9 +1488,14 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   // Sign in with a different user.
   consumer()->SignIn(kTestingUsername3);
 
+  // Signing out cleared all registrations, so we need to register again.
+  consumer()->Register(kTestingAppId, ToSenderList("sender1"));
+  WaitUntilCompleted();
+
   // Incoming message will go through for the new signed-in user.
   GCMClient::IncomingMessage in_message5;
   in_message5.data["in5"] = "in_data5";
+  in_message5.sender_id = "sender1";
   consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, in_message5);
 
   consumer()->gcm_event_router()->clear_results();

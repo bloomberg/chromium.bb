@@ -75,6 +75,7 @@ class GCM_EXPORT GCMClient {
 
     MessageData data;
     std::string collapse_key;
+    std::string sender_id;
   };
 
   // A delegate interface that allows the GCMClient instance to interact with

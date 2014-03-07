@@ -4,6 +4,7 @@
 
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -943,6 +944,16 @@ void GCMProfileService::MessageReceived(const std::string& app_id,
   // Drop the event if signed out.
   if (username_.empty())
     return;
+
+  // Dropping the message when application does not have a registration entry
+  // or the app is not registered for the sender of the message.
+  RegistrationInfoMap::iterator iter = registration_info_map_.find(app_id);
+  if (iter == registration_info_map_.end() ||
+      std::find(iter->second.sender_ids.begin(),
+                iter->second.sender_ids.end(),
+                message.sender_id) == iter->second.sender_ids.end()) {
+    return;
+  }
 
   GetEventRouter(app_id)->OnMessage(app_id, message);
 }

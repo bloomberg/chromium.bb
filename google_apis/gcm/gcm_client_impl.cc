@@ -459,9 +459,13 @@ void GCMClientImpl::OnMCSError() {
 }
 
 void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
+  DCHECK(delegate_);
+
   const mcs_proto::DataMessageStanza& data_message_stanza =
       reinterpret_cast<const mcs_proto::DataMessageStanza&>(
           message.GetProtobuf());
+  DCHECK_EQ(data_message_stanza.device_user_id(), kDefaultUserSerialNumber);
+
   IncomingMessage incoming_message;
   MessageType message_type = DATA_MESSAGE;
   for (int i = 0; i < data_message_stanza.app_data_size(); ++i) {
@@ -472,14 +476,12 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
       incoming_message.data[key] = data_message_stanza.app_data(i).value();
   }
 
-  if (data_message_stanza.has_token())
-    incoming_message.collapse_key = data_message_stanza.token();
-
-  DCHECK_EQ(data_message_stanza.device_user_id(), kDefaultUserSerialNumber);
-  DCHECK(delegate_);
 
   switch (message_type) {
     case DATA_MESSAGE:
+      incoming_message.sender_id = data_message_stanza.from();
+      if (data_message_stanza.has_token())
+        incoming_message.collapse_key = data_message_stanza.token();
       delegate_->OnMessageReceived(data_message_stanza.category(),
                                    incoming_message);
       break;

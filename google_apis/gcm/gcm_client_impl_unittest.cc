@@ -399,6 +399,7 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessage) {
   EXPECT_EQ("app_id", last_app_id());
   EXPECT_EQ(expected_data.size(), last_message().data.size());
   EXPECT_EQ(expected_data, last_message().data);
+  EXPECT_EQ("project_id", last_message().sender_id);
 }
 
 TEST_F(GCMClientImplTest, DispatchDownstreamMessageSendError) {
