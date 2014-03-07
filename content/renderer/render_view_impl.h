@@ -864,8 +864,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnClosePage();
   void OnShowContextMenu(const gfx::Point& location);
   void OnCopyImageAt(int x, int y);
-  void OnCSSInsertRequest(const base::string16& frame_xpath,
-                          const std::string& css);
   void OnSetName(const std::string& name);
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
@@ -998,9 +996,6 @@ class CONTENT_EXPORT RenderViewImpl
   // frames, the frame whose size is image_size is returned. If the image
   // doesn't have a frame at the specified size, the first is returned.
   bool DownloadFavicon(int id, const GURL& image_url, int image_size);
-
-  // Locates a sub frame with given xpath
-  blink::WebFrame* GetChildFrame(const base::string16& frame_xpath) const;
 
   // Returns the URL being loaded by the given frame's request.
   GURL GetLoadingUrl(blink::WebFrame* frame) const;

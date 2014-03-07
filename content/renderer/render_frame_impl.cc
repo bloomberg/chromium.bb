@@ -542,6 +542,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
+    IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -838,6 +839,10 @@ void RenderFrameImpl::OnCustomContextMenuAction(
     // Internal request, forward to WebKit.
     render_view_->webview()->performCustomContextMenuAction(action);
   }
+}
+
+void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
+  frame_->document().insertStyleSheet(WebString::fromUTF8(css));
 }
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(

@@ -131,6 +131,10 @@ void RenderFrameHostImpl::ExecuteCustomContextMenuCommand(
   Send(new FrameMsg_CustomContextMenuAction(routing_id_, context, action));
 }
 
+void RenderFrameHostImpl::InsertCSS(const std::string& css) {
+  Send(new FrameMsg_CSSInsertRequest(routing_id_, css));
+}
+
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }

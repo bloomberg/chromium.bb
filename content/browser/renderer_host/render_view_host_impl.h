@@ -219,8 +219,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual SiteInstance* GetSiteInstance() const OVERRIDE;
-  virtual void InsertCSS(const base::string16& frame_xpath,
-                         const std::string& css) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
   virtual void ReloadFrame() OVERRIDE;

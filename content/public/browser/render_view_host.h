@@ -202,11 +202,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   virtual SiteInstance* GetSiteInstance() const = 0;
 
-  // Requests the renderer to evaluate an xpath to a frame and insert css
-  // into that frame's document.
-  virtual void InsertCSS(const base::string16& frame_xpath,
-                         const std::string& css) = 0;
-
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.
   virtual bool IsRenderViewLive() const = 0;

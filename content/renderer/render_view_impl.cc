@@ -1125,7 +1125,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnResetPageEncodingToDefault)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_PostMessageEvent, OnPostMessageEvent)
-    IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -3222,7 +3221,31 @@ void RenderViewImpl::EvaluateScript(const base::string16& frame_xpath,
                                     bool notify_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Handle<v8::Value> result;
-  WebFrame* web_frame = GetChildFrame(frame_xpath);
+
+  WebFrame* web_frame;
+  if (frame_xpath.empty()) {
+    web_frame = webview()->mainFrame();
+  } else {
+    // The |frame_xpath| string can represent a frame deep down the tree (across
+    // multiple frame DOMs).
+    //
+    // For example,
+    //     /html/body/table/tbody/tr/td/iframe\n/frameset/frame[0]
+    // should break into 2 xpaths:
+    //     /html/body/table/tbody/tr/td/iframe
+    //     /frameset/frame[0]
+    std::vector<base::string16> xpaths;
+    base::SplitString(frame_xpath, '\n', &xpaths);
+
+    WebFrame* frame = webview()->mainFrame();
+    for (std::vector<base::string16>::const_iterator i = xpaths.begin();
+         frame && i != xpaths.end(); ++i) {
+      frame = frame->findChildByExpression(*i);
+    }
+
+    web_frame = frame;
+  }
+
   if (web_frame)
     result = web_frame->executeScriptAndReturnValue(WebScriptSource(jscript));
   if (notify_result) {
@@ -3660,27 +3683,6 @@ void RenderViewImpl::OnResetPageEncodingToDefault() {
   webview()->setPageEncoding(no_encoding);
 }
 
-WebFrame* RenderViewImpl::GetChildFrame(const base::string16& xpath) const {
-  if (xpath.empty())
-    return webview()->mainFrame();
-
-  // xpath string can represent a frame deep down the tree (across multiple
-  // frame DOMs).
-  // Example, /html/body/table/tbody/tr/td/iframe\n/frameset/frame[0]
-  // should break into 2 xpaths
-  // /html/body/table/tbody/tr/td/iframe & /frameset/frame[0]
-  std::vector<base::string16> xpaths;
-  base::SplitString(xpath, '\n', &xpaths);
-
-  WebFrame* frame = webview()->mainFrame();
-  for (std::vector<base::string16>::const_iterator i = xpaths.begin();
-       frame && i != xpaths.end(); ++i) {
-    frame = frame->findChildByExpression(*i);
-  }
-
-  return frame;
-}
-
 void RenderViewImpl::OnScriptEvalRequest(const base::string16& frame_xpath,
                                          const base::string16& jscript,
                                          int id,
@@ -3733,15 +3735,6 @@ void RenderViewImpl::OnPostMessageEvent(
         WebSecurityOrigin::createFromString(WebString(params.target_origin));
   }
   frame->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
-}
-
-void RenderViewImpl::OnCSSInsertRequest(const base::string16& frame_xpath,
-                                        const std::string& css) {
-  WebFrame* frame = GetChildFrame(frame_xpath);
-  if (!frame)
-    return;
-
-  frame->document().insertStyleSheet(WebString::fromUTF8(css));
 }
 
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {

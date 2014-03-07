@@ -60,6 +60,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void ExecuteCustomContextMenuCommand(
       int action, const CustomContextMenuContext& context) = 0;
 
+  // Requests the renderer to insert CSS into the frame's document.
+  virtual void InsertCSS(const std::string& css) = 0;
+
   // Temporary until we get rid of RenderViewHost.
   virtual RenderViewHost* GetRenderViewHost() = 0;
 

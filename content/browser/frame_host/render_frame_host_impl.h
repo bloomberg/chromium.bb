@@ -55,6 +55,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteCustomContextMenuCommand(
       int action, const CustomContextMenuContext& context) OVERRIDE;
+  virtual void InsertCSS(const std::string& css) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // IPC::Sender

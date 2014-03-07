@@ -362,6 +362,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
                                  unsigned action);
+  void OnCSSInsertRequest(const std::string& css);
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
       RenderFrame* render_frame,

@@ -742,13 +742,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
 // Requests that the RenderView's main frame sets its opener to null.
 IPC_MESSAGE_ROUTED0(ViewMsg_DisownOpener)
 
-// Request for the renderer to evaluate an xpath to a frame and insert css
-// into that frame's document. See ViewMsg_ScriptEvalRequest for details on
-// allowed xpath expressions.
-IPC_MESSAGE_ROUTED2(ViewMsg_CSSInsertRequest,
-                    base::string16,  /* frame_xpath */
-                    std::string  /* css string */)
-
 // Change the zoom level for the current main frame.  If the level actually
 // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
 // telling it what url got zoomed and what its current zoom level is.

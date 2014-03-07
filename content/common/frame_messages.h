@@ -296,6 +296,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_Navigate, FrameMsg_Navigate_Params)
 // finished.
 IPC_MESSAGE_ROUTED0(FrameMsg_SwapOut)
 
+// Request for the renderer to insert CSS into the frame.
+IPC_MESSAGE_ROUTED1(FrameMsg_CSSInsertRequest,
+                    std::string  /* css */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

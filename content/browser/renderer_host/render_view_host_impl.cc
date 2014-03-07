@@ -1764,11 +1764,6 @@ void RenderViewHostImpl::ReloadFrame() {
   Send(new ViewMsg_ReloadFrame(GetRoutingID()));
 }
 
-void RenderViewHostImpl::InsertCSS(const base::string16& frame_xpath,
-                                   const std::string& css) {
-  Send(new ViewMsg_CSSInsertRequest(GetRoutingID(), frame_xpath, css));
-}
-
 void RenderViewHostImpl::DisableScrollbarsForThreshold(const gfx::Size& size) {
   Send(new ViewMsg_DisableScrollbarsForSmallWindows(GetRoutingID(), size));
 }
