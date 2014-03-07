@@ -49,6 +49,9 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
   base::Closure listener_cb_;
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;
   std::string default_render_device_id_;
+  std::string default_capture_device_id_;
+  std::string default_communications_render_device_id_;
+  std::string default_communications_capture_device_id_;
 
   // AudioDeviceListenerWin must be constructed and destructed on one thread.
   base::ThreadChecker thread_checker_;

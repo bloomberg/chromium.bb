@@ -30,6 +30,27 @@ static std::string RoleToString(ERole role) {
   }
 }
 
+static std::string GetDeviceId(EDataFlow flow,
+                               ERole role) {
+  ScopedComPtr<IMMDevice> device =
+      CoreAudioUtil::CreateDefaultDevice(flow, role);
+  if (!device) {
+    // Most probable reason for ending up here is that all audio devices are
+    // disabled or unplugged.
+    DVLOG(1) << "CoreAudioUtil::CreateDefaultDevice failed. No device?";
+    return std::string();
+  }
+
+  AudioDeviceName device_name;
+  HRESULT hr = CoreAudioUtil::GetDeviceName(device, &device_name);
+  if (FAILED(hr)) {
+    DVLOG(1) << "Failed to retrieve the device id: " << std::hex << hr;
+    return std::string();
+  }
+
+  return device_name.unique_id;
+}
+
 AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
     : listener_cb_(listener_cb) {
   CHECK(CoreAudioUtil::IsSupported());
@@ -48,22 +69,12 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
 
   device_enumerator_ = device_enumerator;
 
-  ScopedComPtr<IMMDevice> device =
-      CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
-  if (!device) {
-    // Most probable reason for ending up here is that all audio devices are
-    // disabled or unplugged.
-    VLOG(1)  << "CoreAudioUtil::CreateDefaultDevice failed. No device?";
-    return;
-  }
-
-  AudioDeviceName device_name;
-  hr = CoreAudioUtil::GetDeviceName(device, &device_name);
-  if (FAILED(hr)) {
-    VLOG(1)  << "Failed to retrieve the device id: " << std::hex << hr;
-    return;
-  }
-  default_render_device_id_ = device_name.unique_id;
+  default_render_device_id_ = GetDeviceId(eRender, eConsole);
+  default_capture_device_id_ = GetDeviceId(eCapture, eConsole);
+  default_communications_render_device_id_ =
+      GetDeviceId(eRender, eCommunications);
+  default_communications_capture_device_id_ =
+      GetDeviceId(eCapture, eCommunications);
 }
 
 AudioDeviceListenerWin::~AudioDeviceListenerWin() {
@@ -126,9 +137,24 @@ STDMETHODIMP AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
 
 STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
     EDataFlow flow, ERole role, LPCWSTR new_default_device_id) {
-  // Only listen for output device changes right now...
-  if (flow != eConsole && role != eRender)
+  // Only listen for console and communication device changes.
+  if ((role != eConsole && role != eCommunications) ||
+      (flow != eRender && flow != eCapture)) {
     return S_OK;
+  }
+
+  // Grab a pointer to the appropriate ID member.
+  // Note that there are three "?:"'s here to select the right ID.
+  std::string* current_device_id =
+      role == eRender ? (
+          flow == eConsole ?
+              &default_render_device_id_ :
+              &default_communications_render_device_id_
+      ) : (
+          flow == eConsole ?
+              &default_capture_device_id_ :
+              &default_communications_capture_device_id_
+      );
 
   // If no device is now available, |new_default_device_id| will be NULL.
   std::string new_device_id;
@@ -146,10 +172,11 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // TODO(dalecurtis): This still seems to fire an extra event on my machine for
   // an unplug event (probably others too); e.g., we get two transitions to a
   // new default device id.
-  if (new_device_id.compare(default_render_device_id_) == 0)
+  if (new_device_id.compare(*current_device_id) == 0)
     return S_OK;
 
-  default_render_device_id_ = new_device_id;
+  // Store the new id in the member variable (that current_device_id points to).
+  *current_device_id = new_device_id;
   listener_cb_.Run();
 
   return S_OK;

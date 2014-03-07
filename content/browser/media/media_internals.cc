@@ -5,6 +5,7 @@
 #include "content/browser/media/media_internals.h"
 
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -21,6 +22,37 @@ base::string16 SerializeUpdate(const std::string& function,
                                const base::Value* value) {
   return content::WebUI::GetJavascriptCall(
       function, std::vector<const base::Value*>(1, value));
+}
+
+std::string EffectsToString(int effects) {
+  if (effects == media::AudioParameters::NO_EFFECTS)
+    return "NO_EFFECTS";
+
+  struct {
+    int flag;
+    const char* name;
+  } flags[] = {
+    { media::AudioParameters::ECHO_CANCELLER, "ECHO_CANCELLER" },
+    { media::AudioParameters::DUCKING, "DUCKING" },
+  };
+
+  std::string ret;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flags); ++i) {
+    if (effects & flags[i].flag) {
+      if (!ret.empty())
+        ret += " | ";
+      ret += flags[i].name;
+      effects &= ~flags[i].flag;
+    }
+  }
+
+  if (effects) {
+    if (!ret.empty())
+      ret += " | ";
+    ret += base::IntToString(effects);
+  }
+
+  return ret;
 }
 
 const char kAudioLogStatusKey[] = "status";
@@ -83,6 +115,7 @@ void AudioLogImpl::OnCreated(int component_id,
   dict.SetInteger("channels", params.channels());
   dict.SetString("channel_layout",
                  ChannelLayoutToString(params.channel_layout()));
+  dict.SetString("effects", EffectsToString(params.effects()));
 
   media_internals_->SendUpdateAndCache(
       FormatCacheKey(component_id), kAudioLogUpdateFunction, &dict);
