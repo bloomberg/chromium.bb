@@ -22,7 +22,6 @@
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 
 #include "core/svg/SVGElement.h"
-#include "core/svg/properties/SVGAttributeToPropertyMap.h"
 
 namespace WebCore {
 

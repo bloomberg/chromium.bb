@@ -37,7 +37,6 @@ class CSSCursorImageValue;
 class Document;
 class NewSVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
-class SVGAttributeToPropertyMap;
 class SVGCursorElement;
 class SVGDocumentExtensions;
 class SVGElementInstance;
