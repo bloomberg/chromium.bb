@@ -5,21 +5,9 @@
 #ifndef CC_RESOURCES_PIXEL_BUFFER_RASTER_WORKER_POOL_H_
 #define CC_RESOURCES_PIXEL_BUFFER_RASTER_WORKER_POOL_H_
 
-#include <deque>
+#include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "cc/resources/raster_worker_pool.h"
-
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<cc::internal::WorkerPoolTask*> {
-  size_t operator()(cc::internal::WorkerPoolTask* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
 
 namespace cc {
 
@@ -53,24 +41,33 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
  private:
   struct RasterTaskState {
-    RasterTaskState()
-        : type(UNSCHEDULED), resource(NULL), required_for_activation(false) {}
+    class TaskComparator {
+     public:
+      explicit TaskComparator(const internal::WorkerPoolTask* task)
+          : task_(task) {}
 
-    RasterTaskState& set_completed() {
-      type = COMPLETED;
-      return *this;
-    }
-    RasterTaskState& set_required_for_activation(bool is_required) {
-      required_for_activation = is_required;
-      return *this;
-    }
+      bool operator()(const RasterTaskState& state) const {
+        return state.task == task_;
+      }
+
+     private:
+      const internal::WorkerPoolTask* task_;
+    };
+
+    typedef std::vector<RasterTaskState> Vector;
+
+    RasterTaskState(internal::WorkerPoolTask* task,
+                    bool required_for_activation)
+        : type(UNSCHEDULED),
+          task(task),
+          resource(NULL),
+          required_for_activation(required_for_activation) {}
 
     enum { UNSCHEDULED, SCHEDULED, UPLOADING, COMPLETED } type;
+    internal::WorkerPoolTask* task;
     const Resource* resource;
     bool required_for_activation;
   };
-  typedef internal::WorkerPoolTask* RasterTaskMapKey;
-  typedef base::hash_map<RasterTaskMapKey, RasterTaskState> RasterTaskStateMap;
 
   // Overridden from RasterWorkerPool:
   virtual void OnRasterTasksFinished() OVERRIDE;
@@ -94,10 +91,10 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool shutdown_;
 
   RasterTaskQueue raster_tasks_;
-  RasterTaskStateMap raster_task_states_;
+  RasterTaskState::Vector raster_task_states_;
   TaskDeque raster_tasks_with_pending_upload_;
-  TaskDeque completed_raster_tasks_;
-  TaskDeque completed_image_decode_tasks_;
+  TaskVector completed_raster_tasks_;
+  TaskVector completed_image_decode_tasks_;
 
   size_t scheduled_raster_task_count_;
   size_t raster_tasks_required_for_activation_count_;
