@@ -79,6 +79,14 @@ bool IsRunningTSAN() {
 #endif
 }
 
+bool IsChromeOS() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 // Try to open /proc/self/task/ with the help of |proc_fd|. |proc_fd| can be
 // -1. Will return -1 on error and set errno like open(2).
 int OpenProcTaskFd(int proc_fd) {
@@ -236,9 +244,9 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
 }
 
 bool LinuxSandbox::InitializeSandboxImpl() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   const std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType);
+      command_line->GetSwitchValueASCII(switches::kProcessType);
 
   // We need to make absolutely sure that our sandbox is "sealed" before
   // returning.
@@ -261,10 +269,20 @@ bool LinuxSandbox::InitializeSandboxImpl() {
     // even report an error about it.
     if (IsRunningTSAN())
       return false;
-    // The GPU process is allowed to call InitializeSandbox() with threads for
-    // now, because it loads third-party libraries.
-    if (process_type != switches::kGpuProcess)
-      CHECK(false) << error_message;
+
+    // The GPU process is allowed to call InitializeSandbox() with threads.
+    bool sandbox_failure_fatal = process_type != switches::kGpuProcess;
+
+    // On Chrome OS, the GPU process is only allowed to call InitializeSandbox()
+    // with threads if '--gpu-sandbox-failures-nonfatal' is passed.
+    if (IsChromeOS()) {
+      sandbox_failure_fatal |=
+          !command_line->HasSwitch(switches::kGpuSandboxFailuresNonfatal);
+    }
+
+    if (sandbox_failure_fatal)
+      LOG(FATAL) << error_message;
+
     LOG(ERROR) << error_message;
     return false;
   }

@@ -645,6 +645,9 @@ const char kGpuProcess[]                    = "gpu-process";
 // Allow shmat system call in GPU sandbox.
 const char kGpuSandboxAllowSysVShm[]        = "gpu-sandbox-allow-sysv-shm";
 
+// Makes GPU sandbox failures nonfatal.
+const char kGpuSandboxFailuresNonfatal[]    = "gpu-sandbox-failures-nonfatal";
+
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
