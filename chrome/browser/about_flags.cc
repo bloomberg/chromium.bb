@@ -846,13 +846,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kJavaScriptFlags, "--harmony")
   },
   {
-    "disable-restore-session-state",
-    IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_NAME,
-    IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableRestoreSessionState)
-  },
-  {
     "disable-software-rasterizer",
     IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_NAME,
     IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION,

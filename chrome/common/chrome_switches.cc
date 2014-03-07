@@ -426,10 +426,6 @@ const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 const char kDisableRestoreBackgroundContents[] =
     "disable-restore-background-contents";
 
-// Disables restoring session state (cookies, session storage, etc.) when
-// restoring the browsing session.
-const char kDisableRestoreSessionState[]    = "disable-restore-session-state";
-
 // Disables throttling prints initiated by scripts.
 const char kDisableScriptedPrintThrottling[] =
     "disable-scripted-print-throttling";

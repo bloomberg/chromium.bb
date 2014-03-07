@@ -125,7 +125,6 @@ extern const char kDisableQuicHttps[];
 extern const char kDisableQuicPacing[];
 extern const char kDisableQuicPortSelection[];
 extern const char kDisableRestoreBackgroundContents[];
-extern const char kDisableRestoreSessionState[];
 extern const char kDisableSearchButtonInOmnibox[];
 extern const char kDisableScriptedPrintThrottling[];
 extern const char kDisableSpdy31[];

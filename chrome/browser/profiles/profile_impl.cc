@@ -595,12 +595,9 @@ void ProfileImpl::DoFinalInit() {
         base::Bind(&EnsureReadmeFile, GetPath()),
         base::TimeDelta::FromMilliseconds(create_readme_delay_ms));
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRestoreSessionState)) {
-    TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk")
-    content::BrowserContext::GetDefaultStoragePartition(this)->
-        GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
-  }
+  TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");
+  content::BrowserContext::GetDefaultStoragePartition(this)->
+      GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
 
   // Creation has been finished.
   if (delegate_) {
