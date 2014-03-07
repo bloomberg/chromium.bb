@@ -48,7 +48,7 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
       id,
       new MockIndexedDBDatabaseCallbacks(),
       scope,
-      indexed_db::TRANSACTION_READ_ONLY,
+      indexed_db::TRANSACTION_READ_WRITE,
       db_,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   db_->TransactionCreated(transaction);
@@ -73,6 +73,38 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   // This task will be ignored.
   transaction->ScheduleTask(base::Bind(
       &IndexedDBTransactionTest::DummyOperation, base::Unretained(this)));
+  EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+}
+
+TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
+  const int64 id = 0;
+  const std::set<int64> scope;
+  const bool commit_success = true;
+  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
+      id,
+      new MockIndexedDBDatabaseCallbacks(),
+      scope,
+      indexed_db::TRANSACTION_READ_ONLY,
+      db_,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+  db_->TransactionCreated(transaction);
+
+  // No conflicting transactions, so coordinator will start it immediately:
+  EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+
+  // Schedule a task - timer won't be started until it's processed.
+  transaction->ScheduleTask(base::Bind(
+      &IndexedDBTransactionTest::DummyOperation, base::Unretained(this)));
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+
+  // Transaction is read-only, so no need to time it out.
+  RunPostedTasks();
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+
+  // Clean up to avoid leaks.
+  transaction->Abort();
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 }
