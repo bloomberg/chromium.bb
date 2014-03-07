@@ -170,6 +170,10 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // or kNoHostId.
   IPC_STRUCT_MEMBER(int, appcache_host_id)
 
+  // Indicates which frame (or worker context) the request is being loaded into,
+  // or kInvalidServiceWorkerProviderId.
+  IPC_STRUCT_MEMBER(int, service_worker_provider_id)
+
   // Optional resource request body (may be null).
   IPC_STRUCT_MEMBER(scoped_refptr<webkit_glue::ResourceRequestBody>,
                     request_body)

@@ -19,6 +19,7 @@
 #include "content/child/site_isolation_policy.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -142,6 +143,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
         extra_data->transferred_request_child_id();
     request_.transferred_request_request_id =
         extra_data->transferred_request_request_id();
+    request_.service_worker_provider_id =
+        extra_data->service_worker_provider_id();
     frame_origin_ = extra_data->frame_origin();
   } else {
     request_.visiblity_state = blink::WebPageVisibilityStateVisible;
@@ -154,6 +157,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     request_.should_replace_current_entry = false;
     request_.transferred_request_child_id = -1;
     request_.transferred_request_request_id = -1;
+    request_.service_worker_provider_id = kInvalidServiceWorkerProviderId;
   }
 }
 
