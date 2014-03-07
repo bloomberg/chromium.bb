@@ -122,8 +122,6 @@ if env.Bit('bitcode'):
 
   # (1) Self-consistency.
   settings = dict(base_settings)
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2381
-  settings['allow_struct_va_arg'] = 0
   envlist = [base_env]
   link_env = base_env
   AddTest(base_env, 'callingconv_self', envlist, settings, is_broken=False)
