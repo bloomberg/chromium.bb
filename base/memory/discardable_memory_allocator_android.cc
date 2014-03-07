@@ -4,19 +4,24 @@
 
 #include "base/memory/discardable_memory_allocator_android.h"
 
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <set>
 #include <utility>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
-#include "base/memory/discardable_memory_android.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/ashmem/ashmem.h"
 
 // The allocator consists of three parts (classes):
 // - DiscardableMemoryAllocator: entry point of all allocations (through its
@@ -56,6 +61,67 @@ size_t AlignToNextPage(size_t size) {
   return (size + kPageSize - 1) & mask;
 }
 
+bool CreateAshmemRegion(const char* name,
+                        size_t size,
+                        int* out_fd,
+                        void** out_address) {
+  int fd = ashmem_create_region(name, size);
+  if (fd < 0) {
+    DLOG(ERROR) << "ashmem_create_region() failed";
+    return false;
+  }
+  file_util::ScopedFD fd_closer(&fd);
+
+  const int err = ashmem_set_prot_region(fd, PROT_READ | PROT_WRITE);
+  if (err < 0) {
+    DLOG(ERROR) << "Error " << err << " when setting protection of ashmem";
+    return false;
+  }
+
+  // There is a problem using MAP_PRIVATE here. As we are constantly calling
+  // Lock() and Unlock(), data could get lost if they are not written to the
+  // underlying file when Unlock() gets called.
+  void* const address = mmap(
+      NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (address == MAP_FAILED) {
+    DPLOG(ERROR) << "Failed to map memory.";
+    return false;
+  }
+
+  ignore_result(fd_closer.release());
+  *out_fd = fd;
+  *out_address = address;
+  return true;
+}
+
+bool CloseAshmemRegion(int fd, size_t size, void* address) {
+  if (munmap(address, size) == -1) {
+    DPLOG(ERROR) << "Failed to unmap memory.";
+    close(fd);
+    return false;
+  }
+  return close(fd) == 0;
+}
+
+DiscardableMemoryLockStatus LockAshmemRegion(int fd,
+                                             size_t off,
+                                             size_t size,
+                                             const void* address) {
+  const int result = ashmem_pin_region(fd, off, size);
+  DCHECK_EQ(0, mprotect(address, size, PROT_READ | PROT_WRITE));
+  return result == ASHMEM_WAS_PURGED ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
+                                     : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
+}
+
+bool UnlockAshmemRegion(int fd, size_t off, size_t size, const void* address) {
+  const int failed = ashmem_unpin_region(fd, off, size);
+  if (failed)
+    DLOG(ERROR) << "Failed to unpin memory.";
+  // This allows us to catch accesses to unlocked memory.
+  DCHECK_EQ(0, mprotect(address, size, PROT_NONE));
+  return !failed;
+}
+
 }  // namespace
 
 namespace internal {
@@ -85,13 +151,13 @@ class DiscardableMemoryAllocator::DiscardableAshmemChunk
   virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
     DCHECK(!locked_);
     locked_ = true;
-    return internal::LockAshmemRegion(fd_, offset_, size_, address_);
+    return LockAshmemRegion(fd_, offset_, size_, address_);
   }
 
   virtual void Unlock() OVERRIDE {
     DCHECK(locked_);
     locked_ = false;
-    internal::UnlockAshmemRegion(fd_, offset_, size_, address_);
+    UnlockAshmemRegion(fd_, offset_, size_, address_);
   }
 
   virtual void* Memory() const OVERRIDE {
@@ -119,13 +185,13 @@ class DiscardableMemoryAllocator::AshmemRegion {
     DCHECK_EQ(size, AlignToNextPage(size));
     int fd;
     void* base;
-    if (!internal::CreateAshmemRegion(name.c_str(), size, &fd, &base))
+    if (!CreateAshmemRegion(name.c_str(), size, &fd, &base))
       return scoped_ptr<AshmemRegion>();
     return make_scoped_ptr(new AshmemRegion(fd, size, base, allocator));
   }
 
   ~AshmemRegion() {
-    const bool result = internal::CloseAshmemRegion(fd_, size_, base_);
+    const bool result = CloseAshmemRegion(fd_, size_, base_);
     DCHECK(result);
   }
 
@@ -257,8 +323,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
 
     const size_t offset =
         static_cast<char*>(reused_chunk.start) - static_cast<char*>(base_);
-    internal::LockAshmemRegion(
-        fd_, offset, reused_chunk_size, reused_chunk.start);
+    LockAshmemRegion(fd_, offset, reused_chunk_size, reused_chunk.start);
     scoped_ptr<DiscardableMemory> memory(
         new DiscardableAshmemChunk(this, fd_, reused_chunk.start, offset,
                                    reused_chunk_size));
@@ -390,7 +455,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
 
 DiscardableMemoryAllocator::DiscardableAshmemChunk::~DiscardableAshmemChunk() {
   if (locked_)
-    internal::UnlockAshmemRegion(fd_, offset_, size_, address_);
+    UnlockAshmemRegion(fd_, offset_, size_, address_);
   ashmem_region_->OnChunkDeletion(address_, size_);
 }
 

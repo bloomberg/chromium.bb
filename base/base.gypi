@@ -313,7 +313,6 @@
           'memory/discardable_memory_allocator_android.cc',
           'memory/discardable_memory_allocator_android.h',
           'memory/discardable_memory_android.cc',
-          'memory/discardable_memory_android.h',
           'memory/discardable_memory_emulated.cc',
           'memory/discardable_memory_emulated.h',
           'memory/discardable_memory_linux.cc',
