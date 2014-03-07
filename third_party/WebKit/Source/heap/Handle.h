@@ -42,17 +42,21 @@
 
 namespace WebCore {
 
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
-    typedef WTF::IsSubclassOfTemplate<T, GarbageCollected> GarbageCollectedSubclass; \
-    typedef WTF::IsSubclass<T, GarbageCollectedMixin> GarbageCollectedMixinSubclass; \
-    typedef WTF::IsSubclassOfTemplate3<T, HeapHashSet> HeapHashSetSubclass; \
-    typedef WTF::IsSubclassOfTemplate5<T, HeapHashMap> HeapHashMapSubclass; \
-    typedef WTF::IsSubclassOfTemplateTypenameSize<T, HeapVector> HeapVectorSubclass; \
-    COMPILE_ASSERT(GarbageCollectedSubclass::value || \
-        GarbageCollectedMixinSubclass::value || \
-        HeapHashSetSubclass::value || \
-        HeapHashMapSubclass::value || \
-        HeapVectorSubclass::value, \
+template<typename T> class HeapTerminatedArray;
+
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                               \
+    typedef WTF::IsSubclassOfTemplate<T, GarbageCollected> GarbageCollectedSubclass;       \
+    typedef WTF::IsSubclass<T, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
+    typedef WTF::IsSubclassOfTemplate3<T, HeapHashSet> HeapHashSetSubclass;                \
+    typedef WTF::IsSubclassOfTemplate5<T, HeapHashMap> HeapHashMapSubclass;                \
+    typedef WTF::IsSubclassOfTemplateTypenameSize<T, HeapVector> HeapVectorSubclass;       \
+    typedef WTF::IsSubclassOfTemplate<T, HeapTerminatedArray> HeapTerminatedArraySubclass; \
+    COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                      \
+        GarbageCollectedMixinSubclass::value ||                                            \
+        HeapHashSetSubclass::value ||                                                      \
+        HeapHashMapSubclass::value ||                                                      \
+        HeapVectorSubclass::value ||                                                       \
+        HeapTerminatedArraySubclass::value,                                                \
         ErrorMessage);
 
 template<typename T> class Member;
@@ -633,6 +637,8 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeHeapVector WebCore::HeapVector
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
 #define WillBeGarbageCollectedMixin WebCore::GarbageCollectedMixin
+#define WillBeHeapTerminatedArray WebCore::HeapTerminatedArray
+#define WillBeHeapTerminatedArrayBuilder WebCore::HeapTerminatedArrayBuilder
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -692,6 +698,8 @@ public:
 #define WillBeHeapVector WTF::Vector
 #define WillBePersistentHeapVector WTF::Vector
 #define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
+#define WillBeHeapTerminatedArray WTF::TerminatedArray
+#define WillBeHeapTerminatedArrayBuilder WTF::TerminatedArrayBuilder
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }

@@ -8,12 +8,12 @@
 
 namespace WTF {
 
-template<typename T>
+template<typename T, template <typename> class ArrayType = TerminatedArray>
 class TerminatedArrayBuilder {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(TerminatedArrayBuilder);
 public:
-    explicit TerminatedArrayBuilder(PassOwnPtr<TerminatedArray<T> > array)
+    explicit TerminatedArrayBuilder(typename ArrayType<T>::Allocator::PassPtr array)
         : m_array(array)
         , m_count(0)
         , m_capacity(0)
@@ -30,11 +30,11 @@ public:
             ASSERT(!m_count);
             ASSERT(!m_capacity);
             m_capacity = count;
-            m_array = TerminatedArray<T>::create(m_capacity);
+            m_array = ArrayType<T>::Allocator::create(m_capacity);
             return;
         }
         m_capacity += count;
-        m_array = TerminatedArray<T>::resize(m_array.release(), m_capacity);
+        m_array = ArrayType<T>::Allocator::resize(m_array.release(), m_capacity);
         m_array->at(m_count - 1).setLastInArray(false);
     }
 
@@ -45,7 +45,7 @@ public:
         m_array->at(m_count++) = item;
     }
 
-    PassOwnPtr<TerminatedArray<T> > release()
+    typename ArrayType<T>::Allocator::PassPtr release()
     {
         RELEASE_ASSERT(m_count == m_capacity);
         if (m_array)
@@ -67,7 +67,7 @@ private:
     void assertValid() { }
 #endif
 
-    OwnPtr<TerminatedArray<T> > m_array;
+    typename ArrayType<T>::Allocator::Ptr m_array;
     size_t m_count;
     size_t m_capacity;
 };
