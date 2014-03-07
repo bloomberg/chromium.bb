@@ -397,6 +397,9 @@
     'mouse_lock': {
       'filepath': 'mouse_lock',
     },
+    'music_manager_private': {
+      'filepath' :'chrome/browser/extensions/api/music_manager_private/',
+    },
     'nacl': {
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
         'chrome/browser/nacl_host/|chrome/common/nacl|'\
@@ -802,6 +805,9 @@
              'darin@chromium.org',
              'viettrungluu+watch@chromium.org'],
     'mouse_lock': ['scheib+watch@chromium.org'],
+    'music_manager_private': ['gab+watch@chromium.org',
+                              'erikwright+watch@chromium.org',
+                              'robertshield+watch@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['sbc@chromium.org', 'binji@chromium.org'],
     'navigation': ['creis+watch@chromium.org', 'nasko+codewatch@chromium.org'],
