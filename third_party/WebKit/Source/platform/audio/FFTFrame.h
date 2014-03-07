@@ -66,7 +66,6 @@ public:
     static void cleanup();
     void doFFT(const float* data);
     void doInverseFFT(float* data);
-    void multiply(const FFTFrame& frame); // multiplies ourself with frame : effectively operator*=()
 
     float* realData() const;
     float* imagData() const;
@@ -82,6 +81,7 @@ public:
     void doPaddedFFT(const float* data, size_t dataSize); // zero-padding with dataSize <= fftSize
     double extractAverageGroupDelay();
     void addConstantGroupDelay(double sampleFrameDelay);
+    void multiply(const FFTFrame&); // multiplies ourself with frame : effectively operator*=()
 
     unsigned fftSize() const { return m_FFTSize; }
     unsigned log2FFTSize() const { return m_log2FFTSize; }

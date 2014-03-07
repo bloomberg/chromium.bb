@@ -31,7 +31,6 @@
 #include "platform/audio/FFTFrame.h"
 
 #include "platform/audio/AudioArray.h"
-#include "platform/audio/VectorMath.h"
 #include "wtf/MathExtras.h"
 #include <dl/sp/api/armSP.h>
 #include <dl/sp/api/omxSP.h>
@@ -101,27 +100,6 @@ FFTFrame::~FFTFrame()
         free(m_forwardContext);
     if (m_inverseContext)
         free(m_inverseContext);
-}
-
-void FFTFrame::multiply(const FFTFrame& frame)
-{
-    FFTFrame& frame1 = *this;
-    FFTFrame& frame2 = const_cast<FFTFrame&>(frame);
-
-    float* realP1 = frame1.realData();
-    float* imagP1 = frame1.imagData();
-    const float* realP2 = frame2.realData();
-    const float* imagP2 = frame2.imagData();
-
-    unsigned halfSize = fftSize() / 2;
-    float real0 = realP1[0];
-    float imag0 = imagP1[0];
-
-    VectorMath::zvmul(realP1, imagP1, realP2, imagP2, realP1, imagP1, halfSize);
-
-    // Multiply the packed DC/nyquist component
-    realP1[0] = real0 * realP2[0];
-    imagP1[0] = imag0 * imagP2[0];
 }
 
 void FFTFrame::doFFT(const float* data)
