@@ -57,7 +57,8 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
             initWithMediaList:scoped_ptr<DesktopMediaList>(media_list_)
                        parent:nil
                      callback:callback
-                      appName:base::ASCIIToUTF16("Screenshare Test")]);
+                      appName:base::ASCIIToUTF16("Screenshare Test")
+                   targetName:base::ASCIIToUTF16("https://foo.com")]);
   }
 
   virtual void TearDown() OVERRIDE {

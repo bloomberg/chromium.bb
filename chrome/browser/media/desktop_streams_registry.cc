@@ -34,7 +34,8 @@ std::string DesktopStreamsRegistry::RegisterStream(
     int render_process_id,
     int render_view_id,
     const GURL& origin,
-    const content::DesktopMediaID& source) {
+    const content::DesktopMediaID& source,
+    const std::string& extension_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::string id = GenerateRandomStreamId();
@@ -43,6 +44,7 @@ std::string DesktopStreamsRegistry::RegisterStream(
   stream.render_view_id = render_view_id;
   stream.origin = origin;
   stream.source = source;
+  stream.extension_name = extension_name;
 
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -57,7 +59,8 @@ content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
     const std::string& id,
     int render_process_id,
     int render_view_id,
-    const GURL& origin) {
+    const GURL& origin,
+    std::string* extension_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   StreamsMap::iterator it = approved_streams_.find(id);
@@ -72,6 +75,7 @@ content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
   }
 
   content::DesktopMediaID result = it->second.source;
+  *extension_name = it->second.extension_name;
   approved_streams_.erase(it);
   return result;
 }
@@ -80,3 +84,6 @@ void DesktopStreamsRegistry::CleanupStream(const std::string& id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   approved_streams_.erase(id);
 }
+
+DesktopStreamsRegistry::ApprovedDesktopMediaStream::ApprovedDesktopMediaStream()
+    : render_process_id(-1), render_view_id(-1) {}

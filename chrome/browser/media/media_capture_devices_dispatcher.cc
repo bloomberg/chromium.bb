@@ -155,7 +155,8 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::DesktopMediaID media_id,
     bool capture_audio,
     bool display_notification,
-    base::string16 application_title) {
+    const base::string16& application_title,
+    const base::string16& registered_extension_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<content::MediaStreamUI> ui;
 
@@ -171,9 +172,16 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
 
   // If required, register to display the notification for stream capture.
   if (display_notification) {
-    ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
-        IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT,
-        application_title));
+    if (application_title == registered_extension_name) {
+      ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
+          IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT,
+          application_title));
+    } else {
+      ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
+          IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
+          registered_extension_name,
+          application_title));
+    }
   }
 
   return ui.Pass();
@@ -312,11 +320,14 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
     return;
   }
 
+  // The extension name that the stream is registered with.
+  std::string original_extension_name;
   // Resolve DesktopMediaID for the specified device id.
   content::DesktopMediaID media_id =
       GetDesktopStreamsRegistry()->RequestMediaForStreamId(
           request.requested_video_device_id, request.render_process_id,
-          request.render_view_id, request.security_origin);
+          request.render_view_id, request.security_origin,
+          &original_extension_name);
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
@@ -338,7 +349,8 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
 
   ui = GetDevicesForDesktopCapture(
       devices, media_id, capture_audio, true,
-      GetApplicationTitle(web_contents, extension));
+      GetApplicationTitle(web_contents, extension),
+      base::UTF8ToUTF16(original_extension_name));
 
   callback.Run(devices, ui.Pass());
 }
@@ -425,7 +437,8 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       bool display_notification = !component_extension;
 
       ui = GetDevicesForDesktopCapture(devices, screen_id, capture_audio,
-                                       display_notification, application_title);
+                                       display_notification, application_title,
+                                       application_title);
     }
   }
 

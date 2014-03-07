@@ -154,6 +154,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
                                gfx::NativeWindow parent_window,
                                DesktopMediaPickerViews* parent,
                                const base::string16& app_name,
+                               const base::string16& target_name,
                                scoped_ptr<DesktopMediaList> media_list);
   virtual ~DesktopMediaPickerDialogView();
 
@@ -199,6 +200,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   virtual void Show(gfx::NativeWindow context,
                     gfx::NativeWindow parent,
                     const base::string16& app_name,
+                    const base::string16& target_name,
                     scoped_ptr<DesktopMediaList> media_list,
                     const DoneCallback& done_callback) OVERRIDE;
 
@@ -490,14 +492,20 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     gfx::NativeWindow parent_window,
     DesktopMediaPickerViews* parent,
     const base::string16& app_name,
+    const base::string16& target_name,
     scoped_ptr<DesktopMediaList> media_list)
     : parent_(parent),
       app_name_(app_name),
       label_(new views::Label()),
       scroll_view_(views::ScrollView::CreateScrollViewWithBorder()),
       list_view_(new DesktopMediaListView(this, media_list.Pass())) {
-  label_->SetText(
-      l10n_util::GetStringFUTF16(IDS_DESKTOP_MEDIA_PICKER_TEXT, app_name_));
+  if (app_name == target_name) {
+    label_->SetText(
+        l10n_util::GetStringFUTF16(IDS_DESKTOP_MEDIA_PICKER_TEXT, app_name));
+  } else {
+    label_->SetText(l10n_util::GetStringFUTF16(
+        IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED, app_name, target_name));
+  }
   label_->SetMultiLine(true);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label_);
@@ -624,11 +632,12 @@ DesktopMediaPickerViews::~DesktopMediaPickerViews() {
 void DesktopMediaPickerViews::Show(gfx::NativeWindow context,
                                    gfx::NativeWindow parent,
                                    const base::string16& app_name,
+                                   const base::string16& target_name,
                                    scoped_ptr<DesktopMediaList> media_list,
                                    const DoneCallback& done_callback) {
   callback_ = done_callback;
   dialog_ = new DesktopMediaPickerDialogView(
-      context, parent, this, app_name, media_list.Pass());
+      context, parent, this, app_name, target_name, media_list.Pass());
 }
 
 void DesktopMediaPickerViews::NotifyDialogResult(

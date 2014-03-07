@@ -57,7 +57,8 @@ const int kExcessButtonPadding = 6;
 - (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
                  parent:(NSWindow*)parent
                callback:(const DesktopMediaPicker::DoneCallback&)callback
-                appName:(const base::string16&)appName {
+                appName:(const base::string16&)appName
+             targetName:(const base::string16&)targetName {
   const NSUInteger kStyleMask =
       NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window(
@@ -69,7 +70,7 @@ const int kExcessButtonPadding = 6;
   if ((self = [super initWithWindow:window])) {
     [parent addChildWindow:window ordered:NSWindowAbove];
     [window setDelegate:self];
-    [self initializeContentsWithAppName:appName];
+    [self initializeContentsWithAppName:appName targetName:targetName];
     media_list_ = media_list.Pass();
     media_list_->SetViewDialogWindowId([window windowNumber]);
     doneCallback_ = callback;
@@ -85,7 +86,8 @@ const int kExcessButtonPadding = 6;
   [super dealloc];
 }
 
-- (void)initializeContentsWithAppName:(const base::string16&)appName {
+- (void)initializeContentsWithAppName:(const base::string16&)appName
+                           targetName:(const base::string16&)targetName {
   // Use flipped coordinates to facilitate manual layout.
   const CGFloat kPaddedWidth = kInitialContentWidth - (kFramePadding * 2);
   base::scoped_nsobject<FlippedView> content(
@@ -99,8 +101,14 @@ const int kExcessButtonPadding = 6;
   [[self window] setTitle:titleText];
 
   // Set the dialog's description.
-  NSString* descriptionText = l10n_util::GetNSStringF(
-      IDS_DESKTOP_MEDIA_PICKER_TEXT, appName);
+  NSString* descriptionText;
+  if (appName == targetName) {
+    descriptionText = l10n_util::GetNSStringF(
+        IDS_DESKTOP_MEDIA_PICKER_TEXT, appName);
+  } else {
+    descriptionText = l10n_util::GetNSStringF(
+        IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED, appName, targetName);
+  }
   NSTextField* description = [self createTextFieldWithText:descriptionText
                                                 frameWidth:kPaddedWidth];
   [description setFrameOrigin:origin];

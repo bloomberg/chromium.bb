@@ -25,7 +25,8 @@ class DesktopStreamsRegistry {
   std::string RegisterStream(int render_process_id,
                              int render_view_id,
                              const GURL& origin,
-                             const content::DesktopMediaID& source);
+                             const content::DesktopMediaID& source,
+                             const std::string& extension_name);
 
   // Validates stream identifier specified in getUserMedia(). Returns null
   // DesktopMediaID if the specified |id| is invalid, i.e. wasn't generated
@@ -34,15 +35,19 @@ class DesktopStreamsRegistry {
   content::DesktopMediaID RequestMediaForStreamId(const std::string& id,
                                                   int render_process_id,
                                                   int render_view_id,
-                                                  const GURL& origin);
+                                                  const GURL& origin,
+                                                  std::string* extension_name);
 
  private:
   // Type used to store list of accepted desktop media streams.
   struct ApprovedDesktopMediaStream {
+    ApprovedDesktopMediaStream();
+
     int render_process_id;
     int render_view_id;
     GURL origin;
     content::DesktopMediaID source;
+    std::string extension_name;
   };
   typedef std::map<std::string, ApprovedDesktopMediaStream> StreamsMap;
 

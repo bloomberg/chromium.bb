@@ -86,12 +86,14 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
 
   gfx::NativeWindow parent_window;
   content::RenderViewHost* render_view;
+  base::string16 target_name;
   if (params->target_tab) {
     if (!params->target_tab->url) {
       error_ = kNoUrlError;
       return false;
     }
     origin_ = GURL(*(params->target_tab->url)).GetOrigin();
+    target_name = base::UTF8ToUTF16(origin_.spec());
 
     if (!params->target_tab->id) {
       error_ = kNoTabIdError;
@@ -119,6 +121,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
     parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
   } else {
     origin_ = GetExtension()->url();
+    target_name = base::UTF8ToUTF16(GetExtension()->name());
     render_view = render_view_host();
     parent_window =
         GetAssociatedWebContents()->GetView()->GetTopLevelNativeWindow();
@@ -195,6 +198,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
 
   picker_->Show(parent_window, parent_window,
                 base::UTF8ToUTF16(GetExtension()->name()),
+                target_name,
                 media_list.Pass(), callback);
   return true;
 }
@@ -212,7 +216,11 @@ void DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults(
         MediaCaptureDevicesDispatcher::GetInstance()->
         GetDesktopStreamsRegistry();
     result = registry->RegisterStream(
-        render_process_id_, render_view_id_, origin_, source);
+        render_process_id_,
+        render_view_id_,
+        origin_,
+        source,
+        GetExtension()->name());
   }
 
   SetResult(new base::StringValue(result));
