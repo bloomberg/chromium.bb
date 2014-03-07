@@ -632,6 +632,12 @@ void VolumeManager::DoMountEvent(chromeos::MountError error_code,
       return;
   }
 
+  // Filter out removable disks if forbidden by policy for this profile.
+  if (volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION &&
+      profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
+    return;
+  }
+
   if (error_code == chromeos::MOUNT_ERROR_NONE || volume_info.mount_condition)
     mounted_volumes_[volume_info.volume_id] = volume_info;
 
