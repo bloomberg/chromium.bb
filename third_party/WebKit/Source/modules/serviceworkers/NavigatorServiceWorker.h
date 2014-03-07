@@ -21,11 +21,11 @@ public:
     static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator& navigator) { return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName())); }
     static const char* supplementName();
 
-    static ServiceWorkerContainer* serviceWorker(Navigator&);
+    static ServiceWorkerContainer* serviceWorker(ExecutionContext*, Navigator&);
 
 private:
     explicit NavigatorServiceWorker(Navigator&);
-    ServiceWorkerContainer* serviceWorker();
+    ServiceWorkerContainer* serviceWorker(ExecutionContext*);
 
     // DOMWindowProperty override.
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;

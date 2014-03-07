@@ -34,15 +34,15 @@ const char* NavigatorServiceWorker::supplementName()
     return "NavigatorServiceWorker";
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator& navigator)
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(ExecutionContext* executionContext, Navigator& navigator)
 {
-    return NavigatorServiceWorker::from(navigator).serviceWorker();
+    return NavigatorServiceWorker::from(navigator).serviceWorker(executionContext);
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker()
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(ExecutionContext* executionContext)
 {
     if (!m_serviceWorker && frame())
-        m_serviceWorker = ServiceWorkerContainer::create();
+        m_serviceWorker = ServiceWorkerContainer::create(executionContext);
     return m_serviceWorker.get();
 }
 

@@ -46,9 +46,9 @@ using blink::WebServiceWorkerProvider;
 
 namespace WebCore {
 
-PassRefPtr<ServiceWorkerContainer> ServiceWorkerContainer::create()
+PassRefPtr<ServiceWorkerContainer> ServiceWorkerContainer::create(ExecutionContext* executionContext)
 {
-    return adoptRef(new ServiceWorkerContainer());
+    return adoptRef(new ServiceWorkerContainer(executionContext));
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer()
@@ -83,7 +83,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
         return promise;
     }
 
-    ensureProvider(executionContext)->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver, executionContext));
+    m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver, executionContext));
     return promise;
 }
 
@@ -101,23 +101,15 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
         return promise;
     }
 
-    ensureProvider(executionContext)->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver, executionContext));
+    m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver, executionContext));
     return promise;
 }
 
-ServiceWorkerContainer::ServiceWorkerContainer()
-    : m_provider(0)
+ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)
+    : m_provider(ServiceWorkerContainerClient::from(executionContext)->provider())
 {
     ScriptWrappable::init(this);
-}
-
-WebServiceWorkerProvider* ServiceWorkerContainer::ensureProvider(ExecutionContext* executionContext)
-{
-    if (!m_provider) {
-        m_provider = ServiceWorkerContainerClient::from(executionContext)->provider();
-        m_provider->setClient(this);
-    }
-    return m_provider;
+    m_provider->setClient(this);
 }
 
 } // namespace WebCore

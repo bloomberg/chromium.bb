@@ -52,7 +52,7 @@ class ServiceWorkerContainer FINAL :
     public ScriptWrappable,
     public blink::WebServiceWorkerProviderClient {
 public:
-    static PassRefPtr<ServiceWorkerContainer> create();
+    static PassRefPtr<ServiceWorkerContainer> create(ExecutionContext*);
     ~ServiceWorkerContainer();
 
     void detachClient();
@@ -61,8 +61,7 @@ public:
     ScriptPromise unregisterServiceWorker(ExecutionContext*, const String& scope = String());
 
 private:
-    ServiceWorkerContainer();
-    blink::WebServiceWorkerProvider* ensureProvider(ExecutionContext*);
+    ServiceWorkerContainer(ExecutionContext*);
 
     blink::WebServiceWorkerProvider* m_provider;
 };
