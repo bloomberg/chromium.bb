@@ -839,20 +839,6 @@ const Experiment kExperiments[] = {
   },
 #endif  // defined(OS_ANDROID)
   {
-    "disable-opus-playback",
-    IDS_FLAGS_DISABLE_OPUS_PLAYBACK_NAME,
-    IDS_FLAGS_DISABLE_OPUS_PLAYBACK_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableOpusPlayback)
-  },
- {
-    "disable-vp8-alpha-playback",
-    IDS_FLAGS_DISABLE_VP8_ALPHA_PLAYBACK_NAME,
-    IDS_FLAGS_DISABLE_VP8_ALPHA_PLAYBACK_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableVp8AlphaPlayback)
-  },
-  {
     "enable-javascript-harmony",
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME,
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION,

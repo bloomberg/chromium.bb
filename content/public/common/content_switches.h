@@ -44,7 +44,6 @@ CONTENT_EXPORT extern const char kDisableAcceleratedVideo[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 CONTENT_EXPORT extern const char kDisableAltWinstation[];
 CONTENT_EXPORT extern const char kDisableApplicationCache[];
-CONTENT_EXPORT extern const char kDisableAudio[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char kDisableBrowserPluginCompositing[];
 CONTENT_EXPORT extern const char kDisableCompositedScrollingForFrames[];

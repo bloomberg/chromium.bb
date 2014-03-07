@@ -89,10 +89,7 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
   // case is sadly the browser UI thread.  Failure to execute calls on the right
   // thread leads to crashes and odd behavior.  See http://crbug.com/158170.
   // TODO(dalecurtis): We should require the message loop to be passed in.
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kDisableMainThreadAudio) &&
-      base::MessageLoopProxy::current().get() &&
-      base::MessageLoopForUI::IsCurrent()) {
+  if (base::MessageLoopForUI::IsCurrent()) {
     task_runner_ = base::MessageLoopProxy::current();
     return;
   }

@@ -6269,18 +6269,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable non-compositing decoding in MediaDrm by default for Encrypted Media Extensions.
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_OPUS_PLAYBACK_NAME" desc="Title for the flag to disable Opus playback in &lt;video&gt; elements.">
-        Disable Opus playback in &lt;video&gt; elements.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_OPUS_PLAYBACK_DESCRIPTION" desc="Description for the flag to disable Opus playback in &lt;video&gt; elements.">
-        Disable experimental Opus playback in the video element.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_VP8_ALPHA_PLAYBACK_NAME" desc="Title for the flag to disable VP8 Alpha playback in &lt;video&gt; elements.">
-        Disable VP8 Alpha playback in &lt;video&gt; elements.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_VP8_ALPHA_PLAYBACK_DESCRIPTION" desc="Description for the flag to disable VP8 Alpha playback in &lt;video&gt; elements.">
-        Disable VP8 Alpha playback in the video element.
-      </message>
       <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME" desc="Name for the option to enable/disable the auto window placement functionality.">
         Automatic window placement.
       </message>

@@ -259,15 +259,11 @@ static vpx_codec_ctx* InitializeVpxContext(vpx_codec_ctx* context,
 }
 
 bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  bool can_handle = false;
-  if (config.codec() == kCodecVP9)
-    can_handle = true;
-  if (!cmd_line->HasSwitch(switches::kDisableVp8AlphaPlayback) &&
-      config.codec() == kCodecVP8 && config.format() == VideoFrame::YV12A) {
-    can_handle = true;
-  }
-  if (!can_handle)
+  if (config.codec() != kCodecVP8 && config.codec() != kCodecVP9)
+    return false;
+  // Only VP8 videos with alpha are handled by VpxVideoDecoder.  Everything else
+  // goes to FFmpegVideoDecoder.
+  if (config.codec() == kCodecVP8 && config.format() != VideoFrame::YV12A)
     return false;
 
   CloseDecoder();

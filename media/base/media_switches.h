@@ -14,10 +14,6 @@ namespace switches {
 
 MEDIA_EXPORT extern const char kAudioBufferSize[];
 
-MEDIA_EXPORT extern const char kDisableOpusPlayback[];
-
-MEDIA_EXPORT extern const char kDisableVp8AlphaPlayback[];
-
 MEDIA_EXPORT extern const char kVideoThreads[];
 
 MEDIA_EXPORT extern const char kEnableADTSStreamParser[];
@@ -34,7 +30,6 @@ MEDIA_EXPORT extern const char kAlsaOutputDevice[];
 #endif
 
 #if defined(OS_MACOSX)
-MEDIA_EXPORT extern const char kDisableMainThreadAudio[];
 MEDIA_EXPORT extern const char kDisableAVFoundation[];
 #endif
 

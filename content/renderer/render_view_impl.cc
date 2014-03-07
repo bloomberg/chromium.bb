@@ -2419,18 +2419,12 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
 #if defined(OS_ANDROID)
   return CreateAndroidWebMediaPlayer(frame, url, client);
 #else
-  scoped_refptr<media::AudioRendererSink> sink;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAudio)) {
-    sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
-        CreateInput(routing_id_, render_frame->GetRoutingID());
-    DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
-  }
-
   WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(render_frame)),
-      sink);
+      RenderThreadImpl::current()->GetAudioRendererMixerManager()->CreateInput(
+          routing_id_, render_frame->GetRoutingID()));
   return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
 #endif  // defined(OS_ANDROID)
 }

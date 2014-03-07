@@ -1170,9 +1170,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   // Create our audio decoders and renderer.
   ScopedVector<media::AudioDecoder> audio_decoders;
   audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_));
-  if (!cmd_line->HasSwitch(switches::kDisableOpusPlayback)) {
-    audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
-  }
+  audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
 
   scoped_ptr<media::AudioRenderer> audio_renderer(
       new media::AudioRendererImpl(media_loop_,

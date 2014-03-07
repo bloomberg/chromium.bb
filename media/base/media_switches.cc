@@ -9,12 +9,6 @@ namespace switches {
 // Allow users to specify a custom buffer size for debugging purpose.
 const char kAudioBufferSize[] = "audio-buffer-size";
 
-// Disables Opus playback in media elements.
-const char kDisableOpusPlayback[] = "disable-opus-playback";
-
-// Disables VP8 Alpha playback in media elements.
-const char kDisableVp8AlphaPlayback[] = "disable-vp8-alpha-playback";
-
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
@@ -42,11 +36,6 @@ const char kAlsaOutputDevice[] = "alsa-output-device";
 #endif
 
 #if defined(OS_MACOSX)
-// Unlike other platforms, OSX requires CoreAudio calls to happen on the main
-// thread of the process.  Provide a way to disable this until support is well
-// tested.  See http://crbug.com/158170.
-// TODO(dalecurtis): Remove this once we're sure nothing has exploded.
-const char kDisableMainThreadAudio[] = "disable-main-thread-audio";
 // AVFoundation is available in versions 10.7 and onwards, and is to be used
 // http://crbug.com/288562 for both audio and video device monitoring and for
 // video capture. Being a dynamically loaded NSBundle and library, it hits the

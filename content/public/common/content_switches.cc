@@ -118,10 +118,6 @@ const char kDisableAltWinstation[]          = "disable-winsta";
 
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
-//
-// TODO(scherkus): remove --disable-audio when we have a proper fallback
-// mechanism.
-const char kDisableAudio[]                  = "disable-audio";
 
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
