@@ -42,7 +42,6 @@ class RendererClipboardClient;
 class ScreenOrientationDispatcher;
 class ThreadSafeSender;
 class WebClipboardImpl;
-class WebCryptoImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
 
@@ -151,7 +150,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       blink::WebDeviceMotionListener* listener) OVERRIDE;
   virtual void setDeviceOrientationListener(
       blink::WebDeviceOrientationListener* listener) OVERRIDE;
-  virtual blink::WebCrypto* crypto() OVERRIDE;
   virtual void queryStorageUsageAndQuota(
       const blink::WebURL& storage_partition,
       blink::WebStorageQuotaType,
@@ -227,8 +225,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
   webkit::WebCompositorSupportImpl compositor_support_;
-
-  scoped_ptr<WebCryptoImpl> web_crypto_;
 
   scoped_ptr<ScreenOrientationDispatcher> screen_orientation_dispatcher_;
 

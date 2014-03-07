@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "content/renderer/webcrypto/crypto_data.h"
-#include "content/renderer/webcrypto/platform_crypto.h"
-#include "content/renderer/webcrypto/shared_crypto.h"
-#include "content/renderer/webcrypto/webcrypto_util.h"
+#include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/platform_crypto.h"
+#include "content/child/webcrypto/shared_crypto.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 
 namespace content {
 

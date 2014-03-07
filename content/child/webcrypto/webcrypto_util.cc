@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webcrypto/webcrypto_util.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -269,10 +269,8 @@ blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
   DCHECK(IsHashAlgorithm(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaOaep,
-      new blink::WebCryptoRsaHashedImportParams(
-          CreateAlgorithm(hash_id)));
+      new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
 }
-
 
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
   switch (hash_id) {
@@ -298,8 +296,7 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
       if (hash.isNull())
         return false;
       *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
-          algorithm.id(),
-          new blink::WebCryptoHmacKeyAlgorithmParams(hash));
+          algorithm.id(), new blink::WebCryptoHmacKeyAlgorithmParams(hash));
       return true;
     }
     case blink::WebCryptoAlgorithmIdAesKw:

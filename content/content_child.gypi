@@ -167,6 +167,18 @@
     'child/web_url_loader_impl.h',
     'child/webblobregistry_impl.cc',
     'child/webblobregistry_impl.h',
+    'child/webcrypto/crypto_data.cc',
+    'child/webcrypto/crypto_data.h',
+    'child/webcrypto/jwk.cc',
+    'child/webcrypto/platform_crypto.h',
+    'child/webcrypto/platform_crypto_nss.cc',
+    'child/webcrypto/platform_crypto_openssl.cc',
+    'child/webcrypto/shared_crypto.cc',
+    'child/webcrypto/shared_crypto.h',
+    'child/webcrypto/webcrypto_impl.cc',
+    'child/webcrypto/webcrypto_impl.h',
+    'child/webcrypto/webcrypto_util.cc',
+    'child/webcrypto/webcrypto_util.h',
     'child/webfallbackthemeengine_impl.cc',
     'child/webfallbackthemeengine_impl.h',
     'child/webfileutilities_impl.cc',
@@ -242,6 +254,30 @@
     ['OS=="win"', {
       'sources!': [
         'child/npapi/webplugin_delegate_impl_aura.cc',
+      ],
+    }],
+    ['use_openssl==1', {
+      'sources!': [
+        'child/webcrypto/platform_crypto_nss.cc',
+      ],
+      'dependencies': [
+        '../third_party/openssl/openssl.gyp:openssl',
+      ],
+    }, {
+      'sources!': [
+        'child/webcrypto/platform_crypto_openssl.cc',
+      ],
+      'conditions': [
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+          'dependencies': [
+            '../build/linux/system.gyp:ssl',
+          ],
+        }, {
+          'dependencies': [
+            '../third_party/nss/nss.gyp:nspr',
+            '../third_party/nss/nss.gyp:nss',
+          ],
+        }],
       ],
     }],
   ],

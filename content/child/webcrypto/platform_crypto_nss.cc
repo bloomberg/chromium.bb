@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webcrypto/platform_crypto.h"
+#include "content/child/webcrypto/platform_crypto.h"
 
 #include <cryptohi.h>
 #include <pk11pub.h>
@@ -12,8 +12,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "content/renderer/webcrypto/crypto_data.h"
-#include "content/renderer/webcrypto/webcrypto_util.h"
+#include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/crypto_data.h"
 
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 

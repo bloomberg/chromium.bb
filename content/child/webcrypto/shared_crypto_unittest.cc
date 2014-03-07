@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webcrypto/shared_crypto.h"
+#include "content/child/webcrypto/shared_crypto.h"
 
 #include <algorithm>
 #include <string>
@@ -17,17 +17,15 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "content/renderer/webcrypto/crypto_data.h"
-#include "content/renderer/webcrypto/webcrypto_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
-#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/re2/re2/re2.h"
 
 // The OpenSSL implementation of WebCrypto is less complete, so don't run all of

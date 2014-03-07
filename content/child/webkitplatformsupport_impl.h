@@ -11,6 +11,7 @@
 #include "ui/base/layout.h"
 
 namespace content {
+class WebCryptoImpl;
 
 // This is a specialization of WebKitPlatformSupportImpl that implements the
 // embedder functions in terms of ContentClient.
@@ -33,6 +34,10 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
       blink::WebSocketStreamHandle* handle,
       WebSocketStreamHandleDelegate* delegate) OVERRIDE;
   virtual blink::WebSocketHandle* createWebSocketHandle() OVERRIDE;
+  virtual blink::WebCrypto* crypto() OVERRIDE;
+
+ private:
+  scoped_ptr<WebCryptoImpl> web_crypto_;
 };
 
 }  // namespace content

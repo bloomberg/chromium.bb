@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webcrypto/shared_crypto.h"
+#include "content/child/webcrypto/shared_crypto.h"
 
 #include "base/logging.h"
-#include "content/renderer/webcrypto/crypto_data.h"
-#include "content/renderer/webcrypto/platform_crypto.h"
-#include "content/renderer/webcrypto/webcrypto_util.h"
+#include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/platform_crypto.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
-#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
 namespace content {
 

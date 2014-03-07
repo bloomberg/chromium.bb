@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webcrypto/webcrypto_impl.h"
+#include "content/child/webcrypto/webcrypto_impl.h"
 
 #include "base/logging.h"
-#include "content/renderer/webcrypto/crypto_data.h"
-#include "content/renderer/webcrypto/shared_crypto.h"
-#include "content/renderer/webcrypto/webcrypto_util.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/shared_crypto.h"
+#include "content/child/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
 

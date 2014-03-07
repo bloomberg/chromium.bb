@@ -52,7 +52,6 @@
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/webclipboard_impl.h"
-#include "content/renderer/webcrypto/webcrypto_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "gpu/config/gpu_info.h"
@@ -1102,15 +1101,6 @@ void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
 void RendererWebKitPlatformSupportImpl::SetMockDeviceOrientationDataForTesting(
     const blink::WebDeviceOrientationData& data) {
   g_test_device_orientation_data.Get() = data;
-}
-
-//------------------------------------------------------------------------------
-
-blink::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
-  if (!web_crypto_)
-    web_crypto_.reset(new WebCryptoImpl());
-  return web_crypto_.get();
-
 }
 
 //------------------------------------------------------------------------------
