@@ -1708,6 +1708,32 @@ TEST(TilingDataTest, SpiralDifferenceIteratorEdgeCases) {
 
   expected.clear();
   TestSpiralIterate(__LINE__, tiling_data, consider, ignore, center, expected);
+
+  // Center is just to the left of cover, and off of the tiling's left side.
+  consider = gfx::Rect(0, 0, 30, 30);
+  ignore = gfx::Rect();
+  center = gfx::Rect(-20, 0, 19, 30);
+
+  // Layout of the tiling data, and expected return order:
+  //   x 0 1 2
+  //  y.------
+  // *0| 3 6 9
+  // *1| 2 5 8
+  // *2| 1 4 7
+  expected.clear();
+
+  expected.push_back(std::make_pair(0, 2));
+  expected.push_back(std::make_pair(0, 1));
+  expected.push_back(std::make_pair(0, 0));
+  expected.push_back(std::make_pair(1, 2));
+  expected.push_back(std::make_pair(1, 1));
+  expected.push_back(std::make_pair(1, 0));
+  expected.push_back(std::make_pair(2, 2));
+  expected.push_back(std::make_pair(2, 1));
+  expected.push_back(std::make_pair(2, 0));
+
+  TestSpiralIterate(__LINE__, tiling_data, consider, ignore, center, expected);
 }
 }  // namespace
+
 }  // namespace cc

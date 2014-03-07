@@ -179,11 +179,6 @@ class CC_EXPORT TilingData {
   };
 
  private:
-  std::pair<int, int> UnclampedFirstBorderTileIndexFromSrcCoord(int x,
-                                                                int y) const;
-  std::pair<int, int> UnclampedLastBorderTileIndexFromSrcCoord(int x,
-                                                               int y) const;
-
   void AssertTile(int i, int j) const {
     DCHECK_GE(i,  0);
     DCHECK_LT(i, num_tiles_x_);

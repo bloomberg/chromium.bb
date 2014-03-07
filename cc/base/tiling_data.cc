@@ -68,30 +68,6 @@ void TilingData::SetBorderTexels(int border_texels) {
   RecomputeNumTiles();
 }
 
-std::pair<int, int> TilingData::UnclampedFirstBorderTileIndexFromSrcCoord(
-    int x,
-    int y) const {
-  int inner_tile_width = max_texture_size_.width() - 2 * border_texels_;
-  int result_x = (x - 2 * border_texels_) / inner_tile_width;
-
-  int inner_tile_height = max_texture_size_.height() - 2 * border_texels_;
-  int result_y = (y - 2 * border_texels_) / inner_tile_height;
-
-  return std::make_pair(result_x, result_y);
-}
-
-std::pair<int, int> TilingData::UnclampedLastBorderTileIndexFromSrcCoord(
-    int x,
-    int y) const {
-  int inner_tile_width = max_texture_size_.width() - 2 * border_texels_;
-  int result_x = x / inner_tile_width;
-
-  int inner_tile_height = max_texture_size_.height() - 2 * border_texels_;
-  int result_y = y / inner_tile_height;
-
-  return std::make_pair(result_x, result_y);
-}
-
 int TilingData::TileXIndexFromSrcCoord(int src_position) const {
   if (num_tiles_x_ <= 1)
     return 0;
@@ -498,26 +474,47 @@ TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator(
     return;
   }
 
-  std::pair<int, int> around_left_top =
-      tiling_data->UnclampedFirstBorderTileIndexFromSrcCoord(center.x(),
-                                                             center.y());
-  std::pair<int, int> around_right_bottom =
-      tiling_data->UnclampedLastBorderTileIndexFromSrcCoord(
-          center.right() - 1, center.bottom() - 1);
+  // Determine around left, such that it is between -1 and num_tiles_x.
+  int around_left = 0;
+  if (center.x() < 0 || center.IsEmpty())
+    around_left = -1;
+  else if (center.x() > tiling_data->total_size().width())
+    around_left = tiling_data->num_tiles_x();
+  else
+    around_left = tiling_data->FirstBorderTileXIndexFromSrcCoord(center.x());
 
-  if (center.IsEmpty()) {
-    around_left_top = std::make_pair(-1, -1);
-    around_right_bottom = std::make_pair(-1, -1);
+  // Determine around top, such that it is between -1 and num_tiles_y.
+  int around_top = 0;
+  if (center.y() < 0 || center.IsEmpty())
+    around_top = -1;
+  else if (center.y() > tiling_data->total_size().height())
+    around_top = tiling_data->num_tiles_y();
+  else
+    around_top = tiling_data->FirstBorderTileYIndexFromSrcCoord(center.y());
+
+  // Determine around right, such that it is between -1 and num_tiles_x.
+  int right_src_coord = center.right() - 1;
+  int around_right = 0;
+  if (right_src_coord < 0 || center.IsEmpty()) {
+    around_right = -1;
+  } else if (right_src_coord > tiling_data->total_size().width()) {
+    around_right = tiling_data->num_tiles_x();
+  } else {
+    around_right =
+        tiling_data->LastBorderTileXIndexFromSrcCoord(right_src_coord);
   }
 
-  int around_left = std::max(
-      -1, std::min(tiling_data_->num_tiles_x(), around_left_top.first));
-  int around_top = std::max(
-      -1, std::min(tiling_data_->num_tiles_y(), around_left_top.second));
-  int around_right = std::max(
-      -1, std::min(tiling_data_->num_tiles_x(), around_right_bottom.first));
-  int around_bottom = std::max(
-      -1, std::min(tiling_data_->num_tiles_y(), around_right_bottom.second));
+  // Determine around bottom, such that it is between -1 and num_tiles_y.
+  int bottom_src_coord = center.bottom() - 1;
+  int around_bottom = 0;
+  if (bottom_src_coord < 0 || center.IsEmpty()) {
+    around_bottom = -1;
+  } else if (bottom_src_coord > tiling_data->total_size().height()) {
+    around_bottom = tiling_data->num_tiles_y();
+  } else {
+    around_bottom =
+        tiling_data->LastBorderTileYIndexFromSrcCoord(bottom_src_coord);
+  }
 
   vertical_step_count_ = around_bottom - around_top + 1;
   horizontal_step_count_ = around_right - around_left + 1;
