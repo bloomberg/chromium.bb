@@ -774,11 +774,11 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(adapter_->IsDiscovering());
 
-  // First device to appear should be an Apple Mouse.
+  // First device to appear.
   message_loop_.Run();
 
   EXPECT_EQ(1, observer.device_added_count_);
-  EXPECT_EQ(FakeBluetoothDeviceClient::kAppleMouseAddress,
+  EXPECT_EQ(FakeBluetoothDeviceClient::kLegacyAutopairAddress,
             observer.last_device_address_);
 
   // Next we should get another two devices...
@@ -1556,7 +1556,7 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   DiscoverDevices();
 
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kMicrosoftMouseAddress);
+      FakeBluetoothDeviceClient::kConnectUnpairableAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -1578,7 +1578,7 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kMicrosoftMousePath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kConnectUnpairablePath));
   ASSERT_TRUE(properties->trusted.value());
 
   // Install an observer; expect the DeviceRemoved method to be called
@@ -1592,12 +1592,12 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   EXPECT_EQ(0, error_callback_count_);
 
   EXPECT_EQ(1, observer.device_removed_count_);
-  EXPECT_EQ(FakeBluetoothDeviceClient::kMicrosoftMouseAddress,
+  EXPECT_EQ(FakeBluetoothDeviceClient::kConnectUnpairableAddress,
             observer.last_device_address_);
 
   // GetDevices shouldn't return the device either.
   device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kMicrosoftMouseAddress);
+      FakeBluetoothDeviceClient::kConnectUnpairableAddress);
   EXPECT_FALSE(device != NULL);
 }
 
@@ -1638,7 +1638,7 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
   DiscoverDevices();
 
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kMicrosoftMouseAddress);
+      FakeBluetoothDeviceClient::kConnectUnpairableAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -1668,7 +1668,7 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kMicrosoftMousePath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kConnectUnpairablePath));
   EXPECT_TRUE(properties->trusted.value());
 
   // Verify is a HID device and is not connectable.
@@ -1727,7 +1727,7 @@ TEST_F(BluetoothChromeOSTest, ConnectDeviceFails) {
   DiscoverDevices();
 
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kAppleMouseAddress);
+      FakeBluetoothDeviceClient::kLegacyAutopairAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -1823,16 +1823,16 @@ TEST_F(BluetoothChromeOSTest, DisconnectUnconnectedDevice) {
   EXPECT_FALSE(device->IsConnected());
 }
 
-TEST_F(BluetoothChromeOSTest, PairAppleMouse) {
+TEST_F(BluetoothChromeOSTest, PairLegacyAutopair) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // The Apple Mouse requires no PIN or Passkey to pair; this is equivalent
-  // to Simple Secure Pairing or a device with a fixed 0000 PIN.
+  // The Legacy Autopair device requires no PIN or Passkey to pair because
+  // the daemon provides 0000 to the device for us.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kAppleMouseAddress);
+      FakeBluetoothDeviceClient::kLegacyAutopairAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -1875,20 +1875,19 @@ TEST_F(BluetoothChromeOSTest, PairAppleMouse) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kAppleMousePath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kLegacyAutopairPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
-TEST_F(BluetoothChromeOSTest, PairAppleKeyboard) {
+TEST_F(BluetoothChromeOSTest, PairDisplayPinCode) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // The Apple Keyboard requires that we display a randomly generated
-  // PIN on the screen.
+  // Requires that we display a randomly generated PIN on the screen.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kAppleKeyboardAddress);
+      FakeBluetoothDeviceClient::kDisplayPinCodeAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -1933,20 +1932,20 @@ TEST_F(BluetoothChromeOSTest, PairAppleKeyboard) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kAppleKeyboardPath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPinCodePath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
-TEST_F(BluetoothChromeOSTest, PairMotorolaKeyboard) {
+TEST_F(BluetoothChromeOSTest, PairDisplayPasskey) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // The Motorola Keyboard requires that we display a randomly generated
-  // Passkey on the screen, and notifies us as it's typed in.
+  // Requires that we display a randomly generated Passkey on the screen,
+  // and notifies us as it's typed in.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kMotorolaKeyboardAddress);
+      FakeBluetoothDeviceClient::kDisplayPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2006,25 +2005,25 @@ TEST_F(BluetoothChromeOSTest, PairMotorolaKeyboard) {
   ASSERT_EQ(1U, uuids.size());
   EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
 
-  // Fake MotorolaKeyboard is not connectable.
+  // And usually not connectable.
   EXPECT_FALSE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kMotorolaKeyboardPath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPasskeyPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
-TEST_F(BluetoothChromeOSTest, PairSonyHeadphones) {
+TEST_F(BluetoothChromeOSTest, PairRequestPinCode) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // The Sony Headphones fake requires that the user enters a PIN for them.
+  // Requires that the user enters a PIN for them.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+      FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2070,19 +2069,19 @@ TEST_F(BluetoothChromeOSTest, PairSonyHeadphones) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
-TEST_F(BluetoothChromeOSTest, PairPhone) {
+TEST_F(BluetoothChromeOSTest, PairConfirmPasskey) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // The fake phone requests that we confirm a displayed passkey.
+  // Requests that we confirm a displayed passkey.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kPhoneAddress);
+      FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2125,21 +2124,20 @@ TEST_F(BluetoothChromeOSTest, PairPhone) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
-TEST_F(BluetoothChromeOSTest, PairWeirdDevice) {
+TEST_F(BluetoothChromeOSTest, PairRequestPasskey) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // Use the "weird device" fake that requires that the user enters a Passkey,
-  // this would be some kind of device that has a display, but doesn't use
-  // "just works" - maybe a car?
+  // Requires that the user enters a Passkey, this would be some kind of
+  // device that has a display, but doesn't use "just works" - maybe a car?
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+      FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2181,20 +2179,20 @@ TEST_F(BluetoothChromeOSTest, PairWeirdDevice) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
-TEST_F(BluetoothChromeOSTest, PairBoseSpeakers) {
+TEST_F(BluetoothChromeOSTest, PairJustWorks) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
   DiscoverDevices();
 
-  // Use the "bose speakers" fake that uses just-works pairing, since this is
-  // an outgoing pairing, no delegate interaction is required.
+  // Uses just-works pairing, since this is an outgoing pairing, no delegate
+  // interaction is required.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kBoseSpeakersAddress);
+      FakeBluetoothDeviceClient::kJustWorksAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2232,7 +2230,7 @@ TEST_F(BluetoothChromeOSTest, PairBoseSpeakers) {
   // Make sure the trusted property has been set to true.
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath));
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -2373,7 +2371,7 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPinCode) {
 
   // Reject the pairing after we receive a request for the PIN code.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+      FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2415,7 +2413,7 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPinCode) {
 
   // Cancel the pairing after we receive a request for the PIN code.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+      FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2457,7 +2455,7 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPasskey) {
 
   // Reject the pairing after we receive a request for the passkey.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+      FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2499,7 +2497,7 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPasskey) {
 
   // Cancel the pairing after we receive a request for the passkey.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+      FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2541,7 +2539,7 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtConfirmation) {
 
   // Reject the pairing after we receive a request for passkey confirmation.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kPhoneAddress);
+      FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2583,7 +2581,7 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtConfirmation) {
 
   // Cancel the pairing after we receive a request for the passkey.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kPhoneAddress);
+      FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2625,7 +2623,7 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
 
   // Cancel the pairing while we're waiting for the remote host.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kAppleMouseAddress);
+      FakeBluetoothDeviceClient::kLegacyAutopairAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2658,7 +2656,7 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
   EXPECT_FALSE(device->IsPaired());
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphones) {
+TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCode) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
@@ -2668,12 +2666,12 @@ TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphones) {
       &pairing_delegate,
       BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
-  // The sony headphones requests that we provide a PIN code.
+  // Requires that we provide a PIN code.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+      FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2681,7 +2679,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphones) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2710,7 +2708,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphones) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairPhone) {
+TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskey) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
@@ -2720,12 +2718,12 @@ TEST_F(BluetoothChromeOSTest, IncomingPairPhone) {
       &pairing_delegate,
       BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
-  // The fake phone requests that we confirm a displayed passkey.
+  // Requests that we confirm a displayed passkey.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kPhoneAddress);
+      FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2733,7 +2731,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairPhone) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2763,7 +2761,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairPhone) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDevice) {
+TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskey) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
@@ -2773,12 +2771,12 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDevice) {
       &pairing_delegate,
       BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
-  // The weird device requests that we provide a Passkey.
+  // Requests that we provide a Passkey.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+      FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2786,7 +2784,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDevice) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2815,7 +2813,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDevice) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakers) {
+TEST_F(BluetoothChromeOSTest, IncomingPairJustWorks) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
@@ -2825,13 +2823,13 @@ TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakers) {
       &pairing_delegate,
       BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
-  // The Bose Speakers use just-works pairing so require authorization when
-  // the request is incoming.
+  // Uses just-works pairing so, sinec this an incoming pairing, require
+  // authorization from the user.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kBoseSpeakersAddress);
+      FakeBluetoothDeviceClient::kJustWorksAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2839,7 +2837,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakers) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2868,18 +2866,18 @@ TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakers) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphonesWithoutDelegate) {
+TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCodeWithoutDelegate) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
 
-  // The Sony Headphones requests that we provide a PIN Code, without a
-  // pairing delegate, that will be rejected.
+  // Requires that we provide a PIN Code, without a pairing delegate,
+  // that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+      FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2887,7 +2885,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphonesWithoutDelegate) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2911,18 +2909,18 @@ TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphonesWithoutDelegate) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairPhoneWithoutDelegate) {
+TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskeyWithoutDelegate) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
 
-  // The fake phone requests that we confirm a displayed passkey, without a
-  // pairing delegate, that will be rejected.
+  // Requests that we confirm a displayed passkey, without a pairing delegate,
+  // that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kPhoneAddress);
+      FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2930,7 +2928,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairPhoneWithoutDelegate) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2954,18 +2952,18 @@ TEST_F(BluetoothChromeOSTest, IncomingPairPhoneWithoutDelegate) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDeviceWithoutDelegate) {
+TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskeyWithoutDelegate) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
 
-  // The weird device requests that we provide a displayed passkey, without a
-  // pairing delegate, that will be rejected.
+  // Requests that we provide a displayed passkey, without a pairing delegate,
+  // that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+      FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2973,7 +2971,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDeviceWithoutDelegate) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -2997,18 +2995,18 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDeviceWithoutDelegate) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
-TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakersWithoutDelegate) {
+TEST_F(BluetoothChromeOSTest, IncomingPairJustWorksWithoutDelegate) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
 
-  // The Bose Speakers uses just-works pairing and thus requires authorization,
-  // without a pairing delegate, that will be rejected.
+  // Uses just-works pairing and thus requires authorization for incoming
+  // pairings, without a pairing delegate, that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kBoseSpeakersAddress);
+      FakeBluetoothDeviceClient::kJustWorksAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3016,7 +3014,7 @@ TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakersWithoutDelegate) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
@@ -3050,12 +3048,12 @@ TEST_F(BluetoothChromeOSTest, RemovePairingDelegateDuringPairing) {
       &pairing_delegate,
       BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 
-  // The weird device requests that we provide a Passkey.
+  // Requests that we provide a Passkey.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+      FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3063,7 +3061,7 @@ TEST_F(BluetoothChromeOSTest, RemovePairingDelegateDuringPairing) {
   adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),

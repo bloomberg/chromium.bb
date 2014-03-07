@@ -104,45 +104,45 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   static const char kPairedDeviceAddress[];
   static const uint32 kPairedDeviceClass;
 
-  static const char kAppleMousePath[];
-  static const char kAppleMouseName[];
-  static const char kAppleMouseAddress[];
-  static const uint32 kAppleMouseClass;
+  static const char kLegacyAutopairPath[];
+  static const char kLegacyAutopairName[];
+  static const char kLegacyAutopairAddress[];
+  static const uint32 kLegacyAutopairClass;
 
-  static const char kAppleKeyboardPath[];
-  static const char kAppleKeyboardName[];
-  static const char kAppleKeyboardAddress[];
-  static const uint32 kAppleKeyboardClass;
+  static const char kDisplayPinCodePath[];
+  static const char kDisplayPinCodeName[];
+  static const char kDisplayPinCodeAddress[];
+  static const uint32 kDisplayPinCodeClass;
 
   static const char kVanishingDevicePath[];
   static const char kVanishingDeviceName[];
   static const char kVanishingDeviceAddress[];
   static const uint32 kVanishingDeviceClass;
 
-  static const char kMicrosoftMousePath[];
-  static const char kMicrosoftMouseName[];
-  static const char kMicrosoftMouseAddress[];
-  static const uint32 kMicrosoftMouseClass;
+  static const char kConnectUnpairablePath[];
+  static const char kConnectUnpairableName[];
+  static const char kConnectUnpairableAddress[];
+  static const uint32 kConnectUnpairableClass;
 
-  static const char kMotorolaKeyboardPath[];
-  static const char kMotorolaKeyboardName[];
-  static const char kMotorolaKeyboardAddress[];
-  static const uint32 kMotorolaKeyboardClass;
+  static const char kDisplayPasskeyPath[];
+  static const char kDisplayPasskeyName[];
+  static const char kDisplayPasskeyAddress[];
+  static const uint32 kDisplayPasskeyClass;
 
-  static const char kSonyHeadphonesPath[];
-  static const char kSonyHeadphonesName[];
-  static const char kSonyHeadphonesAddress[];
-  static const uint32 kSonyHeadphonesClass;
+  static const char kRequestPinCodePath[];
+  static const char kRequestPinCodeName[];
+  static const char kRequestPinCodeAddress[];
+  static const uint32 kRequestPinCodeClass;
 
-  static const char kPhonePath[];
-  static const char kPhoneName[];
-  static const char kPhoneAddress[];
-  static const uint32 kPhoneClass;
+  static const char kConfirmPasskeyPath[];
+  static const char kConfirmPasskeyName[];
+  static const char kConfirmPasskeyAddress[];
+  static const uint32 kConfirmPasskeyClass;
 
-  static const char kWeirdDevicePath[];
-  static const char kWeirdDeviceName[];
-  static const char kWeirdDeviceAddress[];
-  static const uint32 kWeirdDeviceClass;
+  static const char kRequestPasskeyPath[];
+  static const char kRequestPasskeyName[];
+  static const char kRequestPasskeyAddress[];
+  static const uint32 kRequestPasskeyClass;
 
   static const char kUnconnectableDevicePath[];
   static const char kUnconnectableDeviceName[];
@@ -154,10 +154,10 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   static const char kUnpairableDeviceAddress[];
   static const uint32 kUnpairableDeviceClass;
 
-  static const char kBoseSpeakersPath[];
-  static const char kBoseSpeakersName[];
-  static const char kBoseSpeakersAddress[];
-  static const uint32 kBoseSpeakersClass;
+  static const char kJustWorksPath[];
+  static const char kJustWorksName[];
+  static const char kJustWorksAddress[];
+  static const uint32 kJustWorksClass;
 
  private:
   // Property callback passed when we create Properties* structures.

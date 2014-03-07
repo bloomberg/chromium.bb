@@ -79,21 +79,21 @@ const char FakeBluetoothDeviceClient::kPairedDeviceName[] =
     "Fake Device";
 const uint32 FakeBluetoothDeviceClient::kPairedDeviceClass = 0x000104;
 
-const char FakeBluetoothDeviceClient::kAppleMousePath[] =
+const char FakeBluetoothDeviceClient::kLegacyAutopairPath[] =
     "/fake/hci0/dev1";
-const char FakeBluetoothDeviceClient::kAppleMouseAddress[] =
+const char FakeBluetoothDeviceClient::kLegacyAutopairAddress[] =
     "28:CF:DA:00:00:00";
-const char FakeBluetoothDeviceClient::kAppleMouseName[] =
-    "Apple Magic Mouse";
-const uint32 FakeBluetoothDeviceClient::kAppleMouseClass = 0x002580;
+const char FakeBluetoothDeviceClient::kLegacyAutopairName[] =
+    "Bluetooth 2.0 Mouse";
+const uint32 FakeBluetoothDeviceClient::kLegacyAutopairClass = 0x002580;
 
-const char FakeBluetoothDeviceClient::kAppleKeyboardPath[] =
+const char FakeBluetoothDeviceClient::kDisplayPinCodePath[] =
     "/fake/hci0/dev2";
-const char FakeBluetoothDeviceClient::kAppleKeyboardAddress[] =
+const char FakeBluetoothDeviceClient::kDisplayPinCodeAddress[] =
     "28:37:37:00:00:00";
-const char FakeBluetoothDeviceClient::kAppleKeyboardName[] =
-    "Apple Wireless Keyboard";
-const uint32 FakeBluetoothDeviceClient::kAppleKeyboardClass = 0x002540;
+const char FakeBluetoothDeviceClient::kDisplayPinCodeName[] =
+    "Bluetooth 2.0 Keyboard";
+const uint32 FakeBluetoothDeviceClient::kDisplayPinCodeClass = 0x002540;
 
 const char FakeBluetoothDeviceClient::kVanishingDevicePath[] =
     "/fake/hci0/dev3";
@@ -103,45 +103,45 @@ const char FakeBluetoothDeviceClient::kVanishingDeviceName[] =
     "Vanishing Device";
 const uint32 FakeBluetoothDeviceClient::kVanishingDeviceClass = 0x000104;
 
-const char FakeBluetoothDeviceClient::kMicrosoftMousePath[] =
+const char FakeBluetoothDeviceClient::kConnectUnpairablePath[] =
     "/fake/hci0/dev4";
-const char FakeBluetoothDeviceClient::kMicrosoftMouseAddress[] =
+const char FakeBluetoothDeviceClient::kConnectUnpairableAddress[] =
     "7C:ED:8D:00:00:00";
-const char FakeBluetoothDeviceClient::kMicrosoftMouseName[] =
-    "Microsoft Mouse";
-const uint32 FakeBluetoothDeviceClient::kMicrosoftMouseClass = 0x002580;
+const char FakeBluetoothDeviceClient::kConnectUnpairableName[] =
+    "Unpairable Device";
+const uint32 FakeBluetoothDeviceClient::kConnectUnpairableClass = 0x002580;
 
-const char FakeBluetoothDeviceClient::kMotorolaKeyboardPath[] =
+const char FakeBluetoothDeviceClient::kDisplayPasskeyPath[] =
     "/fake/hci0/dev5";
-const char FakeBluetoothDeviceClient::kMotorolaKeyboardAddress[] =
+const char FakeBluetoothDeviceClient::kDisplayPasskeyAddress[] =
     "00:0F:F6:00:00:00";
-const char FakeBluetoothDeviceClient::kMotorolaKeyboardName[] =
-    "Motorola Keyboard";
-const uint32 FakeBluetoothDeviceClient::kMotorolaKeyboardClass = 0x002540;
+const char FakeBluetoothDeviceClient::kDisplayPasskeyName[] =
+    "Bluetooth 2.1+ Keyboard";
+const uint32 FakeBluetoothDeviceClient::kDisplayPasskeyClass = 0x002540;
 
-const char FakeBluetoothDeviceClient::kSonyHeadphonesPath[] =
+const char FakeBluetoothDeviceClient::kRequestPinCodePath[] =
     "/fake/hci0/dev6";
-const char FakeBluetoothDeviceClient::kSonyHeadphonesAddress[] =
+const char FakeBluetoothDeviceClient::kRequestPinCodeAddress[] =
     "00:24:BE:00:00:00";
-const char FakeBluetoothDeviceClient::kSonyHeadphonesName[] =
-    "Sony BT-00";
-const uint32 FakeBluetoothDeviceClient::kSonyHeadphonesClass = 0x240408;
+const char FakeBluetoothDeviceClient::kRequestPinCodeName[] =
+    "PIN Device";
+const uint32 FakeBluetoothDeviceClient::kRequestPinCodeClass = 0x240408;
 
-const char FakeBluetoothDeviceClient::kPhonePath[] =
+const char FakeBluetoothDeviceClient::kConfirmPasskeyPath[] =
     "/fake/hci0/dev7";
-const char FakeBluetoothDeviceClient::kPhoneAddress[] =
+const char FakeBluetoothDeviceClient::kConfirmPasskeyAddress[] =
     "20:7D:74:00:00:00";
-const char FakeBluetoothDeviceClient::kPhoneName[] =
+const char FakeBluetoothDeviceClient::kConfirmPasskeyName[] =
     "Phone";
-const uint32 FakeBluetoothDeviceClient::kPhoneClass = 0x7a020c;
+const uint32 FakeBluetoothDeviceClient::kConfirmPasskeyClass = 0x7a020c;
 
-const char FakeBluetoothDeviceClient::kWeirdDevicePath[] =
+const char FakeBluetoothDeviceClient::kRequestPasskeyPath[] =
     "/fake/hci0/dev8";
-const char FakeBluetoothDeviceClient::kWeirdDeviceAddress[] =
+const char FakeBluetoothDeviceClient::kRequestPasskeyAddress[] =
     "20:7D:74:00:00:01";
-const char FakeBluetoothDeviceClient::kWeirdDeviceName[] =
-    "Weird Device";
-const uint32 FakeBluetoothDeviceClient::kWeirdDeviceClass = 0x7a020c;
+const char FakeBluetoothDeviceClient::kRequestPasskeyName[] =
+    "Passkey Device";
+const uint32 FakeBluetoothDeviceClient::kRequestPasskeyClass = 0x7a020c;
 
 const char FakeBluetoothDeviceClient::kUnconnectableDevicePath[] =
     "/fake/hci0/dev9";
@@ -159,13 +159,13 @@ const char FakeBluetoothDeviceClient::kUnpairableDeviceName[] =
     "Unpairable Device";
 const uint32 FakeBluetoothDeviceClient::kUnpairableDeviceClass = 0x002540;
 
-const char FakeBluetoothDeviceClient::kBoseSpeakersPath[] =
+const char FakeBluetoothDeviceClient::kJustWorksPath[] =
     "/fake/hci0/devB";
-const char FakeBluetoothDeviceClient::kBoseSpeakersAddress[] =
+const char FakeBluetoothDeviceClient::kJustWorksAddress[] =
     "00:0C:8A:00:00:00";
-const char FakeBluetoothDeviceClient::kBoseSpeakersName[] =
-    "Bose SoundLink Mobile speaker II";
-const uint32 FakeBluetoothDeviceClient::kBoseSpeakersClass = 0x240428;
+const char FakeBluetoothDeviceClient::kJustWorksName[] =
+    "Just-Works Device";
+const uint32 FakeBluetoothDeviceClient::kJustWorksClass = 0x240428;
 
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
@@ -277,7 +277,7 @@ void FakeBluetoothDeviceClient::Connect(
   }
 
   if (properties->paired.value() != true &&
-      object_path != dbus::ObjectPath(kMicrosoftMousePath)) {
+      object_path != dbus::ObjectPath(kConnectUnpairablePath)) {
     // Must be paired.
     error_callback.Run(bluetooth_device::kErrorFailed, "Not paired");
     return;
@@ -482,21 +482,21 @@ void FakeBluetoothDeviceClient::CreateDevice(
       device_path));
   properties->adapter.ReplaceValue(adapter_path);
 
-  if (device_path == dbus::ObjectPath(kAppleMousePath)) {
-    properties->address.ReplaceValue(kAppleMouseAddress);
-    properties->bluetooth_class.ReplaceValue(kAppleMouseClass);
-    properties->name.ReplaceValue("Fake Apple Magic Mouse");
-    properties->alias.ReplaceValue(kAppleMouseName);
+  if (device_path == dbus::ObjectPath(kLegacyAutopairPath)) {
+    properties->address.ReplaceValue(kLegacyAutopairAddress);
+    properties->bluetooth_class.ReplaceValue(kLegacyAutopairClass);
+    properties->name.ReplaceValue("LegacyAutopair");
+    properties->alias.ReplaceValue(kLegacyAutopairName);
 
     std::vector<std::string> uuids;
     uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
     properties->uuids.ReplaceValue(uuids);
 
-  } else if (device_path == dbus::ObjectPath(kAppleKeyboardPath)) {
-    properties->address.ReplaceValue(kAppleKeyboardAddress);
-    properties->bluetooth_class.ReplaceValue(kAppleKeyboardClass);
-    properties->name.ReplaceValue("Fake Apple Wireless Keyboard");
-    properties->alias.ReplaceValue(kAppleKeyboardName);
+  } else if (device_path == dbus::ObjectPath(kDisplayPinCodePath)) {
+    properties->address.ReplaceValue(kDisplayPinCodeAddress);
+    properties->bluetooth_class.ReplaceValue(kDisplayPinCodeClass);
+    properties->name.ReplaceValue("DisplayPinCode");
+    properties->alias.ReplaceValue(kDisplayPinCodeName);
 
     std::vector<std::string> uuids;
     uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
@@ -505,51 +505,51 @@ void FakeBluetoothDeviceClient::CreateDevice(
   } else if (device_path == dbus::ObjectPath(kVanishingDevicePath)) {
     properties->address.ReplaceValue(kVanishingDeviceAddress);
     properties->bluetooth_class.ReplaceValue(kVanishingDeviceClass);
-    properties->name.ReplaceValue("Fake Vanishing Device");
+    properties->name.ReplaceValue("VanishingDevice");
     properties->alias.ReplaceValue(kVanishingDeviceName);
 
-  } else if (device_path == dbus::ObjectPath(kMicrosoftMousePath)) {
-    properties->address.ReplaceValue(kMicrosoftMouseAddress);
-    properties->bluetooth_class.ReplaceValue(kMicrosoftMouseClass);
-    properties->name.ReplaceValue("Fake Microsoft Mouse");
-    properties->alias.ReplaceValue(kMicrosoftMouseName);
+  } else if (device_path == dbus::ObjectPath(kConnectUnpairablePath)) {
+    properties->address.ReplaceValue(kConnectUnpairableAddress);
+    properties->bluetooth_class.ReplaceValue(kConnectUnpairableClass);
+    properties->name.ReplaceValue("ConnectUnpairable");
+    properties->alias.ReplaceValue(kConnectUnpairableName);
 
     std::vector<std::string> uuids;
     uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
     properties->uuids.ReplaceValue(uuids);
 
-  } else if (device_path == dbus::ObjectPath(kMotorolaKeyboardPath)) {
-    properties->address.ReplaceValue(kMotorolaKeyboardAddress);
-    properties->bluetooth_class.ReplaceValue(kMotorolaKeyboardClass);
-    properties->name.ReplaceValue("Fake Motorola Keyboard");
-    properties->alias.ReplaceValue(kMotorolaKeyboardName);
+  } else if (device_path == dbus::ObjectPath(kDisplayPasskeyPath)) {
+    properties->address.ReplaceValue(kDisplayPasskeyAddress);
+    properties->bluetooth_class.ReplaceValue(kDisplayPasskeyClass);
+    properties->name.ReplaceValue("DisplayPasskey");
+    properties->alias.ReplaceValue(kDisplayPasskeyName);
 
     std::vector<std::string> uuids;
     uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
     properties->uuids.ReplaceValue(uuids);
 
-  } else if (device_path == dbus::ObjectPath(kSonyHeadphonesPath)) {
-    properties->address.ReplaceValue(kSonyHeadphonesAddress);
-    properties->bluetooth_class.ReplaceValue(kSonyHeadphonesClass);
-    properties->name.ReplaceValue("Fake Sony Headphones");
-    properties->alias.ReplaceValue(kSonyHeadphonesName);
+  } else if (device_path == dbus::ObjectPath(kRequestPinCodePath)) {
+    properties->address.ReplaceValue(kRequestPinCodeAddress);
+    properties->bluetooth_class.ReplaceValue(kRequestPinCodeClass);
+    properties->name.ReplaceValue("RequestPinCode");
+    properties->alias.ReplaceValue(kRequestPinCodeName);
 
-  } else if (device_path == dbus::ObjectPath(kPhonePath)) {
-    properties->address.ReplaceValue(kPhoneAddress);
-    properties->bluetooth_class.ReplaceValue(kPhoneClass);
-    properties->name.ReplaceValue("Fake Phone");
-    properties->alias.ReplaceValue(kPhoneName);
+  } else if (device_path == dbus::ObjectPath(kConfirmPasskeyPath)) {
+    properties->address.ReplaceValue(kConfirmPasskeyAddress);
+    properties->bluetooth_class.ReplaceValue(kConfirmPasskeyClass);
+    properties->name.ReplaceValue("ConfirmPasskey");
+    properties->alias.ReplaceValue(kConfirmPasskeyName);
 
-  } else if (device_path == dbus::ObjectPath(kWeirdDevicePath)) {
-    properties->address.ReplaceValue(kWeirdDeviceAddress);
-    properties->bluetooth_class.ReplaceValue(kWeirdDeviceClass);
-    properties->name.ReplaceValue("Fake Weird Device");
-    properties->alias.ReplaceValue(kWeirdDeviceName);
+  } else if (device_path == dbus::ObjectPath(kRequestPasskeyPath)) {
+    properties->address.ReplaceValue(kRequestPasskeyAddress);
+    properties->bluetooth_class.ReplaceValue(kRequestPasskeyClass);
+    properties->name.ReplaceValue("RequestPasskey");
+    properties->alias.ReplaceValue(kRequestPasskeyName);
 
   } else if (device_path == dbus::ObjectPath(kUnconnectableDevicePath)) {
     properties->address.ReplaceValue(kUnconnectableDeviceAddress);
     properties->bluetooth_class.ReplaceValue(kUnconnectableDeviceClass);
-    properties->name.ReplaceValue("Fake Unconnectable Device");
+    properties->name.ReplaceValue("UnconnectableDevice");
     properties->alias.ReplaceValue(kUnconnectableDeviceName);
 
   } else if (device_path == dbus::ObjectPath(kUnpairableDevicePath)) {
@@ -558,11 +558,11 @@ void FakeBluetoothDeviceClient::CreateDevice(
     properties->name.ReplaceValue("Fake Unpairable Device");
     properties->alias.ReplaceValue(kUnpairableDeviceName);
 
-  } else if (device_path == dbus::ObjectPath(kBoseSpeakersPath)) {
-    properties->address.ReplaceValue(kBoseSpeakersAddress);
-    properties->bluetooth_class.ReplaceValue(kBoseSpeakersClass);
-    properties->name.ReplaceValue("Fake Bose Speakers");
-    properties->alias.ReplaceValue(kBoseSpeakersName);
+  } else if (device_path == dbus::ObjectPath(kJustWorksPath)) {
+    properties->address.ReplaceValue(kJustWorksAddress);
+    properties->bluetooth_class.ReplaceValue(kJustWorksClass);
+    properties->name.ReplaceValue("JustWorks");
+    properties->alias.ReplaceValue(kJustWorksName);
 
   } else {
     NOTREACHED();
@@ -620,35 +620,35 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
   VLOG(1) << "discovery simulation, step " << discovery_simulation_step_;
   if (discovery_simulation_step_ == 2) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kAppleMousePath));
+                 dbus::ObjectPath(kLegacyAutopairPath));
 
   } else if (discovery_simulation_step_ == 4) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kAppleKeyboardPath));
+                 dbus::ObjectPath(kDisplayPinCodePath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kVanishingDevicePath));
 
   } else if (discovery_simulation_step_ == 7) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kMicrosoftMousePath));
+                 dbus::ObjectPath(kConnectUnpairablePath));
 
   } else if (discovery_simulation_step_ == 8) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kMotorolaKeyboardPath));
+                 dbus::ObjectPath(kDisplayPasskeyPath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kSonyHeadphonesPath));
+                 dbus::ObjectPath(kRequestPinCodePath));
 
   } else if (discovery_simulation_step_ == 10) {
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kPhonePath));
+                 dbus::ObjectPath(kConfirmPasskeyPath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kWeirdDevicePath));
+                 dbus::ObjectPath(kRequestPasskeyPath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kUnconnectableDevicePath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kUnpairableDevicePath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kBoseSpeakersPath));
+                 dbus::ObjectPath(kJustWorksPath));
 
   } else if (discovery_simulation_step_ == 13) {
     RemoveDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
@@ -676,43 +676,43 @@ void FakeBluetoothDeviceClient::IncomingPairingSimulationTimer() {
   switch (incoming_pairing_simulation_step_) {
     case 1:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                   dbus::ObjectPath(kPhonePath));
-      SimulatePairing(dbus::ObjectPath(kPhonePath), true,
+                   dbus::ObjectPath(kConfirmPasskeyPath));
+      SimulatePairing(dbus::ObjectPath(kConfirmPasskeyPath), true,
                       base::Bind(&base::DoNothing),
                       base::Bind(&SimpleErrorCallback));
       break;
     case 2:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                   dbus::ObjectPath(kBoseSpeakersPath));
-      SimulatePairing(dbus::ObjectPath(kBoseSpeakersPath), true,
+                   dbus::ObjectPath(kJustWorksPath));
+      SimulatePairing(dbus::ObjectPath(kJustWorksPath), true,
                       base::Bind(&base::DoNothing),
                       base::Bind(&SimpleErrorCallback));
       break;
     case 3:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                   dbus::ObjectPath(kAppleKeyboardPath));
-      SimulatePairing(dbus::ObjectPath(kAppleKeyboardPath), true,
+                   dbus::ObjectPath(kDisplayPinCodePath));
+      SimulatePairing(dbus::ObjectPath(kDisplayPinCodePath), true,
                       base::Bind(&base::DoNothing),
                       base::Bind(&SimpleErrorCallback));
       break;
     case 4:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                   dbus::ObjectPath(kMotorolaKeyboardPath));
-      SimulatePairing(dbus::ObjectPath(kMotorolaKeyboardPath), true,
+                   dbus::ObjectPath(kDisplayPasskeyPath));
+      SimulatePairing(dbus::ObjectPath(kDisplayPasskeyPath), true,
                       base::Bind(&base::DoNothing),
                       base::Bind(&SimpleErrorCallback));
       break;
     case 5:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                   dbus::ObjectPath(kSonyHeadphonesPath));
-      SimulatePairing(dbus::ObjectPath(kSonyHeadphonesPath), true,
+                   dbus::ObjectPath(kRequestPinCodePath));
+      SimulatePairing(dbus::ObjectPath(kRequestPinCodePath), true,
                       base::Bind(&base::DoNothing),
                       base::Bind(&SimpleErrorCallback));
       break;
     case 6:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                   dbus::ObjectPath(kWeirdDevicePath));
-      SimulatePairing(dbus::ObjectPath(kWeirdDevicePath), true,
+                   dbus::ObjectPath(kRequestPasskeyPath));
+      SimulatePairing(dbus::ObjectPath(kRequestPasskeyPath), true,
                       base::Bind(&base::DoNothing),
                       base::Bind(&SimpleErrorCallback));
       break;
@@ -742,8 +742,8 @@ void FakeBluetoothDeviceClient::SimulatePairing(
       fake_bluetooth_agent_manager_client->GetAgentServiceProvider();
   CHECK(agent_service_provider != NULL);
 
-  if (object_path == dbus::ObjectPath(kAppleMousePath) ||
-      object_path == dbus::ObjectPath(kMicrosoftMousePath) ||
+  if (object_path == dbus::ObjectPath(kLegacyAutopairPath) ||
+      object_path == dbus::ObjectPath(kConnectUnpairablePath) ||
       object_path == dbus::ObjectPath(kUnconnectableDevicePath)) {
     // No need to call anything on the pairing delegate, just wait 3 times
     // the interval before acting as if the other end accepted it.
@@ -754,7 +754,7 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    object_path, callback, error_callback),
         base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
 
-  } else if (object_path == dbus::ObjectPath(kAppleKeyboardPath)) {
+  } else if (object_path == dbus::ObjectPath(kDisplayPinCodePath)) {
     // Display a Pincode, and wait 7 times the interval before acting as
     // if the other end accepted it.
     agent_service_provider->DisplayPinCode(object_path, "123456");
@@ -775,7 +775,7 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    object_path, error_callback),
         base::TimeDelta::FromMilliseconds(4 * simulation_interval_ms_));
 
-  } else if (object_path == dbus::ObjectPath(kMotorolaKeyboardPath)) {
+  } else if (object_path == dbus::ObjectPath(kDisplayPasskeyPath)) {
     // Display a passkey, and each interval act as if another key was entered
     // for it.
     agent_service_provider->DisplayPasskey(object_path, 123456, 0);
@@ -787,7 +787,7 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    1, object_path, callback, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
-  } else if (object_path == dbus::ObjectPath(kSonyHeadphonesPath)) {
+  } else if (object_path == dbus::ObjectPath(kRequestPinCodePath)) {
     // Request a Pincode.
     agent_service_provider->RequestPinCode(
         object_path,
@@ -797,7 +797,7 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    callback,
                    error_callback));
 
-  } else if (object_path == dbus::ObjectPath(kPhonePath)) {
+  } else if (object_path == dbus::ObjectPath(kConfirmPasskeyPath)) {
     // Request confirmation of a Passkey.
     agent_service_provider->RequestConfirmation(
         object_path, 123456,
@@ -807,7 +807,7 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    callback,
                    error_callback));
 
-  } else if (object_path == dbus::ObjectPath(kWeirdDevicePath)) {
+  } else if (object_path == dbus::ObjectPath(kRequestPasskeyPath)) {
     // Request a Passkey from the user.
     agent_service_provider->RequestPasskey(
         object_path,
@@ -826,7 +826,7 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 
-  } else if (object_path == dbus::ObjectPath(kBoseSpeakersPath)) {
+  } else if (object_path == dbus::ObjectPath(kJustWorksPath)) {
     if (incoming_request) {
       agent_service_provider->RequestAuthorization(
           object_path,

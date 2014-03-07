@@ -85,10 +85,14 @@ void FakeBluetoothInputClient::AddInputDevice(
       base::Unretained(this),
       object_path));
 
-  // Mark Apple mouse and keyboard as ReconnectMode "any" and the Motorola and
-  // Microsoft devices as ReconnectMode "device".
-  if (object_path.value() == FakeBluetoothDeviceClient::kMotorolaKeyboardPath ||
-      object_path.value() == FakeBluetoothDeviceClient::kMicrosoftMousePath) {
+  // The LegacyAutopair and DisplayPinCode devices represent a typical mouse
+  // and keyboard respectively, so mark them as ReconnectMode "any". The
+  // DisplayPasskey device represents a Bluetooth 2.1+ keyboard and the
+  // ConnectUnpairable device represents a pre-standardization mouse, so mark
+  // them as ReconnectMode "device".
+  if (object_path.value() == FakeBluetoothDeviceClient::kDisplayPasskeyPath ||
+      object_path.value() ==
+          FakeBluetoothDeviceClient::kConnectUnpairablePath) {
     properties->reconnect_mode.ReplaceValue(
         bluetooth_input::kDeviceReconnectModeProperty);
   } else {
