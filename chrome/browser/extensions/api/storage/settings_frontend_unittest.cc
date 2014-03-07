@@ -93,6 +93,17 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 // alternating in each test.
 // TODO(kalman): explicitly test the two interact correctly.
 
+// Tests that the frontend is set up correctly.
+TEST_F(ExtensionSettingsFrontendTest, Basics) {
+  // Local storage is always enabled.
+  EXPECT_TRUE(frontend_->IsStorageEnabled(settings::LOCAL));
+  EXPECT_TRUE(frontend_->GetValueStoreCache(settings::LOCAL));
+
+  // Invalid storage areas are not available.
+  EXPECT_FALSE(frontend_->IsStorageEnabled(settings::INVALID));
+  EXPECT_FALSE(frontend_->GetValueStoreCache(settings::INVALID));
+}
+
 TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
   scoped_refptr<const Extension> extension =

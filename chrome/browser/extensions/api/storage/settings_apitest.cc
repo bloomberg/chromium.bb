@@ -114,18 +114,19 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
         settings_namespace, normal_action, incognito_action, NULL, true);
   }
 
+  syncer::SyncableService* GetSyncableService() {
+    return settings_sync_util::GetSyncableService(browser()->profile(),
+                                                  kModelType);
+  }
+
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {
     base::MessageLoop::current()->RunUntilIdle();
-    SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
-    InitSyncWithSyncableService(sync_processor,
-                                frontend->GetBackendForSync(kModelType));
+    InitSyncWithSyncableService(sync_processor, GetSyncableService());
   }
 
   void SendChanges(const syncer::SyncChangeList& change_list) {
     base::MessageLoop::current()->RunUntilIdle();
-    SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
-    SendChangesToSyncableService(change_list,
-                                 frontend->GetBackendForSync(kModelType));
+    SendChangesToSyncableService(change_list, GetSyncableService());
   }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

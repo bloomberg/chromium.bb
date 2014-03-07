@@ -5,13 +5,20 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_SYNC_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_SYNC_UTIL_H_
 
-
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 
 namespace base {
 class Value;
-}  // namespace base
+}
+
+namespace content {
+class BrowserContext;
+}
+
+namespace syncer {
+class SyncableService;
+}
 
 namespace extensions {
 
@@ -43,6 +50,11 @@ syncer::SyncChange CreateDelete(
     const std::string& extension_id,
     const std::string& key,
     syncer::ModelType type);
+
+// Returns the sync service for settings. Must be called on the FILE thread.
+// |type| must be either APP_SETTINGS or EXTENSION_SETTINGS.
+syncer::SyncableService* GetSyncableService(content::BrowserContext* context,
+                                            syncer::ModelType type);
 
 }  // namespace settings_sync_util
 

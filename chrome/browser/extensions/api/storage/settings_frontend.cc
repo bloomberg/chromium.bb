@@ -4,15 +4,13 @@
 
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 
-#include <limits>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/sync_or_local_value_store_cache.h"
+#include "chrome/browser/extensions/api/storage/local_value_store_cache.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,8 +23,6 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace extensions {
-
-namespace storage = api::storage;
 
 namespace {
 
@@ -52,7 +48,7 @@ class DefaultObserver : public SettingsObserver {
     args->Append(new base::StringValue(settings_namespace::ToString(
         settings_namespace)));
     scoped_ptr<Event> event(new Event(
-        storage::OnChanged::kEventName, args.Pass()));
+        api::storage::OnChanged::kEventName, args.Pass()));
     ExtensionSystem::Get(browser_context_)->event_router()->
         DispatchEventToExtension(extension_id, event.Pass());
   }
@@ -60,24 +56,6 @@ class DefaultObserver : public SettingsObserver {
  private:
   BrowserContext* const browser_context_;
 };
-
-SettingsStorageQuotaEnforcer::Limits GetLocalLimits() {
-  SettingsStorageQuotaEnforcer::Limits limits = {
-    static_cast<size_t>(api::storage::local::QUOTA_BYTES),
-    std::numeric_limits<size_t>::max(),
-    std::numeric_limits<size_t>::max()
-  };
-  return limits;
-}
-
-SettingsStorageQuotaEnforcer::Limits GetSyncLimits() {
-  SettingsStorageQuotaEnforcer::Limits limits = {
-    static_cast<size_t>(api::storage::sync::QUOTA_BYTES),
-    static_cast<size_t>(api::storage::sync::QUOTA_BYTES_PER_ITEM),
-    static_cast<size_t>(api::storage::sync::MAX_ITEMS)
-  };
-  return limits;
-}
 
 }  // namespace
 
@@ -94,18 +72,14 @@ SettingsFrontend* SettingsFrontend::CreateForTesting(
 }
 
 SettingsFrontend::SettingsFrontend(BrowserContext* context)
-    : local_quota_limit_(GetLocalLimits()),
-      sync_quota_limit_(GetSyncLimits()),
-      browser_context_(context) {
+    : browser_context_(context) {
   Init(new LeveldbSettingsStorageFactory());
 }
 
 SettingsFrontend::SettingsFrontend(
     const scoped_refptr<SettingsStorageFactory>& factory,
     BrowserContext* context)
-    : local_quota_limit_(GetLocalLimits()),
-      sync_quota_limit_(GetSyncLimits()),
-      browser_context_(context) {
+    : browser_context_(context) {
   Init(factory);
 }
 
@@ -118,24 +92,11 @@ void SettingsFrontend::Init(
 
   observers_->AddObserver(browser_context_observer_.get());
 
-  const base::FilePath& browser_context_path = browser_context_->GetPath();
   caches_[settings_namespace::LOCAL] =
-      new SyncOrLocalValueStoreCache(
-          settings_namespace::LOCAL,
-          factory,
-          local_quota_limit_,
-          observers_,
-          browser_context_path);
-  caches_[settings_namespace::SYNC] =
-      new SyncOrLocalValueStoreCache(
-          settings_namespace::SYNC,
-          factory,
-          sync_quota_limit_,
-          observers_,
-          browser_context_path);
+      new LocalValueStoreCache(factory, browser_context_->GetPath());
 
-  // Add any additional caches the embedder supports (for example, a cache
-  // for chrome.storage.managed).
+  // Add any additional caches the embedder supports (for example, caches
+  // for chrome.storage.managed and chrome.storage.sync).
   ExtensionsAPIClient::Get()->AddAdditionalValueStoreCaches(
       browser_context_, factory, observers_, &caches_);
 }
@@ -150,15 +111,12 @@ SettingsFrontend::~SettingsFrontend() {
   }
 }
 
-syncer::SyncableService* SettingsFrontend::GetBackendForSync(
-    syncer::ModelType type) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CacheMap::const_iterator it = caches_.find(settings_namespace::SYNC);
-  DCHECK(it != caches_.end());
-  const SyncOrLocalValueStoreCache* sync_cache =
-      static_cast<const SyncOrLocalValueStoreCache*>(it->second);
-  DCHECK(type == syncer::APP_SETTINGS || type == syncer::EXTENSION_SETTINGS);
-  return sync_cache->GetSyncableService(type);
+ValueStoreCache* SettingsFrontend::GetValueStoreCache(
+    settings_namespace::Namespace settings_namespace) const {
+  CacheMap::const_iterator it = caches_.find(settings_namespace);
+  if (it != caches_.end())
+    return it->second;
+  return NULL;
 }
 
 bool SettingsFrontend::IsStorageEnabled(

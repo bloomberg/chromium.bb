@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/storage/settings_test_util.h"
+#include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -231,7 +232,9 @@ class ExtensionSettingsSyncTest : public testing::Test {
   // Gets the syncer::SyncableService for the given sync type.
   syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
     base::MessageLoop::current()->RunUntilIdle();
-    return frontend_->GetBackendForSync(model_type);
+    SyncValueStoreCache* sync_cache = static_cast<SyncValueStoreCache*>(
+        frontend_->GetValueStoreCache(settings_namespace::SYNC));
+    return sync_cache->GetSyncableService(model_type);
   }
 
   // Gets all the sync data from the SyncableService for a sync type as a map

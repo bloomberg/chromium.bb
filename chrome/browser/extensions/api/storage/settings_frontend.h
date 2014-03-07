@@ -12,11 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/value_store_cache.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "sync/api/syncable_service.h"
 
 namespace content {
 class BrowserContext;
@@ -26,8 +24,6 @@ namespace extensions {
 
 // The component of extension settings which runs on the UI thread, as opposed
 // to SettingsBackend which lives on the FILE thread.
-// All public methods, must be called on the UI thread, with the exception of
-// GetBackendForSync(), which must be called on the FILE thread.
 class SettingsFrontend : public BrowserContextKeyedAPI {
  public:
   // Returns the current instance for |context|.
@@ -41,9 +37,9 @@ class SettingsFrontend : public BrowserContextKeyedAPI {
   // Public so tests can create and delete their own instances.
   virtual ~SettingsFrontend();
 
-  // Must only be called from the FILE thread. |type| should be either
-  // APP_SETTINGS or EXTENSION_SETTINGS.
-  syncer::SyncableService* GetBackendForSync(syncer::ModelType type) const;
+  // Returns the value store cache for |settings_namespace|.
+  ValueStoreCache* GetValueStoreCache(
+      settings_namespace::Namespace settings_namespace) const;
 
   // Returns true if |settings_namespace| is a valid namespace.
   bool IsStorageEnabled(settings_namespace::Namespace settings_namespace) const;
@@ -82,11 +78,6 @@ class SettingsFrontend : public BrowserContextKeyedAPI {
                    content::BrowserContext* context);
 
   void Init(const scoped_refptr<SettingsStorageFactory>& storage_factory);
-
-  // The quota limit configurations for the local and sync areas, taken out of
-  // the schema in chrome/common/extensions/api/storage.json.
-  const SettingsStorageQuotaEnforcer::Limits local_quota_limit_;
-  const SettingsStorageQuotaEnforcer::Limits sync_quota_limit_;
 
   // The (non-incognito) browser context this Frontend belongs to.
   content::BrowserContext* const browser_context_;

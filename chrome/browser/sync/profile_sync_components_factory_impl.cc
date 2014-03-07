@@ -9,7 +9,7 @@
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_frontend.h"
+#include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/history/history_service.h"
@@ -471,8 +471,7 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
     case syncer::APP_SETTINGS:
     case syncer::EXTENSION_SETTINGS:
-      return extensions::SettingsFrontend::Get(profile_)
-          ->GetBackendForSync(type)
+      return extensions::settings_sync_util::GetSyncableService(profile_, type)
           ->AsWeakPtr();
 #if defined(ENABLE_APP_LIST)
     case syncer::APP_LIST:
