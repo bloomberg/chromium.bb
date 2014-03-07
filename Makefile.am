@@ -57,10 +57,13 @@ nodist_libwayland_client_la_SOURCES =		\
 
 pkgconfig_DATA += src/wayland-client.pc src/wayland-server.pc
 
-protocoldir = $(top_srcdir)/protocol
-
 if ENABLE_SCANNER
 wayland_scanner = $(top_builddir)/wayland-scanner
+bin_PROGRAMS = wayland-scanner
+wayland_scanner_SOURCES = src/scanner.c
+wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
+$(BUILT_SOURCES) : wayland-scanner
+pkgconfig_DATA += src/wayland-scanner.pc
 else
 wayland_scanner = wayland-scanner
 endif
@@ -73,18 +76,6 @@ protocol/%-server-protocol.h : $(top_srcdir)/protocol/%.xml
 
 protocol/%-client-protocol.h : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
-
-
-if ENABLE_SCANNER
-bin_PROGRAMS = wayland-scanner
-
-wayland_scanner_SOURCES = src/scanner.c
-wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
-
-$(BUILT_SOURCES) : wayland-scanner
-
-pkgconfig_DATA += src/wayland-scanner.pc
-endif
 
 BUILT_SOURCES =					\
 	$(nodist_libwayland_server_la_SOURCES)	\
