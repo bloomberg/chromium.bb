@@ -191,11 +191,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
 
-  net::BackendType cache_type = net::CACHE_BACKEND_SIMPLE;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableSimpleCache)) {
-    cache_type = net::CACHE_BACKEND_BLOCKFILE;
-  }
   PopulateNetworkSessionParams(url_request_context_.get(),
                                &network_session_params);
 
@@ -203,7 +198,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       network_session_params,
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
-          cache_type,
+          net::CACHE_BACKEND_SIMPLE,
           partition_path_.Append(FILE_PATH_LITERAL("Cache")),
           20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));

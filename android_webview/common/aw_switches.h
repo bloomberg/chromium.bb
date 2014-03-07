@@ -7,9 +7,6 @@
 
 namespace switches {
 
-// When set, falls back to using the old disk cache.
-extern const char kDisableSimpleCache[];
-
 // Explicitly enable accelerated 2d canvas.
 // TODO(boliu): Remove this switch once on by default.
 extern const char kEnableAccelerated2dCanvas[];

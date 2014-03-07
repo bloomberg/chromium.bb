@@ -6,8 +6,6 @@
 
 namespace switches {
 
-const char kDisableSimpleCache[] = "disable-simple-cache";
-
 const char kEnableAccelerated2dCanvas[] = "enable-accelerated-2d-canvas";
 
 }  // namespace switches
