@@ -17,7 +17,8 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.content.browser.ContentView;
@@ -52,7 +53,7 @@ import org.chromium.ui.UiUtils;
  * As the scroll offset or the viewport height are updated via a scroll or fling, the difference
  * from the initial value is used to determine the View's Y-translation.  If a gesture is stopped,
  * the View will be snapped back into the center of the screen or entirely off of the screen, based
- * on how much of the banner is visible, or where the user is currently located on the page.
+ * on how much of the View is visible, or where the user is currently located on the page.
  *
  * HORIZONTAL SCROLL CALCULATIONS
  * Horizontal drags and swipes are used to dismiss the View.  Translating the View far enough
@@ -68,7 +69,6 @@ import org.chromium.ui.UiUtils;
  */
 public abstract class SwipableOverlayView extends FrameLayout {
     private static final float ALPHA_THRESHOLD = 0.25f;
-    private static final float DISMISS_FLING_THRESHOLD = 0.1f;
     private static final float DISMISS_SWIPE_THRESHOLD = 0.75f;
     private static final float FULL_THRESHOLD = 0.5f;
     private static final float VERTICAL_FLING_SHOW_THRESHOLD = 0.2f;
@@ -83,7 +83,8 @@ public abstract class SwipableOverlayView extends FrameLayout {
     private static final int DRAGGED_CANCEL = 0;
     private static final int DRAGGED_RIGHT = 1;
 
-    protected static final long MS_ANIMATION_DURATION = 300;
+    protected static final long MS_ANIMATION_DURATION = 250;
+    private static final long MS_DISMISS_FLING_THRESHOLD = MS_ANIMATION_DURATION * 2;
 
     // Detects when the user is dragging the View.
     private final GestureDetector mGestureDetector;
@@ -91,17 +92,29 @@ public abstract class SwipableOverlayView extends FrameLayout {
     // Detects when the user is dragging the ContentView.
     private final GestureStateListener mGestureStateListener;
 
+    // Monitors for animation completions and resets the state.
+    private final AnimatorListenerAdapter mAnimatorListenerAdapter;
+
+    // Interpolator used for the animation.
+    private final Interpolator mInterpolator;
+
     // Tracks whether the user is scrolling or flinging.
     private int mGestureState;
 
     // Animation currently being used to translate the View.
     private AnimatorSet mCurrentAnimation;
 
-    // Whether or not the current animation is dismissing the View.
-    private boolean mIsAnimationRemovingView;
+    // Whether or not the current animation is adding or removing the View.
+    private boolean mIsAnimationAddingOrRemovingView;
 
     // Direction the user is horizontally dragging.
     private int mDragDirection;
+
+    // How quickly the user is horizontally dragging.
+    private float mDragXPerMs;
+
+    // WHen the user first started dragging.
+    private long mDragStartMs;
 
     // Used to determine when the layout has changed and the Viewport must be updated.
     private int mParentHeight;
@@ -126,6 +139,8 @@ public abstract class SwipableOverlayView extends FrameLayout {
         mGestureDetector = new GestureDetector(context, gestureListener);
         mGestureStateListener = createGestureStateListener();
         mGestureState = GESTURE_NONE;
+        mAnimatorListenerAdapter = createAnimatorListenerAdapter();
+        mInterpolator = new DecelerateInterpolator(1.0f);
     }
 
     /**
@@ -136,7 +151,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
         contentView.addView(this, 0, createLayoutParams());
         contentView.getContentViewCore().addGestureStateListener(mGestureStateListener);
 
-        // Listen for the layout to know when to animate the banner coming onto the screen.
+        // Listen for the layout to know when to animate the View coming onto the screen.
         addOnLayoutChangeListener(createLayoutChangeListener());
     }
 
@@ -168,7 +183,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
      */
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        // Hide the banner when the keyboard is showing.
+        // Hide the View when the keyboard is showing.
         boolean keyboardIsShowing = UiUtils.isKeyboardShowing(getContext(), this);
         setVisibility(keyboardIsShowing ? INVISIBLE : VISIBLE);
 
@@ -207,27 +222,28 @@ public abstract class SwipableOverlayView extends FrameLayout {
     }
 
     /**
-     * Creates a listener that monitors horizontal dismissal gestures performed on the View.
+     * Creates a listener that monitors horizontal gestures performed on the View.
      * @return The SimpleOnGestureListener that will monitor the View.
      */
     private SimpleOnGestureListener createGestureListener() {
         return new SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent e) {
+                mGestureState = GESTURE_SCROLLING;
                 mDragDirection = DRAGGED_CANCEL;
-                mGestureState = GESTURE_NONE;
+                mDragXPerMs = 0;
+                mDragStartMs = e.getEventTime();
                 return true;
             }
 
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distX, float distY) {
-                mGestureState = GESTURE_SCROLLING;
                 float distance = e2.getX() - e1.getX();
                 setTranslationX(getTranslationX() + distance);
                 setAlpha(calculateAnimationAlpha());
 
-                // Because the fling velocity is unreliable, we track what direction the user is
-                // dragging the View from here.
+                // Because the Android-calculated fling velocity is highly unreliable, we track what
+                // direction the user is dragging the View from here.
                 mDragDirection = distance < 0 ? DRAGGED_LEFT : DRAGGED_RIGHT;
                 return true;
             }
@@ -235,6 +251,17 @@ public abstract class SwipableOverlayView extends FrameLayout {
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float vX, float vY) {
                 mGestureState = GESTURE_FLINGING;
+
+                // The direction and speed of the Android-given velocity feels completely disjoint
+                // from what the user actually perceives.
+                float androidXPerMs = Math.abs(vX) / 1000.0f;
+
+                // Track how quickly the user has translated the view to this point.
+                float dragXPerMs = Math.abs(getTranslationX()) / (e2.getEventTime() - mDragStartMs);
+
+                // Check if the velocity from the user's drag is higher; if so, use that one
+                // instead since that often feels more correct.
+                mDragXPerMs = mDragDirection * Math.max(androidXPerMs, dragXPerMs);
                 createHorizontalAnimation();
                 return true;
             }
@@ -243,6 +270,11 @@ public abstract class SwipableOverlayView extends FrameLayout {
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 onViewClicked();
                 return true;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+                onViewPressed(e);
             }
         };
     }
@@ -277,7 +309,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
 
                 boolean show = !isScrollingDownward;
                 if (isVisibleInitially) {
-                    // Check if the banner was moving off-screen.
+                    // Check if the View was moving off-screen.
                     boolean isHiding = getTranslationY() > mInitialTranslationY;
                     show &= isVisibleEnough || !isHiding;
                 } else {
@@ -330,8 +362,9 @@ public abstract class SwipableOverlayView extends FrameLayout {
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 removeOnLayoutChangeListener(this);
 
-                // Animate the banner coming in from the bottom of the screen.
+                // Animate the View coming in from the bottom of the screen.
                 setTranslationY(mTotalHeight);
+                mIsAnimationAddingOrRemovingView = true;
                 createVerticalSnapAnimation(true);
                 mCurrentAnimation.start();
             }
@@ -352,7 +385,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
     }
 
     /**
-     * Dismisses the banner, animating the banner moving vertically off of the screen if needed.
+     * Dismisses the View, animating it moving vertically off of the screen if needed.
      */
     void dismiss() {
         if (getParent() == null) return;
@@ -367,7 +400,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * Calculates how transparent the View should be.
      *
      * The transparency value is proportional to how far the View has been swiped away from the
-     * center of the screen.  The {@link ALPHA_THRESHOLD} determines at what point the banner should
+     * center of the screen.  The {@link ALPHA_THRESHOLD} determines at what point the View should
      * start fading away.
      * @return The alpha value to use for the View.
      */
@@ -388,29 +421,38 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * and marked as a manual removal.
      */
     private void createHorizontalAnimation() {
-        // Determine where the banner needs to move. Because of the unreliability of the fling
+        long duration = MS_ANIMATION_DURATION;
+
+        // Determine where the View needs to move. Because of the unreliability of the fling
         // velocity, we ignore it and instead rely on the direction the user was last dragging the
         // View.  Moreover, we lower the translation threshold for dismissal.
         boolean isFlinging = mGestureState == GESTURE_FLINGING;
-        float dismissThreshold =
-                getWidth() * (isFlinging ? DISMISS_FLING_THRESHOLD : DISMISS_SWIPE_THRESHOLD);
-        boolean isSwipedFarEnough = Math.abs(getTranslationX()) > dismissThreshold;
-        boolean isFlungInSameDirection =
-                (getTranslationX() < 0.0f) == (mDragDirection == DRAGGED_LEFT);
-        if (!isSwipedFarEnough || (isFlinging && !isFlungInSameDirection)) {
-            mDragDirection = DRAGGED_CANCEL;
+
+        // If the user hasn't tried hard enough to dismiss the View, move it back to the center.
+        if (isFlinging) {
+            // Assuming a linear velocity, allow flinging the View away if it would fly off the
+            // screen in a reasonable time frame.
+            float remainingDifference = mDragDirection * getWidth() - getTranslationX();
+            float msRequired = Math.abs(remainingDifference / mDragXPerMs);
+
+            if (msRequired < MS_DISMISS_FLING_THRESHOLD) {
+                duration = (long) msRequired;
+            } else {
+                mDragDirection = DRAGGED_CANCEL;
+            }
+        } else {
+            // Check if the user has dragged the View far enough to be dismissed.
+            float dismissPercentage = DISMISS_SWIPE_THRESHOLD;
+            float dismissThreshold = getWidth() * dismissPercentage;
+            if (Math.abs(getTranslationX()) < dismissThreshold) mDragDirection = DRAGGED_CANCEL;
         }
 
         // Set up the animation parameters.
         float finalAlpha = mDragDirection == DRAGGED_CANCEL ? 1.0f : 0.0f;
         float finalX = mDragDirection * getWidth();
-        float xDifference = Math.abs(finalX - getTranslationX()) / getWidth();
-        long duration = (long) (MS_ANIMATION_DURATION * xDifference);
+        boolean isSwipedAway = mDragDirection != DRAGGED_CANCEL;
 
-        // Dismiss the banner if it's going off the screen.
-        boolean translatedOffScreen = mDragDirection != DRAGGED_CANCEL;
-
-        createAnimation(finalAlpha, finalX, getTranslationY(), duration, translatedOffScreen);
+        createAnimation(finalAlpha, finalX, getTranslationY(), duration, isSwipedAway);
     }
 
     /**
@@ -421,8 +463,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * @param duration How long the animation should run for.
      * @param remove If true, remove the View from its parent ViewGroup.
      */
-    private void createAnimation(float alpha, float x, float y, long duration,
-            final boolean remove) {
+    private void createAnimation(float alpha, float x, float y, long duration, boolean remove) {
         Animator alphaAnimator =
                 ObjectAnimator.ofPropertyValuesHolder(this,
                         PropertyValuesHolder.ofFloat("alpha", getAlpha(), alpha));
@@ -433,21 +474,30 @@ public abstract class SwipableOverlayView extends FrameLayout {
                 ObjectAnimator.ofPropertyValuesHolder(this,
                         PropertyValuesHolder.ofFloat("translationY", getTranslationY(), y));
 
-        mIsAnimationRemovingView = remove;
+        mIsAnimationAddingOrRemovingView = remove;
         mCurrentAnimation = new AnimatorSet();
         mCurrentAnimation.setDuration(duration);
         mCurrentAnimation.playTogether(alphaAnimator, translationXAnimator, translationYAnimator);
-        mCurrentAnimation.addListener(new AnimatorListenerAdapter() {
+        mCurrentAnimation.addListener(mAnimatorListenerAdapter);
+        mCurrentAnimation.setInterpolator(mInterpolator);
+        mCurrentAnimation.start();
+    }
+
+    /**
+     * Creates an AnimatorListenerAdapter that cleans up after an animation is completed.
+     * @return {@link AnimatorListenerAdapter} to use for animations.
+     */
+    private AnimatorListenerAdapter createAnimatorListenerAdapter() {
+        return new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mGestureState = GESTURE_NONE;
                 mCurrentAnimation = null;
-                mIsAnimationRemovingView = false;
-                if (remove) removeFromParent();
+
+                if (mIsAnimationAddingOrRemovingView) removeFromParent();
+                mIsAnimationAddingOrRemovingView = false;
             }
-        });
-        mCurrentAnimation.setInterpolator(new AccelerateInterpolator());
-        mCurrentAnimation.start();
+        };
     }
 
     /**
@@ -465,7 +515,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * @return True if the animation was canceled or wasn't running, false otherwise.
      */
     private boolean cancelCurrentAnimation() {
-        if (mIsAnimationRemovingView) return false;
+        if (mIsAnimationAddingOrRemovingView) return false;
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
         return true;
     }
@@ -474,4 +524,9 @@ public abstract class SwipableOverlayView extends FrameLayout {
      * Called when the View has been clicked.
      */
     protected abstract void onViewClicked();
+
+    /**
+     * Called when the View needs to show that it's been pressed.
+     */
+    protected abstract void onViewPressed(MotionEvent event);
 }

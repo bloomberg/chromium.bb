@@ -73,9 +73,6 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
         public void onBannerClicked(AppBannerView banner);
     }
 
-    // Number of milliseconds to wait before showing the card highlight.
-    private static final long MS_HIGHLIGHT_APPEARANCE = 150;
-
     // XML layout for the BannerView.
     private static final int BANNER_LAYOUT = R.layout.app_banner_view;
 
@@ -216,6 +213,14 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     }
 
     @Override
+    protected void onViewPressed(MotionEvent event) {
+        // Highlight the banner when the user has held it for long enough and doesn't move.
+        mInitialXForHighlight = event.getRawX();
+        mIsBannerPressed = true;
+        mBannerHighlightView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     protected ViewGroup.MarginLayoutParams createLayoutParams() {
         // Define the margin around the entire banner that accounts for the drop shadow.
         ViewGroup.MarginLayoutParams params = super.createLayoutParams();
@@ -281,23 +286,14 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
     }
 
     /**
-     * Highlight the banner when the user has held it for long enough and doesn't move.
      * Passes all touch events through to the parent.
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
-        if (action == MotionEvent.ACTION_DOWN) {
-            mIsBannerPressed = true;
-            mInitialXForHighlight = event.getRawX();
-            getHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // Highlight the banner if the user is still holding onto it.
-                    if (mIsBannerPressed) mBannerHighlightView.setVisibility(View.VISIBLE);
-                }
-            }, MS_HIGHLIGHT_APPEARANCE);
-        } else if (mIsBannerPressed) {
+        if (mIsBannerPressed) {
+            // Mimic Google Now card behavior, where the card stops being highlighted if the user
+            // scrolls a bit to the side.
             float xDifference = Math.abs(event.getRawX() - mInitialXForHighlight);
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL
                     || (action == MotionEvent.ACTION_MOVE && xDifference > HIGHLIGHT_DISTANCE)) {
