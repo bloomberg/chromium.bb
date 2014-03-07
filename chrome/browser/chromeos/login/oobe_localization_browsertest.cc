@@ -88,7 +88,7 @@ class FakeStatisticsProvider : public StatisticsProvider {
 class OobeLocalizationTest : public InProcessBrowserTest {
  public:
   OobeLocalizationTest();
-  ~OobeLocalizationTest();
+  virtual ~OobeLocalizationTest();
 
   // Verifies that the comma-separated |values| corresponds with the first
   // values in |select_id|, optionally checking for an options group label after
