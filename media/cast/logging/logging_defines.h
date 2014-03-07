@@ -71,7 +71,7 @@ enum CastLoggingEvent {
   kVideoPacketReceived,
   kDuplicateAudioPacketReceived,
   kDuplicateVideoPacketReceived,
-  kNumOfLoggingEvents,
+  kNumOfLoggingEvents = kDuplicateVideoPacketReceived
 };
 
 std::string CastLoggingToString(CastLoggingEvent event);

@@ -17,6 +17,7 @@
 #include "base/time/default_tick_clock.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -72,7 +73,7 @@ class CastSessionDelegate {
 
  private:
   // Start encoding threads and initialize the CastEnvironment.
-  void Initialize();
+  void Initialize(const media::cast::CastLoggingConfig& logging_config);
 
   // Configure CastSender. It is ready to accept audio / video frames after
   // receiving a successful call to InitializationResult.
@@ -80,6 +81,9 @@ class CastSessionDelegate {
 
   void StatusNotificationCB(
       media::cast::transport::CastTransportStatus status);
+
+  // Adds logs collected from transport on browser side.
+  void LogRawEvents(const std::vector<media::cast::PacketEvent>& packet_events);
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;

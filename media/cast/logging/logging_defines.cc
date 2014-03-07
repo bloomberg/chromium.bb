@@ -65,9 +65,6 @@ std::string CastLoggingToString(CastLoggingEvent event) {
     ENUM_TO_STRING(VideoPacketReceived);
     ENUM_TO_STRING(DuplicateAudioPacketReceived);
     ENUM_TO_STRING(DuplicateVideoPacketReceived);
-    case kNumOfLoggingEvents:
-      NOTREACHED();
-      return "";
   }
   NOTREACHED();
   return "";
@@ -105,9 +102,6 @@ EventMediaType GetEventMediaType(CastLoggingEvent event) {
     case kVideoPacketReceived:
     case kDuplicateVideoPacketReceived:
       return VIDEO_EVENT;
-    case kNumOfLoggingEvents:
-      NOTREACHED();
-      return OTHER_EVENT;
   }
   NOTREACHED();
   return OTHER_EVENT;

@@ -8,6 +8,13 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "media/cast/transport/cast_transport_sender.h"
 
+namespace {
+
+// How often to send raw events.
+const int kSendRawEventsIntervalSecs = 1;
+
+}
+
 namespace cast {
 
 CastTransportHostFilter::CastTransportHostFilter()
@@ -58,9 +65,18 @@ void CastTransportHostFilter::ReceivedRtpStatistics(
       channel_id, audio, sender_info, time_sent, rtp_timestamp));
 }
 
-void CastTransportHostFilter::OnNew(int32 channel_id,
-                                    const net::IPEndPoint& local_end_point,
-                                    const net::IPEndPoint& remote_end_point) {
+void CastTransportHostFilter::RawEvents(
+    int32 channel_id,
+    const std::vector<media::cast::PacketEvent>& packet_events) {
+  if (!packet_events.empty())
+    Send(new CastMsg_RawEvents(channel_id, packet_events));
+}
+
+void CastTransportHostFilter::OnNew(
+    int32 channel_id,
+    const net::IPEndPoint& local_end_point,
+    const net::IPEndPoint& remote_end_point,
+    const media::cast::CastLoggingConfig& logging_config) {
   if (id_map_.Lookup(channel_id)) {
     id_map_.Remove(channel_id);
   }
@@ -71,9 +87,14 @@ void CastTransportHostFilter::OnNew(int32 channel_id,
           &clock_,
           local_end_point,
           remote_end_point,
+          logging_config,
           base::Bind(&CastTransportHostFilter::NotifyStatusChange,
                      base::Unretained(this),
                      channel_id),
+          base::Bind(&CastTransportHostFilter::RawEvents,
+                     base::Unretained(this),
+                     channel_id),
+          base::TimeDelta::FromSeconds(kSendRawEventsIntervalSecs),
           base::MessageLoopProxy::current());
 
   sender->SetPacketReceiver(base::Bind(&CastTransportHostFilter::ReceivedPacket,

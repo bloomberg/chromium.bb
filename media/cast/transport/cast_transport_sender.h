@@ -29,6 +29,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
 
@@ -49,6 +50,9 @@ typedef base::Callback<void(const RtcpSenderInfo& sender_info,
                             base::TimeTicks time_sent,
                             uint32 rtp_timestamp)> CastTransportRtpStatistics;
 
+typedef base::Callback<void(const std::vector<PacketEvent>&)>
+    BulkRawEventsCallback;
+
 // The application should only trigger this class from the transport thread.
 class CastTransportSender : public base::NonThreadSafe {
  public:
@@ -57,7 +61,10 @@ class CastTransportSender : public base::NonThreadSafe {
       base::TickClock* clock,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
+      const CastLoggingConfig& logging_config,
       const CastTransportStatusCallback& status_callback,
+      const BulkRawEventsCallback& raw_events_callback,
+      base::TimeDelta raw_events_callback_interval,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~CastTransportSender() {}

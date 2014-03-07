@@ -16,6 +16,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/media/cast/logging/logging.gyp:cast_common_logging',
         '<(DEPTH)/net/net.gyp:net',
         'utility/utility.gypi:transport_utility',
       ],

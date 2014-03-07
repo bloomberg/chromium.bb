@@ -9,6 +9,7 @@
 #include "base/id_map.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 
 class CastTransportSenderIPC;
@@ -45,6 +46,8 @@ class CastIPCDispatcher : public IPC::ChannelProxy::MessageFilter {
       const media::cast::transport::RtcpSenderInfo& sender_info,
       base::TimeTicks time_sent,
       uint32 rtp_timestamp);
+  void OnRawEvents(int32 channel_id,
+                   const std::vector<media::cast::PacketEvent>& packet_events);
 
   static CastIPCDispatcher* global_instance_;
 

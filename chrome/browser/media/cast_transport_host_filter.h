@@ -10,6 +10,7 @@
 #include "chrome/common/cast_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 
 namespace cast {
@@ -32,6 +33,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       const media::cast::transport::RtcpSenderInfo& sender_info,
       base::TimeTicks time_sent,
       uint32 rtp_timestamp);
+  void RawEvents(int32 channel_id,
+                 const std::vector<media::cast::PacketEvent>& packet_events);
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -65,7 +68,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnNew(
       int32 channel_id,
       const net::IPEndPoint& local_end_point,
-      const net::IPEndPoint& remote_end_point);
+      const net::IPEndPoint& remote_end_point,
+      const media::cast::CastLoggingConfig& logging_config);
   void OnDelete(int32 channel_id);
 
   IDMap<media::cast::transport::CastTransportSender, IDMapOwnPointer> id_map_;

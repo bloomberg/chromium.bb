@@ -10,6 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "media/cast/logging/logging_defines.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/pacing/paced_sender.h"
@@ -26,12 +29,20 @@ class CastTransportSenderImpl : public CastTransportSender {
   // external_transport is only used for testing.
   // Note that SetPacketReceiver does not work if an external
   // transport is provided.
+  // |raw_events_callback|: Raw events will be returned on this callback
+  // which will be invoked every |raw_events_callback_interval|.
+  // This can be a null callback, i.e. if user is not interested in raw events.
+  // |raw_events_callback_interval|: This can be |base::TimeDelta()| if
+  // |raw_events_callback| is a null callback.
   CastTransportSenderImpl(
       net::NetLog* net_log,
       base::TickClock* clock,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
+      const CastLoggingConfig& logging_config,
       const CastTransportStatusCallback& status_callback,
+      const BulkRawEventsCallback& raw_events_callback,
+      base::TimeDelta raw_events_callback_interval,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacketSender* external_transport);
 
@@ -71,14 +82,28 @@ class CastTransportSenderImpl : public CastTransportSender {
       const CastTransportRtpStatistics& callback) OVERRIDE;
 
  private:
+  // If raw events logging is enabled, this is called periodically.
+  // Calls |raw_events_callback_| with events collected by |event_subscriber_|
+  // since last call.
+  void SendRawEvents();
+
   base::TickClock* clock_;  // Not owned by this class.
   CastTransportStatusCallback status_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
+
   scoped_ptr<UdpTransport> transport_;
   PacedSender pacer_;
   RtcpBuilder rtcp_builder_;
   scoped_ptr<TransportAudioSender> audio_sender_;
   scoped_ptr<TransportVideoSender> video_sender_;
+
+  LoggingImpl logging_;
+
+  // This is non-null iff raw events logging is enabled.
+  scoped_ptr<SimpleEventSubscriber> event_subscriber_;
+  base::RepeatingTimer<CastTransportSenderImpl> raw_events_timer_;
+
+  BulkRawEventsCallback raw_events_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTransportSenderImpl);
 };

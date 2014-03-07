@@ -62,6 +62,7 @@
         '../google_apis/gcm/gcm.gyp:gcm',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
+        '../media/cast/logging/logging.gyp:cast_common_logging',
         '../media/cast/transport/cast_transport.gyp:cast_transport',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',

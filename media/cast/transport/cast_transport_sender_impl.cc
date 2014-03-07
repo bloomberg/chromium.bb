@@ -17,14 +17,20 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
     base::TickClock* clock,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
+    const CastLoggingConfig& logging_config,
     const CastTransportStatusCallback& status_callback,
+    const BulkRawEventsCallback& raw_events_callback,
+    base::TimeDelta raw_events_callback_interval,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner) {
   return scoped_ptr<CastTransportSender>(
       new CastTransportSenderImpl(net_log,
                                   clock,
                                   local_end_point,
                                   remote_end_point,
+                                  logging_config,
                                   status_callback,
+                                  raw_events_callback,
+                                  raw_events_callback_interval,
                                   transport_task_runner.get(),
                                   NULL));
 }
@@ -34,7 +40,10 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     base::TickClock* clock,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
+    const CastLoggingConfig& logging_config,
     const CastTransportStatusCallback& status_callback,
+    const BulkRawEventsCallback& raw_events_callback,
+    base::TimeDelta raw_events_callback_interval,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacketSender* external_transport)
     : clock_(clock),
@@ -49,9 +58,25 @@ CastTransportSenderImpl::CastTransportSenderImpl(
       pacer_(clock,
              external_transport ? external_transport : transport_.get(),
              transport_task_runner),
-      rtcp_builder_(&pacer_) {}
+      rtcp_builder_(&pacer_),
+      logging_(transport_task_runner, logging_config),
+      raw_events_callback_(raw_events_callback) {
+  if (!raw_events_callback_.is_null()) {
+    DCHECK(logging_config.enable_raw_data_collection);
+    DCHECK(raw_events_callback_interval > base::TimeDelta());
+    event_subscriber_.reset(new SimpleEventSubscriber);
+    logging_.AddRawEventSubscriber(event_subscriber_.get());
+    raw_events_timer_.Start(FROM_HERE,
+                            raw_events_callback_interval,
+                            this,
+                            &CastTransportSenderImpl::SendRawEvents);
+  }
+}
 
-CastTransportSenderImpl::~CastTransportSenderImpl() {}
+CastTransportSenderImpl::~CastTransportSenderImpl() {
+  if (event_subscriber_.get())
+    logging_.RemoveRawEventSubscriber(event_subscriber_.get());
+}
 
 void CastTransportSenderImpl::InitializeAudio(
     const CastTransportAudioConfig& config) {
@@ -125,6 +150,14 @@ void CastTransportSenderImpl::SubscribeVideoRtpStatsCallback(
     const CastTransportRtpStatistics& callback) {
   DCHECK(video_sender_) << "Audio sender uninitialized";
   video_sender_->SubscribeVideoRtpStatsCallback(callback);
+}
+
+void CastTransportSenderImpl::SendRawEvents() {
+  DCHECK(event_subscriber_.get());
+  DCHECK(!raw_events_callback_.is_null());
+  std::vector<PacketEvent> packet_events;
+  event_subscriber_->GetPacketEventsAndReset(&packet_events);
+  raw_events_callback_.Run(packet_events);
 }
 
 }  // namespace transport

@@ -317,6 +317,24 @@ namespace {
 void UpdateCastTransportStatus(
     media::cast::transport::CastTransportStatus status) {}
 
+void LogRawEvents(
+    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
+    const std::vector<media::cast::PacketEvent>& packet_events) {
+  VLOG(1) << "Got packet events from transport, size: " << packet_events.size();
+  for (std::vector<media::cast::PacketEvent>::const_iterator it =
+           packet_events.begin();
+       it != packet_events.end();
+       ++it) {
+    cast_environment->Logging()->InsertPacketEvent(it->timestamp,
+                                                   it->type,
+                                                   it->rtp_timestamp,
+                                                   it->frame_id,
+                                                   it->packet_id,
+                                                   it->max_packet_id,
+                                                   it->size);
+  }
+}
+
 void InitializationResult(media::cast::CastInitializationStatus result) {
   CHECK_EQ(result, media::cast::STATUS_INITIALIZED);
   VLOG(1) << "Cast Sender initialized";
@@ -410,6 +428,11 @@ int main(int argc, char** argv) {
   media::cast::VideoSenderConfig video_config =
       media::cast::GetVideoSenderConfig();
 
+  // Enable main and send side threads only. Enable raw event logging.
+  // Running transport on the main thread.
+  media::cast::CastLoggingConfig logging_config;
+  logging_config.enable_raw_data_collection = true;
+
   // Setting up transport config.
   media::cast::transport::CastTransportAudioConfig transport_audio_config;
   media::cast::transport::CastTransportVideoConfig transport_video_config;
@@ -420,18 +443,6 @@ int main(int argc, char** argv) {
   transport_audio_config.base.rtp_config = audio_config.rtp_config;
   transport_video_config.base.ssrc = video_config.sender_ssrc;
   transport_video_config.base.rtp_config = video_config.rtp_config;
-
-  scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =
-      media::cast::transport::CastTransportSender::Create(
-          NULL,  // net log.
-          clock.get(),
-          local_endpoint,
-          remote_endpoint,
-          base::Bind(&UpdateCastTransportStatus),
-          io_message_loop.message_loop_proxy());
-
-  transport_sender->InitializeAudio(transport_audio_config);
-  transport_sender->InitializeVideo(transport_video_config);
 
   // Enable main and send side threads only. Enable raw event and stats logging.
   // Running transport on the main thread.
@@ -445,6 +456,21 @@ int main(int argc, char** argv) {
           NULL,
           io_message_loop.message_loop_proxy(),
           media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()));
+
+  scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =
+      media::cast::transport::CastTransportSender::Create(
+          NULL,  // net log.
+          clock.get(),
+          local_endpoint,
+          remote_endpoint,
+          logging_config,
+          base::Bind(&UpdateCastTransportStatus),
+          base::Bind(&LogRawEvents, cast_environment),
+          base::TimeDelta::FromSeconds(1),
+          io_message_loop.message_loop_proxy());
+
+  transport_sender->InitializeAudio(transport_audio_config);
+  transport_sender->InitializeVideo(transport_video_config);
 
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(
@@ -465,7 +491,6 @@ int main(int argc, char** argv) {
                                    frame_input));
 
   // Set up event subscribers.
-  // TODO(imcheng): Set up separate subscribers for audio / video / other.
   int logging_duration = media::cast::GetLoggingDuration();
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;
   scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber;

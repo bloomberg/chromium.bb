@@ -7,6 +7,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "media/cast/logging/logging_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -15,7 +16,9 @@ class CastTransportHostFilterTest : public testing::Test {
  public:
   CastTransportHostFilterTest()
       : browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {
+            content::TestBrowserThreadBundle::IO_MAINLOOP),
+        logging_config_(
+            media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()) {
     filter_ = new cast::CastTransportHostFilter();
     local_endpoint_ = net::IPEndPoint(net::IPAddressNumber(4, 0), 0);
     // 127.0.0.1:7 is the local echo service port, which
@@ -40,11 +43,13 @@ class CastTransportHostFilterTest : public testing::Test {
   net::IPAddressNumber receiver_address_;
   net::IPEndPoint local_endpoint_;
   net::IPEndPoint receive_endpoint_;
+  media::cast::CastLoggingConfig logging_config_;
 };
 
 TEST_F(CastTransportHostFilterTest, NewDelete) {
   const int kChannelId = 17;
-  CastHostMsg_New new_msg(kChannelId, local_endpoint_, receive_endpoint_);
+  CastHostMsg_New new_msg(kChannelId, local_endpoint_, receive_endpoint_,
+                          logging_config_);
   CastHostMsg_Delete delete_msg(kChannelId);
 
   // New, then delete, as expected.
@@ -67,7 +72,8 @@ TEST_F(CastTransportHostFilterTest, NewDelete) {
 
 TEST_F(CastTransportHostFilterTest, NewMany) {
   for (int i = 0; i < 100; i++) {
-    CastHostMsg_New new_msg(i, local_endpoint_, receive_endpoint_);
+    CastHostMsg_New new_msg(i, local_endpoint_, receive_endpoint_,
+                            logging_config_);
     FakeSend(new_msg);
   }
 
@@ -82,7 +88,8 @@ TEST_F(CastTransportHostFilterTest, NewMany) {
 TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   // Create a cast transport sender.
   const int32 kChannelId = 42;
-  CastHostMsg_New new_msg(kChannelId, local_endpoint_, receive_endpoint_);
+  CastHostMsg_New new_msg(kChannelId, local_endpoint_, receive_endpoint_,
+                          logging_config_);
   FakeSend(new_msg);
 
   media::cast::transport::CastTransportAudioConfig audio_config;

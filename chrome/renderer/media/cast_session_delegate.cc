@@ -63,14 +63,14 @@ CastSessionDelegate::~CastSessionDelegate() {
   }
 }
 
-void CastSessionDelegate::Initialize() {
+void CastSessionDelegate::Initialize(
+    const media::cast::CastLoggingConfig& logging_config) {
   if (cast_environment_)
     return;  // Already initialized.
 
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // There's no need to decode so no thread assigned for decoding.
-  // Logging: enable raw events and stats collection.
   cast_environment_ = new CastEnvironment(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock()).Pass(),
       base::MessageLoopProxy::current(),
@@ -79,7 +79,7 @@ void CastSessionDelegate::Initialize() {
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
       NULL,
       base::MessageLoopProxy::current(),
-      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled());
+      logging_config);
 }
 
 void CastSessionDelegate::StartAudio(
@@ -198,7 +198,10 @@ void CastSessionDelegate::StartSendingInternal() {
   if (!audio_config_ || !video_config_)
     return;
 
-  Initialize();
+  // Logging: enable raw events and stats collection.
+  media::cast::CastLoggingConfig logging_config =
+      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled();
+  Initialize(logging_config);
 
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportSenderIPC, and they both share the same thread.
@@ -206,6 +209,9 @@ void CastSessionDelegate::StartSendingInternal() {
       local_endpoint_,
       remote_endpoint_,
       base::Bind(&CastSessionDelegate::StatusNotificationCB,
+                 base::Unretained(this)),
+      logging_config,
+      base::Bind(&CastSessionDelegate::LogRawEvents,
                  base::Unretained(this))));
 
   // TODO(hubbe): set config.aes_key and config.aes_iv_mask.
@@ -252,3 +258,20 @@ void CastSessionDelegate::InitializationResult(
   }
 }
 
+void CastSessionDelegate::LogRawEvents(
+    const std::vector<media::cast::PacketEvent>& packet_events) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  for (std::vector<media::cast::PacketEvent>::const_iterator it =
+           packet_events.begin();
+       it != packet_events.end();
+       ++it) {
+    cast_environment_->Logging()->InsertPacketEvent(it->timestamp,
+                                                    it->type,
+                                                    it->rtp_timestamp,
+                                                    it->frame_id,
+                                                    it->packet_id,
+                                                    it->max_packet_id,
+                                                    it->size);
+  }
+}

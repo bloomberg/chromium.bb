@@ -7,6 +7,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 
 // This implementation of the CastTransportSender interface
@@ -20,7 +21,9 @@ class CastTransportSenderIPC
   CastTransportSenderIPC(
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
-      const media::cast::transport::CastTransportStatusCallback& status_cb);
+      const media::cast::transport::CastTransportStatusCallback& status_cb,
+      const media::cast::CastLoggingConfig& logging_config,
+      const media::cast::transport::BulkRawEventsCallback& raw_events_cb);
 
   virtual ~CastTransportSenderIPC();
 
@@ -64,6 +67,7 @@ class CastTransportSenderIPC
       const media::cast::transport::RtcpSenderInfo& sender_info,
       base::TimeTicks time_sent,
       uint32 rtp_timestamp);
+  void OnRawEvents(const std::vector<media::cast::PacketEvent>& packet_events);
 
  private:
   void Send(IPC::Message* message);
@@ -73,6 +77,8 @@ class CastTransportSenderIPC
   media::cast::transport::CastTransportStatusCallback status_callback_;
   media::cast::transport::CastTransportRtpStatistics audio_rtp_callback_;
   media::cast::transport::CastTransportRtpStatistics video_rtp_callback_;
+  media::cast::transport::BulkRawEventsCallback raw_events_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(CastTransportSenderIPC);
 };
 

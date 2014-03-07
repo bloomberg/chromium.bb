@@ -398,6 +398,7 @@ class End2EndTest : public ::testing::Test {
         testing_clock_receiver_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(
             testing_clock_sender_)),
+        logging_config_(GetLoggingConfigWithRawEventsAndStatsEnabled()),
         cast_environment_sender_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_sender_).Pass(),
             task_runner_,
@@ -406,7 +407,7 @@ class End2EndTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            GetLoggingConfigWithRawEventsAndStatsEnabled())),
+            logging_config_)),
         cast_environment_receiver_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_receiver_).Pass(),
             task_runner_,
@@ -415,7 +416,7 @@ class End2EndTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_,
-            GetLoggingConfigWithRawEventsAndStatsEnabled())),
+            logging_config_)),
         receiver_to_sender_(cast_environment_receiver_),
         sender_to_receiver_(cast_environment_sender_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
@@ -502,7 +503,10 @@ class End2EndTest : public ::testing::Test {
         testing_clock_sender_,
         dummy_endpoint,
         dummy_endpoint,
+        logging_config_,
         base::Bind(&UpdateCastTransportStatus),
+        base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
+        base::TimeDelta::FromSeconds(1),
         task_runner_,
         &sender_to_receiver_));
     transport_sender_->InitializeAudio(transport_audio_config_);
@@ -567,6 +571,22 @@ class End2EndTest : public ::testing::Test {
     EXPECT_EQ(result, STATUS_INITIALIZED);
   }
 
+  void LogRawEvents(const std::vector<PacketEvent>& packet_events) {
+    EXPECT_FALSE(packet_events.empty());
+    for (std::vector<media::cast::PacketEvent>::const_iterator it =
+             packet_events.begin();
+         it != packet_events.end();
+         ++it) {
+      cast_environment_sender_->Logging()->InsertPacketEvent(it->timestamp,
+                                                             it->type,
+                                                             it->rtp_timestamp,
+                                                             it->frame_id,
+                                                             it->packet_id,
+                                                             it->max_packet_id,
+                                                             it->size);
+    }
+  }
+
   AudioReceiverConfig audio_receiver_config_;
   VideoReceiverConfig video_receiver_config_;
   AudioSenderConfig audio_sender_config_;
@@ -578,6 +598,7 @@ class End2EndTest : public ::testing::Test {
   base::SimpleTestTickClock* testing_clock_sender_;
   base::SimpleTestTickClock* testing_clock_receiver_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  CastLoggingConfig logging_config_;
   scoped_refptr<CastEnvironment> cast_environment_sender_;
   scoped_refptr<CastEnvironment> cast_environment_receiver_;
 
@@ -599,6 +620,9 @@ class End2EndTest : public ::testing::Test {
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
   std::vector<GenericEvent> generic_events_;
+
+  // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(End2EndTest, LoopNoLossPcm16) {

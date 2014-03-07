@@ -7,6 +7,7 @@
 
 #include "ipc/ipc_message_macros.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "net/base/ip_endpoint.h"
@@ -24,6 +25,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::RtcpSenderFrameStatus,
                           media::cast::transport::kRtcpSenderFrameStatusLast)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::CastTransportStatus,
                           media::cast::transport::CAST_TRANSPORT_STATUS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
+                          media::cast::kNumOfLoggingEvents)
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedAudioFrame)
   IPC_STRUCT_TRAITS_MEMBER(codec)
@@ -90,6 +93,21 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::SendRtcpFromRtpSenderData)
   IPC_STRUCT_TRAITS_MEMBER(c_name)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(media::cast::PacketEvent)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(frame_id)
+  IPC_STRUCT_TRAITS_MEMBER(max_packet_id)
+  IPC_STRUCT_TRAITS_MEMBER(packet_id)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::CastLoggingConfig)
+  IPC_STRUCT_TRAITS_MEMBER(enable_raw_data_collection)
+  IPC_STRUCT_TRAITS_MEMBER(enable_stats_data_collection)
+  IPC_STRUCT_TRAITS_MEMBER(enable_tracing)
+IPC_STRUCT_TRAITS_END()
 
 // Cast messages sent from the browser to the renderer.
 
@@ -110,6 +128,9 @@ IPC_MESSAGE_CONTROL5(
     base::TimeTicks /* time_sent */,
     uint32 /* rtp_timestamp */);
 
+IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
+                     int32 /* channel_id */,
+                     std::vector<media::cast::PacketEvent> /* packet_events */);
 
 // Cast messages sent from the renderer to the browser.
 
@@ -149,11 +170,12 @@ IPC_MESSAGE_CONTROL3(
     bool /* is_audio */,
     media::cast::MissingFramesAndPacketsMap /* missing_packets */)
 
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL4(
     CastHostMsg_New,
     int32 /* channel_id */,
     net::IPEndPoint /*local_end_point*/,
-    net::IPEndPoint /*remote_end_point*/);
+    net::IPEndPoint /*remote_end_point*/,
+    media::cast::CastLoggingConfig /* logging_config */);
 
 IPC_MESSAGE_CONTROL1(
     CastHostMsg_Delete,

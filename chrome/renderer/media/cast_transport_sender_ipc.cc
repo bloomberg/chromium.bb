@@ -15,12 +15,15 @@
 CastTransportSenderIPC::CastTransportSenderIPC(
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
-    const media::cast::transport::CastTransportStatusCallback& status_cb)
-    : status_callback_(status_cb) {
+    const media::cast::transport::CastTransportStatusCallback& status_cb,
+    const media::cast::CastLoggingConfig& logging_config,
+    const media::cast::transport::BulkRawEventsCallback& raw_events_cb)
+    : status_callback_(status_cb), raw_events_callback_(raw_events_cb) {
   if (CastIPCDispatcher::Get()) {
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);
   }
-  Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point));
+  Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point,
+                           logging_config));
 }
 
 CastTransportSenderIPC::~CastTransportSenderIPC() {
@@ -107,8 +110,7 @@ void CastTransportSenderIPC::OnReceivedPacket(
         new media::cast::transport::Packet(packet));
     packet_callback_.Run(packet_copy.Pass());
   } else {
-    LOG(ERROR) << "CastIPCDispatcher::OnReceivedPacket "
-               << "no packet callback yet.";
+    DVLOG(1) << "CastIPCDispatcher::OnReceivedPacket no packet callback yet.";
   }
 }
 
@@ -125,6 +127,11 @@ void CastTransportSenderIPC::OnRtpStatistics(
   const media::cast::transport::CastTransportRtpStatistics& callback =
       audio ? audio_rtp_callback_ : video_rtp_callback_;
   callback.Run(sender_info, time_sent, rtp_timestamp);
+}
+
+void CastTransportSenderIPC::OnRawEvents(
+    const std::vector<media::cast::PacketEvent>& packet_events) {
+  raw_events_callback_.Run(packet_events);
 }
 
 void CastTransportSenderIPC::Send(IPC::Message* message) {
