@@ -110,7 +110,7 @@ class DelayingDnsProbeService : public DnsProbeService {
 FilePath GetMockLinkDoctorFilePath() {
   FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-  return root_http.AppendASCII("mock-link-doctor.html");
+  return root_http.AppendASCII("mock-link-doctor.json");
 }
 
 // A request that can be delayed until Resume() is called.  Can also run a
@@ -215,23 +215,23 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
   const DestructionCallback destruction_callback_;
 };
 
-// ProtocolHandler for Link Doctor requests.  Can cause requests to fail with
-// an error, and/or delay a request until a test allows to continue.  Also can
-// run a callback when a delayed request is cancelled.
-class BreakableLinkDoctorProtocolHandler
+// ProtocolHandler for navigation correction requests.  Can cause requests to
+// fail with an error, and/or delay a request until a test allows to continue.
+// Also can run a callback when a delayed request is cancelled.
+class BreakableCorrectionProtocolHandler
     : public URLRequestJobFactory::ProtocolHandler {
  public:
-  explicit BreakableLinkDoctorProtocolHandler(
-      const FilePath& mock_link_doctor_file_path)
-      : mock_link_doctor_file_path_(mock_link_doctor_file_path),
+  explicit BreakableCorrectionProtocolHandler(
+      const FilePath& mock_corrections_file_path)
+      : mock_corrections_file_path_(mock_corrections_file_path),
         net_error_(net::OK),
         delay_requests_(false),
         on_request_destroyed_callback_(
-            base::Bind(&BreakableLinkDoctorProtocolHandler::OnRequestDestroyed,
+            base::Bind(&BreakableCorrectionProtocolHandler::OnRequestDestroyed,
                        base::Unretained(this))) {
   }
 
-  virtual ~BreakableLinkDoctorProtocolHandler() {
+  virtual ~BreakableCorrectionProtocolHandler() {
     // All delayed requests should have been resumed or cancelled by this point.
     EXPECT_TRUE(delayed_requests_.empty());
   }
@@ -250,7 +250,7 @@ class BreakableLinkDoctorProtocolHandler
     } else {
       DelayableURLRequestMockHTTPJob* job =
           new DelayableURLRequestMockHTTPJob(
-              request, network_delegate, mock_link_doctor_file_path_,
+              request, network_delegate, mock_corrections_file_path_,
               delay_requests_, on_request_destroyed_callback_);
       if (delay_requests_)
         delayed_requests_.insert(job);
@@ -295,7 +295,7 @@ class BreakableLinkDoctorProtocolHandler
   }
 
  private:
-  const FilePath mock_link_doctor_file_path_;
+  const FilePath mock_corrections_file_path_;
   int net_error_;
   bool delay_requests_;
 
@@ -319,8 +319,8 @@ class DnsProbeBrowserTestIOThreadHelper {
 
   void SetMockDnsClientRules(MockDnsClientRule::Result system_good_result,
                              MockDnsClientRule::Result public_good_result);
-  void SetLinkDoctorNetError(int link_doctor_net_error);
-  void SetLinkDoctorDelayRequests(bool delay_requests);
+  void SetCorrectionServiceNetError(int net_error);
+  void SetCorrectionServiceDelayRequests(bool delay_requests);
   void SetRequestDestructionCallback(const base::Closure& callback);
   void StartDelayedProbes(int expected_delayed_probe_count);
 
@@ -328,8 +328,8 @@ class DnsProbeBrowserTestIOThreadHelper {
   IOThread* io_thread_;
   DnsProbeService* original_dns_probe_service_;
   DelayingDnsProbeService* delaying_dns_probe_service_;
-  BreakableLinkDoctorProtocolHandler* protocol_handler_;
-  FilePath mock_link_doctor_file_path_;
+  BreakableCorrectionProtocolHandler* protocol_handler_;
+  FilePath mock_corrections_file_path_;
 };
 
 DnsProbeBrowserTestIOThreadHelper::DnsProbeBrowserTestIOThreadHelper()
@@ -337,7 +337,7 @@ DnsProbeBrowserTestIOThreadHelper::DnsProbeBrowserTestIOThreadHelper()
       original_dns_probe_service_(NULL),
       delaying_dns_probe_service_(NULL),
       protocol_handler_(NULL),
-      mock_link_doctor_file_path_(GetMockLinkDoctorFilePath()) {}
+      mock_corrections_file_path_(GetMockLinkDoctorFilePath()) {}
 
 void DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread(IOThread* io_thread) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -358,13 +358,11 @@ void DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread(IOThread* io_thread) {
   URLRequestFailedJob::AddUrlHandler();
 
   scoped_ptr<URLRequestJobFactory::ProtocolHandler> protocol_handler(
-      new BreakableLinkDoctorProtocolHandler(mock_link_doctor_file_path_));
+      new BreakableCorrectionProtocolHandler(mock_corrections_file_path_));
   protocol_handler_ =
-      static_cast<BreakableLinkDoctorProtocolHandler*>(protocol_handler.get());
-  const GURL link_doctor_base_url = LinkDoctorBaseURL();
-  const std::string link_doctor_host = link_doctor_base_url.host();
-  URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-      "http", link_doctor_host, protocol_handler.Pass());
+      static_cast<BreakableCorrectionProtocolHandler*>(protocol_handler.get());
+  URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+      LinkDoctorBaseURL(), protocol_handler.Pass());
 }
 
 void DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper() {
@@ -394,14 +392,14 @@ void DnsProbeBrowserTestIOThreadHelper::SetMockDnsClientRules(
       CreateMockDnsClientForProbes(public_result));
 }
 
-void DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorNetError(
-    int link_doctor_net_error) {
+void DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceNetError(
+    int net_error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  protocol_handler_->set_net_error(link_doctor_net_error);
+  protocol_handler_->set_net_error(net_error);
 }
 
-void DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorDelayRequests(
+void DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceDelayRequests(
     bool delay_requests) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -441,16 +439,16 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
   // DnsProbeStatus messages of its currently active tab monitored.
   void SetActiveBrowser(Browser* browser);
 
-  void SetLinkDoctorBroken(bool broken);
-  void SetLinkDoctorDelayRequests(bool delay_requests);
+  void SetCorrectionServiceBroken(bool broken);
+  void SetCorrectionServiceDelayRequests(bool delay_requests);
   void WaitForDelayedRequestDestruction();
   void SetMockDnsClientRules(MockDnsClientRule::Result system_result,
                              MockDnsClientRule::Result public_result);
 
-  // These functions are often used to wait for two navigations because the Link
-  // Doctor loads two pages: a blank page, so the user stops seeing the previous
-  // page, and then either the Link Doctor page or a regular error page.  Often
-  // need to wait for both to finish in a row.
+  // These functions are often used to wait for two navigations because two
+  // pages are loaded when navigation corrections are enabled: a blank page, so
+  // the user stops seeing the previous page, and then the error page, either
+  // with navigation corrections or without them (If the request failed).
   void NavigateToDnsError(int num_navigations);
   void NavigateToOtherError(int num_navigations);
 
@@ -460,6 +458,16 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
 
   std::string Title();
   bool PageContains(const std::string& expected);
+
+  // Checks that the local error page is being displayed, without navigation
+  // corrections, and with the specified status text.  The status text should be
+  // either a network error or DNS probe status.
+  void ExpectDisplayingLocalErrorPage(const std::string& status_text);
+
+  // Checks that an error page with mock navigation corrections is being
+  // displayed, with the specified status text. The status text should be either
+  // a network error or DNS probe status.
+  void ExpectDisplayingCorrections(const std::string& status_text);
 
  private:
   void OnDnsProbeStatusSent(DnsProbeStatus dns_probe_status);
@@ -528,20 +536,22 @@ void DnsProbeBrowserTest::SetActiveBrowser(Browser* browser) {
       Bind(&DnsProbeBrowserTest::OnDnsProbeStatusSent, Unretained(this)));
 }
 
-void DnsProbeBrowserTest::SetLinkDoctorBroken(bool broken) {
+void DnsProbeBrowserTest::SetCorrectionServiceBroken(bool broken) {
   int net_error = broken ? net::ERR_NAME_NOT_RESOLVED : net::OK;
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      Bind(&DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorNetError,
+      Bind(&DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceNetError,
            Unretained(helper_),
            net_error));
 }
 
-void DnsProbeBrowserTest::SetLinkDoctorDelayRequests(bool delay_requests) {
+void DnsProbeBrowserTest::SetCorrectionServiceDelayRequests(
+    bool delay_requests) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      Bind(&DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorDelayRequests,
+      Bind(&DnsProbeBrowserTestIOThreadHelper::
+               SetCorrectionServiceDelayRequests,
            Unretained(helper_),
            delay_requests));
 }
@@ -638,6 +648,20 @@ bool DnsProbeBrowserTest::PageContains(const std::string& expected) {
   return text_content.find(expected) != std::string::npos;
 }
 
+void DnsProbeBrowserTest::ExpectDisplayingLocalErrorPage(
+    const std::string& status_text) {
+  EXPECT_FALSE(PageContains("http://correction1/"));
+  EXPECT_FALSE(PageContains("http://correction2/"));
+  EXPECT_TRUE(PageContains(status_text));
+}
+
+void DnsProbeBrowserTest::ExpectDisplayingCorrections(
+    const std::string& status_text) {
+  EXPECT_TRUE(PageContains("http://correction1/"));
+  EXPECT_TRUE(PageContains("http://correction2/"));
+  EXPECT_TRUE(PageContains(status_text));
+}
+
 void DnsProbeBrowserTest::OnDnsProbeStatusSent(
     DnsProbeStatus dns_probe_status) {
   dns_probe_status_queue_.push_back(dns_probe_status);
@@ -645,57 +669,57 @@ void DnsProbeBrowserTest::OnDnsProbeStatusSent(
     MessageLoop::current()->Quit();
 }
 
-// Make sure probes don't break non-DNS error pages when Link Doctor loads.
-IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, OtherErrorWithWorkingLinkDoctor) {
-  SetLinkDoctorBroken(false);
+// Make sure probes don't break non-DNS error pages when corrections load.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, OtherErrorWithCorrectionsSuccess) {
+  SetCorrectionServiceBroken(false);
 
   NavigateToOtherError(2);
-  EXPECT_EQ("Mock Link Doctor", Title());
+  ExpectDisplayingCorrections("ERR_CONNECTION_REFUSED");
 }
 
-// Make sure probes don't break non-DNS error pages when Link Doctor doesn't
+// Make sure probes don't break non-DNS error pages when corrections failed to
 // load.
-IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, OtherErrorWithBrokenLinkDoctor) {
-  SetLinkDoctorBroken(true);
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, OtherErrorWithCorrectionsFailure) {
+  SetCorrectionServiceBroken(true);
 
   NavigateToOtherError(2);
-  EXPECT_TRUE(PageContains("CONNECTION_REFUSED"));
+  ExpectDisplayingLocalErrorPage("ERR_CONNECTION_REFUSED");
 }
 
-// Make sure probes don't break DNS error pages when Link doctor loads.
+// Make sure probes don't break DNS error pages when corrections load.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
-                       NxdomainProbeResultWithWorkingLinkDoctor) {
-  SetLinkDoctorBroken(false);
+                       NxdomainProbeResultWithWorkingCorrections) {
+  SetCorrectionServiceBroken(false);
   SetMockDnsClientRules(MockDnsClientRule::OK, MockDnsClientRule::OK);
 
   NavigateToDnsError(2);
-  EXPECT_EQ("Mock Link Doctor", Title());
+  ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 
-  // One status for committing a blank page before the Link Doctor, and one for
-  // when the Link Doctor is committed.
+  // One status for committing a blank page before the corrections, and one for
+  // when the error page with corrections is committed.
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_EQ("Mock Link Doctor", Title());
+  ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 
   StartDelayedProbes(1);
 
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_EQ("Mock Link Doctor", Title());
+  ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 }
 
-// Make sure probes don't break Link Doctor when probes complete before the
-// Link Doctor loads.
+// Make sure probes don't break corrections when probes complete before the
+// corrections load.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
-                       NxdomainProbeResultWithWorkingSlowLinkDoctor) {
-  SetLinkDoctorBroken(false);
-  SetLinkDoctorDelayRequests(true);
+                       NxdomainProbeResultWithWorkingSlowCorrections) {
+  SetCorrectionServiceBroken(false);
+  SetCorrectionServiceDelayRequests(true);
   SetMockDnsClientRules(MockDnsClientRule::OK, MockDnsClientRule::OK);
 
   NavigateToDnsError(1);
-  // A blank page should be displayed while the Link Doctor page loads.
+  // A blank page should be displayed while the corrections are loaded.
   EXPECT_EQ("", Title());
 
   // A single probe should be triggered by the error page load, and it should
@@ -712,23 +736,23 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   content::TestNavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  // The Link Doctor page finishes loading.
-  SetLinkDoctorDelayRequests(false);
+  // The corrections finish loading.
+  SetCorrectionServiceDelayRequests(false);
   // Wait for it to commit.
   observer.Wait();
-  EXPECT_EQ("Mock Link Doctor", Title());
+  ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 
-  // Committing the Link Doctor page should trigger sending the probe result
+  // Committing the corections page should trigger sending the probe result
   // again.
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
             WaitForSentStatus());
-  EXPECT_EQ("Mock Link Doctor", Title());
+  ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 }
 
 // Make sure probes update DNS error page properly when they're supposed to.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
-                       NoInternetProbeResultWithBrokenLinkDoctor) {
-  SetLinkDoctorBroken(true);
+                       NoInternetProbeResultWithBrokenCorrections) {
+  SetCorrectionServiceBroken(true);
   SetMockDnsClientRules(MockDnsClientRule::TIMEOUT,
                         MockDnsClientRule::TIMEOUT);
 
@@ -737,9 +761,9 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("DNS_PROBE_STARTED"));
+  ExpectDisplayingLocalErrorPage("DNS_PROBE_STARTED");
   EXPECT_EQ(0, pending_status_count());
 
   StartDelayedProbes(1);
@@ -747,22 +771,22 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
             WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("DNS_PROBE_FINISHED_NO_INTERNET"));
+  ExpectDisplayingLocalErrorPage("DNS_PROBE_FINISHED_NO_INTERNET");
 }
 
-// Make sure probes don't break Link Doctor when probes complete before the
-// Link Doctor request returns an error.
+// Make sure probes don't break corrections when probes complete before the
+// corrections request returns an error.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
-                       NoInternetProbeResultWithSlowBrokenLinkDoctor) {
-  SetLinkDoctorBroken(true);
-  SetLinkDoctorDelayRequests(true);
+                       NoInternetProbeResultWithSlowBrokenCorrections) {
+  SetCorrectionServiceBroken(true);
+  SetCorrectionServiceDelayRequests(true);
   SetMockDnsClientRules(MockDnsClientRule::TIMEOUT,
                         MockDnsClientRule::TIMEOUT);
 
   NavigateToDnsError(1);
-  // A blank page should be displayed while the Link Doctor page loads.
+  // A blank page should be displayed while the corrections load.
   EXPECT_EQ("", Title());
 
   // A single probe should be triggered by the error page load, and it should
@@ -779,8 +803,8 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   content::TestNavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  // The Link Doctor request fails.
-  SetLinkDoctorDelayRequests(false);
+  // The corrections request fails.
+  SetCorrectionServiceDelayRequests(false);
   // Wait for the DNS error page to load instead.
   observer.Wait();
   // The page committing should result in sending the probe results again.
@@ -788,12 +812,12 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
             WaitForSentStatus());
 
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("DNS_PROBE_FINISHED_NO_INTERNET"));
+  ExpectDisplayingLocalErrorPage("DNS_PROBE_FINISHED_NO_INTERNET");
 }
 
 // Double-check to make sure sync failures don't explode.
-IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenLinkDoctor) {
-  SetLinkDoctorBroken(true);
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenCorrections) {
+  SetCorrectionServiceBroken(true);
   SetMockDnsClientRules(MockDnsClientRule::FAIL, MockDnsClientRule::FAIL);
 
   NavigateToDnsError(2);
@@ -801,9 +825,9 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenLinkDoctor) {
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("DNS_PROBE_STARTED"));
+  ExpectDisplayingLocalErrorPage("DNS_PROBE_STARTED");
   EXPECT_EQ(0, pending_status_count());
 
   StartDelayedProbes(1);
@@ -811,19 +835,19 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenLinkDoctor) {
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE,
             WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
+  ExpectDisplayingLocalErrorPage("ERR_NAME_NOT_RESOLVED");
   EXPECT_EQ(0, pending_status_count());
 }
 
-// Test that pressing the stop button cancels loading the Link Doctor page.
+// Test that pressing the stop button cancels loading corrections.
 // TODO(mmenke):  Add a test for the cross process navigation case.
 // TODO(mmenke):  This test could flakily pass due to the timeout on downloading
-//                the Link Doctor page.  Disable that timeout for browser tests.
-IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorLoadStopped) {
-  SetLinkDoctorDelayRequests(true);
-  SetLinkDoctorBroken(true);
+//                the corrections.  Disable that timeout for browser tests.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsLoadStopped) {
+  SetCorrectionServiceDelayRequests(true);
+  SetCorrectionServiceBroken(true);
   SetMockDnsClientRules(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT);
 
   NavigateToDnsError(1);
@@ -843,12 +867,11 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorLoadStopped) {
   EXPECT_EQ("", Title());
 }
 
-// Test that pressing the stop button cancels the load of the Link Doctor error
-// page, and receiving a probe result afterwards does not swap in a DNS error
-// page.
-IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorLoadStoppedSlowProbe) {
-  SetLinkDoctorDelayRequests(true);
-  SetLinkDoctorBroken(true);
+// Test that pressing the stop button cancels the load of corrections, and
+// receiving a probe result afterwards does not swap in a DNS error page.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsLoadStoppedSlowProbe) {
+  SetCorrectionServiceDelayRequests(true);
+  SetCorrectionServiceBroken(true);
   SetMockDnsClientRules(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT);
 
   NavigateToDnsError(1);
@@ -873,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorLoadStoppedSlowProbe) {
 
 // Make sure probes don't run for subframe DNS errors.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, NoProbeInSubframe) {
-  SetLinkDoctorBroken(false);
+  SetCorrectionServiceBroken(false);
 
   const FilePath::CharType kIframeDnsErrorHtmlName[] =
       FILE_PATH_LITERAL("iframe_dns_error.html");
@@ -892,45 +915,45 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, NoProbeInSubframe) {
 
 // Make sure browser sends NOT_RUN properly when probes are disabled.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, ProbesDisabled) {
-  // Disable probes (And Link Doctor).
+  // Disable probes (And corrections).
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kAlternateErrorPagesEnabled, false);
 
-  SetLinkDoctorBroken(true);
+  SetCorrectionServiceBroken(true);
   SetMockDnsClientRules(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT);
 
   NavigateToDnsError(1);
 
   EXPECT_EQ(chrome_common_net::DNS_PROBE_NOT_RUN, WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
+  ExpectDisplayingLocalErrorPage("ERR_NAME_NOT_RESOLVED");
 }
 
-// Test the case that Link Doctor is disabled, but DNS probes are enabled.  This
-// is the case with Chromium builds.
-IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorDisabled) {
-  // Disable Link Doctor.
+// Test the case that corrections are disabled, but DNS probes are enabled.
+// This is the case with Chromium builds.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsDisabled) {
+  // Disable corrections.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kAlternateErrorPagesEnabled, false);
-  // Requests to the Link Doctor should work if any are made, so the test fails
-  // if that happens unexpectedly.
-  SetLinkDoctorBroken(false);
-  // Normally disabling the LinkDoctor disables DNS probes, so force DNS probes
+  // Requests to the correction service should work if any are made, so the test
+  // fails if that happens unexpectedly.
+  SetCorrectionServiceBroken(false);
+  // Normally disabling corrections disables DNS probes, so force DNS probes
   // to be enabled.
   NetErrorTabHelper::set_state_for_testing(
       NetErrorTabHelper::TESTING_FORCE_ENABLED);
 
   SetMockDnsClientRules(MockDnsClientRule::FAIL, MockDnsClientRule::FAIL);
 
-  // Just one commit and one sent status, since the Link Doctor is disabled.
+  // Just one commit and one sent status, since corrections are disabled.
   NavigateToDnsError(1);
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("DNS_PROBE_STARTED"));
+  ExpectDisplayingLocalErrorPage("DNS_PROBE_STARTED");
   EXPECT_EQ(0, pending_status_count());
 
   StartDelayedProbes(1);
@@ -938,28 +961,28 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorDisabled) {
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
+  ExpectDisplayingLocalErrorPage("ERR_NAME_NOT_RESOLVED");
 }
 
-// Test incognito mode.  Link Doctor should be disabled, but DNS probes are
+// Test incognito mode.  Corrections should be disabled, but DNS probes are
 // still enabled.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, Incognito) {
-  // Requests to the Link Doctor should work if any are made, so the test will
-  // fail if one is requested unexpectedly.
-  SetLinkDoctorBroken(false);
+  // Requests to the correction service should work if any are made, so the test
+  // will fail if one is requested unexpectedly.
+  SetCorrectionServiceBroken(false);
 
   Browser* incognito = CreateIncognitoBrowser();
   SetActiveBrowser(incognito);
 
   SetMockDnsClientRules(MockDnsClientRule::FAIL, MockDnsClientRule::FAIL);
 
-  // Just one commit and one sent status, since the Link Doctor is disabled.
+  // Just one commit and one sent status, since the corrections are disabled.
   NavigateToDnsError(1);
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
 
-  // PageContains runs the RunLoop, so make sure nothing hairy happens.
+  // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("DNS_PROBE_STARTED"));
+  ExpectDisplayingLocalErrorPage("DNS_PROBE_STARTED");
   EXPECT_EQ(0, pending_status_count());
 
   StartDelayedProbes(1);
@@ -967,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, Incognito) {
   EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
-  EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
+  ExpectDisplayingLocalErrorPage("ERR_NAME_NOT_RESOLVED");
 }
 
 }  // namespace
