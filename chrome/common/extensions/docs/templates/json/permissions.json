@@ -20,9 +20,9 @@
   },
   "chrome://favicon/": {
     "anchor": "favicon",
+    "extension_types": ["extension"],
     "name": "chrome://favicon/",
-    "partial": "permissions/favicon.html",
-    "platforms": ["extension"]
+    "partial": "permissions/favicon.html"
   },
   "clipboardRead": {
     "partial": "permissions/clipboard_read.html"

@@ -65,14 +65,23 @@ def Parse(features_json):
     if ignore_feature(name, value):
       continue
 
-    features[name] = { 'platforms': [] }
-
+    # Now we transform 'extension_types' into the more useful 'platforms'.
+    #
+    # But first, note that 'platforms' has a double meaning. In the docserver
+    # model (what we're in the process of generating) it means 'apps' vs
+    # 'extensions'. In the JSON features as read from Chrome it means 'win' vs
+    # 'mac'. Ignore the latter.
+    value.pop('platforms', None)
     extension_types = value.pop('extension_types', None)
-    if extension_types is not None:
-      features[name]['platforms'] = _GetPlatformsForExtensionTypes(
-          extension_types)
 
-    features[name]['name'] = name
+    platforms = []
+    if extension_types is not None:
+      platforms = _GetPlatformsForExtensionTypes(extension_types)
+
+    features[name] = {
+      'name': name,
+      'platforms': platforms,
+    }
     features[name].update(value)
 
   return features

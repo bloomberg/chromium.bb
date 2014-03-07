@@ -18,31 +18,26 @@ _PERMISSION_FEATURES = {
   # This will appear for extensions with a description as defined in the
   # permissions.json file.
   'activeTab': {
-    'name': 'activeTab',
-    'platforms': ['extensions'],
+    'extension_types': ['extension'],
   },
   # This will appear for apps and extensions with an auto-generated description
   # since the entry appears in _api_features.json.
   'alarms': {
-    'name': 'alarms',
-    'platforms': ['apps', 'extensions'],
+    'extension_types': ['platform_app', 'extension'],
   },
   # This won't appear for anything since there's no entry in permissions.json
   # and it's not an API.
   'audioCapture': {
-    'name': 'audioCapture',
-    'platforms': ['apps'],
+    'extension_types': ['platform_app'],
   },
   # This won't appear for anything because it's private.
   'commandLinePrivate': {
-    'name': 'commandLinePrivate',
-    'platforms': ['apps', 'extensions']
+    'extension_types': ['platform_app', 'extension']
   },
   # This will only appear for apps with an auto-generated description because
   # it's an API.
   'cookies': {
-    'name': 'cookies',
-    'platforms': ['apps']
+    'extension_types': ['platform_app']
   },
 }
 
@@ -51,11 +46,11 @@ _PERMISSIONS_JSON = {
   # This will appear for both apps and extensions with a custom description,
   # anchor, etc.
   'host-permissions': {
-    'name': 'match pattern',
     'anchor': 'custom-anchor',
+    'extension_types': ['platform_app', 'extension'],
+    'literal_name': True,
+    'name': 'match pattern',
     'partial': 'permissions/host_permissions.html',
-    'platforms': ['apps', 'extensions'],
-    'literal_name': True
   },
   # A custom 'partial' here overrides the default partial.
   'activeTab': {

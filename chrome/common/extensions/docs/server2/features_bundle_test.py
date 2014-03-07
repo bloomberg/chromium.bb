@@ -70,7 +70,8 @@ _TEST_FILESYSTEM = {
       },
       'omnibox': {
         'channel': 'stable',
-        'extension_types': ['extension']
+        'extension_types': ['extension'],
+        'platforms': ['win']
       },
       'page_action': {
         'channel': 'stable',

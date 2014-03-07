@@ -2,12 +2,15 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import unittest
 import json
+
 from api_list_data_source import APIListDataSource
 from extensions_paths import EXTENSIONS
 from server_instance import ServerInstance
 from test_file_system import TestFileSystem
+
 
 def _ToTestData(obj):
   '''Transforms |obj| into test data by turning a list of files into an object
@@ -15,23 +18,32 @@ def _ToTestData(obj):
   '''
   return dict((name, name) for name in obj)
 
+
 def _ToTestFeatures(names):
   '''Transforms a list of strings into a minimal JSON features object.
   '''
-  features = dict((name, {'name': name, 'platforms': platforms})
-              for name, platforms, in names)
+  def platforms_to_extension_types(platforms):
+    return ['platform_app' if platform == 'apps' else 'extension'
+            for platform in platforms]
+  features = dict((name, {
+                     'name': name,
+                     'extension_types': platforms_to_extension_types(platforms),
+                   }) for name, platforms in names)
   features['sockets.udp']['channel'] = 'dev'
   return features
+
 
 def _ToTestApiData(names):
   api_data = dict((name, [{'namespace': name, 'description': description}])
               for name, description in names)
   return api_data
 
+
 def _ToTestApiSchema(names, apis):
   for name, json_file in names:
     apis['api'][json_file] = json.dumps(_TEST_API_DATA[name])
   return apis
+
 
 _TEST_API_FEATURES = _ToTestFeatures([
   ('alarms', ['apps', 'extensions']),
