@@ -593,6 +593,8 @@ int DOMWindow::orientation() const
 {
     ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
 
+    UseCounter::count(document(), UseCounter::WindowOrientation);
+
     if (!m_frame)
         return 0;
 
