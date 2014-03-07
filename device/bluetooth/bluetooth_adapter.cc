@@ -113,7 +113,7 @@ void BluetoothAdapter::OnStartDiscoverySession(
     const DiscoverySessionCallback& callback) {
   VLOG(1) << "Discovery session started!";
   scoped_ptr<BluetoothDiscoverySession> discovery_session(
-      new BluetoothDiscoverySession(this));
+      new BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter>(this)));
   discovery_sessions_.insert(discovery_session.get());
   callback.Run(discovery_session.Pass());
 }

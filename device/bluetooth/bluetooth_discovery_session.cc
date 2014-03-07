@@ -9,13 +9,21 @@
 
 namespace device {
 
-BluetoothDiscoverySession::BluetoothDiscoverySession(BluetoothAdapter* adapter)
-    : active_(true),
-      adapter_(adapter),
-      weak_ptr_factory_(this) {
+BluetoothDiscoverySession::BluetoothDiscoverySession(
+    scoped_refptr<BluetoothAdapter> adapter)
+    : active_(true), adapter_(adapter), weak_ptr_factory_(this) {
+  DCHECK(adapter_.get());
 }
 
+BluetoothDiscoverySession::BluetoothDiscoverySession()
+    : active_(false), weak_ptr_factory_(this) {}
+
 BluetoothDiscoverySession::~BluetoothDiscoverySession() {
+  // |adapter_| may be NULL if this instance was initialized as a mock.
+  if (!adapter_.get()) {
+    DCHECK(!active_);
+    return;
+  }
   Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
   adapter_->DiscoverySessionDestroyed(this);
 }
@@ -28,11 +36,12 @@ void BluetoothDiscoverySession::Stop(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (!active_) {
-    LOG(ERROR) << "Discovery session not active. Cannot stop.";
+    LOG(WARNING) << "Discovery session not active. Cannot stop.";
     error_callback.Run();
     return;
   }
   VLOG(1) << "Stopping device discovery session.";
+  DCHECK(adapter_.get());
   adapter_->RemoveDiscoverySession(
       base::Bind(&BluetoothDiscoverySession::OnStop,
                  weak_ptr_factory_.GetWeakPtr(),

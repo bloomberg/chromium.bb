@@ -52,6 +52,9 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     const base::Closure& callback,
                     const ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(IsDiscovering, bool());
+  MOCK_METHOD2(StartDiscoverySession,
+               void(const DiscoverySessionCallback& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD2(StartDiscovering,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
@@ -74,12 +77,10 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD0(DefaultPairingDelegate, BluetoothDevice::PairingDelegate*());
 
  protected:
-  MOCK_METHOD2(AddDiscoverySession,
-               void(const base::Closure& callback,
-                    const ErrorCallback& error_callback));
-  MOCK_METHOD2(RemoveDiscoverySession,
-               void(const base::Closure& callback,
-                    const ErrorCallback& error_callback));
+  virtual void AddDiscoverySession(const base::Closure& callback,
+                                   const ErrorCallback& error_callback);
+  virtual void RemoveDiscoverySession(const base::Closure& callback,
+                                      const ErrorCallback& error_callback);
   virtual ~MockBluetoothAdapter();
 
   MOCK_METHOD1(RemovePairingDelegateInternal,
