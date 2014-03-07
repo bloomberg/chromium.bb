@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/port/browser/event_with_latency_info.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -93,8 +94,9 @@ class CONTENT_EXPORT TouchEventQueue {
   bool IsPendingAckTouchStart() const;
 
   // Sets whether a delayed touch ack will cancel and flush the current
-  // touch sequence.
-  void SetAckTimeoutEnabled(bool enabled, size_t ack_timeout_delay_ms);
+  // touch sequence. Note that, if the timeout was previously disabled, enabling
+  // it will take effect only for the following touch sequence.
+  void SetAckTimeoutEnabled(bool enabled, base::TimeDelta ack_timeout_delay);
 
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();

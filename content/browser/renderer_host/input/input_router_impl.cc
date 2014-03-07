@@ -52,18 +52,18 @@ namespace {
 // conditional compilation here, we should instead use an InputRouter::Settings
 // construct, supplied and customized by the RenderWidgetHostView. See
 // crbug.com/343917.
-bool GetTouchAckTimeoutDelayMs(size_t* touch_ack_timeout_delay_ms) {
+bool GetTouchAckTimeoutDelay(base::TimeDelta* touch_ack_timeout_delay) {
   CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
   if (!parsed_command_line->HasSwitch(switches::kTouchAckTimeoutDelayMs))
     return false;
 
   std::string timeout_string = parsed_command_line->GetSwitchValueASCII(
       switches::kTouchAckTimeoutDelayMs);
-  size_t timeout_value;
-  if (!base::StringToSizeT(timeout_string, &timeout_value))
+  size_t timeout_ms;
+  if (!base::StringToSizeT(timeout_string, &timeout_ms))
     return false;
 
-  *touch_ack_timeout_delay_ms = timeout_value;
+  *touch_ack_timeout_delay = base::TimeDelta::FromMilliseconds(timeout_ms);
   return true;
 }
 
@@ -143,7 +143,6 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
       touch_ack_timeout_supported_(false),
-      touch_ack_timeout_delay_ms_(std::numeric_limits<size_t>::max()),
       current_view_flags_(0),
       current_ack_source_(ACK_SOURCE_NONE),
       gesture_event_queue_(new GestureEventQueue(this, this)) {
@@ -153,7 +152,7 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
   touch_event_queue_.reset(new TouchEventQueue(
       this, GetTouchScrollingMode(), GetTouchMoveSlopSuppressionLengthDips()));
   touch_ack_timeout_supported_ =
-      GetTouchAckTimeoutDelayMs(&touch_ack_timeout_delay_ms_);
+      GetTouchAckTimeoutDelay(&touch_ack_timeout_delay_);
   UpdateTouchAckTimeoutEnabled();
 }
 
@@ -784,7 +783,7 @@ void InputRouterImpl::SimulateTouchGestureWithMouse(
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   if (!touch_ack_timeout_supported_) {
-    touch_event_queue_->SetAckTimeoutEnabled(false, 0);
+    touch_event_queue_->SetAckTimeoutEnabled(false, base::TimeDelta());
     return;
   }
 
@@ -803,7 +802,7 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
                                          !mobile_viewport &&
                                          !touch_action_none;
   touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled,
-                                           touch_ack_timeout_delay_ms_);
+                                           touch_ack_timeout_delay_);
 }
 
 bool InputRouterImpl::IsInOverscrollGesture() const {

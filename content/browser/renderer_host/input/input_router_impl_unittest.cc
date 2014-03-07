@@ -288,7 +288,7 @@ class InputRouterImplTest : public testing::Test {
     return count;
   }
 
-  static void Wait(base::TimeDelta delay) {
+  static void RunTasksAndWait(base::TimeDelta delay) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::MessageLoop::QuitClosure(), delay);
     base::MessageLoop::current()->Run();
@@ -1005,7 +1005,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   EXPECT_FALSE(TouchEventTimeoutEnabled());
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kTouchAckTimeoutDelayMs, "5");
+      switches::kTouchAckTimeoutDelayMs, "1");
   TearDown();
   SetUp();
   ASSERT_TRUE(TouchEventTimeoutEnabled());
@@ -1015,7 +1015,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   SendTouchEvent();
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  Wait(base::TimeDelta::FromMilliseconds(15));
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(2));
 
   // The timed-out event should have been ack'ed.
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
@@ -1082,7 +1082,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 TEST_F(InputRouterImplTest,
        TouchAckTimeoutDisabledForTouchSequenceAfterTouchActionNone) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kTouchAckTimeoutDelayMs, "5");
+      switches::kTouchAckTimeoutDelayMs, "1");
   TearDown();
   SetUp();
   ASSERT_TRUE(TouchEventTimeoutEnabled());
@@ -1114,7 +1114,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Delay the ack.  The timeout should *not* fire.
-  Wait(base::TimeDelta::FromMilliseconds(15));
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(2));
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 
@@ -1140,7 +1140,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Wait for the touch ack timeout to fire.
-  Wait(base::TimeDelta::FromMilliseconds(15));
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(2));
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 }
 

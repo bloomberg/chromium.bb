@@ -239,7 +239,7 @@ private:
 
   // Whether touch ack timeout handling has been enabled via the command line.
   bool touch_ack_timeout_supported_;
-  size_t touch_ack_timeout_delay_ms_;
+  base::TimeDelta touch_ack_timeout_delay_;
 
   // Cached flags from |OnViewUpdated()|, defaults to 0.
   int current_view_flags_;

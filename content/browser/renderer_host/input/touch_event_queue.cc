@@ -44,9 +44,10 @@ bool ShouldTouchTypeTriggerTimeout(WebInputEvent::Type type) {
 // sufficiently delayed.
 class TouchEventQueue::TouchTimeoutHandler {
  public:
-  TouchTimeoutHandler(TouchEventQueue* touch_queue, size_t timeout_delay_ms)
+  TouchTimeoutHandler(TouchEventQueue* touch_queue,
+                      base::TimeDelta timeout_delay)
       : touch_queue_(touch_queue),
-        timeout_delay_(base::TimeDelta::FromMilliseconds(timeout_delay_ms)),
+        timeout_delay_(timeout_delay),
         pending_ack_state_(PENDING_ACK_NONE),
         timeout_monitor_(base::Bind(&TouchTimeoutHandler::OnTimeOut,
                                     base::Unretained(this))) {}
@@ -94,6 +95,10 @@ class TouchEventQueue::TouchTimeoutHandler {
   void Reset() {
     pending_ack_state_ = PENDING_ACK_NONE;
     timeout_monitor_.Stop();
+  }
+
+  void set_timeout_delay(base::TimeDelta timeout_delay) {
+    timeout_delay_ = timeout_delay;
   }
 
  private:
@@ -501,17 +506,24 @@ bool TouchEventQueue::IsPendingAckTouchStart() const {
 }
 
 void TouchEventQueue::SetAckTimeoutEnabled(bool enabled,
-                                           size_t ack_timeout_delay_ms) {
+                                           base::TimeDelta ack_timeout_delay) {
   if (!enabled) {
-    // Avoid resetting |timeout_handler_|, as an outstanding timeout may
-    // be active and must be completed for ack handling consistency.
     ack_timeout_enabled_ = false;
+    if (touch_filtering_state_ == FORWARD_TOUCHES_UNTIL_TIMEOUT)
+      touch_filtering_state_ = FORWARD_ALL_TOUCHES;
+    // Only reset the |timeout_handler_| if the timer is running and has not yet
+    // timed out. This ensures that an already timed out sequence is properly
+    // flushed by the handler.
+    if (timeout_handler_ && timeout_handler_->IsTimeoutTimerRunning())
+      timeout_handler_->Reset();
     return;
   }
 
   ack_timeout_enabled_ = true;
   if (!timeout_handler_)
-    timeout_handler_.reset(new TouchTimeoutHandler(this, ack_timeout_delay_ms));
+    timeout_handler_.reset(new TouchTimeoutHandler(this, ack_timeout_delay));
+  else
+    timeout_handler_->set_timeout_delay(ack_timeout_delay);
 }
 
 bool TouchEventQueue::IsTimeoutRunningForTesting() const {
