@@ -725,8 +725,6 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
   }
 }
 
-static void IgnoreCallback(uint32, bool) {}
-
 void PepperPluginInstanceImpl::CommitBackingTexture() {
   if (!texture_layer_.get())
     return;
@@ -736,9 +734,8 @@ void PepperPluginInstanceImpl::CommitBackingTexture() {
   context->GetBackingMailbox(&mailbox, &sync_point);
   DCHECK(!mailbox.IsZero());
   DCHECK_NE(sync_point, 0u);
-  texture_layer_->SetTextureMailbox(
-      cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
-      cc::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
+  texture_layer_->SetTextureMailboxWithoutReleaseCallback(
+      cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point));
   texture_layer_->SetNeedsDisplay();
 }
 
@@ -1963,9 +1960,8 @@ void PepperPluginInstanceImpl::UpdateLayer() {
       DCHECK(bound_graphics_3d_.get());
       texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
       opaque = bound_graphics_3d_->IsOpaque();
-      texture_layer_->SetTextureMailbox(
-          cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
-          cc::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
+      texture_layer_->SetTextureMailboxWithoutReleaseCallback(
+          cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point));
     } else {
       DCHECK(bound_graphics_2d_platform_);
       texture_layer_ = cc::TextureLayer::CreateForMailbox(this);

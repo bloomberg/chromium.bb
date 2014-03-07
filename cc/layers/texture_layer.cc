@@ -135,10 +135,12 @@ void TextureLayer::SetTextureId(unsigned id) {
 void TextureLayer::SetTextureMailboxInternal(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback,
-    bool requires_commit) {
+    bool requires_commit,
+    bool allow_mailbox_reuse) {
   DCHECK(uses_mailbox_);
   DCHECK(!mailbox.IsValid() || !holder_ref_ ||
-         !mailbox.Equals(holder_ref_->holder()->mailbox()));
+         !mailbox.Equals(holder_ref_->holder()->mailbox()) ||
+         allow_mailbox_reuse);
   DCHECK_EQ(mailbox.IsValid(), !!release_callback);
 
   // If we never commited the mailbox, we need to release it here.
@@ -163,10 +165,29 @@ void TextureLayer::SetTextureMailboxInternal(
 void TextureLayer::SetTextureMailbox(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback) {
+  bool requires_commit = true;
+  bool allow_mailbox_reuse = false;
   SetTextureMailboxInternal(
-      mailbox,
-      release_callback.Pass(),
-      true /* requires_commit */);
+      mailbox, release_callback.Pass(), requires_commit, allow_mailbox_reuse);
+}
+
+static void IgnoreReleaseCallback(uint32 sync_point, bool lost) {}
+
+void TextureLayer::SetTextureMailboxWithoutReleaseCallback(
+    const TextureMailbox& mailbox) {
+  // We allow reuse of the mailbox if there is a new sync point signalling new
+  // content, and the release callback goes nowhere since we'll be calling it
+  // multiple times for the same mailbox.
+  DCHECK(!mailbox.IsValid() || !holder_ref_ ||
+         !mailbox.Equals(holder_ref_->holder()->mailbox()) ||
+         mailbox.sync_point() != holder_ref_->holder()->mailbox().sync_point());
+  scoped_ptr<SingleReleaseCallback> release;
+  bool requires_commit = true;
+  bool allow_mailbox_reuse = true;
+  if (mailbox.IsValid())
+    release = SingleReleaseCallback::Create(base::Bind(&IgnoreReleaseCallback));
+  SetTextureMailboxInternal(
+      mailbox, release.Pass(), requires_commit, allow_mailbox_reuse);
 }
 
 void TextureLayer::WillModifyTexture() {
@@ -228,10 +249,12 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
               &release_callback,
               layer_tree_host()->UsingSharedMemoryResources())) {
         // Already within a commit, no need to do another one immediately.
-        SetTextureMailboxInternal(
-            mailbox,
-            release_callback.Pass(),
-            false /* requires_commit */);
+        bool requires_commit = false;
+        bool allow_mailbox_reuse = false;
+        SetTextureMailboxInternal(mailbox,
+                                  release_callback.Pass(),
+                                  requires_commit,
+                                  allow_mailbox_reuse);
         updated = true;
       }
     } else {
