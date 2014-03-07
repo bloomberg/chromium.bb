@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -18,8 +18,9 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "content/public/test/test_utils.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
@@ -33,6 +34,13 @@ class AutofillManager;
 }
 
 namespace {
+
+void RunAllPendingTasks() {
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  run_loop.Run();
+}
 
 class MockPasswordManagerDriver : public PasswordManagerDriver {
  public:
@@ -52,15 +60,16 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
 
 class TestPasswordManagerClient : public PasswordManagerClient {
  public:
-  explicit TestPasswordManagerClient(Profile* profile,
-                                     PasswordStore* password_store)
-      : profile_(profile),
-        password_store_(password_store) {}
+  explicit TestPasswordManagerClient(PasswordStore* password_store)
+      : password_store_(password_store) {
+    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
+                                           true);
+  }
 
   virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save)
       OVERRIDE {}
-  virtual PrefService* GetPrefs() OVERRIDE { return profile_->GetPrefs(); }
-  virtual PasswordStore* GetPasswordStore() OVERRIDE { return password_store_;}
+  virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
+  virtual PasswordStore* GetPasswordStore() OVERRIDE { return password_store_; }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {
@@ -70,7 +79,7 @@ class TestPasswordManagerClient : public PasswordManagerClient {
   MockPasswordManagerDriver* GetMockDriver() { return &driver_; }
 
  private:
-  Profile* profile_;
+  TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
   MockPasswordManagerDriver driver_;
 };
@@ -80,11 +89,10 @@ class TestPasswordManager : public PasswordManager {
   explicit TestPasswordManager(PasswordManagerClient* client)
       : PasswordManager(client) {}
 
-  virtual void Autofill(
-      const autofill::PasswordForm& form_for_autofill,
-      const autofill::PasswordFormMap& best_matches,
-      const autofill::PasswordForm& preferred_match,
-      bool wait_for_username) const OVERRIDE {
+  virtual void Autofill(const autofill::PasswordForm& form_for_autofill,
+                        const autofill::PasswordFormMap& best_matches,
+                        const autofill::PasswordForm& preferred_match,
+                        bool wait_for_username) const OVERRIDE {
     best_matches_ = best_matches;
   }
 
@@ -101,8 +109,7 @@ class TestPasswordManager : public PasswordManager {
 
 class PasswordFormManagerTest : public testing::Test {
  public:
-  PasswordFormManagerTest() {
-  }
+  PasswordFormManagerTest() {}
 
   virtual void SetUp() {
     observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
@@ -120,11 +127,9 @@ class PasswordFormManagerTest : public testing::Test {
     saved_match_.password_value = ASCIIToUTF16("test1");
     saved_match_.other_possible_usernames.push_back(
         ASCIIToUTF16("test2@gmail.com"));
-    profile_ = new TestingProfile();
   }
 
   virtual void TearDown() {
-    delete profile_;
     if (mock_store_)
       mock_store_->Shutdown();
   }
@@ -136,9 +141,7 @@ class PasswordFormManagerTest : public testing::Test {
     }
   }
 
-  MockPasswordStore* mock_store() const {
-    return mock_store_.get();
-  }
+  MockPasswordStore* mock_store() const { return mock_store_.get(); }
 
   PasswordForm* GetPendingCredentials(PasswordFormManager* p) {
     return &p->pending_credentials_;
@@ -178,8 +181,6 @@ class PasswordFormManagerTest : public testing::Test {
     return p->IgnoreResult(*form);
   }
 
-  Profile* profile() { return profile_; }
-
   PasswordForm* observed_form() { return &observed_form_; }
   PasswordForm* saved_match() { return &saved_match_; }
   PasswordForm* CreateSavedMatch(bool blacklisted) {
@@ -192,13 +193,12 @@ class PasswordFormManagerTest : public testing::Test {
  private:
   PasswordForm observed_form_;
   PasswordForm saved_match_;
-  Profile* profile_;
   scoped_refptr<MockPasswordStore> mock_store_;
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   PasswordFormManager* manager = new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false);
@@ -210,8 +210,7 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   credentials.password_value = saved_match()->password_value;
   credentials.preferred = true;
   manager->ProvisionallySave(
-      credentials,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
@@ -222,8 +221,7 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
             GetPendingCredentials(manager)->origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
             GetPendingCredentials(manager)->signon_realm);
-  EXPECT_EQ(observed_form()->action,
-              GetPendingCredentials(manager)->action);
+  EXPECT_EQ(observed_form()->action, GetPendingCredentials(manager)->action);
   EXPECT_TRUE(GetPendingCredentials(manager)->preferred);
   EXPECT_EQ(saved_match()->password_value,
             GetPendingCredentials(manager)->password_value);
@@ -240,8 +238,7 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   credentials.username_value = new_user;
   credentials.password_value = new_pass;
   manager->ProvisionallySave(
-      credentials,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   // Again, the PasswordFormManager should know this is still a new login.
   EXPECT_TRUE(manager->IsNewLogin());
@@ -251,10 +248,8 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   EXPECT_EQ(observed_form()->signon_realm,
             GetPendingCredentials(manager)->signon_realm);
   EXPECT_TRUE(GetPendingCredentials(manager)->preferred);
-  EXPECT_EQ(new_pass,
-            GetPendingCredentials(manager)->password_value);
-  EXPECT_EQ(new_user,
-            GetPendingCredentials(manager)->username_value);
+  EXPECT_EQ(new_pass, GetPendingCredentials(manager)->password_value);
+  EXPECT_EQ(new_user, GetPendingCredentials(manager)->username_value);
   delete manager;
 }
 
@@ -262,7 +257,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   // Create a PasswordFormManager with observed_form, as if we just
   // saw this form and need to find matching logins.
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   PasswordFormManager* manager = new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false);
@@ -280,8 +275,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   credentials.password_value = new_pass;
   credentials.preferred = true;
   manager->ProvisionallySave(
-      credentials,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -296,15 +290,14 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   EXPECT_EQ(GetPendingCredentials(manager)->signon_realm,
             saved_match()->signon_realm);
   EXPECT_TRUE(GetPendingCredentials(manager)->preferred);
-  EXPECT_EQ(new_pass,
-            GetPendingCredentials(manager)->password_value);
+  EXPECT_EQ(new_pass, GetPendingCredentials(manager)->password_value);
   // Done.
   delete manager;
 }
 
 TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   PasswordFormManager* manager = new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false);
@@ -326,7 +319,7 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
 
 TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
@@ -338,8 +331,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
   manager->ProvisionallySave(
-      login,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_FALSE(manager->IsNewLogin());
   // We bless our saved PasswordForm entry with the action URL of the
   // observed form.
@@ -349,7 +341,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
 
 TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
@@ -361,8 +353,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   login.password_value = saved_match()->password_value;
 
   manager->ProvisionallySave(
-      login,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_FALSE(manager->IsNewLogin());
   // The observed action URL is different from the previously saved one, and
   // is the same as the one that would be submitted on successful login.
@@ -373,7 +364,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
 
 TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
@@ -385,13 +376,11 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   login.action = new_action;
 
   manager->ProvisionallySave(
-      login,
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_TRUE(manager->IsNewLogin());
   // Check that the provisionally saved action URL is the same as the submitted
   // action URL, not the one observed on page load.
-  EXPECT_EQ(new_action,
-            GetPendingCredentials(manager.get())->action);
+  EXPECT_EQ(new_action, GetPendingCredentials(manager.get())->action);
 }
 
 TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
@@ -400,18 +389,14 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
   CHECK(password_store->Init());
 
-  TestPasswordManagerClient client(profile(), password_store.get());
+  TestPasswordManagerClient client(password_store.get());
   TestPasswordManager password_manager(&client);
-  scoped_ptr<PasswordFormManager> manager(
-      new PasswordFormManager(&password_manager,
-                              &client,
-                              client.GetDriver(),
-                              *observed_form(),
-                              false));
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
 
   password_store->AddLogin(*saved_match());
   manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
-  content::RunAllPendingInMessageLoop();
+  RunAllPendingTasks();
 
   // The saved match has the right username already.
   PasswordForm login(*observed_form());
@@ -419,12 +404,11 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   login.password_value = saved_match()->password_value;
   login.preferred = true;
   manager->ProvisionallySave(
-      login,
-      PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+      login, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
 
   EXPECT_FALSE(manager->IsNewLogin());
   manager->Save();
-  content::RunAllPendingInMessageLoop();
+  RunAllPendingTasks();
 
   // Should be only one password stored, and should not have
   // |other_possible_usernames| set anymore.
@@ -433,31 +417,26 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   ASSERT_EQ(1U, passwords[saved_match()->signon_realm].size());
   EXPECT_EQ(saved_match()->username_value,
             passwords[saved_match()->signon_realm][0].username_value);
-  EXPECT_EQ(
-      0U,
-      passwords[saved_match()->signon_realm][0].
-      other_possible_usernames.size());
+  EXPECT_EQ(0U,
+            passwords[saved_match()->signon_realm][0]
+                .other_possible_usernames.size());
 
   // This time use an alternate username
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        &client,
-                                        client.GetDriver(),
-                                        *observed_form(),
-                                        false));
+  manager.reset(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
   password_store->Clear();
   password_store->AddLogin(*saved_match());
   manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
-  content::RunAllPendingInMessageLoop();
+  RunAllPendingTasks();
 
   base::string16 new_username = saved_match()->other_possible_usernames[0];
   login.username_value = new_username;
   manager->ProvisionallySave(
-      login,
-      PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+      login, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
 
   EXPECT_FALSE(manager->IsNewLogin());
   manager->Save();
-  content::RunAllPendingInMessageLoop();
+  RunAllPendingTasks();
 
   // |other_possible_usernames| should also be empty, but username_value should
   // be changed to match |new_username|
@@ -466,10 +445,9 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   ASSERT_EQ(1U, passwords[saved_match()->signon_realm].size());
   EXPECT_EQ(new_username,
             passwords[saved_match()->signon_realm][0].username_value);
-  EXPECT_EQ(
-      0U,
-      passwords[saved_match()->signon_realm][0].
-      other_possible_usernames.size());
+  EXPECT_EQ(0U,
+            passwords[saved_match()->signon_realm][0]
+                .other_possible_usernames.size());
   password_store->Shutdown();
 }
 
@@ -543,14 +521,10 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   base::MessageLoop message_loop;
 
   // A dumb password manager.
-  TestPasswordManagerClient client(profile(), NULL);
+  TestPasswordManagerClient client(NULL);
   TestPasswordManager password_manager(&client);
-  scoped_ptr<PasswordFormManager> manager(
-      new PasswordFormManager(&password_manager,
-                              &client,
-                              client.GetDriver(),
-                              *observed_form(),
-                              false));
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
 
   // First time sign up attempt; No login result is found from password store;
   // We should send the not blacklisted message.
@@ -564,11 +538,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   // Sign up attempt to previously visited sites; Login result is found from
   // password store, and is not blacklisted; We should send the not blacklisted
   // message.
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        &client,
-                                        client.GetDriver(),
-                                        *observed_form(),
-                                        false));
+  manager.reset(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
   EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
       .Times(1);
   SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
@@ -580,11 +551,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   // Sign up attempt to previously visited sites; Login result is found from
   // password store, but is blacklisted; We should not send the not blacklisted
   // message.
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        &client,
-                                        client.GetDriver(),
-                                        *observed_form(),
-                                        false));
+  manager.reset(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
   EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
       .Times(0);
   SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
@@ -597,14 +565,10 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
 TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   base::MessageLoop message_loop;
 
-  TestPasswordManagerClient client(profile(), NULL);
+  TestPasswordManagerClient client(NULL);
   TestPasswordManager password_manager(&client);
-  scoped_ptr<PasswordFormManager> manager(
-      new PasswordFormManager(&password_manager,
-                              &client,
-                              client.GetDriver(),
-                              *observed_form(),
-                              false));
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
 
   // Simulate having two matches for this origin, one of which was from a form
   // with different HTML tags for elements. Because of scoring differences,
@@ -622,11 +586,8 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
 
   // Same thing, except this time the credentials that don't match quite as
   // well are generated. They should now be sent to Autofill().
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        &client,
-                                        client.GetDriver(),
-                                        *observed_form(),
-                                        false));
+  manager.reset(new PasswordFormManager(
+      &password_manager, &client, client.GetDriver(), *observed_form(), false));
   results.push_back(CreateSavedMatch(false));
   results.push_back(CreateSavedMatch(false));
   results[1]->username_value = ASCIIToUTF16("other@gmail.com");
@@ -640,7 +601,7 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
 
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   scoped_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient(profile(), NULL));
+      new TestPasswordManagerClient(NULL));
   scoped_ptr<MockPasswordManagerDriver> driver;
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       NULL, client.get(), driver.get(), *observed_form(), false));
@@ -689,23 +650,19 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   encountered_form.password_element = ASCIIToUTF16("Passwd");
   encountered_form.submit_element = ASCIIToUTF16("signIn");
 
-  TestPasswordManagerClient client(profile(), mock_store());
+  TestPasswordManagerClient client(mock_store());
   MockPasswordManagerDriver driver;
   EXPECT_CALL(driver, IsOffTheRecord()).WillRepeatedly(Return(false));
   EXPECT_CALL(driver, AllowPasswordGenerationForForm(_));
 
   TestPasswordManager manager(&client);
-  PasswordFormManager form_manager(&manager,
-                                   &client,
-                                   &driver,
-                                   encountered_form,
-                                   false);
+  PasswordFormManager form_manager(
+      &manager, &client, &driver, encountered_form, false);
 
   const PasswordStore::AuthorizationPromptPolicy auth_policy =
       PasswordStore::DISALLOW_PROMPT;
-  EXPECT_CALL(*mock_store(), GetLogins(encountered_form,
-                                       auth_policy,
-                                       &form_manager));
+  EXPECT_CALL(*mock_store(),
+              GetLogins(encountered_form, auth_policy, &form_manager));
   form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
 
   // Password store only has these incomplete credentials.
@@ -734,7 +691,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   form_manager.OnRequestDone(results);
 
   form_manager.ProvisionallySave(
-        complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   // By now that form has been used once.
   complete_form.times_used = 1;
 
