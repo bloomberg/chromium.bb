@@ -71,8 +71,7 @@ class SyncFileSystemService
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
 
-  ConflictResolutionPolicy GetConflictResolutionPolicy(
-      const GURL& origin) const;
+  ConflictResolutionPolicy GetConflictResolutionPolicy(const GURL& origin);
   SyncStatusCode SetConflictResolutionPolicy(const GURL& origin,
                                              ConflictResolutionPolicy policy);
 

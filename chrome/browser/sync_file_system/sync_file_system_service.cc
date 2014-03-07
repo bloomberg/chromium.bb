@@ -382,14 +382,14 @@ void SyncFileSystemService::RemoveSyncEventObserver(
 }
 
 ConflictResolutionPolicy SyncFileSystemService::GetConflictResolutionPolicy(
-    const GURL& origin) const {
-  return remote_service_->GetConflictResolutionPolicy(origin);
+    const GURL& origin) {
+  return GetRemoteService(origin)->GetConflictResolutionPolicy(origin);
 }
 
 SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
     const GURL& origin,
     ConflictResolutionPolicy policy) {
-  return remote_service_->SetConflictResolutionPolicy(origin, policy);
+  return GetRemoteService(origin)->SetConflictResolutionPolicy(origin, policy);
 }
 
 LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
@@ -765,6 +765,9 @@ RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
     v2_remote_service_->AddServiceObserver(v2_remote_syncer.get());
     v2_remote_service_->AddFileStatusObserver(this);
     v2_remote_service_->SetRemoteChangeProcessor(local_service_.get());
+    v2_remote_service_->SetSyncEnabled(sync_enabled_);
+    v2_remote_service_->SetDefaultConflictResolutionPolicy(
+        remote_service_->GetDefaultConflictResolutionPolicy());
     remote_sync_runners_.push_back(v2_remote_syncer.release());
   }
   return v2_remote_service_.get();
