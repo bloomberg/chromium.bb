@@ -66,8 +66,8 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
 
   // Set of origins that can use UMA private APIs from NaCl.
   std::set<std::string> allowed_origins_;
-  // Set of histograms that can be used from this interface.
-  std::set<std::string> allowed_histograms_;
+  // Set of hashed histogram prefixes that can be used from this interface.
+  std::set<std::string> allowed_histogram_prefixes_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperUMAHost);
 };

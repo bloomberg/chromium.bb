@@ -20,19 +20,19 @@
 
 namespace {
 
-const char* kPredefinedAllowedUMAOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/317833
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/317833
+const char* const kPredefinedAllowedUMAOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see http://crbug.com/317833
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see http://crbug.com/317833
 };
 
-const char* kWhitelistedHistogramHashes[] = {
-  "F131550DAB7A7C6E6633EF81FB5998CC0482AC63",  // see crbug.com/317833
-  "13955AB4DAD798384DFB4304734FCF2A95F353CC",  // see crbug.com/317833
-  "404E800582901F1B937B8E287235FC603A5DEDFB"   // see crbug.com/317833
+const char* const kWhitelistedHistogramPrefixes[] = {
+  "CD190EA2B764EDF0BB97552A638D32072F3CFD41",  // see http://crbug.com/317833
 };
 
-std::string HashHistogram(const std::string& histogram) {
-  const std::string id_hash = base::SHA1HashString(histogram);
+
+std::string HashPrefix(const std::string& histogram) {
+  const std::string id_hash = base::SHA1HashString(
+      histogram.substr(0, histogram.find('.')));
   DCHECK_EQ(id_hash.length(), base::kSHA1Length);
   return base::HexEncode(id_hash.c_str(), id_hash.length());
 }
@@ -48,8 +48,8 @@ PepperUMAHost::PepperUMAHost(
       is_plugin_in_process_(host->IsRunningInProcess()) {
   for (size_t i = 0; i < arraysize(kPredefinedAllowedUMAOrigins); ++i)
     allowed_origins_.insert(kPredefinedAllowedUMAOrigins[i]);
-  for (size_t i = 0; i < arraysize(kWhitelistedHistogramHashes); ++i)
-    allowed_histograms_.insert(kWhitelistedHistogramHashes[i]);
+  for (size_t i = 0; i < arraysize(kWhitelistedHistogramPrefixes); ++i)
+    allowed_histogram_prefixes_.insert(kWhitelistedHistogramPrefixes[i]);
 }
 
 PepperUMAHost::~PepperUMAHost() {
@@ -78,8 +78,8 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
       ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
           document_url_, allowed_origins_);
   if (is_whitelisted &&
-      allowed_histograms_.find(HashHistogram(histogram)) !=
-          allowed_histograms_.end()) {
+      allowed_histogram_prefixes_.find(HashPrefix(histogram)) !=
+          allowed_histogram_prefixes_.end()) {
     return true;
   }
 
