@@ -1818,6 +1818,55 @@ out:
 	return -1;
 }
 
+static int
+gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
+{
+	struct gl_renderer *gr = get_renderer(ec);
+	const char *extensions;
+	EGLBoolean ret;
+
+	gr->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
+	gr->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
+	gr->bind_display =
+		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
+	gr->unbind_display =
+		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
+	gr->query_buffer =
+		(void *) eglGetProcAddress("eglQueryWaylandBufferWL");
+
+	extensions =
+		(const char *) eglQueryString(gr->egl_display, EGL_EXTENSIONS);
+	if (!extensions) {
+		weston_log("Retrieving EGL extension string failed.\n");
+		return -1;
+	}
+
+	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
+		gr->has_bind_display = 1;
+	if (gr->has_bind_display) {
+		ret = gr->bind_display(gr->egl_display, ec->wl_display);
+		if (!ret)
+			gr->has_bind_display = 0;
+	}
+
+	if (strstr(extensions, "EGL_EXT_buffer_age"))
+		gr->has_egl_buffer_age = 1;
+	else
+		weston_log("warning: EGL_EXT_buffer_age not supported. "
+			   "Performance could be affected.\n");
+
+#ifdef EGL_EXT_swap_buffers_with_damage
+	if (strstr(extensions, "EGL_EXT_swap_buffers_with_damage"))
+		gr->swap_buffers_with_damage =
+			(void *) eglGetProcAddress("eglSwapBuffersWithDamageEXT");
+	else
+		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
+			   "supported. Performance could be affected.\n");
+#endif
+
+	return 0;
+}
+
 static const EGLint gl_renderer_opaque_attribs[] = {
 	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 	EGL_RED_SIZE, 1,
@@ -1876,6 +1925,9 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	ec->renderer = &gr->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
+
+	if (gl_renderer_setup_egl_extensions(ec) < 0)
+		goto err_egl;
 
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
 
@@ -2004,14 +2056,6 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	gr->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
-	gr->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
-	gr->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
-	gr->bind_display =
-		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
-	gr->unbind_display =
-		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
-	gr->query_buffer =
-		(void *) eglGetProcAddress("eglQueryWaylandBufferWL");
 
 	extensions = (const char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) {
@@ -2036,36 +2080,6 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	if (strstr(extensions, "GL_OES_EGL_image_external"))
 		gr->has_egl_image_external = 1;
-
-	extensions =
-		(const char *) eglQueryString(gr->egl_display, EGL_EXTENSIONS);
-	if (!extensions) {
-		weston_log("Retrieving EGL extension string failed.\n");
-		return -1;
-	}
-
-	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
-		gr->has_bind_display = 1;
-	if (gr->has_bind_display) {
-		ret = gr->bind_display(gr->egl_display, ec->wl_display);
-		if (!ret)
-			gr->has_bind_display = 0;
-	}
-
-	if (strstr(extensions, "EGL_EXT_buffer_age"))
-		gr->has_egl_buffer_age = 1;
-	else
-		weston_log("warning: EGL_EXT_buffer_age not supported. "
-			   "Performance could be affected.\n");
-
-#ifdef EGL_EXT_swap_buffers_with_damage
-	if (strstr(extensions, "EGL_EXT_swap_buffers_with_damage"))
-		gr->swap_buffers_with_damage =
-			(void *) eglGetProcAddress("eglSwapBuffersWithDamageEXT");
-	else
-		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
-			   "supported. Performance could be affected.\n");
-#endif
 
 	glActiveTexture(GL_TEXTURE0);
 
