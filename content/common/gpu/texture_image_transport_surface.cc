@@ -73,11 +73,8 @@ bool TextureImageTransportSurface::Initialize() {
     return false;
 
   GpuChannel* parent_channel = manager->LookupChannel(handle_.parent_client_id);
-  if (parent_channel) {
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
-      helper_->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
-  }
+  if (parent_channel)
+    helper_->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
 
   return true;
 }

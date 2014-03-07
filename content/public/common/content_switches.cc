@@ -905,12 +905,6 @@ const char kTraceStartupDuration[]          = "trace-startup-duration";
 // all events since startup.
 const char kTraceStartupFile[]              = "trace-startup-file";
 
-
-
-// Prioritizes the UI's command stream in the GPU process
-extern const char kUIPrioritizeInGpuProcess[] =
-    "ui-prioritize-in-gpu-process";
-
 // Overrides the preferred discardable memory implementation.
 const char kUseDiscardableMemory[] = "use-discardable-memory";
 
