@@ -13,6 +13,31 @@
   ],
   'targets': [
     {
+      'target_name': 'chrome_elf_resources',
+      'type': 'none',
+      'conditions': [
+        ['branding == "Chrome"', {
+          'variables': {
+             'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
+          },
+        }, { # else branding!="Chrome"
+          'variables': {
+             'branding_path': '../chrome/app/theme/chromium/BRANDING',
+          },
+        }],
+      ],
+      'variables': {
+        'output_dir': 'chrome_elf',
+        'template_input_path': '../chrome/app/chrome_version.rc.version',
+      },
+      'sources': [
+        'chrome_elf.ver',
+      ],
+      'includes': [
+        '../chrome/version_resource_rules.gypi',
+      ],
+    },
+    {
       'target_name': 'chrome_elf',
       'type': 'shared_library',
       'include_dirs': [
@@ -22,11 +47,13 @@
         'chrome_elf.def',
         'chrome_elf_main.cc',
         'chrome_elf_main.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_elf/chrome_elf_version.rc',
       ],
       'dependencies': [
         'blacklist',
         'chrome_elf_breakpad',
         'chrome_elf_lib',
+        'chrome_elf_resources',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
