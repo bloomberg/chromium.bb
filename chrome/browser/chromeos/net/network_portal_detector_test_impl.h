@@ -35,8 +35,8 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;
-  virtual void EnableLazyDetection() OVERRIDE;
-  virtual void DisableLazyDetection() OVERRIDE;
+  virtual void EnableErrorScreenStrategy() OVERRIDE;
+  virtual void DisableErrorScreenStrategy() OVERRIDE;
 
  private:
   typedef std::string NetworkId;

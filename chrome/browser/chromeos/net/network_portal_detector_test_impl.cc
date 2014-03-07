@@ -83,10 +83,10 @@ bool NetworkPortalDetectorTestImpl::StartDetectionIfIdle() {
   return false;
 }
 
-void NetworkPortalDetectorTestImpl::EnableLazyDetection() {
+void NetworkPortalDetectorTestImpl::EnableErrorScreenStrategy() {
 }
 
-void NetworkPortalDetectorTestImpl::DisableLazyDetection() {
+void NetworkPortalDetectorTestImpl::DisableErrorScreenStrategy() {
 }
 
 }  // namespace chromeos

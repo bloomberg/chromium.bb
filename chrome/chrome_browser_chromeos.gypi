@@ -663,6 +663,8 @@
         'browser/chromeos/net/network_portal_detector.h',
         'browser/chromeos/net/network_portal_detector_impl.cc',
         'browser/chromeos/net/network_portal_detector_impl.h',
+        'browser/chromeos/net/network_portal_detector_strategy.cc',
+        'browser/chromeos/net/network_portal_detector_strategy.h',
         'browser/chromeos/net/network_portal_detector_test_impl.cc',
         'browser/chromeos/net/network_portal_detector_test_impl.h',
         'browser/chromeos/net/network_portal_notification_controller.cc',

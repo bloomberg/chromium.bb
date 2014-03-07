@@ -54,7 +54,7 @@ void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
   parent_screen_ = parent_screen;
   ShowScreen(OobeUI::kScreenErrorMessage, params);
   NetworkErrorShown();
-  NetworkPortalDetector::Get()->EnableLazyDetection();
+  NetworkPortalDetector::Get()->EnableErrorScreenStrategy();
   LOG(WARNING) << "Offline message is displayed";
 }
 
@@ -64,7 +64,7 @@ void ErrorScreenHandler::Hide() {
   std::string screen_name;
   if (GetScreenName(parent_screen_, &screen_name))
     ShowScreen(screen_name.c_str(), NULL);
-  NetworkPortalDetector::Get()->DisableLazyDetection();
+  NetworkPortalDetector::Get()->DisableErrorScreenStrategy();
   LOG(WARNING) << "Offline message is hidden";
 }
 

@@ -94,12 +94,12 @@ class NetworkPortalDetector {
   // started.
   virtual bool StartDetectionIfIdle() = 0;
 
-  // Enables lazy detection mode. In this mode portal detection after
-  // first 3 consecutive attemps will be performed once in 5 seconds.
-  virtual void EnableLazyDetection() = 0;
+  // Enables detection strategy for the error screen. In this mode portal
+  // detection will be performed once in 5 seconds.
+  virtual void EnableErrorScreenStrategy() = 0;
 
-  // Dizables lazy detection mode.
-  virtual void DisableLazyDetection() = 0;
+  // Dizables detection strategy for the error screen.
+  virtual void DisableErrorScreenStrategy() = 0;
 
   // Initializes network portal detector for testing. The
   // |network_portal_detector| will be owned by the internal pointer

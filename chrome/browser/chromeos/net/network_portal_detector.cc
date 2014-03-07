@@ -48,8 +48,8 @@ class NetworkPortalDetectorStubImpl : public NetworkPortalDetector {
   virtual bool IsEnabled() OVERRIDE { return false; }
   virtual void Enable(bool /* start_detection */) OVERRIDE {}
   virtual bool StartDetectionIfIdle() OVERRIDE { return false; }
-  virtual void EnableLazyDetection() OVERRIDE {}
-  virtual void DisableLazyDetection() OVERRIDE {}
+  virtual void EnableErrorScreenStrategy() OVERRIDE {}
+  virtual void DisableErrorScreenStrategy() OVERRIDE {}
 };
 
 }  // namespace
