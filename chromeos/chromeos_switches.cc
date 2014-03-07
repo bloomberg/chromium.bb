@@ -67,9 +67,6 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
-// Disables fetching online CrOS EULA page, only static version is shown.
-const char kDisableOnlineEULA[] = "disable-cros-online-eula";
-
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 

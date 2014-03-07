@@ -37,7 +37,6 @@ CHROMEOS_EXPORT extern const char kDisableNetworkPortalNotification[];
 CHROMEOS_EXPORT extern const char kDisableNewChannelSwitcherUI[];
 CHROMEOS_EXPORT extern const char kDisableNewKioskUI[];
 CHROMEOS_EXPORT extern const char kDisableOOBEBlockingUpdate[];
-CHROMEOS_EXPORT extern const char kDisableOnlineEULA[];
 CHROMEOS_EXPORT extern const char kDisableOobeAnimation[];
 CHROMEOS_EXPORT extern const char kDisableQuickofficeComponentApp[];
 CHROMEOS_EXPORT extern const char kDisableVolumeAdjustSound[];
