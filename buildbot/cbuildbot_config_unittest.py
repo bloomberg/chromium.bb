@@ -208,11 +208,12 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Verify that hw test timeout is in a reasonable range."""
     # The parallel library will kill the process if it's silent for longer
     # than the silent timeout.
-    max_timeout = parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT
+    max_timeout = parallel._BackgroundTask.SILENT_TIMEOUT
     for build_name, config in cbuildbot_config.config.iteritems():
       for test_config in config['hw_tests']:
         self.assertTrue(test_config.timeout < max_timeout,
-            '%s has a hw_tests_timeout that is too large.' % build_name)
+            '%s has a hw_tests_timeout of %s that is too large. Expected %s' %
+            (build_name, test_config.timeout, max_timeout))
 
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""
