@@ -128,19 +128,11 @@ class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getDevices", BLUETOOTH_GETDEVICES)
 
-  BluetoothGetDevicesFunction();
-
  protected:
   virtual ~BluetoothGetDevicesFunction() {}
 
   // BluetoothExtensionFunction:
   virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
-
- private:
-  void DispatchDeviceSearchResult(const device::BluetoothDevice& device);
-  void FinishDeviceSearch();
-
-  int device_events_sent_;
 };
 
 class BluetoothGetServicesFunction : public BluetoothExtensionFunction {

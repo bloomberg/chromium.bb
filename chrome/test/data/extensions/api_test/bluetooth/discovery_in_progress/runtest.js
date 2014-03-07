@@ -23,16 +23,17 @@ function sendReady(callback) {
   chrome.test.sendMessage('ready', callback);
 }
 
-function stopDiscoveryAndContinue() {
-  chrome.bluetooth.stopDiscovery();
-  sendReady(startTests);
-}
-
 var discoveredDevices = [];
 function recordDevice(device) {
   discoveredDevices.push(device);
 }
 
+function stopDiscoveryAndContinue() {
+  chrome.bluetooth.stopDiscovery();
+  chrome.bluetooth.onDeviceAdded.removeListener(recordDevice);
+  sendReady(startTests);
+}
+
+chrome.bluetooth.onDeviceAdded.addListener(recordDevice);
 chrome.bluetooth.startDiscovery(
-    { deviceCallback:recordDevice },
     function() { sendReady(stopDiscoveryAndContinue); });

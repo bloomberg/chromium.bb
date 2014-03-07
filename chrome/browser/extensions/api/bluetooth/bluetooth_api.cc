@@ -96,6 +96,12 @@ BluetoothAPI::BluetoothAPI(BrowserContext* context)
     : browser_context_(context) {
   ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
       this, bluetooth::OnAdapterStateChanged::kEventName);
+  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
+      this, bluetooth::OnDeviceAdded::kEventName);
+  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
+      this, bluetooth::OnDeviceChanged::kEventName);
+  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
+      this, bluetooth::OnDeviceRemoved::kEventName);
 }
 
 BluetoothAPI::~BluetoothAPI() {
@@ -272,52 +278,12 @@ bool BluetoothGetAdapterStateFunction::DoWork(
   return true;
 }
 
-BluetoothGetDevicesFunction::BluetoothGetDevicesFunction()
-    : device_events_sent_(0) {}
-
-void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
-    const BluetoothDevice& device) {
-  bluetooth::Device extension_device;
-  bluetooth::BluetoothDeviceToApiDevice(device, &extension_device);
-  GetEventRouter(browser_context())->DispatchDeviceEvent(
-      extensions::event_names::kBluetoothOnDeviceSearchResult,
-      extension_device);
-
-  device_events_sent_++;
-}
-
-void BluetoothGetDevicesFunction::FinishDeviceSearch() {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue());
-  info->SetInteger("expectedEventCount", device_events_sent_);
-  args->Append(info.release());
-
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::event_names::kBluetoothOnDeviceSearchFinished, args.Pass()));
-  extensions::ExtensionSystem::Get(browser_context())
-      ->event_router()
-      ->BroadcastEvent(event.Pass());
-
-  SendResponse(true);
-}
-
 bool BluetoothGetDevicesFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  scoped_ptr<GetDevices::Params> params(GetDevices::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const bluetooth::GetDevicesOptions& options = params->options;
-
-  std::string uuid;
-  if (options.profile.get() != NULL) {
-    uuid = options.profile->uuid;
-    if (!BluetoothDevice::IsUUIDValid(uuid)) {
-      SetError(kInvalidUuid);
-      SendResponse(false);
-      return false;
-    }
-  }
+  base::ListValue* device_list = new base::ListValue;
+  SetResult(device_list);
 
   BluetoothAdapter::DeviceList devices = adapter->GetDevices();
   for (BluetoothAdapter::DeviceList::const_iterator iter = devices.begin();
@@ -325,11 +291,14 @@ bool BluetoothGetDevicesFunction::DoWork(
        ++iter) {
     const BluetoothDevice* device = *iter;
     DCHECK(device);
-    if (uuid.empty() || device->ProvidesServiceWithUUID(uuid))
-      DispatchDeviceSearchResult(*device);
+
+    bluetooth::Device extension_device;
+    bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
+
+    device_list->Append(extension_device.ToValue().release());
   }
 
-  FinishDeviceSearch();
+  SendResponse(true);
 
   return true;
 }
@@ -637,12 +606,10 @@ void BluetoothStartDiscoveryFunction::OnSuccessCallback() {
 void BluetoothStartDiscoveryFunction::OnErrorCallback() {
   SetError(kStartDiscoveryFailed);
   SendResponse(false);
-  GetEventRouter(browser_context())->OnListenerRemoved();
 }
 
 bool BluetoothStartDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
-  GetEventRouter(browser_context())->OnListenerAdded();
   GetEventRouter(browser_context())->StartDiscoverySession(
       adapter,
       extension_id(),
@@ -654,13 +621,11 @@ bool BluetoothStartDiscoveryFunction::DoWork(
 
 void BluetoothStopDiscoveryFunction::OnSuccessCallback() {
   SendResponse(true);
-  GetEventRouter(browser_context())->OnListenerRemoved();
 }
 
 void BluetoothStopDiscoveryFunction::OnErrorCallback() {
   SetError(kStopDiscoveryFailed);
   SendResponse(false);
-  GetEventRouter(browser_context())->OnListenerRemoved();
 }
 
 bool BluetoothStopDiscoveryFunction::DoWork(

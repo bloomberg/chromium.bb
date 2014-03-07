@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -210,15 +209,6 @@ ExtensionBluetoothEventRouter::GetSocket(int id) {
   return socket_entry->second.socket;
 }
 
-void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
-    const std::string& event_name, const bluetooth::Device& device) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(device.ToValue().release());
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
-      event.Pass());
-}
-
 void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
     const std::string& extension_id,
     const std::string& uuid,
@@ -228,13 +218,13 @@ void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
     return;
 
   int socket_id = RegisterSocket(extension_id, socket);
-  api::bluetooth::Socket result_socket;
-  api::bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
+  bluetooth::Socket result_socket;
+  bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
   result_socket.profile.uuid = uuid;
   result_socket.id = socket_id;
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(result_socket.ToValue().release());
+  scoped_ptr<base::ListValue> args =
+      bluetooth::OnConnection::Create(result_socket);
   scoped_ptr<Event> event(new Event(
       bluetooth::OnConnection::kEventName, args.Pass()));
   ExtensionSystem::Get(browser_context_)
@@ -294,11 +284,29 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
     return;
   }
 
-  bluetooth::Device extension_device;
-  bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
+  DispatchDeviceEvent(bluetooth::OnDeviceAdded::kEventName, device);
+}
 
-  DispatchDeviceEvent(extensions::event_names::kBluetoothOnDeviceDiscovered,
-                      extension_device);
+void ExtensionBluetoothEventRouter::DeviceChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device) {
+  if (adapter != adapter_.get()) {
+    DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
+    return;
+  }
+
+  DispatchDeviceEvent(bluetooth::OnDeviceChanged::kEventName, device);
+}
+
+void ExtensionBluetoothEventRouter::DeviceRemoved(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device) {
+  if (adapter != adapter_.get()) {
+    DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
+    return;
+  }
+
+  DispatchDeviceEvent(bluetooth::OnDeviceRemoved::kEventName, device);
 }
 
 void ExtensionBluetoothEventRouter::InitializeAdapterIfNeeded() {
@@ -324,14 +332,27 @@ void ExtensionBluetoothEventRouter::MaybeReleaseAdapter() {
 }
 
 void ExtensionBluetoothEventRouter::DispatchAdapterStateEvent() {
-  api::bluetooth::AdapterState state;
+  bluetooth::AdapterState state;
   PopulateAdapterState(*adapter_.get(), &state);
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(state.ToValue().release());
+  scoped_ptr<base::ListValue> args =
+      bluetooth::OnAdapterStateChanged::Create(state);
   scoped_ptr<Event> event(new Event(
       bluetooth::OnAdapterStateChanged::kEventName,
       args.Pass()));
+  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
+      event.Pass());
+}
+
+void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
+    const std::string& event_name,
+    device::BluetoothDevice* device) {
+  bluetooth::Device extension_device;
+  bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
+
+  scoped_ptr<base::ListValue> args =
+      bluetooth::OnDeviceAdded::Create(extension_device);
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
       event.Pass());
 }

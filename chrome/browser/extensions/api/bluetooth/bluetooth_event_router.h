@@ -108,11 +108,6 @@ class ExtensionBluetoothEventRouter
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<device::BluetoothSocket> GetSocket(int id);
 
-  // Dispatch an event that takes a device as a parameter to all renderers.
-  void DispatchDeviceEvent(
-      const std::string& event_name,
-      const extensions::api::bluetooth::Device& device);
-
   // Dispatch an event that takes a connection socket as a parameter to the
   // extension that registered the profile that the socket has connected to.
   void DispatchConnectionEvent(const std::string& extension_id,
@@ -129,6 +124,10 @@ class ExtensionBluetoothEventRouter
                                          bool discovering) OVERRIDE;
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
                            device::BluetoothDevice* device) OVERRIDE;
+  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE;
+  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE;
 
   // Overridden from content::NotificationObserver
   virtual void Observe(int type,
@@ -145,6 +144,8 @@ class ExtensionBluetoothEventRouter
   void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();
+  void DispatchDeviceEvent(const std::string& event_name,
+                           device::BluetoothDevice* device);
   void CleanUpForExtension(const std::string& extension_id);
   void OnStartDiscoverySession(
       const std::string& extension_id,
