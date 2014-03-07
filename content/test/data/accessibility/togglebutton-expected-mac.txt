@@ -1,3 +1,4 @@
-AXWebArea
-    AXButton AXTitle='Regular button'
-    AXButton AXTitle='Toggle button'
+AXWebArea AXRoleDescription='HTML content'
+    AXButton AXRoleDescription='button' AXTitle='Regular button'
+    AXCheckBox AXSubrole=AXToggleButton AXRoleDescription='toggle button' AXTitle='Toggle button' AXValue='0'
+

@@ -148,7 +148,7 @@ RoleMap BuildRoleMap() {
     { ui::AX_ROLE_TEXT_AREA, NSAccessibilityTextAreaRole },
     { ui::AX_ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole },
     { ui::AX_ROLE_TIMER, NSAccessibilityGroupRole },
-    { ui::AX_ROLE_TOGGLE_BUTTON, NSAccessibilityButtonRole },
+    { ui::AX_ROLE_TOGGLE_BUTTON, NSAccessibilityCheckBoxRole },
     { ui::AX_ROLE_TOOLBAR, NSAccessibilityToolbarRole },
     { ui::AX_ROLE_TOOLTIP, NSAccessibilityGroupRole },
     { ui::AX_ROLE_TREE, NSAccessibilityOutlineRole },
@@ -206,6 +206,7 @@ RoleMap BuildSubroleMap() {
     { ui::AX_ROLE_STATUS, @"AXApplicationStatus" },
     { ui::AX_ROLE_TAB_PANEL, @"AXTabPanel" },
     { ui::AX_ROLE_TIMER, @"AXApplicationTimer" },
+    { ui::AX_ROLE_TOGGLE_BUTTON, @"AXToggleButton" },
     { ui::AX_ROLE_TOOLTIP, @"AXUserInterfaceTooltip" },
     { ui::AX_ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole },
   };
@@ -663,6 +664,17 @@ NSDictionary* attributeToMethodNameMap = nil;
           ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
     return NSAccessibilityGroupRole;
   }
+  if (role == ui::AX_ROLE_BUTTON || role == ui::AX_ROLE_TOGGLE_BUTTON) {
+    bool isAriaPressedDefined;
+    bool isMixed;
+    browserAccessibility_->GetAriaTristate("aria-pressed",
+                                           &isAriaPressedDefined,
+                                           &isMixed);
+    if (isAriaPressedDefined)
+      return NSAccessibilityCheckBoxRole;
+    else
+      return NSAccessibilityButtonRole;
+  }
   return NativeRoleFromAXRole(role);
 }
 
@@ -710,6 +722,9 @@ NSDictionary* attributeToMethodNameMap = nil;
     // This control is similar to what VoiceOver calls a "stepper".
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_STEPPER));
+  case ui::AX_ROLE_TOGGLE_BUTTON:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_TOGGLE_BUTTON));
   default:
     break;
   }
@@ -861,6 +876,18 @@ NSDictionary* attributeToMethodNameMap = nil;
   } else if ([role isEqualToString:NSAccessibilityButtonRole]) {
     // AXValue does not make sense for pure buttons.
     return @"";
+  } else if ([self internalRole] == ui::AX_ROLE_TOGGLE_BUTTON) {
+    int value = 0;
+    bool isAriaPressedDefined;
+    bool isMixed;
+    value = browserAccessibility_->GetAriaTristate(
+        "aria-pressed", &isAriaPressedDefined, &isMixed) ? 1 : 0;
+
+    if (isMixed)
+      value = 2;
+
+    return [NSNumber numberWithInt:value];
+
   } else if ([role isEqualToString:NSAccessibilityCheckBoxRole] ||
              [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     int value = 0;
