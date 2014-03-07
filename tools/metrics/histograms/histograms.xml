@@ -27984,6 +27984,11 @@ other types of suffix sets.
   <int value="277" label="JavascriptExhaustedMemory"/>
   <int value="278" label="InsertAdjacentHTML"/>
   <int value="279" label="SVGClassName"/>
+  <int value="280" label="HTMLAppletElement"/>
+  <int value="281" label="HTMLMediaElementSeekToFragmentStart"/>
+  <int value="282" label="HTMLMediaElementSeekToFragmentEnd"/>
+  <int value="283" label="PrefixedWindowURL"/>
+  <int value="284" label="PrefixedWorkerURL"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
