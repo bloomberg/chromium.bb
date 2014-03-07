@@ -19,9 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    RuntimeEnabled=Fullscreen,
-] partial interface Document {
+partial interface Document {
     // Mozilla version
     readonly attribute boolean webkitIsFullScreen;
     readonly attribute boolean webkitFullScreenKeyboardInputAllowed;

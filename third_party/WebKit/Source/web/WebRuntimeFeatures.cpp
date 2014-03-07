@@ -133,11 +133,6 @@ void WebRuntimeFeatures::enableFileSystem(bool enable)
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableFullscreen(bool enable)
-{
-    RuntimeEnabledFeatures::setFullscreenEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableGamepad(bool enable)
 {
     RuntimeEnabledFeatures::setGamepadEnabled(enable);

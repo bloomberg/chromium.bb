@@ -71,8 +71,6 @@ public:
 
     BLINK_EXPORT static void enableFileSystem(bool);
 
-    BLINK_EXPORT static void enableFullscreen(bool);
-
     BLINK_EXPORT static void enableGamepad(bool);
 
     BLINK_EXPORT static void enableLazyLayout(bool);
