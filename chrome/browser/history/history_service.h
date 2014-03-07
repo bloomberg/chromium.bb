@@ -274,15 +274,18 @@ class HistoryService : public CancelableRequestProvider,
 
   // Called when the results of QueryRedirectsFrom are available.
   // The given vector will contain a list of all redirects, not counting
-  // the original page. If A redirects to B, the vector will contain only B,
-  // and A will be in 'source_url'.
+  // the original page. If A redirects to B which redirects to C, the vector
+  // will contain [B, C], and A will be in 'from_url'.
+  //
+  // For QueryRedirectsTo, the order is reversed. For A->B->C, the vector will
+  // contain [B, A] and C will be in 'to_url'.
   //
   // If there is no such URL in the database or the most recent visit has no
   // redirect, the vector will be empty. If the history system failed for
   // some reason, success will additionally be false. If the given page
   // has redirected to multiple destinations, this will pick a random one.
   typedef base::Callback<void(Handle,
-                              GURL,  // from_url
+                              GURL,  // from_url / to_url
                               bool,  // success
                               history::RedirectList*)> QueryRedirectsCallback;
 
