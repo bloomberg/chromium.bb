@@ -82,7 +82,6 @@ class Adb(object):
         target,
         '{CR_ADB}', 'install',
         '-r',
-        '-d',
         '{CR_BINARY}',
         *arguments
     )
