@@ -58,7 +58,9 @@ struct gl_renderer_interface {
 	EGLDisplay (*display)(struct weston_compositor *ec);
 
 	int (*output_create)(struct weston_output *output,
-			     EGLNativeWindowType window);
+			     EGLNativeWindowType window,
+			     const EGLint *attribs,
+			     const EGLint *visual_id);
 
 	void (*output_destroy)(struct weston_output *output);
 

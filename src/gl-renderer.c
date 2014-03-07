@@ -139,6 +139,8 @@ struct gl_renderer {
 
 	int has_egl_buffer_age;
 
+	int has_configless_context;
+
 	struct gl_shader texture_shader_rgba;
 	struct gl_shader texture_shader_rgbx;
 	struct gl_shader texture_shader_egl_external;
@@ -1658,6 +1660,51 @@ log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
 		weston_log_continue(" unknown\n");
 }
 
+static int
+egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
+		  const EGLint *visual_id,
+		  EGLConfig *config_out)
+{
+	EGLint count = 0;
+	EGLint matched = 0;
+	EGLConfig *configs;
+	int i;
+
+	if (!eglGetConfigs(gr->egl_display, NULL, 0, &count) || count < 1)
+		return -1;
+
+	configs = calloc(count, sizeof *configs);
+	if (!configs)
+		return -1;
+
+	if (!eglChooseConfig(gr->egl_display, attribs, configs,
+			      count, &matched))
+		goto out;
+
+	for (i = 0; i < matched; ++i) {
+		EGLint id;
+
+		if (visual_id) {
+			if (!eglGetConfigAttrib(gr->egl_display,
+					configs[i], EGL_NATIVE_VISUAL_ID,
+					&id))
+				continue;
+
+			if (id != 0 && id != *visual_id)
+				continue;
+		}
+
+		*config_out = configs[i];
+
+		free(configs);
+		return 0;
+	}
+
+out:
+	free(configs);
+	return -1;
+}
+
 static void
 gl_renderer_output_set_border(struct weston_output *output,
 			      enum gl_renderer_border_side side,
@@ -1689,19 +1736,37 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
 static int
 gl_renderer_output_create(struct weston_output *output,
-				    EGLNativeWindowType window)
+			  EGLNativeWindowType window,
+			  const EGLint *attribs,
+			  const EGLint *visual_id)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
-	struct gl_output_state *go = calloc(1, sizeof *go);
+	struct gl_output_state *go;
+	EGLConfig egl_config;
 	int i;
+
+	if (egl_choose_config(gr, attribs, visual_id, &egl_config) == -1) {
+		weston_log("failed to choose EGL config for output\n");
+		return -1;
+	}
+
+	if (egl_config != gr->egl_config &&
+	    !gr->has_configless_context) {
+		weston_log("attempted to use a different EGL config for an "
+			   "output but EGL_MESA_configless_context is not "
+			   "supported\n");
+		return -1;
+	}
+
+	go = calloc(1, sizeof *go);
 
 	if (!go)
 		return -1;
 
 	go->egl_surface =
 		eglCreateWindowSurface(gr->egl_display,
-				       gr->egl_config,
+				       egl_config,
 				       window, NULL);
 
 	if (go->egl_surface == EGL_NO_SURFACE) {
@@ -1720,6 +1785,8 @@ gl_renderer_output_create(struct weston_output *output,
 		pixman_region32_init(&go->buffer_damage[i]);
 
 	output->renderer_state = go;
+
+	log_egl_config_info(gr->egl_display, egl_config);
 
 	return 0;
 }
@@ -1775,50 +1842,6 @@ gl_renderer_destroy(struct weston_compositor *ec)
 }
 
 static int
-egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
-	const EGLint *visual_id)
-{
-	EGLint count = 0;
-	EGLint matched = 0;
-	EGLConfig *configs;
-	int i;
-
-	if (!eglGetConfigs(gr->egl_display, NULL, 0, &count) || count < 1)
-		return -1;
-
-	configs = calloc(count, sizeof *configs);
-	if (!configs)
-		return -1;
-
-	if (!eglChooseConfig(gr->egl_display, attribs, configs,
-			      count, &matched))
-		goto out;
-
-	for (i = 0; i < matched; ++i) {
-		EGLint id;
-
-		if (visual_id) {
-			if (!eglGetConfigAttrib(gr->egl_display,
-					configs[i], EGL_NATIVE_VISUAL_ID,
-					&id))
-				continue;
-
-			if (id != 0 && id != *visual_id)
-				continue;
-		}
-
-		gr->egl_config = configs[i];
-
-		free(configs);
-		return 0;
-	}
-
-out:
-	free(configs);
-	return -1;
-}
-
-static int
 gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 {
 	struct gl_renderer *gr = get_renderer(ec);
@@ -1862,6 +1885,11 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 	else
 		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
 			   "supported. Performance could be affected.\n");
+#endif
+
+#ifdef EGL_MESA_configless_context
+	if (strstr(extensions, "EGL_MESA_configless_context"))
+		gr->has_configless_context = 1;
 #endif
 
 	return 0;
@@ -1917,7 +1945,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 		goto err_egl;
 	}
 
-	if (egl_choose_config(gr, attribs, visual_id) < 0) {
+	if (egl_choose_config(gr, attribs, visual_id, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
 		goto err_egl;
 	}
@@ -2021,6 +2049,7 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 {
 	struct gl_renderer *gr = get_renderer(ec);
 	const char *extensions;
+	EGLConfig context_config;
 	EGLBoolean ret;
 
 	static const EGLint context_attribs[] = {
@@ -2034,9 +2063,14 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		return -1;
 	}
 
-	log_egl_config_info(gr->egl_display, gr->egl_config);
+	context_config = gr->egl_config;
 
-	gr->egl_context = eglCreateContext(gr->egl_display, gr->egl_config,
+#ifdef EGL_MESA_configless_context
+	if (gr->has_configless_context)
+		context_config = EGL_NO_CONFIG_MESA;
+#endif
+
+	gr->egl_context = eglCreateContext(gr->egl_display, context_config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (gr->egl_context == NULL) {
 		weston_log("failed to create context\n");

@@ -890,7 +890,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		}
 	} else {
 		ret = gl_renderer->output_create(&output->base,
-						 (EGLNativeWindowType) output->window);
+						 (EGLNativeWindowType) output->window,
+						 gl_renderer->opaque_attribs,
+						 NULL);
 		if (ret < 0)
 			return NULL;
 	}

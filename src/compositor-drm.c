@@ -147,6 +147,7 @@ struct drm_output {
 	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
 	drmModePropertyPtr dpms_prop;
+	uint32_t format;
 
 	int vblank_pending;
 	int page_flip_pending;
@@ -420,8 +421,6 @@ static uint32_t
 drm_output_check_scanout_format(struct drm_output *output,
 				struct weston_surface *es, struct gbm_bo *bo)
 {
-	struct drm_compositor *c =
-		(struct drm_compositor *) output->base.compositor;
 	uint32_t format;
 	pixman_region32_t r;
 
@@ -442,7 +441,7 @@ drm_output_check_scanout_format(struct drm_output *output,
 		pixman_region32_fini(&r);
 	}
 
-	if (c->format == format)
+	if (output->format == format)
 		return format;
 
 	return 0;
@@ -507,7 +506,7 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, c, c->format);
+	output->next = drm_fb_get_from_bo(bo, c, output->format);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->surface, bo);
@@ -1528,12 +1527,13 @@ find_crtc_for_connector(struct drm_compositor *ec,
 static int
 drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 {
+	EGLint format = output->format;
 	int i, flags;
 
 	output->surface = gbm_surface_create(ec->gbm,
 					     output->base.current_mode->width,
 					     output->base.current_mode->height,
-					     ec->format,
+					     format,
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
 	if (!output->surface) {
@@ -1541,7 +1541,9 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 		return -1;
 	}
 
-	if (gl_renderer->output_create(&output->base, output->surface) < 0) {
+	if (gl_renderer->output_create(&output->base, output->surface,
+				       gl_renderer->opaque_attribs,
+				       &format) < 0) {
 		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->surface);
 		return -1;
@@ -1853,6 +1855,35 @@ setup_output_seat_constraint(struct drm_compositor *ec,
 }
 
 static int
+get_gbm_format_from_section(struct weston_config_section *section,
+			    uint32_t default_value,
+			    uint32_t *format)
+{
+	char *s;
+	int ret = 0;
+
+	weston_config_section_get_string(section,
+					 "gbm-format", &s, NULL);
+
+	if (s == NULL)
+		*format = default_value;
+	else if (strcmp(s, "xrgb8888") == 0)
+		*format = GBM_FORMAT_XRGB8888;
+	else if (strcmp(s, "rgb565") == 0)
+		*format = GBM_FORMAT_RGB565;
+	else if (strcmp(s, "xrgb2101010") == 0)
+		*format = GBM_FORMAT_XRGB2101010;
+	else {
+		weston_log("fatal: unrecognized pixel format: %s\n", s);
+		ret = -1;
+	}
+
+	free(s);
+
+	return ret;
+}
+
+static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
 			    drmModeConnector *connector,
@@ -1918,6 +1949,11 @@ create_output_for_connector(struct drm_compositor *ec,
 	weston_config_section_get_string(section, "transform", &s, "normal");
 	transform = parse_transform(s, output->base.name);
 	free(s);
+
+	if (get_gbm_format_from_section(section,
+					ec->format,
+					&output->format) == -1)
+		output->format = ec->format;
 
 	weston_config_section_get_string(section, "seat", &s, "");
 	setup_output_seat_constraint(ec, &output->base, s);
@@ -2663,7 +2699,6 @@ drm_compositor_create(struct wl_display *display,
 	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
 	const char *path;
-	char *s;
 	uint32_t key;
 
 	weston_log("initializing drm backend\n");
@@ -2677,20 +2712,10 @@ drm_compositor_create(struct wl_display *display,
 	ec->sprites_are_broken = 1;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
-	weston_config_section_get_string(section,
-					 "gbm-format", &s, "xrgb8888");
-	if (strcmp(s, "xrgb8888") == 0)
-		ec->format = GBM_FORMAT_XRGB8888;
-	else if (strcmp(s, "rgb565") == 0)
-		ec->format = GBM_FORMAT_RGB565;
-	else if (strcmp(s, "xrgb2101010") == 0)
-		ec->format = GBM_FORMAT_XRGB2101010;
-	else {
-		weston_log("fatal: unrecognized pixel format: %s\n", s);
-		free(s);
+	if (get_gbm_format_from_section(section,
+					GBM_FORMAT_XRGB8888,
+					&ec->format) == -1)
 		goto err_base;
-	}
-	free(s);
 
 	ec->use_pixman = param->use_pixman;
 
