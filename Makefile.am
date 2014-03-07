@@ -20,9 +20,9 @@ noinst_LTLIBRARIES = libwayland-util.la
 
 include_HEADERS =				\
 	src/wayland-util.h			\
-	src/wayland-server-protocol.h		\
+	protocol/wayland-server-protocol.h	\
 	src/wayland-server.h			\
-	src/wayland-client-protocol.h		\
+	protocol/wayland-client-protocol.h	\
 	src/wayland-client.h			\
 	src/wayland-egl.h			\
 	src/wayland-version.h
