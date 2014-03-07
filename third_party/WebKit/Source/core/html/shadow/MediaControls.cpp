@@ -120,7 +120,7 @@ bool MediaControls::initializeControls(Document& document)
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document, this);
+    RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document);
     m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
     panel->appendChild(toggleClosedCaptionsButton.release(), exceptionState);
     if (exceptionState.hadException())

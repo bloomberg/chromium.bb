@@ -149,14 +149,14 @@ private:
 
 class MediaControlToggleClosedCaptionsButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> create(Document&, MediaControls*);
+    static PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> create(Document&);
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
 
     virtual void updateDisplayType() OVERRIDE;
 
 private:
-    explicit MediaControlToggleClosedCaptionsButtonElement(Document&, MediaControls*);
+    explicit MediaControlToggleClosedCaptionsButtonElement(Document&);
 
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
