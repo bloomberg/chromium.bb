@@ -102,15 +102,26 @@ def Main(args):
   if len(args) != 0:
     parser.error('Got unexpected arguments')
 
-  git_dir = os.path.join('pnacl/git', options.component)
   component_name_map = {'llvm': 'LLVM',
                         'clang': 'Clang',
-                        'gcc': 'GCC',
+                        'pnacl-gcc': 'GCC',
                         'binutils': 'Binutils',
                         'libcxx': 'libc++',
+                        'libcxxabi': 'libc++abi',
                         'llvm-test-suite': 'LLVM test suite',
-                        'nacl-newlib': 'Newlib',
+                        'pnacl-newlib': 'Newlib',
                         'compiler-rt': 'compiler-rt'}
+
+  src_base = 'toolchain_build/src'
+  if not os.path.exists(src_base):
+    # This build is still using the old build.sh based process.
+    # TODO(dschuff) Get rid of this once rid of build.sh in favor of
+    #               toolchain_build_pnacl.py.
+    src_base = 'pnacl/git'
+    component_name_map['gcc'] = 'GCC'
+    component_name_map['nacl-newlib'] = 'Newlib'
+
+  git_dir = os.path.join(src_base, options.component)
   component_name = component_name_map.get(options.component, options.component)
   if options.component == 'gcc':
     pnacl_branch = 'origin/pnacl'
