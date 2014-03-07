@@ -121,11 +121,6 @@ void FixRateSender::UpdateRtt(QuicTime::Delta rtt_sample) {
   latest_rtt_ = rtt_sample;
 }
 
-QuicTime::Delta FixRateSender::SmoothedRtt() const {
-  // TODO(satyamshekhar): Calculate and return smoothed rtt.
-  return latest_rtt_;
-}
-
 QuicTime::Delta FixRateSender::RetransmissionDelay() const {
   // TODO(pwestin): Calculate and return retransmission delay.
   // Use 2 * the latest RTT for now.

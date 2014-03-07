@@ -41,6 +41,14 @@ QuicVersion QuicVersionMin();
 // Returns an address for 127.0.0.1.
 IPAddressNumber Loopback4();
 
+// Create an encrypted packet for testing.
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketSequenceNumber sequence_number,
+    const std::string& data);
+
 void CompareCharArraysWithHexError(const std::string& description,
                                    const char* actual,
                                    const int actual_len,
@@ -296,6 +304,8 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
   MOCK_METHOD2(SendConnectionCloseWithDetails, void(QuicErrorCode error,
                                                     const string& details));
+  MOCK_METHOD2(SendConnectionClosePacket, void(QuicErrorCode error,
+                                               const string& details));
   MOCK_METHOD3(SendRstStream, void(QuicStreamId id,
                                    QuicRstStreamErrorCode error,
                                    QuicStreamOffset bytes_written));
@@ -432,7 +442,6 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                                               IsHandshake));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD1(UpdateRtt, void(QuicTime::Delta rtt_sample));
-  MOCK_CONST_METHOD0(SmoothedRtt, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());
 
@@ -445,12 +454,11 @@ class MockLossAlgorithm : public LossDetectionInterface {
   MockLossAlgorithm();
   virtual ~MockLossAlgorithm();
 
-  MOCK_METHOD5(DetectLostPackets,
+  MOCK_METHOD4(DetectLostPackets,
                SequenceNumberSet(const QuicUnackedPacketMap& unacked_packets,
                                  const QuicTime& time,
                                  QuicPacketSequenceNumber largest_observed,
-                                 QuicTime::Delta srtt,
-                                 QuicTime::Delta latest_rtt));
+                                 const RttStats& rtt_stats));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
 };
 

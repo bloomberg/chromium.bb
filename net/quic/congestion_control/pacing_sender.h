@@ -53,18 +53,14 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
       IsHandshake handshake) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
   virtual void UpdateRtt(QuicTime::Delta rtt_sample) OVERRIDE;
-  virtual QuicTime::Delta SmoothedRtt() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
 
  private:
-  QuicTime::Delta GetTransferTime(QuicByteCount bytes);
-
   scoped_ptr<SendAlgorithmInterface> sender_;  // Underlying sender.
   QuicTime::Delta alarm_granularity_;
   QuicTime next_packet_send_time_;  // When can the next packet be sent.
   bool was_last_send_delayed_;  // True when the last send was delayed.
-  QuicByteCount max_segment_size_;
   bool updated_rtt_;  // True if we have at least one RTT update.
 
   DISALLOW_COPY_AND_ASSIGN(PacingSender);

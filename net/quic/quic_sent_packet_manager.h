@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
+#include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
@@ -269,12 +270,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   const QuicClock* clock_;
   QuicConnectionStats* stats_;
+  RttStats rtt_stats_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   scoped_ptr<LossDetectionInterface> loss_algorithm_;
-  QuicTime::Delta rtt_sample_;  // RTT estimate from the most recent ACK.
+
   QuicPacketSequenceNumber largest_observed_;  // From the most recent ACK.
-  // Number of outstanding crypto handshake packets.
-  size_t pending_crypto_packet_count_;
   // Number of times the RTO timer has fired in a row without receiving an ack.
   size_t consecutive_rto_count_;
   // Number of times the tail loss probe has been sent.

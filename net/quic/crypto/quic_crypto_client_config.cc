@@ -647,22 +647,23 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   const QuicTag* supported_version_tags;
   size_t num_supported_versions;
 
-  // TODO(rch): Make it a failure if the server does not have a version list.
   if (server_hello.GetTaglist(kVER, &supported_version_tags,
-                              &num_supported_versions) == QUIC_NO_ERROR) {
-    if (!negotiated_versions.empty()) {
-      bool mismatch = num_supported_versions != negotiated_versions.size();
-      for (size_t i = 0; i < num_supported_versions && !mismatch; ++i) {
-        mismatch = QuicTagToQuicVersion(supported_version_tags[i]) !=
-            negotiated_versions[i];
-      }
-      // The server sent a list of supported versions, and the connection
-      // reports that there was a version negotiation during the handshake.
+                              &num_supported_versions) != QUIC_NO_ERROR) {
+    *error_details = "server hello missing version list";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+  if (!negotiated_versions.empty()) {
+    bool mismatch = num_supported_versions != negotiated_versions.size();
+    for (size_t i = 0; i < num_supported_versions && !mismatch; ++i) {
+      mismatch = QuicTagToQuicVersion(supported_version_tags[i]) !=
+          negotiated_versions[i];
+    }
+    // The server sent a list of supported versions, and the connection
+    // reports that there was a version negotiation during the handshake.
       // Ensure that these two lists are identical.
-      if (mismatch) {
-        *error_details = "Downgrade attack detected";
-        return QUIC_VERSION_NEGOTIATION_MISMATCH;
-      }
+    if (mismatch) {
+      *error_details = "Downgrade attack detected";
+      return QUIC_VERSION_NEGOTIATION_MISMATCH;
     }
   }
 

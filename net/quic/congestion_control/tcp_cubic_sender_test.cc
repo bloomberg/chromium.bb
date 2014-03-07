@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -26,13 +27,15 @@ class TcpCubicSenderPeer : public TcpCubicSender {
   TcpCubicSenderPeer(const QuicClock* clock,
                      bool reno,
                      QuicTcpCongestionWindow max_tcp_congestion_window)
-      : TcpCubicSender(clock, reno, max_tcp_congestion_window, &stats_) {
+      : TcpCubicSender(
+            clock, &rtt_stats_, reno, max_tcp_congestion_window, &stats_) {
   }
 
   QuicTcpCongestionWindow congestion_window() {
     return congestion_window_;
   }
 
+  RttStats rtt_stats_;
   QuicConnectionStats stats_;
 
   using TcpCubicSender::AvailableSendWindow;
@@ -67,11 +70,16 @@ class TcpCubicSenderTest : public ::testing::Test {
     return packets_sent;
   }
 
+  void UpdateRtt(QuicTime::Delta rtt) {
+    sender_->rtt_stats_.UpdateRtt(rtt, QuicTime::Delta::Zero());
+    sender_->UpdateRtt(rtt);
+  }
+
   // Normal is that TCP acks every other segment.
   void AckNPackets(int n) {
     for (int i = 0; i < n; ++i) {
       ++acked_sequence_number_;
-      sender_->UpdateRtt(QuicTime::Delta::FromMilliseconds(60));
+      UpdateRtt(QuicTime::Delta::FromMilliseconds(60));
       sender_->OnPacketAcked(acked_sequence_number_, kDefaultTCPMSS);
     }
     clock_.AdvanceTime(one_ms_);  // 1 millisecond.
@@ -401,7 +409,7 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   const int64 kDeviationMs = 3;
   EXPECT_EQ(QuicTime::Delta::Zero(), sender_->RetransmissionDelay());
 
-  sender_->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRttMs));
+  UpdateRtt(QuicTime::Delta::FromMilliseconds(kRttMs));
 
   // Initial value is to set the median deviation to half of the initial
   // rtt, the median in then multiplied by a factor of 4 and finally the
@@ -412,20 +420,18 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
 
   for (int i = 0; i < 100; ++i) {
     // Run to make sure that we converge.
-    sender_->UpdateRtt(
-        QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs));
-    sender_->UpdateRtt(
-        QuicTime::Delta::FromMilliseconds(kRttMs - kDeviationMs));
+    UpdateRtt(QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs));
+    UpdateRtt(QuicTime::Delta::FromMilliseconds(kRttMs - kDeviationMs));
   }
   expected_delay = QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs * 4);
 
-  EXPECT_NEAR(kRttMs, sender_->SmoothedRtt().ToMilliseconds(), 1);
+  EXPECT_NEAR(kRttMs, sender_->rtt_stats_.SmoothedRtt().ToMilliseconds(), 1);
   EXPECT_NEAR(expected_delay.ToMilliseconds(),
               sender_->RetransmissionDelay().ToMilliseconds(),
               1);
   EXPECT_EQ(static_cast<int64>(
                 sender_->GetCongestionWindow() * kNumMicrosPerSecond /
-                sender_->SmoothedRtt().ToMicroseconds()),
+                sender_->rtt_stats_.SmoothedRtt().ToMicroseconds()),
             sender_->BandwidthEstimate().ToBytesPerSecond());
 }
 

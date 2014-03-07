@@ -19,7 +19,6 @@ class QuicServerPeer {
   static bool SetSmallSocket(QuicServer* server);
   static void DisableRecvmmsg(QuicServer* server);
   static QuicDispatcher* GetDispatcher(QuicServer* server);
-  static int GetFD(QuicServer* server);
 };
 
 }  // namespace test

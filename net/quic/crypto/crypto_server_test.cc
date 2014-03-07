@@ -44,6 +44,8 @@ class CryptoServerTest : public ::testing::Test {
         config_(QuicCryptoServerConfig::TESTING, rand_) {
     config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
     supported_versions_ = QuicSupportedVersions();
+    client_version_ = QuicUtils::TagToString(
+        QuicVersionToQuicTag(supported_versions_.front()));
   }
 
   virtual void SetUp() {
@@ -69,6 +71,7 @@ class CryptoServerTest : public ::testing::Test {
         "KEXS", "C255",
         "PUBS", pub_hex_.c_str(),
         "NONC", nonce_hex_.c_str(),
+        "VER\0", client_version_.data(),
         "$padding", static_cast<int>(kClientHelloMinimumSize),
         NULL);
     ShouldSucceed(client_hello);
@@ -221,6 +224,7 @@ class CryptoServerTest : public ::testing::Test {
   MockClock clock_;
   const IPEndPoint client_address_;
   QuicVersionVector supported_versions_;
+  string client_version_;
   QuicCryptoServerConfig config_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
   QuicCryptoNegotiatedParameters params_;
@@ -243,10 +247,14 @@ TEST_F(CryptoServerTest, BadSNI) {
     "ffee::1",
   };
 
+  string client_version = QuicUtils::TagToString(
+      QuicVersionToQuicTag(supported_versions_.front()));
+
   for (size_t i = 0; i < arraysize(kBadSNIs); i++) {
     ShouldFailMentioning("SNI", InchoateClientHello(
         "CHLO",
         "SNI", kBadSNIs[i],
+        "VER\0", client_version.data(),
         NULL));
   }
 }
@@ -265,6 +273,7 @@ TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
       "NONC", nonce_hex_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       "PDMD", "X509",
+      "VER\0", client_version_.data(),
       NULL));
 
   StringPiece cert, proof;
@@ -277,6 +286,7 @@ TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
 TEST_F(CryptoServerTest, TooSmall) {
   ShouldFailMentioning("too small", CryptoTestUtils::Message(
         "CHLO",
+        "VER\0", client_version_.data(),
         NULL));
 }
 
@@ -293,6 +303,7 @@ TEST_F(CryptoServerTest, BadSourceAddressToken) {
     ShouldSucceed(InchoateClientHello(
         "CHLO",
         "STK", kBadSourceAddressTokens[i],
+        "VER\0", client_version_.data(),
         NULL));
   }
 }
@@ -309,6 +320,7 @@ TEST_F(CryptoServerTest, BadClientNonce) {
     ShouldSucceed(InchoateClientHello(
         "CHLO",
         "NONC", kBadNonces[i],
+        "VER\0", client_version_.data(),
         NULL));
   }
 }
@@ -320,12 +332,12 @@ TEST_F(CryptoServerTest, DowngradeAttack) {
   }
   // Set the client's preferred version to a supported version that
   // is not the "current" version (supported_versions_.front()).
-  string client_version = QuicUtils::TagToString(
+  string bad_version = QuicUtils::TagToString(
       QuicVersionToQuicTag(supported_versions_.back()));
 
   ShouldFailMentioning("Downgrade", InchoateClientHello(
       "CHLO",
-      "VER\0", client_version.data(),
+      "VER\0", bad_version.data(),
       NULL));
 }
 
@@ -339,6 +351,7 @@ TEST_F(CryptoServerTest, ReplayProtection) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       NULL);
   ShouldSucceed(msg);
@@ -439,6 +452,7 @@ class CryptoServerTestNoConfig : public CryptoServerTest {
 TEST_F(CryptoServerTestNoConfig, DontCrash) {
     ShouldFailMentioning("No config", InchoateClientHello(
         "CHLO",
+        "VER\0", client_version_.data(),
         NULL));
 }
 
@@ -474,6 +488,7 @@ TEST_F(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_.data(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
       NULL);
 

@@ -66,7 +66,7 @@ TEST_F(CubicTest, AboveOrigin) {
   }
   // Total time elapsed so far; add min_rtt (0.1s) here as well.
   float elapsed_time_s = 10.0f + 0.1f;
-  // expected_cwnd is initial value of cwnd + K * t^3, where K = 0.4.
+  // |expected_cwnd| is initial value of cwnd + K * t^3, where K = 0.4.
   expected_cwnd = 11 + (elapsed_time_s * elapsed_time_s * elapsed_time_s * 410)
       / 1024;
   EXPECT_EQ(expected_cwnd, current_cwnd);
@@ -108,7 +108,7 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
   }
   // Total time elapsed so far; add min_rtt (0.1s) here as well.
   float elapsed_time_s = 10.0f + 0.1f;
-  // expected_cwnd is initial value of cwnd + K * t^3, where K = 0.4.
+  // |expected_cwnd| is initial value of cwnd + K * t^3, where K = 0.4.
   expected_cwnd = 11 + (elapsed_time_s * elapsed_time_s * elapsed_time_s * 410)
       / 1024;
   EXPECT_EQ(expected_cwnd - old_cwnd, stats_.cwnd_increase_cubic_mode);

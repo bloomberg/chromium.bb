@@ -20,8 +20,6 @@ class NET_EXPORT_PRIVATE InterArrivalProbe {
   explicit InterArrivalProbe(QuicByteCount max_segment_size);
   ~InterArrivalProbe();
 
-  void set_max_segment_size(QuicByteCount max_segment_size);
-
   // Call every time a packet is sent to the network.
   void OnPacketSent(QuicByteCount bytes);
 

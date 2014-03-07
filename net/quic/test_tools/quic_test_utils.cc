@@ -441,6 +441,39 @@ IPAddressNumber Loopback4() {
   return addr;
 }
 
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketSequenceNumber sequence_number,
+    const string& data) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id;
+  header.public_header.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
+  header.public_header.version_flag = version_flag;
+  header.public_header.reset_flag = reset_flag;
+  header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
+  header.packet_sequence_number = sequence_number;
+  header.entropy_flag = false;
+  header.entropy_hash = 0;
+  header.fec_flag = false;
+  header.is_in_fec_group = NOT_IN_FEC_GROUP;
+  header.fec_group = 0;
+  QuicStreamFrame stream_frame(1, false, 0, MakeIOVector(data));
+  QuicFrame frame(&stream_frame);
+  QuicFrames frames;
+  frames.push_back(frame);
+  QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
+  scoped_ptr<QuicPacket> packet(
+      framer.BuildUnsizedDataPacket(header, frames).packet);
+  EXPECT_TRUE(packet != NULL);
+  QuicEncryptedPacket* encrypted = framer.EncryptPacket(ENCRYPTION_NONE,
+                                                        sequence_number,
+                                                        *packet);
+  EXPECT_TRUE(encrypted != NULL);
+  return encrypted;
+}
+
 void CompareCharArraysWithHexError(
     const string& description,
     const char* actual,

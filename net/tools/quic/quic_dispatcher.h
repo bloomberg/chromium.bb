@@ -126,7 +126,6 @@ class QuicDispatcher : public QuicServerSessionVisitor {
     return time_wait_list_manager_.get();
   }
 
-  QuicEpollConnectionHelper* helper() { return helper_.get(); }
   EpollServer* epoll_server() { return epoll_server_; }
 
   const QuicVersionVector& supported_versions() const {
@@ -137,10 +136,6 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   virtual bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header);
 
-  // Information about the packet currently being dispatched.
-  const IPEndPoint& current_client_address() {
-    return current_client_address_;
-  }
   const IPEndPoint& current_server_address() {
     return current_server_address_;
   }

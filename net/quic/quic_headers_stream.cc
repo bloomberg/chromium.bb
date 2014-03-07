@@ -134,7 +134,7 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE {
-    CloseConnection("SPDY CONTINUATION frame recevied.");
+    CloseConnection("SPDY CONTINUATION frame received.");
   }
 
   // SpdyFramerDebugVisitorInterface implementation

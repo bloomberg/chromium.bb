@@ -527,18 +527,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Clears any accumulated frames from the last received packet.
   void ClearLastFrames();
 
-  // Calculates the smallest sequence number length that can also represent four
-  // times the maximum of the congestion window and the difference between the
-  // least_packet_awaited_by_peer_ and |sequence_number|.
-  QuicSequenceNumberLength CalculateSequenceNumberLength(
-      QuicPacketSequenceNumber sequence_number);
-
-  // Drop packet corresponding to |sequence_number| by deleting entries from
-  // |unacked_packets_| and |retransmission_map_|, if present. We need to drop
-  // all packets with encryption level NONE after the default level has been set
-  // to FORWARD_SECURE.
-  void DropPacket(QuicPacketSequenceNumber sequence_number);
-
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.
   void WriteQueuedPackets();

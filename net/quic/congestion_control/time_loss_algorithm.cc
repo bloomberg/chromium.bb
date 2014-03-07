@@ -4,6 +4,7 @@
 
 #include "net/quic/congestion_control/time_loss_algorithm.h"
 
+#include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -26,13 +27,13 @@ SequenceNumberSet TimeLossAlgorithm::DetectLostPackets(
     const QuicUnackedPacketMap& unacked_packets,
     const QuicTime& time,
     QuicPacketSequenceNumber largest_observed,
-    QuicTime::Delta srtt,
-    QuicTime::Delta latest_rtt) {
+    const RttStats& rtt_stats) {
   SequenceNumberSet lost_packets;
   loss_detection_timeout_ = QuicTime::Zero();
   QuicTime::Delta loss_delay = QuicTime::Delta::Max(
       QuicTime::Delta::FromMilliseconds(kMinLossDelayMs),
-      QuicTime::Delta::Max(srtt, latest_rtt).Multiply(kLossDelayMultiplier));
+      QuicTime::Delta::Max(rtt_stats.SmoothedRtt(), rtt_stats.latest_rtt())
+          .Multiply(kLossDelayMultiplier));
 
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
        it != unacked_packets.end() && it->first <= largest_observed; ++it) {

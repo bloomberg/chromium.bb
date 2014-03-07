@@ -29,7 +29,6 @@ using testing::Invoke;
 using testing::InvokeArgument;
 using testing::InSequence;
 using testing::Return;
-using testing::StrEq;
 using testing::StrictMock;
 using testing::WithArgs;
 
@@ -45,14 +44,6 @@ class QuicSpdyServerStreamPeer : public QuicSpdyServerStream {
 
   using QuicSpdyServerStream::SendResponse;
   using QuicSpdyServerStream::SendErrorResponse;
-
-  const string& body() {
-    return body_;
-  }
-
-  const BalsaHeaders& headers() {
-    return headers_;
-  }
 
   BalsaHeaders* mutable_headers() {
     return &headers_;

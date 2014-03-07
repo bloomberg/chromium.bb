@@ -24,13 +24,13 @@
 using base::StringPiece;
 using net::EpollServer;
 using net::test::MockSession;
+using net::test::ConstructEncryptedPacket;
 using net::tools::test::MockConnection;
 using std::make_pair;
 using testing::_;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InSequence;
-using testing::Return;
 using testing::WithoutArgs;
 
 namespace net {
@@ -109,46 +109,13 @@ class QuicDispatcherTest : public ::testing::Test {
     return reinterpret_cast<MockConnection*>(session2_->connection());
   }
 
-  QuicEncryptedPacket* ConstructEncryptedPacket(
-      QuicConnectionId connection_id,
-      bool version_flag,
-      bool reset_flag,
-      QuicPacketSequenceNumber sequence_number,
-      const string& data) {
-    QuicPacketHeader header;
-    header.public_header.connection_id = connection_id;
-    header.public_header.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
-    header.public_header.version_flag = version_flag;
-    header.public_header.reset_flag = reset_flag;
-    header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
-    header.packet_sequence_number = sequence_number;
-    header.entropy_flag = false;
-    header.entropy_hash = 0;
-    header.fec_flag = false;
-    header.is_in_fec_group = NOT_IN_FEC_GROUP;
-    header.fec_group = 0;
-    QuicStreamFrame stream_frame(1, false, 0, MakeIOVector(data));
-    QuicFrame frame(&stream_frame);
-    QuicFrames frames;
-    frames.push_back(frame);
-    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
-    scoped_ptr<QuicPacket> packet(
-        framer.BuildUnsizedDataPacket(header, frames).packet);
-    EXPECT_TRUE(packet != NULL);
-    QuicEncryptedPacket* encrypted = framer.EncryptPacket(ENCRYPTION_NONE,
-                                                          sequence_number,
-                                                          *packet);
-    EXPECT_TRUE(encrypted != NULL);
-    data_ = string(encrypted->data(), encrypted->length());
-    return encrypted;
-  }
-
   void ProcessPacket(IPEndPoint addr,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      const string& data) {
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
         connection_id, has_version_flag, false, 1, data));
+    data_ = string(packet->data(), packet->length());
     dispatcher_.ProcessPacket(IPEndPoint(), addr, *packet.get());
   }
 

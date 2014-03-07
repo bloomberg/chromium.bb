@@ -21,9 +21,12 @@
 
 namespace net {
 
+class RttStats;
+
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   static SendAlgorithmInterface* Create(const QuicClock* clock,
+                                        const RttStats* rtt_stats,
                                         CongestionFeedbackType type,
                                         QuicConnectionStats* stats);
 
@@ -76,10 +79,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual QuicBandwidth BandwidthEstimate() const = 0;
 
   // Updates the smoothed RTT based on a new sample.
+  // TODO(ianswett): Now that the RTT is managed by RTTStats, it may be
+  // possible to remove this method.
   virtual void UpdateRtt(QuicTime::Delta rtt_sample) = 0;
-
-  // TODO(satyamshekhar): Monitor MinRtt.
-  virtual QuicTime::Delta SmoothedRtt() const = 0;
 
   // Get the send algorithm specific retransmission delay, called RTO in TCP,
   // Note 1: the caller is responsible for sanity checking this value.

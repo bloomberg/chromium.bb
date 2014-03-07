@@ -22,10 +22,6 @@ PacedSender::PacedSender(QuicBandwidth estimate, QuicByteCount max_segment_size)
       max_segment_size_(kDefaultMaxPacketSize) {
 }
 
-void PacedSender::set_max_segment_size(QuicByteCount max_segment_size) {
-  max_segment_size_ = max_segment_size;
-}
-
 void PacedSender::UpdateBandwidthEstimate(QuicTime now,
                                           QuicBandwidth estimate) {
   leaky_bucket_.SetDrainingRate(now, estimate);

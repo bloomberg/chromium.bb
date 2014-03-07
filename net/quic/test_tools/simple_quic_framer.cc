@@ -140,12 +140,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const vector<QuicStopWaitingFrame>& stop_waiting_frames() const {
     return stop_waiting_frames_;
   }
-  const vector<QuicWindowUpdateFrame>& window_update_frames() const {
-    return window_update_frames_;
-  }
-  const vector<QuicBlockedFrame>& blocked_frames() const {
-    return blocked_frames_;
-  }
   const QuicFecData& fec_data() const {
     return fec_data_;
   }

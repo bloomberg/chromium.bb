@@ -24,7 +24,7 @@ namespace net {
 
 class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
  public:
-  explicit InterArrivalSender(const QuicClock* clock);
+  InterArrivalSender(const QuicClock* clock, const RttStats* rtt_stats);
   virtual ~InterArrivalSender();
 
   // Start implementation of SendAlgorithmInterface.
@@ -52,7 +52,6 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
       IsHandshake handshake) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
   virtual void UpdateRtt(QuicTime::Delta rtt_sample) OVERRIDE;
-  virtual QuicTime::Delta SmoothedRtt() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.
@@ -95,6 +94,7 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   SentPacketsMap packet_history_map_;
 
   const QuicClock* clock_;
+  const RttStats* rtt_stats_;
   bool probing_;  // Are we currently in the probing phase?
   QuicByteCount max_segment_size_;
   QuicBandwidth current_bandwidth_;

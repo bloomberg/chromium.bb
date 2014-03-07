@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,12 +22,13 @@ class InterArrivalSenderTest : public ::testing::Test {
        one_s_(QuicTime::Delta::FromMilliseconds(1000)),
        nine_ms_(QuicTime::Delta::FromMilliseconds(9)),
        send_start_time_(send_clock_.Now()),
-       sender_(&send_clock_),
+       sender_(&send_clock_, &rtt_stats_),
        sequence_number_(1),
        acked_sequence_number_(1),
        feedback_sequence_number_(1) {
     send_clock_.AdvanceTime(one_ms_);
     receive_clock_.AdvanceTime(one_ms_);
+    rtt_stats_.set_initial_rtt_us(60 * base::Time::kMicrosecondsPerMillisecond);
   }
 
   virtual ~InterArrivalSenderTest() {
@@ -101,6 +103,7 @@ class InterArrivalSenderTest : public ::testing::Test {
   MockClock send_clock_;
   MockClock receive_clock_;
   const QuicTime send_start_time_;
+  RttStats rtt_stats_;
   InterArrivalSender sender_;
   QuicPacketSequenceNumber sequence_number_;
   QuicPacketSequenceNumber acked_sequence_number_;

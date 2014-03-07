@@ -12,7 +12,6 @@ PacingSender::PacingSender(SendAlgorithmInterface* sender,
       alarm_granularity_(alarm_granularity),
       next_packet_send_time_(QuicTime::Zero()),
       was_last_send_delayed_(false),
-      max_segment_size_(kDefaultMaxPacketSize),
       updated_rtt_(false) {
 }
 
@@ -125,10 +124,6 @@ QuicBandwidth PacingSender::BandwidthEstimate() const {
 void PacingSender::UpdateRtt(QuicTime::Delta rtt_sample) {
   updated_rtt_= true;
   sender_->UpdateRtt(rtt_sample);
-}
-
-QuicTime::Delta PacingSender::SmoothedRtt() const {
-  return sender_->SmoothedRtt();
 }
 
 QuicTime::Delta PacingSender::RetransmissionDelay() const {

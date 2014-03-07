@@ -19,8 +19,6 @@ class NET_EXPORT_PRIVATE PacedSender {
  public:
   PacedSender(QuicBandwidth bandwidth_estimate, QuicByteCount max_segment_size);
 
-  void set_max_segment_size(QuicByteCount max_segment_size);
-
   // The estimated bandidth from the congestion algorithm changed.
   void UpdateBandwidthEstimate(QuicTime now, QuicBandwidth bandwidth_estimate);
 

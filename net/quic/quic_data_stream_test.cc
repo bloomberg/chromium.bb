@@ -17,9 +17,7 @@ using base::StringPiece;
 using std::min;
 using testing::_;
 using testing::InSequence;
-using testing::Return;
 using testing::SaveArg;
-using testing::StrEq;
 using testing::StrictMock;
 
 namespace net {

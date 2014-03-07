@@ -28,11 +28,6 @@ QuicDispatcher* QuicServerPeer::GetDispatcher(QuicServer* server) {
   return server->dispatcher_.get();
 }
 
-// static
-int QuicServerPeer::GetFD(QuicServer* server) {
-  return server->fd_;
-}
-
 }  // namespace test
 }  // namespace tools
 }  // namespace net

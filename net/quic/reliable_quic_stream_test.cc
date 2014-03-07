@@ -21,7 +21,6 @@ using testing::_;
 using testing::InSequence;
 using testing::Return;
 using testing::SaveArg;
-using testing::StrEq;
 using testing::StrictMock;
 
 namespace net {
@@ -58,8 +57,6 @@ class TestStream : public ReliableQuicStream {
   using ReliableQuicStream::CloseReadSide;
   using ReliableQuicStream::CloseWriteSide;
   using ReliableQuicStream::OnClose;
-
-  const string& data() const { return data_; }
 
  private:
   bool should_process_data_;

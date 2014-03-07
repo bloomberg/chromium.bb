@@ -265,9 +265,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static size_t GetWindowUpdateFrameSize();
   // Size in bytes of all Blocked frame fields.
   static size_t GetBlockedFrameSize();
-  // The maximum number of nacks which can be transmitted in a single ack packet
-  // without exceeding kDefaultMaxPacketSize.
-  static size_t GetMaxUnackedPackets(QuicPacketHeader header);
   // Size in bytes required to serialize the stream id.
   static size_t GetStreamIdSize(QuicStreamId stream_id);
   // Size in bytes required to serialize the stream offset.

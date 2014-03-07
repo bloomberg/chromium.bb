@@ -13,8 +13,6 @@ using std::max;
 
 namespace net {
 
-#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
-
 QuicUnackedPacketMap::TransmissionInfo::TransmissionInfo()
     : retransmittable_frames(NULL),
       sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
@@ -53,10 +51,10 @@ QuicUnackedPacketMap::TransmissionInfo::TransmissionInfo(
   all_transmissions->insert(sequence_number);
 }
 
-QuicUnackedPacketMap::QuicUnackedPacketMap(bool is_server)
+QuicUnackedPacketMap::QuicUnackedPacketMap()
     : largest_sent_packet_(0),
       bytes_in_flight_(0),
-      is_server_(is_server) {
+      pending_crypto_packet_count_(0) {
 }
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
@@ -87,6 +85,11 @@ void QuicUnackedPacketMap::AddPacket(
       TransmissionInfo(serialized_packet.retransmittable_frames,
                        serialized_packet.sequence_number,
                        serialized_packet.sequence_number_length);
+  if (serialized_packet.retransmittable_frames != NULL &&
+      serialized_packet.retransmittable_frames->HasCryptoHandshake()
+          == IS_HANDSHAKE) {
+    ++pending_crypto_packet_count_;
+  }
 }
 
 void QuicUnackedPacketMap::OnRetransmittedPacket(
@@ -167,6 +170,10 @@ void QuicUnackedPacketMap::RemovePacket(
     delete transmission_info.all_transmissions;
   }
   if (transmission_info.retransmittable_frames != NULL) {
+    if (transmission_info.retransmittable_frames->HasCryptoHandshake()
+            == IS_HANDSHAKE) {
+      --pending_crypto_packet_count_;
+    }
     delete transmission_info.retransmittable_frames;
   }
   unacked_packets_.erase(it);
@@ -280,6 +287,10 @@ bool QuicUnackedPacketMap::HasMultiplePendingPackets() const {
     }
   }
   return false;
+}
+
+bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
+  return pending_crypto_packet_count_ > 0;
 }
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {

@@ -772,6 +772,8 @@
         'quic/congestion_control/quic_max_sized_map.h',
         'quic/congestion_control/receive_algorithm_interface.cc',
         'quic/congestion_control/receive_algorithm_interface.h',
+        'quic/congestion_control/rtt_stats.cc',
+        'quic/congestion_control/rtt_stats.h',
         'quic/congestion_control/send_algorithm_interface.cc',
         'quic/congestion_control/send_algorithm_interface.h',
         'quic/congestion_control/tcp_cubic_sender.cc',

@@ -67,15 +67,14 @@ QuicSentPacketManager::QuicSentPacketManager(bool is_server,
                                              const QuicClock* clock,
                                              QuicConnectionStats* stats,
                                              CongestionFeedbackType type)
-    : unacked_packets_(is_server),
+    : unacked_packets_(),
       is_server_(is_server),
       clock_(clock),
       stats_(stats),
-      send_algorithm_(SendAlgorithmInterface::Create(clock, type, stats)),
+      send_algorithm_(
+          SendAlgorithmInterface::Create(clock, &rtt_stats_, type, stats)),
       loss_algorithm_(LossDetectionInterface::Create()),
-      rtt_sample_(QuicTime::Delta::Infinite()),
       largest_observed_(0),
-      pending_crypto_packet_count_(0),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
       consecutive_crypto_retransmission_count_(0),
@@ -87,14 +86,11 @@ QuicSentPacketManager::~QuicSentPacketManager() {
 }
 
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
-  if (config.initial_round_trip_time_us() > 0 &&
-      rtt_sample_.IsInfinite()) {
+  if (config.initial_round_trip_time_us() > 0) {
     // The initial rtt should already be set on the client side.
     DVLOG_IF(1, !is_server_)
         << "Client did not set an initial RTT, but did negotiate one.";
-    rtt_sample_ =
-        QuicTime::Delta::FromMicroseconds(config.initial_round_trip_time_us());
-    send_algorithm_->UpdateRtt(rtt_sample_);
+    rtt_stats_.set_initial_rtt_us(config.initial_round_trip_time_us());
   }
   if (config.congestion_control() == kPACE) {
     MaybeEnablePacing();
@@ -108,11 +104,6 @@ void QuicSentPacketManager::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
   if (serialized_packet.retransmittable_frames) {
     ack_notifier_manager_.OnSerializedPacket(serialized_packet);
-
-    if (serialized_packet.retransmittable_frames->HasCryptoHandshake()
-            == IS_HANDSHAKE) {
-      ++pending_crypto_packet_count_;
-    }
   }
 
   unacked_packets_.AddPacket(serialized_packet);
@@ -313,11 +304,8 @@ QuicSentPacketManager::MarkPacketHandled(
     ++stats_->packets_spuriously_retransmitted;
   }
 
-  bool has_cryto_handshake = HasCryptoHandshake(
+  bool has_crypto_handshake = HasCryptoHandshake(
       unacked_packets_.GetTransmissionInfo(newest_transmission));
-  if (has_cryto_handshake) {
-    --pending_crypto_packet_count_;
-  }
   while (all_transmissions_it != all_transmissions.rend()) {
     QuicPacketSequenceNumber previous_transmission = *all_transmissions_it;
     const QuicUnackedPacketMap::TransmissionInfo& transmission_info =
@@ -327,7 +315,7 @@ QuicSentPacketManager::MarkPacketHandled(
       // marked for retransmission.
       pending_retransmissions_.erase(previous_transmission);
     }
-    if (has_cryto_handshake) {
+    if (has_crypto_handshake) {
       // If it's a crypto handshake packet, discard it and all retransmissions,
       // since they won't be acked now that one has been processed.
       if (transmission_info.pending) {
@@ -499,7 +487,7 @@ void QuicSentPacketManager::RetransmitAllPackets() {
 QuicSentPacketManager::RetransmissionTimeoutMode
     QuicSentPacketManager::GetRetransmissionMode() const {
   DCHECK(unacked_packets_.HasPendingPackets());
-  if (pending_crypto_packet_count_ > 0) {
+  if (unacked_packets_.HasPendingCryptoPackets()) {
     return HANDSHAKE_MODE;
   }
   if (loss_algorithm_->GetLossTimeout() != QuicTime::Zero()) {
@@ -562,8 +550,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
       loss_algorithm_->DetectLostPackets(unacked_packets_,
                                          time,
                                          largest_observed_,
-                                         send_algorithm_->SmoothedRtt(),
-                                         rtt_sample_);
+                                         rtt_stats_);
   for (SequenceNumberSet::const_iterator it = lost_packets.begin();
        it != lost_packets.end(); ++it) {
     QuicPacketSequenceNumber sequence_number = *it;
@@ -603,16 +590,8 @@ void QuicSentPacketManager::MaybeUpdateRTT(
 
   QuicTime::Delta send_delta =
       ack_receive_time.Subtract(transmission_info.sent_time);
-  if (send_delta > received_info.delta_time_largest_observed) {
-    rtt_sample_ = send_delta.Subtract(
-        received_info.delta_time_largest_observed);
-  } else if (rtt_sample_.IsInfinite()) {
-    // Even though we received information from the peer suggesting
-    // an invalid (negative) RTT, we can use the send delta as an
-    // approximation until we get a better estimate.
-    rtt_sample_ = send_delta;
-  }
-  send_algorithm_->UpdateRtt(rtt_sample_);
+  rtt_stats_.UpdateRtt(send_delta, received_info.delta_time_largest_observed);
+  send_algorithm_->UpdateRtt(rtt_stats_.latest_rtt());
 }
 
 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
@@ -666,10 +645,10 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
       // The RTO is based on the first pending packet.
       const QuicTime sent_time =
           unacked_packets_.GetFirstPendingPacketSentTime();
-      // Always wait at least 1.5 * RTT after the first sent packet.
+      QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
+      // Always wait at least 1.5 * RTT from now.
       QuicTime min_timeout = clock_->ApproximateNow().Add(
           SmoothedRtt().Multiply(1.5));
-      QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
 
       return QuicTime::Max(min_timeout, rto_timeout);
     }
@@ -722,7 +701,7 @@ const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
 }
 
 const QuicTime::Delta QuicSentPacketManager::SmoothedRtt() const {
-  return send_algorithm_->SmoothedRtt();
+  return rtt_stats_.SmoothedRtt();
 }
 
 QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {

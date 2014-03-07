@@ -34,6 +34,12 @@ void QuicSentPacketManagerPeer::SetLossAlgorithm(
 }
 
 // static
+RttStats* QuicSentPacketManagerPeer::GetRttStats(
+    QuicSentPacketManager* sent_packet_manager) {
+  return &sent_packet_manager->rtt_stats_;
+}
+
+// static
 size_t QuicSentPacketManagerPeer::GetNackCount(
     const QuicSentPacketManager* sent_packet_manager,
     QuicPacketSequenceNumber sequence_number) {
@@ -64,12 +70,6 @@ QuicTime QuicSentPacketManagerPeer::GetSentTime(
 }
 
 // static
-QuicTime::Delta QuicSentPacketManagerPeer::rtt(
-    QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->rtt_sample_;
-}
-
-// static
 bool QuicSentPacketManagerPeer::IsRetransmission(
     QuicSentPacketManager* sent_packet_manager,
     QuicPacketSequenceNumber sequence_number) {
@@ -97,7 +97,7 @@ QuicTime::Delta QuicSentPacketManagerPeer::GetRetransmissionDelay(
 // static
 bool QuicSentPacketManagerPeer::HasUnackedCryptoPackets(
     const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->pending_crypto_packet_count_ > 0;
+  return sent_packet_manager->unacked_packets_.HasPendingCryptoPackets();
 }
 
 // static

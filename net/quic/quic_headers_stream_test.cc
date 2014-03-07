@@ -15,7 +15,6 @@
 using base::StringPiece;
 using std::string;
 using testing::Invoke;
-using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
 using testing::_;

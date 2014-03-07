@@ -30,10 +30,6 @@ InterArrivalProbe::InterArrivalProbe(QuicByteCount max_segment_size)
 InterArrivalProbe::~InterArrivalProbe() {
 }
 
-void InterArrivalProbe::set_max_segment_size(QuicByteCount max_segment_size) {
-  max_segment_size_ = max_segment_size;
-}
-
 bool InterArrivalProbe::GetEstimate(QuicBandwidth* available_channel_estimate) {
   if (!estimate_available_) {
     return false;

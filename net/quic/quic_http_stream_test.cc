@@ -186,8 +186,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
-    EXPECT_CALL(*send_algorithm_, SmoothedRtt()).WillRepeatedly(
-        Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
         Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "net/quic/congestion_control/rtt_stats.h"
 
 using std::max;
 using std::min;
@@ -23,21 +24,17 @@ const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
-// Constants used for RTT calculation.
-const int kInitialRttMs = 100;  // At a typical RTT 100 ms.
-const float kAlpha = 0.125f;
-const float kOneMinusAlpha = (1 - kAlpha);
-const float kBeta = 0.25f;
-const float kOneMinusBeta = (1 - kBeta);
 };  // namespace
 
 TcpCubicSender::TcpCubicSender(
     const QuicClock* clock,
+    const RttStats* rtt_stats,
     bool reno,
     QuicTcpCongestionWindow max_tcp_congestion_window,
     QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
       cubic_(clock, stats),
+      rtt_stats_(rtt_stats),
       reno_(reno),
       congestion_window_count_(0),
       receive_window_(kDefaultReceiveWindow),
@@ -53,10 +50,7 @@ TcpCubicSender::TcpCubicSender(
       largest_sent_at_last_cutback_(0),
       congestion_window_(kInitialCongestionWindow),
       slowstart_threshold_(max_tcp_congestion_window),
-      max_tcp_congestion_window_(max_tcp_congestion_window),
-      delay_min_(QuicTime::Delta::Zero()),
-      smoothed_rtt_(QuicTime::Delta::Zero()),
-      mean_deviation_(QuicTime::Delta::Zero()) {
+      max_tcp_congestion_window_(max_tcp_congestion_window) {
 }
 
 TcpCubicSender::~TcpCubicSender() {
@@ -221,28 +215,20 @@ QuicByteCount TcpCubicSender::SendWindow() {
 
 QuicBandwidth TcpCubicSender::BandwidthEstimate() const {
   return QuicBandwidth::FromBytesAndTimeDelta(GetCongestionWindow(),
-                                              SmoothedRtt());
-}
-
-QuicTime::Delta TcpCubicSender::SmoothedRtt() const {
-  if (smoothed_rtt_.IsZero()) {
-    return QuicTime::Delta::FromMilliseconds(kInitialRttMs);
-  }
-  return smoothed_rtt_;
+                                              rtt_stats_->SmoothedRtt());
 }
 
 QuicTime::Delta TcpCubicSender::RetransmissionDelay() const {
+  if (!rtt_stats_->HasUpdates()) {
+    return QuicTime::Delta::Zero();
+  }
   return QuicTime::Delta::FromMicroseconds(
-      smoothed_rtt_.ToMicroseconds() + 4 * mean_deviation_.ToMicroseconds());
+      rtt_stats_->SmoothedRtt().ToMicroseconds() +
+      4 * rtt_stats_->mean_deviation().ToMicroseconds());
 }
 
 QuicByteCount TcpCubicSender::GetCongestionWindow() const {
   return congestion_window_ * kMaxSegmentSize;
-}
-
-void TcpCubicSender::Reset() {
-  delay_min_ = QuicTime::Delta::Zero();
-  hybrid_slow_start_.Restart();
 }
 
 bool TcpCubicSender::IsCwndLimited() const {
@@ -305,9 +291,9 @@ void TcpCubicSender::MaybeIncreaseCwnd(
              << " slowstart threshold: " << slowstart_threshold_
              << " congestion window count: " << congestion_window_count_;
   } else {
-    congestion_window_ = min(
-        max_tcp_congestion_window_,
-        cubic_.CongestionWindowAfterAck(congestion_window_, delay_min_));
+    congestion_window_ = min(max_tcp_congestion_window_,
+                             cubic_.CongestionWindowAfterAck(
+                                 congestion_window_, rtt_stats_->min_rtt()));
     DVLOG(1) << "Cubic; congestion window: " << congestion_window_
              << " slowstart threshold: " << slowstart_threshold_;
   }
@@ -323,38 +309,6 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 }
 
 void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
-  if (rtt.IsInfinite() || rtt.IsZero()) {
-    DVLOG(1) << "Ignoring rtt, because it's "
-             << (rtt.IsZero() ? "Zero" : "Infinite");
-    return;
-  }
-  // RTT can't be negative.
-  DCHECK_LT(0, rtt.ToMicroseconds());
-
-  // TODO(pwestin): Discard delay samples right after fast recovery,
-  // during 1 second?.
-
-  // First time call or link delay decreases.
-  if (delay_min_.IsZero() || delay_min_ > rtt) {
-    delay_min_ = rtt;
-  }
-  // First time call.
-  if (smoothed_rtt_.IsZero()) {
-    smoothed_rtt_ = rtt;
-    mean_deviation_ = QuicTime::Delta::FromMicroseconds(
-        rtt.ToMicroseconds() / 2);
-  } else {
-    mean_deviation_ = QuicTime::Delta::FromMicroseconds(
-        kOneMinusBeta * mean_deviation_.ToMicroseconds() +
-        kBeta *
-            std::abs(smoothed_rtt_.ToMicroseconds() - rtt.ToMicroseconds()));
-    smoothed_rtt_ = QuicTime::Delta::FromMicroseconds(
-        kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
-        kAlpha * rtt.ToMicroseconds());
-    DVLOG(1) << "Cubic; smoothed_rtt_:" << smoothed_rtt_.ToMicroseconds()
-             << " mean_deviation_:" << mean_deviation_.ToMicroseconds();
-  }
-
   // Hybrid start triggers when cwnd is larger than some threshold.
   if (congestion_window_ <= slowstart_threshold_ &&
       congestion_window_ >= kHybridStartLowWindow) {
@@ -362,7 +316,7 @@ void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
       // Time to start the hybrid slow start.
       hybrid_slow_start_.Reset(end_sequence_number_);
     }
-    hybrid_slow_start_.Update(rtt, delay_min_);
+    hybrid_slow_start_.Update(rtt, rtt_stats_->min_rtt());
     if (hybrid_slow_start_.Exit()) {
       slowstart_threshold_ = congestion_window_;
     }

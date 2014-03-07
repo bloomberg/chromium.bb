@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
     bool pending;
   };
 
-  explicit QuicUnackedPacketMap(bool is_server);
+  QuicUnackedPacketMap();
   ~QuicUnackedPacketMap();
 
   // Adds |serialized_packet| to the map.  Does not mark it pending.
@@ -88,11 +88,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Returns the number of unacked packets which have retransmittable frames.
   size_t GetNumRetransmittablePackets() const;
-
-  // Returns the total number of bytes associated with pending packets.
-  size_t bytes_in_flight() const {
-    return bytes_in_flight_;
-  }
 
   // Returns the largest sequence number that has been sent.
   QuicPacketSequenceNumber largest_sent_packet() const {
@@ -144,6 +139,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if there are multiple packet pending.
   bool HasMultiplePendingPackets() const;
 
+  // Returns true if there are any pending crypto packets.
+  bool HasPendingCryptoPackets() const;
+
   // Removes entries from the unacked packet map, and deletes
   // the retransmittable frames associated with the packet.
   // Does not remove any previous or subsequent transmissions of this packet.
@@ -167,8 +165,8 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   UnackedPacketMap unacked_packets_;
 
   size_t bytes_in_flight_;
-
-  bool is_server_;
+  // Number of outstanding crypto handshake packets.
+  size_t pending_crypto_packet_count_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };

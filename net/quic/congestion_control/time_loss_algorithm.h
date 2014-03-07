@@ -30,8 +30,7 @@ class NET_EXPORT_PRIVATE TimeLossAlgorithm : public LossDetectionInterface {
       const QuicUnackedPacketMap& unacked_packets,
       const QuicTime& time,
       QuicPacketSequenceNumber largest_observed,
-      QuicTime::Delta srtt,
-      QuicTime::Delta latest_rtt) OVERRIDE;
+      const RttStats& rtt_stats) OVERRIDE;
 
   // Returns the time the next packet will be lost, or zero if there
   // are no nacked pending packets outstanding.
