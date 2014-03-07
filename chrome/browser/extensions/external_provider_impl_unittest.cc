@@ -83,6 +83,12 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 #endif
   }
 
+  virtual void TearDown() OVERRIDE {
+#if defined(OS_CHROMEOS)
+    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
+#endif
+  }
+
  private:
   scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     GURL url = test_server_->GetURL(request.relative_url);

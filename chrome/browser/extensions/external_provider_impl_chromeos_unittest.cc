@@ -62,6 +62,10 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
         .WillRepeatedly(Return(false));
   }
 
+  virtual void TearDown() OVERRIDE {
+    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
+  }
+
  private:
   scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;

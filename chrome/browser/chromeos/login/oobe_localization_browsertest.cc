@@ -88,6 +88,7 @@ class FakeStatisticsProvider : public StatisticsProvider {
 class OobeLocalizationTest : public InProcessBrowserTest {
  public:
   OobeLocalizationTest();
+  ~OobeLocalizationTest();
 
   // Verifies that the comma-separated |values| corresponds with the first
   // values in |select_id|, optionally checking for an options group label after
@@ -121,6 +122,10 @@ OobeLocalizationTest::OobeLocalizationTest() {
   statistics_provider_.reset(new system::FakeStatisticsProvider());
   // Set the instance returned by GetInstance() for testing.
   system::StatisticsProvider::SetTestProvider(statistics_provider_.get());
+}
+
+OobeLocalizationTest::~OobeLocalizationTest() {
+  system::StatisticsProvider::SetTestProvider(NULL);
 }
 
 void OobeLocalizationTest::VerifyInitialOptions(const char* select_id,

@@ -80,6 +80,8 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
         id, std::string(), std::string(), layouts, languages, true,
         GURL(), GURL());
   }
+
+  base::ShadowingAtExitManager at_exit_manager_;
 };
 
 }  // namespace

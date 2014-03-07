@@ -263,6 +263,8 @@ class LoginUtilsTest : public testing::Test,
     // LoginUtils instance must not outlive Profile instances.
     LoginUtils::Set(NULL);
 
+    system::StatisticsProvider::SetTestProvider(NULL);
+
     input_method::Shutdown();
     LoginState::Shutdown();
     SystemSaltGetter::Shutdown();
