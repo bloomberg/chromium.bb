@@ -21,10 +21,13 @@ FakeDistiller::FakeDistiller(bool execute_callback)
 
 FakeDistiller::~FakeDistiller() { Die(); }
 
-void FakeDistiller::DistillPage(const GURL& url,
-                                const DistillerCallback& callback) {
+void FakeDistiller::DistillPage(
+    const GURL& url,
+    const DistillationFinishedCallback& article_callback,
+    const DistillationUpdateCallback& page_callback) {
   url_ = url;
-  callback_ = callback;
+  article_callback_ = article_callback;
+  page_callback_ = page_callback;
   if (execute_callback_) {
     scoped_ptr<DistilledArticleProto> proto(new DistilledArticleProto);
     proto->add_pages()->set_url(url_.spec());
@@ -43,9 +46,9 @@ void FakeDistiller::RunDistillerCallback(
 
 void FakeDistiller::RunDistillerCallbackInternal(
     scoped_ptr<DistilledArticleProto> proto) {
-  EXPECT_FALSE(callback_.is_null());
-  callback_.Run(proto.Pass());
-  callback_.Reset();
+  EXPECT_FALSE(article_callback_.is_null());
+  article_callback_.Run(proto.Pass());
+  article_callback_.Reset();
 }
 
 }  // namespace test

@@ -59,6 +59,9 @@ class DomDistillerViewerSource::RequestViewerHandle
   virtual void OnArticleReady(const DistilledArticleProto* article_proto)
       OVERRIDE;
 
+  virtual void OnArticleUpdated(ArticleDistillationUpdate article_update)
+      OVERRIDE;
+
   void TakeViewerHandle(scoped_ptr<ViewerHandle> viewer_handle);
 
  private:
@@ -100,6 +103,11 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleReady(
       ReplaceHtmlTemplateValues(title, unsafe_article_html);
   callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
+    ArticleDistillationUpdate article_update) {
+  // TODO(nyquist): Add support for displaying pages incrementally.
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::TakeViewerHandle(
@@ -179,7 +187,7 @@ bool DomDistillerViewerSource::ShouldServiceRequest(
 // TODO(nyquist): Start tracking requests using this method.
 void DomDistillerViewerSource::WillServiceRequest(
     const net::URLRequest* request,
-    std::string* path) const {};
+    std::string* path) const {}
 
 std::string DomDistillerViewerSource::GetContentSecurityPolicyObjectSrc()
     const {

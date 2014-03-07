@@ -4,7 +4,10 @@
 
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 
+#include <vector>
+
 #include "base/callback.h"
+#include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
@@ -23,6 +26,8 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
   virtual ~FakeViewRequestDelegate() {}
   MOCK_METHOD1(OnArticleReady, void(const DistilledArticleProto* proto));
+  MOCK_METHOD1(OnArticleUpdated,
+               void(ArticleDistillationUpdate article_update));
 };
 
 class TestDomDistillerService : public DomDistillerServiceInterface {

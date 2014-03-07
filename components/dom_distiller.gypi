@@ -50,6 +50,8 @@
           'sources': [
             'dom_distiller/android/component_jni_registrar.cc',
             'dom_distiller/android/component_jni_registrar.h',
+            'dom_distiller/core/article_distillation_update.cc',
+            'dom_distiller/core/article_distillation_update.h',
             'dom_distiller/core/article_entry.cc',
             'dom_distiller/core/article_entry.h',
             'dom_distiller/core/distiller.cc',

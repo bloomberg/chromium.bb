@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/dom_distiller/core/page_distiller.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
@@ -24,13 +27,21 @@ class DistillerImpl;
 class Distiller {
  public:
   typedef base::Callback<void(scoped_ptr<DistilledArticleProto>)>
-      DistillerCallback;
+      DistillationFinishedCallback;
+  typedef base::Callback<void(const ArticleDistillationUpdate&)>
+      DistillationUpdateCallback;
+
   virtual ~Distiller() {}
 
-  // Distills a page, and asynchrounously returns the article HTML to the
-  // supplied callback.
+  // Distills a page, and asynchronously returns the article HTML to the
+  // supplied |finished_cb| callback. |update_cb| is invoked whenever article
+  // under distillation is updated with more data.
+  // E.g. when distilling a 2 page article, |update_cb| may be invoked each time
+  // a distilled page is added and |finished_cb| will be invoked once
+  // distillation is completed.
   virtual void DistillPage(const GURL& url,
-                           const DistillerCallback& callback) = 0;
+                           const DistillationFinishedCallback& finished_cb,
+                           const DistillationUpdateCallback& update_cb) = 0;
 };
 
 class DistillerFactory {
@@ -66,7 +77,9 @@ class DistillerImpl : public Distiller {
   virtual void Init();
 
   virtual void DistillPage(const GURL& url,
-                           const DistillerCallback& callback) OVERRIDE;
+                           const DistillationFinishedCallback& finished_cb,
+                           const DistillationUpdateCallback& update_cb)
+      OVERRIDE;
 
   void SetMaxNumPagesInArticle(size_t max_num_pages);
 
@@ -84,7 +97,8 @@ class DistillerImpl : public Distiller {
     int page_num;
     std::string title;
     ScopedVector<DistillerURLFetcher> image_fetchers_;
-    scoped_ptr<DistilledPageProto> proto;
+    scoped_refptr<base::RefCountedData<DistilledPageProto> >
+        distilled_page_proto;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DistilledPageData);
@@ -122,7 +136,7 @@ class DistillerImpl : public Distiller {
   // includes pages that are pending distillation.
   size_t TotalPageCount() const;
 
-  // Runs |distillation_cb_| if all distillation callbacks and image fetches are
+  // Runs |finished_cb_| if all distillation callbacks and image fetches are
   // complete.
   void RunDistillerCallbackIfDone();
 
@@ -132,9 +146,14 @@ class DistillerImpl : public Distiller {
 
   DistilledPageData* GetPageAtIndex(size_t index) const;
 
+  // Create an ArticleDistillationUpdate for the current distillation
+  // state.
+  const ArticleDistillationUpdate CreateDistillationUpdate() const;
+
   const DistillerURLFetcherFactory& distiller_url_fetcher_factory_;
   scoped_ptr<PageDistiller> page_distiller_;
-  DistillerCallback distillation_cb_;
+  DistillationFinishedCallback finished_cb_;
+  DistillationUpdateCallback update_cb_;
 
   // Set of pages that are under distillation or have finished distillation.
   // |started_pages_index_| and |finished_pages_index_| maintains the mapping

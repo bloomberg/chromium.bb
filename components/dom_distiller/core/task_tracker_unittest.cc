@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/task_tracker.h"
 
 #include "base/run_loop.h"
+#include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/fake_distiller.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +21,8 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
   virtual ~FakeViewRequestDelegate() {}
   MOCK_METHOD1(OnArticleReady,
                void(const DistilledArticleProto* article_proto));
+  MOCK_METHOD1(OnArticleUpdated,
+               void(ArticleDistillationUpdate article_update));
 };
 
 class TestCancelCallback {

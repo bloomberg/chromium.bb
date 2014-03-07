@@ -33,6 +33,8 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
   virtual ~FakeViewRequestDelegate() {}
   MOCK_METHOD1(OnArticleReady, void(const DistilledArticleProto* proto));
+  MOCK_METHOD1(OnArticleUpdated,
+               void(ArticleDistillationUpdate article_update));
 };
 
 class MockDistillerObserver : public DomDistillerObserver {
@@ -120,7 +122,7 @@ TEST_F(DomDistillerServiceTest, TestViewEntry) {
   scoped_ptr<ViewerHandle> handle =
       service_->ViewEntry(&viewer_delegate, entry_id);
 
-  ASSERT_FALSE(distiller->GetCallback().is_null());
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
 
   scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
   EXPECT_CALL(viewer_delegate, OnArticleReady(proto.get()));
@@ -137,7 +139,7 @@ TEST_F(DomDistillerServiceTest, TestViewUrl) {
   GURL url("http://www.example.com/p1");
   scoped_ptr<ViewerHandle> handle = service_->ViewUrl(&viewer_delegate, url);
 
-  ASSERT_FALSE(distiller->GetCallback().is_null());
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
   scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
@@ -162,7 +164,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleViewUrl) {
   scoped_ptr<ViewerHandle> handle = service_->ViewUrl(&viewer_delegate, url);
   scoped_ptr<ViewerHandle> handle2 = service_->ViewUrl(&viewer_delegate2, url2);
 
-  ASSERT_FALSE(distiller->GetCallback().is_null());
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
   scoped_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
@@ -170,7 +172,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleViewUrl) {
 
   RunDistillerCallback(distiller, proto.Pass());
 
-  ASSERT_FALSE(distiller2->GetCallback().is_null());
+  ASSERT_FALSE(distiller2->GetArticleCallback().is_null());
   EXPECT_EQ(url2, distiller2->GetUrl());
 
   scoped_ptr<DistilledArticleProto> proto2 = CreateDefaultArticle();
@@ -192,7 +194,7 @@ TEST_F(DomDistillerServiceTest, TestViewUrlCancelled) {
   GURL url("http://www.example.com/p1");
   scoped_ptr<ViewerHandle> handle = service_->ViewUrl(&viewer_delegate, url);
 
-  ASSERT_FALSE(distiller->GetCallback().is_null());
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
   EXPECT_CALL(viewer_delegate, OnArticleReady(_)).Times(0);
@@ -234,7 +236,7 @@ TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
 
   std::string entry_id = service_->AddToList(url, ArticleCallback(&article_cb));
 
-  ASSERT_FALSE(distiller->GetCallback().is_null());
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
   EXPECT_EQ(url, distiller->GetUrl());
 
   scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
@@ -389,7 +391,7 @@ TEST_F(DomDistillerServiceTest, TestMultiplePageArticle) {
       service_->AddToList(pages_url[0], ArticleCallback(&article_cb));
 
   ArticleEntry entry;
-  ASSERT_FALSE(distiller->GetCallback().is_null());
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
   EXPECT_EQ(pages_url[0], distiller->GetUrl());
 
   // Create the article with pages to pass to the distiller.

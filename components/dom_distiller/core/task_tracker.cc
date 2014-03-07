@@ -41,7 +41,9 @@ void TaskTracker::StartDistiller(DistillerFactory* factory) {
 
   distiller_ = factory->CreateDistiller();
   distiller_->DistillPage(url,
-                          base::Bind(&TaskTracker::OnDistilledDataReady,
+                          base::Bind(&TaskTracker::OnDistilledArticleReady,
+                                     weak_ptr_factory_.GetWeakPtr()),
+                          base::Bind(&TaskTracker::OnArticleDistillationUpdated,
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -139,7 +141,7 @@ void TaskTracker::NotifyViewer(ViewRequestDelegate* delegate) {
   delegate->OnArticleReady(distilled_article_.get());
 }
 
-void TaskTracker::OnDistilledDataReady(
+void TaskTracker::OnDistilledArticleReady(
     scoped_ptr<DistilledArticleProto> distilled_article) {
   distilled_article_ = distilled_article.Pass();
   bool distillation_successful = false;
@@ -162,6 +164,13 @@ void TaskTracker::OnDistilledDataReady(
 
   // Already inside a callback run SaveCallbacks directly.
   DoSaveCallbacks(distillation_successful);
+}
+
+void TaskTracker::OnArticleDistillationUpdated(
+    const ArticleDistillationUpdate& article_update) {
+  for (size_t i = 0; i < viewers_.size(); ++i) {
+    viewers_[i]->OnArticleUpdated(article_update);
+  }
 }
 
 }  // namespace dom_distiller

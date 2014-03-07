@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
@@ -44,6 +45,9 @@ class ViewRequestDelegate {
   // when the corresponding ViewerHandle is destroyed (or when the
   // DomDistillerService is destroyed).
   virtual void OnArticleReady(const DistilledArticleProto* article_proto) = 0;
+
+  // Called when an article that is currently under distillation is updated.
+  virtual void OnArticleUpdated(ArticleDistillationUpdate article_update) = 0;
 };
 
 // A TaskTracker manages the various tasks related to viewing, saving,
@@ -90,8 +94,10 @@ class TaskTracker {
   bool HasUrl(const GURL& url) const;
 
  private:
-  void OnDistilledDataReady(
+  void OnDistilledArticleReady(
       scoped_ptr<DistilledArticleProto> distilled_article);
+  void OnArticleDistillationUpdated(
+      const ArticleDistillationUpdate& article_update);
   // Posts a task to run DoSaveCallbacks with |distillation_succeeded|.
   void ScheduleSaveCallbacks(bool distillation_succeeded);
 
