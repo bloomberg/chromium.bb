@@ -1009,6 +1009,7 @@ script
 // touch-action
 pan-x
 pan-y
+manipulation
 
 // justify-self
 // auto

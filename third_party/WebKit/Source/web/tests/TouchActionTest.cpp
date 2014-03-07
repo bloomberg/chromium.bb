@@ -272,6 +272,8 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
                         EXPECT_EQ(WebTouchActionPanY, client.lastTouchAction()) << failureContextPos;
                     } else if (expectedAction == "pan-x-y") {
                         EXPECT_EQ((WebTouchActionPanX | WebTouchActionPanY), client.lastTouchAction()) << failureContextPos;
+                    } else if (expectedAction == "manipulation") {
+                        EXPECT_EQ((WebTouchActionPanX | WebTouchActionPanY | WebTouchActionPinchZoom), client.lastTouchAction()) << failureContextPos;
                     } else {
                         FAIL() << "Unrecognized expected-action \"" << expectedAction.ascii().data()
                             << "\" " << failureContextPos;

@@ -21,11 +21,13 @@
 <div class="test" id="explicit-pan-y" style="touch-action: pan-y;" expected="pan-y"></div>
 <div class="test" id="explicit-pan-x-pan-y" style="touch-action: pan-x pan-y;" expected="pan-x pan-y"></div>
 <div class="test" id="explicit-pan-y-pan-x" style="touch-action: pan-y pan-x;" expected="pan-x pan-y"></div>
+<div class="test" id="explicit-manipulation" style="touch-action: manipulation;" expected="manipulation"></div>
 <div class="test" id="explicit-none" style="touch-action: none;" expected="none"></div>
 <div class="test" id="explicit-invalid-1" style="touch-action: bogus;" expected="auto"></div>
 <div class="test defnone" id="explicit-invalid-2" style="touch-action: auto pan-x;" expected="none"></div>
 <div class="test" id="explicit-invalid-3" style="touch-action: pan-y none;" expected="auto"></div>
 <div class="test" id="explicit-invalid-4" style="touch-action: pan-x pan-x;" expected="auto"></div>
+<div class="test" id="explicit-invalid-5" style="touch-action: manipulation pan-x;" expected="auto"></div>
 <div style="touch-action: none;">
   <div class="test" id="not-inherited" expected="auto"></div>
   <div class="test" id="inherit" style="touch-action: inherit;" expected="none"></div>

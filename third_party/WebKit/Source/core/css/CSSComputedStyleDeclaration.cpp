@@ -1463,11 +1463,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> touchActionFlagsToCSSValue(TouchAction t
         ASSERT(touchAction == TouchActionNone);
         list->append(cssValuePool().createIdentifierValue(CSSValueNone));
     }
-    if (touchAction & TouchActionPanX)
-        list->append(cssValuePool().createIdentifierValue(CSSValuePanX));
-    if (touchAction & TouchActionPanY)
-        list->append(cssValuePool().createIdentifierValue(CSSValuePanY));
-
+    if (touchAction == (TouchActionPanX | TouchActionPanY | TouchActionPinchZoom)) {
+        list->append(cssValuePool().createIdentifierValue(CSSValueManipulation));
+    } else {
+        if (touchAction & TouchActionPanX)
+            list->append(cssValuePool().createIdentifierValue(CSSValuePanX));
+        if (touchAction & TouchActionPanY)
+            list->append(cssValuePool().createIdentifierValue(CSSValuePanY));
+    }
     ASSERT(list->length());
     return list.release();
 }

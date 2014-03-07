@@ -1496,7 +1496,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertyTouchAction:
-        // auto | none | [pan-x || pan-y]
+        // auto | none | [pan-x || pan-y] | manipulation
         return parseTouchAction(important);
 
     case CSSPropertyAlignSelf:
@@ -7535,7 +7535,7 @@ bool CSSPropertyParser::parseTouchAction(bool important)
 
     CSSParserValue* value = m_valueList->current();
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    if (m_valueList->size() == 1 && value && (value->id == CSSValueAuto || value->id == CSSValueNone)) {
+    if (m_valueList->size() == 1 && value && (value->id == CSSValueAuto || value->id == CSSValueNone || value->id == CSSValueManipulation)) {
         list->append(cssValuePool().createIdentifierValue(value->id));
         addProperty(CSSPropertyTouchAction, list.release(), important);
         m_valueList->next();

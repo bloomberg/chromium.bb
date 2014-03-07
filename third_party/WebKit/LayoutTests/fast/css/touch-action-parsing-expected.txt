@@ -24,6 +24,9 @@ PASS style.touchAction is "pan-x pan-y"
 Test case: explicit-pan-y-pan-x
 PASS style.touchAction is "pan-x pan-y"
 
+Test case: explicit-manipulation
+PASS style.touchAction is "manipulation"
+
 Test case: explicit-none
 PASS style.touchAction is "none"
 
@@ -37,6 +40,9 @@ Test case: explicit-invalid-3
 PASS style.touchAction is "auto"
 
 Test case: explicit-invalid-4
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-5
 PASS style.touchAction is "auto"
 
 Test case: not-inherited

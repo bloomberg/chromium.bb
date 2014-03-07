@@ -38,7 +38,8 @@ enum WebTouchAction {
     WebTouchActionAuto = 0x0,
     WebTouchActionNone = 0x1,
     WebTouchActionPanX = 0x2,
-    WebTouchActionPanY = 0x4
+    WebTouchActionPanY = 0x4,
+    WebTouchActionPinchZoom = 0x8,
 };
 inline WebTouchAction operator| (WebTouchAction a, WebTouchAction b) { return WebTouchAction(int(a) | int(b)); }
 inline WebTouchAction& operator|= (WebTouchAction& a, WebTouchAction b) { return a = a | b; }

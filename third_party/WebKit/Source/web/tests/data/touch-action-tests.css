@@ -23,6 +23,11 @@
   touch-action: pan-x pan-y;
 }
 
+.ta-manipulation {
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+}
+
 /* Make it easy to visualize div boundaries */
 [expected-action] {
   margin: 15px;
@@ -45,6 +50,9 @@
 }
 [expected-action=pan-x-y]::before {
   content: "PAN-X PAN-Y \2190 ";
+}
+[expected-action=manipulation]::before {
+  content: "MANIPULATION \2190 ";
 }
 
 body {
