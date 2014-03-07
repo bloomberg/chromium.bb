@@ -23,6 +23,9 @@ class CONTENT_EXPORT StreamHandle {
 
   // Get the MIME type associated with this Stream.
   virtual const std::string& GetMimeType() = 0;
+
+  // Get the HTTP response headers associated with this Stream.
+  virtual const std::string& GetResponseHeaders() = 0;
 };
 
 }  // namespace content

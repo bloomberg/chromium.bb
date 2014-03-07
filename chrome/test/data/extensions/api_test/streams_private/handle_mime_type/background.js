@@ -11,7 +11,15 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
   // meant to be handled by the extension. The extension getting an event with
   // the MIME type 'application/msword' means the test has succeeded.
   if (params.mimeType == 'application/msword') {
-    chrome.test.notifyPass();
+    var headers = params.responseHeaders;
+    if (headers.indexOf('Content-Type: application/msword') == -1 ||
+        headers.indexOf('HTTP/1.1 200 OK') == -1) {
+      chrome.test.notifyFail(
+          'HTTP request header did not contain expected attributes.');
+      hasFailed = true;
+    } else {
+      chrome.test.notifyPass();
+    }
     return;
   }
 

@@ -13,11 +13,13 @@ namespace content {
 
 StreamHandleImpl::StreamHandleImpl(const base::WeakPtr<Stream>& stream,
                                    const GURL& original_url,
-                                   const std::string& mime_type)
+                                   const std::string& mime_type,
+                                   const std::string& response_headers)
     : stream_(stream),
       url_(stream->url()),
       original_url_(original_url),
       mime_type_(mime_type),
+      response_headers_(response_headers),
       stream_message_loop_(base::MessageLoopProxy::current().get()) {}
 
 StreamHandleImpl::~StreamHandleImpl() {
@@ -35,6 +37,10 @@ const GURL& StreamHandleImpl::GetOriginalURL() {
 
 const std::string& StreamHandleImpl::GetMimeType() {
   return mime_type_;
+}
+
+const std::string& StreamHandleImpl::GetResponseHeaders() {
+  return response_headers_;
 }
 
 }  // namespace content

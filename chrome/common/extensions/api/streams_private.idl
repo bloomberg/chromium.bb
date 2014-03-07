@@ -21,6 +21,9 @@ namespace streamsPrivate {
     // The amount of data the Stream should contain, if known.  If there is no
     // information on the size it will be -1.
     long expectedContentSize;
+
+    // The HTTP response headers of the intercepted request.
+    DOMString responseHeaders;
   };
 
   interface Events {

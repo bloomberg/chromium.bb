@@ -55,6 +55,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   if (expected_content_size <= INT_MAX)
     size = expected_content_size;
   info.expected_content_size = size;
+  info.response_headers = stream->GetResponseHeaders();
 
   scoped_ptr<Event> event(
       new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
