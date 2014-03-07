@@ -37,12 +37,12 @@ function surroundingText(html, offset, maxLength) {
         throw 'No node after "here" element';
 
     var coords = findOffsetCoordinates(node, offset);
-    var text = window.testRunner.textSurroundingNode(node, coords.x, coords.y, maxLength);
+    var text = window.internals.textSurroundingNode(node, coords.x, coords.y, maxLength);
     return text.replace(/\s+/g, ' ').replace(/^\s*|\s*$/g, '');
 }
 
 function run() {
-    if (!window.testRunner)
+    if (!window.internals)
         return;
 
     shouldBeEqualToString('surroundingText(\'<button>.</button>12345<p id="here">6789 12345</p>6789<button>.</button>\', 0, 100)', '12345 6789 12345 6789');

@@ -74,6 +74,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/SpellCheckRequester.h"
 #include "core/editing/SpellChecker.h"
+#include "core/editing/SurroundingText.h"
 #include "core/editing/TextIterator.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -2405,6 +2406,13 @@ void Internals::startSpeechInput(Element* element)
 void Internals::setValueForUser(Element* element, const String& value)
 {
     toHTMLInputElement(element)->setValueForUser(value);
+}
+
+String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long maxLength)
+{
+    blink::WebPoint point(x, y);
+    SurroundingText surroundingText(VisiblePosition(node->renderer()->positionForPoint(static_cast<IntPoint>(point))), maxLength);
+    return surroundingText.content();
 }
 
 }

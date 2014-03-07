@@ -317,6 +317,8 @@ public:
     void startSpeechInput(Element*);
     void setValueForUser(Element*, const String&);
 
+    String textSurroundingNode(Node*, int x, int y, unsigned long maxLength);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;
