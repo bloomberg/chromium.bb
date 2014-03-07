@@ -39,9 +39,6 @@ class StateStore::DelayedTaskQueue {
   // Marks us ready, and invokes all pending tasks.
   void SetReady();
 
-  // Return whether or not the DelayedTaskQueue is |ready_|.
-  bool ready() const { return ready_; }
-
  private:
   bool ready_;
   std::vector<base::Closure> pending_tasks_;
@@ -126,8 +123,6 @@ void StateStore::RemoveExtensionValue(const std::string& extension_id,
       base::Bind(&ValueStoreFrontend::Remove, base::Unretained(&store_),
                  GetFullKey(extension_id, key)));
 }
-
-bool StateStore::IsInitialized() const { return task_queue_->ready(); }
 
 void StateStore::Observe(int type,
                          const content::NotificationSource& source,
