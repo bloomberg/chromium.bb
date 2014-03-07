@@ -38,7 +38,7 @@
     },
   ],
   'conditions': [
-    ['OS != "mac"', {
+    ['os_posix == 1 and OS != "mac"', {
       'targets': [{
         'target_name': 'ui_unittest_strings',
         'type': 'none',
