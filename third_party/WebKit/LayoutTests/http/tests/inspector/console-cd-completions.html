@@ -7,7 +7,7 @@
 function test()
 {
     InspectorTest.showConsolePanel();
-    var selector = WebInspector.consoleView._executionContextSelector._selectElement;
+    var selector = WebInspector.ConsolePanel._view()._executionContextSelector._selectElement;
     var option = selector.firstChild;
     while (option) {
         if (option.textContent && option.textContent.startsWith("myIFrame"))
@@ -20,7 +20,7 @@ function test()
         return;
     }
     option.selected = true;
-    WebInspector.consoleView._executionContextChanged();
+    WebInspector.ConsolePanel._view()._executionContextChanged();
 
     WebInspector.runtimeModel._completionsForExpression("", "myGlob", false, checkCompletions.bind(this));
     function checkCompletions(completions)

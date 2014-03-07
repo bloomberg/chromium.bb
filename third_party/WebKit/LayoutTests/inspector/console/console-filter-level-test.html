@@ -24,11 +24,11 @@ function onload()
 
 function test()
 {
-    var messagesElement = WebInspector.consoleView.messagesElement;
+    var messagesElement = WebInspector.ConsolePanel._view().messagesElement;
 
     function dumpVisibleMessages()
     {
-        var children = WebInspector.consoleView.topGroup.element.childNodes[0].childNodes;
+        var children = WebInspector.ConsolePanel._view().topGroup.element.childNodes[0].childNodes;
 
         for (var i = 0; i < children.length; i++)
             InspectorTest.addResult(">" + children[i].textContent);
@@ -44,45 +44,45 @@ function test()
         
         function onlyWarning(next)
         {
-            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("warning");
+            WebInspector.ConsolePanel._view()._filter._levelFilterUI._toggleTypeFilter("warning");
             dumpVisibleMessages();
             next();
         },
         
         function onlyLog(next)
         {
-            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("log");
+            WebInspector.ConsolePanel._view()._filter._levelFilterUI._toggleTypeFilter("log");
             dumpVisibleMessages();
             next();
         },
         
         function onlyErrorDebug(next)
         {
-            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("error");
-            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("debug", true);
+            WebInspector.ConsolePanel._view()._filter._levelFilterUI._toggleTypeFilter("error");
+            WebInspector.ConsolePanel._view()._filter._levelFilterUI._toggleTypeFilter("debug", true);
             dumpVisibleMessages();
             next();
         },
         
         function onlyAbcMessagePlain(next)
         {
-            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES);
-            WebInspector.consoleView._filter._textFilterUI.setValue("abc");
+            WebInspector.ConsolePanel._view()._filter._levelFilterUI._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES);
+            WebInspector.ConsolePanel._view()._filter._textFilterUI.setValue("abc");
             dumpVisibleMessages();
             next();
         },
         
         function onlyAbcMessageRegex(next)
         {
-            WebInspector.consoleView._filter._textFilterUI._regexCheckBox.checked = "checked";
-            WebInspector.consoleView._filter._textFilterUI.setValue("ab[a-z]");
+            WebInspector.ConsolePanel._view()._filter._textFilterUI._regexCheckBox.checked = "checked";
+            WebInspector.ConsolePanel._view()._filter._textFilterUI.setValue("ab[a-z]");
             dumpVisibleMessages();
             next();
         },
         
         function onlyAbcMessageRegexWarning(next)
         {
-            WebInspector.consoleView._filter._levelFilterUI._toggleTypeFilter("warning", false);
+            WebInspector.ConsolePanel._view()._filter._levelFilterUI._toggleTypeFilter("warning", false);
             dumpVisibleMessages();
             next();
         }

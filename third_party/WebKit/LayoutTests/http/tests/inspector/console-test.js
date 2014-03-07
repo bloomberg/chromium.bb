@@ -1,5 +1,6 @@
 var initialize_ConsoleTest = function() {
 
+
 InspectorTest.showConsolePanel = function()
 {
     WebInspector.showPanel("console");
@@ -19,8 +20,9 @@ InspectorTest.prepareConsoleMessageText = function(messageElement)
 
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames)
 {
+    WebInspector.panel("console");
     var result = [];
-    var visibleMessagesIndices = WebInspector.consoleView._visibleMessagesIndices;
+    var visibleMessagesIndices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < visibleMessagesIndices.length; ++i) {
         var message = WebInspector.console.messages[visibleMessagesIndices[i]];
         var element = InspectorTest.toViewMessage(message).toMessageElement();
@@ -80,8 +82,9 @@ InspectorTest.dumpConsoleTableMessage = function(message)
 
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
+    WebInspector.panel("console");
     var result = [];
-    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var element = InspectorTest.toViewMessage(WebInspector.console.messages[indices[i]]).toMessageElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
@@ -93,8 +96,9 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 }
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
+    WebInspector.panel("console");
     var result = [];
-    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var element = InspectorTest.toViewMessage(WebInspector.console.messages[indices[i]]).toMessageElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
@@ -108,7 +112,8 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 
 InspectorTest.expandConsoleMessages = function(callback)
 {
-    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    WebInspector.panel("console");
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var message = WebInspector.console.messages[indices[i]];
         var element = InspectorTest.toViewMessage(message).toMessageElement();
@@ -129,7 +134,8 @@ InspectorTest.expandConsoleMessages = function(callback)
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    WebInspector.panel("console");
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var m = WebInspector.console.messages[indices[i]];
         InspectorTest.addResult("Message[" + i + "]:");

@@ -12,7 +12,7 @@ function test()
 {
     InspectorTest.showConsolePanel();
 
-    var consoleView = WebInspector.consoleView;
+    var consoleView = WebInspector.ConsolePanel._view();
     var selector = consoleView._executionContextSelector._selectElement;
     var contextList = WebInspector.runtimeModel.contextLists()[1];
     var contextId = 5;
