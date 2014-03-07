@@ -120,7 +120,7 @@
         video.addEventListener('ended', failTest);
         if (runEncrypted) {
           loadEncryptedMedia(video, MEDIA_1, keySystem, KEY, true,
-                             appendNextSource);
+                             usePrefixedEME, appendNextSource);
         } else {
           var mediaSource = loadMediaSource(MEDIA_1, mediaType,
                                             appendNextSource);

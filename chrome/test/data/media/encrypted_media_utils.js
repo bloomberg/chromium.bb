@@ -6,6 +6,7 @@ var keySystem = QueryString.keySystem;
 var mediaFile = QueryString.mediaFile;
 var mediaType = QueryString.mediaType || 'video/webm; codecs="vorbis, vp8"';
 var useMSE = QueryString.useMSE == 1;
+var usePrefixedEME = QueryString.usePrefixedEME == 1;
 var forceInvalidResponse = QueryString.forceInvalidResponse == 1;
 var sessionToLoad = QueryString.sessionToLoad;
 var licenseServerURL = QueryString.licenseServerURL;
@@ -51,6 +52,39 @@ function hasPrefix(msg, prefix) {
   return true;
 }
 
+// JWK routines copied from third_party/WebKit/LayoutTests/media/
+//   encrypted-media/encrypted-media-utils.js
+//
+// Encodes data (Uint8Array) into base64 string without trailing '='.
+// TODO(jrummell): Update once the EME spec is updated to say base64url
+// encoding.
+function base64Encode(data) {
+  var result = btoa(String.fromCharCode.apply(null, data));
+  return result.replace(/=+$/g, '');
+}
+
+// Creates a JWK from raw key ID and key.
+function createJWK(keyId, key) {
+  var jwk = "{\"kty\":\"oct\",\"kid\":\"";
+  jwk += base64Encode(keyId);
+  jwk += "\",\"k\":\"";
+  jwk += base64Encode(key);
+  jwk += "\"}";
+  return jwk;
+}
+
+// Creates a JWK Set from an array of JWK(s).
+function createJWKSet() {
+  var jwkSet = "{\"keys\":[";
+  for (var i = 0; i < arguments.length; i++) {
+    if (i != 0)
+      jwkSet += ",";
+    jwkSet += arguments[i];
+  }
+  jwkSet += "]}";
+  return jwkSet;
+}
+
 function isHeartbeatMessage(msg) {
   return hasPrefix(msg, HEART_BEAT_HEADER);
 }
@@ -60,13 +94,16 @@ function isFileIOTestMessage(msg) {
 }
 
 function loadEncryptedMediaFromURL(video) {
-  return loadEncryptedMedia(video, mediaFile, keySystem, KEY, useMSE);
+  return loadEncryptedMedia(video, mediaFile, keySystem, KEY, useMSE,
+                            usePrefixedEME);
 }
 
 function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
-                            appendSourceCallbackFn) {
+                            usePrefixedEME, appendSourceCallbackFn) {
   var keyRequested = false;
   var sourceOpened = false;
+  var mediaKeys;
+  var mediaKeySession;
   // Add properties to enable verification that events occurred.
   video.receivedKeyAdded = false;
   video.receivedHeartbeat = false;
@@ -78,6 +115,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     return;
   }
 
+  // Shared by prefixed and unprefixed EME.
   function onNeedKey(e) {
     if (keyRequested)
       return;
@@ -87,19 +125,30 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     var initData = sessionToLoad ? stringToUint8Array(
         PREFIXED_API_LOAD_SESSION_HEADER + sessionToLoad) : e.initData;
     try {
-      video.webkitGenerateKeyRequest(keySystem, initData);
+      if (usePrefixedEME) {
+        video.webkitGenerateKeyRequest(keySystem, initData);
+      } else {
+        mediaKeySession = mediaKeys.createSession(e.contentType, initData);
+        mediaKeySession.addEventListener('message', onMessage);
+        mediaKeySession.addEventListener('error', function() {
+            setResultInTitle("KeyError");
+        });
+        mediaKeySession.addEventListener('ready', onReady);
+      }
     }
     catch(error) {
       setResultInTitle(error.name);
     }
   }
 
+  // Prefixed EME callbacks.
   function onKeyAdded(e) {
     e.target.receivedKeyAdded = true;
   }
 
   function onKeyMessage(message) {
     video.receivedKeyMessage = true;
+
     if (!message.keySystem || message.keySystem != keySystem) {
       failTest('Message with unexpected keySystem: ' + message.keySystem);
       return;
@@ -110,21 +159,36 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       return;
     }
 
+    processMessage(message, message.keySystem, message.defaultURL);
+  }
+
+  // Unprefixed EME callbacks.
+  function onReady(e) {
+  }
+
+  function onMessage(message) {
+    processMessage(message, keySystem, message.destinationURL);
+  }
+
+  // Shared by prefixed and unprefixed EME.
+  function processMessage(message, keySystem, url) {
+    video.receivedKeyMessage = true;
+
     if (!message.message) {
       failTest('Message without a message content: ' + message.message);
       return;
     }
 
     if (isHeartbeatMessage(message.message)) {
-      console.log('onKeyMessage - heartbeat', message);
-      message.target.receivedHeartbeat = true;
-      verifyHeartbeatMessage(message);
+      console.log('processMessage - heartbeat', message);
+      video.receivedHeartbeat = true;
+      verifyHeartbeatMessage(keySystem, url);
       return;
     }
 
     if (isFileIOTestMessage(message.message)) {
-      var success = getFileIOTestResult(message);
-      console.log('onKeyMessage - CDM file IO test: ' +
+      var success = getFileIOTestResult(keySystem, message);
+      console.log('processMessage - CDM file IO test: ' +
                   (success ? 'Success' : 'Fail'));
       if (success)
         setResultInTitle("FILEIOTESTSUCCESS");
@@ -134,24 +198,28 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     }
 
     // For FileIOTest key system, no need to start playback.
-    if (message.keySystem == EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM)
+    if (keySystem == EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM)
       return;
 
     // No tested key system returns defaultURL in for key request messages.
-    if (message.defaultURL) {
-      failTest('Message unexpectedly has defaultURL: ' + message.defaultURL);
+    if (url) {
+      failTest('Message unexpectedly has URL: ' + url);
       return;
     }
 
-    // When loading a session, no need to call webkitAddKey().
+    // When loading a session, no need to call update()/webkitAddKey().
     if (sessionToLoad)
       return;
 
-    console.log('onKeyMessage - key request', message);
+    console.log('processMessage - key request', message);
     if (forceInvalidResponse) {
-      console.log('Forcing an invalid onKeyMessage response.');
+      console.log('processMessage - Forcing an invalid response.');
       var invalidData = new Uint8Array([0xAA]);
-      video.webkitAddKey(keySystem, invalidData, invalidData);
+      if (usePrefixedEME) {
+        video.webkitAddKey(keySystem, invalidData, invalidData);
+      } else {
+        mediaKeySession.update(invalidData);
+      }
       return;
     }
     // Check if should send request to locally running license server.
@@ -159,14 +227,19 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       requestLicense(message);
       return;
     }
-    console.log('Respond to onKeyMessage with test key.');
+    console.log('processMessage - Respond with test key.');
     var initData = message.message;
     if (mediaType.indexOf('mp4') != -1)
       initData = KEY_ID; // Temporary hack for Clear Key in v0.1.
-    video.webkitAddKey(keySystem, key, initData);
+    if (usePrefixedEME) {
+      video.webkitAddKey(keySystem, key, initData);
+    } else {
+      var jwkSet = stringToUint8Array(createJWKSet(createJWK(initData, key)));
+      mediaKeySession.update(jwkSet);
+    }
   }
 
-  function verifyHeartbeatMessage(message) {
+  function verifyHeartbeatMessage(keySystem, url) {
     String.prototype.startsWith = function(prefix) {
       return this.indexOf(prefix) === 0;
     }
@@ -177,22 +250,21 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     }
 
     // Only External Clear Key sends a HEARTBEAT message.
-    if (!isExternalClearKey(message.keySystem)) {
-      failTest('Unexpected heartbeat from ' + message.keySystem);
+    if (!isExternalClearKey(keySystem)) {
+      failTest('Unexpected heartbeat from ' + keySystem);
       return;
     }
 
-    if (message.defaultURL != EXTERNAL_CLEAR_KEY_HEARTBEAT_URL) {
-      failTest('Heartbeat message with unexpected defaultURL: ' +
-               message.defaultURL);
+    if (url != EXTERNAL_CLEAR_KEY_HEARTBEAT_URL) {
+      failTest('Heartbeat message with unexpected URL: ' + url);
       return;
     }
   }
 
-  function getFileIOTestResult(e) {
+  function getFileIOTestResult(keySystem, e) {
     // Only External Clear Key sends a FILEIOTESTRESULT message.
-    if (e.keySystem != EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM) {
-      failTest('Unexpected CDM file IO test result from ' + e.keySystem);
+    if (keySystem != EXTERNAL_CLEAR_KEY_FILE_IO_TEST_KEY_SYSTEM) {
+      failTest('Unexpected CDM file IO test result from ' + keySystem);
       return false;
     }
 
@@ -204,12 +276,16 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     return String.fromCharCode(e.message[result_index]) == 1;
   }
 
-  video.addEventListener('webkitneedkey', onNeedKey);
-  video.addEventListener('webkitkeymessage', onKeyMessage);
-  video.addEventListener('webkitkeyerror', function() {
-      setResultInTitle("KeyError");
-  });
-  video.addEventListener('webkitkeyadded', onKeyAdded);
+  if (usePrefixedEME) {
+    video.addEventListener('webkitneedkey', onNeedKey);
+    video.addEventListener('webkitkeymessage', onKeyMessage);
+    video.addEventListener('webkitkeyerror', function() {
+        setResultInTitle("KeyError");
+    });
+    video.addEventListener('webkitkeyadded', onKeyAdded);
+  } else {
+    video.addEventListener('needkey', onNeedKey);
+  }
   installTitleEventHandler(video, 'error');
 
   if (useMSE) {
@@ -218,6 +294,10 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     video.src = window.URL.createObjectURL(mediaSource);
   } else {
     video.src = mediaFile;
+  }
+  if (!usePrefixedEME) {
+    mediaKeys = new MediaKeys(keySystem);
+    video.setMediaKeys(mediaKeys);
   }
 }
 
