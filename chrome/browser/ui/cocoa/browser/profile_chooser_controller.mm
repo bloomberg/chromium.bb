@@ -1000,7 +1000,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   webContents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(browser_->profile())));
   webContents_->GetController().LoadURL(
-      signin::GetPromoURL(source, false),
+      signin::GetPromoURL(
+          source, false /* auto_close */, true /* is_constrained */),
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
