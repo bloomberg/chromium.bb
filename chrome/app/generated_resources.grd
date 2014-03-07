@@ -5871,12 +5871,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION" desc="Description of the static ip config lab.">
         Enables static ip configuration. May not work.
       </message>
-      <message name="IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME" desc="Name of the context menu for enabling tab grouping in the context menu">
-        Add grouping to tab context menu
-      </message>
-      <message name="IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION" desc="Description of the context menu for enabling tab grouping in the context menu lab.">
-        Adds items to the tab context menu for grouping tabs.
-      </message>
       <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_NAME" desc="Name of the 'Enable suggestions page' lab.">
         NTP Suggestions page
       </message>

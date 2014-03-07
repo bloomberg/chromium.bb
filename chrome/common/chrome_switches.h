@@ -223,7 +223,6 @@ extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncAppList[];
 extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
-extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableTranslateNewUX[];
 extern const char kEnableUnrestrictedSSL3Fallback[];

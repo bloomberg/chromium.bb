@@ -675,13 +675,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kNoPings)
   },
-  {
-    "tab-groups-context-menu",
-    IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME,
-    IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION,
-    kOsWin,
-    SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
-  },
 #if defined(OS_ANDROID)
   {
     "enable-new-ntp",

@@ -777,9 +777,6 @@ const char kEnableSyncAppList[]             = "enable-sync-app-list";
 // Enables synced articles.
 const char kEnableSyncArticles[]            = "enable-sync-articles";
 
-// Enables context menu for selecting groups of tabs.
-const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
-
 // Enables fanciful thumbnail processing. Used with NTP for
 // instant-extended-api, where thumbnails are generally smaller.
 const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
