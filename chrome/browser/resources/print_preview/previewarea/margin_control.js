@@ -421,7 +421,7 @@ cr.define('print_preview', function() {
         clearTimeout(this.textTimeout_);
         this.textTimeout_ = null;
       }
-      if (event.keyIdentifier == 'Enter') {
+      if (event.keyCode == 13 /*enter*/) {
         this.preTimeoutValue_ = null;
         cr.dispatchSimpleEvent(this, MarginControl.EventType.TEXT_CHANGE);
       } else {

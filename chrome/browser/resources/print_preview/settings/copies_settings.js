@@ -75,6 +75,10 @@ cr.define('print_preview', function() {
       fadeOutOption(this.getElement(), true);
       this.tracker.add(
           this.getChildElement('input.copies'),
+          'keydown',
+          this.onTextfieldKeyDown_.bind(this));
+      this.tracker.add(
+          this.getChildElement('input.copies'),
           'input',
           this.onTextfieldInput_.bind(this));
       this.tracker.add(
@@ -168,9 +172,24 @@ cr.define('print_preview', function() {
      * @private
      */
     onTextfieldTimeout_: function() {
+      this.textfieldTimeout_ = null;
       var copiesVal = this.getChildElement('input.copies').value;
       if (copiesVal != '') {
         this.copiesTicketItem_.updateValue(copiesVal);
+      }
+    },
+
+    /**
+     * Called when a key is pressed on the custom input.
+     * @param {Event} event Contains the key that was pressed.
+     * @private
+     */
+    onTextfieldKeyDown_: function(event) {
+      if (event.keyCode == 13 /*enter*/) {
+        if (this.textfieldTimeout_) {
+          clearTimeout(this.textfieldTimeout_);
+        }
+        this.onTextfieldTimeout_();
       }
     },
 

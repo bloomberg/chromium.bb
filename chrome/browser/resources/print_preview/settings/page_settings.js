@@ -100,6 +100,8 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.customInput_, 'focus', this.onCustomInputFocus_.bind(this));
       this.tracker.add(
+          this.customInput_, 'keydown', this.onCustomInputKeyDown_.bind(this));
+      this.tracker.add(
           this.customInput_, 'keyup', this.onCustomInputKeyUp_.bind(this));
       this.tracker.add(
           this.pageRangeTicketItem_,
@@ -188,13 +190,27 @@ cr.define('print_preview', function() {
      * @param {Event} event Contains the key that was pressed.
      * @private
      */
+    onCustomInputKeyDown_: function(event) {
+      if (event.keyCode == 13 /*enter*/) {
+        if (this.customInputTimeout_) {
+          clearTimeout(this.customInputTimeout_);
+          this.customInputTimeout_ = null;
+        }
+        this.pageRangeTicketItem_.updateValue(this.customInput_.value);
+      }
+    },
+
+    /**
+     * Called when a key is pressed on the custom input.
+     * @param {Event} event Contains the key that was pressed.
+     * @private
+     */
     onCustomInputKeyUp_: function(event) {
       if (this.customInputTimeout_) {
         clearTimeout(this.customInputTimeout_);
+        this.customInputTimeout_ = null;
       }
-      if (event.keyIdentifier == 'Enter') {
-        this.pageRangeTicketItem_.updateValue(this.customInput_.value);
-      } else {
+      if (event.keyCode != 13 /*enter*/) {
         this.customRadio_.checked = true;
         this.customInputTimeout_ = setTimeout(
             this.onCustomInputTimeout_.bind(this),
