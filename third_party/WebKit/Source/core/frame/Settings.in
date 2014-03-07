@@ -243,6 +243,7 @@ experimentalWebSocketEnabled initial=false
 # crbug.com/304869 tracks removal.
 pinchVirtualViewportEnabled initial=false
 useSolidColorScrollbars initial=false
+pinchOverlayScrollbarThickness type=int, initial=0
 
 mainFrameClipsContent initial=true
 

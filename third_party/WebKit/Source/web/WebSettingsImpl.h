@@ -198,7 +198,6 @@ public:
     bool viewportMetaLayoutSizeQuirk() const { return m_viewportMetaLayoutSizeQuirk; }
     bool viewportMetaNonUserScalableQuirk() const { return m_viewportMetaNonUserScalableQuirk; }
     bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }
-    int pinchOverlayScrollbarThickness() const { return m_pinchOverlayScrollbarThickness; }
 
 private:
     WebCore::Settings* m_settings;
@@ -224,7 +223,6 @@ private:
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/313754.
     bool m_clobberUserAgentInitialScaleQuirk;
-    int m_pinchOverlayScrollbarThickness;
     bool m_mainFrameResizesAreOrientationChanges;
 };
 

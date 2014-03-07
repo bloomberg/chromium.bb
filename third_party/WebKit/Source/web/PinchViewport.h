@@ -39,8 +39,10 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
+class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
+class GraphicsLayerFactory;
 class IntRect;
 class IntSize;
 }
@@ -53,7 +55,7 @@ class WebViewImpl;
 
 class PinchViewport FINAL : WebCore::GraphicsLayerClient {
 public:
-    static PassOwnPtr<PinchViewport> create(WebViewImpl* owner);
+    static PassOwnPtr<PinchViewport> create(WebCore::FrameHost&, WebCore::GraphicsLayerFactory*);
     virtual ~PinchViewport();
 
     void setOverflowControlsHostLayer(WebCore::GraphicsLayer*);
@@ -66,18 +68,18 @@ public:
     void registerViewportLayersWithTreeView(WebLayerTreeView*) const;
     void clearViewportLayersForTreeView(WebLayerTreeView*) const;
 
+private:
+
     // GraphicsLayerClient implementation.
     virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double monotonicTime) OVERRIDE;
     virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip) OVERRIDE;
-
     virtual String debugName(const WebCore::GraphicsLayer*) OVERRIDE;
 
-private:
-    explicit PinchViewport(WebViewImpl* owner);
+    explicit PinchViewport(WebCore::FrameHost&, WebCore::GraphicsLayerFactory*);
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
 
-    WebViewImpl* m_owner;
+    WebCore::FrameHost& m_owner;
     OwnPtr<WebCore::GraphicsLayer> m_innerViewportContainerLayer;
     OwnPtr<WebCore::GraphicsLayer> m_pageScaleLayer;
     OwnPtr<WebCore::GraphicsLayer> m_innerViewportScrollLayer;

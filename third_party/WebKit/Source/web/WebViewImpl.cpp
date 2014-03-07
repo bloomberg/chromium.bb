@@ -3604,7 +3604,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
     if (page()->settings().pinchVirtualViewportEnabled()) {
         if (!m_pinchViewports)
-            m_pinchViewports = PinchViewport::create(this);
+            m_pinchViewports = PinchViewport::create(page()->frameHost(), graphicsLayerFactory());
 
         m_pinchViewports->setOverflowControlsHostLayer(layer);
         m_pinchViewports->setViewportSize(mainFrameImpl()->frame()->view()->frameRect().size());

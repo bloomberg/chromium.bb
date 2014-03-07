@@ -33,12 +33,18 @@
 
 #include "WebSettingsImpl.h"
 #include "WebViewImpl.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -46,25 +52,26 @@
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebScrollbarLayer.h"
 
+using WebCore::FrameHost;
 using WebCore::GraphicsLayer;
+using WebCore::GraphicsLayerFactory;
 
 namespace blink {
 
-PassOwnPtr<PinchViewport> PinchViewport::create(WebViewImpl* owner)
+PassOwnPtr<PinchViewport> PinchViewport::create(FrameHost& owner, GraphicsLayerFactory* graphicsLayerFactory)
 {
-    return adoptPtr(new PinchViewport(owner));
+    return adoptPtr(new PinchViewport(owner, graphicsLayerFactory));
 }
 
-PinchViewport::PinchViewport(WebViewImpl* owner)
+PinchViewport::PinchViewport(FrameHost& owner, GraphicsLayerFactory* graphicsLayerFactory)
     : m_owner(owner)
-    , m_innerViewportContainerLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
-    , m_pageScaleLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
-    , m_innerViewportScrollLayer(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
-    , m_overlayScrollbarHorizontal(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
-    , m_overlayScrollbarVertical(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
+    , m_innerViewportContainerLayer(GraphicsLayer::create(graphicsLayerFactory, this))
+    , m_pageScaleLayer(GraphicsLayer::create(graphicsLayerFactory, this))
+    , m_innerViewportScrollLayer(GraphicsLayer::create(graphicsLayerFactory, this))
+    , m_overlayScrollbarHorizontal(GraphicsLayer::create(graphicsLayerFactory, this))
+    , m_overlayScrollbarVertical(GraphicsLayer::create(graphicsLayerFactory, this))
 {
-    ASSERT(m_owner);
-    WebCore::ScrollingCoordinator* coordinator = m_owner->page()->scrollingCoordinator();
+    WebCore::ScrollingCoordinator* coordinator = m_owner.page().scrollingCoordinator();
     ASSERT(coordinator);
     coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
 
@@ -130,18 +137,16 @@ void PinchViewport::setOverflowControlsHostLayer(GraphicsLayer* layer)
         return;
     }
 
-    WebCore::Page* page = m_owner->page();
-    if (!page)
-        return;
-
     // We only need to disable the existing (outer viewport) scrollbars
     // if the existing ones are already overlay.
     // FIXME: If we knew in advance before the overflowControlsHostLayer goes
     // away, we would re-enable the drawing of these scrollbars.
-    if (GraphicsLayer* scrollbar = m_owner->compositor()->layerForHorizontalScrollbar())
-        scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
-    if (GraphicsLayer* scrollbar = m_owner->compositor()->layerForVerticalScrollbar())
-        scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
+    // FIXME: This doesn't seem to work (at least on Android). Commenting out for now until
+    // I figure out how to access RenderLayerCompositor from here.
+    // if (GraphicsLayer* scrollbar = m_owner->compositor()->layerForHorizontalScrollbar())
+    //    scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
+    // if (GraphicsLayer* scrollbar = m_owner->compositor()->layerForVerticalScrollbar())
+    //    scrollbar->setDrawsContent(!page->mainFrame()->view()->hasOverlayScrollbars());
 }
 
 void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
@@ -152,10 +157,10 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
         m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
-    const int overlayScrollbarThickness = m_owner->settingsImpl()->pinchOverlayScrollbarThickness();
+    const int overlayScrollbarThickness = m_owner.settings().pinchOverlayScrollbarThickness();
 
     if (!webScrollbarLayer) {
-        WebCore::ScrollingCoordinator* coordinator = m_owner->page()->scrollingCoordinator();
+        WebCore::ScrollingCoordinator* coordinator = m_owner.page().scrollingCoordinator();
         ASSERT(coordinator);
         WebCore::ScrollbarOrientation webcoreOrientation = isHorizontal ? WebCore::HorizontalScrollbar : WebCore::VerticalScrollbar;
         webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, false);
@@ -179,8 +184,10 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 void PinchViewport::registerViewportLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
     ASSERT(layerTreeView);
+    ASSERT(m_owner.page().mainFrame());
+    ASSERT(m_owner.page().mainFrame()->contentRenderer());
 
-    WebCore::RenderLayerCompositor* compositor = m_owner->compositor();
+    WebCore::RenderLayerCompositor* compositor = m_owner.page().mainFrame()->contentRenderer()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer()->platformLayer();
 
