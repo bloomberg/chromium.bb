@@ -415,6 +415,12 @@ void OmniboxViewMac::EmphasizeURLComponents() {
     ApplyTextAttributes(GetText(), storage);
 
     [storage endEditing];
+
+    // This function can be called during the editor's -resignFirstResponder. If
+    // that happens, |storage| and |field_| will not be synced automatically any
+    // more. Calling -stringValue ensures that |field_| reflects the changes to
+    // |storage|.
+    [field_ stringValue];
   } else {
     SetText(GetText());
   }
