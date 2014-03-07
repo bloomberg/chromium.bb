@@ -206,8 +206,8 @@ gfx::NativeView ContentVideoView::GetNativeView() {
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
   JNIEnv* env = AttachCurrentThread();
-  bool legacyMode = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOverlayFullscreenVideoSubtitle);
+  bool legacyMode = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOverlayFullscreenVideoSubtitle);
   return JavaObjectWeakGlobalRef(
       env,
       Java_ContentVideoView_createContentVideoView(

@@ -53,8 +53,8 @@ public class ShellManager extends FrameLayout {
                     @Override
                     public void onShowCustomView(View view) {
                         super.onShowCustomView(view);
-                        if (CommandLine.getInstance().hasSwitch(
-                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                        if (!CommandLine.getInstance().hasSwitch(
+                                ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
                             setOverlayVideoMode(true);
                         }
                     }
@@ -62,8 +62,8 @@ public class ShellManager extends FrameLayout {
                     @Override
                     public void onDestroyContentVideoView() {
                         super.onDestroyContentVideoView();
-                        if (CommandLine.getInstance().hasSwitch(
-                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                        if (!CommandLine.getInstance().hasSwitch(
+                                ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
                             setOverlayVideoMode(false);
                         }
                     }

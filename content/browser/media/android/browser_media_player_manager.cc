@@ -197,8 +197,8 @@ void BrowserMediaPlayerManager::FullscreenPlayerSeek(int msec) {
 }
 
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOverlayFullscreenVideoSubtitle)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOverlayFullscreenVideoSubtitle)) {
     if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
       delegate->ToggleFullscreenModeForTab(web_contents_, false);
     if (RenderWidgetHostViewAndroid* view_android =
@@ -238,8 +238,8 @@ void BrowserMediaPlayerManager::SetVideoSurface(
   }
   player->SetVideoSurface(surface.Pass());
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOverlayFullscreenVideoSubtitle)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOverlayFullscreenVideoSubtitle)) {
     return;
   }
   if (RenderWidgetHostViewAndroid* view_android =
