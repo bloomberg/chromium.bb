@@ -5810,9 +5810,12 @@ shell_reposition_view_on_output_destroy(struct weston_view *view)
 
 		x = first_output->x + first_output->width / 4;
 		y = first_output->y + first_output->height / 4;
+
+		weston_view_set_position(view, x, y);
+	} else {
+		weston_view_geometry_dirty(view);
 	}
 
-	weston_view_set_position(view, x, y);
 
 	shsurf = get_shell_surface(view->surface);
 
