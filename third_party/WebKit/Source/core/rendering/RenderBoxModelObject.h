@@ -262,13 +262,13 @@ protected:
 
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
 
-    static bool shouldAntialiasLines(GraphicsContext*);
-
     static void clipRoundedInnerRect(GraphicsContext*, const LayoutRect&, const RoundedRect& clipRect);
 
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;
 
 public:
+    static bool shouldAntialiasLines(GraphicsContext*);
+
     // For RenderBlocks and RenderInlines with m_style->styleType() == FIRST_LETTER, this tracks their remaining text fragments
     RenderTextFragment* firstLetterRemainingText() const;
     void setFirstLetterRemainingText(RenderTextFragment*);

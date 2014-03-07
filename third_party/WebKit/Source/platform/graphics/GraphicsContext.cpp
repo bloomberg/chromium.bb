@@ -719,7 +719,6 @@ void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shad
     clearDrawLooper();
 }
 
-// This is only used to draw borders.
 void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
 {
     if (paintingDisabled())
@@ -905,32 +904,35 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt, float width, bool pr
     if (width <= 0)
         return;
 
-    int thickness = SkMax32(static_cast<int>(strokeThickness()), 1);
-    SkRect r;
-    r.fLeft = WebCoreFloatToSkScalar(pt.x());
-    // Avoid anti-aliasing lines. Currently, these are always horizontal.
-    // Round to nearest pixel to match text and other content.
-    r.fTop = WebCoreFloatToSkScalar(floorf(pt.y() + 0.5f));
-    r.fRight = r.fLeft + WebCoreFloatToSkScalar(width);
-    r.fBottom = r.fTop + SkIntToScalar(thickness);
-
     SkPaint paint;
     switch (strokeStyle()) {
     case NoStroke:
     case SolidStroke:
     case DoubleStroke:
-    case WavyStroke:
+    case WavyStroke: {
+        int thickness = SkMax32(static_cast<int>(strokeThickness()), 1);
+        SkRect r;
+        r.fLeft = WebCoreFloatToSkScalar(pt.x());
+        // Avoid anti-aliasing lines. Currently, these are always horizontal.
+        // Round to nearest pixel to match text and other content.
+        r.fTop = WebCoreFloatToSkScalar(floorf(pt.y() + 0.5f));
+        r.fRight = r.fLeft + WebCoreFloatToSkScalar(width);
+        r.fBottom = r.fTop + SkIntToScalar(thickness);
         paint = immutableState()->fillPaint();
-        break;
+        // Text lines are drawn using the stroke color.
+        paint.setColor(effectiveStrokeColor());
+        drawRect(r, paint);
+        return;
+    }
     case DottedStroke:
-    case DashedStroke:
-        paint = immutableState()->strokePaint();
-        break;
+    case DashedStroke: {
+        int y = floorf(pt.y() + std::max<float>(strokeThickness() / 2.0f, 0.5f));
+        drawLine(IntPoint(pt.x(), y), IntPoint(pt.x() + width, y));
+        return;
+    }
     }
 
-    // Text lines are drawn using the stroke color.
-    paint.setColor(effectiveStrokeColor());
-    drawRect(r, paint);
+    ASSERT_NOT_REACHED();
 }
 
 // Draws a filled rectangle with a stroked border.

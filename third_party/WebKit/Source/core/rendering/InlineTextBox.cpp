@@ -1102,6 +1102,17 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
 
     context->setStrokeThickness(textDecorationThickness);
 
+    switch (decorationStyle) {
+    case TextDecorationStyleDotted:
+    case TextDecorationStyleDashed:
+        context->setShouldAntialias(RenderBoxModelObject::shouldAntialiasLines(context));
+        break;
+    case TextDecorationStyleSolid:
+    case TextDecorationStyleDouble:
+    case TextDecorationStyleWavy:
+        break;
+    }
+
     float extraOffset = 0;
     if (!linesAreOpaque && shadowCount > 1) {
         FloatRect clipRect(localOrigin, FloatSize(width, baseline + 2));
