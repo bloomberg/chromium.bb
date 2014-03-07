@@ -66,23 +66,8 @@ If your change adds new files to the repository, you'll need to regenerate the
 GYP defines by following the directions in chromium/scripts/generate_gyp.py.
 
 After all that's done and your change has landed in the Git repository, you'll
-need to export it to the Subversion repository.  See the next help entry.
+need to roll DEPS before the change will show up in Chrome.
 
--- Exporting the Git repository to Subversion.
-
-Sadly, as of this writing (Oct 2012) Chromium does not support building from Git
-repos.  The builders rely on an export of the Git repo to SVN for builds.  A
-DEPS entry controls which revision the builders are currently using.
-
-The steps for doing this are:
-
-  cd <some path outside of ffmpeg Git>
-  svn co svn://svn.chromium.org/chrome/trunk/deps/third_party/ffmpeg
-  <path to ffmpeg Git>/chromium/scripts/sync_svn.py <Git path> <SVN path>
-  cd <svn repo>
-  svn commit -m "<Some happy message about updating FFmpeg SVN.>"
-
-You'll need to roll DEPS once your SVN changes are committed.
 
 -- Performing an upstream merge.
 
@@ -110,7 +95,11 @@ The upstream merge process follows the normal Git merge process:
   # approval on your Gerrit account.  Do not commit any other way.
   git push origin master
 
-  <Follow the steps under "Exporting the Git repository to Subversion."
+Once complete you'll need to regenerate the configuration files for every
+platform (see "Short Directions" in the "Building" section below).  You'll also
+need to regenerate the gyp files (see chromium/scripts/generate_gyp.py).  After
+all that is done, you can update Chromium's root DEPS file to point to the tip
+of tree commit.
 
 -- Upstreaming a patch.
 
