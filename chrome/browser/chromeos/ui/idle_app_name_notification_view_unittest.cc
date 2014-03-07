@@ -41,7 +41,7 @@ class IdleAppNameNotificationViewTest : public BrowserWithTestWindowTest {
     manifest.SetString(extensions::manifest_keys::kName, "Test");
     manifest.SetString(extensions::manifest_keys::kVersion, "1");
     manifest.SetString(extensions::manifest_keys::kDescription, "Test app");
-    manifest.SetString("author", "Someone");
+    manifest.SetString("author.email", "Someone");
 
     std::string error;
     correct_extension_ =

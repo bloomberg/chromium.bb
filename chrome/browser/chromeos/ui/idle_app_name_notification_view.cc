@@ -287,7 +287,7 @@ void IdleAppNameNotificationView::ShowMessage(
     app_name = base::UTF8ToUTF16(extension->name());
     // TODO(skuhne): This might not be enough since the author flag is not
     // explicitly enforced by us, but for Kiosk mode we could maybe require it.
-    extension->manifest()->GetString("author", &author);
+    extension->manifest()->GetString("author.email", &author);
     if (ContainsOnlyWhitespace(author)) {
       error = true;
       author = l10n_util::GetStringUTF16(
