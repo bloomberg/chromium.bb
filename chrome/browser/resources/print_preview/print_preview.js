@@ -769,9 +769,13 @@ cr.define('print_preview', function() {
           !this.destinationSearch_.getIsVisible() &&
           this.printTicketStore_.isTicketValid()) {
         assert(this.uiState_ == PrintPreview.UiState_.READY,
-          'Trying to print when not in ready state: ' + this.uiState_);
-        this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
-        e.preventDefault();
+            'Trying to print when not in ready state: ' + this.uiState_);
+        var activeElementTag = document.activeElement ?
+            document.activeElement.tagName.toUpperCase() : '';
+        if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT') {
+          this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
+          e.preventDefault();
+        }
         return;
       }
 
