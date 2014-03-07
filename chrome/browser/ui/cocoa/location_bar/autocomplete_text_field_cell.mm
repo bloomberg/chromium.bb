@@ -18,6 +18,7 @@
 #import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using extensions::FeatureSwitch;
 
@@ -377,7 +378,16 @@ size_t CalculatePositionsInFrame(
   // |-textFrameForFrame:|.
 
   // Superclass draws text portion WRT original |cellFrame|.
-  [super drawInteriorWithFrame:cellFrame inView:controlView];
+  // Even though -isOpaque is NO due to rounded corners, we know that the text
+  // will be drawn on top of an opaque area, therefore it is safe to enable
+  // font smoothing.
+  {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+    NSGraphicsContext* context = [NSGraphicsContext currentContext];
+    CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
+    CGContextSetShouldSmoothFonts(cgContext, true);
+    [super drawInteriorWithFrame:cellFrame inView:controlView];
+  }
 }
 
 - (LocationBarDecoration*)decorationForEvent:(NSEvent*)theEvent
