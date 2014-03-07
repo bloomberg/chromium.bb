@@ -3271,10 +3271,10 @@ COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, pname) == 12,
                OffsetOf_GetFramebufferAttachmentParameteriv_pname_not_12);
 COMPILE_ASSERT(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_id) == 16,
-    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);  // NOLINT
+    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);
 COMPILE_ASSERT(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_offset) == 20,
-    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);  // NOLINT
+    OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);
 
 struct GetIntegerv {
   typedef GetIntegerv ValueType;
@@ -7993,7 +7993,7 @@ COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, samples) == 8,
                OffsetOf_RenderbufferStorageMultisampleCHROMIUM_samples_not_8);
 COMPILE_ASSERT(
     offsetof(RenderbufferStorageMultisampleCHROMIUM, internalformat) == 12,
-    OffsetOf_RenderbufferStorageMultisampleCHROMIUM_internalformat_not_12);  // NOLINT
+    OffsetOf_RenderbufferStorageMultisampleCHROMIUM_internalformat_not_12);
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, width) == 16,
                OffsetOf_RenderbufferStorageMultisampleCHROMIUM_width_not_16);
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, height) == 20,
@@ -8054,7 +8054,7 @@ COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, samples) == 8,
                OffsetOf_RenderbufferStorageMultisampleEXT_samples_not_8);
 COMPILE_ASSERT(
     offsetof(RenderbufferStorageMultisampleEXT, internalformat) == 12,
-    OffsetOf_RenderbufferStorageMultisampleEXT_internalformat_not_12);  // NOLINT
+    OffsetOf_RenderbufferStorageMultisampleEXT_internalformat_not_12);
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
                OffsetOf_RenderbufferStorageMultisampleEXT_width_not_16);
 COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
@@ -9946,7 +9946,7 @@ COMPILE_ASSERT(offsetof(BindUniformLocationCHROMIUMBucket, location) == 8,
                OffsetOf_BindUniformLocationCHROMIUMBucket_location_not_8);
 COMPILE_ASSERT(
     offsetof(BindUniformLocationCHROMIUMBucket, name_bucket_id) == 12,
-    OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);  // NOLINT
+    OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);
 
 struct BindTexImage2DCHROMIUM {
   typedef BindTexImage2DCHROMIUM ValueType;

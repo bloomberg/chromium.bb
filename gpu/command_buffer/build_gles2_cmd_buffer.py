@@ -2584,72 +2584,9 @@ class CWriter(object):
     lines = string.splitlines()
     num_lines = len(lines)
     for ii in range(0, num_lines):
-      self.__WriteLine(lines[ii], ii < (num_lines - 1) or string[-1] == '\n')
-
-  def __FindSplit(self, string):
-    """Finds a place to split a string."""
-    splitter = string.find('=')
-    if splitter >= 1 and not string[splitter + 1] == '=' and splitter < 80:
-      return splitter
-    # parts = string.split('(')
-    parts = re.split("(?<=[^\"])\((?!\")", string)
-    fptr = re.compile('\*\w*\)')
-    if len(parts) > 1:
-      splitter = len(parts[0])
-      for ii in range(1, len(parts)):
-        # Don't split on the dot in "if (.condition)".
-        if (not parts[ii - 1][-3:] == "if " and
-            # Don't split "(.)" or "(.*fptr)".
-            (len(parts[ii]) > 0 and
-                not parts[ii][0] == ")" and not fptr.match(parts[ii]))
-            and splitter < 80):
-          return splitter
-        splitter += len(parts[ii]) + 1
-    done = False
-    end = len(string)
-    last_splitter = -1
-    while not done:
-      splitter = string[0:end].rfind(',')
-      if splitter < 0 or (splitter > 0 and string[splitter - 1] == '"'):
-        return last_splitter
-      elif splitter >= 80:
-        end = splitter
-      else:
-        return splitter
-
-  def __WriteLine(self, line, ends_with_eol):
-    """Given a signle line, writes it to a file, splitting if it's > 80 chars"""
-    if len(line) >= 80:
-      i = self.__FindSplit(line)
-      if i > 0:
-        line1 = line[0:i + 1]
-        if line1[-1] == ' ':
-          line1 = line1[:-1]
-        lineend = ''
-        if line1[0] == '#':
-          lineend = ' \\'
-        nolint = ''
-        if len(line1) > 80:
-          nolint = '  // NOLINT'
-        self.__AddLine(line1 + nolint + lineend + '\n')
-        match = re.match("( +)", line1)
-        indent = ""
-        if match:
-          indent = match.group(1)
-        splitter = line[i]
-        if not splitter == ',':
-          indent = "    " + indent
-        self.__WriteLine(indent + line[i + 1:].lstrip(), True)
-        return
-    nolint = ''
-    if len(line) > 80:
-      nolint = '  // NOLINT'
-    self.__AddLine(line + nolint)
-    if ends_with_eol:
-      self.__AddLine('\n')
-
-  def __AddLine(self, line):
-    self.content.append(line)
+      self.content.append(lines[ii])
+      if ii < (num_lines - 1) or string[-1] == '\n':
+        self.content.append('\n')
 
   def Close(self):
     """Close the file."""

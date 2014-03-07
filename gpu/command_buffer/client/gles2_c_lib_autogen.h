@@ -1007,7 +1007,7 @@ extern const NameToFunc g_gles2_function_table[] = {
     {"glGetFloatv", reinterpret_cast<GLES2FunctionPointer>(glGetFloatv), },
     {"glGetFramebufferAttachmentParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(
-         glGetFramebufferAttachmentParameteriv), },  // NOLINT
+         glGetFramebufferAttachmentParameteriv), },
     {"glGetIntegerv", reinterpret_cast<GLES2FunctionPointer>(glGetIntegerv), },
     {"glGetProgramiv",
      reinterpret_cast<GLES2FunctionPointer>(glGetProgramiv), },
@@ -1138,13 +1138,13 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glBlitFramebufferCHROMIUM), },
     {"glRenderbufferStorageMultisampleCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
-         glRenderbufferStorageMultisampleCHROMIUM), },  // NOLINT
+         glRenderbufferStorageMultisampleCHROMIUM), },
     {"glRenderbufferStorageMultisampleEXT",
      reinterpret_cast<GLES2FunctionPointer>(
-         glRenderbufferStorageMultisampleEXT), },  // NOLINT
+         glRenderbufferStorageMultisampleEXT), },
     {"glFramebufferTexture2DMultisampleEXT",
      reinterpret_cast<GLES2FunctionPointer>(
-         glFramebufferTexture2DMultisampleEXT), },  // NOLINT
+         glFramebufferTexture2DMultisampleEXT), },
     {"glTexStorage2DEXT",
      reinterpret_cast<GLES2FunctionPointer>(glTexStorage2DEXT), },
     {"glGenQueriesEXT",
@@ -1204,12 +1204,12 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glResizeCHROMIUM), },
     {"glGetRequestableExtensionsCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
-         glGetRequestableExtensionsCHROMIUM), },  // NOLINT
+         glGetRequestableExtensionsCHROMIUM), },
     {"glRequestExtensionCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glRequestExtensionCHROMIUM), },
     {"glRateLimitOffscreenContextCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
-         glRateLimitOffscreenContextCHROMIUM), },  // NOLINT
+         glRateLimitOffscreenContextCHROMIUM), },
     {"glGetMultipleIntegervCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glGetMultipleIntegervCHROMIUM), },
     {"glGetProgramInfoCHROMIUM",

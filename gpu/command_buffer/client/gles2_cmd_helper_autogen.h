@@ -381,7 +381,7 @@ void DeleteRenderbuffersImmediate(GLsizei n, const GLuint* renderbuffers) {
   const uint32 size = gles2::cmds::DeleteRenderbuffersImmediate::ComputeSize(n);
   gles2::cmds::DeleteRenderbuffersImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::DeleteRenderbuffersImmediate>(
-          size);  // NOLINT
+          size);
   if (c) {
     c->Init(n, renderbuffers);
   }
@@ -1783,7 +1783,7 @@ void DeleteVertexArraysOESImmediate(GLsizei n, const GLuint* arrays) {
       gles2::cmds::DeleteVertexArraysOESImmediate::ComputeSize(n);
   gles2::cmds::DeleteVertexArraysOESImmediate* c =
       GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::DeleteVertexArraysOESImmediate>(size);  // NOLINT
+          gles2::cmds::DeleteVertexArraysOESImmediate>(size);
   if (c) {
     c->Init(n, arrays);
   }
@@ -2007,7 +2007,7 @@ void ProduceTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
       gles2::cmds::ProduceTextureCHROMIUMImmediate::ComputeSize();
   gles2::cmds::ProduceTextureCHROMIUMImmediate* c =
       GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::ProduceTextureCHROMIUMImmediate>(size);  // NOLINT
+          gles2::cmds::ProduceTextureCHROMIUMImmediate>(size);
   if (c) {
     c->Init(target, mailbox);
   }
@@ -2028,7 +2028,7 @@ void ConsumeTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
       gles2::cmds::ConsumeTextureCHROMIUMImmediate::ComputeSize();
   gles2::cmds::ConsumeTextureCHROMIUMImmediate* c =
       GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::ConsumeTextureCHROMIUMImmediate>(size);  // NOLINT
+          gles2::cmds::ConsumeTextureCHROMIUMImmediate>(size);
   if (c) {
     c->Init(target, mailbox);
   }
@@ -2166,7 +2166,7 @@ void DiscardFramebufferEXTImmediate(GLenum target,
       gles2::cmds::DiscardFramebufferEXTImmediate::ComputeSize(count);
   gles2::cmds::DiscardFramebufferEXTImmediate* c =
       GetImmediateCmdSpaceTotalSize<
-          gles2::cmds::DiscardFramebufferEXTImmediate>(size);  // NOLINT
+          gles2::cmds::DiscardFramebufferEXTImmediate>(size);
   if (c) {
     c->Init(target, count, attachments);
   }

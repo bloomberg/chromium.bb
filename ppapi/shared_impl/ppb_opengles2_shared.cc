@@ -1650,32 +1650,32 @@ const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2InstancedArrays*
-PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {  // NOLINT
+PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {
   static const struct PPB_OpenGLES2InstancedArrays ppb_opengles2 = {
       &DrawArraysInstancedANGLE, &DrawElementsInstancedANGLE,
       &VertexAttribDivisorANGLE};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2FramebufferBlit*
-PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {  // NOLINT
+PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {
   static const struct PPB_OpenGLES2FramebufferBlit ppb_opengles2 = {
       &BlitFramebufferEXT};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2FramebufferMultisample*
-PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {  // NOLINT
+PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {
   static const struct PPB_OpenGLES2FramebufferMultisample ppb_opengles2 = {
       &RenderbufferStorageMultisampleEXT};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2ChromiumEnableFeature*
-PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {  // NOLINT
+PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {
   static const struct PPB_OpenGLES2ChromiumEnableFeature ppb_opengles2 = {
       &EnableFeatureCHROMIUM};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2ChromiumMapSub*
-PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {  // NOLINT
+PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {
   static const struct PPB_OpenGLES2ChromiumMapSub ppb_opengles2 = {
       &MapBufferSubDataCHROMIUM, &UnmapBufferSubDataCHROMIUM,
       &MapTexSubImage2DCHROMIUM, &UnmapTexSubImage2DCHROMIUM};
@@ -1688,7 +1688,7 @@ const PPB_OpenGLES2Query* PPB_OpenGLES2_Shared::GetQueryInterface() {
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2DrawBuffers_Dev*
-PPB_OpenGLES2_Shared::GetDrawBuffersInterface() {  // NOLINT
+PPB_OpenGLES2_Shared::GetDrawBuffersInterface() {
   static const struct PPB_OpenGLES2DrawBuffers_Dev ppb_opengles2 = {
       &DrawBuffersEXT};
   return &ppb_opengles2;
