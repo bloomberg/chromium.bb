@@ -56,6 +56,10 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // Returns the timestamp of our InstallSignature, if we have one.
   base::Time SignatureTimestamp();
 
+  // Returns true if |id| is either verified or our stored signature explicitly
+  // tells us that it was invalid when we asked the server about it.
+  bool IsKnownId(const std::string& id);
+
   // A callback for indicating success/failure of adding new ids.
   typedef base::Callback<void(bool)> AddResultCallback;
 

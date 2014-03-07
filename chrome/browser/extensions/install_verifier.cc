@@ -130,8 +130,16 @@ void LogInitResultHistogram(InitResult result) {
 }
 
 bool FromStore(const Extension& extension) {
-  bool updates_from_store = ManifestURL::UpdatesFromGallery(&extension);
-  return extension.from_webstore() || updates_from_store;
+  if (extension.from_webstore() || ManifestURL::UpdatesFromGallery(&extension))
+    return true;
+
+  // If an extension has no update url, our autoupdate code will ask the
+  // webstore about it (to aid in migrating to the webstore from self-hosting
+  // or sideloading based installs). So we want to do verification checks on
+  // such extensions too so that we don't accidentally disable old installs of
+  // extensions that did migrate to the webstore.
+  return (ManifestURL::GetUpdateURL(&extension).is_empty() &&
+          Manifest::IsAutoUpdateableLocation(extension.location()));
 }
 
 bool CanUseExtensionApis(const Extension& extension) {
@@ -181,6 +189,11 @@ base::Time InstallVerifier::SignatureTimestamp() {
     return signature_->timestamp;
   else
     return base::Time();
+}
+
+bool InstallVerifier::IsKnownId(const std::string& id) {
+  return signature_.get() && (ContainsKey(signature_->ids, id) ||
+                              ContainsKey(signature_->invalid_ids, id));
 }
 
 void InstallVerifier::Add(const std::string& id,
@@ -238,7 +251,8 @@ void InstallVerifier::RemoveMany(const ExtensionIdSet& ids) {
 
   bool found_any = false;
   for (ExtensionIdSet::const_iterator i = ids.begin(); i != ids.end(); ++i) {
-    if (ContainsKey(signature_->ids, *i)) {
+    if (ContainsKey(signature_->ids, *i) ||
+        ContainsKey(signature_->invalid_ids, *i)) {
       found_any = true;
       break;
     }
@@ -273,6 +287,8 @@ enum MustRemainDisabledOutcome {
   NOT_VERIFIED_BUT_NOT_ENFORCING,
   NOT_VERIFIED,
   NOT_VERIFIED_BUT_INSTALL_TIME_NEWER_THAN_SIGNATURE,
+  NOT_VERIFIED_BUT_UNKNOWN_ID,
+  COMPONENT,
 
   // This is used in histograms - do not remove or reorder entries above! Also
   // the "MAX" item below should always be the last element.
@@ -298,6 +314,10 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     MustRemainDisabledHistogram(UNPACKED);
     return false;
   }
+  if (extension->location() == Manifest::COMPONENT) {
+    MustRemainDisabledHistogram(COMPONENT);
+    return false;
+  }
   if (AllowedByEnterprisePolicy(extension->id())) {
     MustRemainDisabledHistogram(ENTERPRISE_POLICY_ALLOWED);
     return false;
@@ -319,8 +339,8 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     // get a signature.
     outcome = NO_SIGNATURE;
   } else if (!IsVerified(extension->id())) {
-    if (WasInstalledAfterSignature(extension->id())) {
-      outcome = NOT_VERIFIED_BUT_INSTALL_TIME_NEWER_THAN_SIGNATURE;
+    if (!ContainsKey(signature_->invalid_ids, extension->id())) {
+      outcome = NOT_VERIFIED_BUT_UNKNOWN_ID;
     } else {
       verified = false;
       outcome = NOT_VERIFIED;
@@ -356,6 +376,8 @@ void InstallVerifier::GarbageCollect() {
   }
   CHECK(signature_.get());
   ExtensionIdSet leftovers = signature_->ids;
+  leftovers.insert(signature_->invalid_ids.begin(),
+                   signature_->invalid_ids.end());
   ExtensionIdList all_ids;
   prefs_->GetExtensions(&all_ids);
   for (ExtensionIdList::const_iterator i = all_ids.begin();
@@ -390,19 +412,6 @@ bool InstallVerifier::AllowedByEnterprisePolicy(const std::string& id) const {
 bool InstallVerifier::IsVerified(const std::string& id) const {
   return ((signature_.get() && ContainsKey(signature_->ids, id)) ||
           ContainsKey(provisional_, id));
-}
-
-bool InstallVerifier::WasInstalledAfterSignature(const std::string& id) const {
-  if (!signature_.get() || signature_->timestamp.is_null())
-    return true;
-
-  base::Time install_time = prefs_->GetInstallTime(id);
-  // If the extension install time is in the future, just assume it isn't
-  // newer than the signature. (Either the clock went backwards, or
-  // an attacker changed the install time in the preferences).
-  if (install_time >= base::Time::Now())
-    return false;
-  return install_time > signature_->timestamp;
 }
 
 void InstallVerifier::BeginFetch() {

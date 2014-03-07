@@ -614,20 +614,15 @@ void ExtensionService::MaybeBootstrapVerifier() {
   if (verifier->NeedsBootstrap()) {
     do_bootstrap = true;
   } else {
-    // If any of the installed extensions have an install time newer than the
-    // signature's timestamp, we need to bootstrap because our signature may
-    // be missing valid extensions.
-    base::Time timestamp = verifier->SignatureTimestamp();
     scoped_ptr<extensions::ExtensionSet> extensions =
         GenerateInstalledExtensionsSet();
     for (extensions::ExtensionSet::const_iterator i = extensions->begin();
          i != extensions->end();
          ++i) {
       const Extension& extension = **i;
-      base::Time install_time =
-          extension_prefs_->GetInstallTime(extension.id());
+
       if (verifier->NeedsVerification(extension) &&
-          install_time < base::Time::Now() && install_time >= timestamp) {
+          !verifier->IsKnownId(extension.id())) {
         do_bootstrap = true;
         break;
       }
