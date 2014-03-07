@@ -105,6 +105,8 @@ noletsign i
 noletsign I
 noletsign å
 noletsign Å
+noletsign à
+noletsign á
 #noletsignbefore '.
 noletsignafter :.
 

@@ -1,5 +1,10 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 2.5.5 (2014-??-??)
+** Braille table improvements
+- Fix for Norwegian where letsign is affecting some extra characters
+  thanks to Lars Bjørndal
+
 * Noteworthy changes in release 2.5.4 (2014-3-3)
 This release contains nine months worth of braille table improvements
 for example for Danish, UEB, en-us, Nemeth, Bulgarian, Slovenian and
@@ -10,7 +15,7 @@ and back-translation.
    - Added function lou_registerTableResolver for plugging in a table
      resolver callback from your host language.
 
-** Bug Fixes
+** Bug fixes
    - Fixed ENDSEGMENT indicator in computer Braille thanks to John
      Boyer.
    - Emphasized words should now be contracted consistently thanks to
@@ -24,7 +29,7 @@ and back-translation.
      "includes" in that table will now work as expected, meaning files
      in the same directory will be found.
 
-** Braille Table Improvements
+** Braille table improvements
    - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some
      instances.
    - en-us-g2.ctb, en-ueb-g2.ctb: Fixes for that's, can't and s'
