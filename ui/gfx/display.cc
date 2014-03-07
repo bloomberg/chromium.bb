@@ -51,7 +51,9 @@ float Display::GetForcedDeviceScaleFactor() {
 
 //static
 bool Display::HasForceDeviceScaleFactor() {
-  return HasForceDeviceScaleFactorImpl();
+  static const bool kHasForceDeviceScaleFactor =
+      HasForceDeviceScaleFactorImpl();
+  return kHasForceDeviceScaleFactor;
 }
 
 Display::Display()
