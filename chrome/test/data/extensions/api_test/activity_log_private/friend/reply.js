@@ -309,13 +309,6 @@ function executeDOMChangesOnTabUpdated() {
           'store.removeItem("foo"); ' +
           'store.clear();';
 
-  // Accesses the HTML5 Notification API from inside a content script.
-  code += 'try {' +
-          '  webkitNotifications.createNotification("myIcon.png", ' +
-          '                                         "myTitle", ' +
-          '                                         "myContent");' +
-          '} catch (e) {}';
-
   // Accesses the HTML5 ApplicationCache API from inside a content script.
   code += 'var appCache = window.applicationCache;';
 

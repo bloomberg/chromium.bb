@@ -10,20 +10,18 @@ var g_notifications = [];
 // Whether the site has requested and been granted permission.
 var g_permissionGranted = false;
 
-// Creates a notification with a iconUrl, title, text, and replaceId.
+// Creates a notification with a iconUrl, title, text, and tag.
 // Returns an id for the notification, which can be used to cancel it with
 // |cancelNotification|. If two notifications are created with the same
-// replaceId, the second one should replace the first.
-function createNotification(iconUrl, title, text, replaceId) {
-  try {
-    var note = webkitNotifications.createNotification(iconUrl,
-                                                      title,
-                                                      text);
-  } catch (exception)  {
-    sendResultToTest(-1);
-    return;
-  }
-  createNotificationHelper(note, replaceId, true);
+// tag, the second one should replace the first.
+function createNotification(iconUrl, title, text, tag) {
+  var notification = new Notification(title, {
+    icon: iconUrl,
+    body: text,
+    tag: tag
+  });
+
+  createNotificationHelper(notification, true);
 }
 
 // Cancels a notification with the given id. The notification must be showing,
@@ -38,12 +36,12 @@ function cancelNotification(id) {
   g_notifications[id].onclose = function() {
     sendResultToTest(1);
   }
-  g_notifications[id].cancel();
+  g_notifications[id].close();
 }
 
 // Requests permission for this origin to create notifications.
 function requestPermission() {
-  window.webkitNotifications.requestPermission(onPermissionGranted);
+  Notification.requestPermission(onPermissionGranted);
   sendResultToTest(1);
 }
 
@@ -65,19 +63,17 @@ function onPermissionGranted() {
 // it. The index of the notification is sent back to the test, or -1 is sent
 // back on error. If |waitForDisplay| is true, the response will not be sent
 // until the notification is actually displayed.
-function createNotificationHelper(note, replaceId, waitForDisplay) {
+function createNotificationHelper(note, waitForDisplay) {
   function sendNotificationIdToTest() {
     sendResultToTest(g_notifications.length - 1);
   }
   g_notifications.push(note);
-  note.replaceId = replaceId;
   if (waitForDisplay)
-    note.ondisplay = sendNotificationIdToTest;
+    note.onshow = sendNotificationIdToTest;
   note.onerror = function() {
     sendResultToTest(-1);
   }
 
-  note.show();
   if (!waitForDisplay)
     sendNotificationIdToTest();
 }

@@ -248,9 +248,6 @@ var domExpectedActivity = [
     'Storage.getItem',
     'Storage.removeItem',
     'Storage.clear',
-    // Notification access
-    'Window.webkitNotifications',
-    'NotificationCenter.createNotification',
     // Cache access
     'Window.applicationCache',
     // Web database access

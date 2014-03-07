@@ -41,18 +41,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
   ASSERT_TRUE(RunExtensionTest("notifications/has_not_permission")) << message_;
 }
 
-// This test verifies that on RichNotification-enabled platforms HTML
-// notificaitons are disabled.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_NoHTMLNotifications NoHTMLNotifications
-#else
-#define MAYBE_NoHTMLNotifications DISABLED_NoHTMLNotifications
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NoHTMLNotifications) {
-  ASSERT_TRUE(message_center::IsRichNotificationEnabled());
-  ASSERT_TRUE(RunExtensionTest("notifications/no_html")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermission) {
   DesktopNotificationServiceFactory::GetForProfile(browser()->profile())
       ->GrantPermission(GURL(

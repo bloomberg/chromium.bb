@@ -123,7 +123,10 @@ Galore.controller = {
     var iconUrl = options.iconUrl;
     var title = options.title;
     var message = options.message;
-    webkitNotifications.createNotification(iconUrl, title, message).show();
+    new Notification(title, {
+      body: message,
+      icon: iconUrl
+    });
     this.handleEvent_('create', '?', 'title: "' + title + '"');
   },
 

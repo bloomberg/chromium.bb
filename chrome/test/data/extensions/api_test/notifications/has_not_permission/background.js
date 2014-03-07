@@ -4,26 +4,19 @@
 
 chrome.test.runTests([
   function hasPermission() {
-    chrome.test.assertEq(1,  // permission not allowed
-                         webkitNotifications.checkPermission());
+    chrome.test.assertEq("default",  // permission not granted
+                         Notification.permission);
     chrome.test.succeed();
   },
-  function showHTMLNotification() {
-    // createHTMLNotification should not be exposed.
-    if (window.webkitNotifications.createHTMLNotification)
-      chrome.test.fail("createHTMLNotification is found.");
-    else
-      chrome.test.succeed();
-  },
   function showTextNotification() {
-    try {
-      window.webkitNotifications.createNotification(
-          "", "Foo", "This is text notification.").show();
-    } catch (e) {
-      chrome.test.assertEq("SecurityError", e.name);
+    var notification = new Notification("Foo", {
+      body: "This is a text notification."
+    });
+    notification.onerror = function() {
       chrome.test.succeed();
-      return;
-    }
-    chrome.test.fail("Expected access denied error.");
+    };
+    notification.onshow = function() {
+      chrome.test.fail("Displayed a notification without permission.");
+    };
   }
 ]);

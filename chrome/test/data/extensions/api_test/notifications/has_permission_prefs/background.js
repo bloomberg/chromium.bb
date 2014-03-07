@@ -4,27 +4,19 @@
 
 chrome.test.runTests([
   function hasPermission() {
-    chrome.test.assertEq(0,  // allowed
-                         webkitNotifications.checkPermission());
+    chrome.test.assertEq("granted",  // permission not allowed
+                         Notification.permission);
     chrome.test.succeed();
   },
-  function showHTMLNotification() {
-    // createHTMLNotification is not exposed even when the web page permission
-    // is granted.
-    if (window.webkitNotifications.createHTMLNotification)
-      chrome.test.fail("createHTMLNotification is found.");
-    else
-      chrome.test.succeed();
-  },
   function showTextNotification() {
-    var notification = window.webkitNotifications.createNotification(
-        "", "Foo", "This is text notification.");
+    var notification = new Notification("Foo", {
+      body: "This is a text notification."
+    });
     notification.onerror = function() {
       chrome.test.fail("Failed to show notification.");
     };
-    notification.ondisplay = function() {
+    notification.onshow = function() {
       chrome.test.succeed();
     };
-    notification.show();
   }
 ]);

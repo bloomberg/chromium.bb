@@ -294,7 +294,6 @@
             # but expect one.
             'browser/notifications/desktop_notifications_unittest.cc',
             'browser/notifications/desktop_notifications_unittest.h',
-            'browser/notifications/notification_browsertest.cc',
             # TODO(port): I have no idea about the crashes in here; there's
             # nothing obviously wrong. It doesn't run on gtk today, either.
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
