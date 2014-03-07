@@ -12,13 +12,10 @@ of the build process.
 import hashlib
 import os.path
 import re
-import shutil
 import sys
-import time
 import urllib2
 
 import http_download
-import platform
 
 SOURCE_STAMP = 'SOURCE_URL'
 HASH_STAMP = 'SOURCE_SHA1'
@@ -111,57 +108,10 @@ def WriteSourceStamp(path, url):
   stampfile = os.path.join(path, SOURCE_STAMP)
   WriteStamp(stampfile, url)
 
+
 def WriteHashStamp(path, hash_val):
   hash_stampfile = os.path.join(path, HASH_STAMP)
   WriteStamp(hash_stampfile, hash_val)
-
-
-def Retry(op, *args):
-  # Windows seems to be prone to having commands that delete files or
-  # directories fail.  We currently do not have a complete understanding why,
-  # and as a workaround we simply retry the command a few times.
-  # It appears that file locks are hanging around longer than they should.  This
-  # may be a secondary effect of processes hanging around longer than they
-  # should.  This may be because when we kill a browser sel_ldr does not exit
-  # immediately, etc.
-  # Virus checkers can also accidently prevent files from being deleted, but
-  # that shouldn't be a problem on the bots.
-  if platform.IsWindows():
-    count = 0
-    while True:
-      try:
-        op(*args)
-        break
-      except Exception:
-        sys.stdout.write('FAILED: %s %s\n' % (op.__name__, repr(args)))
-        count += 1
-        if count < 5:
-          sys.stdout.write('RETRY: %s %s\n' % (op.__name__, repr(args)))
-          time.sleep(pow(2, count))
-        else:
-          # Don't mask the exception.
-          raise
-  else:
-    op(*args)
-
-
-def MoveDirCleanly(src, dst):
-  RemoveDir(dst)
-  MoveDir(src, dst)
-
-
-def MoveDir(src, dst):
-  Retry(shutil.move, src, dst)
-
-
-def RemoveDir(path):
-  if os.path.exists(path):
-    Retry(shutil.rmtree, path)
-
-
-def RemoveFile(path):
-  if os.path.exists(path):
-    Retry(os.unlink, path)
 
 
 def _HashFileHandle(fh):

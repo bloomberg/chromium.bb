@@ -9,6 +9,9 @@ import re
 import sys
 import tempfile
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+import pynacl.file_tools
+
 import corpus_errors
 import corpus_utils
 
@@ -108,8 +111,8 @@ def TestApps(options, work_dir):
       progress.Result(
           TestAppStartup(options, filename, app_path, profile_path))
     finally:
-      corpus_utils.RemoveDir(app_path)
-      corpus_utils.RemoveDir(profile_path)
+      pynacl.file_tools.RemoveDir(app_path)
+      pynacl.file_tools.RemoveDir(profile_path)
   progress.Summary()
 
 
@@ -152,7 +155,7 @@ def Main():
   try:
     TestApps(options, work_dir)
   finally:
-    corpus_utils.RemoveDir(work_dir)
+    pynacl.file_tools.RemoveDir(work_dir)
 
 
 if __name__ == '__main__':

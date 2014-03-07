@@ -17,6 +17,7 @@ import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.download_utils
+import pynacl.file_tools
 import pynacl.platform
 
 import toolchainbinaries
@@ -215,7 +216,7 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
       full_path = os.path.join(toolchain_dir, path)
       try:
         print 'Cleaning up %s...' % full_path
-        pynacl.download_utils.RemoveDir(full_path)
+        pynacl.file_tools.RemoveDir(full_path)
       except Exception, e:
         print 'Failed cleanup with: ' + str(e)
 
@@ -280,10 +281,10 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
       src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
     else:
       src = os.path.join(untar_dir, 'toolchain', flavor)
-    pynacl.download_utils.MoveDirCleanly(src, dst)
+    pynacl.file_tools.MoveDirCleanly(src, dst)
   finally:
     try:
-      pynacl.download_utils.RemoveDir(untar_dir)
+      pynacl.file_tools.RemoveDir(untar_dir)
     except Exception, e:
       print 'Failed cleanup with: ' + str(e)
       print 'Continuing on original exception...'
@@ -369,6 +370,7 @@ def ParseArgs(args):
 def ScriptDependencyTimestamp():
   """Determine the timestamp for the most recently changed script."""
   src_list = ['download_toolchains.py', '../pynacl/download_utils.py',
+              '../pynacl/file_tools.py', '../pynacl/platform.py',
               'cygtar.py', '../pynacl/http_download.py']
   srcs = [os.path.join(SCRIPT_DIR, src) for src in src_list]
   src_times = []

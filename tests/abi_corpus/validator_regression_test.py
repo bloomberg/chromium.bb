@@ -6,7 +6,11 @@
 import optparse
 import os
 import subprocess
+import sys
 import tempfile
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+import pynacl.file_tools
 
 import corpus_errors
 import corpus_utils
@@ -138,7 +142,7 @@ def Main():
   try:
     TestValidators(options, work_dir)
   finally:
-    corpus_utils.RemoveDir(work_dir)
+    pynacl.file_tools.RemoveDir(work_dir)
 
 
 if __name__ == '__main__':
