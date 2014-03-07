@@ -39,7 +39,6 @@ namespace WebCore {
 inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElement(HTMLNames::outputTag, document, form)
     , m_isDefaultValueMode(true)
-    , m_isSetTextContentInProgress(false)
     , m_defaultValue("")
     , m_tokens(DOMSettableTokenList::create())
 {
@@ -84,11 +83,6 @@ void HTMLOutputElement::childrenChanged(bool createdByParser, Node* beforeChange
 {
     HTMLFormControlElement::childrenChanged(createdByParser, beforeChange, afterChange, childCountDelta);
 
-    if (createdByParser || m_isSetTextContentInProgress) {
-        m_isSetTextContentInProgress = false;
-        return;
-    }
-
     if (m_isDefaultValueMode)
         m_defaultValue = textContent();
 }
@@ -98,10 +92,10 @@ void HTMLOutputElement::resetImpl()
     // The reset algorithm for output elements is to set the element's
     // value mode flag to "default" and then to set the element's textContent
     // attribute to the default value.
-    m_isDefaultValueMode = true;
     if (m_defaultValue == value())
         return;
-    setTextContentInternal(m_defaultValue);
+    setTextContent(m_defaultValue);
+    m_isDefaultValueMode = true;
 }
 
 String HTMLOutputElement::value() const
@@ -115,7 +109,7 @@ void HTMLOutputElement::setValue(const String& value)
     m_isDefaultValueMode = false;
     if (value == this->value())
         return;
-    setTextContentInternal(value);
+    setTextContent(value);
 }
 
 String HTMLOutputElement::defaultValue() const
@@ -131,14 +125,7 @@ void HTMLOutputElement::setDefaultValue(const String& value)
     // The spec requires the value attribute set to the default value
     // when the element's value mode flag to "default".
     if (m_isDefaultValueMode)
-        setTextContentInternal(value);
-}
-
-void HTMLOutputElement::setTextContentInternal(const String& value)
-{
-    ASSERT(!m_isSetTextContentInProgress);
-    m_isSetTextContentInProgress = true;
-    setTextContent(value);
+        setTextContent(value);
 }
 
 } // namespace

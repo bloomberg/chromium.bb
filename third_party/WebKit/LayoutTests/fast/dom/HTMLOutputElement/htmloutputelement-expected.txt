@@ -6,6 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS output1.type is "output"
 PASS output1.name is "output1"
 PASS output1.value is "A value"
+PASS output1.defaultValue is "A value"
 PASS output2.htmlFor.length is 1
 PASS output2.htmlFor[0] is "for-target1"
 PASS output2.htmlFor.value is "for-target1"

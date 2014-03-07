@@ -62,10 +62,7 @@ private:
     virtual void childrenChanged(bool createdByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
     virtual void resetImpl() OVERRIDE;
 
-    void setTextContentInternal(const String&);
-
     bool m_isDefaultValueMode;
-    bool m_isSetTextContentInProgress;
     String m_defaultValue;
     RefPtr<DOMSettableTokenList> m_tokens;
 };
