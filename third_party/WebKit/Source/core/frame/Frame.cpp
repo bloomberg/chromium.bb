@@ -68,9 +68,9 @@ int64_t generateFrameID()
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
-Frame::Frame(PassRefPtr<FrameInit> frameInit)
-    : m_frameInit(frameInit)
-    , m_host(m_frameInit->frameHost())
+Frame::Frame(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+    : m_host(host)
+    , m_ownerElement(ownerElement)
     , m_frameID(generateFrameID())
     , m_remotePlatformLayer(0)
 {

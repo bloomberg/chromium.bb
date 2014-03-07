@@ -406,23 +406,7 @@ private:
     // Returns a hit-tested VisiblePosition for the given point
     WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
-    class WebFrameInit : public WebCore::FrameInit {
-    public:
-        static PassRefPtr<WebFrameInit> create(WebFrameImpl* webFrameImpl)
-        {
-            return adoptRef(new WebFrameInit(webFrameImpl));
-        }
-
-    private:
-        explicit WebFrameInit(WebFrameImpl* webFrameImpl)
-            : m_frameLoaderClientImpl(webFrameImpl)
-        {
-            setFrameLoaderClient(&m_frameLoaderClientImpl);
-        }
-
-        FrameLoaderClientImpl m_frameLoaderClientImpl;
-    };
-    RefPtr<WebFrameInit> m_frameInit;
+    FrameLoaderClientImpl m_frameLoaderClientImpl;
 
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.

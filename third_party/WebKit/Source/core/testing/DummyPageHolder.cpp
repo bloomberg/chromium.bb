@@ -54,7 +54,7 @@ DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
 
     m_page = adoptPtr(new Page(m_pageClients));
 
-    m_frame = LocalFrame::create(FrameInit::create(&m_page->frameHost(), &m_frameLoaderClient));
+    m_frame = LocalFrame::create(&m_frameLoaderClient, &m_page->frameHost(), 0);
     m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
     m_frame->init();
 }

@@ -2082,7 +2082,7 @@ WebFrameImpl* WebFrameImpl::create(WebFrameClient* client)
 }
 
 WebFrameImpl::WebFrameImpl(WebFrameClient* client)
-    : m_frameInit(WebFrameInit::create(this))
+    : m_frameLoaderClientImpl(this)
     , m_parent(0)
     , m_previousSibling(0)
     , m_nextSibling(0)
@@ -2129,8 +2129,7 @@ void WebFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
 
 void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 {
-    m_frameInit->setFrameHost(&page->frameHost());
-    setWebCoreFrame(LocalFrame::create(m_frameInit));
+    setWebCoreFrame(LocalFrame::create(&m_frameLoaderClientImpl, &page->frameHost(), 0));
 
     // We must call init() after m_frame is assigned because it is referenced
     // during init().
@@ -2144,9 +2143,7 @@ PassRefPtr<LocalFrame> WebFrameImpl::createChildFrame(const FrameLoadRequest& re
     if (!webframe)
         return nullptr;
 
-    webframe->m_frameInit->setFrameHost(frame()->host());
-    webframe->m_frameInit->setOwnerElement(ownerElement);
-    RefPtr<LocalFrame> childFrame = LocalFrame::create(webframe->m_frameInit);
+    RefPtr<LocalFrame> childFrame = LocalFrame::create(&webframe->m_frameLoaderClientImpl, frame()->host(), ownerElement);
     webframe->setWebCoreFrame(childFrame);
 
     childFrame->tree().setName(request.frameName());

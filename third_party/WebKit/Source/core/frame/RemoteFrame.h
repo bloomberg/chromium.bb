@@ -11,13 +11,13 @@ namespace WebCore {
 
 class RemoteFrame: public Frame {
 public:
-    static PassRefPtr<RemoteFrame> create(PassRefPtr<FrameInit>);
+    static PassRefPtr<RemoteFrame> create(FrameHost*, HTMLFrameOwnerElement*);
     virtual bool isRemoteFrame() const OVERRIDE { return true; }
 
     virtual ~RemoteFrame();
 
 private:
-    RemoteFrame(PassRefPtr<FrameInit>);
+    RemoteFrame(FrameHost*, HTMLFrameOwnerElement*);
 };
 
 DEFINE_TYPE_CASTS(RemoteFrame, Frame, remoteFrame, remoteFrame->isRemoteFrame(), remoteFrame.isRemoteFrame());

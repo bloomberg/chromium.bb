@@ -43,42 +43,10 @@ class DOMWindow;
 class ChromeClient;
 class FrameDestructionObserver;
 class FrameHost;
-class FrameLoaderClient;
 class HTMLFrameOwnerElement;
 class Page;
 class RenderView;
 class Settings;
-
-class FrameInit : public RefCounted<FrameInit> {
-public:
-    // For creating a dummy Frame
-    static PassRefPtr<FrameInit> create(FrameHost* host, FrameLoaderClient* client)
-    {
-        return adoptRef(new FrameInit(host, client));
-    }
-
-    void setFrameHost(FrameHost* host) { m_frameHost = host; }
-    FrameHost* frameHost() const { return m_frameHost; }
-
-    void setFrameLoaderClient(FrameLoaderClient* client) { m_client = client; }
-    FrameLoaderClient* frameLoaderClient() const { return m_client; }
-
-    void setOwnerElement(HTMLFrameOwnerElement* ownerElement) { m_ownerElement = ownerElement; }
-    HTMLFrameOwnerElement* ownerElement() const { return m_ownerElement; }
-
-protected:
-    FrameInit(FrameHost* host = 0, FrameLoaderClient* client = 0)
-        : m_client(client)
-        , m_frameHost(host)
-        , m_ownerElement(0)
-    {
-    }
-
-private:
-    FrameLoaderClient* m_client;
-    FrameHost* m_frameHost;
-    HTMLFrameOwnerElement* m_ownerElement;
-};
 
 class Frame : public RefCounted<Frame> {
 public:
@@ -120,10 +88,10 @@ public:
     Settings* settings() const; // can be null
 
 protected:
-    Frame(PassRefPtr<FrameInit>);
+    Frame(FrameHost*, HTMLFrameOwnerElement*);
 
-    RefPtr<FrameInit> m_frameInit;
     FrameHost* m_host;
+    HTMLFrameOwnerElement* m_ownerElement;
 
     RefPtr<DOMWindow> m_domWindow;
 

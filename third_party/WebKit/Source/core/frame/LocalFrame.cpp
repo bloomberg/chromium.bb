@@ -87,10 +87,10 @@ static inline float parentTextZoomFactor(LocalFrame* frame)
     return parent->textZoomFactor();
 }
 
-inline LocalFrame::LocalFrame(PassRefPtr<FrameInit> frameInit)
-    : Frame(frameInit)
+inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+    : Frame(host, ownerElement)
     , m_treeNode(this)
-    , m_loader(this, m_frameInit->frameLoaderClient())
+    , m_loader(this, client)
     , m_navigationScheduler(this)
     , m_script(adoptPtr(new ScriptController(this)))
     , m_editor(Editor::create(*this))
@@ -103,15 +103,15 @@ inline LocalFrame::LocalFrame(PassRefPtr<FrameInit> frameInit)
     , m_orientation(0)
     , m_inViewSourceMode(false)
 {
-    if (ownerElement()) {
+    if (this->ownerElement()) {
         page()->incrementSubframeCount();
-        ownerElement()->setContentFrame(*this);
+        this->ownerElement()->setContentFrame(*this);
     }
 }
 
-PassRefPtr<LocalFrame> LocalFrame::create(PassRefPtr<FrameInit> frameInit)
+PassRefPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
 {
-    RefPtr<LocalFrame> frame = adoptRef(new LocalFrame(frameInit));
+    RefPtr<LocalFrame> frame = adoptRef(new LocalFrame(client, host, ownerElement));
     if (!frame->ownerElement())
         frame->page()->setMainFrame(frame);
     InspectorInstrumentation::frameAttachedToParent(frame.get());
@@ -290,7 +290,7 @@ void LocalFrame::disconnectOwnerElement()
         if (page())
             page()->decrementSubframeCount();
     }
-    m_frameInit->setOwnerElement(0);
+    m_ownerElement = 0;
 }
 
 String LocalFrame::documentTypeString() const

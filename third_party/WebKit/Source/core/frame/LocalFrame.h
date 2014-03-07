@@ -58,7 +58,7 @@ namespace WebCore {
 
     class LocalFrame : public Frame {
     public:
-        static PassRefPtr<LocalFrame> create(PassRefPtr<FrameInit>);
+        static PassRefPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, HTMLFrameOwnerElement*);
 
         virtual bool isLocalFrame() const OVERRIDE { return true; }
 
@@ -146,7 +146,7 @@ namespace WebCore {
     // ========
 
     private:
-        LocalFrame(PassRefPtr<FrameInit>);
+        LocalFrame(FrameLoaderClient*, FrameHost*, HTMLFrameOwnerElement*);
 
         mutable FrameTree m_treeNode;
         mutable FrameLoader m_loader;
@@ -216,7 +216,7 @@ namespace WebCore {
 
     inline HTMLFrameOwnerElement* LocalFrame::ownerElement() const
     {
-        return m_frameInit->ownerElement();
+        return m_ownerElement;
     }
 
     inline bool LocalFrame::inViewSourceMode() const

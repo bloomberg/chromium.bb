@@ -443,7 +443,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         m_page->settings().setPluginsEnabled(false);
         m_page->settings().setAcceleratedCompositingEnabled(false);
 
-        RefPtr<LocalFrame> frame = LocalFrame::create(FrameInit::create(&m_page->frameHost(), dummyFrameLoaderClient));
+        RefPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient, &m_page->frameHost(), 0);
         frame->setView(FrameView::create(frame.get()));
         frame->init();
         FrameLoader& loader = frame->loader();
