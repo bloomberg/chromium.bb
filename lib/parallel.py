@@ -76,7 +76,7 @@ class _BackgroundTask(multiprocessing.Process):
   # The time we allow processes to be silent. This must be greater than the
   # hw_test_timeout set in cbuildbot_config.py, and less than the timeout set
   # by buildbot itself (typically, 150 minutes.)
-  SILENT_TIMEOUT = 60 * 145
+  SILENT_TIMEOUT = 60 * 205
 
   # The amount by which we reduce the SILENT_TIMEOUT every time we launch
   # a subprocess. This helps ensure that children get a chance to enforce the
