@@ -233,7 +233,9 @@ class Singleton {
       base::ThreadRestrictions::AssertSingletonAllowed();
 #endif
 
-    base::subtle::AtomicWord value = base::subtle::NoBarrier_Load(&instance_);
+    // The load has acquire memory ordering as the thread which reads the
+    // instance_ pointer must acquire visibility over the singleton data.
+    base::subtle::AtomicWord value = base::subtle::Acquire_Load(&instance_);
     if (value != 0 && value != base::internal::kBeingCreatedMarker) {
       // See the corresponding HAPPENS_BEFORE below.
       ANNOTATE_HAPPENS_AFTER(&instance_);
@@ -252,6 +254,7 @@ class Singleton {
       // synchronization between different threads calling get().
       // See the corresponding HAPPENS_AFTER below and above.
       ANNOTATE_HAPPENS_BEFORE(&instance_);
+      // Releases the visibility over instance_ to the readers.
       base::subtle::Release_Store(
           &instance_, reinterpret_cast<base::subtle::AtomicWord>(newval));
 
