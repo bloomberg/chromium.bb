@@ -186,12 +186,14 @@ const Experiment::Choice kOverscrollHistoryNavigationChoices[] = {
 #endif
 
 const Experiment::Choice kNaClDebugMaskChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   // Secure shell can be used on ChromeOS for forwarding the TCP port opened by
-  // debug stub to a remote machine. Since secure shell uses NaCl, we provide
-  // an option to switch off its debugging.
-  { IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS,
-      switches::kNaClDebugMask, "!*://*/*ssh_client.nmf" },
+  // debug stub to a remote machine. Since secure shell uses NaCl, we usually
+  // want to avoid debugging that. The PNaCl translator is also a NaCl module,
+  // so by default we want to avoid debugging that.
+  // NOTE: As the default value must be the empty string, the mask excluding
+  // the PNaCl translator and secure shell is substituted elsewhere.
+  { IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS_PNACL, "", "" },
+  { IDS_NACL_DEBUG_MASK_CHOICE_DEBUG_ALL, switches::kNaClDebugMask, "*://*" },
   { IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG,
       switches::kNaClDebugMask, "*://*/*debug.nmf" }
 };

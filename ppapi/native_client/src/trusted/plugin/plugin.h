@@ -112,7 +112,8 @@ class Plugin : public pp::Instance {
   // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
-  NaClSubprocess* LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+  NaClSubprocess* LoadHelperNaClModule(const nacl::string& helper_url,
+                                       nacl::DescWrapper* wrapper,
                                        const Manifest* manifest,
                                        ErrorInfo* error_info);
 

@@ -341,8 +341,15 @@ void NaClProcessHost::EarlyStartup() {
   UMA_HISTOGRAM_BOOLEAN(
       "NaCl.enable-nacl-debug",
       cmd->HasSwitch(switches::kEnableNaClDebug));
-  NaClBrowser::GetDelegate()->SetDebugPatterns(
-      cmd->GetSwitchValueASCII(switches::kNaClDebugMask));
+  std::string nacl_debug_mask =
+      cmd->GetSwitchValueASCII(switches::kNaClDebugMask);
+  // By default, exclude debugging SSH and the PNaCl translator.
+  // about::flags only allows empty flags as the default, so replace
+  // the empty setting with the default. To debug all apps, use a wild-card.
+  if (nacl_debug_mask.empty()) {
+    nacl_debug_mask = "!*://*/*ssh_client.nmf,chrome://pnacl-translator/*";
+  }
+  NaClBrowser::GetDelegate()->SetDebugPatterns(nacl_debug_mask);
 }
 
 void NaClProcessHost::Launch(

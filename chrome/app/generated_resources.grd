@@ -5592,11 +5592,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION" desc="Description of the 'Restrict NaCl GDB debugging' lab.">
         Restricts Native Client application GDB-based debugging by URL of manifest file. Native Client GDB-based debugging must be enabled for this option to work.
       </message>
-      <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
-        Debug only if manifest URL ends with debug.nmf
+      <message name="IDS_NACL_DEBUG_MASK_CHOICE_DEBUG_ALL">
+        Debug everything.
       </message>
-      <message name="IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS">
-        Debug everything except secure shell
+      <message name="IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS_PNACL">
+        Debug everything except secure shell and the PNaCl translator.
+      </message>
+      <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
+        Debug only if manifest URL ends with debug.nmf.
       </message>
       <message name="IDS_FLAGS_DISABLE_PNACL_NAME" desc="Name of the 'Disable Portable Native Client' lab.">
         Disable Portable Native Client.

@@ -115,8 +115,13 @@ NaClSubprocess* PnaclTranslateThread::StartSubprocess(
   PLUGIN_PRINTF(("PnaclTranslateThread::StartSubprocess (url_for_nexe=%s)\n",
                  url_for_nexe.c_str()));
   nacl::DescWrapper* wrapper = resources_->WrapperForUrl(url_for_nexe);
+  // Supply a URL for the translator components, different from the app URL,
+  // so that NaCl GDB can filter-out the translator processes (and not debug
+  // the translator itself). Must have a full URL with schema, otherwise the
+  // string gets silently dropped by GURL.
+  nacl::string full_url = resources_->GetFullUrl(url_for_nexe);
   nacl::scoped_ptr<NaClSubprocess> subprocess(
-      plugin_->LoadHelperNaClModule(wrapper, manifest, error_info));
+      plugin_->LoadHelperNaClModule(full_url, wrapper, manifest, error_info));
   if (subprocess.get() == NULL) {
     PLUGIN_PRINTF((
         "PnaclTranslateThread::StartSubprocess: subprocess creation failed\n"));

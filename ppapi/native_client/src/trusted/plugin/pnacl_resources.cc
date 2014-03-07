@@ -18,11 +18,11 @@
 
 namespace plugin {
 
-static const char kPnaclComponentScheme[] = "pnacl-component://";
+static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
 const char PnaclUrls::kResourceInfoUrl[] = "pnacl.json";
 
 nacl::string PnaclUrls::GetBaseUrl() {
-  return nacl::string(kPnaclComponentScheme);
+  return nacl::string(kPnaclBaseUrl);
 }
 
 nacl::string PnaclUrls::PrependPlatformPrefix(const nacl::string& url) {
@@ -34,7 +34,7 @@ nacl::string PnaclUrls::PrependPlatformPrefix(const nacl::string& url) {
 // The URL could be one of the other variants for shared libraries
 // served from the web.
 bool PnaclUrls::IsPnaclComponent(const nacl::string& full_url) {
-  return full_url.find(kPnaclComponentScheme, 0) == 0;
+  return full_url.find(kPnaclBaseUrl, 0) == 0;
 }
 
 // Convert a URL to a filename accepted by GetReadonlyPnaclFd.
@@ -42,8 +42,7 @@ bool PnaclUrls::IsPnaclComponent(const nacl::string& full_url) {
 nacl::string PnaclUrls::PnaclComponentURLToFilename(
     const nacl::string& full_url) {
   // strip component scheme.
-  nacl::string r = full_url.substr(
-      nacl::string(kPnaclComponentScheme).length());
+  nacl::string r = full_url.substr(nacl::string(kPnaclBaseUrl).length());
 
   // Use white-listed-chars.
   size_t replace_pos;
@@ -189,6 +188,20 @@ bool PnaclResources::ParseResourceInfo(const nacl::string& buf,
   return true;
 }
 
+nacl::string PnaclResources::GetFullUrl(const nacl::string& partial_url) const {
+  nacl::string full_url;
+  ErrorInfo error_info;
+  const nacl::string& url_with_platform_prefix =
+      PnaclUrls::PrependPlatformPrefix(partial_url);
+  if (!manifest_->ResolveURL(url_with_platform_prefix, &full_url,
+                             &error_info)) {
+    PLUGIN_PRINTF(("PnaclResources::GetFullUrl failed: %s.\n",
+                   error_info.message().c_str()));
+    return "";
+  }
+  return full_url;
+}
+
 void PnaclResources::StartLoad(
     const pp::CompletionCallback& all_loaded_callback) {
   PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
@@ -201,17 +214,11 @@ void PnaclResources::StartLoad(
   // Do a blocking load of each of the resources.
   int32_t result = PP_OK;
   for (size_t i = 0; i < resource_urls.size(); ++i) {
-    const nacl::string& url_with_platform_prefix =
-      PnaclUrls::PrependPlatformPrefix(resource_urls[i]);
-    nacl::string full_url;
-    ErrorInfo error_info;
-    if (!manifest_->ResolveURL(url_with_platform_prefix, &full_url,
-                               &error_info)) {
+    nacl::string full_url = GetFullUrl(resource_urls[i]);
+    if (full_url == "") {
       coordinator_->ReportNonPpapiError(
           PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-          nacl::string("failed to resolve ") +
-          url_with_platform_prefix + ": " +
-          error_info.message() + ".");
+          nacl::string("failed to resolve ") + resource_urls[i] + ".");
       break;
     }
     nacl::string filename = PnaclUrls::PnaclComponentURLToFilename(full_url);

@@ -435,7 +435,8 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   return true;
 }
 
-NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
+                                             nacl::DescWrapper* wrapper,
                                              const Manifest* manifest,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
@@ -452,7 +453,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   // done to save on address space and swap space.
   // TODO(jvoung): See if we still need the uses_ppapi variable, now that
   // LaunchSelLdr always happens on the main thread.
-  SelLdrStartParams params(manifest_base_url(),
+  SelLdrStartParams params(helper_url,
                            false /* uses_irt */,
                            false /* uses_ppapi */,
                            enable_dev_interfaces_,
@@ -482,7 +483,8 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
     return NULL;
   }
 
-  PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule (%s)\n",
+  PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule (%s, %s)\n",
+                 helper_url.c_str(),
                  nacl_subprocess.get()->detailed_description().c_str()));
 
   return nacl_subprocess.release();

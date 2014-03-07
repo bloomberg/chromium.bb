@@ -78,6 +78,8 @@ class PnaclResources {
     return ld_tool_name;
   }
 
+  nacl::string GetFullUrl(const nacl::string& partial_url) const;
+
   // Get file descs by name. Only valid after StartLoad's completion callback
   // fired.
   nacl::DescWrapper* WrapperForUrl(const nacl::string& url);
