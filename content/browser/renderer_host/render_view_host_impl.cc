@@ -430,8 +430,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.accelerated_compositing_for_3d_transforms_enabled =
       prefs.accelerated_compositing_for_animation_enabled =
           !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
-  prefs.accelerated_compositing_for_plugins_enabled =
-      !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
+  prefs.accelerated_compositing_for_plugins_enabled = true;
   prefs.accelerated_compositing_for_video_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
   prefs.lazy_layout_enabled =

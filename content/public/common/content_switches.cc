@@ -106,9 +106,6 @@ const char kDisableLayerSquashing[] =
 const char kDisableAcceleratedScrollableFrames[] =
      "disable-accelerated-scrollable-frames";
 
-// Disables the hardware acceleration of plugins.
-const char kDisableAcceleratedPlugins[]     = "disable-accelerated-plugins";
-
 // Disables GPU accelerated video display.
 const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
 
