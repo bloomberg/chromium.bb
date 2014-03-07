@@ -367,9 +367,6 @@
       ],
       'actions': [
         {
-          'includes': ['chrome_repack_chrome.gypi']
-        },
-        {
           'includes': ['chrome_repack_locales.gypi']
         },
         {
