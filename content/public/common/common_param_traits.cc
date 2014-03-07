@@ -120,6 +120,11 @@ bool ParamTraits<net::IPEndPoint>::Read(const Message* m, PickleIterator* iter,
   int port;
   if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
     return false;
+  if (address.size() &&
+      address.size() != net::kIPv4AddressSize &&
+      address.size() != net::kIPv6AddressSize) {
+    return false;
+  }
   *p = net::IPEndPoint(address, port);
   return true;
 }
