@@ -18,6 +18,9 @@ public class EmptyTabObserver implements TabObserver {
     public void onContentChanged(Tab tab) { }
 
     @Override
+    public void onLoadUrl(Tab tab, String url, int loadType) { }
+
+    @Override
     public void onFaviconUpdated(Tab tab) { }
 
     @Override

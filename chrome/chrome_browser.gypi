@@ -184,6 +184,7 @@
         'browser/android/signin/signin_manager_android.h',
         'browser/android/tab_android.cc',
         'browser/android/tab_android.h',
+        'browser/android/tab_load_status.h',
         'browser/android/uma_bridge.cc',
         'browser/android/uma_bridge.h',
         'browser/android/uma_utils.cc',
@@ -3784,6 +3785,18 @@
           'variables': {
             'package_name': 'org/chromium/chrome/browser/ui/toolbar',
             'template_deps': ['browser/ui/toolbar/toolbar_model_security_level_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'tab_load_status_java',
+          'type': 'none',
+          'sources': [
+            'android/java/TabLoadStatus.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/chrome/browser',
+            'template_deps': ['browser/android/tab_load_status.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

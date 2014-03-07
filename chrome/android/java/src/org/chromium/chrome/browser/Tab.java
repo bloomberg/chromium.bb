@@ -13,6 +13,7 @@ import android.view.View;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationClient;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageInfo;
@@ -340,6 +342,39 @@ public class Tab implements NavigationClient {
      */
     protected void requestRestoreLoad() {
         if (mContentViewCore != null) mContentViewCore.requestRestoreLoad();
+    }
+
+    /**
+     * Causes this tab to navigate to the specified URL.
+     * @param params parameters describing the url load. Note that it is important to set correct
+     *               page transition as it is used for ranking URLs in the history so the omnibox
+     *               can report suggestions correctly.
+     * @return FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the page has been
+     *         prerendered. DEFAULT_PAGE_LOAD if it had not.
+     */
+    public int loadUrl(LoadUrlParams params) {
+        TraceEvent.begin();
+
+        // We load the URL from the tab rather than directly from the ContentView so the tab has a
+        // chance of using a prerenderer page is any.
+        int loadType = nativeLoadUrl(
+                mNativeTabAndroid,
+                params.getUrl(),
+                params.getVerbatimHeaders(),
+                params.getPostData(),
+                params.getTransitionType(),
+                params.getReferrer() != null ? params.getReferrer().getUrl() : null,
+                // Policy will be ignored for null referrer url, 0 is just a placeholder.
+                // TODO(ppi): Should we pass Referrer jobject and add JNI methods to read it from
+                //            the native?
+                params.getReferrer() != null ? params.getReferrer().getPolicy() : 0);
+
+        TraceEvent.end();
+
+        for (TabObserver observer : mObservers) {
+            observer.onLoadUrl(this, params.getUrl(), loadType);
+        }
+        return loadType;
     }
 
     /**
@@ -975,6 +1010,8 @@ public class Tab implements NavigationClient {
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
     private native WebContents nativeGetWebContents(long nativeTabAndroid);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
+    private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,
+            byte[] postData, int transition, String referrerUrl, int referrerPolicy);
     private native int nativeGetSecurityLevel(long nativeTabAndroid);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);

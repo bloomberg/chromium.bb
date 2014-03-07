@@ -1,0 +1,11 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser;
+
+public class TabLoadStatus {
+#define DEFINE_TAB_LOAD_STATUS(name,value) \
+  public static final int name = value;
+#include "chrome/browser/android/tab_load_status.h"
+}

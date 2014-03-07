@@ -26,6 +26,19 @@ public interface TabObserver {
     void onContentChanged(Tab tab);
 
     /**
+     * Called when loadUrl is triggered on a a {@link Tab}.
+     * @param tab      The notifying {@link Tab}.
+     * @param url      The url that is being loaded.
+     * @param loadType The type of load that was performed.
+     *
+     * @see TabLoadStatus#PAGE_LOAD_FAILED
+     * @see TabLoadStatus#DEFAULT_PAGE_LOAD
+     * @see TabLoadStatus#PARTIAL_PRERENDERED_PAGE_LOAD
+     * @see TabLoadStatus#FULL_PRERENDERED_PAGE_LOAD
+     */
+    void onLoadUrl(Tab tab, String url, int loadType);
+
+    /**
      * Called when the favicon of a {@link Tab} has been updated.
      * @param tab The notifying {@link Tab}.
      */
