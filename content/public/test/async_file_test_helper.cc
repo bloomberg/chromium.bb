@@ -19,6 +19,8 @@ namespace content {
 
 typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
+namespace {
+
 void AssignAndQuit(base::RunLoop* run_loop,
                    base::File::Error* result_out,
                    base::File::Error result) {
@@ -65,7 +67,7 @@ void ReadDirectoryCallback(base::RunLoop* run_loop,
                            const FileEntryList& entries,
                            bool has_more) {
   *result_out = result;
-  *entries_out = entries;
+  entries_out->insert(entries_out->end(), entries.begin(), entries.end());
   if (result != base::File::FILE_OK || !has_more)
     run_loop->Quit();
 }
@@ -83,6 +85,8 @@ void DidGetUsageAndQuota(quota::QuotaStatusCode* status_out,
   if (quota_out)
     *quota_out = quota;
 }
+
+}  // namespace
 
 const int64 AsyncFileTestHelper::kDontCheckSize = -1;
 
