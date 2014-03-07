@@ -48,6 +48,10 @@
 #include "ui/gfx/switches.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/ozone_switches.h"
 #endif
@@ -1089,7 +1093,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kEnableShareGroupAsyncTextureUpload,
     switches::kGpuStartupDialog,
     switches::kGpuSandboxAllowSysVShm,
-    switches::kGpuSandboxFailuresNonfatal,
     switches::kLoggingLevel,
     switches::kNoSandbox,
     switches::kTestGLLib,
@@ -1098,6 +1101,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kVModule,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
+#endif
+#if defined(OS_CHROMEOS)
+    chromeos::switches::kGpuSandboxFailuresNonfatal,
 #endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,

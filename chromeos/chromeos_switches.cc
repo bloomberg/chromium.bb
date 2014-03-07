@@ -134,6 +134,9 @@ const char kFirstExecAfterBoot[]            = "first-exec-after-boot";
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[]      = "force-login-manager-in-tests";
 
+// Makes GPU sandbox failures nonfatal.
+const char kGpuSandboxFailuresNonfatal[] = "gpu-sandbox-failures-nonfatal";
+
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[]                  = "bwsi";
