@@ -45,6 +45,23 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     private static final String TAG = "ChromeShellActivity";
     private static final String CHROME_DISTILLER_SCHEME = "chrome-distiller";
 
+    /**
+     * Factory used to set up a mock ActivityWindowAndroid for testing.
+     */
+    public interface WindowAndroidFactoryForTest {
+        /**
+         * @return ActivityWindowAndroid for the given activity.
+         */
+        public ActivityWindowAndroid getActivityWindowAndroid(Activity activity);
+    }
+
+    private static WindowAndroidFactoryForTest sWindowAndroidFactory =
+            new WindowAndroidFactoryForTest() {
+                @Override
+                public ActivityWindowAndroid getActivityWindowAndroid(Activity activity) {
+                    return new ActivityWindowAndroid(activity);
+                }
+            };
     private WindowAndroid mWindow;
     private TabManager mTabManager;
     private DevToolsServer mDevToolsServer;
@@ -80,8 +97,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                 };
         try {
             BrowserStartupController.get(this).startBrowserProcessesAsync(callback);
-        }
-        catch (ProcessInitException e) {
+        } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             System.exit(-1);
         }
@@ -91,7 +107,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         setContentView(R.layout.testshell_activity);
         mTabManager = (TabManager) findViewById(R.id.tab_manager);
 
-        mWindow = new ActivityWindowAndroid(this);
+        mWindow = sWindowAndroidFactory.getActivityWindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.initialize(mWindow, new ActivityContentVideoViewClient(this));
 
@@ -314,5 +330,10 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         int itemRowHeight = a.getDimensionPixelSize(0, 0);
         a.recycle();
         return itemRowHeight;
+    }
+
+    @VisibleForTesting
+    public static void setActivityWindowAndroidFactory(WindowAndroidFactoryForTest factory) {
+        sWindowAndroidFactory = factory;
     }
 }

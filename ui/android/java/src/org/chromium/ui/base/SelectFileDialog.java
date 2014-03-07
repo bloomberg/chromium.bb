@@ -149,9 +149,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
             // see crbug.com/345393
             return "";
         } finally {
-            if (cursor != null ) {
-                cursor.close();
-            }
+            if (cursor != null) cursor.close();
         }
         return "";
     }
