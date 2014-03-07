@@ -248,13 +248,11 @@
                 ['exclude', '\\.cc$'],
                 ['exclude', '\\.mm$'],
                 ['include', '^test/run_all_unittests\\.cc$'],
-                # TODO(ios): Include files here as they are made to work, see
-                # http://crbug.com/303011.
                 # TODO(asvitkine): Bring up variations/ unittests on iOS.
-                # TODO(blundell): Bring up json_schema/ unittests on iOS.
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
+                ['include', '^json_schema/'],
                 ['include', '^language_usage_metrics/'],
                 ['include', '^password_manager/'],
                 ['include', '^precache/core/'],
