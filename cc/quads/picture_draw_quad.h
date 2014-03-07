@@ -25,6 +25,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               ResourceFormat texture_format,

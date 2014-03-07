@@ -29,13 +29,14 @@ scoped_ptr<TextureDrawQuad> TextureDrawQuad::Create() {
 void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
-                             unsigned resource_id, bool premultiplied_alpha,
+                             const gfx::Rect& visible_rect,
+                             unsigned resource_id,
+                             bool premultiplied_alpha,
                              const gfx::PointF& uv_top_left,
                              const gfx::PointF& uv_bottom_right,
                              SkColor background_color,
                              const float vertex_opacity[4],
                              bool flipped) {
-  gfx::Rect visible_rect = rect;
   bool needs_blending = vertex_opacity[0] != 1.0f || vertex_opacity[1] != 1.0f
       || vertex_opacity[2] != 1.0f || vertex_opacity[3] != 1.0f;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,

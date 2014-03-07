@@ -50,6 +50,7 @@ class DelegatedFrameProviderTest
     quad->SetNew(sqs.get(),
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Rect(0, 0, 10, 10),
+                 gfx::Rect(0, 0, 10, 10),
                  resource_id,
                  false,
                  gfx::PointF(0.f, 0.f),

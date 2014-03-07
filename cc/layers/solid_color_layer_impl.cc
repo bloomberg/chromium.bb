@@ -34,13 +34,17 @@ void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
   int height = content_bounds().height();
   for (int x = 0; x < width; x += tile_size_) {
     for (int y = 0; y < height; y += tile_size_) {
-      gfx::Rect solid_tile_rect(x,
-                              y,
-                              std::min(width - x, tile_size_),
-                              std::min(height - y, tile_size_));
+      gfx::Rect quad_rect(x,
+                          y,
+                          std::min(width - x, tile_size_),
+                          std::min(height - y, tile_size_));
+      gfx::Rect visible_quad_rect(quad_rect);
       scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-      quad->SetNew(
-          shared_quad_state, solid_tile_rect, background_color(), false);
+      quad->SetNew(shared_quad_state,
+                   quad_rect,
+                   visible_quad_rect,
+                   background_color(),
+                   false);
       quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
     }
   }

@@ -19,6 +19,7 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               unsigned resource_id,
               bool premultiplied_alpha,
               const gfx::PointF& uv_top_left,

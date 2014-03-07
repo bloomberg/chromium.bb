@@ -18,6 +18,7 @@ class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
+              const gfx::Rect& visible_rect,
               SkColor color,
               int width);
 

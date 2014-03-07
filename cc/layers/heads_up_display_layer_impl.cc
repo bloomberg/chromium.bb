@@ -115,6 +115,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
+  gfx::Rect visible_quad_rect(quad_rect);
   bool premultiplied_alpha = true;
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
@@ -124,6 +125,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
+               visible_quad_rect,
                hud_resource_->id(),
                premultiplied_alpha,
                uv_top_left,

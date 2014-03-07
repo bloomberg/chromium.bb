@@ -78,9 +78,10 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
       root_render_pass_id, outer_rect, outer_rect, gfx::Transform());
   scoped_ptr<SolidColorDrawQuad> outer_quad = SolidColorDrawQuad::Create();
   outer_quad->SetNew(
-      shared_quad_state.get(), outer_rect, SK_ColorYELLOW, false);
+      shared_quad_state.get(), outer_rect, outer_rect, SK_ColorYELLOW, false);
   scoped_ptr<SolidColorDrawQuad> inner_quad = SolidColorDrawQuad::Create();
-  inner_quad->SetNew(shared_quad_state.get(), inner_rect, SK_ColorCYAN, false);
+  inner_quad->SetNew(
+      shared_quad_state.get(), inner_rect, inner_rect, SK_ColorCYAN, false);
   inner_quad->visible_rect = visible_rect;
   root_render_pass->AppendQuad(inner_quad.PassAs<DrawQuad>());
   root_render_pass->AppendQuad(outer_quad.PassAs<DrawQuad>());
@@ -173,12 +174,14 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   outer_quad->SetNew(shared_quad_state.get(),
                      outer_rect,
                      outer_rect,
+                     outer_rect,
                      resource_yellow,
                      gfx::RectF(outer_size),
                      outer_size,
                      false);
   scoped_ptr<TileDrawQuad> inner_quad = TileDrawQuad::Create();
   inner_quad->SetNew(shared_quad_state.get(),
+                     inner_rect,
                      inner_rect,
                      inner_rect,
                      resource_cyan,
@@ -260,6 +263,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
       root_render_pass_id, root_rect, root_rect, gfx::Transform());
   scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
   quad->SetNew(shared_quad_state.get(),
+               tile_rect,
                tile_rect,
                tile_rect,
                resource_cyan,

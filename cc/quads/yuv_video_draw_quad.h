@@ -22,6 +22,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               const gfx::SizeF& tex_scale,
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,

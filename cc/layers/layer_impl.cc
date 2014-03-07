@@ -304,10 +304,12 @@ void LayerImpl::AppendDebugBorderQuad(QuadSink* quad_sink,
   if (!ShowDebugBorders())
     return;
 
-  gfx::Rect content_rect(content_bounds());
+  gfx::Rect quad_rect(content_bounds());
+  gfx::Rect visible_quad_rect(quad_rect);
   scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
       DebugBorderDrawQuad::Create();
-  debug_border_quad->SetNew(shared_quad_state, content_rect, color, width);
+  debug_border_quad->SetNew(
+      shared_quad_state, quad_rect, visible_quad_rect, color, width);
   quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
 }
 

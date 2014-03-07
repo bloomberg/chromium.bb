@@ -103,6 +103,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
 
     gfx::Rect rect = root_output_rect;
     gfx::Rect opaque_rect = root_output_rect;
+    gfx::Rect visible_rect = root_output_rect;
     // An invalid resource id! The resource isn't part of the frame.
     unsigned resource_id = 5;
     bool premultiplied_alpha = false;
@@ -116,6 +117,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     invalid_draw_quad->SetNew(shared_quad_state.get(),
                               rect,
                               opaque_rect,
+                              visible_rect,
                               resource_id,
                               premultiplied_alpha,
                               uv_top_left,
@@ -152,6 +154,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     quad->SetNew(sqs.get(),
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Rect(0, 0, 10, 10),
+                 gfx::Rect(0, 0, 10, 10),
                  resource_id,
                  false,
                  gfx::PointF(0.f, 0.f),
@@ -184,9 +187,10 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
 
     quad->SetNew(sqs.get(),
                  output_rect,
+                 output_rect,
                  id,
                  false,  // is_replica
-                 0,  // mask_resource_id
+                 0,      // mask_resource_id
                  damage_rect,
                  gfx::Rect(0, 0, 1, 1),  // mask_uv_rect
                  filters,

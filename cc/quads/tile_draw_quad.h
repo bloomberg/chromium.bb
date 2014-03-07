@@ -17,6 +17,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,

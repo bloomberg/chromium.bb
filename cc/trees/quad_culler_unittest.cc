@@ -802,10 +802,12 @@ TEST_F(QuadCullerTest, PartialCullingNotDestroyed) {
   SharedQuadState* sqs = culler.UseSharedQuadState(SharedQuadState::Create());
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
-  color_quad->SetNew(sqs, gfx::Rect(100, 100), SK_ColorRED, false);
+  color_quad->SetNew(
+      sqs, gfx::Rect(100, 100), gfx::Rect(100, 100), SK_ColorRED, false);
 
   scoped_ptr<RenderPassDrawQuad> pass_quad = RenderPassDrawQuad::Create();
   pass_quad->SetNew(sqs,
+                    gfx::Rect(100, 100),
                     gfx::Rect(100, 100),
                     RenderPass::Id(10, 10),
                     false,
@@ -817,6 +819,7 @@ TEST_F(QuadCullerTest, PartialCullingNotDestroyed) {
 
   scoped_ptr<RenderPassDrawQuad> replica_quad = RenderPassDrawQuad::Create();
   replica_quad->SetNew(sqs,
+                       gfx::Rect(100, 100),
                        gfx::Rect(100, 100),
                        RenderPass::Id(10, 10),
                        true,
@@ -878,10 +881,12 @@ TEST_F(QuadCullerTest, PartialCullingWithOcclusionNotDestroyed) {
   SharedQuadState* sqs = culler.UseSharedQuadState(SharedQuadState::Create());
 
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
-  color_quad->SetNew(sqs, gfx::Rect(100, 100), SK_ColorRED, false);
+  color_quad->SetNew(
+      sqs, gfx::Rect(100, 100), gfx::Rect(100, 100), SK_ColorRED, false);
 
   scoped_ptr<RenderPassDrawQuad> pass_quad = RenderPassDrawQuad::Create();
   pass_quad->SetNew(sqs,
+                    gfx::Rect(100, 100),
                     gfx::Rect(100, 100),
                     RenderPass::Id(10, 10),
                     false,
@@ -893,6 +898,7 @@ TEST_F(QuadCullerTest, PartialCullingWithOcclusionNotDestroyed) {
 
   scoped_ptr<RenderPassDrawQuad> replica_quad = RenderPassDrawQuad::Create();
   replica_quad->SetNew(sqs,
+                       gfx::Rect(100, 100),
                        gfx::Rect(100, 100),
                        RenderPass::Id(10, 10),
                        true,

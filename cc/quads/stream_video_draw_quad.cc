@@ -19,9 +19,9 @@ scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::Create() {
 void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,
+                                 const gfx::Rect& visible_rect,
                                  unsigned resource_id,
                                  const gfx::Transform& matrix) {
-  gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);

@@ -134,6 +134,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
+  gfx::Rect visible_quad_rect(quad_rect);
   gfx::Rect visible_rect = frame_->visible_rect();
   gfx::Size coded_size = frame_->coded_size();
 
@@ -159,6 +160,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       texture_quad->SetNew(shared_quad_state,
                            quad_rect,
                            opaque_rect,
+                           visible_quad_rect,
                            software_resources_[0],
                            premultiplied_alpha,
                            uv_top_left,
@@ -175,15 +177,16 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
         break;
       gfx::SizeF tex_scale(tex_width_scale, tex_height_scale);
       scoped_ptr<YUVVideoDrawQuad> yuv_video_quad = YUVVideoDrawQuad::Create();
-      yuv_video_quad->SetNew(shared_quad_state,
-                             quad_rect,
-                             opaque_rect,
-                             tex_scale,
-                             frame_resources_[0],
-                             frame_resources_[1],
-                             frame_resources_[2],
-                             frame_resources_.size() > 3 ?
-                                 frame_resources_[3] : 0);
+      yuv_video_quad->SetNew(
+          shared_quad_state,
+          quad_rect,
+          opaque_rect,
+          visible_quad_rect,
+          tex_scale,
+          frame_resources_[0],
+          frame_resources_[1],
+          frame_resources_[2],
+          frame_resources_.size() > 3 ? frame_resources_[3] : 0);
       quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }
@@ -200,6 +203,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       texture_quad->SetNew(shared_quad_state,
                            quad_rect,
                            opaque_rect,
+                           visible_quad_rect,
                            frame_resources_[0],
                            premultiplied_alpha,
                            uv_top_left,
@@ -222,6 +226,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
           shared_quad_state,
           quad_rect,
           opaque_rect,
+          visible_quad_rect,
           frame_resources_[0],
           scale * provider_client_impl_->stream_texture_matrix());
       quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
@@ -238,6 +243,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       io_surface_quad->SetNew(shared_quad_state,
                               quad_rect,
                               opaque_rect,
+                              visible_quad_rect,
                               visible_size,
                               frame_resources_[0],
                               IOSurfaceDrawQuad::UNFLIPPED);

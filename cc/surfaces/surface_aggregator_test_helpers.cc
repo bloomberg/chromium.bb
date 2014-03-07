@@ -46,8 +46,10 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
 
   scoped_ptr<SurfaceDrawQuad> surface_quad = SurfaceDrawQuad::Create();
   gfx::Rect quad_rect = gfx::Rect(surface_size);
-  surface_quad->SetNew(
-      pass->shared_quad_state_list.back(), gfx::Rect(surface_size), surface_id);
+  surface_quad->SetNew(pass->shared_quad_state_list.back(),
+                       gfx::Rect(surface_size),
+                       gfx::Rect(surface_size),
+                       surface_id);
   pass->quad_list.push_back(surface_quad.PassAs<DrawQuad>());
 }
 void AddTestRenderPassQuad(TestRenderPass* pass,
@@ -66,6 +68,7 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                        SkXfermode::kSrcOver_Mode);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state,
+               output_rect,
                output_rect,
                render_pass_id,
                false,

@@ -662,11 +662,15 @@ static void AppendQuadsToFillScreen(
        fill_rects.has_rect();
        fill_rects.next()) {
     gfx::Rect screen_space_rect = fill_rects.rect();
+    gfx::Rect visible_screen_space_rect = screen_space_rect;
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-    quad->SetNew(
-        shared_quad_state, screen_space_rect, screen_background_color, false);
+    quad->SetNew(shared_quad_state,
+                 screen_space_rect,
+                 visible_screen_space_rect,
+                 screen_background_color,
+                 false);
     quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
   }
   for (Region::Iterator fill_rects(overhang_region);
@@ -674,12 +678,15 @@ static void AppendQuadsToFillScreen(
        fill_rects.next()) {
     DCHECK(overhang_resource_id);
     gfx::Rect screen_space_rect = fill_rects.rect();
+    gfx::Rect opaque_screen_space_rect = screen_space_rect;
+    gfx::Rect visible_screen_space_rect = screen_space_rect;
     scoped_ptr<TextureDrawQuad> tex_quad = TextureDrawQuad::Create();
     const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
     tex_quad->SetNew(
         shared_quad_state,
         screen_space_rect,
-        screen_space_rect,
+        opaque_screen_space_rect,
+        visible_screen_space_rect,
         overhang_resource_id,
         false,
         gfx::PointF(

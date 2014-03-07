@@ -22,6 +22,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
+              const gfx::Rect& visible_rect,
               RenderPass::Id render_pass_id,
               bool is_replica,
               ResourceProvider::ResourceId mask_resource_id,

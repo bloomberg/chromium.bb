@@ -83,6 +83,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   gfx::Rect thumb_quad_rect = ComputeThumbQuadRect();
+  gfx::Rect visible_thumb_quad_rect = thumb_quad_rect;
 
   ResourceProvider::ResourceId thumb_resource_id =
       layer_tree_impl()->ResourceIdForUIResource(thumb_ui_resource_id_);
@@ -96,6 +97,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state,
                  thumb_quad_rect,
                  opaque_rect,
+                 visible_thumb_quad_rect,
                  thumb_resource_id,
                  premultipled_alpha,
                  uv_top_left,
@@ -107,6 +109,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   }
 
   gfx::Rect track_quad_rect = content_bounds_rect;
+  gfx::Rect visible_track_quad_rect = track_quad_rect;
   if (track_resource_id && !track_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect(contents_opaque() ? track_quad_rect : gfx::Rect());
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -114,6 +117,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state,
                  track_quad_rect,
                  opaque_rect,
+                 visible_track_quad_rect,
                  track_resource_id,
                  premultipled_alpha,
                  uv_top_left,

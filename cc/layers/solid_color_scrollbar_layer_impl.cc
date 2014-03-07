@@ -91,14 +91,16 @@ bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
 
 void SolidColorScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) {
-  gfx::Rect thumb_quad_rect = ComputeThumbQuadRect();
+  gfx::Rect thumb_quad_rect(ComputeThumbQuadRect());
+  gfx::Rect visible_quad_rect(thumb_quad_rect);
 
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-  quad->SetNew(shared_quad_state, thumb_quad_rect, color_, false);
+  quad->SetNew(
+      shared_quad_state, thumb_quad_rect, visible_quad_rect, color_, false);
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 

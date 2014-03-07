@@ -3171,6 +3171,7 @@ class BlendStateCheckLayer : public LayerImpl {
       opaque_rect = quad_rect_;
     else
       opaque_rect = opaque_content_rect_;
+    gfx::Rect visible_quad_rect = quad_rect_;
 
     SharedQuadState* shared_quad_state =
         quad_sink->UseSharedQuadState(CreateSharedQuadState());
@@ -3178,6 +3179,7 @@ class BlendStateCheckLayer : public LayerImpl {
     test_blending_draw_quad->SetNew(shared_quad_state,
                                     quad_rect_,
                                     opaque_rect,
+                                    visible_quad_rect,
                                     resource_id_,
                                     gfx::RectF(0.f, 0.f, 1.f, 1.f),
                                     gfx::Size(1, 1),
@@ -3956,8 +3958,10 @@ class FakeLayerWithQuads : public LayerImpl {
 
     SkColor gray = SkColorSetRGB(100, 100, 100);
     gfx::Rect quad_rect(content_bounds());
+    gfx::Rect visible_quad_rect(quad_rect);
     scoped_ptr<SolidColorDrawQuad> my_quad = SolidColorDrawQuad::Create();
-    my_quad->SetNew(shared_quad_state, quad_rect, gray, false);
+    my_quad->SetNew(
+        shared_quad_state, quad_rect, visible_quad_rect, gray, false);
     quad_sink->Append(my_quad.PassAs<DrawQuad>(), append_quads_data);
   }
 

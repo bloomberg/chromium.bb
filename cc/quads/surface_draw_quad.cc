@@ -16,21 +16,20 @@ scoped_ptr<SurfaceDrawQuad> SurfaceDrawQuad::Create() {
 }
 
 void SurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
-                             gfx::Rect rect,
+                             const gfx::Rect& rect,
+                             const gfx::Rect& visible_rect,
                              int surface_id) {
   gfx::Rect opaque_rect;
-  gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->surface_id = surface_id;
 }
 
-
 void SurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
-                             gfx::Rect rect,
-                             gfx::Rect opaque_rect,
-                             gfx::Rect visible_rect,
+                             const gfx::Rect& rect,
+                             const gfx::Rect& opaque_rect,
+                             const gfx::Rect& visible_rect,
                              bool needs_blending,
                              int surface_id) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,

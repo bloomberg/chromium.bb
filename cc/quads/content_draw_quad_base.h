@@ -20,6 +20,7 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
               DrawQuad::Material material,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool swizzle_contents);

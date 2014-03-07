@@ -24,12 +24,12 @@ scoped_ptr<YUVVideoDrawQuad> YUVVideoDrawQuad::Create() {
 void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
                               const gfx::Rect& opaque_rect,
+                              const gfx::Rect& visible_rect,
                               const gfx::SizeF& tex_scale,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
                               unsigned a_plane_resource_id) {
-  gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);

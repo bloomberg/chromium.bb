@@ -23,20 +23,22 @@ scoped_ptr<PictureDrawQuad> PictureDrawQuad::Create() {
 void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
+                             const gfx::Rect& visible_rect,
                              const gfx::RectF& tex_coord_rect,
                              const gfx::Size& texture_size,
                              ResourceFormat texture_format,
                              const gfx::Rect& content_rect,
                              float contents_scale,
                              scoped_refptr<PicturePileImpl> picture_pile) {
-  ContentDrawQuadBase::SetNew(shared_quad_state,
-                              DrawQuad::PICTURE_CONTENT,
-                              rect,
-                              opaque_rect,
-                              tex_coord_rect,
-                              texture_size,
-                              !PlatformColor::SameComponentOrder(
-                                  texture_format));
+  ContentDrawQuadBase::SetNew(
+      shared_quad_state,
+      DrawQuad::PICTURE_CONTENT,
+      rect,
+      opaque_rect,
+      visible_rect,
+      tex_coord_rect,
+      texture_size,
+      !PlatformColor::SameComponentOrder(texture_format));
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
   this->picture_pile = picture_pile;

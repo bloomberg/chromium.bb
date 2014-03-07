@@ -111,17 +111,17 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   DCHECK(!bounds().IsEmpty());
 
-  gfx::Rect quad_rect(bounds());
-
   bool opaque = layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
                 contents_opaque();
-  gfx::Rect opaque_rect(opaque ? quad_rect : gfx::Rect());
-  scoped_ptr<TextureDrawQuad> quad;
 
-  quad = TextureDrawQuad::Create();
+  gfx::Rect quad_rect(bounds());
+  gfx::Rect opaque_rect(opaque ? quad_rect : gfx::Rect());
+  gfx::Rect visible_quad_rect(quad_rect);
+  scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
+               visible_quad_rect,
                resource,
                premultiplied_alpha,
                uv_top_left_,

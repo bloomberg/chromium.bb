@@ -66,8 +66,11 @@ static inline bool AppendQuadInternal(
           layer ? layer->layer_tree_impl() : NULL);
       scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
           DebugBorderDrawQuad::Create();
-      debug_border_quad->SetNew(
-          draw_quad->shared_quad_state, draw_quad->visible_rect, color, width);
+      debug_border_quad->SetNew(draw_quad->shared_quad_state,
+                                draw_quad->visible_rect,
+                                draw_quad->visible_rect,
+                                color,
+                                width);
       quad_list->push_back(debug_border_quad.PassAs<DrawQuad>());
     }
 

@@ -24,12 +24,18 @@ scoped_ptr<TileDrawQuad> TileDrawQuad::Create() {
 void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                           const gfx::Rect& rect,
                           const gfx::Rect& opaque_rect,
+                          const gfx::Rect& visible_rect,
                           unsigned resource_id,
                           const gfx::RectF& tex_coord_rect,
                           const gfx::Size& texture_size,
                           bool swizzle_contents) {
-  ContentDrawQuadBase::SetNew(shared_quad_state, DrawQuad::TILED_CONTENT, rect,
-                              opaque_rect, tex_coord_rect, texture_size,
+  ContentDrawQuadBase::SetNew(shared_quad_state,
+                              DrawQuad::TILED_CONTENT,
+                              rect,
+                              opaque_rect,
+                              visible_rect,
+                              tex_coord_rect,
+                              texture_size,
                               swizzle_contents);
   this->resource_id = resource_id;
 }

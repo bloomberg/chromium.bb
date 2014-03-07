@@ -37,6 +37,7 @@ scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Copy(
 void RenderPassDrawQuad::SetNew(
     const SharedQuadState* shared_quad_state,
     const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
     RenderPass::Id render_pass_id,
     bool is_replica,
     ResourceProvider::ResourceId mask_resource_id,
@@ -48,7 +49,6 @@ void RenderPassDrawQuad::SetNew(
   DCHECK_GE(render_pass_id.index, 0);
 
   gfx::Rect opaque_rect;
-  gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   SetAll(shared_quad_state, rect, opaque_rect, visible_rect, needs_blending,
          render_pass_id, is_replica, mask_resource_id,

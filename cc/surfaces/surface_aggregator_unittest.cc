@@ -431,6 +431,7 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   color_quad->SetNew(pass->shared_quad_state_list.back(),
                      visible_content_rect,
+                     visible_content_rect,
                      SK_ColorGREEN,
                      force_anti_aliasing_off);
   pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
@@ -498,6 +499,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       SurfaceDrawQuad::Create();
   grandchild_surface_quad->SetNew(child_one_pass->shared_quad_state_list.back(),
                                   gfx::Rect(surface_size),
+                                  gfx::Rect(surface_size),
                                   grandchild_surface.surface_id());
   child_one_pass->quad_list.push_back(
       grandchild_surface_quad.PassAs<DrawQuad>());
@@ -523,12 +525,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       SurfaceDrawQuad::Create();
   child_one_surface_quad->SetNew(root_pass->shared_quad_state_list.back(),
                                  gfx::Rect(surface_size),
+                                 gfx::Rect(surface_size),
                                  child_one_surface.surface_id());
   root_pass->quad_list.push_back(child_one_surface_quad.PassAs<DrawQuad>());
   AddSolidColorQuadWithBlendMode(surface_size, root_pass.get(), blend_modes[4]);
   scoped_ptr<SurfaceDrawQuad> child_two_surface_quad =
       SurfaceDrawQuad::Create();
   child_two_surface_quad->SetNew(root_pass->shared_quad_state_list.back(),
+                                 gfx::Rect(surface_size),
                                  gfx::Rect(surface_size),
                                  child_two_surface.surface_id());
   root_pass->quad_list.push_back(child_two_surface_quad.PassAs<DrawQuad>());
