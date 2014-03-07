@@ -210,7 +210,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 fontData = SimpleFontData::create(
                     m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(),
                         fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic(),
-                        fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create(false));
+                        fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create());
             }
         } else {
 #if ENABLE(SVG_FONTS)
@@ -232,8 +232,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
             ASSERT_NOT_REACHED();
             return nullptr;
         }
-        RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(true, m_font->exceedsFontLoadWaitLimit() ? CustomFontData::VisibleFallback : CustomFontData::InvisibleFallback);
-        cssFontData->setCSSFontFaceSource(this);
+        RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(this, m_font->exceedsFontLoadWaitLimit() ? CSSCustomFontData::VisibleFallback : CSSCustomFontData::InvisibleFallback);
         fontData = SimpleFontData::create(temporaryFont->platformData(), cssFontData);
     }
 

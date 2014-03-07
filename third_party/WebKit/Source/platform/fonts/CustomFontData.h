@@ -37,18 +37,15 @@ struct WidthIterator;
 
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
 public:
-    enum FallbackVisibility { InvisibleFallback, VisibleFallback };
-    static PassRefPtr<CustomFontData> create(bool isLoadingFallback = false, FallbackVisibility visibility = VisibleFallback)
-    {
-        return adoptRef(new CustomFontData(isLoadingFallback, visibility));
-    }
+    static PassRefPtr<CustomFontData> create() { return adoptRef(new CustomFontData()); }
 
     virtual ~CustomFontData() { }
 
     virtual void beginLoadIfNeeded() const { };
-    bool isLoading() const { return m_isLoadingFallback && m_isUsed; }
-    bool isLoadingFallback() const { return m_isLoadingFallback; }
+    virtual bool isLoading() const { return false; }
+    virtual bool isLoadingFallback() const { return false; }
     virtual bool shouldSkipDrawing() const { return false; }
+    virtual void clearCSSFontFaceSource() { }
 
     virtual bool isSVGFont() const { return false; }
     virtual void initializeFontData(SimpleFontData*, float) { }
@@ -56,20 +53,8 @@ public:
     virtual bool fillSVGGlyphPage(GlyphPage*, unsigned, unsigned, UChar*, unsigned, const SimpleFontData*) const { return false; }
     virtual bool applySVGGlyphSelection(WidthIterator&, GlyphData&, bool, int, unsigned&) const { return false; }
 
-    virtual void setCSSFontFaceSource(CSSFontFaceSource* source) { ASSERT_NOT_REACHED(); }
-    virtual void clearCSSFontFaceSource() { }
-
 protected:
-    CustomFontData(bool isLoadingFallback, FallbackVisibility visibility = VisibleFallback)
-        : m_isLoadingFallback(isLoadingFallback)
-        , m_fallbackVisibility(visibility)
-        , m_isUsed(false)
-    {
-    }
-
-    bool m_isLoadingFallback;
-    FallbackVisibility m_fallbackVisibility;
-    mutable bool m_isUsed;
+    CustomFontData() { }
 };
 
 }

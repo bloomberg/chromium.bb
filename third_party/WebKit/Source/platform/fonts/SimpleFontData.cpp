@@ -176,7 +176,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::verticalRightOrientationFontData() co
     if (!m_derivedFontData->verticalRightOrientation) {
         FontPlatformData verticalRightPlatformData(m_platformData);
         verticalRightPlatformData.setOrientation(Horizontal);
-        m_derivedFontData->verticalRightOrientation = create(verticalRightPlatformData, isCustomFont() ? CustomFontData::create(false): nullptr, true);
+        m_derivedFontData->verticalRightOrientation = create(verticalRightPlatformData, isCustomFont() ? CustomFontData::create(): nullptr, true);
     }
     return m_derivedFontData->verticalRightOrientation;
 }
@@ -186,7 +186,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::uprightOrientationFontData() const
     if (!m_derivedFontData)
         m_derivedFontData = DerivedFontData::create(isCustomFont());
     if (!m_derivedFontData->uprightOrientation)
-        m_derivedFontData->uprightOrientation = create(m_platformData, isCustomFont() ? CustomFontData::create(false): nullptr, true);
+        m_derivedFontData->uprightOrientation = create(m_platformData, isCustomFont() ? CustomFontData::create(): nullptr, true);
     return m_derivedFontData->uprightOrientation;
 }
 
@@ -215,7 +215,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::brokenIdeographFontData() const
     if (!m_derivedFontData)
         m_derivedFontData = DerivedFontData::create(isCustomFont());
     if (!m_derivedFontData->brokenIdeograph) {
-        m_derivedFontData->brokenIdeograph = create(m_platformData, isCustomFont() ? CustomFontData::create(false): nullptr);
+        m_derivedFontData->brokenIdeograph = create(m_platformData, isCustomFont() ? CustomFontData::create(): nullptr);
         m_derivedFontData->brokenIdeograph->m_isBrokenIdeographFallback = true;
     }
     return m_derivedFontData->brokenIdeograph;

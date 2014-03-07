@@ -45,7 +45,7 @@ using namespace Unicode;
 namespace WebCore {
 
 SVGFontData::SVGFontData(SVGFontFaceElement* fontFaceElement)
-    : CustomFontData(false)
+    : CustomFontData()
     , m_svgFontFaceElement(fontFaceElement)
     , m_horizontalOriginX(fontFaceElement->horizontalOriginX())
     , m_horizontalOriginY(fontFaceElement->horizontalOriginY())

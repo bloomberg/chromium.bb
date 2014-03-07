@@ -198,7 +198,7 @@ void SimpleFontData::platformDestroy()
 PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {
     const float scaledSize = lroundf(fontDescription.computedSize() * scaleFactor);
-    return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont() ? CustomFontData::create(false) : nullptr);
+    return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont() ? CustomFontData::create() : nullptr);
 }
 
 void SimpleFontData::determinePitch()
