@@ -798,15 +798,13 @@ void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandl
             disabledInSettings = !frame->settings()->scriptEnabled();
     }
 
-    if (!disabledByScriptController) {
-        *status = PageCommandHandler::Result::Allowed;
-        return;
-    }
-
+    // Order is important.
     if (disabledInSettings)
         *status = PageCommandHandler::Result::Disabled;
-    else
+    else if (disabledByScriptController)
         *status = PageCommandHandler::Result::Forbidden;
+    else
+        *status = PageCommandHandler::Result::Allowed;
 }
 
 void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
