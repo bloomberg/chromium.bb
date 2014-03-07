@@ -58,7 +58,7 @@ BOT_ASSIGNMENT = {
     'precise_64-newlib-mips-pnacl':
         echo + ' "TODO(mseaborn): add mips"',
     # PNaCl Spec
-    'lucid_64-newlib-arm_qemu-pnacl-buildonly-spec':
+    'precise_64-newlib-arm_qemu-pnacl-buildonly-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
     'oneiric_32-newlib-arm_hw-pnacl-panda-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-hw',
@@ -66,8 +66,6 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_spec2k.sh pnacl-x8632',
     'lucid_64-newlib-x86_64-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-x8664',
-    'precise_64-newlib-arm_qemu-pnacl-buildonly-spec':
-        bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
     # NaCl Spec
     'lucid_64-newlib-x86_32-spec':
         bash + ' buildbot/buildbot_spec2k.sh nacl-x8632',
