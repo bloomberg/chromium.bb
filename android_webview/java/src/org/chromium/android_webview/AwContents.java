@@ -1764,8 +1764,9 @@ public class AwContents {
      * @see android.webkit.WebView#clearFormData()
      */
     public void hideAutofillPopup() {
-        if (mAwAutofillManagerDelegate != null)
+        if (mAwAutofillManagerDelegate != null) {
             mAwAutofillManagerDelegate.hideAutofillPopup();
+        }
     }
 
     public void setNetworkAvailable(boolean networkUp) {
