@@ -11,9 +11,9 @@ RUN(video.canPlayType('audio/wav', 'webkit-org.w3.clearkey'))
 'src' has been set, but loading has not yet started. Verify that all methods except canPlayType() throw INVALID_STATE_ERR.
 EXPECTED (video.networkState == '3') OK
 EXPECTED (video.currentSrc == '') OK
-TEST(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitGenerateKeyRequest' on 'HTMLMediaElement': The player is in an invalid state.) OK
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', key)) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': The player is in an invalid state.) OK
-TEST(video.webkitCancelKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitCancelKeyRequest' on 'HTMLMediaElement': The player is in an invalid state.) OK
+TEST(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitGenerateKeyRequest' on 'HTMLMediaElement': No media has been loaded.) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', key)) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitAddKey' on 'HTMLMediaElement': No media has been loaded.) OK
+TEST(video.webkitCancelKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitCancelKeyRequest' on 'HTMLMediaElement': No media has been loaded.) OK
 RUN(video.canPlayType('audio/wav', 'webkit-org.w3.clearkey'))
 
 EVENT(loadstart)

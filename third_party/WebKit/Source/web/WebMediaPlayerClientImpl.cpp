@@ -14,6 +14,8 @@
 #include "core/html/TimeRanges.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
+#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
@@ -59,7 +61,7 @@ static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* cli
     return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url, client));
 }
 
-WebMediaPlayer* WebMediaPlayerClientImpl::mediaPlayer() const
+WebMediaPlayer* WebMediaPlayerClientImpl::webMediaPlayer() const
 {
     return m_webMediaPlayer.get();
 }
@@ -68,6 +70,8 @@ WebMediaPlayer* WebMediaPlayerClientImpl::mediaPlayer() const
 
 WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl()
 {
+    HTMLMediaElementEncryptedMedia::playerDestroyed(mediaElement());
+
     // Explicitly destroy the WebMediaPlayer to allow verification of tear down.
     m_webMediaPlayer.clear();
 }
@@ -124,22 +128,22 @@ WebMediaPlayer::Preload WebMediaPlayerClientImpl::preload() const
 
 void WebMediaPlayerClientImpl::keyAdded(const WebString& keySystem, const WebString& sessionId)
 {
-    m_client->mediaPlayerKeyAdded(keySystem, sessionId);
+    HTMLMediaElementEncryptedMedia::keyAdded(mediaElement(), keySystem, sessionId);
 }
 
 void WebMediaPlayerClientImpl::keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode errorCode, unsigned short systemCode)
 {
-    m_client->mediaPlayerKeyError(keySystem, sessionId, static_cast<MediaPlayerClient::MediaKeyErrorCode>(errorCode), systemCode);
+    HTMLMediaElementEncryptedMedia::keyError(mediaElement(), keySystem, sessionId, errorCode, systemCode);
 }
 
 void WebMediaPlayerClientImpl::keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL)
 {
-    m_client->mediaPlayerKeyMessage(keySystem, sessionId, message, messageLength, defaultURL);
+    HTMLMediaElementEncryptedMedia::keyMessage(mediaElement(), keySystem, sessionId, message, messageLength, defaultURL);
 }
 
 void WebMediaPlayerClientImpl::keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength)
 {
-    m_client->mediaPlayerKeyNeeded(contentType, initData, initDataLength);
+    HTMLMediaElementEncryptedMedia::keyNeeded(mediaElement(), contentType, initData, initDataLength);
 }
 
 void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)
@@ -197,7 +201,7 @@ void WebMediaPlayerClientImpl::loadInternal()
 #endif
 
     // FIXME: Remove this cast
-    LocalFrame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
+    LocalFrame* frame = mediaElement().document().frame();
 
     WebURL poster = m_client->mediaPlayerPosterURL();
 
@@ -218,7 +222,7 @@ void WebMediaPlayerClientImpl::loadInternal()
         m_webMediaPlayer->setPoster(poster);
 
         // Tell WebMediaPlayer about any connected CDM (may be null).
-        m_webMediaPlayer->setContentDecryptionModule(m_cdm);
+        m_webMediaPlayer->setContentDecryptionModule(HTMLMediaElementEncryptedMedia::contentDecryptionModule(mediaElement()));
 
         WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
         m_webMediaPlayer->load(m_loadType, m_url, corsMode);
@@ -252,40 +256,6 @@ void WebMediaPlayerClientImpl::hideFullscreenOverlay()
 bool WebMediaPlayerClientImpl::canShowFullscreenOverlay() const
 {
     return m_webMediaPlayer && m_webMediaPlayer->canEnterFullscreen();
-}
-
-MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength)
-{
-    if (!m_webMediaPlayer)
-        return MediaPlayer::InvalidPlayerState;
-
-    WebMediaPlayer::MediaKeyException result = m_webMediaPlayer->generateKeyRequest(keySystem, initData, initDataLength);
-    return static_cast<MediaPlayer::MediaKeyException>(result);
-}
-
-MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId)
-{
-    if (!m_webMediaPlayer)
-        return MediaPlayer::InvalidPlayerState;
-
-    WebMediaPlayer::MediaKeyException result = m_webMediaPlayer->addKey(keySystem, key, keyLength, initData, initDataLength, sessionId);
-    return static_cast<MediaPlayer::MediaKeyException>(result);
-}
-
-MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::cancelKeyRequest(const String& keySystem, const String& sessionId)
-{
-    if (!m_webMediaPlayer)
-        return MediaPlayer::InvalidPlayerState;
-
-    WebMediaPlayer::MediaKeyException result = m_webMediaPlayer->cancelKeyRequest(keySystem, sessionId);
-    return static_cast<MediaPlayer::MediaKeyException>(result);
-}
-
-void WebMediaPlayerClientImpl::setContentDecryptionModule(WebContentDecryptionModule* cdm)
-{
-    m_cdm = cdm;
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->setContentDecryptionModule(cdm);
 }
 
 void WebMediaPlayerClientImpl::prepareToPlay()
@@ -591,7 +561,6 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     , m_volume(1.0)
     , m_muted(false)
     , m_rate(1.0)
-    , m_cdm(0)
     , m_loadType(WebMediaPlayer::LoadTypeURL)
 {
     ASSERT(m_client);
@@ -648,6 +617,11 @@ void WebMediaPlayerClientImpl::AudioClientImpl::setFormat(size_t numberOfChannel
 {
     if (m_client)
         m_client->setFormat(numberOfChannels, sampleRate);
+}
+
+WebCore::HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
+{
+    return *static_cast<HTMLMediaElement*>(m_client);
 }
 
 #endif

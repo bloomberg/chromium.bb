@@ -58,7 +58,6 @@ class KURL;
 class MediaController;
 class MediaControls;
 class MediaError;
-class MediaKeys;
 class HTMLMediaSource;
 class TextTrackList;
 class TimeRanges;
@@ -72,7 +71,7 @@ typedef Vector<CueInterval> CueList;
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
-class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public ActiveDOMObject, public MediaControllerInterface
+class HTMLMediaElement : public Supplementable<HTMLMediaElement>, public HTMLElement, public MediaPlayerClient, public ActiveDOMObject, public MediaControllerInterface
 {
 public:
     static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
@@ -80,7 +79,10 @@ public:
     static void setMediaStreamRegistry(URLRegistry*);
     static bool isMediaStreamURL(const String& url);
 
+    // Do not use player().
+    // FIXME: Replace all uses with webMediaPlayer() and remove this API.
     MediaPlayer* player() const { return m_player.get(); }
+    blink::WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
 
     virtual bool isVideo() const = 0;
     virtual bool hasVideo() const OVERRIDE { return false; }
@@ -147,23 +149,6 @@ public:
     // media source extensions
     void closeMediaSource();
     void durationChanged(double duration);
-
-    // encrypted media extensions (v0.1b)
-    void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
-    void webkitGenerateKeyRequest(const String& keySystem, ExceptionState&);
-    void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
-    void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState&);
-    void webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState&);
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyadded);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyerror);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitneedkey);
-
-    // encrypted media extensions (WD)
-    MediaKeys* mediaKeys() const { return m_mediaKeys.get(); }
-    void setMediaKeys(MediaKeys*, ExceptionState&);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(needkey);
 
     // controls
     bool controls() const;
@@ -279,6 +264,8 @@ public:
     MediaController* controller() const;
     void setController(PassRefPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 
+    void scheduleEvent(PassRefPtr<Event>);
+
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     virtual ~HTMLMediaElement();
@@ -339,11 +326,6 @@ private:
     virtual void mediaPlayerRepaint() OVERRIDE FINAL;
     virtual void mediaPlayerSizeChanged() OVERRIDE FINAL;
 
-    virtual void mediaPlayerKeyAdded(const String& keySystem, const String& sessionId) OVERRIDE FINAL;
-    virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE FINAL;
-    virtual void mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE FINAL;
-    virtual bool mediaPlayerKeyNeeded(const String& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE FINAL;
-
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE FINAL;
 
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE FINAL;
@@ -363,7 +345,7 @@ private:
     void addPlayedRange(double start, double end);
 
     void scheduleTimeupdateEvent(bool periodicEvent);
-    void scheduleEvent(const AtomicString& eventName);
+    void scheduleEvent(const AtomicString& eventName); // FIXME: Rename to scheduleNamedEvent for clarity.
 
     // loading
     void prepareForLoad();
@@ -430,19 +412,6 @@ private:
     bool isBlocked() const;
     bool isBlockedOnMediaController() const;
     bool isAutoplaying() const { return m_autoplaying; }
-
-    // Currently we have both EME v0.1b and EME WD implemented in media element.
-    // But we do not want to support both at the same time. The one used first
-    // will be supported. Use |m_emeMode| to track this selection.
-    // FIXME: Remove EmeMode once EME v0.1b support is removed. See crbug.com/249976.
-    enum EmeMode { EmeModeNotSelected, EmeModePrefixed, EmeModeUnprefixed };
-
-    // check (and set if necessary) the encrypted media extensions (EME) mode
-    // (v0.1b or WD). Returns whether the mode is allowed and successfully set.
-    bool setEmeMode(EmeMode, ExceptionState&);
-
-    blink::WebContentDecryptionModule* contentDecryptionModule();
-    void setMediaKeysInternal(MediaKeys*);
 
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;
@@ -547,10 +516,6 @@ private:
     RefPtr<MediaController> m_mediaController;
 
     friend class TrackDisplayUpdateScope;
-
-    EmeMode m_emeMode;
-
-    RefPtrWillBePersistent<MediaKeys> m_mediaKeys;
 
     static URLRegistry* s_mediaStreamRegistry;
 };

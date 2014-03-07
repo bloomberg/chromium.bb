@@ -48,6 +48,7 @@
 
 namespace WebCore {
 class AudioSourceProviderClient;
+class HTMLMediaElement;
 }
 
 namespace blink {
@@ -66,9 +67,6 @@ public:
 
     virtual ~WebMediaPlayerClientImpl();
 
-    // Returns the encapsulated blink::WebMediaPlayer.
-    WebMediaPlayer* mediaPlayer() const;
-
     // WebMediaPlayerClient methods:
     virtual void networkStateChanged() OVERRIDE;
     virtual void readyStateChanged() OVERRIDE;
@@ -80,10 +78,13 @@ public:
     virtual double volume() const OVERRIDE;
     virtual void playbackStateChanged() OVERRIDE;
     virtual WebMediaPlayer::Preload preload() const OVERRIDE;
+
+    // WebEncryptedMediaPlayerClient methods:
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) OVERRIDE;
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) OVERRIDE;
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
+
     virtual bool needsWebLayerForVideo() const OVERRIDE;
     virtual void setWebLayer(WebLayer*) OVERRIDE;
     virtual void addTextTrack(WebInbandTextTrack*) OVERRIDE;
@@ -93,8 +94,8 @@ public:
     virtual void requestSeek(double) OVERRIDE;
 
     // MediaPlayer methods:
+    virtual WebMediaPlayer* webMediaPlayer() const OVERRIDE;
     virtual void load(WebMediaPlayer::LoadType, const WTF::String& url) OVERRIDE;
-
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
     virtual void prepareToPlay() OVERRIDE;
@@ -136,16 +137,13 @@ public:
     virtual WebCore::AudioSourceProvider* audioSourceProvider() OVERRIDE;
 #endif
 
-    virtual WebCore::MediaPlayer::MediaKeyException generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
-    virtual WebCore::MediaPlayer::MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId) OVERRIDE;
-    virtual WebCore::MediaPlayer::MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId) OVERRIDE;
-    virtual void setContentDecryptionModule(WebContentDecryptionModule*) OVERRIDE;
-
 private:
     explicit WebMediaPlayerClientImpl(WebCore::MediaPlayerClient*);
 
     void startDelayedLoad();
     void loadInternal();
+
+    WebCore::HTMLMediaElement& mediaElement() const;
 
 #if OS(ANDROID)
     // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
@@ -164,7 +162,6 @@ private:
     double m_volume;
     bool m_muted;
     double m_rate;
-    WebContentDecryptionModule* m_cdm;
 
 #if ENABLE(WEB_AUDIO)
     // AudioClientImpl wraps an AudioSourceProviderClient.

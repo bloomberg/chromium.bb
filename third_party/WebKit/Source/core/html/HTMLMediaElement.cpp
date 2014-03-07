@@ -50,8 +50,6 @@
 #include "core/html/MediaController.h"
 #include "core/html/MediaError.h"
 #include "core/html/MediaFragmentURIParser.h"
-#include "core/html/MediaKeyError.h"
-#include "core/html/MediaKeyEvent.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/InbandTextTrack.h"
@@ -61,9 +59,6 @@
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
-// FIXME: Remove dependency on modules/encryptedmedia (http://crbug.com/242754).
-#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
-#include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/ContentType.h"
 #include "platform/Language.h"
 #include "platform/Logging.h"
@@ -149,26 +144,6 @@ static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* do
     set.remove(element);
     if (!set.isEmpty())
         map.add(document, set);
-}
-
-static void throwExceptionForMediaKeyException(const String& keySystem, const String& sessionId, MediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
-{
-    switch (exception) {
-    case MediaPlayer::NoError:
-        return;
-    case MediaPlayer::InvalidPlayerState:
-        exceptionState.throwDOMException(InvalidStateError, "The player is in an invalid state.");
-        return;
-    case MediaPlayer::KeySystemNotSupported:
-        exceptionState.throwDOMException(NotSupportedError, "The key system provided ('" + keySystem +"') is not supported.");
-        return;
-    case MediaPlayer::InvalidAccess:
-        exceptionState.throwDOMException(InvalidAccessError, "The session ID provided ('" + sessionId + "') is invalid.");
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
-    return;
 }
 
 class TrackDisplayUpdateScope {
@@ -307,7 +282,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 #if ENABLE(WEB_AUDIO)
     , m_audioSourceNode(0)
 #endif
-    , m_emeMode(EmeModeNotSelected)
 {
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 
@@ -341,8 +315,6 @@ HTMLMediaElement::~HTMLMediaElement()
     }
 
     closeMediaSource();
-
-    setMediaKeysInternal(0);
 
     removeElementFromDocumentMap(this, &document());
 
@@ -545,10 +517,15 @@ void HTMLMediaElement::scheduleNextSourceChild()
 
 void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 {
+    scheduleEvent(Event::createCancelable(eventName));
+}
+
+void HTMLMediaElement::scheduleEvent(PassRefPtr<Event> event)
+{
 #if LOG_MEDIA_EVENTS
-    WTF_LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", eventName.ascii().data());
+    WTF_LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", event->type().ascii().data());
 #endif
-    m_asyncEventQueue->enqueueEvent(Event::createCancelable(eventName));
+    m_asyncEventQueue->enqueueEvent(event);
 }
 
 void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
@@ -1665,165 +1642,6 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         updateActiveTextTrackCues(currentTime());
 }
 
-void HTMLMediaElement::mediaPlayerKeyAdded(const String& keySystem, const String& sessionId)
-{
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyAdded");
-
-    MediaKeyEventInit initializer;
-    initializer.keySystem = keySystem;
-    initializer.sessionId = sessionId;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
-
-    RefPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyadded, initializer);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
-}
-
-void HTMLMediaElement::mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
-{
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyError: sessionID=%s, errorCode=%d, systemCode=%d", sessionId.utf8().data(), errorCode, systemCode);
-
-    MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
-    switch (errorCode) {
-    case MediaPlayerClient::UnknownError:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
-        break;
-    case MediaPlayerClient::ClientError:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_CLIENT;
-        break;
-    case MediaPlayerClient::ServiceError:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_SERVICE;
-        break;
-    case MediaPlayerClient::OutputError:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_OUTPUT;
-        break;
-    case MediaPlayerClient::HardwareChangeError:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_HARDWARECHANGE;
-        break;
-    case MediaPlayerClient::DomainError:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_DOMAIN;
-        break;
-    }
-
-    MediaKeyEventInit initializer;
-    initializer.keySystem = keySystem;
-    initializer.sessionId = sessionId;
-    initializer.errorCode = MediaKeyError::create(mediaKeyErrorCode);
-    initializer.systemCode = systemCode;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
-
-    RefPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyerror, initializer);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
-}
-
-void HTMLMediaElement::mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL)
-{
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyMessage: sessionID=%s", sessionId.utf8().data());
-
-    MediaKeyEventInit initializer;
-    initializer.keySystem = keySystem;
-    initializer.sessionId = sessionId;
-    initializer.message = Uint8Array::create(message, messageLength);
-    initializer.defaultURL = defaultURL;
-    initializer.bubbles = false;
-    initializer.cancelable = false;
-
-    RefPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeymessage, initializer);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
-}
-
-// Create a MediaKeyNeededEvent for WD EME.
-static PassRefPtr<Event> createNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
-{
-    MediaKeyNeededEventInit initializer;
-    initializer.contentType = contentType;
-    initializer.initData = Uint8Array::create(initData, initDataLength);
-    initializer.bubbles = false;
-    initializer.cancelable = false;
-
-    return MediaKeyNeededEvent::create(EventTypeNames::needkey, initializer);
-}
-
-// Create a 'needkey' MediaKeyEvent for v0.1b EME.
-static PassRefPtr<Event> createWebkitNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
-{
-    MediaKeyEventInit webkitInitializer;
-    webkitInitializer.keySystem = String();
-    webkitInitializer.sessionId = String();
-    webkitInitializer.initData = Uint8Array::create(initData, initDataLength);
-    webkitInitializer.bubbles = false;
-    webkitInitializer.cancelable = false;
-
-    return MediaKeyEvent::create(EventTypeNames::webkitneedkey, webkitInitializer);
-}
-
-bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& contentType, const unsigned char* initData, unsigned initDataLength)
-{
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyNeeded: contentType=%s", contentType.utf8().data());
-
-    if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
-        // Send event for WD EME.
-        RefPtr<Event> event = createNeedKeyEvent(contentType, initData, initDataLength);
-        event->setTarget(this);
-        m_asyncEventQueue->enqueueEvent(event.release());
-    }
-
-    if (RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled()) {
-        // Send event for v0.1b EME.
-        RefPtr<Event> event = createWebkitNeedKeyEvent(contentType, initData, initDataLength);
-        event->setTarget(this);
-        m_asyncEventQueue->enqueueEvent(event.release());
-    }
-
-    return true;
-}
-
-bool HTMLMediaElement::setEmeMode(EmeMode emeMode, ExceptionState& exceptionState)
-{
-    if (m_emeMode != EmeModeNotSelected && m_emeMode != emeMode) {
-        exceptionState.throwDOMException(InvalidStateError, "Mixed use of EME prefixed and unprefixed API not allowed.");
-        return false;
-    }
-    m_emeMode = emeMode;
-    return true;
-}
-
-blink::WebContentDecryptionModule* HTMLMediaElement::contentDecryptionModule()
-{
-    return m_mediaKeys ? m_mediaKeys->contentDecryptionModule() : 0;
-}
-
-void HTMLMediaElement::setMediaKeysInternal(MediaKeys* mediaKeys)
-{
-    WTF_LOG(Media, "HTMLMediaElement::setMediaKeys");
-    if (m_mediaKeys == mediaKeys)
-        return;
-
-    ASSERT(m_emeMode = EmeModeUnprefixed);
-
-    if (m_mediaKeys)
-        m_mediaKeys->setMediaElement(0);
-    m_mediaKeys = mediaKeys;
-    if (m_mediaKeys)
-        m_mediaKeys->setMediaElement(this);
-
-    // If a player is connected, tell it that the CDM has changed.
-    if (m_player)
-        m_player->setContentDecryptionModule(contentDecryptionModule());
-}
-
-void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys, ExceptionState& exceptionState)
-{
-    if (!setEmeMode(EmeModeUnprefixed, exceptionState))
-        return;
-
-    setMediaKeysInternal(mediaKeys);
-}
-
 void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
 {
     ASSERT(m_player);
@@ -2222,103 +2040,6 @@ void HTMLMediaElement::closeMediaSource()
 
     m_mediaSource->close();
     m_mediaSource = nullptr;
-}
-
-void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
-{
-    WTF_LOG(Media, "HTMLMediaElement::webkitGenerateKeyRequest");
-
-    if (!setEmeMode(EmeModePrefixed, exceptionState))
-        return;
-
-    if (keySystem.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The key system provided is empty.");
-        return;
-    }
-
-    if (!m_player) {
-        exceptionState.throwDOMException(InvalidStateError, "No media has been loaded.");
-        return;
-    }
-
-    const unsigned char* initDataPointer = 0;
-    unsigned initDataLength = 0;
-    if (initData) {
-        initDataPointer = initData->data();
-        initDataLength = initData->length();
-    }
-
-    MediaPlayer::MediaKeyException result = m_player->generateKeyRequest(keySystem, initDataPointer, initDataLength);
-    throwExceptionForMediaKeyException(keySystem, String(), result, exceptionState);
-}
-
-void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, ExceptionState& exceptionState)
-{
-    webkitGenerateKeyRequest(keySystem, Uint8Array::create(0), exceptionState);
-}
-
-void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
-{
-    WTF_LOG(Media, "HTMLMediaElement::webkitAddKey");
-
-    if (!setEmeMode(EmeModePrefixed, exceptionState))
-        return;
-
-    if (keySystem.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The key system provided is empty.");
-        return;
-    }
-
-    if (!key) {
-        exceptionState.throwDOMException(SyntaxError, "The key provided is invalid.");
-        return;
-    }
-
-    if (!key->length()) {
-        exceptionState.throwDOMException(TypeMismatchError, "The key provided is invalid.");
-        return;
-    }
-
-    if (!m_player) {
-        exceptionState.throwDOMException(InvalidStateError, "No media has been loaded.");
-        return;
-    }
-
-    const unsigned char* initDataPointer = 0;
-    unsigned initDataLength = 0;
-    if (initData) {
-        initDataPointer = initData->data();
-        initDataLength = initData->length();
-    }
-
-    MediaPlayer::MediaKeyException result = m_player->addKey(keySystem, key->data(), key->length(), initDataPointer, initDataLength, sessionId);
-    throwExceptionForMediaKeyException(keySystem, sessionId, result, exceptionState);
-}
-
-void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState& exceptionState)
-{
-    webkitAddKey(keySystem, key, Uint8Array::create(0), String(), exceptionState);
-}
-
-void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
-{
-    WTF_LOG(Media, "HTMLMediaElement::webkitCancelKeyRequest");
-
-    if (!setEmeMode(EmeModePrefixed, exceptionState))
-        return;
-
-    if (keySystem.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The key system provided is empty.");
-        return;
-    }
-
-    if (!m_player) {
-        exceptionState.throwDOMException(InvalidStateError, "No media has been loaded.");
-        return;
-    }
-
-    MediaPlayer::MediaKeyException result = m_player->cancelKeyRequest(keySystem, sessionId);
-    throwExceptionForMediaKeyException(keySystem, sessionId, result, exceptionState);
 }
 
 bool HTMLMediaElement::loop() const
@@ -3422,8 +3143,6 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     closeMediaSource();
 
-    setMediaKeysInternal(0);
-
     clearMediaPlayerAndAudioSourceProviderClient();
 
     stopPeriodicTimers();
@@ -3713,9 +3432,6 @@ void HTMLMediaElement::createMediaPlayer()
         closeMediaSource();
 
     m_player = MediaPlayer::create(this);
-
-    if (m_emeMode == EmeModeUnprefixed && m_player)
-        m_player->setContentDecryptionModule(contentDecryptionModule());
 
 #if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode) {
