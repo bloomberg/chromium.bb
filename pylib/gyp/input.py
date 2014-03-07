@@ -200,7 +200,7 @@ def CheckNode(node, keypath):
          "': " + repr(node)
 
 
-def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
+def LoadOneBuildFile(build_file_path, data, aux_data, includes,
                      is_target, check):
   if build_file_path in data:
     return data[build_file_path]
@@ -236,10 +236,10 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
     try:
       if is_target:
         LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                      aux_data, variables, includes, check)
+                                      aux_data, includes, check)
       else:
         LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                      aux_data, variables, None, check)
+                                      aux_data, None, check)
     except Exception, e:
       gyp.common.ExceptionAppend(e,
                                  'while reading includes of ' + build_file_path)
@@ -249,7 +249,7 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
 
 
 def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
-                                  variables, includes, check):
+                                  includes, check):
   includes_list = []
   if includes != None:
     includes_list.extend(includes)
@@ -273,30 +273,27 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
     gyp.DebugOutput(gyp.DEBUG_INCLUDES, "Loading Included File: '%s'", include)
 
     MergeDicts(subdict,
-               LoadOneBuildFile(include, data, aux_data, variables, None,
-                                False, check),
+               LoadOneBuildFile(include, data, aux_data, None, False, check),
                subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(v, subdict_path, data, aux_data, variables,
+      LoadBuildFileIncludesIntoDict(v, subdict_path, data, aux_data,
                                     None, check)
     elif v.__class__ == list:
-      LoadBuildFileIncludesIntoList(v, subdict_path, data, aux_data, variables,
+      LoadBuildFileIncludesIntoList(v, subdict_path, data, aux_data,
                                     check)
 
 
 # This recurses into lists so that it can look for dicts.
-def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data,
-                                  variables, check):
+def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data, check):
   for item in sublist:
     if item.__class__ == dict:
       LoadBuildFileIncludesIntoDict(item, sublist_path, data, aux_data,
-                                    variables, None, check)
+                                    None, check)
     elif item.__class__ == list:
-      LoadBuildFileIncludesIntoList(item, sublist_path, data, aux_data,
-                                    variables, check)
+      LoadBuildFileIncludesIntoList(item, sublist_path, data, aux_data, check)
 
 # Processes toolsets in all the targets. This recurses into condition entries
 # since they can contain toolsets as well.
@@ -358,7 +355,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   gyp.DebugOutput(gyp.DEBUG_INCLUDES,
                   "Loading Target Build File '%s'", build_file_path)
 
-  build_file_data = LoadOneBuildFile(build_file_path, data, aux_data, variables,
+  build_file_data = LoadOneBuildFile(build_file_path, data, aux_data,
                                      includes, True, check)
 
   # Store DEPTH for later use in generators.
