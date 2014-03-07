@@ -52,6 +52,9 @@ class StateStore
   void RemoveExtensionValue(const std::string& extension_id,
                             const std::string& key);
 
+  // Return whether or not the StateStore has initialized itself.
+  bool IsInitialized() const;
+
  private:
   class DelayedTaskQueue;
 
