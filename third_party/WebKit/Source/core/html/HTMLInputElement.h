@@ -173,6 +173,7 @@ public:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE FINAL;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
+    virtual void updateFocusAppearance(bool restorePreviousSelection) OVERRIDE FINAL;
 
     // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the NVI-idiom here by making
     // it private virtual in all classes and expose a public method in HTMLFormControlElement to call
@@ -300,7 +301,6 @@ private:
     virtual bool isEnumeratable() const OVERRIDE FINAL;
     virtual bool isInteractiveContent() const OVERRIDE FINAL;
     virtual bool supportLabels() const OVERRIDE FINAL;
-    virtual void updateFocusAppearance(bool restorePreviousSelection) OVERRIDE FINAL;
     virtual bool shouldUseInputMethod() OVERRIDE FINAL;
 
     virtual bool isTextFormControl() const OVERRIDE FINAL { return isTextField(); }
