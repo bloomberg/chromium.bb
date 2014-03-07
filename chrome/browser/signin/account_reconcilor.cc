@@ -133,17 +133,21 @@ OAuth2TokenService::ScopeSet AccountReconcilor::UserIdFetcher::GetScopes() {
 void AccountReconcilor::UserIdFetcher::OnGetUserIdResponse(
     const std::string& user_id) {
   VLOG(1) << "AccountReconcilor::OnGetUserIdResponse: " << account_id_;
+
+  // HandleSuccessfulAccountIdCheck() may delete |this|, so call it last.
   reconcilor_->HandleSuccessfulAccountIdCheck(account_id_);
 }
 
 void AccountReconcilor::UserIdFetcher::OnOAuthError() {
   VLOG(1) << "AccountReconcilor::OnOAuthError: " << account_id_;
-  reconcilor_->HandleFailedAccountIdCheck(account_id_);
 
   // Invalidate the access token to force a refetch next time.
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(reconcilor_->profile());
   token_service->InvalidateToken(account_id_, GetScopes(), access_token_);
+
+  // HandleFailedAccountIdCheck() may delete |this|, so call it last.
+  reconcilor_->HandleFailedAccountIdCheck(account_id_);
 }
 
 void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
@@ -152,6 +156,7 @@ void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
 
   // TODO(rogerta): some response error should not be treated like
   // permanent errors.  Figure out appropriate ones.
+  // HandleFailedAccountIdCheck() may delete |this|, so call it last.
   reconcilor_->HandleFailedAccountIdCheck(account_id_);
 }
 
