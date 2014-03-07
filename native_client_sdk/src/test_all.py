@@ -10,14 +10,17 @@ import unittest
 # add tools folder to sys.path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(SCRIPT_DIR, 'tools', 'tests'))
+sys.path.append(os.path.join(SCRIPT_DIR, 'tools', 'lib', 'tests'))
 sys.path.append(os.path.join(SCRIPT_DIR, 'build_tools', 'tests'))
 
 TEST_MODULES = [
     'create_html_test',
     'create_nmf_test',
     'easy_template_test',
+    'elf_test',
     'fix_deps_test',
     'getos_test',
+    'get_shared_deps_test',
     'httpd_test',
     'nacl_config_test',
     'oshelpers_test',

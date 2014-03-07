@@ -421,6 +421,9 @@ tools/host_vc.mk
 tools/httpd.py
 tools/irt_core_x86_32.nexe
 tools/irt_core_x86_64.nexe
+tools/lib/elf.py
+tools/lib/get_shared_deps.py
+tools/lib/quote.py
 [win]tools/make.exe
 [linux,mac]tools/minidump_dump
 [linux,mac]tools/minidump_stackwalk
@@ -432,7 +435,6 @@ tools/nacl_llvm.mk
 tools/ncval${EXE_EXT}
 tools/ncval.py
 tools/oshelpers.py
-tools/quote.py
 tools/run.py
 tools/sel_ldr.py
 tools/sel_ldr_x86_32${EXE_EXT}

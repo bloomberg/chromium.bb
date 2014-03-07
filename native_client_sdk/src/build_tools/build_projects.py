@@ -73,6 +73,12 @@ def UpdateHelpers(pepperdir, clobber=False):
   buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.mk'),
       tools_dir)
 
+  # Copy tools/lib scripts
+  tools_lib_dir = os.path.join(pepperdir, 'tools', 'lib')
+  buildbot_common.MakeDir(tools_lib_dir)
+  buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', 'lib', '*.py'),
+      tools_lib_dir)
+
   # On Windows add a prebuilt make
   if getos.GetPlatform() == 'win':
     buildbot_common.BuildStep('Add MAKE')
