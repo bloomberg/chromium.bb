@@ -122,7 +122,8 @@ WebPreferences::WebPreferences()
       use_solid_color_scrollbars(false),
       compositor_touch_hit_testing(true),
       navigate_on_drag_drop(true),
-      cookie_enabled(true)
+      cookie_enabled(true),
+      pepper_accelerated_video_decode_enabled(false)
 #if defined(OS_ANDROID)
       ,
       text_autosizing_enabled(true),

@@ -165,6 +165,10 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   // without raising a DOM security exception.
   bool cookie_enabled;
 
+  // This flag indicates whether H/W accelerated video decode is enabled for
+  // pepper plugins. Defaults to false.
+  bool pepper_accelerated_video_decode_enabled;
+
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;
   float font_scale_factor;

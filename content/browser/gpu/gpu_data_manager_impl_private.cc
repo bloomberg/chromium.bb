@@ -805,6 +805,12 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->pepper_3d_enabled = false;
   }
 #endif
+
+  if (!IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAcceleratedVideoDecode)) {
+    prefs->pepper_accelerated_video_decode_enabled = true;
+  }
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {

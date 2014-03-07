@@ -192,6 +192,9 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
   if (!dispatcher)
     return 0;
 
+  if (!dispatcher->preferences().is_accelerated_video_decode_enabled)
+    return 0;
+
   EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
                                                         true);
   if (enter_context.failed())
