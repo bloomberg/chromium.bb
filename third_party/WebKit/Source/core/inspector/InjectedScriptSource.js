@@ -614,20 +614,21 @@ InjectedScript.prototype = {
         // Surround the expression in with statements to inject our command line API so that
         // the window object properties still take more precedent than our API functions.
 
-        var injectScopeChain = scopeChain && scopeChain.length;
+        injectCommandLineAPI = injectCommandLineAPI && !("__commandLineAPI" in inspectedWindow);
+        var injectScopeChain = scopeChain && scopeChain.length && !("__scopeChainForEval" in inspectedWindow);
 
         try {
             var prefix = "";
             var suffix = "";
-            if (injectCommandLineAPI && inspectedWindow.console) {
-                inspectedWindow.console._commandLineAPI = new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null);
-                prefix = "with ((console && console._commandLineAPI) || { __proto__: null }) {";
+            if (injectCommandLineAPI) {
+                inspectedWindow.__commandLineAPI = new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null);
+                prefix = "with (__commandLineAPI || { __proto__: null }) {";
                 suffix = "}";
             }
-            if (injectScopeChain && inspectedWindow.console) {
-                inspectedWindow.console._scopeChainForEval = scopeChain;
+            if (injectScopeChain) {
+                inspectedWindow.__scopeChainForEval = scopeChain;
                 for (var i = 0; i < scopeChain.length; ++i) {
-                    prefix = "with ((console && console._scopeChainForEval[" + i + "]) || { __proto__: null }) {" + (suffix ? " " : "") + prefix;
+                    prefix = "with (__scopeChainForEval[" + i + "] || { __proto__: null }) {" + (suffix ? " " : "") + prefix;
                     if (suffix)
                         suffix += " }";
                     else
@@ -642,10 +643,10 @@ InjectedScript.prototype = {
                 this._lastResult = result;
             return result;
         } finally {
-            if (injectCommandLineAPI && inspectedWindow.console)
-                delete inspectedWindow.console._commandLineAPI;
-            if (injectScopeChain && inspectedWindow.console)
-                delete inspectedWindow.console._scopeChainForEval;
+            if (injectCommandLineAPI)
+                delete inspectedWindow.__commandLineAPI;
+            if (injectScopeChain)
+                delete inspectedWindow.__scopeChainForEval;
         }
     },
 

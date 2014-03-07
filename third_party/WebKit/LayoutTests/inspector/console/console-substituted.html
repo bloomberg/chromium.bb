@@ -10,10 +10,7 @@ function deleteConsole()
 
 function substituteConsole()
 {
-    window.console = {
-        get _commandLineAPI() { return undefined; },
-        set _commandLineAPI() {}
-    };
+    Object.defineProperty(window, "__commandLineAPI", { enumerable: false, configurable: false, get: function() { throw "Substituted" }});
 }
 
 var test = function()
