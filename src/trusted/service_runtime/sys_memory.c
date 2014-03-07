@@ -61,6 +61,14 @@ int32_t NaClSysBrk(struct NaClAppThread *natp,
   uintptr_t             start_new_region;
   uintptr_t             region_size;
 
+  /*
+   * The sysbrk() IRT interface is deprecated and is not enabled for
+   * ABI-stable PNaCl pexes, so for security hardening, disable the
+   * syscall under PNaCl too.
+   */
+  if (nap->pnacl_mode)
+    return -NACL_ABI_ENOSYS;
+
   break_addr = nap->break_addr;
 
   NaClLog(3, "Entered NaClSysBrk(new_break 0x%08"NACL_PRIxPTR")\n",
