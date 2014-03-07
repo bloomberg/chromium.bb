@@ -178,7 +178,7 @@ float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
     return width(run);
 }
 
-FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point, int h, int from, int to) const
+FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
     to = (to == -1 ? run.length() : to);
 
@@ -188,7 +188,7 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
         codePathToUse = ComplexPath;
 
     if (codePathToUse != ComplexPath)
-        return selectionRectForSimpleText(run, point, h, from, to);
+        return selectionRectForSimpleText(run, point, h, from, to, accountForGlyphBounds);
 
     return selectionRectForComplexText(run, point, h, from, to);
 }
@@ -755,10 +755,10 @@ float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFont
     return it.m_runWidthSoFar;
 }
 
-FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to) const
+FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
     GlyphBuffer glyphBuffer;
-    WidthIterator it(this, run);
+    WidthIterator it(this, run, 0, accountForGlyphBounds);
     it.advance(from, &glyphBuffer);
     float beforeWidth = it.m_runWidthSoFar;
     it.advance(to, &glyphBuffer);
@@ -772,13 +772,15 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
         it.advance(run.length(), &glyphBuffer);
         float totalWidth = it.m_runWidthSoFar;
         float pixelAlignedX = floorf(point.x() + totalWidth - afterWidth + LayoutUnit::epsilon());
-        return FloatRect(pixelAlignedX, point.y(),
-            roundf(point.x() + totalWidth - beforeWidth) - pixelAlignedX, h);
+        return FloatRect(pixelAlignedX, accountForGlyphBounds ? it.minGlyphBoundingBoxY() : point.y(),
+            roundf(point.x() + totalWidth - beforeWidth) - pixelAlignedX,
+            accountForGlyphBounds ? it.maxGlyphBoundingBoxY() - it.minGlyphBoundingBoxY() : h);
     }
 
     float pixelAlignedX = floorf(point.x() + beforeWidth + LayoutUnit::epsilon());
-    return FloatRect(pixelAlignedX, point.y(),
-        roundf(point.x() + afterWidth) - pixelAlignedX, h);
+    return FloatRect(pixelAlignedX, accountForGlyphBounds ? it.minGlyphBoundingBoxY() : point.y(),
+        roundf(point.x() + afterWidth) - pixelAlignedX,
+        accountForGlyphBounds ? it.maxGlyphBoundingBoxY() - it.minGlyphBoundingBoxY() : h);
 }
 
 int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool includePartialGlyphs) const

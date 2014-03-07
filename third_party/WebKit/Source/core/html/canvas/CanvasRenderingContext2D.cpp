@@ -2245,7 +2245,34 @@ PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text
 
     FontCachePurgePreventer fontCachePurgePreventer;
     canvas()->document().updateStyleIfNeeded();
-    metrics->setWidth(accessFont().width(TextRun(text)));
+    const Font& font = accessFont();
+    const TextRun textRun(text);
+    FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
+
+    // x direction
+    metrics->setWidth(font.width(textRun));
+    metrics->setActualBoundingBoxLeft(-textBounds.x());
+    metrics->setActualBoundingBoxRight(textBounds.maxX());
+
+    // y direction
+    const FontMetrics& fontMetrics = font.fontMetrics();
+    const float ascent = fontMetrics.floatAscent();
+    const float descent = fontMetrics.floatDescent();
+    const float baselineY = getFontBaseline(fontMetrics);
+
+    metrics->setFontBoundingBoxAscent(ascent - baselineY);
+    metrics->setFontBoundingBoxDescent(descent + baselineY);
+    metrics->setActualBoundingBoxAscent(-textBounds.y() - baselineY);
+    metrics->setActualBoundingBoxDescent(textBounds.maxY() + baselineY);
+
+    // Note : top/bottom and ascend/descend are currently the same, so there's no difference
+    //        between the EM box's top and bottom and the font's ascend and descend
+    metrics->setEmHeightAscent(0);
+    metrics->setEmHeightDescent(0);
+
+    metrics->setHangingBaseline(-0.8f * ascent + baselineY);
+    metrics->setAlphabeticBaseline(baselineY);
+    metrics->setIdeographicBaseline(descent + baselineY);
     return metrics.release();
 }
 
@@ -2306,24 +2333,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 
     TextRun textRun(normalizedText, 0, 0, TextRun::AllowTrailingExpansion, direction, override, true, TextRun::NoRounding);
     // Draw the item text at the correct point.
-    FloatPoint location(x, y);
-    switch (state().m_textBaseline) {
-    case TopTextBaseline:
-    case HangingTextBaseline:
-        location.setY(y + fontMetrics.ascent());
-        break;
-    case BottomTextBaseline:
-    case IdeographicTextBaseline:
-        location.setY(y - fontMetrics.descent());
-        break;
-    case MiddleTextBaseline:
-        location.setY(y - fontMetrics.descent() + fontMetrics.height() / 2);
-        break;
-    case AlphabeticTextBaseline:
-    default:
-         // Do nothing.
-        break;
-    }
+    FloatPoint location(x, y + getFontBaseline(fontMetrics));
 
     float fontWidth = font.width(TextRun(normalizedText, 0, 0, TextRun::AllowTrailingExpansion, direction, override));
 
@@ -2395,6 +2405,28 @@ const Font& CanvasRenderingContext2D::accessFont()
     if (!state().m_realizedFont)
         setFont(state().m_unparsedFont);
     return state().m_font;
+}
+
+int CanvasRenderingContext2D::getFontBaseline(const FontMetrics& fontMetrics) const
+{
+    switch (state().m_textBaseline) {
+    case TopTextBaseline:
+        return fontMetrics.ascent();
+    case HangingTextBaseline:
+        // According to http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
+        // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of the ascender height"
+        return (fontMetrics.ascent() * 4) / 5;
+    case BottomTextBaseline:
+    case IdeographicTextBaseline:
+        return -fontMetrics.descent();
+    case MiddleTextBaseline:
+        return -fontMetrics.descent() + fontMetrics.height() / 2;
+    case AlphabeticTextBaseline:
+    default:
+        // Do nothing.
+        break;
+    }
+    return 0;
 }
 
 blink::WebLayer* CanvasRenderingContext2D::platformLayer() const

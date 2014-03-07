@@ -24,6 +24,20 @@
  */
 [
 ] interface TextMetrics {
+    // x-direction
     readonly attribute float width;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxLeft;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxRight;
+
+    // y-direction
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float fontBoundingBoxAscent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float fontBoundingBoxDescent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxAscent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxDescent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float emHeightAscent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float emHeightDescent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float hangingBaseline;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float alphabeticBaseline;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float ideographicBaseline;
 };
 

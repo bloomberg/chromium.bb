@@ -321,6 +321,7 @@ private:
     void drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth = 0, bool useMaxWidth = false);
 
     const Font& accessFont();
+    int getFontBaseline(const FontMetrics&) const;
 
     void clearCanvas();
     bool rectContainsTransformedRect(const FloatRect&, const FloatRect&) const;
