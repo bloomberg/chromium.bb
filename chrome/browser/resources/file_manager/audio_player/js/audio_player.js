@@ -191,14 +191,17 @@ AudioPlayer.prototype.onUnload = function() {
 /**
  * Selects a new track to play.
  * @param {number} newTrack New track number.
- * @param {boolean=} opt_restoreState True if restoring the play state from URL.
  * @private
  */
-AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
+AudioPlayer.prototype.select_ = function(newTrack) {
   if (this.currentTrackIndex_ == newTrack) return;
 
   this.currentTrackIndex_ = newTrack;
   this.player_.currentTrackIndex = this.currentTrackIndex_;
+  Platform.performMicrotaskCheckpoint();
+
+  if (!window.appReopen)
+    this.player_.audioElement.play();
 
   window.appState.position = this.currentTrackIndex_;
   window.appState.time = 0;

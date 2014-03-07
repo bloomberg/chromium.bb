@@ -12,7 +12,9 @@ Polymer('audio-player', {
   audioElement: null,
   trackList: null,
 
-  // Attributes of the element (little charactor only)
+  // Attributes of the element (little charactor only).
+  // These value must be used only to data binding and shouldn't be assignred
+  // anu value nowhere except in the handler.
   playing: false,
   currenttrackurl: '',
 
@@ -70,7 +72,8 @@ Polymer('audio-player', {
       if (currentTrack && currentTrack.url != this.audioElement.src) {
         this.audioElement.src = currentTrack.url;
         currentTrackUrl = this.audioElement.src;
-        this.audioElement.play();
+        if (this.audioController.playing)
+          this.audioElement.play();
       }
     }
 
@@ -103,7 +106,6 @@ Polymer('audio-player', {
 
     // When the new status is "stopped".
     this.cancelAutoAdvance_();
-    this.audioController.playing = false;
     this.audioElement.pause();
     this.currenttrackurl = '';
     this.lastAudioUpdateTime_ = null;
@@ -202,15 +204,10 @@ Polymer('audio-player', {
     var isNextTrackAvailable =
         (this.trackList.getNextTrackIndex(forward, repeat) !== -1);
 
+    this.audioController.playing = isNextTrackAvailable;
     this.trackList.currentTrackIndex = nextTrackIndex;
 
-    if (isNextTrackAvailable) {
-      var nextTrack = this.trackList.tracks[nextTrackIndex];
-      this.audioElement.src = nextTrack.url;
-      this.audioElement.play();
-    } else {
-      this.audioElement.pause();
-    }
+    Platform.performMicrotaskCheckpoint();
   },
 
   /**
