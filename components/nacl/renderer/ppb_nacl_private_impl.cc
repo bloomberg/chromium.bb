@@ -106,6 +106,7 @@ void LaunchSelLdr(PP_Instance instance,
                   const char* alleged_url,
                   PP_Bool uses_irt,
                   PP_Bool uses_ppapi,
+                  PP_Bool uses_nonsfi_mode,
                   PP_Bool enable_ppapi_dev,
                   PP_Bool enable_dyncode_syscalls,
                   PP_Bool enable_exception_handling,
@@ -155,6 +156,7 @@ void LaunchSelLdr(PP_Instance instance,
                                  routing_id,
                                  perm_bits,
                                  PP_ToBool(uses_irt),
+                                 PP_ToBool(uses_nonsfi_mode),
                                  PP_ToBool(enable_dyncode_syscalls),
                                  PP_ToBool(enable_exception_handling),
                                  PP_ToBool(enable_crash_throttling)),
@@ -298,6 +300,15 @@ int32_t GetNumberOfProcessors() {
     return 1;
   }
   return num_processors;
+}
+
+PP_Bool IsNonSFIModeEnabled() {
+#if defined(OS_LINUX)
+  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kEnableNaClNonSfiMode));
+#else
+  return PP_FALSE;
+#endif
 }
 
 int32_t GetNexeFd(PP_Instance instance,
@@ -552,6 +563,7 @@ const PPB_NaCl_Private nacl_interface = {
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
+  &IsNonSFIModeEnabled,
   &GetNexeFd,
   &ReportTranslationFinished,
   &OpenNaClExecutable,

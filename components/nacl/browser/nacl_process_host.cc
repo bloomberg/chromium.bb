@@ -237,6 +237,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  int render_view_id,
                                  uint32 permission_bits,
                                  bool uses_irt,
+                                 bool uses_nonsfi_mode,
                                  bool enable_dyncode_syscalls,
                                  bool enable_exception_handling,
                                  bool enable_crash_throttling,
@@ -254,6 +255,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       internal_(new NaClInternal()),
       weak_factory_(this),
       uses_irt_(uses_irt),
+      uses_nonsfi_mode_(uses_nonsfi_mode),
       enable_debug_stub_(false),
       enable_dyncode_syscalls_(enable_dyncode_syscalls),
       enable_exception_handling_(enable_exception_handling),
@@ -762,8 +764,7 @@ bool NaClProcessHost::StartNaClExecution() {
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;
   params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
-  params.enable_nonsfi_mode = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNaClNonSfiMode);
+  params.uses_nonsfi_mode = uses_nonsfi_mode_;
 
   const ChildProcessData& data = process_->GetData();
   if (!ShareHandleToSelLdr(data.handle,
@@ -812,6 +813,19 @@ bool NaClProcessHost::StartNaClExecution() {
     }
   }
 #endif
+
+  if (params.uses_nonsfi_mode) {
+#if defined(OS_LINUX)
+    const bool kNonSFIModeSupported = true;
+#else
+    const bool kNonSFIModeSupported = false;
+#endif
+    if (!kNonSFIModeSupported ||
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableNaClNonSfiMode)) {
+      return false;
+    }
+  }
 
   process_->Send(new NaClProcessMsg_Start(params));
 

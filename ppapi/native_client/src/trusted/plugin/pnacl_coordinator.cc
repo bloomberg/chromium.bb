@@ -42,10 +42,12 @@ class PnaclManifest : public Manifest {
 
   virtual bool GetProgramURL(nacl::string* full_url,
                              PnaclOptions* pnacl_options,
+                             bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const {
     // Does not contain program urls.
     UNREFERENCED_PARAMETER(full_url);
     UNREFERENCED_PARAMETER(pnacl_options);
+    UNREFERENCED_PARAMETER(uses_nonsfi_mode);
     UNREFERENCED_PARAMETER(error_info);
     PLUGIN_PRINTF(("PnaclManifest does not contain a program\n"));
     error_info->SetReport(PP_NACL_ERROR_MANIFEST_GET_NEXE_URL,

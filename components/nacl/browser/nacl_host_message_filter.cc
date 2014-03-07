@@ -77,6 +77,7 @@ void NaClHostMessageFilter::OnLaunchNaCl(
       launch_params.render_view_id,
       launch_params.permission_bits,
       launch_params.uses_irt,
+      launch_params.uses_nonsfi_mode,
       launch_params.enable_dyncode_syscalls,
       launch_params.enable_exception_handling,
       launch_params.enable_crash_throttling,
@@ -138,7 +139,7 @@ void NaClHostMessageFilter::AsyncReturnTemporaryFile(
       IPC::GetFileHandleForProcess(fd, PeerHandle(), false)));
 }
 
-void NaClHostMessageFilter::OnNaClGetNumProcessors(int *num_processors) {
+void NaClHostMessageFilter::OnNaClGetNumProcessors(int* num_processors) {
   *num_processors = base::SysInfo::NumberOfProcessors();
 }
 

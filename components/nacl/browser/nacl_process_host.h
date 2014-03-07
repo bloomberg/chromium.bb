@@ -50,6 +50,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // render_view_id: RenderView routing id, to control access to private APIs.
   // permission_bits: controls which interfaces the NaCl plugin can use.
   // uses_irt: whether the launched process should use the IRT.
+  // uses_nonsfi_mode: whether the program should be loaded under non-SFI mode.
   // enable_dyncode_syscalls: whether the launched process should allow dyncode
   //                          and mmap with PROT_EXEC.
   // enable_exception_handling: whether the launched process should allow
@@ -64,6 +65,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                   int render_view_id,
                   uint32 permission_bits,
                   bool uses_irt,
+                  bool uses_nonsfi_mode,
                   bool enable_dyncode_syscalls,
                   bool enable_exception_handling,
                   bool enable_crash_throttling,
@@ -200,6 +202,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   scoped_ptr<content::BrowserChildProcessHost> process_;
 
   bool uses_irt_;
+  bool uses_nonsfi_mode_;
 
   bool enable_debug_stub_;
   bool enable_dyncode_syscalls_;

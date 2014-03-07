@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Feb 27 14:06:31 2014. */
+/* From private/ppb_nacl_private.idl modified Fri Mar  7 13:41:05 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -149,6 +149,8 @@ struct PPB_NaCl_Private_1_0 {
    * does not need PPAPI, then it can run off the main thread.
    * The |uses_irt| flag indicates whether the IRT should be loaded in this
    * NaCl process.  This is true for ABI stable nexes.
+   * The |uses_nonsfi_mode| flag indicates whether or not nonsfi-mode should
+   * be used with the binary pointed by the url.
    * The |enable_dyncode_syscalls| flag indicates whether or not the nexe
    * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
    * The |enable_exception_handling| flag indicates whether or not the nexe
@@ -161,6 +163,7 @@ struct PPB_NaCl_Private_1_0 {
                        const char* alleged_url,
                        PP_Bool uses_irt,
                        PP_Bool uses_ppapi,
+                       PP_Bool uses_nonsfi_mode,
                        PP_Bool enable_ppapi_dev,
                        PP_Bool enable_dyncode_syscalls,
                        PP_Bool enable_exception_handling,
@@ -208,6 +211,8 @@ struct PPB_NaCl_Private_1_0 {
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
   /* Return the number of processors in the system as reported by the OS */
   int32_t (*GetNumberOfProcessors)(void);
+  /* Return whether the non-SFI mode is enabled. */
+  PP_Bool (*IsNonSFIModeEnabled)(void);
   /* Create a temporary file, which will be deleted by the time the
    * last handle is closed (or earlier on POSIX systems), to use for
    * the nexe with the cache information given by |pexe_url|,

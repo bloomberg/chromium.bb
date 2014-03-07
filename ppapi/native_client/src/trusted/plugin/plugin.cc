@@ -283,7 +283,7 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
     const SelLdrStartParams& params) {
   CHECK(!pp::Module::Get()->core()->IsMainThread());
   ServiceRuntime* service_runtime =
-      new ServiceRuntime(this, manifest, false,
+      new ServiceRuntime(this, manifest, false, uses_nonsfi_mode_,
                          pp::BlockUntilComplete(), pp::BlockUntilComplete());
   subprocess->set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
@@ -339,6 +339,7 @@ void Plugin::SignalStartSelLdrDone(int32_t pp_error,
 }
 
 void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
+                            bool uses_nonsfi_mode,
                             bool enable_dyncode_syscalls,
                             bool enable_exception_handling,
                             bool enable_crash_throttling,
@@ -354,13 +355,15 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   SelLdrStartParams params(manifest_base_url(),
                            true /* uses_irt */,
                            true /* uses_ppapi */,
+                           uses_nonsfi_mode,
                            enable_dev_interfaces_,
                            enable_dyncode_syscalls,
                            enable_exception_handling,
                            enable_crash_throttling);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime =
-      new ServiceRuntime(this, manifest_.get(), true, init_done_cb, crash_cb);
+      new ServiceRuntime(this, manifest_.get(), true, uses_nonsfi_mode,
+                         init_done_cb, crash_cb);
   main_subprocess_.set_service_runtime(service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime)));
@@ -398,16 +401,18 @@ void Plugin::LoadNexeAndStart(int32_t pp_error,
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
-  if (!main_subprocess_.StartSrpcServices()) {
-    // The NaCl process probably crashed. On Linux, a crash causes this error,
-    // while on other platforms, the error is detected below, when we attempt to
-    // start the proxy. Report a module initialization error here, to make it
-    // less confusing for developers.
-    NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
-            "StartSrpcServices failed\n");
-    error_info->SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
-                          "could not initialize module.");
-    return false;
+  if (!uses_nonsfi_mode_) {
+    if (!main_subprocess_.StartSrpcServices()) {
+      // The NaCl process probably crashed. On Linux, a crash causes this
+      // error, while on other platforms, the error is detected below, when we
+      // attempt to start the proxy. Report a module initialization error here,
+      // to make it less confusing for developers.
+      NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
+              "StartSrpcServices failed\n");
+      error_info->SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
+                            "could not initialize module.");
+      return false;
+    }
   }
   PP_ExternalPluginResult ipc_result =
       nacl_interface_->StartPpapiProxy(pp_instance());
@@ -456,6 +461,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
   SelLdrStartParams params(helper_url,
                            false /* uses_irt */,
                            false /* uses_ppapi */,
+                           false /* uses_nonsfi_mode */,
                            enable_dev_interfaces_,
                            false /* enable_dyncode_syscalls */,
                            false /* enable_exception_handling */,
@@ -588,6 +594,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       main_subprocess_("main subprocess", NULL, NULL),
+      uses_nonsfi_mode_(false),
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
       enable_dev_interfaces_(false),
@@ -762,6 +769,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   LoadNaClModule(
       wrapper.release(),
+      uses_nonsfi_mode_,
       true, /* enable_dyncode_syscalls */
       true, /* enable_exception_handling */
       false, /* enable_crash_throttling */
@@ -879,6 +887,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
       wrapper(pnacl_coordinator_.get()->ReleaseTranslatedFD());
   LoadNaClModule(
       wrapper.release(),
+      false, /* uses_nonsfi_mode */
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */
       true, /* enable_crash_throttling */
@@ -1036,16 +1045,19 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
 void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   HistogramSizeKB("NaCl.Perf.Size.Manifest",
                   static_cast<int32_t>(manifest_json.length() / 1024));
-  nacl::string program_url;
-  PnaclOptions pnacl_options;
   ErrorInfo error_info;
   if (!SetManifestObject(manifest_json, &error_info)) {
     ReportLoadError(error_info);
     return;
   }
 
-  if (manifest_->GetProgramURL(&program_url, &pnacl_options, &error_info)) {
+  nacl::string program_url;
+  PnaclOptions pnacl_options;
+  bool uses_nonsfi_mode;
+  if (manifest_->GetProgramURL(
+          &program_url, &pnacl_options, &uses_nonsfi_mode, &error_info)) {
     is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
+    uses_nonsfi_mode_ = uses_nonsfi_mode;
     set_nacl_ready_state(LOADING);
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS);
@@ -1139,11 +1151,14 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   // Determine whether lookups should use portable (i.e., pnacl versions)
   // rather than platform-specific files.
   bool is_pnacl = (mime_type() == kPnaclMIMEType);
+  bool nonsfi_mode_enabled =
+      PP_ToBool(nacl_interface_->IsNonSFIModeEnabled());
   bool pnacl_debug = GetNaClInterface()->NaClDebugStubEnabled();
   nacl::scoped_ptr<JsonManifest> json_manifest(
       new JsonManifest(url_util_,
                        manifest_base_url(),
                        (is_pnacl ? kPortableISA : GetSandboxISA()),
+                       nonsfi_mode_enabled,
                        pnacl_debug));
   if (!json_manifest->Init(manifest_json, error_info)) {
     return false;

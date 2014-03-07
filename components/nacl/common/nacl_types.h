@@ -60,7 +60,7 @@ struct NaClStartParams {
   bool enable_ipc_proxy;
   bool uses_irt;
   bool enable_dyncode_syscalls;
-  bool enable_nonsfi_mode;
+  bool uses_nonsfi_mode;
 };
 
 // Parameters sent to the browser process to have it launch a NaCl process.
@@ -69,7 +69,9 @@ struct NaClStartParams {
 // nacl_host_messages.h.
 struct NaClLaunchParams {
   NaClLaunchParams();
-  NaClLaunchParams(const std::string& u, int r, uint32 p, bool uses_irt,
+  NaClLaunchParams(const std::string& u, int r, uint32 p,
+                   bool uses_irt,
+                   bool uses_nonsfi_mode,
                    bool enable_dyncode_syscalls,
                    bool enable_exception_handling,
                    bool enable_crash_throttling);
@@ -80,6 +82,7 @@ struct NaClLaunchParams {
   int render_view_id;
   uint32 permission_bits;
   bool uses_irt;
+  bool uses_nonsfi_mode;
   bool enable_dyncode_syscalls;
   bool enable_exception_handling;
   bool enable_crash_throttling;

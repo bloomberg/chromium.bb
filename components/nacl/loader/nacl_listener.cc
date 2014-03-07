@@ -287,7 +287,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
 
 #if defined(OS_LINUX)
-    if (params.enable_nonsfi_mode) {
+    if (params.uses_nonsfi_mode) {
       // In non-SFI mode, we neither intercept nor rewrite the message using
       // NaClIPCAdapter, and the channels are connected between the plugin and
       // the hosts directly. So, the IPC::Channel instances will be created in
@@ -416,7 +416,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #endif
 
 #if defined(OS_LINUX)
-  if (params.enable_nonsfi_mode) {
+  if (params.uses_nonsfi_mode) {
     nacl::nonsfi::MainStart(args->imc_bootstrap_handle);
     NOTREACHED();
     return;

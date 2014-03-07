@@ -89,6 +89,7 @@ class Plugin : public pp::Instance {
   //
   // Updates nacl_module_origin() and nacl_module_url().
   void LoadNaClModule(nacl::DescWrapper* wrapper,
+                      bool uses_nonsfi_mode,
                       bool enable_dyncode_syscalls,
                       bool enable_exception_handling,
                       bool enable_crash_throttling,
@@ -180,6 +181,7 @@ class Plugin : public pp::Instance {
     // interaction with the page.
     DONE = 4
   };
+
   bool nexe_error_reported() const { return nexe_error_reported_; }
   void set_nexe_error_reported(bool val) {
     nexe_error_reported_ = val;
@@ -389,6 +391,7 @@ class Plugin : public pp::Instance {
   nacl::string plugin_base_url_;
   nacl::string manifest_base_url_;
   nacl::string manifest_url_;
+  bool uses_nonsfi_mode_;
   ReadyState nacl_ready_state_;
   bool nexe_error_reported_;  // error or crash reported
 

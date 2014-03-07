@@ -126,6 +126,8 @@ interface PPB_NaCl_Private {
    * does not need PPAPI, then it can run off the main thread.
    * The |uses_irt| flag indicates whether the IRT should be loaded in this
    * NaCl process.  This is true for ABI stable nexes.
+   * The |uses_nonsfi_mode| flag indicates whether or not nonsfi-mode should
+   * be used with the binary pointed by the url.
    * The |enable_dyncode_syscalls| flag indicates whether or not the nexe
    * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
    * The |enable_exception_handling| flag indicates whether or not the nexe
@@ -138,6 +140,7 @@ interface PPB_NaCl_Private {
                     [in] str_t alleged_url,
                     [in] PP_Bool uses_irt,
                     [in] PP_Bool uses_ppapi,
+                    [in] PP_Bool uses_nonsfi_mode,
                     [in] PP_Bool enable_ppapi_dev,
                     [in] PP_Bool enable_dyncode_syscalls,
                     [in] PP_Bool enable_exception_handling,
@@ -192,6 +195,9 @@ interface PPB_NaCl_Private {
 
   /* Return the number of processors in the system as reported by the OS */
   int32_t GetNumberOfProcessors();
+
+  /* Return whether the non-SFI mode is enabled. */
+  PP_Bool IsNonSFIModeEnabled();
 
   /* Create a temporary file, which will be deleted by the time the
    * last handle is closed (or earlier on POSIX systems), to use for

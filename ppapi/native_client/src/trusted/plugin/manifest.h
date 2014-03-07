@@ -43,6 +43,7 @@ class Manifest {
   // PNaCl translation.
   virtual bool GetProgramURL(nacl::string* full_url,
                              PnaclOptions* pnacl_options,
+                             bool* uses_nonsfi_mode,
                              ErrorInfo* error_info) const = 0;
 
   // Resolves a URL relative to the manifest base URL

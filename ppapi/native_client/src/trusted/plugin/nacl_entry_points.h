@@ -22,6 +22,7 @@ typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     const char* alleged_url,
     PP_Bool uses_irt,
     PP_Bool uses_ppapi,
+    PP_Bool uses_nonsfi_mode,
     PP_Bool enable_ppapi_dev,
     PP_Bool enable_dyncode_syscalls,
     PP_Bool enable_exception_handling,

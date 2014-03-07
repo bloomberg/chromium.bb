@@ -429,10 +429,12 @@ void PluginReverseInterface::AddTempQuotaManagedFile(
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                const Manifest* manifest,
                                bool main_service_runtime,
+                               bool uses_nonsfi_mode,
                                pp::CompletionCallback init_done_cb,
                                pp::CompletionCallback crash_cb)
     : plugin_(plugin),
       main_service_runtime_(main_service_runtime),
+      uses_nonsfi_mode_(uses_nonsfi_mode),
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
@@ -470,6 +472,18 @@ bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc,
 }
 
 bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
+  if (uses_nonsfi_mode_) {
+    // In non-SFI mode, open_resource() is not yet supported, so we do not
+    // need the reverse service. So, skip the initialization (with calling
+    // the completion callback).
+    // Note that there is on going work to replace SRPC by Chrome IPC (not only
+    // for non-SFI mode, but also for SFI mode) (crbug.com/333950),
+    // and non-SFI mode will use Chrome IPC for open_resource() after the
+    // refactoring is done.
+    rev_interface_->StartupInitializationComplete();
+    return true;
+  }
+
   // Hook up the reverse service channel.  We are the IMC client, but
   // provide SRPC service.
   NaClDesc* out_conn_cap;
@@ -510,18 +524,24 @@ bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
   // subsystem since that is handled by user-level code (not secure!)
   // in libsrpc.
   int load_status = -1;
-  NaClSrpcResultCodes rpc_result =
-      NaClSrpcInvokeBySignature(&command_channel_,
-                                "start_module::i",
-                                &load_status);
+  if (uses_nonsfi_mode_) {
+    // In non-SFI mode, we don't need to call start_module SRPC to launch
+    // the plugin.
+    load_status = LOAD_OK;
+  } else {
+    NaClSrpcResultCodes rpc_result =
+        NaClSrpcInvokeBySignature(&command_channel_,
+                                  "start_module::i",
+                                  &load_status);
 
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
-                          "ServiceRuntime: could not start nacl module");
-    return false;
+    if (NACL_SRPC_RESULT_OK != rpc_result) {
+      error_info->SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
+                            "ServiceRuntime: could not start nacl module");
+      return false;
+    }
   }
-  NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n",
-          load_status);
+
+  NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n", load_status);
   if (main_service_runtime_) {
     plugin_->ReportSelLdrLoadStatus(load_status);
   }
@@ -560,6 +580,7 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                         params.url.c_str(),
                         params.uses_irt,
                         params.uses_ppapi,
+                        params.uses_nonsfi_mode,
                         params.enable_dev_interfaces,
                         params.enable_dyncode_syscalls,
                         params.enable_exception_handling,
