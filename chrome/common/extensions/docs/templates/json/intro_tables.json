@@ -117,6 +117,14 @@
       }
     ]
   },
+  "gcm": {
+    "Learn More": [
+      {
+        "link": "cloudMessagingV2.html",
+        "text": "Google Cloud Messaging"
+      }
+    ]
+  },
   "identity": {
     "Learn More": [
       {

@@ -1,0 +1,358 @@
+<meta name="doc-family" content="apps">
+<h1 id="gcm">Google Cloud Messaging</h1>
+
+<p>Google Cloud Messaging (GCM) is a service for both Android-powered device and
+Chrome instances to send and receive message data from servers. <a href="gcm.html">GCM Chrome
+API</a> allows the Chrome apps or extensions to access the GCM
+service for the signed-in Chrome users. The service works even if an app or
+extension isn't currently running. For example, calendar updates could be pushed
+to users even when their calendar app isn't open. </p>
+
+<p>To use both API and service, you must agree to the <a href="https://developers.google.com/terms/">Google APIs Terms of
+Service</a> and <a href="https://developers.google.com/cloud/terms/">Google Cloud Platform Terms
+of Service</a>.</p>
+
+<p>This document describes how to set up and use GCM. For additional information
+see the reference documentation for the <a href="gcm.html">GCM Chrome API</a> and
+the <a href="http://developer.android.com/google/gcm/index.html">GCM Service</a>. To get
+help with GCM or to give us feedback, please see
+<a href="#feedback">Feedback</a>.</p>
+
+<p>Please note that GCM Chrome API is experimental. It is only available to Chrome
+users on the dev channel.</p>
+
+<h2 id="enable_gcm">Enable GCM</h2>
+
+<p>To use GCM for your app or extension, do the following:</p>
+
+<ol>
+<li>Upload your app or extension client to the <a href="https://developers.google.com/chrome/web-store/docs/publish">Chrome Web
+Store</a>.</li>
+<li>A user installs your app or extension.</li>
+<li>Your app or extension client requests a registration ID using $ref:gcm.register
+function and sends this ID to your server together with information
+identifying the user. For more details, please see <a href="#obtain_registration_id">Obtain registration
+ID</a>.</li>
+</ol>
+
+<h2 id="receive_a_message">Receive a message</h2>
+
+<p>At a glance, receiving a message works like this:</p>
+
+<ol>
+<li>Your app or extension client should register a handler to receive the
+$ref:gcm.onMessage event.</li>
+<li>When your server sends a message to the user, it specifies all of the
+registration IDs that are related to that user and passes the message to the
+GCM service.</li>
+<li>GCM servers route the message to all instances of Chrome running apps or
+extensions with one of the registration IDs.</li>
+<li>When the message arrives on the client, Chrome starts the app or extension,
+if it is not already running, and calls the registered handler to process the
+message.</li>
+</ol>
+
+<p>For more details, please see <a href="#receive_messages">Receive messages</a>.</p>
+
+<h2 id="send_a_message">Send a message</h2>
+
+<p>At a glance, sending a message works like this:</p>
+
+<ol>
+<li>Your app or extension generates a unique message ID, so that it is possible
+to find out which message failed to be queued or delivered.</li>
+<li>Your app or extension calls $ref:gcm.send function with an object containing
+message ID, destination ID that identifies the server, and data that consist
+of a list of key value pairs. In this step you can also provide an optional
+time-to-live for the message.</li>
+<li>The callback passed to $ref:gcm.send function will be called to notify the
+result. Your app or extension should check $ref:runtime.lastError to find out if
+the message has been successfully queued for delivery. Please refer to <a href="#error_reference">Error
+reference</a> for possible error codes that could be
+returned.</li>
+<li>In cases that the queued message could not be delivered to the GCM server,
+like network error, a $ref:gcm.onSendError event will be fired. Your app or
+extension can listen to this event and react to it, e.g. by trying to resend
+the message. Please refer to <a href="#error_reference">Error reference</a> for
+possible error codes that could be returned.</li>
+</ol>
+
+<p>For more details, please see <a href="#send_messages">Send messages</a>.</p>
+
+<h2 id="set_up_project">Set up project</h2>
+
+<h3 id="create_google_api_project">Create Google API project</h3>
+
+<ol>
+<li>Login to the <a href="https://cloud.google.com/console/project">Google Developers
+Console</a> using the same Google <br>
+Account that you will use to upload your app or extension.</li>
+<li>If you haven't created an API project yet, click <strong>Create Project</strong>.</li>
+<li>Supply a project name and click <strong>Create</strong>.</li>
+<li>Once the project has been created, a page appears that displays your project
+number. For example, <strong>Project Number: 670330094152</strong>.</li>
+<li>Copy down your project number. You will use it later on as the GCM sender ID.</li>
+</ol>
+
+<h3 id="enable_the_gcm_service">Enable the GCM service</h3>
+
+<ol>
+<li>In the sidebar on the left, select <strong>APIs &amp; auth</strong>.</li>
+<li>In the displayed list of APIs, turn the <strong>Google Cloud Messaging for
+Android</strong> toggle to ON.</li>
+</ol>
+
+<h2 id="set_up_chrome_app_or_extension">Set up Chrome App or Extension</h2>
+
+<h3 id="add_permission_to_manifest">Add permission to manifest</h3>
+
+<p>To use the gcm service, you must declare the <code>gcm</code> permission in
+<code>manifest.json</code>.</p>
+
+<pre data-filename="manifest.json"><code>
+"permissions": [
+  "gcm", "storage", ...
+]
+</code></pre>
+
+<p>Please note that the <code>storage</code> permission is also provided here because the
+sample codes below needs to persist some data via the
+<a href="storage.html">chrome.storage</a> API.</p>
+
+<h2 id="write_chrome_app_or_extension">Write Chrome App or Extension</h2>
+
+<h3 id="obtain_registration_id">Obtain registration ID</h3>
+
+<p>Your app or extension needs to register with GCM servers before it can receive
+messages. When an app or extension registers, it receives a registration ID.
+This is achieved by calling $ref:gcm.register and specifying a list of senders
+identified by project numbers from Google Developers Console. Your app or
+extension should pass a callback function to verify that the registration was
+successful. If successful, the received registration ID should be sent back to
+your application server in a secure way, for example, via https. Otherwise, your
+app or extension should handle the error identified by
+<code>chrome.runtime.lastError</code> and retry later.</p>
+
+<p>If your app or extension wishes to receive messages from the different senders,
+it can call $ref:gcm.register again with the new sender list and the new
+registration ID will be returned.</p>
+
+<pre data-filename="background.js"><code>
+function registerCallback(registrationId) {
+  if (chrome.runtime.lastError) {
+    // When the registration fails, handle the error and retry the
+    // registration later.
+    return;
+  }
+
+  // Send the registration ID to your application server.
+  sendRegistrationId(function(succeed) {
+    // Once the registration ID is received by your server,
+    // set the flag such that register will not be invoked
+    // next time when the app starts up.
+    if (succeed)
+      chrome.storage.local.set({registered: true});
+  });
+}
+
+function sendRegistrationId(callback) {
+  // Send the registration ID to your application server
+  // in a secure way.
+}
+
+chrome.runtime.onStartup.addListener(function() {
+  chrome.storage.local.get("registered", function(result) {
+    // If already registered, bail out.
+    if (result["registered"])
+      return;
+
+    // Up to 100 senders are allowed.
+    var senderIds = ["Your-Sender-ID"];
+    chrome.gcm.register(senderIds, registerCallback);
+  });
+});
+</code></pre>
+
+<p>If your app or extension is installed in different profiles and/or in different
+Chrome instances, each of them will receive a different registration ID.</p>
+
+<p>Your app or extension is automatically unregistered from the GCM service when a
+user uninstalls it. You can't unregister using the GCM API.</p>
+
+<h3 id="receive_messages">Receive messages</h3>
+
+<p>When your server sends a message to the user, it specifies all of the
+registration IDs that are related to that user and passes the message to the GCM
+service. GCM servers route the message to all instances of Chrome running apps
+or extensions with one of the registration IDs. If your app or extension has
+been installed in more than one profiles in a single Chrome instance, all of
+them can receive messages independently based on their unique registration IDs.</p>
+
+<p>Messages from the server are delivered via the $ref:gcm.onMessage event. Your app
+or extension must register a handler to receive this event.</p>
+
+<pre data-filename="background.js"><code>
+chrome.gcm.onMessage.addListener(function(message) {
+  // A message is an object with a data property that
+  // consists of key-value pairs.
+});
+</code></pre>
+
+<p>As long as Chrome is running, even if the extension or app is not running, it is
+woken up to deliver a message.</p>
+
+<h3 id="send_messages">Send messages</h3>
+
+<p>To send messages upstream, your app or extension should call $ref:gcm.send with an
+object containing:</p>
+
+<ul>
+<li>Message ID that identifies the message when it fails to be queued or
+delivered. The message ID can be any kind of string. However, it is
+recommended to stay unique across the lifetime of your app or extension, even
+after it restarts. If you use the same message ID, there may be a chance that
+the previous message gets overridden. If an auto-increment counter is used to
+create the message ID, your app or extension should persist the counter value
+via <a href="storage.html">chrome.storage</a> API and restore it when the app
+reloads.</li>
+<li>Destination ID that identifies the server. This is the project number from the
+Google Developers Console plus the suffix "@gcm.googleapis.com".</li>
+<li>Data that consist of a list of string-to-string key value pairs (up to 4KB
+total).</li>
+<li>Time-to-live (TTL, optional). This property value must be a duration from 0 to
+2,419,200 seconds (4 weeks) and it corresponds to the maximum period of time
+for which GCM will store and try to deliver the message. If this property is
+not set, it is default to the maximum value. When a TTL is set to 0, GCM will
+try to deliver the message immediately. If the immediate effort fails, the
+message will be discarded.</li>
+</ul>
+
+<p>When the callback passed in $ref:gcm.send is called without runtime error, it does
+not mean that the message was already delivered to the GCM server. Rather, it
+means that it was queued for delivery. If the message fails to reach the
+destination within the specified TTL period, for example due to network error,
+the $ref:gcm.onSendError will be fired.</p>
+
+<pre data-filename="background.js"><code>
+// Substitute your own sender ID here. This is the project
+// number you got from the Google Developers Console.
+var senderId = "Your-Sender-ID";
+
+// Make the message ID unique across the lifetime of your app.
+// One way to achieve this is to use the auto-increment counter
+// that is persisted to local storage.
+
+// Message ID is saved to and restored from local storage.
+var messageId = 0;
+chrome.storage.local.get("messageId", function(result) {
+  if (chrome.runtime.lastError)
+    return;
+  messageId = parseInt(result["messageId"]);
+  if (isNaN(messageId))
+    messageId = 0;
+});
+
+// Sets up an event listener for send error.
+chrome.gcm.onSendError.addListener(sendError);
+
+// Returns a new ID to identify the message.
+function getMessageId() {
+  messageId++;
+  chrome.storage.local.set({messageId: messageId});
+  return messageId.toString();
+}
+
+function sendMessage() {
+  var message = {
+    messageId: getMessageId(),
+    destinationId: senderId + "@gcm.googleapis.com",
+    timeToLive: 86400,    // 1 day
+    data: {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  };
+  chrome.gcm.send(message, function(messageId) {
+    if (chrome.runtime.lastError) {
+      // Some error occurred. Fail gracefully or try to send
+      // again.
+      return;
+    }
+
+    // The message has been accepted for delivery. If the message
+    // can not reach the destination, onSendError event will be
+    // fired.
+  });
+}
+
+function sendError(error) {
+  console.log("Message " + error.messageId +
+      " failed to be sent: " + error.errorMessage);
+}
+</code></pre>
+
+<h3 id="messages_deleted_event">Messages deleted event</h3>
+
+<p>GCM will store up to 100 non-collapsible messages. After that, all messages are
+discarded from GCM, and an event $ref:gcm.onMessagesDeleted will be fired, which
+tells the client that it falls behind. Your app or extension should respond by
+syncing with your application server to recover the discarded messages.</p>
+
+<pre data-filename="background.js"><code>
+chrome.gcm.onMessagesDeleted.addListener(messagesDeleted);
+
+function messagesDeleted() {
+  // All messages have been discarded from GCM. Sync with
+  // your application server to recover from the situation.
+}
+</code></pre>
+
+<h3 id="collapsible_messages">Collapsible messages</h3>
+
+<p>GCM messages are often a tickle, telling the app or extension to contact the
+server for fresh data. In GCM, it's possible to create collapsible messages for
+this situation, wherein new messages replace older ones. When a collapse key is
+provided and multiple messages are queued up in the GCM servers for the same
+user, only the last one with any given collapse key is delivered to your app or
+extension. As a result the <code>message</code> object passed to the $ref:gcm.onMessage event
+will contain a <code>collapseKey</code>field. For more details about sending collapsible
+messages, please refer to <a href="http://developer.android.com/google/gcm/adv.html#collapsible">GCM Advance
+Topics</a>.</p>
+
+<h2 id="publish_your_app">Publish your app</h2>
+
+<p>To use the GCM service, you must publish your app in the <a href="https://developers.google.com/chrome/web-store/docs/publish">Chrome Web
+Store</a>.</p>
+
+<h2 id="error_reference">Error reference</h2>
+
+<p>An error could occur when a gcm API function is called. Your app or extension
+should check $ref:runtime.lastError for more information in your callback. The
+error code will also be passed as a parameter to $ref:gcm.onSendError event.</p>
+
+<p>Here's a brief summary of the gcm errors:</p>
+
+<ul>
+<li><strong>Function was called with invalid parameters</strong>: this could happen when gcm
+functions are called with bad parameters.</li>
+<li><strong>Profile was not signed in</strong>: this could happen when gcm functions are called
+from a profile that was not signed in.</li>
+<li><strong>Asynchronous operation is pending</strong>: this could happen when certain gcm
+function is called again without waiting for the callback passed in previous
+function to be called.</li>
+<li><strong>Network error occurred</strong>: this could happen when GCM server fails to reach
+due to network problem, like losing Internet connection.</li>
+<li><strong>Server error occurred</strong>: this could happen when GCM server fails to reach
+due to server problem, like server busy.</li>
+<li><strong>Time-to-live exceeded</strong>: this could happen when a message could not be
+delivered within the specific time-to-live period.</li>
+<li><strong>Unknown error occurred</strong>: this could happen due to any other internal
+errors.</li>
+</ul>
+
+<h2 id="feedback">Feedback</h2>
+
+<p>You can provide feedback about Google Cloud Messaging and the gcm API through
+the Google Group <a href="https://groups.google.com/forum/#!forum/gcm-for-chrome-v2-feedback">GCM for Chrome V2
+Feedback</a>.
+Use this group to ask for help, file bug reports, and request features.</p>
