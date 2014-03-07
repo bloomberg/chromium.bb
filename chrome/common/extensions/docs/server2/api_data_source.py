@@ -9,7 +9,7 @@ import posixpath
 
 from environment import IsPreviewServer
 from extensions_paths import (
-    API, API_FEATURES, JSON_TEMPLATES, PRIVATE_TEMPLATES)
+    API_FEATURES, JSON_TEMPLATES, PRIVATE_TEMPLATES)
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 from environment import IsPreviewServer

@@ -9,7 +9,8 @@ import sys
 import unittest
 from appengine_url_fetcher import AppEngineUrlFetcher
 from extensions_paths import (
-    ARTICLES_TEMPLATES, EXTENSIONS, DOCS, JSON_TEMPLATES, PUBLIC_TEMPLATES)
+    ARTICLES_TEMPLATES, CHROME_EXTENSIONS, DOCS, JSON_TEMPLATES,
+    PUBLIC_TEMPLATES)
 from fake_fetchers import ConfigureFakeFetchers
 from file_system import FileNotFoundError
 from rietveld_patcher import RietveldPatcher
@@ -52,9 +53,10 @@ class RietveldPatcherTest(unittest.TestCase):
                      ['%sextensions/runtime.html' % PUBLIC_TEMPLATES])
     self.assertEqual(
         sorted(modified),
-        _PrefixWith(EXTENSIONS, ['api/test.json',
-                                 'docs/templates/json/extensions_sidenav.json',
-                                 'manifest.h']))
+        _PrefixWith(CHROME_EXTENSIONS,
+                    ['api/test.json',
+                     'docs/templates/json/extensions_sidenav.json',
+                     'manifest.h']))
 
   def testApply(self):
     article_path = '%stest_foo.html' % ARTICLES_TEMPLATES

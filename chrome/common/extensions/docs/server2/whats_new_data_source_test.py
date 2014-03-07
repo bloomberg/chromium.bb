@@ -8,7 +8,6 @@ import os
 import unittest
 import sys
 
-from extensions_paths import EXTENSIONS
 from fake_host_file_system_provider import FakeHostFileSystemProvider
 from server_instance import ServerInstance
 from test_data.canned_data import CANNED_API_FILE_SYSTEM_DATA
