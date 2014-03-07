@@ -65,7 +65,7 @@ class MockFakeTimeEpollServer : public FakeTimeEpollServer {
                                    EpollAlarmCallbackInterface* alarm));
 };
 
-class QuicTimeWaitListManagerTest : public testing::Test {
+class QuicTimeWaitListManagerTest : public ::testing::Test {
  protected:
   QuicTimeWaitListManagerTest()
       : time_wait_list_manager_(&writer_, &visitor_,

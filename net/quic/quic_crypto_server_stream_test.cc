@@ -49,7 +49,7 @@ class QuicCryptoServerConfigPeer {
 
 namespace {
 
-class QuicCryptoServerStreamTest : public testing::TestWithParam<bool> {
+class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
  public:
   QuicCryptoServerStreamTest()
       : connection_(new PacketSavingConnection(true)),

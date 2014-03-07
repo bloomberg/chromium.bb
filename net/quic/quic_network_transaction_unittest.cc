@@ -105,7 +105,7 @@ class MockQuicData {
 
 class QuicNetworkTransactionTest
     : public PlatformTest,
-      public testing::WithParamInterface<QuicVersion> {
+      public ::testing::WithParamInterface<QuicVersion> {
  protected:
   QuicNetworkTransactionTest()
       : maker_(GetParam(), 0),

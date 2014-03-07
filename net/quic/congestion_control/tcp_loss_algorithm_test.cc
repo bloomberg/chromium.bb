@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/congestion_control/tcp_loss_algorithm.h"
-
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/rtt_stats.h"
+#include "net/quic/congestion_control/tcp_loss_algorithm.h"
 #include "net/quic/quic_unacked_packet_map.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
-namespace {
 
 class TcpLossAlgorithmTest : public ::testing::Test {
  protected:
@@ -177,6 +175,5 @@ TEST_F(TcpLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
-}  // namespace
 }  // namespace test
 }  // namespace net

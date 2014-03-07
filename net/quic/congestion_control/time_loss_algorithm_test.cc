@@ -14,7 +14,6 @@
 
 namespace net {
 namespace test {
-namespace {
 
 class TimeLossAlgorithmTest : public ::testing::Test {
  protected:
@@ -134,6 +133,5 @@ TEST_F(TimeLossAlgorithmTest, MultipleLossesAtOnce) {
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
-}  // namespace
 }  // namespace test
 }  // namespace net

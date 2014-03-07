@@ -12,6 +12,7 @@
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_utils.h"
 
+using std::min;
 using std::string;
 
 namespace net {
@@ -106,7 +107,7 @@ QuicErrorCode QuicNegotiableUint32::ProcessClientHello(
     return error;
   }
   negotiated_ = true;
-  negotiated_value_ = std::min(value, max_value_);
+  negotiated_value_ = min(value, max_value_);
 
   return QUIC_NO_ERROR;
 }
