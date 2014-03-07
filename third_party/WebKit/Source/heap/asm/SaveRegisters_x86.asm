@@ -74,6 +74,11 @@
 mangle(pushAllRegisters):
         ;; Push all callee-saves registers to get them
         ;; on the stack for conservative stack scanning.
+        ;; We maintain 16-byte alignment at calls (required on Mac).
+        ;; There is an 8-byte return address on the stack and we push
+        ;; 56 bytes which maintains 16-byte stack alignment
+        ;; at the call.
+        push 0
         push rbx
         push rbp
         push r12
@@ -88,7 +93,7 @@ mangle(pushAllRegisters):
         call r8
         ;; Pop the callee-saved registers. None of them were
         ;; modified so no restoring is needed.
-        add rsp, 48
+        add rsp, 56
         ret
 
 %elif X64WIN
@@ -120,6 +125,10 @@ mangle(pushAllRegisters):
 mangle(pushAllRegisters):
         ;; Push all callee-saves registers to get them
         ;; on the stack for conservative stack scanning.
+        ;; We maintain 16-byte alignment at calls (required on
+        ;; Mac). There is a 4-byte return address on the stack
+        ;; and we push 28 bytes which maintains 16-byte alignment
+        ;; at the call.
         push ebx
         push ebp
         push esi
