@@ -34,6 +34,14 @@ const char kDataFileName[] = TEST_DATA_DIR "/countryinfo.txt";
 // The number of characters in the fake data URL prefix.
 const size_t kFakeDataUrlLength = sizeof FakeDownloader::kFakeDataUrl - 1;
 
+// Returns "data/HK" for "data/HK--en".
+std::string RemoveLanguageCode(const std::string& key) {
+  std::string::size_type language_code_pos = key.find("--");
+  return language_code_pos == std::string::npos
+      ? key
+      : key.substr(0, language_code_pos);
+}
+
 std::string CCKey(const std::string& key) {
   const char kSplitChar = '/';
 
@@ -64,7 +72,7 @@ std::map<std::string, std::string> InitData() {
     }
 
     std::string key = line.substr(0, divider);
-    std::string cc_key = CCKey(key);
+    std::string cc_key = RemoveLanguageCode(CCKey(key));
     std::string value = line.substr(divider + 1);
     std::string url = FakeDownloader::kFakeDataUrl + cc_key;
     std::map<std::string, std::string>::iterator data_it = data.find(url);
