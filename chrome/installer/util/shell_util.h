@@ -412,6 +412,11 @@ class ShellUtil {
   // Returns the DefaultState of Chrome for HTTP and HTTPS.
   static DefaultState GetChromeDefaultState();
 
+  // Returns the DefaultState of the Chrome instance with the specified path
+  // for HTTP and HTTPs.
+  static DefaultState GetChromeDefaultStateFromPath(
+      const base::FilePath& chrome_exe);
+
   // Returns the DefaultState of Chrome for |protocol|.
   static DefaultState GetChromeDefaultProtocolClientState(
       const base::string16& protocol);
