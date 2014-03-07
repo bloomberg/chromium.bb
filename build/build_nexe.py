@@ -118,7 +118,7 @@ def IsEnvFlagTrue(flag_name, default=False):
   flag_value = os.environ.get(flag_name)
   if flag_value is None:
     return default
-  return bool(re.search(flag_value, r'^([tTyY]|1:?)'))
+  return bool(re.search(r'^([tTyY]|1:?)', flag_value))
 
 
 class Builder(object):
