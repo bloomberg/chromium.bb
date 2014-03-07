@@ -61,8 +61,8 @@ void ContextMenuController::clearContextMenu()
     if (m_menuProvider)
         m_menuProvider->contextMenuCleared();
     m_menuProvider = nullptr;
-    m_hitTestResult = HitTestResult();
     m_client->clearContextMenu();
+    m_hitTestResult = HitTestResult();
 }
 
 void ContextMenuController::documentDetached(Document* document)

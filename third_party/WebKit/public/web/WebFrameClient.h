@@ -231,6 +231,10 @@ public:
     // the given frame. Additional context data is supplied.
     virtual void showContextMenu(const WebContextMenuData&) { }
 
+    // Called when the data attached to the currently displayed context menu is
+    // invalidated. The context menu may be closed if possible.
+    virtual void clearContextMenu() { }
+
 
     // Low-level resource notifications ------------------------------------
 
