@@ -126,9 +126,6 @@ class BluetoothAdapterChromeOS
                                 const ConfirmationCallback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
-  // PairingContext is an API between BluetoothAdapterChromeOS and
-  // BluetoothDeviceChromeOS for a single pairing attempt, wrapping the
-  // callbacks of the underlying BluetoothAgentServiceProvider object.
   // Called by dbus:: on completion of the D-Bus method call to register the
   // pairing agent.
   void OnRegisterAgent();

@@ -32,6 +32,10 @@ const char kAgentPath[] = "/org/chromium/bluetooth_agent";
 
 void OnUnregisterAgentError(const std::string& error_name,
                             const std::string& error_message) {
+  // It's okay if the agent didn't exist, it means we never saw an adapter.
+  if (error_name == bluetooth_agent_manager::kErrorDoesNotExist)
+    return;
+
   LOG(WARNING) << "Failed to unregister pairing agent: "
                << error_name << ": " << error_message;
 }
@@ -48,6 +52,12 @@ BluetoothAdapterChromeOS::BluetoothAdapterChromeOS()
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothInputClient()->AddObserver(this);
 
+  // Register the pairing agent.
+  dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
+  agent_.reset(BluetoothAgentServiceProvider::Create(
+      system_bus, dbus::ObjectPath(kAgentPath), this));
+  DCHECK(agent_.get());
+
   std::vector<dbus::ObjectPath> object_paths =
       DBusThreadManager::Get()->GetBluetoothAdapterClient()->GetAdapters();
 
@@ -55,22 +65,6 @@ BluetoothAdapterChromeOS::BluetoothAdapterChromeOS()
     VLOG(1) << object_paths.size() << " Bluetooth adapter(s) available.";
     SetAdapter(object_paths[0]);
   }
-
-  // Register the pairing agent.
-  dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
-  agent_.reset(BluetoothAgentServiceProvider::Create(
-      system_bus, dbus::ObjectPath(kAgentPath), this));
-  DCHECK(agent_.get());
-
-  VLOG(1) << "Registering pairing agent";
-  DBusThreadManager::Get()->GetBluetoothAgentManagerClient()->
-      RegisterAgent(
-          dbus::ObjectPath(kAgentPath),
-          bluetooth_agent_manager::kKeyboardDisplayCapability,
-          base::Bind(&BluetoothAdapterChromeOS::OnRegisterAgent,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BluetoothAdapterChromeOS::OnRegisterAgentError,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 BluetoothAdapterChromeOS::~BluetoothAdapterChromeOS() {
@@ -474,10 +468,12 @@ void BluetoothAdapterChromeOS::OnRegisterAgent() {
 void BluetoothAdapterChromeOS::OnRegisterAgentError(
     const std::string& error_name,
     const std::string& error_message) {
+  // Our agent being already registered isn't an error.
+  if (error_name == bluetooth_agent_manager::kErrorAlreadyExists)
+    return;
+
   LOG(WARNING) << ": Failed to register pairing agent: "
                << error_name << ": " << error_message;
-
-  agent_.reset();
 }
 
 void BluetoothAdapterChromeOS::OnRequestDefaultAgent() {
@@ -533,6 +529,16 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
   object_path_ = object_path;
 
   VLOG(1) << object_path_.value() << ": using adapter.";
+
+  VLOG(1) << "Registering pairing agent";
+  DBusThreadManager::Get()->GetBluetoothAgentManagerClient()->
+      RegisterAgent(
+          dbus::ObjectPath(kAgentPath),
+          bluetooth_agent_manager::kKeyboardDisplayCapability,
+          base::Bind(&BluetoothAdapterChromeOS::OnRegisterAgent,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BluetoothAdapterChromeOS::OnRegisterAgentError,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   SetDefaultAdapterName();
 
