@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
-#include "mojo/apps/js/bindings/handle.h"
+#include "mojo/bindings/js/handle.h"
 
 namespace mojo {
 namespace apps {

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/apps/js/bindings/support.h"
+#include "mojo/bindings/js/support.h"
 
 #include "base/bind.h"
 #include "gin/arguments.h"
@@ -12,8 +12,8 @@
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
-#include "mojo/apps/js/bindings/handle.h"
-#include "mojo/apps/js/bindings/waiting_callback.h"
+#include "mojo/bindings/js/handle.h"
+#include "mojo/bindings/js/waiting_callback.h"
 #include "mojo/public/environment/default_async_waiter.h"
 #include "mojo/public/system/core_cpp.h"
 
@@ -55,7 +55,7 @@ gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
-const char Support::kModuleName[] = "mojo/apps/js/bindings/support";
+const char Support::kModuleName[] = "mojo/bindings/js/support";
 
 v8::Local<v8::Value> Support::GetModule(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);

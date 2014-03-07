@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/apps/js/bindings/core.h"
+#include "mojo/bindings/js/core.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -14,7 +14,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
-#include "mojo/apps/js/bindings/handle.h"
+#include "mojo/bindings/js/handle.h"
 
 namespace mojo {
 namespace js {
@@ -86,7 +86,7 @@ gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
-const char Core::kModuleName[] = "mojo/apps/js/bindings/core";
+const char Core::kModuleName[] = "mojo/bindings/js/core";
 
 v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);

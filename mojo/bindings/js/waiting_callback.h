@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_APPS_JS_BINDINGS_WAITING_CALLBACK_H_
-#define MOJO_APPS_JS_BINDINGS_WAITING_CALLBACK_H_
+#ifndef MOJO_BINDINGS_JS_WAITING_CALLBACK_H_
+#define MOJO_BINDINGS_JS_WAITING_CALLBACK_H_
 
 #include "gin/handle.h"
 #include "gin/runner.h"
@@ -46,4 +46,4 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback> {
 }  // namespace js
 }  // namespace mojo
 
-#endif  // MOJO_APPS_JS_BINDINGS_WAITING_CALLBACK_H_
+#endif  // MOJO_BINDINGS_JS_WAITING_CALLBACK_H_

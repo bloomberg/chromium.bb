@@ -11,11 +11,11 @@
 #include "gin/modules/module_registry.h"
 #include "gin/modules/timer.h"
 #include "gin/try_catch.h"
-#include "mojo/apps/js/bindings/core.h"
 #include "mojo/apps/js/bindings/gl/module.h"
 #include "mojo/apps/js/bindings/monotonic_clock.h"
-#include "mojo/apps/js/bindings/support.h"
 #include "mojo/apps/js/bindings/threading.h"
+#include "mojo/bindings/js/core.h"
+#include "mojo/bindings/js/support.h"
 
 namespace mojo {
 namespace apps {

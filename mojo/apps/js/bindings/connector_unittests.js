@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Mock out the support module to avoid depending on the message loop.
-define("mojo/apps/js/bindings/support", function() {
+define("mojo/bindings/js/support", function() {
   var waitingCallbacks = [];
 
   function WaitCookie(id) {
@@ -46,9 +46,9 @@ define("mojo/apps/js/bindings/support", function() {
 
 define([
     "gin/test/expect",
-    "mojo/apps/js/bindings/support",
-    "mojo/apps/js/bindings/core",
-    "mojo/apps/js/bindings/connector",
+    "mojo/bindings/js/support",
+    "mojo/bindings/js/core",
+    "mojo/public/bindings/js/connector",
     "mojo/public/bindings/tests/sample_service.mojom",
 ], function(expect, mockSupport, core, connector, sample) {
 

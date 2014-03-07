@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 define("{{module.path}}", [
-    "mojo/apps/js/bindings/core",
-    "mojo/apps/js/bindings/codec",
+    "mojo/bindings/js/core",
+    "mojo/public/bindings/js/codec",
 {%- for import in imports %}
     "{{import.module.path}}",
 {%- endfor %}

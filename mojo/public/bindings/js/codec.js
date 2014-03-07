@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/apps/js/bindings/codec", function() {
+define("mojo/public/bindings/js/codec", function() {
 
   // Memory -------------------------------------------------------------------
 

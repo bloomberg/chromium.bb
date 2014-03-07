@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_APPS_JS_BINDINGS_HANDLE_H_
-#define MOJO_APPS_JS_BINDINGS_HANDLE_H_
+#ifndef MOJO_BINDINGS_JS_HANDLE_H_
+#define MOJO_BINDINGS_JS_HANDLE_H_
 
 #include "gin/converter.h"
 #include "mojo/public/system/core_cpp.h"
@@ -20,4 +20,4 @@ struct Converter<mojo::Handle> {
 
 }  // namespace gin
 
-#endif  // MOJO_APPS_JS_BINDINGS_HANDLE_H_
+#endif  // MOJO_BINDINGS_JS_HANDLE_H_

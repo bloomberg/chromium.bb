@@ -424,6 +424,33 @@
         'service_manager/test.mojom',
       ],
     },
+    {
+      'target_name': 'mojo_js_bindings_lib',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../gin/gin.gyp:gin',
+        '../v8/tools/gyp/v8.gyp:v8',
+        'mojo_common_lib',
+        'mojo_system',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        '../gin/gin.gyp:gin',
+        'mojo_common_lib',
+        'mojo_system',
+      ],
+      'sources': [
+        'bindings/js/core.cc',
+        'bindings/js/core.h',
+        'bindings/js/handle.cc',
+        'bindings/js/handle.h',
+        'bindings/js/support.cc',
+        'bindings/js/support.h',
+        'bindings/js/waiting_callback.cc',
+        'bindings/js/waiting_callback.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"', {
