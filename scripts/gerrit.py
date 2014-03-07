@@ -270,6 +270,11 @@ def UserActMessage(opts, idx, message):
   opts.gerrit.SetReview(idx, msg=message)
 
 
+def UserActDeletedraft(opts, idx):
+  """Delete draft patch set <n>"""
+  opts.gerrit.DeleteDraft(idx)
+
+
 def main(argv):
   # Locate actions that are exposed to the user.  All functions that start
   # with "UserAct" are fair game.

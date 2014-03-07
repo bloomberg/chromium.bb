@@ -336,6 +336,14 @@ class GerritHelper(object):
       return
     gob_util.RestoreChange(self.host, self._to_changenum(change))
 
+  def DeleteDraft(self, change, dryrun=False):
+    """Delete a draft patch set."""
+    if dryrun:
+      logging.info('Would have deleted draft patch set %s', change)
+      return
+    gob_util.DeleteDraft(self.host, self._to_changenum(change))
+
+
 
 def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information.

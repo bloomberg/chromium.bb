@@ -297,6 +297,22 @@ def RestoreChange(host, change, msg=''):
   return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
+def DeleteDraft(host, change, msg=''):
+  """Delete a gerrit draft patch set."""
+  path = 'changes/%s' % change
+  body = {'message': msg} if msg else None
+  try:
+    FetchUrl(host, path, reqtype='DELETE', body=body, ignore_404=False)
+  except GOBError as e:
+    # On success, gerrit returns status 204; anything else is an error.
+    if e.http_status != 204:
+      raise
+  else:
+    raise GOBError(
+        'Unexpectedly received a 200 http status while deleting draft %r'
+        % change)
+
+
 def SubmitChange(host, change, wait_for_merge=True):
   """Submits a gerrit change via Gerrit."""
   path = 'changes/%s/submit' % change
