@@ -14,32 +14,32 @@
       ],
       "stress_memory": [
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Next" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Next",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Next" },
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Next" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Next",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Next" },
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Next" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Next",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Previous" },
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Previous" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Previous",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Previous" },
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Previous" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Previous",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Previous" },
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Previous" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Previous",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Images" },
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Images" },
-        { "action": "wait", "condition": "href_change" },
+        { "action": "javascript_click", "text": "Images",
+          "wait_until" : {"condition": "href_change" }},
         { "action": "wait", "condition": "element", "text": "Images" }
       ]
     },
@@ -56,10 +56,10 @@
         "scrollable_element_function": "function(callback) { gmonkey.load('2.0', function(api) { callback(api.getScrollableElement()); }); }"
       },
       "stress_memory": [
-        { "action": "javascript_click", "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#starred\"]" },
-        { "action": "wait", "condition": "href_change" },
-        { "action": "javascript_click", "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]" },
-        { "action": "wait", "condition": "href_change" }
+        { "action": "javascript_click", "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#starred\"]",
+            "wait_until" : {"condition": "href_change" }},
+        { "action": "javascript_click", "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]",
+            "wait_until" : {"condition": "href_change" }}
       ]
     },
     {
@@ -172,17 +172,17 @@
         { "action": "wait", "condition": "element", "text": "accessibility" }
       ],
       "stress_memory": [
-        { "action": "javascript_click", "text": "accessibility" },
-        { "action": "wait", "condition": "navigate" },
+        { "action": "javascript_click", "text": "accessibility",
+          "wait_until" : {"condition": "navigate" }},
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "advanced" },
-        { "action": "wait", "condition": "navigate" },
+        { "action": "javascript_click", "text": "advanced",
+          "wait_until" : {"condition": "navigate" }},
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "beginner" },
-        { "action": "wait", "condition": "navigate" },
+        { "action": "javascript_click", "text": "beginner",
+          "wait_until" : {"condition": "navigate" }},
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Home" },
-        { "action": "wait", "condition": "navigate" }
+        { "action": "javascript_click", "text": "Home",
+          "wait_until" : {"condition": "navigate" }}
       ]
     },
     {
@@ -195,14 +195,14 @@
       ],
       "stress_memory": [
         { "action": "scroll" },
-        { "action": "javascript_click", "selector": "a[href=\"http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/\"]" },
-        { "action": "wait", "condition": "navigate" },
+        { "action": "javascript_click", "selector": "a[href=\"http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/\"]",
+          "wait_until" : { "condition": "navigate" }},
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "Features" },
-        { "action": "wait", "condition": "navigate" },
+        { "action": "javascript_click", "text": "Features",
+          "wait_until" : { "condition": "navigate" }},
         { "action": "scroll" },
-        { "action": "javascript_click", "text": "News" },
-        { "action": "wait", "condition": "navigate" },
+        { "action": "javascript_click", "text": "News",
+          "wait_until" : { "condition": "navigate" }},
         { "action": "scroll" }
       ]
     },
@@ -220,18 +220,18 @@
         "scroll_is_infinite": true
       },
       "stress_memory": [
-        { "action": "javascript_click", "text": "About" },
-        { "action": "wait", "condition": "navigate" },
-        { "action": "javascript_click", "text": "The Audacity of Hope" },
-        { "action": "wait", "condition": "navigate" },
-        { "action": "javascript_click", "text": "Back to Barack Obama's Timeline" },
-        { "action": "wait", "condition": "navigate" },
-        { "action": "javascript_click", "text": "About" },
-        { "action": "wait", "condition": "navigate" },
-        { "action": "javascript_click", "text": "Elected to U.S. Senate" },
-        { "action": "wait", "condition": "navigate" },
-        { "action": "javascript_click", "text": "Home" },
-        { "action": "wait", "condition": "navigate" }
+        { "action": "javascript_click", "text": "About",
+          "wait_until" : { "condition": "navigate" }},
+        { "action": "javascript_click", "text": "The Audacity of Hope",
+          "wait_until" : { "condition": "navigate" }},
+        { "action": "javascript_click", "text": "Back to Barack Obama's Timeline",
+          "wait_until" : { "condition": "navigate" }},
+        { "action": "javascript_click", "text": "About",
+          "wait_until" : { "condition": "navigate" }},
+        { "action": "javascript_click", "text": "Elected to U.S. Senate",
+          "wait_until" : { "condition": "navigate" }},
+        { "action": "javascript_click", "text": "Home",
+          "wait_until" : { "condition": "navigate" }}
       ]
     },
     {

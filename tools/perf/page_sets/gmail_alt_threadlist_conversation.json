@@ -16,15 +16,15 @@
       "endure": [
         {
           "action": "javascript_click",
-          "xpath": "//span[@email]"
+          "xpath": "//span[@email]",
+          "wait_until" : { "condition" : "href_change" }
         },
-        { "action": "wait", "condition": "href_change" },
         { "action": "wait", "seconds": 1 },
         {
           "action": "javascript_click",
-          "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]"
+          "selector": "a[href=\"https://mail.google.com/mail/u/0/?shva=1#inbox\"]",
+          "wait_until" : { "condition" : "href_change" }
         },
-        { "action": "wait", "condition": "href_change" },
         { "action": "wait", "seconds": 1 }
       ]
     }
