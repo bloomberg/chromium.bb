@@ -15,7 +15,7 @@
 // TODO(blundell): Eliminate the need for this conditional include.
 // crbug.com/328150
 #if !defined(OS_IOS)
-#include "grit/webkit_resources.h"
+#include "grit/component_scaled_resources.h"
 #endif
 
 using base::ASCIIToUTF16;

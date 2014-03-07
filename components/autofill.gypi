@@ -86,12 +86,6 @@
         '..',
       ],
       'dependencies': [
-        'autofill_core_common',
-        'autofill_regexes',
-        'component_strings.gyp:component_strings',
-        'encryptor',
-        'user_prefs',
-        'webdata_common',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_prefs',
@@ -105,6 +99,13 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
+        'autofill_core_common',
+        'autofill_regexes',
+        'component_resources.gyp:component_resources',
+        'component_strings.gyp:component_strings',
+        'encryptor',
+        'user_prefs',
+        'webdata_common',
       ],
       'sources': [
         'autofill/core/browser/address.cc',
@@ -218,7 +219,7 @@
         # crbug.com/328150
         ['OS != "ios"', {
           'dependencies': [
-            '../webkit/webkit_resources.gyp:webkit_resources',
+            'component_resources.gyp:component_resources',
           ],
         }],
         ['autofill_enable_sync == 1', {
@@ -331,14 +332,6 @@
             '..',
           ],
           'dependencies': [
-            'autofill_content_common',
-            'autofill_content_risk_proto',
-            'autofill_core_browser',
-            'autofill_core_common',
-            'autofill_regexes',
-            'encryptor',
-            'user_prefs',
-            'webdata_common',
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:base_prefs',
@@ -356,9 +349,16 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/ui.gyp:ui',
             '../url/url.gyp:url_lib',
-            '../webkit/webkit_resources.gyp:webkit_resources',
-
+            'autofill_content_common',
+            'autofill_content_risk_proto',
+            'autofill_core_browser',
+            'autofill_core_common',
+            'autofill_regexes',
+            'component_resources.gyp:component_resources',
             'component_strings.gyp:component_strings',
+            'encryptor',
+            'user_prefs',
+            'webdata_common',
           ],
           'sources': [
             'autofill/content/browser/autofill_driver_impl.cc',

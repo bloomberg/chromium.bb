@@ -84,7 +84,6 @@
   "chrome/app/resources/locale_settings_win.grd": {
     "messages": [10500],
   },
-
   "ui/base/strings/ui_strings.grd": {
     "messages": [11000],
   },
@@ -109,12 +108,10 @@
   "webkit/glue/webkit_strings.grd": {
     "messages": [18500],
   },
-
   "components/policy/resources/policy_templates.grd": {
     "structures": [20500],
     "messages": [20510],
   },
-
   "chrome/browser/resources/sync_internals_resources.grd": {
     "includes": [21500],
   },
@@ -133,8 +130,6 @@
   },
   "chrome/browser/resources/options_resources.grd": {
     "includes": [23000],
-  },
-  "chrome/browser/resources/options_resources.grd": {
     "structures": [23200],
   },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
@@ -194,8 +189,11 @@
   "components/component_strings.grd": {
     "messages": [30000],
   },
-  "components/component_resources.grd": {
+  "components/resources/component_resources.grd": {
     "includes": [30250],
+  },
+  "components/resources/component_scaled_resources.grd": {
+    "structures": [30350],
   },
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30500],

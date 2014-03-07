@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "grit/webkit_resources.h"
+#include "grit/component_scaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/rect_conversions.h"

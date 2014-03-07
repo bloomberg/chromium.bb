@@ -12,14 +12,28 @@
       },
       'actions': [
         {
-          'action_name': 'component_resources',
+          'action_name': 'generate_component_resources',
           'variables': {
-            'grit_grd_file': 'component_resources.grd',
+            'grit_grd_file': 'resources/component_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'generate_component_scaled_resources',
+          'variables': {
+            'grit_grd_file': 'resources/component_scaled_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/components',
+        ],
+      },
+      'hard_dependency': 1,
     },
   ],
 }

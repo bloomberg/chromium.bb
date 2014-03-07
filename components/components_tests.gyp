@@ -204,11 +204,8 @@
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
               ],
               'dependencies': [
-                # Dependencies of autofill/core/browser/credit_card_unittest.cc.
-                # TODO(blundell): Eliminate the need for this conditional
-                # dependence. crbug.com/328150
-                '../webkit/webkit_resources.gyp:webkit_resources',
-                
+                'component_resources.gyp:component_resources',
+
                 # Dependencies of browser_context_keyed_service
                 'components.gyp:browser_context_keyed_service',
 

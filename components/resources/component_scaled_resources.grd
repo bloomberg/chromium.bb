@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/component_scaled_resources.h" type="rc_header" context="default_100_percent">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="component_resources_100_percent.pak" type="data_package" context="default_100_percent" />
+    <output filename="component_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+  </outputs>
+  <release seq="1">
+    <structures fallback_to_low_resolution="true">
+      <part file="autofill_scaled_resources.grdp" />
+    </structures>
+  </release>
+</grit>

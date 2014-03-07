@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit-part>
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_AMEX" file="common/autofill/amex.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DINERS" file="common/autofill/diners.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DISCOVER" file="common/autofill/discover.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="common/autofill/cc-generic.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_JCB" file="common/autofill/jcb.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="common/autofill/mastercard.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="common/autofill/visa.png" />
+</grit-part>

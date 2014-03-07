@@ -491,6 +491,7 @@
         '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
+        '../components/component_resources.gyp:component_resources',
         '../content/content.gyp:content_app_both',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',

@@ -84,13 +84,6 @@
       <structure type="chrome_scaled_image" name="IDR_SEARCH_MAGNIFIER" file="search_magnifier.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_MAGNIFIER_RESULTS" file="search_magnifier_results.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTAREA_RESIZER" file="textarea_resize_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_AMEX" file="amex.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DINERS" file="diners.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DISCOVER" file="discover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="cc-generic.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_JCB" file="jcb.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="mastercard.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="visa.png" />
       <if expr="enable_plugins">
         <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP" file="pdf_button_ftp.png" />
         <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP_HOVER" file="pdf_button_ftp_hover.png" />

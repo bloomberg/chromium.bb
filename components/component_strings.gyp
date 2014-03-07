@@ -17,9 +17,9 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-     'direct_dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/components/strings',
+          '<(SHARED_INTERMEDIATE_DIR)/components/strings',
         ],
       },
       'hard_dependency': 1,
