@@ -6,10 +6,12 @@
 
 #include <map>
 
+#include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/search_result_list_view_delegate.h"
+#include "ui/app_list/views/search_result_view.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {
@@ -55,8 +57,8 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   }
 
   int GetOpenResultCountAndReset(int ranking) {
-    int result = open_result_counts_[ranking];
-    open_result_counts_.clear();
+    int result = view_delegate_.open_search_result_counts()[ranking];
+    view_delegate_.open_search_result_counts().clear();
     return result;
   }
 
@@ -72,6 +74,14 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     view_->SetSelectedIndex(0);
   }
 
+  void AddTestResultAtIndex(int index) {
+    view_delegate_.GetModel()->results()->Add(new SearchResult());
+  }
+
+  void DeleteResultAt(int index) {
+    view_delegate_.GetModel()->results()->DeleteAt(index);
+  }
+
   bool KeyPress(ui::KeyboardCode key_code) {
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE, true);
     return view_->OnKeyPressed(event);
@@ -85,29 +95,22 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     view_->ForceAutoLaunchForTest();
   }
 
- private:
-  // Overridden from SearchResultListViewDelegate:
-  virtual void OpenResult(SearchResult* result,
-                          bool auto_launch,
-                          int event_flags) OVERRIDE {
-    const AppListModel::SearchResults* results =
-        view_delegate_.GetModel()->results();
+  void ExpectConsistent() {
+    // Adding results will schedule Update().
+    RunPendingMessages();
+
+    AppListModel::SearchResults* results = view_delegate_.GetModel()->results();
     for (size_t i = 0; i < results->item_count(); ++i) {
-      if (results->GetItemAt(i) == result) {
-        open_result_counts_[i]++;
-        break;
-      }
+      EXPECT_EQ(results->GetItemAt(i), view_->GetResultViewAt(i)->result());
     }
   }
-  virtual void InvokeResultAction(SearchResult* result,
-                                  int action_index,
-                                  int event_flags) OVERRIDE {}
+
+ private:
   virtual void OnResultInstalled(SearchResult* result) OVERRIDE {}
   virtual void OnResultUninstalled(SearchResult* result) OVERRIDE {}
 
   AppListTestViewDelegate view_delegate_;
   scoped_ptr<SearchResultListView> view_;
-  std::map<int, int> open_result_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListViewTest);
 };
@@ -183,6 +186,27 @@ TEST_F(SearchResultListViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   view()->SetVisible(true);
   EXPECT_TRUE(IsAutoLaunching());
+}
+
+TEST_F(SearchResultListViewTest, ModelObservers) {
+  SetUpSearchResults();
+  ExpectConsistent();
+
+  // Insert at start.
+  AddTestResultAtIndex(0);
+  ExpectConsistent();
+
+  // Remove from end.
+  DeleteResultAt(kDefaultSearchItems);
+  ExpectConsistent();
+
+  // Insert at end.
+  AddTestResultAtIndex(kDefaultSearchItems);
+  ExpectConsistent();
+
+  // Delete from start.
+  DeleteResultAt(0);
+  ExpectConsistent();
 }
 
 }  // namespace test

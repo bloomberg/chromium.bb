@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -30,6 +31,9 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   int open_search_result_count() { return open_search_result_count_; }
   void SetUsers(const Users& users) {
     users_ = users;
+  }
+  std::map<size_t, int> open_search_result_counts() {
+    return open_search_result_counts_;
   }
 
   void set_auto_launch_timeout(const base::TimeDelta& timeout) {
@@ -84,6 +88,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
  private:
   int dismiss_count_;
   int open_search_result_count_;
+  std::map<size_t, int> open_search_result_counts_;
   Users users_;
   scoped_ptr<TestSigninDelegate> test_signin_delegate_;
   scoped_ptr<AppListTestModel> model_;

@@ -43,8 +43,7 @@ class SearchResultView : public views::CustomButton,
   // Internal class name.
   static const char kViewClassName[];
 
-  SearchResultView(SearchResultListView* list_view,
-                   SearchResultViewDelegate* delegate);
+  SearchResultView(SearchResultListView* list_view);
   virtual ~SearchResultView();
 
   // Sets/gets SearchResult displayed by this view.
@@ -94,9 +93,6 @@ class SearchResultView : public views::CustomButton,
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;
-
-  // Not owned by us.
-  SearchResultViewDelegate* delegate_;
 
   views::ImageView* icon_;  // Owned by views hierarchy.
   scoped_ptr<gfx::RenderText> title_text_;

@@ -91,6 +91,13 @@ void AppListTestViewDelegate::GetShortcutPathForApp(
 void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
                                                bool auto_launch,
                                                int event_flags) {
+  const AppListModel::SearchResults* results = model_->results();
+  for (size_t i = 0; i < results->item_count(); ++i) {
+    if (results->GetItemAt(i) == result) {
+      open_search_result_counts_[i]++;
+      break;
+    }
+  }
   ++open_search_result_count_;
 }
 

@@ -130,7 +130,6 @@
         'views/search_result_list_view_delegate.h',
         'views/search_result_view.cc',
         'views/search_result_view.h',
-        'views/search_result_view_delegate.h',
         'views/signin_view.cc',
         'views/signin_view.h',
         'views/speech_view.cc',

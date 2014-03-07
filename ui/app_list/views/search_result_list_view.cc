@@ -44,7 +44,7 @@ SearchResultListView::SearchResultListView(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   for (int i = 0; i < kMaxResults; ++i)
-    results_container_->AddChildView(new SearchResultView(this, this));
+    results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
 
   auto_launch_indicator_->set_background(
@@ -216,7 +216,7 @@ void SearchResultListView::VisibilityChanged(views::View* starting_from,
 
 void SearchResultListView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(auto_launch_animation_.get(), animation);
-  delegate_->OpenResult(results_->GetItemAt(0), true, ui::EF_NONE);
+  view_delegate_->OpenSearchResult(results_->GetItemAt(0), true, ui::EF_NONE);
 
   // The auto-launch has to be canceled explicitly. Think that one of searcher
   // is extremely slow. Sometimes the events would happen in the following
@@ -260,15 +260,15 @@ void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
                                                  int event_flags) {
-  if (delegate_ && view->result())
-    delegate_->OpenResult(view->result(), false, event_flags);
+  if (view_delegate_ && view->result())
+    view_delegate_->OpenSearchResult(view->result(), false, event_flags);
 }
 
 void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
                                                        size_t action_index,
                                                        int event_flags) {
-  if (delegate_ && view->result()) {
-    delegate_->InvokeResultAction(
+  if (view_delegate_ && view->result()) {
+    view_delegate_->InvokeSearchResultAction(
         view->result(), action_index, event_flags);
   }
 }

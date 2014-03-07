@@ -13,21 +13,6 @@ class SearchResult;
 
 class APP_LIST_EXPORT SearchResultListViewDelegate {
  public:
-  // Invoked to open given |result|. |event_flags| contains the flags of the
-  // keyboard/mouse event that triggers the "open" request. |auto_launch| is
-  // true when the result is opened automatically through voice-search. Delegate
-  // could use the |event_flags| information to choose different ways to open
-  // the result.
-  virtual void OpenResult(SearchResult* result,
-                          bool auto_launch,
-                          int event_flags) = 0;
-
-  // Called to invoke a custom action on |result|.  |action_index| corresponds
-  // to the index of the icon in |result.action_icons()| that was activated.
-  virtual void InvokeResultAction(SearchResult* result,
-                                  int action_index,
-                                  int event_flags) = 0;
-
   // Called when the app represented by |result| is installed.
   virtual void OnResultInstalled(SearchResult* result) = 0;
 

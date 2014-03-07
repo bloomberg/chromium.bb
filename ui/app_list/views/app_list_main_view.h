@@ -85,12 +85,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;
 
   // Overridden from SearchResultListViewDelegate:
-  virtual void OpenResult(SearchResult* result,
-                          bool auto_launch,
-                          int event_flags) OVERRIDE;
-  virtual void InvokeResultAction(SearchResult* result,
-                                  int action_index,
-                                  int event_flags) OVERRIDE;
   virtual void OnResultInstalled(SearchResult* result) OVERRIDE;
   virtual void OnResultUninstalled(SearchResult* result) OVERRIDE;
 

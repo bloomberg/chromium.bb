@@ -230,18 +230,6 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
     delegate_->StopSearch();
 }
 
-void AppListMainView::OpenResult(SearchResult* result,
-                                 bool auto_launch,
-                                 int event_flags) {
-  delegate_->OpenSearchResult(result, auto_launch, event_flags);
-}
-
-void AppListMainView::InvokeResultAction(SearchResult* result,
-                                         int action_index,
-                                         int event_flags) {
-  delegate_->InvokeSearchResultAction(result, action_index, event_flags);
-}
-
 void AppListMainView::OnResultInstalled(SearchResult* result) {
   // Clears the search to show the apps grid. The last installed app
   // should be highlighted and made visible already.

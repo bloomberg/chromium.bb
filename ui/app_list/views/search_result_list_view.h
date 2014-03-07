@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/views/search_result_view_delegate.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view.h"
@@ -30,8 +29,7 @@ class SearchResultView;
 // SearchResultView.
 class APP_LIST_EXPORT SearchResultListView : public views::View,
                                              public gfx::AnimationDelegate,
-                                             public ui::ListModelObserver,
-                                             public SearchResultViewDelegate {
+                                             public ui::ListModelObserver {
  public:
   SearchResultListView(SearchResultListViewDelegate* delegate,
                        AppListViewDelegate* view_delegate);
@@ -44,6 +42,16 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
   void UpdateAutoLaunchState();
 
   bool IsResultViewSelected(const SearchResultView* result_view) const;
+
+  void SearchResultActivated(SearchResultView* view, int event_flags);
+
+  void SearchResultActionActivated(SearchResultView* view,
+                                   size_t action_index,
+                                   int event_flags);
+
+  void OnSearchResultInstalled(SearchResultView* view);
+
+  void OnSearchResultUninstalled(SearchResultView* view);
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
@@ -84,15 +92,6 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
   virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
   virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
   virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
-
-  // Overridden from SearchResultViewDelegate:
-  virtual void SearchResultActivated(SearchResultView* view,
-                                     int event_flags) OVERRIDE;
-  virtual void SearchResultActionActivated(SearchResultView* view,
-                                           size_t action_index,
-                                           int event_flags) OVERRIDE;
-  virtual void OnSearchResultInstalled(SearchResultView* view) OVERRIDE;
-  virtual void OnSearchResultUninstalled(SearchResultView* view) OVERRIDE;
 
   SearchResultListViewDelegate* delegate_;  // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
