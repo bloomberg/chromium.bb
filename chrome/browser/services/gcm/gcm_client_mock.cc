@@ -95,6 +95,10 @@ void GCMClientMock::Send(const std::string& app_id,
                  message.id));
 }
 
+GCMClient::GCMStatistics GCMClientMock::GetStatistics() const {
+  return GCMClient::GCMStatistics();
+}
+
 void GCMClientMock::PerformDelayedLoading() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

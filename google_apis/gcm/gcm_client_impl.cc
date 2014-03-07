@@ -416,6 +416,37 @@ void GCMClientImpl::Send(const std::string& app_id,
   mcs_client_->SendMessage(mcs_message);
 }
 
+std::string GCMClientImpl::GetStateString() const {
+  switch(state_) {
+    case GCMClientImpl::INITIALIZED:
+      return "INITIALIZED";
+    case GCMClientImpl::UNINITIALIZED:
+      return "UNINITIALIZED";
+    case GCMClientImpl::LOADING:
+      return "LOADING";
+    case GCMClientImpl::INITIAL_DEVICE_CHECKIN:
+      return "INITIAL_DEVICE_CHECKIN";
+    case GCMClientImpl::READY:
+      return "READY";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
+GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
+  GCMClient::GCMStatistics stats;
+  stats.gcm_client_state = GCMClientImpl::GetStateString();
+  stats.connection_client_created = mcs_client_.get() != NULL;
+  if (mcs_client_.get()) {
+    stats.connection_state = mcs_client_->GetStateString();
+    // TODO(juyik): add more statistics such as message metadata list, etc.
+  }
+  if (device_checkin_info_.android_id > 0)
+    stats.android_id = device_checkin_info_.android_id;
+  return stats;
+}
+
 void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {
   switch (message.tag()) {
     case kLoginResponseTag:

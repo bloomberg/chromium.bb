@@ -78,6 +78,19 @@ class GCM_EXPORT GCMClient {
     std::string sender_id;
   };
 
+  // Internal states and activity statistics of a GCM client.
+  struct GCM_EXPORT GCMStatistics {
+   public:
+    GCMStatistics();
+    ~GCMStatistics();
+
+    bool gcm_client_created;
+    std::string gcm_client_state;
+    bool connection_client_created;
+    std::string connection_state;
+    uint64 android_id;
+  };
+
   // A delegate interface that allows the GCMClient instance to interact with
   // its caller, i.e. notifying asynchronous event.
   class Delegate {
@@ -185,6 +198,9 @@ class GCM_EXPORT GCMClient {
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) = 0;
+
+  // Gets internal states and statistics.
+  virtual GCMStatistics GetStatistics() const = 0;
 };
 
 }  // namespace gcm

@@ -7,3 +7,17 @@ h1 {
   margin: 0;
   padding: 0;
 }
+
+td {
+  padding: 4px;
+}
+
+.row-caption {
+  font-weight: bold;
+  padding-right: 10px;
+  text-align: end;
+}
+
+.odd-number-row {
+  background-color: rgb(245, 245, 200);
+}

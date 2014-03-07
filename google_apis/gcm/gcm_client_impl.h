@@ -64,9 +64,12 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
+  virtual GCMStatistics GetStatistics() const OVERRIDE;
 
  private:
   // State representation of the GCMClient.
+  // Any change made to this enum should have corresponding change in the
+  // GetStateString(...) function.
   enum State {
     // Uninitialized.
     UNINITIALIZED,
@@ -106,6 +109,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
       PendingUnregistrations;
 
   friend class GCMClientImplTest;
+
+  // Returns text representation of the enum State.
+  std::string GetStateString() const;
 
   // Callbacks for the MCSClient.
   // Receives messages and dispatches them to relevant user delegates.

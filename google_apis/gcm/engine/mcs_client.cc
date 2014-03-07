@@ -128,6 +128,22 @@ ReliablePacketInfo::ReliablePacketInfo()
 }
 ReliablePacketInfo::~ReliablePacketInfo() {}
 
+std::string MCSClient::GetStateString() const {
+  switch(state_) {
+    case UNINITIALIZED:
+      return "UNINITIALIZED";
+    case LOADED:
+      return "LOADED";
+    case CONNECTING:
+      return "CONNECTING";
+    case CONNECTED:
+      return "CONNECTED";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
 MCSClient::MCSClient(const std::string& version_string,
                      base::Clock* clock,
                      ConnectionFactory* connection_factory,

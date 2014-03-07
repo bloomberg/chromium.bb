@@ -19,6 +19,13 @@ GCMClient::IncomingMessage::IncomingMessage() {
 GCMClient::IncomingMessage::~IncomingMessage() {
 }
 
+GCMClient::GCMStatistics::GCMStatistics()
+    : gcm_client_created(false), connection_client_created(false) {
+}
+
+GCMClient::GCMStatistics::~GCMStatistics() {
+}
+
 GCMClient::GCMClient() {
 }
 

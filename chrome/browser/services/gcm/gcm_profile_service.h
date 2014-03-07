@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SERVICES_GCM_GCM_PROFILE_SERVICE_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -46,7 +47,11 @@ class GCMProfileService : public BrowserContextKeyedService,
                               GCMClient::Result result)> RegisterCallback;
   typedef base::Callback<void(const std::string& message_id,
                               GCMClient::Result result)> SendCallback;
+  typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
+      RequestGCMStatisticsCallback;
 
+  // Any change made to this enum should have corresponding change in the
+  // GetGCMEnabledStateString(...) function.
   enum GCMEnabledState {
     // GCM is always enabled. GCMClient will always load and connect with GCM.
     ALWAYS_ENABLED,
@@ -65,6 +70,9 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   // Returns the GCM enabled state.
   static GCMEnabledState GetGCMEnabledState(Profile* profile);
+
+  // Returns text representation of a GCMEnabledState enum entry.
+  static std::string GetGCMEnabledStateString(GCMEnabledState state);
 
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -105,6 +113,16 @@ class GCMProfileService : public BrowserContextKeyedService,
   void set_testing_delegate(TestingDelegate* testing_delegate) {
     testing_delegate_ = testing_delegate;
   }
+
+  // Returns the user name if the profile is signed in.
+  std::string SignedInUserName() const;
+
+  // Returns true if the gcm client is ready.
+  bool IsGCMClientReady() const;
+
+  // Get GCM client internal states and statistics. If it has not been created
+  // then stats won't be modified.
+  void RequestGCMStatistics(RequestGCMStatisticsCallback callback);
 
  private:
   friend class GCMProfileServiceTestConsumer;
@@ -184,6 +202,7 @@ class GCMProfileService : public BrowserContextKeyedService,
                                     scoped_ptr<base::Value> value);
   bool ParsePersistedRegistrationInfo(scoped_ptr<base::Value> value,
                                       RegistrationInfo* registration_info);
+  void RequestGCMStatisticsFinished(GCMClient::GCMStatistics stats);
 
   // Returns the key used to identify the registration info saved into the
   // app's state store. Used for testing purpose.
@@ -210,6 +229,9 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   // Callback map (from <app_id, message_id> to callback) for Send.
   std::map<std::pair<std::string, std::string>, SendCallback> send_callbacks_;
+
+  // Callback for RequestGCMStatistics.
+  RequestGCMStatisticsCallback request_gcm_statistics_callback_;
 
   // Map from app_id to registration info (sender ids & registration ID).
   typedef std::map<std::string, RegistrationInfo> RegistrationInfoMap;

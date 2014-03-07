@@ -274,6 +274,7 @@ class GCMProfileService::IOWorker
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const GCMClient::OutgoingMessage& message);
+  void RequestGCMStatistics();
 
   // For testing purpose. Can be called from UI thread. Use with care.
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
@@ -463,6 +464,37 @@ void GCMProfileService::IOWorker::Send(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   gcm_client_->Send(app_id, receiver_id, message);
+}
+
+void GCMProfileService::IOWorker::RequestGCMStatistics() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  gcm::GCMClient::GCMStatistics stats;
+
+  if (gcm_client_.get()) {
+    stats.gcm_client_created = true;
+    stats = gcm_client_->GetStatistics();
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::RequestGCMStatisticsFinished,
+                 service_,
+                 stats));
+}
+
+std::string GCMProfileService::GetGCMEnabledStateString(GCMEnabledState state) {
+  switch (state) {
+    case GCMProfileService::ALWAYS_ENABLED:
+      return "ALWAYS_ENABLED";
+    case GCMProfileService::ENABLED_FOR_APPS:
+      return "ENABLED_FOR_APPS";
+    case GCMProfileService::ALWAYS_DISABLED:
+      return "ALWAYS_DISABLED";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
 }
 
 GCMProfileService::RegistrationInfo::RegistrationInfo() {
@@ -726,6 +758,27 @@ void GCMProfileService::DoSend(const std::string& app_id,
 
 GCMClient* GCMProfileService::GetGCMClientForTesting() const {
   return io_worker_ ? io_worker_->gcm_client_for_testing() : NULL;
+}
+
+std::string GCMProfileService::SignedInUserName() const {
+  return username_;
+}
+
+bool GCMProfileService::IsGCMClientReady() const {
+  return gcm_client_ready_;
+}
+
+void GCMProfileService::RequestGCMStatistics(
+    RequestGCMStatisticsCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  request_gcm_statistics_callback_ = callback;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::IOWorker::RequestGCMStatistics,
+                 io_worker_));
 }
 
 void GCMProfileService::Observe(int type,
@@ -1111,6 +1164,13 @@ bool GCMProfileService::ParsePersistedRegistrationInfo(
   }
 
   return true;
+}
+
+void GCMProfileService::RequestGCMStatisticsFinished(
+    GCMClient::GCMStatistics stats) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  request_gcm_statistics_callback_.Run(stats);
 }
 
 // static
