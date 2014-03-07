@@ -13536,6 +13536,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX" desc="The name of a type of sandbox used by Chrome on UNIX like systems. 'Seccomp-BPF' is a technical term which should be left untranslated.">
         Seccomp-BPF sandbox
       </message>
+      <message name="IDS_ABOUT_SANDBOX_YAMA_LSM" desc="The name of a Linux security module. It is a technical term that should be left untranslated.">
+        Yama LSM enforcing
+      </message>
       <message name="IDS_ABOUT_SANDBOX_OK" desc="A message telling the user that their sandbox is sufficient.">
         You are adequately sandboxed.
       </message>

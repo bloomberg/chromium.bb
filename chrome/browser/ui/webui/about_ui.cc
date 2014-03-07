@@ -826,6 +826,10 @@ std::string AboutSandbox() {
                   std::string(),
                   IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
                   status & content::kSandboxLinuxSeccompBPF);
+  AboutSandboxRow(&data,
+                  std::string(),
+                  IDS_ABOUT_SANDBOX_YAMA_LSM,
+                  status & content::kSandboxLinuxYama);
 
   data.append("</table>");
 

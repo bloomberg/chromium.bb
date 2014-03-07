@@ -115,6 +115,7 @@ class LinuxSandbox {
   // Did PreinitializeSandbox() run?
   bool pre_initialized_;
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
+  bool yama_is_enforcing_;  // Accurate if pre_initialized_.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
 
   ~LinuxSandbox();

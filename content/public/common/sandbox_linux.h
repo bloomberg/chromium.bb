@@ -23,6 +23,9 @@ enum LinuxSandboxStatus {
   // seccomp-bpf sandbox active.
   kSandboxLinuxSeccompBPF = 1 << 3,
 
+  // The Yama LSM module is present and enforcing.
+  kSandboxLinuxYama = 1 << 4,
+
   // A flag that denotes an invalid sandbox status.
   kSandboxLinuxInvalid = 1 << 31,
 };

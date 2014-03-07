@@ -28,7 +28,10 @@
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/thread_helpers.h"
+#include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+
+using sandbox::Yama;
 
 namespace {
 
@@ -112,6 +115,7 @@ LinuxSandbox::LinuxSandbox()
       sandbox_status_flags_(kSandboxLinuxInvalid),
       pre_initialized_(false),
       seccomp_bpf_supported_(false),
+      yama_is_enforcing_(false),
       setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()) {
   if (setuid_sandbox_client_ == NULL) {
     LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
@@ -138,7 +142,7 @@ void LinuxSandbox::PreinitializeSandbox() {
 #if defined(ADDRESS_SANITIZER) && defined(OS_LINUX)
   // ASan needs to open some resources before the sandbox is enabled.
   // This should not fork, not launch threads, not open a directory.
-  __sanitizer_sandbox_on_notify(/*reserved*/NULL);
+  __sanitizer_sandbox_on_notify(/*reserved*/ NULL);
 #endif
 
 #if !defined(NDEBUG)
@@ -155,6 +159,12 @@ void LinuxSandbox::PreinitializeSandbox() {
       seccomp_bpf_supported_ = true;
     }
   }
+
+  // Yama is a "global", system-level status. We assume it will not regress
+  // after startup.
+  const int yama_status = Yama::GetStatus();
+  yama_is_enforcing_ = (yama_status & Yama::STATUS_PRESENT) &&
+                       (yama_status & Yama::STATUS_ENFORCING);
   pre_initialized_ = true;
 }
 
@@ -186,6 +196,10 @@ int LinuxSandbox::GetStatus() {
     if (seccomp_bpf_supported() &&
         SandboxSeccompBPF::ShouldEnableSeccompBPF(switches::kRendererProcess)) {
       sandbox_status_flags_ |= kSandboxLinuxSeccompBPF;
+    }
+
+    if (yama_is_enforcing_) {
+      sandbox_status_flags_ |= kSandboxLinuxYama;
     }
   }
 
