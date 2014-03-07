@@ -48,6 +48,7 @@ class Element;
 class Event;
 class FileChooser;
 class GraphicsLayerFactory;
+class HTMLFormControlElement;
 class HTMLInputElement;
 class KeyboardEvent;
 class PopupMenuClient;
@@ -177,7 +178,10 @@ public:
     virtual void requestPointerUnlock() OVERRIDE;
 
     virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
+    // FIXME: This function is to be removed once both chromium and blink changes
+    // for BUG332557 are in.
     virtual void didChangeValueInTextField(WebCore::HTMLInputElement&) OVERRIDE;
+    virtual void didChangeValueInTextField(WebCore::HTMLFormControlElement&) OVERRIDE;
     virtual void didEndEditingOnTextField(WebCore::HTMLInputElement&) OVERRIDE;
     virtual void handleKeyboardEventOnTextField(WebCore::HTMLInputElement&, WebCore::KeyboardEvent&) OVERRIDE;
 

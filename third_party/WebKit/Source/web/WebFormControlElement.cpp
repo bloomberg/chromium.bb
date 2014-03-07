@@ -33,6 +33,9 @@
 
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
+
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;
@@ -77,6 +80,33 @@ void WebFormControlElement::setAutofilled(bool autofilled)
 WebString WebFormControlElement::nameForAutofill() const
 {
     return constUnwrap<HTMLFormControlElement>()->nameForAutofill();
+}
+
+WebString WebFormControlElement::editingValue() const
+{
+    if (m_private->hasTagName(HTMLNames::inputTag))
+        return constUnwrap<HTMLInputElement>()->innerTextValue();
+    if (m_private->hasTagName(HTMLNames::textareaTag))
+        return constUnwrap<HTMLTextAreaElement>()->innerTextValue();
+    return WebString();
+}
+
+int WebFormControlElement::selectionStart() const
+{
+    if (m_private->hasTagName(HTMLNames::inputTag))
+        return constUnwrap<HTMLInputElement>()->selectionStart();
+    if (m_private->hasTagName(HTMLNames::textareaTag))
+        return constUnwrap<HTMLTextAreaElement>()->selectionStart();
+    return 0;
+}
+
+int WebFormControlElement::selectionEnd() const
+{
+    if (m_private->hasTagName(HTMLNames::inputTag))
+        return constUnwrap<HTMLInputElement>()->selectionEnd();
+    if (m_private->hasTagName(HTMLNames::textareaTag))
+        return constUnwrap<HTMLTextAreaElement>()->selectionEnd();
+    return 0;
 }
 
 WebFormElement WebFormControlElement::form() const

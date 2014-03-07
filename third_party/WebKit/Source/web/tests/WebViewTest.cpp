@@ -1129,7 +1129,16 @@ public:
     virtual ~MockAutofillClient() { }
 
     virtual void setIgnoreTextChanges(bool ignore) OVERRIDE { m_ignoreTextChanges = ignore; }
+    // FIXME: This function is to be removed once both chromium and blink changes
+    // for BUG332557 are in.
     virtual void textFieldDidChange(const WebInputElement&) OVERRIDE
+    {
+        if (m_ignoreTextChanges)
+            ++m_textChangesWhileIgnored;
+        else
+            ++m_textChangesWhileNotIgnored;
+    }
+    virtual void textFieldDidChange(const WebFormControlElement&) OVERRIDE
     {
         if (m_ignoreTextChanges)
             ++m_textChangesWhileIgnored;

@@ -77,8 +77,6 @@ namespace blink {
         BLINK_EXPORT void setValue(const WebString&, bool sendChangeEvent = false);
         BLINK_EXPORT void setChecked(bool, bool sendChangeEvent = false);
         BLINK_EXPORT WebString value() const;
-        // This returns the non-sanitized, exact value inside the text field.
-        BLINK_EXPORT WebString editingValue() const;
         // Sets the value inside the text field without being sanitized.
         // Can't be used if a renderer doesn't exist or on a non text field type.
         // Caret will be moved to the end.
@@ -86,8 +84,6 @@ namespace blink {
         BLINK_EXPORT void setSuggestedValue(const WebString&);
         BLINK_EXPORT WebString suggestedValue() const;
         BLINK_EXPORT void setSelectionRange(int, int);
-        BLINK_EXPORT int selectionStart() const;
-        BLINK_EXPORT int selectionEnd() const;
         BLINK_EXPORT bool isValidValue(const WebString&) const;
         BLINK_EXPORT bool isChecked() const;
         BLINK_EXPORT bool isMultiple() const;

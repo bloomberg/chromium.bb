@@ -910,11 +910,20 @@ void ChromeClientImpl::forwardInputEvent(
     }
 }
 
+// FIXME: This function is to be removed once both chromium and blink changes
+// for BUG332557 are in.
 void ChromeClientImpl::didChangeValueInTextField(HTMLInputElement& inputElement)
 {
     if (!m_webView->autofillClient())
         return;
     m_webView->autofillClient()->textFieldDidChange(WebInputElement(&inputElement));
+}
+
+void ChromeClientImpl::didChangeValueInTextField(HTMLFormControlElement& element)
+{
+    if (!m_webView->autofillClient())
+        return;
+    m_webView->autofillClient()->textFieldDidChange(WebFormControlElement(&element));
 }
 
 void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)

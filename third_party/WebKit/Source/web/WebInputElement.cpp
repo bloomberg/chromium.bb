@@ -112,11 +112,6 @@ WebString WebInputElement::value() const
     return constUnwrap<HTMLInputElement>()->value();
 }
 
-WebString WebInputElement::editingValue() const
-{
-    return constUnwrap<HTMLInputElement>()->innerTextValue();
-}
-
 void WebInputElement::setEditingValue(const WebString& value)
 {
     unwrap<HTMLInputElement>()->setEditingValue(value);
@@ -135,16 +130,6 @@ WebString WebInputElement::suggestedValue() const
 void WebInputElement::setSelectionRange(int start, int end)
 {
     unwrap<HTMLInputElement>()->setSelectionRange(start, end);
-}
-
-int WebInputElement::selectionStart() const
-{
-    return constUnwrap<HTMLInputElement>()->selectionStart();
-}
-
-int WebInputElement::selectionEnd() const
-{
-    return constUnwrap<HTMLInputElement>()->selectionEnd();
 }
 
 bool WebInputElement::isValidValue(const WebString& value) const

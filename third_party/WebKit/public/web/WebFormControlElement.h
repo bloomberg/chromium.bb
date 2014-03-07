@@ -64,6 +64,20 @@ public:
     BLINK_EXPORT bool isAutofilled() const;
     BLINK_EXPORT void setAutofilled(bool);
 
+    // This returns the non-sanitized, exact value inside the text input field
+    // or insisde the textarea. If neither input element nor textarea element,
+    // a null string is returned.
+    BLINK_EXPORT WebString editingValue() const;
+
+    // The returned value represents a cursor/caret position at the current
+    // selection's start for text input field or textarea. If neither input
+    // element nor textarea element, 0 is returned.
+    BLINK_EXPORT int selectionStart() const;
+    // The returned value represents a cursor/caret position at the current
+    // selection's end for text input field or textarea. If neither input
+    // element nor textarea element, 0 is returned.
+    BLINK_EXPORT int selectionEnd() const;
+
     // Returns the name that should be used for the specified |element| when
     // storing autofill data.  This is either the field name or its id, an empty
     // string if it has no name and no id.

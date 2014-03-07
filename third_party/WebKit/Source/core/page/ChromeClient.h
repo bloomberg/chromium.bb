@@ -60,6 +60,7 @@ class LocalFrame;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class HitTestResult;
+class HTMLFormControlElement;
 class HTMLInputElement;
 class IntRect;
 class Node;
@@ -244,7 +245,10 @@ public:
     virtual bool isChromeClientImpl() const { return false; }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { };
+    // FIXME: This function is to be removed once both chromium and blink changes
+    // for BUG332557 are in.
     virtual void didChangeValueInTextField(HTMLInputElement&) { }
+    virtual void didChangeValueInTextField(HTMLFormControlElement&) { }
     virtual void didEndEditingOnTextField(HTMLInputElement&) { }
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) { }
 
