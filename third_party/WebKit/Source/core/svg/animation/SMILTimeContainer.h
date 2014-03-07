@@ -38,6 +38,8 @@
 
 namespace WebCore {
 
+class AnimationClock;
+class Document;
 class SVGElement;
 class SVGSMILElement;
 class SVGSVGElement;
@@ -61,20 +63,38 @@ public:
     void resume();
     void setElapsed(SMILTime);
 
+    void serviceAnimations(double monotonicAnimationStartTime);
+    bool hasAnimations() const;
+
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
 private:
     SMILTimeContainer(SVGSVGElement* owner);
 
+    enum FrameSchedulingState {
+        // No frame scheduled.
+        Idle,
+        // Scheduled a wakeup to update the animation values.
+        SynchronizeAnimations,
+        // Scheduled a animation frame for continuous update.
+        AnimationFrame
+    };
+
     bool isTimelineRunning() const;
     void scheduleAnimationFrame(SMILTime fireTime);
-    void scheduleAnimationFrame();
     void cancelAnimationFrame();
-    void timerFired(Timer<SMILTimeContainer>*);
-    void updateAnimations(SMILTime elapsed, bool seekToTime = false);
+    void wakeupTimerFired(Timer<SMILTimeContainer>*);
+    void updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime = false);
+    SMILTime updateAnimations(SMILTime elapsed, bool seekToTime = false);
+    void serviceOnNextFrame();
+    void scheduleWakeUp(double delayTime, FrameSchedulingState);
 
     void updateDocumentOrderIndexes();
     double lastResumeTime() const { return m_resumeTime ? m_resumeTime : m_beginTime; }
+
+    Document& document() const;
+    AnimationClock& animationClock() const;
+    double currentTime() const;
 
     double m_beginTime;
     double m_pauseTime;
@@ -82,9 +102,11 @@ private:
     double m_accumulatedActiveTime;
     double m_presetStartTime;
 
+    FrameSchedulingState m_frameSchedulingState;
     bool m_documentOrderIndexesDirty;
 
-    Timer<SMILTimeContainer> m_timer;
+    OwnPtr<AnimationClock> m_animationClock;
+    Timer<SMILTimeContainer> m_wakeupTimer;
 
     typedef pair<SVGElement*, QualifiedName> ElementAttributePair;
     typedef Vector<SVGSMILElement*> AnimationsVector;

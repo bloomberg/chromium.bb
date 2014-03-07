@@ -102,6 +102,7 @@ private:
 
     void wake();
 
+    friend class SMILTimeContainer;
     static const double s_minimumDelay;
 
     OwnPtr<PlatformTiming> m_timing;

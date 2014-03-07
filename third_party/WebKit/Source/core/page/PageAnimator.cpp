@@ -12,6 +12,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/svg/SVGDocumentExtensions.h"
 
 namespace WebCore {
 
@@ -30,6 +31,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     for (RefPtr<LocalFrame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->view()->serviceScrollAnimations();
         DocumentAnimations::updateAnimationTimingForAnimationFrame(*frame->document(), monotonicAnimationStartTime);
+        SVGDocumentExtensions::serviceOnAnimationFrame(*frame->document(), monotonicAnimationStartTime);
     }
 
     Vector<RefPtr<Document> > documents;
