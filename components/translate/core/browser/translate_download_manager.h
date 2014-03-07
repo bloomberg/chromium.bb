@@ -78,6 +78,9 @@ class TranslateDownloadManager {
   // Clears the translate script, so it will be fetched next time we translate.
   void ClearTranslateScriptForTesting();
 
+  // Resets to its initial state as if newly created.
+  void ResetForTesting();
+
   // Used by unit-tests to override some defaults:
   // Delay after which the translate script is fetched again from the
   // translation server.

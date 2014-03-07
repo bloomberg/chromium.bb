@@ -118,6 +118,11 @@ void TranslateDownloadManager::ClearTranslateScriptForTesting() {
   script_->Clear();
 }
 
+void TranslateDownloadManager::ResetForTesting() {
+  language_list_.reset(new TranslateLanguageList);
+  script_.reset(new TranslateScript);
+}
+
 void TranslateDownloadManager::SetTranslateScriptExpirationDelay(int delay_ms) {
   if (script_.get() == NULL) {
     NOTREACHED();

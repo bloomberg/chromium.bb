@@ -18,6 +18,15 @@ class TranslateService : public ResourceRequestAllowedNotifier::Observer {
   // Must be called to shut down the Translate feature.
   static void Shutdown(bool cleanup_pending_fetcher);
 
+  // Initializes the TranslateService in a way that it can be initialized
+  // multiple times in a unit test suite (once for each test). Should be paired
+  // with ShutdownForTesting at the end of the test.
+  static void InitializeForTesting();
+
+  // Shuts down the TranslateService at the end of a test in a way that the next
+  // test can initialize and use the service.
+  static void ShutdownForTesting();
+
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
   // or if prefs::kEnableTranslate is set to false.

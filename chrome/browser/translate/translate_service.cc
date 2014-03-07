@@ -43,9 +43,24 @@ void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
   if (cleanup_pending_fetcher) {
     download_manager->Shutdown();
   } else {
-    // This path is only used by tests.
+    // This path is only used by browser tests.
     download_manager->set_request_context(NULL);
   }
+}
+
+// static
+void TranslateService::InitializeForTesting() {
+  if (!g_translate_service) {
+    TranslateService::Initialize();
+  } else {
+    TranslateDownloadManager::GetInstance()->ResetForTesting();
+    g_translate_service->OnResourceRequestsAllowed();
+  }
+}
+
+// static
+void TranslateService::ShutdownForTesting() {
+  TranslateDownloadManager::GetInstance()->Shutdown();
 }
 
 void TranslateService::OnResourceRequestsAllowed() {
