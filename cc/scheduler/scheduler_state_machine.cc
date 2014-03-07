@@ -310,6 +310,11 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   if (PendingActivationsShouldBeForced())
     return true;
 
+  // Impl thread should not draw anymore when texture is acquired by main thread
+  // because texture is controlled under main thread.
+  if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD)
+    return true;
+
   // Additional states where we should abort draws.
   // Note: We don't force activation in these cases because doing so would
   // result in checkerboarding on resize, becoming visible, etc.
@@ -323,11 +328,6 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
 bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   // These are all the cases where, if we do not force activations to make
   // forward progress, we might deadlock with the main thread.
-
-  // The impl thread cannot lock layer textures unless the pending
-  // tree can be activated to unblock the commit.
-  if (texture_state_ == LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD)
-    return true;
 
   // There is no output surface to trigger our activations.
   if (output_surface_state_ == OUTPUT_SURFACE_LOST)
@@ -568,6 +568,11 @@ void SchedulerStateMachine::CheckInvariants() {
   // timeout simultaneously.
   DCHECK(!(forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW &&
            readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK));
+
+  // Main thread should never have the texture locked when there is a pending
+  // tree or active tree is not drawn for the first time.
+  if (has_pending_tree_ || active_tree_needs_first_draw_)
+    DCHECK(texture_state_ != LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
 }
 
 void SchedulerStateMachine::UpdateState(Action action) {

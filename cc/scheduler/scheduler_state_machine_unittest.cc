@@ -1276,6 +1276,33 @@ TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
 }
 
 TEST(SchedulerStateMachineTest,
+     TestPendingActivationsShouldBeForcedAfterLostOutputSurface) {
+  SchedulerSettings settings;
+  settings.impl_side_painting = true;
+  StateMachine state(settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
+
+  // Cause a lost context.
+  state.DidLoseOutputSurface();
+
+  state.FinishCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+
+  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
+}
+
+TEST(SchedulerStateMachineTest,
      TestSendBeginMainFrameWhenInvisibleAndForceCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
@@ -1603,14 +1630,12 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD);
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
-  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
 
   state.SetNeedsCommit();
   state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
-  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
