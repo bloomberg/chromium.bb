@@ -1,7 +1,6 @@
 {
   "manifest_version": 2,
   "name": "Test Kiosk App",
-  "minimum_chrome_version": "24.0.1307.0",
   "version": "1.0.0",
   "icons": {
     "128": "icon-128.png",
@@ -14,6 +13,7 @@
   },
   "kiosk_enabled": true,
   "permissions": [
-    "power"
+    "power",
+    "webview"
   ]
 }
