@@ -7,12 +7,12 @@
 
 #include "ui/base/ui_base_export.h"
 
-namespace ui {
+#ifdef OS_ANDROID
+#include <jni.h>
+#endif
 
-// TODO(sblom): This is non-standard, and should be removed before
-// RuntimeEnabledFlags::PointerEventsMaxTouchPoints is marked stable.
-// Tracked by: http://crbug.com/308649
-const int kMaxTouchPointsUnknown = -1;
+
+namespace ui {
 
 // Returns true if a touch device is available.
 UI_BASE_EXPORT bool IsTouchDevicePresent();
@@ -25,6 +25,10 @@ UI_BASE_EXPORT bool IsTouchDevicePresent();
 // and 10 simultaneous touch contacts, respectively. This returns 10.
 // http://www.w3.org/TR/pointerevents/#widl-Navigator-maxTouchPoints
 UI_BASE_EXPORT int MaxTouchPoints();
+
+#ifdef OS_ANDROID
+bool RegisterTouchDeviceAndroid(JNIEnv* env);
+#endif
 
 }  // namespace ui
 

@@ -4,23 +4,23 @@
 
 #include "ui/base/touch/touch_device.h"
 
+#include "jni/TouchDevice_jni.h"
+
 namespace ui {
 
 bool IsTouchDevicePresent() {
   return true;
 }
 
-// Looks like the best we can do here is detect 1, 2+, or 5+ by
-// feature detecting:
-// FEATURE_TOUCHSCREEN (1),
-// FEATURE_TOUCHSCREEN_MULTITOUCH (2),
-// FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT (2+), or
-// FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHANDS (5+)
-//
-// Probably start from the biggest and detect down the list until we
-// find one that's supported and return its value.
 int MaxTouchPoints() {
-  return kMaxTouchPointsUnknown;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jobject context = base::android::GetApplicationContext();
+  jint max_touch_points = Java_TouchDevice_maxTouchPoints(env, context);
+  return static_cast<int>(max_touch_points);
+}
+
+bool RegisterTouchDeviceAndroid(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace ui

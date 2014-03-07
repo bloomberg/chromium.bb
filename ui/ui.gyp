@@ -616,6 +616,7 @@
              'android/java/src/org/chromium/ui/base/Clipboard.java',
              'android/java/src/org/chromium/ui/base/LocalizationUtils.java',
              'android/java/src/org/chromium/ui/base/SelectFileDialog.java',
+             'android/java/src/org/chromium/ui/base/TouchDevice.java',
              'android/java/src/org/chromium/ui/base/ViewAndroid.java',
              'android/java/src/org/chromium/ui/base/WindowAndroid.java',
            ],
