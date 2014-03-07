@@ -74,6 +74,10 @@ class TestService : public base::Thread {
   // completed.
   void RequestOwnership(base::Callback<void(bool)> callback);
 
+  // Release the ownership of the well-known name "TestService".
+  // |callback| will be called when the ownership has been released.
+  void ReleaseOwnership(base::Closure callback);
+
   // Returns whether this instance has the name ownership or not.
   bool has_ownership() const { return has_ownership_; }
 
@@ -165,6 +169,25 @@ class TestService : public base::Thread {
 
   // Helper function for RequestOwnership().
   void RequestOwnershipInternal(base::Callback<void(bool)> callback);
+
+  // Helper function for ReleaseOwnership().
+  void ReleaseOwnershipInternal(base::Closure callback);
+
+  // Sends the response on completion of the performed action.
+  void PerformActionResponse(
+      MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender);
+
+  // Re-requests ownership of the well-known name after releasing it.
+  void OwnershipReleased(
+      MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender);
+
+  // Sends the action response after regaining the well-known name.
+  void OwnershipRegained(
+      MethodCall* method_call,
+      dbus::ExportedObject::ResponseSender response_sender,
+      bool success);
 
   // Options to use when requesting service ownership.
   Bus::ServiceOwnershipOptions request_ownership_options_;

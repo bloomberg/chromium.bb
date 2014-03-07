@@ -32,6 +32,9 @@ ObjectManager::ObjectManager(Bus* bus,
 
   DCHECK(bus_);
   object_proxy_ = bus_->GetObjectProxy(service_name_, object_path_);
+  object_proxy_->SetNameOwnerChangedCallback(
+      base::Bind(&ObjectManager::NameOwnerChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   object_proxy_->ConnectToSignal(
       kObjectManagerInterface,
@@ -290,6 +293,37 @@ void ObjectManager::RemoveInterface(const ObjectPath& object_path,
     object_map_.erase(oiter);
     delete object;
   }
+}
+
+void ObjectManager::NameOwnerChanged(const std::string& old_owner,
+                                     const std::string& new_owner) {
+  if (!old_owner.empty()) {
+    ObjectMap::iterator iter = object_map_.begin();
+    while (iter != object_map_.end()) {
+      ObjectMap::iterator tmp = iter;
+      ++iter;
+
+      // PropertiesMap is mutated by RemoveInterface, and also Object is
+      // destroyed; easier to collect the object path and interface names
+      // and remove them safely.
+      const dbus::ObjectPath object_path = tmp->first;
+      Object* object = tmp->second;
+      std::vector<std::string> interfaces;
+
+      for (Object::PropertiesMap::iterator piter =
+              object->properties_map.begin();
+           piter != object->properties_map.end(); ++piter)
+        interfaces.push_back(piter->first);
+
+      for (std::vector<std::string>::iterator iiter = interfaces.begin();
+           iiter != interfaces.end(); ++iiter)
+        RemoveInterface(object_path, *iiter);
+    }
+
+  }
+
+  if (!new_owner.empty())
+    GetManagedObjects();
 }
 
 }  // namespace dbus

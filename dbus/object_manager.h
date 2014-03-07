@@ -273,6 +273,12 @@ public:
   void RemoveInterface(const ObjectPath& object_path,
                        const std::string& interface_name);
 
+  // Removes all objects and interfaces from the object manager when
+  // |old_owner| is not the empty string and/or re-requests the set of managed
+  // objects when |new_owner| is not the empty string.
+  void NameOwnerChanged(const std::string& old_owner,
+                        const std::string& new_owner);
+
   Bus* bus_;
   std::string service_name_;
   ObjectPath object_path_;

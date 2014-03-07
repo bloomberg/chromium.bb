@@ -333,4 +333,21 @@ TEST_F(ObjectManagerTest, RemoveSecondObject) {
   EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[0]);
 }
 
+TEST_F(ObjectManagerTest, OwnershipLost) {
+  PerformAction("ReleaseOwnership", ObjectPath("/org/chromium/TestService"));
+  WaitForRemoveObject();
+
+  std::vector<ObjectPath> object_paths = object_manager_->GetObjects();
+  ASSERT_EQ(0U, object_paths.size());
+}
+
+TEST_F(ObjectManagerTest, OwnershipLostAndRegained) {
+  PerformAction("Ownership", ObjectPath("/org/chromium/TestService"));
+  WaitForRemoveObject();
+  WaitForObject();
+
+  std::vector<ObjectPath> object_paths = object_manager_->GetObjects();
+  ASSERT_EQ(1U, object_paths.size());
+}
+
 }  // namespace dbus

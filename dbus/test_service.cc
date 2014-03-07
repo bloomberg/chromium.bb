@@ -142,6 +142,24 @@ void TestService::OnOwnership(base::Callback<void(bool)> callback,
   on_name_obtained_.Signal();
 }
 
+void TestService::ReleaseOwnership(base::Closure callback) {
+  bus_->GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::ReleaseOwnershipInternal,
+                 base::Unretained(this),
+                 callback));
+}
+
+void TestService::ReleaseOwnershipInternal(
+    base::Closure callback) {
+  bus_->ReleaseOwnership("org.chromium.TestService");
+  has_ownership_ = false;
+
+  bus_->GetOriginTaskRunner()->PostTask(
+      FROM_HERE,
+      callback);
+}
+
 void TestService::OnExported(const std::string& interface_name,
                              const std::string& method_name,
                              bool success) {
@@ -443,10 +461,45 @@ void TestService::PerformAction(
     AddObject(object_path);
   else if (action == "RemoveObject")
     RemoveObject(object_path);
+  else if (action == "ReleaseOwnership") {
+    ReleaseOwnership(base::Bind(&TestService::PerformActionResponse,
+                                base::Unretained(this),
+                                method_call, response_sender));
+    return;
+  } else if (action == "Ownership") {
+    ReleaseOwnership(base::Bind(&TestService::OwnershipReleased,
+                                base::Unretained(this),
+                                method_call, response_sender));
+    return;
+  }
 
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
   response_sender.Run(response.Pass());
 }
+
+void TestService::PerformActionResponse(
+    MethodCall* method_call,
+    ExportedObject::ResponseSender response_sender) {
+  scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+  response_sender.Run(response.Pass());
+}
+
+void TestService::OwnershipReleased(
+    MethodCall* method_call,
+    ExportedObject::ResponseSender response_sender) {
+  RequestOwnership(base::Bind(&TestService::OwnershipRegained,
+                              base::Unretained(this),
+                              method_call, response_sender));
+}
+
+
+void TestService::OwnershipRegained(
+    MethodCall* method_call,
+    ExportedObject::ResponseSender response_sender,
+    bool success) {
+  PerformActionResponse(method_call, response_sender);
+}
+
 
 void TestService::GetManagedObjects(
     MethodCall* method_call,
