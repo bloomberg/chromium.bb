@@ -1030,7 +1030,7 @@ def _CheckUserActionUpdate(input_api, output_api):
       match = input_api.re.search(action_re, line)
       if match:
         for action_name in match.groups():
-          name_pattern = r'\t%s\n' % action_name
+          name_pattern = '\t%s\n' % action_name
           if name_pattern not in current_actions:
             return [output_api.PresubmitPromptWarning(
               'File %s line %d: %s is missing in '
