@@ -16,7 +16,7 @@
 #destination-settings .destination-settings-box {
   -webkit-box-align: center;
   display: -webkit-box;
-  height: 29px;
+  height: 28px;
   margin-bottom: 10px;
 }
 
@@ -37,7 +37,7 @@
 
 .destination-settings-info-wrapper {
   -webkit-box-flex: 1;
-  height: 29px;
+  height: 28px;
   position: relative;
 }
 
@@ -65,7 +65,7 @@
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
   display: -webkit-box;
-  height: 29px;
+  height: 28px;
 }
 
 .destination-settings-name,

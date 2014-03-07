@@ -11,12 +11,12 @@
 #page-settings .page-settings-custom-input-wrapper {
   -webkit-box-flex: 1;
   -webkit-margin-start: 0.6em;
-  height: 29px;
+  height: 28px;
   position: relative;
 }
 
 #page-settings .page-settings-custom-input {
-  height: 29px;
+  height: 28px;
   position: absolute;
   width: 100%;
 }

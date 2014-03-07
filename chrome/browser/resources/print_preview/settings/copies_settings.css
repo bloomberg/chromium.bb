@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #copies-settings input.copies {
-  height: 29px;
+  height: 28px;
   position: relative;
   width: 2.75em;
 }
@@ -33,7 +33,7 @@
   -webkit-padding-end: 0;
   -webkit-padding-start: 0;
   font-weight: 600;
-  height: 29px;
+  height: 28px;
   margin: 0;
   min-width: 0;
   position: relative;
@@ -58,4 +58,8 @@ html[dir='rtl'] #copies-settings button.decrement {
   border-bottom-right-radius: 0;
   border-top-left-radius: 3px;
   border-top-right-radius: 0;
+}
+
+#copies-settings .collate-container label {
+  padding-top: 6px;
 }
