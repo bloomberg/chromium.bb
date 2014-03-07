@@ -17,6 +17,7 @@
 #include "base/process/process_metrics.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,10 +65,12 @@ class ScopedProcSelfTask {
 TEST(ThreadHelpers, MAYBE_IsSingleThreadedBasic) {
   ScopedProcSelfTask task;
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(-1));
 
   base::Thread thread("sandbox_tests");
   ASSERT_TRUE(thread.Start());
   ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(task.fd()));
+  ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(-1));
   // Explicitly stop the thread here to not pollute the next test.
   ASSERT_TRUE(ThreadHelpers::StopThreadAndWatchProcFS(task.fd(), &thread));
 }

@@ -14,8 +14,10 @@ namespace sandbox {
 class ThreadHelpers {
  public:
   // Check whether the current process is single threaded. |proc_self_tasks|
-  // should be a file descriptor to /proc/self/task/ and remains owned by the
-  // caller.
+  // can be a file descriptor to /proc/self/task/ and remains owned by the
+  // caller or -1.
+  // If |proc_self_tasks| is -1, this method will open /proc/self/task/ and
+  // crash if it cannot.
   static bool IsSingleThreaded(int proc_self_task);
 
   // Stop |thread| and ensure that it does not have an entry in
@@ -28,6 +30,6 @@ class ThreadHelpers {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ThreadHelpers);
 };
 
-}  // namespace content
+}  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SERVICES_THREAD_HELPERS_H_

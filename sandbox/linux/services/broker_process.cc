@@ -149,7 +149,9 @@ bool BrokerProcess::Init(
     return false;
   }
 
+#if !defined(THREAD_SANITIZER)
   DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
+#endif
   int child_pid = fork();
   if (child_pid == -1) {
     close(socket_pair[0]);

@@ -181,8 +181,12 @@
         'services/broker_process.h',
         'services/init_process_reaper.cc',
         'services/init_process_reaper.h',
+        'services/scoped_process.cc',
+        'services/scoped_process.h',
         'services/thread_helpers.cc',
         'services/thread_helpers.h',
+        'services/yama.h',
+        'services/yama.cc',
       ],
       'dependencies': [
         '../base/base.gyp:base',

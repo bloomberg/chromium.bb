@@ -65,12 +65,6 @@ bool NoOpCallback() { return true; }
 
 }  // namespace
 
-#if defined(OS_ANDROID)
-  #define DISABLE_ON_ANDROID(function) DISABLED_##function
-#else
-  #define DISABLE_ON_ANDROID(function) function
-#endif
-
 TEST(BrokerProcess, CreateAndDestroy) {
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back("/proc/cpuinfo");

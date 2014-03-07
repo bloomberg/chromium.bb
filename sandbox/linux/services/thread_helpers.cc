@@ -5,6 +5,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,7 +22,9 @@
 
 namespace sandbox {
 
-bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
+namespace {
+
+bool IsSingleThreadedImpl(int proc_self_task) {
   CHECK_LE(0, proc_self_task);
   struct stat task_stat;
   int fstat_ret = fstat(proc_self_task, &task_stat);
@@ -33,6 +36,21 @@ bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
   // determining if the current proces is monothreaded it works: if at any
   // time it becomes monothreaded, it'll stay so.
   return task_stat.st_nlink == 3;
+}
+
+}  // namespace
+
+bool ThreadHelpers::IsSingleThreaded(int proc_self_task) {
+  DCHECK_LE(-1, proc_self_task);
+  if (-1 == proc_self_task) {
+    const int task_fd = open("/proc/self/task/", O_RDONLY | O_DIRECTORY);
+    PCHECK(0 <= task_fd);
+    const bool result = IsSingleThreadedImpl(task_fd);
+    PCHECK(0 == IGNORE_EINTR(close(task_fd)));
+    return result;
+  } else {
+    return IsSingleThreadedImpl(proc_self_task);
+  }
 }
 
 bool ThreadHelpers::StopThreadAndWatchProcFS(int proc_self_task,
