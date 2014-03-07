@@ -12,6 +12,7 @@ namespace base {
 class DictionaryValue;
 class FilePath;
 class SequencedTaskRunner;
+class Time;
 }
 
 namespace policy {
@@ -29,6 +30,7 @@ class PrefRegistrySimple;
 class PrefService;
 class PrefServiceSyncable;
 class PrefStore;
+class Profile;
 
 namespace chrome_prefs {
 
@@ -97,8 +99,19 @@ bool InitializePrefsFromMasterPrefs(
     const base::FilePath& profile_path,
     const base::DictionaryValue& master_prefs);
 
+// Retrieves the time of the last preference reset event, if any, for the
+// provided profile. If no reset has occurred, returns a null |Time|.
+base::Time GetResetTime(Profile* profile);
+
+// Clears the time of the last preference reset event, if any, for the provided
+// profile.
+void ClearResetTime(Profile* profile);
+
 // Register local state prefs used by chrome preference system.
 void RegisterPrefs(PrefRegistrySimple* registry);
+
+// Register user prefs used by chrome preference system.
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace chrome_prefs
 

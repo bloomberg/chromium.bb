@@ -1287,6 +1287,10 @@ extern const char kFullscreenAllowed[] = "fullscreen.allowed";
 const char kLocalDiscoveryNotificationsEnabled[] =
     "local_discovery.notifications_enabled";
 
+// A timestamp (stored in base::Time::ToInternalValue format) of the last time
+// a preference was reset.
+const char kPreferenceResetTime[] = "prefs.preference_reset_time";
+
 // String that indicates if the Profile Reset prompt has already been shown to
 // the user. Used both in user preferences and local state, in the latter, it is
 // actually a dictionary that maps profile keys to before-mentioned strings.
@@ -2651,10 +2655,6 @@ const char kWatchdogExtensionActiveOld[] =
 // hashes of profile prefs that we track to detect changes that happen outside
 // of Chrome.
 const char kProfilePreferenceHashes[] = "profile.preference_hashes";
-
-// A timestamp (stored in base::Time::ToInternalValue format) of the last time
-// a preference was reset.
-const char kProfilePreferenceResetTime[] = "profile.preference_reset_time";
 
 // Stores a pair of local time and corresponding network time to bootstrap
 // network time tracker when browser starts.

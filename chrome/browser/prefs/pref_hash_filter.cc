@@ -8,20 +8,22 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/pref_store.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
 #include "chrome/browser/prefs/tracked/tracked_atomic_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_split_preference.h"
+#include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
-    size_t reporting_ids_count,
-    const base::Closure& reset_callback)
-        : pref_hash_store_(pref_hash_store.Pass()),
-          reset_callback_(reset_callback) {
+    size_t reporting_ids_count)
+        : pref_hash_store_(pref_hash_store.Pass()) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences.size());
 
@@ -57,6 +59,38 @@ PrefHashFilter::~PrefHashFilter() {
   DCHECK(changed_paths_.empty());
 }
 
+// static
+void PrefHashFilter::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // See GetResetTime for why this is a StringPref and not Int64Pref.
+  registry->RegisterStringPref(
+      prefs::kPreferenceResetTime,
+      base::Int64ToString(base::Time().ToInternalValue()),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+// static
+base::Time PrefHashFilter::GetResetTime(PrefService* user_prefs) {
+  // Provide our own implementation (identical to the PrefService::GetInt64) in
+  // order to ensure it remains consistent with the way we store this value
+  // (which we do via a PrefStore, preventing us from reusing
+  // PrefService::SetInt64).
+  int64 internal_value = base::Time().ToInternalValue();
+  if (!base::StringToInt64(
+          user_prefs->GetString(prefs::kPreferenceResetTime),
+          &internal_value)) {
+    // Somehow the value stored on disk is not a valid int64.
+    NOTREACHED();
+    return base::Time();
+  }
+  return base::Time::FromInternalValue(internal_value);
+}
+
+// static
+void PrefHashFilter::ClearResetTime(PrefService* user_prefs) {
+  user_prefs->ClearPref(prefs::kPreferenceResetTime);
+}
+
 void PrefHashFilter::Initialize(const PrefStore& pref_store) {
   scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
       pref_hash_store_->BeginTransaction());
@@ -89,8 +123,11 @@ void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
     }
   }
 
-  if (did_reset)
-    reset_callback_.Run();
+  if (did_reset) {
+    pref_store_contents->Set(prefs::kPreferenceResetTime,
+                             new base::StringValue(base::Int64ToString(
+                                 base::Time::Now().ToInternalValue())));
+  }
 
   // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
   // data has been gathered from the wild to be confident this doesn't

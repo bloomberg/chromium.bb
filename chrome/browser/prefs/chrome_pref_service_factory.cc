@@ -318,18 +318,11 @@ scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
       g_browser_process->local_state()));
 }
 
-void HandleResetEvent() {
-  g_browser_process->local_state()->SetInt64(
-      prefs::kProfilePreferenceResetTime,
-      base::Time::Now().ToInternalValue());
-}
-
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store) {
   return make_scoped_ptr(new PrefHashFilter(pref_hash_store.Pass(),
                                             GetTrackingConfiguration(),
-                                            kTrackedPrefsReportingIDsCount,
-                                            base::Bind(&HandleResetEvent)));
+                                            kTrackedPrefsReportingIDsCount));
 }
 
 void PrepareBuilder(
@@ -621,8 +614,19 @@ bool InitializePrefsFromMasterPrefs(
   return success;
 }
 
+base::Time GetResetTime(Profile* profile) {
+  return PrefHashFilter::GetResetTime(profile->GetPrefs());
+}
+
+void ClearResetTime(Profile* profile) {
+  PrefHashFilter::ClearResetTime(profile->GetPrefs());
+}
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  PrefHashFilter::RegisterProfilePrefs(registry);
+}
+
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kProfilePreferenceResetTime, 0L);
   PrefHashStoreImpl::RegisterPrefs(registry);
 }
 

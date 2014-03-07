@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,12 +18,18 @@
 #include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/tracked/tracked_preference.h"
 
+class PrefService;
 class PrefStore;
 
 namespace base {
 class DictionaryValue;
+class Time;
 class Value;
 }  // namespace base
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 // Intercepts preference values as they are loaded from disk and verifies them
 // using a PrefHashStore. Keeps the PrefHashStore contents up to date as values
@@ -55,15 +60,24 @@ class PrefHashFilter : public PrefFilter {
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
   // using |pref_hash_store| to check/store hashes.
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
-  // than |tracked_preferences.size()|). |reset_callback| is called when a reset
-  // event occurs.
+  // than |tracked_preferences.size()|).
   PrefHashFilter(
       scoped_ptr<PrefHashStore> pref_hash_store,
       const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
-      size_t reporting_ids_count,
-      const base::Closure& reset_callback);
+      size_t reporting_ids_count);
 
   virtual ~PrefHashFilter();
+
+  // Registers required user preferences.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Retrieves the time of the last reset event, if any, for the provided user
+  // preferences. If no reset has occurred, Returns a null |Time|.
+  static base::Time GetResetTime(PrefService* user_prefs);
+
+  // Clears the time of the last reset event, if any, for the provided user
+  // preferences.
+  static void ClearResetTime(PrefService* user_prefs);
 
   // Initializes the PrefHashStore with hashes of the tracked preferences in
   // |pref_store|.
@@ -92,8 +106,6 @@ class PrefHashFilter : public PrefFilter {
   // The set of all paths whose value has changed since the last call to
   // FilterSerializeData.
   ChangedPathsMap changed_paths_;
-
-  base::Closure reset_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };

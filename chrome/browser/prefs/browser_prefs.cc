@@ -346,6 +346,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chrome_browser_net::HttpServerPropertiesManager::RegisterProfilePrefs(
       registry);
   chrome_browser_net::Predictor::RegisterProfilePrefs(registry);
+  chrome_prefs::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
   extensions::launch_util::RegisterProfilePrefs(registry);
