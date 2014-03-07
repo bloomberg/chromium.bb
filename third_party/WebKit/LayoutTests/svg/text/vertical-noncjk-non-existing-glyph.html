@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+window.onload = function() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+</script>
+<!-- Passes if it does not crash. -->
+<p>PASS</p>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <font>
+    <font-face font-family="HappySad"></font-face>
+  </font>
+  <g style="-webkit-writing-mode: vertical-rl; " font-family="HappySad"><text><altGlyph>&#x6bd73;</altGlyph></text></g>
+</svg>
