@@ -5,22 +5,48 @@
 package org.chromium.chromoting;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Parcel;
+import android.os.RemoteException;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import org.chromium.ui.UiUtils;
 
 /**
  * The Activity for showing the Help screen.
  */
 public class HelpActivity extends Activity {
     private static final String PLAY_STORE_URL = "market://details?id=";
+
+    /**
+     * Maximum dimension for the screenshot to be sent to the Send Feedback handler.  This size
+     * ensures the size of bitmap < 1MB, which is a requirement of the handler.
+     */
+    private static final int MAX_FEEDBACK_SCREENSHOT_DIMENSION = 600;
+
+    /**
+     * This global variable is used for passing the screenshot from the originating Activity to the
+     * HelpActivity. There seems to be no better way of doing this.
+     */
+    private static Bitmap mScreenshot;
+
+    /** Constant used to send the feedback parcel to the system feedback service. */
+    private static final int SEND_FEEDBACK_INFO = Binder.FIRST_CALL_TRANSACTION;
 
     /** Launches an external web browser or application. */
     private void openUrl(String url) {
@@ -32,6 +58,41 @@ public class HelpActivity extends Activity {
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    private void sendFeedback() {
+        Intent intent = new Intent(Intent.ACTION_BUG_REPORT);
+        ServiceConnection conn = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                try {
+                    Parcel parcel = Parcel.obtain();
+                    if (mScreenshot != null) {
+                        mScreenshot.writeToParcel(parcel, 0);
+                    }
+                    service.transact(SEND_FEEDBACK_INFO, parcel, null, 0);
+                    parcel.recycle();
+                } catch (RemoteException ex) {
+                    Log.e("help", "Unexpected error sending feedback: ", ex);
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {}
+        };
+
+        bindService(intent, conn, BIND_AUTO_CREATE);
+    }
+
+    /** Launches the Help activity. */
+    public static void launch(Activity activity, String helpUrl) {
+        View rootView = activity.getWindow().getDecorView().getRootView();
+        mScreenshot = UiUtils.generateScaledScreenshot(rootView, MAX_FEEDBACK_SCREENSHOT_DIMENSION,
+                Bitmap.Config.ARGB_8888);
+
+        Intent intent = new Intent(activity, HelpActivity.class);
+        intent.setData(Uri.parse(helpUrl));
+        activity.startActivity(intent);
     }
 
     @Override
@@ -72,6 +133,10 @@ public class HelpActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.actionbar_feedback:
+                sendFeedback();
+                return true;
+
             case R.id.actionbar_play_store:
                 openUrl(PLAY_STORE_URL + getPackageName());
                 return true;

@@ -18,7 +18,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -215,11 +214,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                 return true;
 
             case R.id.actionbar_help:
-                {
-                    Intent intent = new Intent(this, HelpActivity.class);
-                    intent.setData(Uri.parse(HELP_URL));
-                    startActivity(intent);
-                }
+                HelpActivity.launch(this, HELP_URL);
                 return true;
 
             default:

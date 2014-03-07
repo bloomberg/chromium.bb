@@ -8,8 +8,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/actionbar_feedback"
             android:title="@string/actionbar_feedback"
-            android:showAsAction="ifRoom|withText"
-            android:visible="false"/>
+            android:showAsAction="ifRoom|withText"/>
     <item android:id="@+id/actionbar_play_store"
             android:title="@string/actionbar_play_store"
             android:showAsAction="never"/>

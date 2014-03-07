@@ -5,9 +5,7 @@
 package org.chromium.chromoting;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -114,11 +112,7 @@ public class Desktop extends Activity {
                 return true;
 
             case R.id.actionbar_help:
-                {
-                    Intent intent = new Intent(this, HelpActivity.class);
-                    intent.setData(Uri.parse(HELP_URL));
-                    startActivity(intent);
-                }
+                HelpActivity.launch(this, HELP_URL);
                 return true;
 
             default:
