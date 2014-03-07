@@ -322,10 +322,16 @@ void OmniboxFieldTrial::GetDemotionsByType(
     AutocompleteInput::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type) {
   demotions_by_type->clear();
-  const std::string demotion_rule =
-      OmniboxFieldTrial::GetValueForRuleInContext(
-          kDemoteByTypeRule,
-          current_page_classification);
+  std::string demotion_rule = OmniboxFieldTrial::GetValueForRuleInContext(
+      kDemoteByTypeRule, current_page_classification);
+  // If there is no demotion rule for this context, then use the default
+  // value for that context.  At the moment the default value is non-empty
+  // only for the fakebox-focus context.
+  if (demotion_rule.empty() &&
+      (current_page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS))
+    demotion_rule = "1:61,2:61,3:61,4:61,12:61";
+
   // The value of the DemoteByType rule is a comma-separated list of
   // {ResultType + ":" + Number} where ResultType is an AutocompleteMatchType::
   // Type enum represented as an integer and Number is an integer number
