@@ -242,9 +242,16 @@ class USBImager(object):
       image: Path to the image to copy.
       device: Device to copy to.
     """
-    cmd = ['dd', 'if=%s' % image, 'of=%s' % device, 'bs=4M', 'oflag=sync',
-           'status=noxfer']
-    cros_build_lib.SudoRunCommand(cmd, debug_level=self.debug_level)
+    # Use pv to display progress bar if possible.
+    cmd_base = 'pv -pretb'
+    try:
+      cros_build_lib.RunCommand(['pv', '--version'], print_cmd=False,
+                                capture_output=True)
+    except cros_build_lib.RunCommandError:
+      cmd_base = 'cat'
+
+    cmd = '%s %s | dd of=%s bs=4M oflag=sync' % (cmd_base, image, device)
+    cros_build_lib.SudoRunCommand(cmd, shell=True)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
 
   def GetImagePathFromDevserver(self, path):
