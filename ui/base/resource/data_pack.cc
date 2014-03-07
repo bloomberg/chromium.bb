@@ -190,8 +190,7 @@ bool DataPack::GetStringPiece(uint16 resource_id,
   const DataPackEntry* next_entry = target + 1;
   size_t length = next_entry->file_offset - target->file_offset;
 
-  data->set(reinterpret_cast<const char*>(mmap_->data() + target->file_offset),
-            length);
+  data->set(mmap_->data() + target->file_offset, length);
   return true;
 }
 

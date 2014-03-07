@@ -225,7 +225,7 @@ bool ValidateSubProtocol(
 
 bool DeflateError(std::string* message, const base::StringPiece& piece) {
   *message = "Error in permessage-deflate: ";
-  piece.AppendToString(message);
+  AppendToString(piece, message);
   return false;
 }
 
