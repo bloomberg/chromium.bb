@@ -7,18 +7,15 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "url/gurl.h"
 #include "webkit/common/user_agent/webkit_user_agent_export.h"
+
+class GURL;
 
 namespace webkit_glue {
 
-// Sets the user agent.  Pass true for overriding if this is a custom
-// user agent instead of the default one (in order to turn off any browser
-// sniffing workarounds). This must be called before GetUserAgent() can
+// Sets the user agent. This must be called before GetUserAgent() can
 // be called.
-WEBKIT_USER_AGENT_EXPORT void SetUserAgent(const std::string& user_agent,
-                                           bool overriding);
+WEBKIT_USER_AGENT_EXPORT void SetUserAgent(const std::string& user_agent);
 
 // Returns the user agent to use for the given URL. SetUserAgent() must
 // be called prior to calling this function.

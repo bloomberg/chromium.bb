@@ -634,7 +634,6 @@
         '../webkit/common/database/database_connections_unittest.cc',
         '../webkit/common/database/database_identifier_unittest.cc',
         '../webkit/common/fileapi/file_system_util_unittest.cc',
-        '../webkit/common/user_agent/user_agent_unittest.cc',
         '../webkit/browser/quota/mock_quota_manager.cc',
         '../webkit/browser/quota/mock_quota_manager.h',
         '../webkit/browser/quota/mock_quota_manager_proxy.cc',

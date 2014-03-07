@@ -40,9 +40,8 @@ void SetContentClient(ContentClient* client) {
   // Set the default user agent as provided by the client. We need to make
   // sure this is done before webkit_glue::GetUserAgent() is called (so that
   // the UA doesn't change).
-  if (client) {
-    webkit_glue::SetUserAgent(client->GetUserAgent(), false);
-  }
+  if (client)
+    webkit_glue::SetUserAgent(client->GetUserAgent());
 }
 
 ContentClient* GetContentClient() {

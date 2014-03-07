@@ -384,7 +384,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
   // initialized.
   if (command_line.HasSwitch(switches::kUserAgent)) {
     webkit_glue::SetUserAgent(
-        command_line.GetSwitchValueASCII(switches::kUserAgent), true);
+        command_line.GetSwitchValueASCII(switches::kUserAgent));
   }
 
   // The StatsTable must be initialized in each process; we already
@@ -746,7 +746,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // defaults to the user agent set during SetContentClient().
     if (command_line.HasSwitch(switches::kUserAgent)) {
       webkit_glue::SetUserAgent(
-          command_line.GetSwitchValueASCII(switches::kUserAgent), true);
+          command_line.GetSwitchValueASCII(switches::kUserAgent));
     }
 
     if (!process_type.empty())
