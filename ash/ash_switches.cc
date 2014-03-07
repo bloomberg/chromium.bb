@@ -29,10 +29,6 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
-// UI to show preferred networks in the status area (for testing).
-const char kAshDebugShowPreferredNetworks[] =
-    "ash-debug-show-preferred-networks";
-
 // Indicates that the wallpaper images specified by
 // kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
 // downloadable from Google).
