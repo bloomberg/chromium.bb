@@ -1791,13 +1791,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
   TestHelper("testAlertDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-// Fails on official Windows and Linux builds. See http://crbug.com/313868
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_Dialog_TestConfirmDialog DISABLED_Dialog_TestConfirmDialog
-#else
-#define MAYBE_Dialog_TestConfirmDialog Dialog_TestConfirmDialog
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Dialog_TestConfirmDialog) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, TestConfirmDialog) {
   TestHelper("testConfirmDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
@@ -1817,13 +1811,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
              NO_TEST_SERVER);
 }
 
-// Fails on official Windows and Linux builds. See http://crbug.com/313868
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_Dialog_TestPromptDialog DISABLED_Dialog_TestPromptDialog
-#else
-#define MAYBE_Dialog_TestPromptDialog Dialog_TestPromptDialog
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Dialog_TestPromptDialog) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
   TestHelper("testPromptDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 

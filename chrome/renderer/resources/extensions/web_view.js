@@ -66,6 +66,14 @@ var WEB_VIEW_EVENTS = {
     evt: CreateEvent('webview.onContentLoad'),
     fields: []
   },
+  'dialog': {
+    cancelable: true,
+    customHandler: function(webViewInternal, event, webViewEvent) {
+      webViewInternal.handleDialogEvent(event, webViewEvent);
+    },
+    evt: CreateEvent('webview.onDialog'),
+    fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
+  },
   'exit': {
      evt: CreateEvent('webview.onExit'),
      fields: ['processId', 'reason']
@@ -630,6 +638,84 @@ WebViewInternal.prototype.getPermissionTypes = function() {
   var permissions =
       ['media', 'geolocation', 'pointerLock', 'download', 'loadplugin'];
   return permissions.concat(this.maybeGetExperimentalPermissions());
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.handleDialogEvent =
+    function(event, webViewEvent) {
+  var showWarningMessage = function(dialogType) {
+    var VOWELS = ['a', 'e', 'i', 'o', 'u'];
+    var WARNING_MSG_DIALOG_BLOCKED = '<webview>: %1 %2 dialog was blocked.';
+    var article = (VOWELS.indexOf(dialogType.charAt(0)) >= 0) ? 'An' : 'A';
+    var output = WARNING_MSG_DIALOG_BLOCKED.replace('%1', article);
+    output = output.replace('%2', dialogType);
+    window.console.warn(output);
+  };
+
+  var self = this;
+  var browserPluginNode = this.browserPluginNode;
+  var webviewNode = this.webviewNode;
+
+  var requestId = event.requestId;
+  var actionTaken = false;
+
+  var validateCall = function() {
+    var ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN = '<webview>: ' +
+        'An action has already been taken for this "dialog" event.';
+
+    if (actionTaken) {
+      throw new Error(ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN);
+    }
+    actionTaken = true;
+  };
+
+  var dialog = {
+    ok: function(user_input) {
+      validateCall();
+      user_input = user_input || '';
+      WebView.setPermission(self.instanceId, requestId, 'allow', user_input);
+    },
+    cancel: function() {
+      validateCall();
+      WebView.setPermission(self.instanceId, requestId, 'deny');
+    }
+  };
+  webViewEvent.dialog = dialog;
+
+  var defaultPrevented = !webviewNode.dispatchEvent(webViewEvent);
+  if (actionTaken) {
+    return;
+  }
+
+  if (defaultPrevented) {
+    // Tell the JavaScript garbage collector to track lifetime of |dialog| and
+    // call back when the dialog object has been collected.
+    MessagingNatives.BindToGC(dialog, function() {
+      // Avoid showing a warning message if the decision has already been made.
+      if (actionTaken) {
+        return;
+      }
+      WebView.setPermission(
+          self.instanceId, requestId, 'default', '', function(allowed) {
+        if (allowed) {
+          return;
+        }
+        showWarningMessage(event.messageType);
+      });
+    });
+  } else {
+    actionTaken = true;
+    // The default action is equivalent to canceling the dialog.
+    WebView.setPermission(
+        self.instanceId, requestId, 'default', '', function(allowed) {
+      if (allowed) {
+        return;
+      }
+      showWarningMessage(event.messageType);
+    });
+  }
 };
 
 /**
