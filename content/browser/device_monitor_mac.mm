@@ -204,14 +204,14 @@ void QTKitMonitorImpl::OnDeviceChanged() {
   ConsolidateDevicesListAndNotify(snapshot_devices);
 }
 
-// Forward declaration for use by CrAVFoundationSuspendObserver.
+// Forward declaration for use by CrAVFoundationDeviceObserver.
 class AVFoundationMonitorImpl;
 
 }  // namespace
 
 // This class is a Key-Value Observer (KVO) shim.  It is needed because C++
 // classes cannot observe Key-Values directly.
-@interface CrAVFoundationSuspendObserver : NSObject {
+@interface CrAVFoundationDeviceObserver : NSObject {
  @private
   AVFoundationMonitorImpl* receiver_;
 }
@@ -232,7 +232,7 @@ class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
   virtual void OnDeviceChanged() OVERRIDE;
 
  private:
-  base::scoped_nsobject<CrAVFoundationSuspendObserver> suspend_observer_;
+  base::scoped_nsobject<CrAVFoundationDeviceObserver> suspend_observer_;
   DISALLOW_COPY_AND_ASSIGN(AVFoundationMonitorImpl);
 };
 
@@ -255,7 +255,7 @@ AVFoundationMonitorImpl::AVFoundationMonitorImpl(
                   usingBlock:^(NSNotification* notification) {
                       OnDeviceChanged();}];
   suspend_observer_.reset(
-      [[CrAVFoundationSuspendObserver alloc] initWithChangeReceiver:this]);
+      [[CrAVFoundationDeviceObserver alloc] initWithChangeReceiver:this]);
   for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
     [suspend_observer_ startObserving:device];
 }
@@ -292,7 +292,7 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 
 }  // namespace
 
-@implementation CrAVFoundationSuspendObserver
+@implementation CrAVFoundationDeviceObserver
 
 - (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver {
   if ((self = [super init])) {
@@ -307,13 +307,19 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
   [device addObserver:self
            forKeyPath:@"suspended"
               options:0
-              context:nil];
+              context:device];
+  [device addObserver:self
+           forKeyPath:@"connected"
+              options:0
+              context:device];
 }
 
 - (void)stopObserving:(CrAVCaptureDevice*)device {
   DCHECK(device != nil);
   [device removeObserver:self
               forKeyPath:@"suspended"];
+  [device removeObserver:self
+              forKeyPath:@"connected"];
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -322,9 +328,11 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
                        context:(void*)context {
   if ([keyPath isEqual:@"suspended"])
     receiver_->OnDeviceChanged();
+  if ([keyPath isEqual:@"connected"])
+    [self stopObserving:static_cast<CrAVCaptureDevice*>(context)];
 }
 
-@end  // @implementation CrAVFoundationSuspendObserver
+@end  // @implementation CrAVFoundationDeviceObserver
 
 namespace content {
 
