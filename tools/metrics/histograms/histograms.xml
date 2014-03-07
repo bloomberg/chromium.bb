@@ -35037,6 +35037,7 @@ other types of suffix sets.
   <int value="0" label="Seed Not Empty"/>
   <int value="1" label="Seed Empty"/>
   <int value="2" label="Seed Corrupt"/>
+  <int value="3" label="Seed Signature Verification Failed"/>
 </enum>
 
 <enum name="VaryType" type="int">

@@ -18,6 +18,23 @@ namespace chrome_variations {
 
 namespace {
 
+class TestVariationsSeedStore : public VariationsSeedStore {
+ public:
+  explicit TestVariationsSeedStore(PrefService* local_state)
+      : VariationsSeedStore(local_state) {}
+  virtual ~TestVariationsSeedStore() {}
+
+  virtual VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
+      const std::string& seed_bytes,
+      const std::string& base64_seed_signature) OVERRIDE {
+    return VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_ENUM_SIZE;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestVariationsSeedStore);
+};
+
+
 // Populates |seed| with simple test data. The resulting seed will contain one
 // study called "test", which contains one experiment called "abc" with
 // probability weight 100. |seed|'s study field will be cleared before adding
@@ -72,7 +89,7 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   VariationsSeedStore::RegisterPrefs(prefs.registry());
   prefs.SetString(prefs::kVariationsSeed, base64_seed);
 
-  VariationsSeedStore seed_store(&prefs);
+  TestVariationsSeedStore seed_store(&prefs);
 
   VariationsSeed loaded_seed;
   // Check that loading a seed without a hash pref set works correctly.
@@ -90,20 +107,6 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   EXPECT_TRUE(seed_store.LoadSeed(&loaded_seed));
   EXPECT_EQ(SerializeSeed(seed), SerializeSeed(loaded_seed));
 
-  // Check that false is returned and the pref is cleared when hash differs.
-  VariationsSeed different_seed = seed;
-  different_seed.mutable_study(0)->set_name("octopus");
-  std::string different_hash;
-  prefs.SetString(prefs::kVariationsSeed,
-                  SerializeSeedBase64(different_seed, &different_hash));
-  ASSERT_NE(different_hash, prefs.GetString(prefs::kVariationsSeedHash));
-  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
-  EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedHash));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
-
   // Check that loading a bad seed returns false and clears the pref.
   prefs.ClearPref(prefs::kVariationsSeed);
   prefs.SetString(prefs::kVariationsSeed, "this should fail");
@@ -111,7 +114,6 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
-  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedHash));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
 
   // Check that having no seed in prefs results in a return value of false.
@@ -127,7 +129,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());
 
-  VariationsSeedStore seed_store(&prefs);
+  TestVariationsSeedStore seed_store(&prefs);
 
   EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(), now));
   // Make sure the pref was actually set.
@@ -144,6 +146,54 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
   prefs.ClearPref(prefs::kVariationsSeed);
   EXPECT_FALSE(seed_store.StoreSeedData("should fail", std::string(), now));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+}
+
+TEST(VariationsSeedStoreTest, VerifySeedSignature) {
+  // The below seed and signature pair were generated using the server's
+  // private key.
+  const std::string base64_seed_data =
+      "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5p"
+      "Zm9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBAB"
+      "SgwKCGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0"
+      "EAFKDAoIZ3JvdXBfMDUQAUoMCghncm91cF8wNhABSgwKCGdyb3VwXzA3EAFKDAoIZ3JvdXBf"
+      "MDgQAUoMCghncm91cF8wORAB";
+  const std::string base64_seed_signature =
+      "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
+      "96JkMYgzTkHPwbv7K/CmgA==";
+
+  std::string seed_data;
+  EXPECT_TRUE(base::Base64Decode(base64_seed_data, &seed_data));
+
+  VariationsSeedStore seed_store(NULL);
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  // Signature verification is not enabled on mobile.
+  if (seed_store.VerifySeedSignature(seed_data, base64_seed_signature) ==
+      VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_ENUM_SIZE) {
+    return;
+  }
+#endif
+
+  // The above inputs should be valid.
+  EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_VALID,
+            seed_store.VerifySeedSignature(seed_data, base64_seed_signature));
+
+  // If there's no signature, the corresponding result should be returned.
+  EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_MISSING,
+            seed_store.VerifySeedSignature(seed_data, std::string()));
+
+  // Using non-base64 encoded value as signature (e.g. seed data) should fail.
+  EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_DECODE_FAILED,
+            seed_store.VerifySeedSignature(seed_data, seed_data));
+
+  // Using a different signature (e.g. the base64 seed data) should fail.
+  EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_INVALID_SIGNATURE,
+            seed_store.VerifySeedSignature(seed_data, base64_seed_data));
+
+  // Using a different seed should not match the signature.
+  seed_data[0] = 'x';
+  EXPECT_EQ(VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_INVALID_SEED,
+            seed_store.VerifySeedSignature(seed_data, base64_seed_signature));
 }
 
 }  // namespace chrome_variations

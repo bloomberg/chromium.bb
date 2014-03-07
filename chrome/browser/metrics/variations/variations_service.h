@@ -96,6 +96,12 @@ class VariationsService
   // the response.
   virtual void DoActualFetch();
 
+  // Stores the seed to prefs. Set as virtual and protected so that it can be
+  // overridden by tests.
+  virtual void StoreSeed(const std::string& seed_data,
+                         const std::string& seed_signature,
+                         const base::Time& date_fetched);
+
   // This constructor exists for injecting a mock notifier. It is meant for
   // testing only. This instance will take ownership of |notifier|.
   VariationsService(ResourceRequestAllowedNotifier* notifier,

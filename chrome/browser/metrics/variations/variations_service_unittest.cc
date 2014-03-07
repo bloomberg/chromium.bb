@@ -40,7 +40,9 @@ class TestVariationsService : public VariationsService {
   TestVariationsService(TestRequestAllowedNotifier* test_notifier,
                         PrefService* local_state)
       : VariationsService(test_notifier, local_state),
-        fetch_attempted_(false) {
+        intercepts_fetch_(true),
+        fetch_attempted_(false),
+        seed_stored_(false) {
     // Set this so StartRepeatedVariationsSeedFetch can be called in tests.
     SetCreateTrialsFromSeedCalledForTesting(true);
   }
@@ -48,15 +50,34 @@ class TestVariationsService : public VariationsService {
   virtual ~TestVariationsService() {
   }
 
+  void set_intercepts_fetch(bool value) {
+    intercepts_fetch_ = value;
+  }
+
   bool fetch_attempted() const { return fetch_attempted_; }
 
- protected:
+  bool seed_stored() const { return seed_stored_; }
+
   virtual void DoActualFetch() OVERRIDE {
-    fetch_attempted_ = true;
+    if (intercepts_fetch_) {
+      fetch_attempted_ = true;
+      return;
+    }
+
+    VariationsService::DoActualFetch();
+  }
+
+ protected:
+  virtual void StoreSeed(const std::string& seed_data,
+                         const std::string& seed_signature,
+                         const base::Time& date_fetched) OVERRIDE {
+    seed_stored_ = true;
   }
 
  private:
+  bool intercepts_fetch_;
   bool fetch_attempted_;
+  bool seed_stored_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
 };
@@ -82,18 +103,6 @@ std::string SerializeSeed(const VariationsSeed& seed) {
   std::string serialized_seed;
   seed.SerializeToString(&serialized_seed);
   return serialized_seed;
-}
-
-// Serializes |seed| to base64-encoded protobuf binary format.
-std::string SerializeSeedBase64(const VariationsSeed& seed, std::string* hash) {
-  std::string serialized_seed = SerializeSeed(seed);
-  if (hash != NULL) {
-    std::string sha1 = base::SHA1HashString(serialized_seed);
-    *hash = base::HexEncode(sha1.data(), sha1.size());
-  }
-  std::string base64_serialized_seed;
-  base::Base64Encode(serialized_seed, &base64_serialized_seed);
-  return base64_serialized_seed;
 }
 
 // Simulates a variations service response by setting a date header and the
@@ -257,21 +266,19 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService variations_service(new TestRequestAllowedNotifier, &prefs);
+  TestVariationsService service(new TestRequestAllowedNotifier, &prefs);
+  service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
-  variations_service.DoActualFetch();
+  service.DoActualFetch();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   SimulateServerResponse(net::HTTP_OK, fetcher);
-  const VariationsSeed seed = CreateTestSeed();
-  fetcher->SetResponseString(SerializeSeed(seed));
+  fetcher->SetResponseString(SerializeSeed(CreateTestSeed()));
 
-  EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
-  variations_service.OnURLFetchComplete(fetcher);
-  EXPECT_FALSE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
-  const std::string expected_base64 = SerializeSeedBase64(seed, NULL);
-  EXPECT_EQ(expected_base64, prefs.GetString(prefs::kVariationsSeed));
+  EXPECT_FALSE(service.seed_stored());
+  service.OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(service.seed_stored());
 }
 
 TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {

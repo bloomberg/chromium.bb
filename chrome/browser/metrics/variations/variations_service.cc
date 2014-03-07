@@ -372,6 +372,13 @@ void VariationsService::DoActualFetch() {
   last_request_started_time_ = now;
 }
 
+void VariationsService::StoreSeed(const std::string& seed_data,
+                                  const std::string& seed_signature,
+                                  const base::Time& date_fetched) {
+  if (seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched))
+    RecordLastFetchTime();
+}
+
 void VariationsService::FetchVariationsSeed() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -452,8 +459,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   request->GetResponseHeaders()->EnumerateHeader(NULL,
                                                  "X-Seed-Signature",
                                                  &seed_signature);
-  if (seed_store_.StoreSeedData(seed_data, seed_signature, response_date))
-    RecordLastFetchTime();
+  StoreSeed(seed_data, seed_signature, response_date);
 }
 
 void VariationsService::OnResourceRequestsAllowed() {
