@@ -542,15 +542,12 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
     gyp_defines.append('target_arch=%s' % arch)
     if arch == 'arm':
       if getos.GetPlatform() == 'linux':
-        if os.path.exists("/usr/bin/arm-linux-gnueabihf-gcc"):
-          # TODO(sbc): make this conditional once all our linux
-          # have the ARM cross compiler installed.
-          gyp_env['CC'] = 'arm-linux-gnueabihf-gcc'
-          gyp_env['CXX'] = 'arm-linux-gnueabihf-g++'
-          gyp_env['AR'] = 'arm-linux-gnueabihf-ar'
-          gyp_env['AS'] = 'arm-linux-gnueabihf-as'
-          gyp_env['CC_host'] = 'cc'
-          gyp_env['CXX_host'] = 'c++'
+        gyp_env['CC'] = 'arm-linux-gnueabihf-gcc'
+        gyp_env['CXX'] = 'arm-linux-gnueabihf-g++'
+        gyp_env['AR'] = 'arm-linux-gnueabihf-ar'
+        gyp_env['AS'] = 'arm-linux-gnueabihf-as'
+        gyp_env['CC_host'] = 'cc'
+        gyp_env['CXX_host'] = 'c++'
       gyp_defines += ['armv7=1', 'arm_thumb=0', 'arm_neon=1',
           'arm_float_abi=hard']
       if force_arm_gcc:
