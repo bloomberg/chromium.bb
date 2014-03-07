@@ -86,7 +86,6 @@ class FileDownloader {
         url_loader_trusted_interface_(NULL),
         open_time_(-1),
         mode_(DOWNLOAD_NONE),
-        open_and_stream_(true),
         url_scheme_(SCHEME_OTHER),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
@@ -173,7 +172,6 @@ class FileDownloader {
   bool streaming_to_file() const;
   bool streaming_to_buffer() const;
   bool streaming_to_user() const;
-  bool not_streaming() const;
 
   int status_code() const { return status_code_; }
   nacl::string GetResponseHeaders() const;
@@ -222,7 +220,6 @@ class FileDownloader {
   int64_t open_time_;
   int32_t status_code_;
   DownloadMode mode_;
-  bool open_and_stream_;
   static const uint32_t kTempBufferSize = 2048;
   std::vector<char> temp_buffer_;
   std::deque<char> buffer_;

@@ -108,7 +108,6 @@ bool FileDownloader::OpenStream(
     const nacl::string& url,
     const pp::CompletionCallback& callback,
     StreamCallbackSource* stream_callback_source) {
-  open_and_stream_ = false;
   data_stream_callback_source_ = stream_callback_source;
   return Open(url, DOWNLOAD_STREAM, callback, true, NULL);
 }
@@ -146,52 +145,50 @@ bool FileDownloader::Open(
   if (!extra_request_headers_.empty())
     url_request.SetHeaders(extra_request_headers_);
 
-  do {
-    // Reset the url loader and file reader.
-    // Note that we have the only reference to the underlying objects, so
-    // this will implicitly close any pending IO and destroy them.
-    url_loader_ = pp::URLLoader(instance_);
-    url_scheme_ = instance_->GetUrlScheme(url);
-    bool grant_universal_access = false;
-    if (url_scheme_ == SCHEME_DATA) {
-      // TODO(elijahtaylor) Remove this when data URIs can be read without
-      // universal access.
-      // https://bugs.webkit.org/show_bug.cgi?id=17352
-      if (streaming_to_buffer()) {
-        grant_universal_access = true;
-      } else {
-        // Open is to invoke a callback on success or failure. Schedule
-        // it asynchronously to follow PPAPI's convention and avoid reentrancy.
-        pp::Core* core = pp::Module::Get()->core();
-        core->CallOnMainThread(0, callback, PP_ERROR_NOACCESS);
-        PLUGIN_PRINTF(("FileDownloader::Open (pp_error=PP_ERROR_NOACCESS)\n"));
-        return true;
-      }
+  // Reset the url loader and file reader.
+  // Note that we have the only reference to the underlying objects, so
+  // this will implicitly close any pending IO and destroy them.
+  url_loader_ = pp::URLLoader(instance_);
+  url_scheme_ = instance_->GetUrlScheme(url);
+  bool grant_universal_access = false;
+  if (url_scheme_ == SCHEME_DATA) {
+    // TODO(elijahtaylor) Remove this when data URIs can be read without
+    // universal access.
+    // https://bugs.webkit.org/show_bug.cgi?id=17352
+    if (streaming_to_buffer()) {
+      grant_universal_access = true;
+    } else {
+      // Open is to invoke a callback on success or failure. Schedule
+      // it asynchronously to follow PPAPI's convention and avoid reentrancy.
+      pp::Core* core = pp::Module::Get()->core();
+      core->CallOnMainThread(0, callback, PP_ERROR_NOACCESS);
+      PLUGIN_PRINTF(("FileDownloader::Open (pp_error=PP_ERROR_NOACCESS)\n"));
+      return true;
     }
+  }
 
-    url_request.SetRecordDownloadProgress(record_progress);
+  url_request.SetRecordDownloadProgress(record_progress);
 
-    if (url_loader_trusted_interface_ != NULL) {
-      if (grant_universal_access) {
-        // TODO(sehr,jvoung): See if we can remove this -- currently
-        // only used for data URIs.
-        url_loader_trusted_interface_->GrantUniversalAccess(
-            url_loader_.pp_resource());
-      }
-      if (progress_callback != NULL) {
-        url_loader_trusted_interface_->RegisterStatusCallback(
-            url_loader_.pp_resource(), progress_callback);
-      }
+  if (url_loader_trusted_interface_ != NULL) {
+    if (grant_universal_access) {
+      // TODO(sehr,jvoung): See if we can remove this -- currently
+      // only used for data URIs.
+      url_loader_trusted_interface_->GrantUniversalAccess(
+          url_loader_.pp_resource());
     }
-
-    // Prepare the url request.
-    url_request.SetURL(url_);
-
-    if (streaming_to_file()) {
-      file_reader_ = pp::FileIO(instance_);
-      url_request.SetStreamToFile(true);
+    if (progress_callback != NULL) {
+      url_loader_trusted_interface_->RegisterStatusCallback(
+          url_loader_.pp_resource(), progress_callback);
     }
-  } while (0);
+  }
+
+  // Prepare the url request.
+  url_request.SetURL(url_);
+
+  if (streaming_to_file()) {
+    file_reader_ = pp::FileIO(instance_);
+    url_request.SetStreamToFile(true);
+  }
 
   // Request asynchronous download of the url providing an on-load callback.
   // As long as this step is guaranteed to be asynchronous, we can call
@@ -217,7 +214,7 @@ void FileDownloader::OpenFast(const nacl::string& url,
   status_code_ = NACL_HTTP_STATUS_OK;
   url_ = url;
   mode_ = DOWNLOAD_NONE;
-  if (not_streaming() && file_handle != PP_kInvalidFileHandle) {
+  if (file_handle != PP_kInvalidFileHandle) {
     NaClFileInfo tmp_info = NoFileInfo();
     tmp_info.desc = ConvertFileDescriptor(file_handle);
     tmp_info.file_token.lo = file_token_lo;
@@ -303,7 +300,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
     return;
   }
 
-  if (open_and_stream_) {
+  if (!streaming_to_user()) {
     FinishStreaming(file_open_notify_callback_);
     return;
   }
@@ -474,10 +471,6 @@ bool FileDownloader::streaming_to_buffer() const {
 
 bool FileDownloader::streaming_to_user() const {
   return mode_ == DOWNLOAD_STREAM;
-}
-
-bool FileDownloader::not_streaming() const {
-  return mode_ == DOWNLOAD_NONE;
 }
 
 void FileDownloader::GotFileHandleNotify(int32_t pp_error,
