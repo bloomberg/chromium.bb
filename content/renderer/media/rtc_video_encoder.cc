@@ -324,8 +324,12 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
   }
 
   // Use webrtc timestamps to ensure correct RTP sender behavior.
-  // TODO(hshi): obtain timestamp from the capturer, see crbug.com/284783.
-  const int64 capture_time_ms = webrtc::TickTime::MillisecondTimestamp();
+  // TODO(hshi): obtain timestamp from the capturer, see crbug.com/350106.
+  const int64 capture_time_us = webrtc::TickTime::MicrosecondTimestamp();
+
+  // Derive the capture time (in ms) and RTP timestamp (in 90KHz ticks).
+  int64 capture_time_ms = capture_time_us / 1000;
+  uint32_t rtp_timestamp = static_cast<uint32_t>(capture_time_us * 90 / 1000);
 
   scoped_ptr<webrtc::EncodedImage> image(new webrtc::EncodedImage(
       reinterpret_cast<uint8_t*>(output_buffer->memory()),
@@ -333,8 +337,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
       output_buffer->mapped_size()));
   image->_encodedWidth = input_visible_size_.width();
   image->_encodedHeight = input_visible_size_.height();
-  // Convert capture time to 90 kHz RTP timestamp.
-  image->_timeStamp = static_cast<uint32_t>(90 * capture_time_ms);
+  image->_timeStamp = rtp_timestamp;
   image->capture_time_ms_ = capture_time_ms;
   image->_frameType = (key_frame ? webrtc::kKeyFrame : webrtc::kDeltaFrame);
   image->_completeFrame = true;
