@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@ var createSession = chrome.cast.streaming.session.create;
 var pass = chrome.test.callbackPass;
 
 chrome.test.runTests([
-  function rtpStreamStart() {
-    console.log("[TEST] rtpStreamStart");
+  function getStats() {
+    console.log("[TEST] getStats");
     tabCapture.capture({audio: true, video: true},
                        pass(function(stream) {
       console.log("Got MediaStream.");
@@ -44,9 +44,9 @@ chrome.test.runTests([
             stateMachine.onStopped.bind(stateMachine));
         stateMachine.onAllStopped =
             pass(function(audioId, videoId) {
-          rtpStream.getRawEvents(audioId,
+          rtpStream.getStats(audioId,
               stateMachine.onGotLogs.bind(stateMachine, audioId));
-          rtpStream.getRawEvents(videoId,
+          rtpStream.getStats(videoId,
               stateMachine.onGotLogs.bind(stateMachine, videoId));
         }.bind(null, audioId, videoId));
         stateMachine.onGotAllLogs =

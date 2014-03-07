@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 
 namespace media {
 namespace cast {
@@ -75,8 +76,8 @@ void LoggingStats::InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
     stats.event_counter = 1;
     frame_stats_.insert(std::make_pair(event, stats));
   } else {
-    it->second.last_event_time = time_of_event;
     ++(it->second.event_counter);
+    it->second.last_event_time = time_of_event;
   }
 }
 
@@ -101,6 +102,7 @@ void LoggingStats::InsertPacketEvent(const base::TimeTicks& time_of_event,
     // Add to an existing event.
     it->second.sum_size += size;
     ++(it->second.event_counter);
+    it->second.last_event_time = time_of_event;
   }
 }
 
@@ -133,16 +135,97 @@ void LoggingStats::InsertGenericEvent(const base::TimeTicks& time_of_event,
   }
 }
 
-FrameStatsMap LoggingStats::GetFrameStatsData() const {
-  return frame_stats_;
+FrameStatsMap LoggingStats::GetFrameStatsData(EventMediaType media_type) const {
+  DCHECK(media_type == AUDIO_EVENT || media_type == VIDEO_EVENT);
+
+  FrameStatsMap frame_map_to_return;
+  for (FrameStatsMap::const_iterator it = frame_stats_.begin();
+       it != frame_stats_.end();
+       ++it) {
+    if (GetEventMediaType(it->first) == media_type) {
+      frame_map_to_return.insert(std::make_pair(it->first, it->second));
+    }
+  }
+
+  return frame_map_to_return;
 }
 
-PacketStatsMap LoggingStats::GetPacketStatsData() const {
-  return packet_stats_;
+PacketStatsMap LoggingStats::GetPacketStatsData(
+    EventMediaType media_type) const {
+  DCHECK(media_type == AUDIO_EVENT || media_type == VIDEO_EVENT);
+
+  PacketStatsMap packet_map_to_return;
+  for (PacketStatsMap::const_iterator it = packet_stats_.begin();
+       it != packet_stats_.end();
+       ++it) {
+    if (GetEventMediaType(it->first) == media_type) {
+      packet_map_to_return.insert(std::make_pair(it->first, it->second));
+    }
+  }
+
+  return packet_map_to_return;
 }
 
 GenericStatsMap LoggingStats::GetGenericStatsData() const {
   return generic_stats_;
+}
+
+scoped_ptr<base::DictionaryValue> ConvertStats(
+    const FrameStatsMap& frame_stats_map,
+    const PacketStatsMap& packet_stats_map) {
+  scoped_ptr<base::DictionaryValue> overall_stats(new base::DictionaryValue);
+
+  scoped_ptr<base::DictionaryValue> overall_frame_stats(
+      new base::DictionaryValue);
+  for (FrameStatsMap::const_iterator it = frame_stats_map.begin();
+       it != frame_stats_map.end();
+       ++it) {
+    scoped_ptr<base::DictionaryValue> frame_stats(new base::DictionaryValue);
+
+    frame_stats->SetDouble("firstEventTime",
+                           it->second.first_event_time.ToInternalValue());
+    frame_stats->SetDouble("lastEventTime",
+                           it->second.last_event_time.ToInternalValue());
+    frame_stats->SetInteger("count", it->second.event_counter);
+    frame_stats->SetInteger("sizeTotal",
+                            static_cast<int>(it->second.sum_size));
+    frame_stats->SetInteger("minDelayMs",
+                            it->second.min_delay.InMilliseconds());
+    frame_stats->SetInteger("maxDelayMs",
+                            it->second.max_delay.InMilliseconds());
+    frame_stats->SetInteger("sumDelayMs",
+                            it->second.sum_delay.InMilliseconds());
+
+    overall_frame_stats->Set(CastLoggingToString(it->first),
+                             frame_stats.release());
+  }
+
+  overall_stats->Set("frameStats", overall_frame_stats.release());
+
+  scoped_ptr<base::DictionaryValue> overall_packet_stats(
+      new base::DictionaryValue);
+  for (PacketStatsMap::const_iterator it = packet_stats_map.begin();
+       it != packet_stats_map.end();
+       ++it) {
+    scoped_ptr<base::DictionaryValue> packet_stats(new base::DictionaryValue);
+
+    packet_stats->SetDouble("firstEventTime",
+                            it->second.first_event_time.ToInternalValue());
+    packet_stats->SetDouble("lastEventTime",
+                            it->second.last_event_time.ToInternalValue());
+    packet_stats->SetDouble("lastEventTime",
+                            it->second.last_event_time.ToInternalValue());
+    packet_stats->SetInteger("count", it->second.event_counter);
+    packet_stats->SetInteger("sizeTotal",
+                             static_cast<int>(it->second.sum_size));
+
+    overall_packet_stats->Set(CastLoggingToString(it->first),
+                              packet_stats.release());
+  }
+
+  overall_stats->Set("packetStats", overall_packet_stats.release());
+
+  return overall_stats.Pass();
 }
 
 }  // namespace cast

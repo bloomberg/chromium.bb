@@ -6,8 +6,13 @@
 #define MEDIA_CAST_LOGGING_LOGGING_STATS_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/logging/logging_defines.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace media {
 namespace cast {
@@ -47,9 +52,9 @@ class LoggingStats {
   void InsertGenericEvent(const base::TimeTicks& time_of_event,
                           CastLoggingEvent event, int value);
 
-  FrameStatsMap GetFrameStatsData() const;
+  FrameStatsMap GetFrameStatsData(EventMediaType media_type) const;
 
-  PacketStatsMap GetPacketStatsData() const;
+  PacketStatsMap GetPacketStatsData(EventMediaType media_type) const;
 
   GenericStatsMap GetGenericStatsData() const;
 
@@ -65,6 +70,12 @@ class LoggingStats {
 
   DISALLOW_COPY_AND_ASSIGN(LoggingStats);
 };
+
+// Converts stats provided in |frame_stats_map| and |packet_stats_map| to
+// base::DictionaryValue format. See .cc file for the exact structure.
+scoped_ptr<base::DictionaryValue> ConvertStats(
+    const FrameStatsMap& frame_stats_map,
+    const PacketStatsMap& packet_stats_map);
 
 }  // namespace cast
 }  // namespace media

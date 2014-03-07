@@ -11,8 +11,8 @@ function TestStateMachine(stream, audioId, videoId, udpId) {
   this.videoStarted = false;
   this.audioStopped = false;
   this.videoStopped = false;
-  this.gotAudioRawEvents = false;
-  this.gotVideoRawEvents = false;
+  this.gotAudioLogs = false;
+  this.gotVideoLogs = false;
 }
 
 TestStateMachine.prototype.onStarted = function(id) {
@@ -33,15 +33,13 @@ TestStateMachine.prototype.onStopped = function(id) {
     this.onAllStopped();
 }
 
-TestStateMachine.prototype.onGotRawEvents = function(id, rawEvents) {
-  chrome.test.assertTrue(rawEvents.length > 0);
-  if (id == this.audioId) {
-    this.gotAudioRawEvents = true;
-  }
-  if (id == this.videoId) {
-    this.gotVideoRawEvents = true;
-  }
-  if (this.gotAudioRawEvents && this.gotVideoRawEvents)
-    this.onGotAllRawEvents();
+TestStateMachine.prototype.onGotLogs = function(id, data) {
+  chrome.test.assertTrue(!!data);
+  if (id == this.audioId)
+    this.gotAudioLogs = true;
+  if (id == this.videoId)
+    this.gotVideoLogs = true;
+  if (this.gotAudioLogs && this.gotVideoLogs)
+    this.onGotAllLogs();
 }
 

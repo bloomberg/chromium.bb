@@ -16,6 +16,10 @@
 class CastRtpStream;
 class CastUdpTransport;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace extensions {
 
 class ChromeV8Context;
@@ -64,6 +68,8 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
 
   void CallGetRawEventsCallback(int transport_id,
                                 scoped_ptr<std::string> raw_events);
+  void CallGetStatsCallback(int transport_id,
+                            scoped_ptr<base::DictionaryValue> stats);
 
   // Gets the RTP stream or UDP transport indexed by an ID.
   // If not found, returns NULL and throws a V8 exception.
@@ -86,6 +92,7 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
                    linked_ptr<extensions::ScopedPersistent<v8::Function> > >
       RtpStreamCallbackMap;
   RtpStreamCallbackMap get_raw_events_callbacks_;
+  RtpStreamCallbackMap get_stats_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CastStreamingNativeHandler);
 };

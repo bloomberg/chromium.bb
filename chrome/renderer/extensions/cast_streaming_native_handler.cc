@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 
 #include <functional>
+#include <iterator>
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -123,16 +124,18 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
 
 void FromCastRtpParams(const CastRtpParams& cast_params,
                        RtpParams* ext_params) {
-  std::copy(cast_params.rtcp_features.begin(), cast_params.rtcp_features.end(),
-            ext_params->rtcp_features.begin());
+  std::copy(cast_params.rtcp_features.begin(),
+            cast_params.rtcp_features.end(),
+            std::back_inserter(ext_params->rtcp_features));
   FromCastRtpPayloadParams(cast_params.payload, &ext_params->payload);
 }
 
 bool ToCastRtpParamsOrThrow(v8::Isolate* isolate,
                             const RtpParams& ext_params,
                             CastRtpParams* cast_params) {
-  std::copy(ext_params.rtcp_features.begin(), ext_params.rtcp_features.end(),
-            cast_params->rtcp_features.begin());
+  std::copy(ext_params.rtcp_features.begin(),
+            ext_params.rtcp_features.end(),
+            std::back_inserter(cast_params->rtcp_features));
   if (!ToCastRtpPayloadParamsOrThrow(isolate,
                                      ext_params.payload,
                                      &cast_params->payload)) {
@@ -459,8 +462,20 @@ void CastStreamingNativeHandler::GetStats(
   CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsFunction());
+  const int transport_id = args[0]->ToInt32()->Value();
+  CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
+  if (!transport)
+    return;
 
-  // TODO(imcheng): Implement this.
+  linked_ptr<extensions::ScopedPersistent<v8::Function> > callback(
+      new extensions::ScopedPersistent<v8::Function>);
+  callback->reset(args[1].As<v8::Function>());
+  get_stats_callbacks_.insert(std::make_pair(transport_id, callback));
+
+  transport->GetStats(
+      base::Bind(&CastStreamingNativeHandler::CallGetStatsCallback,
+                 weak_factory_.GetWeakPtr(),
+                 transport_id));
 }
 
 void CastStreamingNativeHandler::CallGetRawEventsCallback(
@@ -472,15 +487,33 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
 
   RtpStreamCallbackMap::iterator it =
       get_raw_events_callbacks_.find(transport_id);
-  if (it != get_raw_events_callbacks_.end()) {
-    v8::Handle<v8::Value> callback_args[1];
-    callback_args[0] = v8::String::NewFromUtf8(isolate,
-                                               raw_events->data(),
-                                               v8::String::kNormalString,
-                                               raw_events->size());
-    context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
-    get_raw_events_callbacks_.erase(it);
-  }
+  if (it == get_raw_events_callbacks_.end())
+    return;
+  v8::Handle<v8::Value> callback_args[1];
+  callback_args[0] = v8::String::NewFromUtf8(isolate,
+                                             raw_events->data(),
+                                             v8::String::kNormalString,
+                                             raw_events->size());
+  context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
+  get_raw_events_callbacks_.erase(it);
+}
+
+void CastStreamingNativeHandler::CallGetStatsCallback(
+    int transport_id,
+    scoped_ptr<base::DictionaryValue> stats) {
+  v8::Isolate* isolate = context()->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+
+  RtpStreamCallbackMap::iterator it = get_stats_callbacks_.find(transport_id);
+  if (it == get_stats_callbacks_.end())
+    return;
+
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  v8::Handle<v8::Value> callback_args[1];
+  callback_args[0] = converter->ToV8Value(stats.get(), context()->v8_context());
+  context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
+  get_stats_callbacks_.erase(it);
 }
 
 CastRtpStream* CastStreamingNativeHandler::GetRtpStreamOrThrow(

@@ -354,6 +354,11 @@ void CastRtpStream::GetRawEvents(
   cast_session_->GetEventLogsAndReset(IsAudio(), callback);
 }
 
+void CastRtpStream::GetStats(
+    const base::Callback<void(scoped_ptr<base::DictionaryValue>)>& callback) {
+  cast_session_->GetStatsAndReset(IsAudio(), callback);
+}
+
 bool CastRtpStream::IsAudio() const {
   return track_.source().type() == blink::WebMediaStreamSource::TypeAudio;
 }

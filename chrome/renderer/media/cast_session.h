@@ -14,6 +14,7 @@
 #include "net/base/ip_endpoint.h"
 
 namespace base {
+class DictionaryValue;
 class MessageLoopProxy;
 }  // namespace base
 
@@ -42,6 +43,7 @@ class CastSession : public base::RefCounted<CastSession> {
       FrameInputAvailableCallback;
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
   typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
+  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
 
   CastSession();
 
@@ -66,6 +68,10 @@ class CastSession : public base::RefCounted<CastSession> {
   // Returns raw event logs in serialized format for either the audio or video
   // stream since last call and returns result in |callback|.
   void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
+
+  // Returns stats in a DictionaryValue format for either the audio or video
+  // stream since last call and returns result in |callback|.
+  void GetStatsAndReset(bool is_audio, const StatsCallback& callback);
 
  private:
   friend class base::RefCounted<CastSession>;

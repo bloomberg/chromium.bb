@@ -82,3 +82,13 @@ void CastSession::GetEventLogsAndReset(
                  is_audio,
                  media::BindToCurrentLoop(callback)));
 }
+
+void CastSession::GetStatsAndReset(bool is_audio,
+                                   const StatsCallback& callback) {
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CastSessionDelegate::GetStatsAndReset,
+                 base::Unretained(delegate_.get()),
+                 is_audio,
+                 media::BindToCurrentLoop(callback)));
+}

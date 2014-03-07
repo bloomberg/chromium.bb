@@ -15,6 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 class CastAudioSink;
 class CastSession;
 class CastVideoSink;
@@ -124,6 +128,11 @@ class CastRtpStream {
   // with the result.
   void GetRawEvents(
       const base::Callback<void(scoped_ptr<std::string>)>& callback);
+
+  // Get stats in DictionaryValue format and invokves |callback| with
+  // the result.
+  void GetStats(const base::Callback<void(
+      scoped_ptr<base::DictionaryValue>)>& callback);
 
  private:
   // Return true if this track is an audio track. Return false if this

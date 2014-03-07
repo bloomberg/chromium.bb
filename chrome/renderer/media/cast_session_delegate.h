@@ -20,6 +20,7 @@
 #include "media/cast/logging/logging_defines.h"
 
 namespace base {
+class DictionaryValue;
 class MessageLoopProxy;
 }  // namespace base
 
@@ -46,6 +47,7 @@ class CastSessionDelegate {
   typedef base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
       FrameInputAvailableCallback;
   typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
+  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
 
   CastSessionDelegate();
   virtual ~CastSessionDelegate();
@@ -64,6 +66,7 @@ class CastSessionDelegate {
 
   void ToggleLogging(bool is_audio, bool enable);
   void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
+  void GetStatsAndReset(bool is_audio, const StatsCallback& callback);
 
  protected:
   // Callback with the result of the initialization.

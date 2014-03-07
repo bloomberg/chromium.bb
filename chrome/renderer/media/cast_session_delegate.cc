@@ -181,6 +181,21 @@ void CastSessionDelegate::GetEventLogsAndReset(
   callback.Run(serialized_log.Pass());
 }
 
+void CastSessionDelegate::GetStatsAndReset(bool is_audio,
+                                           const StatsCallback& callback) {
+  media::cast::FrameStatsMap frame_stats =
+      cast_environment_->Logging()->GetFrameStatsData(
+          is_audio ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT);
+  media::cast::PacketStatsMap packet_stats =
+      cast_environment_->Logging()->GetPacketStatsData(
+          is_audio ? media::cast::AUDIO_EVENT : media::cast::VIDEO_EVENT);
+
+  scoped_ptr<base::DictionaryValue> stats = media::cast::ConvertStats(
+      frame_stats, packet_stats);
+
+  callback.Run(stats.Pass());
+}
+
 void CastSessionDelegate::StatusNotificationCB(
     media::cast::transport::CastTransportStatus unused_status) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());

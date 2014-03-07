@@ -149,14 +149,15 @@ void LoggingImpl::RemoveRawEventSubscriber(RawEventSubscriber* subscriber) {
   raw_.RemoveSubscriber(subscriber);
 }
 
-FrameStatsMap LoggingImpl::GetFrameStatsData() const {
+FrameStatsMap LoggingImpl::GetFrameStatsData(EventMediaType media_type) const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  return stats_.GetFrameStatsData();
+  return stats_.GetFrameStatsData(media_type);
 }
 
-PacketStatsMap LoggingImpl::GetPacketStatsData() const {
+PacketStatsMap LoggingImpl::GetPacketStatsData(
+    EventMediaType media_type) const {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  return stats_.GetPacketStatsData();
+  return stats_.GetPacketStatsData(media_type);
 }
 
 GenericStatsMap LoggingImpl::GetGenericStatsData() const {

@@ -58,8 +58,8 @@ class LoggingImpl : public base::NonThreadSafe {
   void RemoveRawEventSubscriber(RawEventSubscriber* subscriber);
 
   // Get stats only.
-  FrameStatsMap GetFrameStatsData() const;
-  PacketStatsMap GetPacketStatsData() const;
+  FrameStatsMap GetFrameStatsData(EventMediaType media_type) const;
+  PacketStatsMap GetPacketStatsData(EventMediaType media_type) const;
   GenericStatsMap GetGenericStatsData() const;
 
   // Reset stats logging data.
