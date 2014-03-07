@@ -383,6 +383,7 @@
       # Update that regex if command line changes (other than changing flags)
       'action': [
         'python',
+        '-S',  # skip 'import site' to speed up startup
         'scripts/idl_compiler.py',
         '--output-dir',
         '<(bindings_output_dir)',
