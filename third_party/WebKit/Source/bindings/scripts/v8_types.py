@@ -244,6 +244,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
     'XPathNSResolver': 'RefPtrWillBeRawPtr<XPathNSResolver>',
+    'MediaQueryListListener': 'RefPtrWillBeRawPtr<MediaQueryListListener>',
     'boolean': 'bool',
 }
 

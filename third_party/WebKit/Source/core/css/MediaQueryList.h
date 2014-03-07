@@ -37,25 +37,26 @@ class MediaQuerySet;
 // retrieve the current value of the given media query and to add/remove listeners that
 // will be called whenever the value of the query changes.
 
-class MediaQueryList : public RefCounted<MediaQueryList> {
+class MediaQueryList FINAL : public RefCountedWillBeGarbageCollected<MediaQueryList> {
 public:
-    static PassRefPtr<MediaQueryList> create(PassRefPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool);
+    static PassRefPtrWillBeRawPtr<MediaQueryList> create(PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool);
     ~MediaQueryList();
-
     String media() const;
     bool matches();
 
-    void addListener(PassRefPtr<MediaQueryListListener>);
-    void removeListener(PassRefPtr<MediaQueryListListener>);
+    void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
+    void removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
 
     void evaluate(MediaQueryEvaluator*, bool& notificationNeeded);
 
+    void trace(Visitor*);
+
 private:
-    MediaQueryList(PassRefPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool matches);
+    MediaQueryList(PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool matches);
     void setMatches(bool);
 
-    RefPtr<MediaQueryMatcher> m_matcher;
-    RefPtrWillBePersistent<MediaQuerySet> m_media;
+    RefPtrWillBeMember<MediaQueryMatcher> m_matcher;
+    RefPtrWillBeMember<MediaQuerySet> m_media;
     unsigned m_evaluationRound; // Indicates if the query has been evaluated after the last style selector change.
     unsigned m_changeRound; // Used to know if the query has changed in the last style selector change.
     bool m_matches;

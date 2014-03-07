@@ -21,6 +21,7 @@
 #define MediaQueryMatcher_h
 
 #include "bindings/v8/ScriptState.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -38,35 +39,38 @@ class MediaQuerySet;
 // whenever it is needed and to call the listeners if the corresponding query has changed.
 // The listeners must be called in the very same order in which they have been added.
 
-class MediaQueryMatcher : public RefCounted<MediaQueryMatcher> {
+class MediaQueryMatcher FINAL : public RefCountedWillBeGarbageCollected<MediaQueryMatcher> {
 public:
-    static PassRefPtr<MediaQueryMatcher> create(Document* document) { return adoptRef(new MediaQueryMatcher(document)); }
+    static PassRefPtrWillBeRawPtr<MediaQueryMatcher> create(Document* document) { return adoptRefWillBeNoop(new MediaQueryMatcher(document)); }
     ~MediaQueryMatcher();
     void documentDestroyed();
 
-    void addListener(PassRefPtr<MediaQueryListListener>, PassRefPtr<MediaQueryList>);
+    void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>, PassRefPtrWillBeRawPtr<MediaQueryList>);
     void removeListener(MediaQueryListListener*, MediaQueryList*);
 
-    PassRefPtr<MediaQueryList> matchMedia(const String&);
+    PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&);
 
     unsigned evaluationRound() const { return m_evaluationRound; }
     void styleResolverChanged();
     bool evaluate(const MediaQuerySet*);
 
-private:
-    class Listener {
-    public:
-        Listener(PassRefPtr<MediaQueryListListener>, PassRefPtr<MediaQueryList>);
-        ~Listener();
+    void trace(Visitor*);
 
+private:
+    class Listener : public NoBaseWillBeGarbageCollected<Listener> {
+    public:
+        Listener(PassRefPtrWillBeRawPtr<MediaQueryListListener>, PassRefPtrWillBeRawPtr<MediaQueryList>);
+        ~Listener();
         void evaluate(ScriptState*, MediaQueryEvaluator*);
 
         MediaQueryListListener* listener() { return m_listener.get(); }
         MediaQueryList* query() { return m_query.get(); }
 
+        void trace(Visitor*);
+
     private:
-        RefPtr<MediaQueryListListener> m_listener;
-        RefPtr<MediaQueryList> m_query;
+        RefPtrWillBeMember<MediaQueryListListener> m_listener;
+        RefPtrWillBeMember<MediaQueryList> m_query;
     };
 
     MediaQueryMatcher(Document*);
@@ -74,7 +78,7 @@ private:
     AtomicString mediaType() const;
 
     Document* m_document;
-    Vector<OwnPtr<Listener> > m_listeners;
+    WillBeHeapVector<OwnPtrWillBeMember<Listener> > m_listeners;
 
     // This value is incremented at style selector changes.
     // It is used to avoid evaluating queries more then once and to make sure

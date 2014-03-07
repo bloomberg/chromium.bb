@@ -505,7 +505,7 @@ DOMWindow* DOMWindow::toDOMWindow()
     return this;
 }
 
-PassRefPtr<MediaQueryList> DOMWindow::matchMedia(const String& media)
+PassRefPtrWillBeRawPtr<MediaQueryList> DOMWindow::matchMedia(const String& media)
 {
     return document() ? document()->mediaQueryMatcher().matchMedia(media) : nullptr;
 }

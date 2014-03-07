@@ -3399,7 +3399,7 @@ static void methodQueryListListenerMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
+    V8TRYCATCH_VOID(RefPtrWillBeRawPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
     imp->methodQueryListListener(listener);
 }
 

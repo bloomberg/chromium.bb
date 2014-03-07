@@ -109,7 +109,7 @@ enum PageshowEventPersistence {
 
         void reset();
 
-        PassRefPtr<MediaQueryList> matchMedia(const String&);
+        PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&);
 
         unsigned pendingUnloadEventListeners() const;
 
