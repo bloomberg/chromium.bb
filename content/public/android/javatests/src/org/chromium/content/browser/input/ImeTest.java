@@ -121,7 +121,7 @@ public class ImeTest extends ContentShellTestBase {
         setSelection(mConnection, 2, 5);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 2, 5, -1, -1);
 
-        mImeAdapter.copy();
+        copy(mImeAdapter);
         assertClipboardContents(getActivity(), "llo");
     }
 
@@ -149,7 +149,7 @@ public class ImeTest extends ContentShellTestBase {
         setSelection(mConnection, 1, 5);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "snarful", 1, 5, -1, -1);
 
-        mImeAdapter.cut();
+        cut(mImeAdapter);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "sul", 1, 1, -1, -1);
 
         assertClipboardContents(getActivity(), "narf");
@@ -168,18 +168,18 @@ public class ImeTest extends ContentShellTestBase {
             }
         });
 
-        mImeAdapter.paste();
+        paste(mImeAdapter);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "blarg", 5, 5, -1, -1);
 
         setSelection(mConnection, 3, 5);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "blarg", 3, 5, -1, -1);
 
-        mImeAdapter.paste();
+        paste(mImeAdapter);
         // Paste is a two step process when there is a non-zero selection.
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "bla", 3, 3, -1, -1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "blablarg", 8, 8, -1, -1);
 
-        mImeAdapter.paste();
+        paste(mImeAdapter);
         waitAndVerifyEditableCallback(
                 mConnection.mImeUpdateQueue, 5, "blablargblarg", 13, 13, -1, -1);
     }
@@ -190,10 +190,10 @@ public class ImeTest extends ContentShellTestBase {
         commitText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
-        mImeAdapter.selectAll();
+        selectAll(mImeAdapter);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 0, 5, -1, -1);
 
-        mImeAdapter.unselect();
+        unselect(mImeAdapter);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "", 0, 0, -1, -1);
 
         assertWaitForKeyboardStatus(false);
@@ -351,6 +351,51 @@ public class ImeTest extends ContentShellTestBase {
 
     private AdapterInputConnection getAdapterInputConnection() {
         return getContentViewCore().getInputConnectionForTest();
+    }
+
+    private void copy(final ImeAdapter adapter) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                adapter.copy();
+            }
+        });
+    }
+
+    private void cut(final ImeAdapter adapter) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                adapter.cut();
+            }
+        });
+    }
+
+    private void paste(final ImeAdapter adapter) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                adapter.paste();
+            }
+        });
+    }
+
+    private void selectAll(final ImeAdapter adapter) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                adapter.selectAll();
+            }
+        });
+    }
+
+    private void unselect(final ImeAdapter adapter) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                adapter.unselect();
+            }
+        });
     }
 
     private void commitText(final AdapterInputConnection connection, final CharSequence text,

@@ -27,6 +27,9 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
+/**
+ * Tests the insertion handle that allows users to paste text.
+ */
 public class InsertionHandleTest extends ContentShellTestBase {
     private static final String META_DISABLE_ZOOM =
         "<meta name=\"viewport\" content=\"" +
@@ -71,7 +74,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
 
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
-        getImeAdapter().setInputMethodManagerWrapper(
+        getContentViewCore().getImeAdapterForTest().setInputMethodManagerWrapper(
                 new TestInputMethodManagerWrapper(getContentViewCore()));
     }
 
@@ -82,7 +85,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         clickNodeToShowInsertionHandle(TEXTAREA_ID);
 
         // Unselecting should cause the handle to disappear.
-        getImeAdapter().unselect();
+        unselectOnMainSync();
         assertTrue(waitForHandleShowingEquals(false));
     }
 
@@ -362,6 +365,15 @@ public class InsertionHandleTest extends ContentShellTestBase {
         });
     }
 
+    private void unselectOnMainSync() {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                getContentViewCore().getImeAdapterForTest().unselect();
+            }
+        });
+    }
+
     private int getSelectionStart() {
         return Selection.getSelectionStart(getEditable());
     }
@@ -382,9 +394,5 @@ public class InsertionHandleTest extends ContentShellTestBase {
         ClipboardManager clipMgr =
                 (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
         clipMgr.setPrimaryClip(ClipData.newPlainText(null, text));
-    }
-
-    private ImeAdapter getImeAdapter() {
-        return getContentViewCore().getImeAdapterForTest();
     }
 }
