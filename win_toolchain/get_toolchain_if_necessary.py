@@ -38,6 +38,8 @@ import time
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(BASEDIR, '..'))
+import download_from_google_storage
 
 
 GetFileAttributes = ctypes.windll.kernel32.GetFileAttributesW
@@ -131,6 +133,47 @@ def HaveSrcInternalAccess():
         shell=True, stdin=nul, stdout=nul, stderr=nul) == 0
 
 
+def LooksLikeGoogler():
+  """Checks for a USERDOMAIN environment variable of 'GOOGLE', which
+  probably implies the current user is a Googler."""
+  return os.environ.get('USERDOMAIN').upper() == 'GOOGLE'
+
+
+def CanAccessToolchainBucket():
+  """Checks whether the user has access to gs://chrome-wintoolchain/."""
+  gsutil = download_from_google_storage.Gsutil(
+      download_from_google_storage.GSUTIL_DEFAULT_PATH, boto_path=None)
+  code, _, _ = gsutil.check_call('ls', 'gs://chrome-wintoolchain/')
+  return code == 0
+
+
+def ConfigureGsAccess():
+  """Starts the authentication flow for gs://, and confirms that it's
+  accessible after completion, or retries indefinitely.
+  """
+  while not CanAccessToolchainBucket():
+    print 'Access to gs://chrome-wintoolchain/ not configured.'
+    print '-----------------------------------------------------------------'
+    print
+    print 'You appear to be a Googler.'
+    print
+    print 'I\'m sorry for the hassle, but you need to do a one-time manual'
+    print 'authentication. Instructions will open in a new window. This is'
+    print 'a run of "gsutil config".'
+    print
+    print 'NOTE: Just press Enter when asked for a "project-id".'
+    print
+    print '-----------------------------------------------------------------'
+    print
+    sys.stdout.flush()
+    # gclient's buffering makes this hang if we're run from inside gclient
+    # as is typical. So, spawn a new window for the config prompt. :(
+    subprocess.check_call(
+        ['start', '/wait', 'cmd', '/c',
+         'download_from_google_storage', '--config'],
+        shell=True)
+
+
 def DelayBeforeRemoving(target_dir):
   """A grace period before deleting the out of date toolchain directory."""
   if (os.path.isdir(target_dir) and
@@ -167,12 +210,17 @@ def main():
   # based on timestamps to make that case fast.
   current_hash = CalculateHash(target_dir)
   if current_hash not in desired_hashes:
-    should_get_pro = (os.path.isfile(os.path.join(BASEDIR, '.vspro')) or
-                      HaveSrcInternalAccess())
+    should_use_gs = False
+    if (CanAccessToolchainBucket() or
+        HaveSrcInternalAccess() or
+        LooksLikeGoogler()):
+      should_use_gs = True
+      ConfigureGsAccess()
     print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
-          ('Pro' if should_get_pro else 'Express'))
+          ('Pro' if should_use_gs else 'Express'))
     print('  current_hash: %s' % current_hash)
     print('  desired_hashes: %s' % ', '.join(desired_hashes))
+    sys.stdout.flush()
     DelayBeforeRemoving(target_dir)
     # This stays resident and will make the rmdir below fail.
     with open(os.devnull, 'wb') as nul:
@@ -184,7 +232,9 @@ def main():
             'toolchain2013.py',
             '--targetdir', target_dir,
             '--sha1', desired_hashes[0]]
-    if not should_get_pro:
+    if should_use_gs:
+      args.append('--use-gs')
+    else:
       args.append('--express')
     subprocess.check_call(args)
     current_hash = CalculateHash(target_dir)

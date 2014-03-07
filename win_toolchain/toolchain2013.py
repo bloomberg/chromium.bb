@@ -106,9 +106,7 @@ def DeleteAllTempDirs():
 def GetMainIsoUrl(pro):
   """Gets the main .iso URL.
 
-  If |pro| is False, downloads the Express edition. If |CHROME_HEADLESS| is
-  set in the environment, then we assume we're on an internal bot, and download
-  from internal google storage instead.
+  If |pro| is False, downloads the Express edition.
   """
   prefix = 'http://download.microsoft.com/download/'
   if pro:
@@ -256,6 +254,8 @@ def GetSourceImages(local_dir, pro):
   of the 7.1 WDK which is the latest publically accessible source for ATL. When
   |pro| this is not necessary (and CHROME_HEADLESS always implies Pro).
   """
+  if pro and not local_dir:
+    sys.exit('Non-Express must be used with --local')
   url = GetMainIsoUrl(pro)
   if local_dir:
     wdk_path = (os.path.join(local_dir, os.path.basename(WDK_ISO_URL))
@@ -448,8 +448,8 @@ def main():
                     help='use VS Express instead of Pro', action='store_true')
   parser.add_option('--sha1',
                     help='tree sha1 that can be used to mirror an internal '
-                         'copy (used if --bot-mode)')
-  parser.add_option('--bot-mode',
+                         'copy (used if --use-gs)')
+  parser.add_option('--use-gs',
                     help='Use internal servers to pull isos',
                     default=bool(int(os.environ.get('CHROME_HEADLESS', 0))),
                     action='store_true')
@@ -464,7 +464,7 @@ def main():
     # codec dll very well, so this is the simplest way to make sure it runs
     # correctly, as we don't otherwise care about working directory.
     os.chdir(os.path.join(BASEDIR, '7z'))
-    if options.bot_mode and options.sha1:
+    if options.use_gs and options.sha1:
       options.express = False
       DoTreeMirror(target_dir, options.sha1)
     else:
