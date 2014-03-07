@@ -767,8 +767,4 @@ int UDPSocketLibevent::SetDiffServCodePoint(DiffServCodePoint dscp) {
   return OK;
 }
 
-void UDPSocketLibevent::DetachFromThread() {
-  base::NonThreadSafe::DetachFromThread();
-}
-
 }  // namespace net

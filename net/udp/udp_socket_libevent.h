@@ -163,9 +163,6 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   // Return a network error code.
   int SetDiffServCodePoint(DiffServCodePoint dscp);
 
-  // Resets the thread to be used for thread-safety checks.
-  void DetachFromThread();
-
  private:
   enum SocketOptions {
     SOCKET_OPTION_REUSE_ADDRESS  = 1 << 0,
