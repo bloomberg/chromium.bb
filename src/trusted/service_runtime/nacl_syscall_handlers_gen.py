@@ -98,8 +98,6 @@ SYSCALL_LIST = [
      ['int d', 'void *buf', 'size_t count']),
     ('NACL_sys_lseek', 'NaClSysLseek',
      ['int d', 'nacl_abi_off_t *offp', 'int whence']),
-    ('NACL_sys_ioctl', 'NaClSysIoctl',
-     ['int d', 'int request', 'void *arg']),
     ('NACL_sys_fstat', 'NaClSysFstat',
      ['int d', 'struct nacl_abi_stat *nasp']),
     ('NACL_sys_stat', 'NaClSysStat',

@@ -27,7 +27,7 @@
 #define NACL_sys_read                   12
 #define NACL_sys_write                  13
 #define NACL_sys_lseek                  14
-#define NACL_sys_ioctl                  15
+/* 15 used to be ioctl */
 #define NACL_sys_stat                   16
 #define NACL_sys_fstat                  17
 #define NACL_sys_chmod                  18

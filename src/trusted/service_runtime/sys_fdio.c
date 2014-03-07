@@ -20,20 +20,6 @@
 
 static size_t const kdefault_io_buffer_bytes_to_log = 64;
 
-int32_t NaClIoctlAclCheck(struct NaClApp  *nap,
-                          struct NaClDesc *ndp,
-                          int             request,
-                          void            *arg) {
-  NaClLog(2,
-          ("NaClIoctlAclCheck(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR","
-           " %d, 0x%08"NACL_PRIxPTR"\n"),
-          (uintptr_t) nap, (uintptr_t) ndp, request, (uintptr_t) arg);
-  if (NaClAclBypassChecks) {
-    return 0;
-  }
-  return -NACL_ABI_EINVAL;
-}
-
 int32_t NaClSysDup(struct NaClAppThread *natp,
                    int                  oldfd) {
   struct NaClApp  *nap = natp->nap;
@@ -403,68 +389,6 @@ cleanup_unref:
 cleanup:
   return retval;
 }
-
-int32_t NaClSysIoctl(struct NaClAppThread *natp,
-                     int                  d,
-                     int                  request,
-                     void                 *arg) {
-  struct NaClApp  *nap = natp->nap;
-  int             retval = -NACL_ABI_EINVAL;
-  uintptr_t       sysaddr;
-  struct NaClDesc *ndp;
-
-  NaClLog(3,
-          ("Entered NaClSysIoctl(0x%08"NACL_PRIxPTR
-           ", %d, %d, 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, d, request,
-          (uintptr_t) arg);
-  /*
-   * Note that NaClUserToSysAddrRange is not feasible right now, since
-   * the size of the arg argument depends on the request.  We do not
-   * have an enumeration of allowed ioctl requests yet.
-   *
-   * Furthermore, some requests take no arguments, so sysaddr might
-   * end up being kNaClBadAddress and that is perfectly okay.
-   */
-  sysaddr = NaClUserToSysAddr(nap, (uintptr_t) arg);
-  /*
-   ****************************************
-   * NOTE: sysaddr may be kNaClBadAddress *
-   ****************************************
-   */
-
-  ndp = NaClAppGetDesc(nap, d);
-  if (NULL == ndp) {
-    NaClLog(4, "bad desc\n");
-    retval = -NACL_ABI_EBADF;
-    goto cleanup;
-  }
-
-  retval = NaClIoctlAclCheck(nap, ndp, request, arg);
-  if (0 != retval) {
-    NaClLog(3, "Ioctl ACL check rejected descriptor %d\n", d);
-    goto cleanup_unref;
-  }
-
-  /*
-   * We need a virtual function that, given request, returns max
-   * anticipated buffer size so we can do the right thing wrt VM locks
-   * if the ioctl might be blocking.  For now, we assume that ioctls
-   * aren't.  Since we have at least 1 guard page, even if |arg|
-   * points to near the end of the address space, we should be fine
-   * for reasonable sizes of arguments from the point of view of
-   * staying within the untrusted address space.
-   */
-  NaClXMutexLock(&nap->mu);
-  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
-            Ioctl)(ndp, request, (void *) sysaddr);
-  NaClXMutexUnlock(&nap->mu);
-cleanup_unref:
-  NaClDescUnref(ndp);
-cleanup:
-  return retval;
-}
-
 
 int32_t NaClSysFstat(struct NaClAppThread *natp,
                      int                  d,

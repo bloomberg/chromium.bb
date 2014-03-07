@@ -116,18 +116,6 @@ extern int write(int desc, void const *buf, size_t count);
 extern off_t lseek(int desc, off_t offset, int whence);
 #endif
 /**
- *  @posix
- *  Manipulates device parameters of special files.
- *  @param desc The file descriptor
- *  @param request The device-dependent request code.
- *  @param arg An untyped pointer to memory used to convey request information.
- *  @return Ioctl usually returns zero on success.  Some requests return
- *  positive values.  On failure, it returns -1 and sets errno appropriately.
- */
-#ifndef __GLIBC__
-extern int ioctl(int desc, int request, void *arg);
-#endif
-/**
  *  @nacl
  *  Sets the system break to the given address and return the address after
  *  the update.  If new_break is NULL, simply returns the current break address.

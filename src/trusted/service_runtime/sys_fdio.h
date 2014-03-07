@@ -54,11 +54,6 @@ int32_t NaClSysGetdents(struct NaClAppThread  *natp,
 int32_t NaClSysIsatty(struct NaClAppThread *natp,
                       int                  d);
 
-int32_t NaClSysIoctl(struct NaClAppThread *natp,
-                     int                  d,
-                     int                  request,
-                     void                 *arg);
-
 EXTERN_C_END
 
 #endif
