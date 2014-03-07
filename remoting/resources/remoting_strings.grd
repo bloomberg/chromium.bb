@@ -210,7 +210,7 @@
         <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
           Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.
         </message>
-        <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL">
+        <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
           An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.
         </message>
         <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, and a user in a different domain is trying to use it as a Chrome Remote Desktop host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
@@ -312,7 +312,7 @@
         <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
           Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.
         </message>
-        <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL">
+        <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL" formatter_data="android_java">
           An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.
         </message>
         <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
@@ -482,16 +482,16 @@
       <message desc="Column header in the connection history table showing the length of time for which a connection was active, if available." name="IDS_DURATION_HEADER">
         Duration
       </message>
-      <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDS_ERROR_HOST_OVERLOAD">
+      <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDS_ERROR_HOST_OVERLOAD" formatter_data="android_java">
         Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.
       </message>
       <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDS_ERROR_HOST_IS_OFFLINE" formatter_data="android_java">
         The remote computer is not responding to connection requests. Please verify that it is online and try again.
       </message>
-      <message desc="Error displayed if an invalid access code is entered." name="IDS_ERROR_INVALID_ACCESS_CODE">
+      <message desc="Error displayed if an invalid access code is entered." name="IDS_ERROR_INVALID_ACCESS_CODE" formatter_data="android_java">
         The access code is invalid. Please try again.
       </message>
-      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDS_ERROR_P2P_FAILURE">
+      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDS_ERROR_P2P_FAILURE" formatter_data="android_java">
         Unable to reach the host. This is probably due to the configuration of the network you are using.
       </message>
       <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDS_ERROR_NETWORK_FAILURE">

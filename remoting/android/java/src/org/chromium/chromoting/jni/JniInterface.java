@@ -18,7 +18,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -74,31 +73,38 @@ public class JniInterface {
          * This enum must match the C++ enumeration remoting::protocol::ErrorCode.
          */
         public enum Error {
-            OK(0),
-            PEER_IS_OFFLINE(1),
-            SESSION_REJECTED(2),
-            INCOMPATIBLE_PROTOCOL(3),
-            AUTHENTICATION_FAILED(4),
-            CHANNEL_CONNECTION_ERROR(5),
-            SIGNALING_ERROR(6),
-            SIGNALING_TIMEOUT(7),
-            HOST_OVERLOAD(8),
-            UNKNOWN_ERROR(9);
+            OK(0, 0),
+            PEER_IS_OFFLINE(1, R.string.error_host_is_offline),
+            SESSION_REJECTED(2, R.string.error_invalid_access_code),
+            INCOMPATIBLE_PROTOCOL(3, R.string.error_incompatible_protocol),
+            AUTHENTICATION_FAILED(4, R.string.error_invalid_access_code),
+            CHANNEL_CONNECTION_ERROR(5, R.string.error_p2p_failure),
+            SIGNALING_ERROR(6, R.string.error_p2p_failure),
+            SIGNALING_TIMEOUT(7, R.string.error_p2p_failure),
+            HOST_OVERLOAD(8, R.string.error_host_overload),
+            UNKNOWN_ERROR(9, R.string.error_unexpected);
 
             private final int mValue;
+            private final int mMessage;
 
-            Error(int value) {
+            Error(int value, int message) {
                 mValue = value;
+                mMessage = message;
             }
 
             public int value() {
                 return mValue;
             }
 
+            public int message() {
+                return mMessage;
+            }
+
             public static Error fromValue(int value) {
                 return values()[value];
             }
         }
+
 
         /**
          * Notified on connection state change.

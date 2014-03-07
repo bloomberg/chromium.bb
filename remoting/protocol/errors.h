@@ -9,7 +9,7 @@ namespace remoting {
 namespace protocol {
 
 // The UI implementations maintain corresponding definitions of this
-// enumeration in webapp/error.js, android/java/res/values/strings.xml and
+// enumeration in webapp/error.js and
 // android/java/src/org/chromium/chromoting/jni/JniInterface.java.
 // Be sure to update these locations if you make any changes to the ordering.
 enum ErrorCode {

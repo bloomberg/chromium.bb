@@ -224,6 +224,14 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     /** Called when the user taps on a host entry. */
     public void connectToHost(HostInfo host) {
+        mProgressIndicator = ProgressDialog.show(this,
+              host.name, getString(R.string.footer_connecting), true, true,
+              new DialogInterface.OnCancelListener() {
+                  @Override
+                  public void onCancel(DialogInterface dialog) {
+                      JniInterface.disconnectFromHost();
+                  }
+              });
         SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
         connector.connectToHost(mAccount.name, mToken, host);
     }
@@ -360,41 +368,23 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     @Override
     public void onConnectionState(JniInterface.ConnectionListener.State state,
             JniInterface.ConnectionListener.Error error) {
-        String stateText = getResources().getStringArray(R.array.protoc_states)[state.value()];
         boolean dismissProgress = false;
         switch (state) {
             case INITIALIZING:
             case CONNECTING:
             case AUTHENTICATED:
-                // The connection is still being established, so we'll report the current progress.
-                if (mProgressIndicator == null) {
-                    mProgressIndicator = ProgressDialog.show(this,
-                            getString(R.string.footer_connecting), stateText, true, true,
-                            new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialog) {
-                                    JniInterface.disconnectFromHost();
-                                }
-                            });
-                } else {
-                    mProgressIndicator.setMessage(stateText);
-                }
+                // The connection is still being established.
                 break;
 
             case CONNECTED:
                 dismissProgress = true;
-                Toast.makeText(this, stateText, Toast.LENGTH_SHORT).show();
-
                 // Display the remote desktop.
                 startActivityForResult(new Intent(this, Desktop.class), 0);
                 break;
 
             case FAILED:
                 dismissProgress = true;
-                Toast.makeText(this, stateText + ": "
-                        + getResources().getStringArray(R.array.protoc_errors)[error.value()],
-                        Toast.LENGTH_LONG).show();
-
+                Toast.makeText(this, getString(error.message()), Toast.LENGTH_LONG).show();
                 // Close the Desktop view, if it is currently running.
                 finishActivity(0);
                 break;

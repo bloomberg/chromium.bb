@@ -52,8 +52,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
                          public base::NonThreadSafe {
  public:
   // The UI implementations maintain corresponding definitions of this
-  // enumeration in webapp/client_session.js,
-  // android/java/res/values/strings.xml and
+  // enumeration in webapp/client_session.js and
   // android/java/src/org/chromium/chromoting/jni/JniInterface.java. Be sure to
   // update these locations if you make any changes to the ordering.
   enum State {
