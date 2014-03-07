@@ -47,14 +47,19 @@ bool checkShapeImageOrigin(Document& document, ImageResource& imageResource)
     return false;
 }
 
-static LayoutRect getShapeImageRect(const StyleImage& styleImage, const RenderBox* renderBox)
+static void getShapeImageAndRect(const ShapeValue* shapeValue, const RenderBox* renderBox, const LayoutSize& referenceBoxSize, Image*& image, LayoutRect& rect)
 {
-    if (renderBox->isRenderImage())
-        return toRenderImage(renderBox)->replacedContentRect();
+    ASSERT(shapeValue->isImageValid());
+    StyleImage* styleImage = shapeValue->image();
 
-    ASSERT(styleImage.cachedImage());
-    ASSERT(styleImage.cachedImage()->hasImage());
-    return LayoutRect(LayoutPoint(), styleImage.cachedImage()->image()->size());
+    const IntSize& imageSize = renderBox->calculateImageIntrinsicDimensions(styleImage, roundedIntSize(referenceBoxSize), RenderImage::ScaleByEffectiveZoom);
+    styleImage->setContainerSizeForRenderer(renderBox, imageSize, renderBox->style()->effectiveZoom());
+
+    image = styleImage->cachedImage()->imageForRenderer(renderBox);
+    if (renderBox->isRenderImage())
+        rect = toRenderImage(renderBox)->replacedContentRect();
+    else
+        rect = LayoutRect(LayoutPoint(), imageSize);
 }
 
 template<class RenderType>
@@ -76,9 +81,10 @@ const Shape& ShapeInfo<RenderType>::computedShape() const
         m_shape = Shape::createShape(shapeValue->shape(), m_referenceBoxLogicalSize, writingMode, margin, padding);
         break;
     case ShapeValue::Image: {
-        ASSERT(shapeValue->image());
-        const StyleImage& styleImage = *(shapeValue->image());
-        m_shape = Shape::createRasterShape(styleImage, shapeImageThreshold, getShapeImageRect(styleImage, &m_renderer), m_referenceBoxLogicalSize, writingMode, margin, padding);
+        Image* image;
+        LayoutRect rect;
+        getShapeImageAndRect(shapeValue, &m_renderer, m_referenceBoxLogicalSize, image, rect);
+        m_shape = Shape::createRasterShape(image, shapeImageThreshold, rect, m_referenceBoxLogicalSize, writingMode, margin, padding);
         break;
     }
     case ShapeValue::Box: {

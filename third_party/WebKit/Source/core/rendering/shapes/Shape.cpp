@@ -256,11 +256,8 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     return shape.release();
 }
 
-PassOwnPtr<Shape> Shape::createRasterShape(const StyleImage& styleImage, float threshold, const LayoutRect& imageRect, const LayoutSize&, WritingMode writingMode, Length margin, Length padding)
+PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageRect, const LayoutSize&, WritingMode writingMode, Length margin, Length padding)
 {
-    ASSERT(styleImage.cachedImage());
-    ASSERT(styleImage.cachedImage()->hasImage());
-
     IntRect toRect = pixelSnappedIntRect(imageRect);
     IntSize bufferSize = toRect.size();
     IntSize rasterSize = IntSize(toRect.maxX(), toRect.maxY());
@@ -269,7 +266,7 @@ PassOwnPtr<Shape> Shape::createRasterShape(const StyleImage& styleImage, float t
 
     if (imageBuffer) {
         GraphicsContext* graphicsContext = imageBuffer->context();
-        graphicsContext->drawImage(styleImage.cachedImage()->image(), FloatRect(0, 0, bufferSize.width(), bufferSize.height()));
+        graphicsContext->drawImage(image, FloatRect(0, 0, bufferSize.width(), bufferSize.height()));
 
         RefPtr<Uint8ClampedArray> pixelArray = imageBuffer->getUnmultipliedImageData(IntRect(IntPoint(), bufferSize));
         unsigned pixelArrayLength = pixelArray->length();
