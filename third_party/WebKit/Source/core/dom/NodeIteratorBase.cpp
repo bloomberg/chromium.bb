@@ -23,21 +23,21 @@
  */
 
 #include "config.h"
-#include "core/dom/Traversal.h"
+#include "core/dom/NodeIteratorBase.h"
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 
 namespace WebCore {
 
-Traversal::Traversal(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> nodeFilter)
+NodeIteratorBase::NodeIteratorBase(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> nodeFilter)
     : m_root(rootNode)
     , m_whatToShow(whatToShow)
     , m_filter(nodeFilter)
 {
 }
 
-short Traversal::acceptNode(ScriptState* state, Node* node) const
+short NodeIteratorBase::acceptNode(ScriptState* state, Node* node) const
 {
     // The bit twiddling here is done to map DOM node types, which are given as integers from
     // 1 through 14, to whatToShow bit masks.

@@ -31,28 +31,6 @@ inline bool is{{tag.interface}}(const Node& node) { return node.isElementNode() 
 inline bool is{{tag.interface}}(const Node* node) { ASSERT(node); return node->isElementNode() ? is{{tag.interface}}(*toElement(node)) : false; }
 template <> inline bool isElementOfType<const {{tag.interface}}>(const Element& element) { return is{{tag.interface}}(element); }
 {% endfor %}
-// Type casting.
-template<typename T> inline T& toElement(Node& node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(isElementOfType<const T>(node));
-    return static_cast<T&>(node);
-}
-template<typename T> inline T* toElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
-    return static_cast<T*>(node);
-}
-template<typename T> inline const T& toElement(const Node& node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(isElementOfType<const T>(node));
-    return static_cast<const T&>(node);
-}
-template<typename T> inline const T* toElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
-    return static_cast<const T*>(node);
-}
-template<typename T, typename U> inline T* toElement(const RefPtr<U>& node) { return toElement<T>(node.get()); }
 
 // Using macros because the types are forward-declared and we don't want to use reinterpret_cast in the
 // casting functions above. reinterpret_cast would be unsafe due to multiple inheritence.
