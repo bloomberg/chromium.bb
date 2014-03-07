@@ -484,7 +484,7 @@
       'filepath': 'chrome/browser/sessions/',
     },
     'service_worker': {
-      'filepath': 'content/(browser|renderer|child)/service_worker/',
+      'filepath': 'content/(browser|renderer|child|common)/service_worker/',
     },
     'site_instance': {
       'filepath': 'content/browser/site_instance|'\
@@ -834,6 +834,7 @@
                        'horo+watch@chromium.org',
                        'alecflett+watch@chromium.org',
                        'jsbell+serviceworker@chromium.org',
+                       'michaeln@chromium.org',
                        'serviceworker-reviews@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
