@@ -292,9 +292,13 @@ void TileManager::UpdatePrioritizedTileSetIfNeeded() {
 void TileManager::DidFinishRunningTasks() {
   TRACE_EVENT0("cc", "TileManager::DidFinishRunningTasks");
 
+  bool memory_usage_above_limit = resource_pool_->total_memory_usage_bytes() >
+                                  global_state_.soft_memory_limit_in_bytes;
+
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
-  if (all_tiles_that_need_to_be_rasterized_have_memory_)
+  if (all_tiles_that_need_to_be_rasterized_have_memory_ &&
+      !memory_usage_above_limit)
     return;
 
   raster_worker_pool_delegate_->CheckForCompletedTasks();
@@ -310,6 +314,8 @@ void TileManager::DidFinishRunningTasks() {
     ScheduleTasks(tiles_that_need_to_be_rasterized);
     return;
   }
+
+  resource_pool_->ReduceResourceUsage();
 
   // We don't reserve memory for required-for-activation tiles during
   // accelerated gestures, so we just postpone activation when we don't
@@ -457,7 +463,12 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     mts.visible_and_ready_to_draw =
         tree_bin[ACTIVE_TREE] == NOW_AND_READY_TO_DRAW_BIN;
 
-    if (mts.bin == NEVER_BIN) {
+    // If the tile is in NEVER_BIN and it does not have an active task, then we
+    // can release the resources early. If it does have the task however, we
+    // should keep it in the prioritized tile set to ensure that AssignGpuMemory
+    // can visit it.
+    if (mts.bin == NEVER_BIN &&
+        !mts.tile_versions[mts.raster_mode].raster_task_) {
       FreeResourcesForTile(tile);
       continue;
     }
