@@ -435,6 +435,12 @@ void DrawingBuffer::releaseResources()
         for (size_t i = 0; i < m_textureMailboxes.size(); i++)
             m_context->deleteTexture(m_textureMailboxes[i]->textureId);
 
+        if (m_multisampleFBO)
+            m_context->deleteFramebuffer(m_multisampleFBO);
+
+        if (m_fbo)
+            m_context->deleteFramebuffer(m_fbo);
+
         if (m_multisampleColorBuffer)
             m_context->deleteRenderbuffer(m_multisampleColorBuffer);
 
@@ -447,11 +453,8 @@ void DrawingBuffer::releaseResources()
         if (m_stencilBuffer)
             m_context->deleteRenderbuffer(m_stencilBuffer);
 
-        if (m_multisampleFBO)
-            m_context->deleteFramebuffer(m_multisampleFBO);
-
-        if (m_fbo)
-            m_context->deleteFramebuffer(m_fbo);
+        if (m_colorBuffer)
+            m_context->deleteTexture(m_colorBuffer);
 
         m_context = 0;
     }
