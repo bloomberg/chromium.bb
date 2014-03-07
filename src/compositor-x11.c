@@ -56,6 +56,7 @@
 
 static int option_width;
 static int option_height;
+static int option_scale;
 static int option_count;
 
 struct x11_compositor {
@@ -602,8 +603,8 @@ x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
 			if (configure_notify->width % output->scale != 0 ||
 			    configure_notify->height % output->scale != 0)
 				weston_log("Resolution is not a multiple of screen size, rounding\n");
-			output->mode.width = configure_notify->width / output->scale;
-			output->mode.height = configure_notify->height / output->scale;
+			output->mode.width = configure_notify->width;
+			output->mode.height = configure_notify->height;
 			configured = 1;
 			break;
 		}
@@ -1478,7 +1479,7 @@ x11_compositor_create(struct wl_display *display,
 	struct weston_config_section *section;
 	xcb_screen_iterator_t s;
 	int i, x = 0, output_count = 0;
-	int width, height, count, scale;
+	int width, height, scale, count;
 	const char *section_name;
 	char *name, *t, *mode;
 	uint32_t transform;
@@ -1534,6 +1535,7 @@ x11_compositor_create(struct wl_display *display,
 
 	width = option_width ? option_width : 1024;
 	height = option_height ? option_height : 640;
+	scale = option_scale ? option_scale : 1;
 	count = option_count ? option_count : 1;
 
 	section = NULL;
@@ -1586,7 +1588,7 @@ x11_compositor_create(struct wl_display *display,
 	for (i = output_count; i < count; i++) {
 		output = x11_compositor_create_output(c, x, 0, width, height,
 						      fullscreen, no_input, NULL,
-						      WL_OUTPUT_TRANSFORM_NORMAL, 1);
+						      WL_OUTPUT_TRANSFORM_NORMAL, scale);
 		if (output == NULL)
 			goto err_x11_input;
 		x = pixman_region32_extents(&output->base.region)->x2;
@@ -1623,6 +1625,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	const struct weston_option x11_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &option_width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &option_height },
+		{ WESTON_OPTION_INTEGER, "scale", 0, &option_scale },
 		{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &fullscreen },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
 		{ WESTON_OPTION_BOOLEAN, "no-input", 0, &no_input },

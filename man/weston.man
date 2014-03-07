@@ -186,6 +186,10 @@ X windows to emulate the same number of outputs.
 Make the default size of each X window
 .IR W x H " pixels."
 .TP
+.B \-\-scale\fR=\fIN\fR
+Give all outputs a scale factor of
+.I N.
+.TP
 .B \-\-use\-pixman
 Use the pixman renderer.  By default weston will try to use EGL and
 GLES2 for rendering.  Passing this option will make weston use the
