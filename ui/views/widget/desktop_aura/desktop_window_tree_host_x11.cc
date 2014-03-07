@@ -178,7 +178,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowBounds() const {
 void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
   if (active) {
-    delegate_->OnHostActivated();
+    OnHostActivated();
     open_windows().remove(xwindow_);
     open_windows().insert(open_windows().begin(), xwindow_);
   }
@@ -232,7 +232,6 @@ void DesktopWindowTreeHostX11::OnRootWindowCreated(
   dispatcher_->window()->SetProperty(kViewsWindowForRootWindow,
                                      content_window_);
   dispatcher_->window()->SetProperty(kHostForRootWindow, this);
-  delegate_ = dispatcher_;
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation
   // messages to us.
@@ -915,7 +914,7 @@ void DesktopWindowTreeHostX11::PrepareForShutdown() {
 // DesktopWindowTreeHostX11, ui::EventSource implementation:
 
 ui::EventProcessor* DesktopWindowTreeHostX11::GetEventProcessor() {
-  return delegate_->GetEventProcessor();
+  return dispatcher();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1123,7 +1122,7 @@ void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
 void DesktopWindowTreeHostX11::OnCaptureReleased() {
   x11_capture_.reset();
   g_current_capture = NULL;
-  delegate_->OnHostLostWindowCapture();
+  OnHostLostWindowCapture();
   native_widget_delegate_->OnMouseCaptureLost();
 }
 
@@ -1323,9 +1322,9 @@ uint32_t DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
     case FocusOut:
       if (xev->xfocus.mode != NotifyGrab) {
         ReleaseCapture();
-        delegate_->OnHostLostWindowCapture();
+        OnHostLostWindowCapture();
       } else {
-        delegate_->OnHostLostMouseGrab();
+        dispatcher()->OnHostLostMouseGrab();
       }
       break;
     case FocusIn:

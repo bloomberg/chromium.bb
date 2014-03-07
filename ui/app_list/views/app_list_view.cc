@@ -23,6 +23,7 @@
 #include "ui/app_list/views/speech_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"

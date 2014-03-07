@@ -247,7 +247,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
       const std::vector<gfx::Rect>& composition_character_bounds) OVERRIDE;
 
   // Helper function to dispatch a keyboard message to the desired target.
-  // The default target is the WindowTreeHostDelegate. For nested message loop
+  // The default target is the WindowEventDispatcher. For nested message loop
   // invocations we post a synthetic keyboard message directly into the message
   // loop. The dispatcher for the nested loop would then decide how this
   // message is routed.

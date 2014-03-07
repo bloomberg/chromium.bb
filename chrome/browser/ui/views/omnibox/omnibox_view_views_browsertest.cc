@@ -22,7 +22,6 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host_delegate.h"
 #endif // defined(USE_AURA)
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {

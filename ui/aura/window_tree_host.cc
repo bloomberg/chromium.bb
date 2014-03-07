@@ -5,13 +5,13 @@
 #include "ui/aura/window_tree_host.h"
 
 #include "base/debug/trace_event.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
-#include "ui/aura/window_tree_host_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/dip_util.h"
@@ -84,6 +84,17 @@ WindowTreeHost::~WindowTreeHost() {
   DCHECK(!compositor_) << "compositor must be destroyed before root window";
 }
 
+#if defined(OS_ANDROID)
+// static
+WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
+  // This is only hit for tests and ash, right now these aren't an issue so
+  // adding the CHECK.
+  // TODO(sky): decide if we want a factory.
+  CHECK(false);
+  return NULL;
+}
+#endif
+
 // static
 WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
     gfx::AcceleratedWidget widget) {
@@ -94,7 +105,7 @@ WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
 void WindowTreeHost::InitHost() {
   InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
-  Env::GetInstance()->NotifyRootWindowInitialized(delegate_->AsDispatcher());
+  Env::GetInstance()->NotifyRootWindowInitialized(dispatcher());
   window()->Show();
 }
 
@@ -187,8 +198,8 @@ void WindowTreeHost::OnCursorVisibilityChanged(bool show) {
   // visible because that can only happen in response to a mouse event, which
   // will trigger its own mouse enter.
   if (!show) {
-    delegate_->AsDispatcher()->DispatchMouseExitAtPoint(
-        delegate_->AsDispatcher()->GetLastMouseLocationInRoot());
+    dispatcher()->DispatchMouseExitAtPoint(
+        dispatcher()->GetLastMouseLocationInRoot());
   }
 
   OnCursorVisibilityChangedNative(show);
@@ -206,16 +217,11 @@ void WindowTreeHost::MoveCursorToHostLocation(const gfx::Point& host_location) {
   MoveCursorToInternal(root_location, host_location);
 }
 
-WindowEventDispatcher* WindowTreeHost::GetDispatcher() {
-  return delegate_->AsDispatcher();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
 WindowTreeHost::WindowTreeHost()
-    : delegate_(NULL),
-      window_(new Window(NULL)),
+    : window_(new Window(NULL)),
       last_cursor_(ui::kCursorNull) {
 }
 
@@ -225,10 +231,6 @@ void WindowTreeHost::DestroyCompositor() {
 }
 
 void WindowTreeHost::DestroyDispatcher() {
-  // An observer may have been added by an animation on the
-  // WindowEventDispatcher.
-  window()->layer()->GetAnimator()->RemoveObserver(dispatcher());
-
   delete window_;
   window_ = NULL;
   dispatcher_.reset();
@@ -260,7 +262,6 @@ void WindowTreeHost::CreateCompositor(
                                  this));
     dispatcher_.reset(new WindowEventDispatcher(this));
   }
-  delegate_ = dispatcher();
 }
 
 void WindowTreeHost::OnHostMoved(const gfx::Point& new_location) {
@@ -282,13 +283,26 @@ void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   // transformed size of the root window.
   UpdateRootWindowSize(layer_size);
   FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_, OnHostResized(this));
-  delegate_->OnHostResized(layer_size);
+  dispatcher()->OnHostResized(layer_size);
 }
 
 void WindowTreeHost::OnHostCloseRequested() {
   FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
                     OnHostCloseRequested(this));
 }
+
+void WindowTreeHost::OnHostActivated() {
+  Env::GetInstance()->RootWindowActivated(dispatcher());
+}
+
+void WindowTreeHost::OnHostLostWindowCapture() {
+  Window* capture_window = client::GetCaptureWindow(window());
+  if (capture_window && capture_window->GetRootWindow() == window())
+    capture_window->ReleaseCapture();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowTreeHost, private:
 
 void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
                                           const gfx::Point& host_location) {
@@ -299,18 +313,7 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
         gfx::Screen::GetScreenFor(window())->GetDisplayNearestWindow(window());
     cursor_client->SetDisplay(display);
   }
-  delegate_->OnCursorMovedToRootLocation(root_location);
+  dispatcher()->OnCursorMovedToRootLocation(root_location);
 }
-
-#if defined(OS_ANDROID)
-// static
-WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
-  // This is only hit for tests and ash, right now these aren't an issue so
-  // adding the CHECK.
-  // TODO(sky): decide if we want a factory.
-  CHECK(false);
-  return NULL;
-}
-#endif
 
 }  // namespace aura

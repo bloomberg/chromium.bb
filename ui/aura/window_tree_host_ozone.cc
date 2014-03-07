@@ -113,7 +113,7 @@ void WindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
 }
 
 ui::EventProcessor* WindowTreeHostOzone::GetEventProcessor() {
-  return delegate_->GetEventProcessor();
+  return dispatcher();
 }
 
 // static

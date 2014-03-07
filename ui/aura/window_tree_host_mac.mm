@@ -6,7 +6,6 @@
 
 #include "ui/aura/window_tree_host_mac.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/aura/window_tree_host_delegate.h"
 
 namespace aura {
 
