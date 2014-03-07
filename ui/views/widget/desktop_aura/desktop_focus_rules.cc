@@ -14,6 +14,14 @@ DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
 
 DesktopFocusRules::~DesktopFocusRules() {}
 
+bool DesktopFocusRules::CanActivateWindow(aura::Window* window) const {
+  if (!BaseFocusRules::CanActivateWindow(window))
+    return false;
+  // Never activate a window that is not a child of the root window. Transients
+  // spanning different DesktopNativeWidgetAuras may trigger this.
+  return !window || content_window_->GetRootWindow()->Contains(window);
+}
+
 bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {
   // In Desktop-Aura, only the content_window or children of the RootWindow are
   // activatable.
