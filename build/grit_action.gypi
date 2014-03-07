@@ -20,6 +20,7 @@
     # This makes it possible to add more defines in specific targets,
     # instead of build/common.gypi .
     'grit_additional_defines%': [],
+    'grit_rc_header_format%': [],
   },
   'inputs': [
     '<!@pymod_do_main(grit_info <@(grit_defines) <@(grit_additional_defines) '
@@ -35,6 +36,7 @@
              '-f', '<(grit_resource_ids)',
              '-o', '<(grit_out_dir)',
              '<@(grit_defines)',
-             '<@(grit_additional_defines)' ],
+             '<@(grit_additional_defines)',
+             '<@(grit_rc_header_format)'],
   'message': 'Generating resources from <(grit_grd_file)',
 }

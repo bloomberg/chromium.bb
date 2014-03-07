@@ -453,6 +453,9 @@
       # Enable the task manager by default.
       'enable_task_manager%': 1,
 
+      # Enables used resource whitelist generation; disabled by default.
+      'enable_resource_whitelist_generation%': 0,
+
       # Enable FTP support by default.
       'disable_ftp_support%': 0,
 
@@ -921,6 +924,7 @@
     'chroot_cmd%': '<(chroot_cmd)',
     'system_libdir%': '<(system_libdir)',
     'component%': '<(component)',
+    'enable_resource_whitelist_generation%': '<(enable_resource_whitelist_generation)',
     'use_titlecase_in_grd_files%': '<(use_titlecase_in_grd_files)',
     'use_third_party_translations%': '<(use_third_party_translations)',
     'remoting%': '<(remoting)',
@@ -1826,6 +1830,9 @@
       }],
       ['notifications==1', {
         'grit_defines': ['-D', 'enable_notifications'],
+      }],
+      ['enable_resource_whitelist_generation==1', {
+        'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("{textual_id}") {numeric_id}'],
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
         'clang_chrome_plugins_flags': [
@@ -3907,6 +3914,11 @@
                   # this and results in a library with unresolvable relocations.
                   # TODO(eugenis): find a way to reenable this.
                   '-mllvm -asan-globals=0',
+                ],
+              }],
+              ['enable_resource_whitelist_generation==1', {
+                'cflags': [
+                  '-Wunknown-pragmas -Wno-error=unknown-pragmas',
                 ],
               }],
               ['android_webview_build==0', {
