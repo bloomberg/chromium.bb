@@ -265,6 +265,35 @@ ui.StatusArea = base.extends('div',  {
             return ui.StatusArea._instance;
         ui.StatusArea._instance = this;
 
+        var kMinimumStatusAreaHeightPx = 60;
+        var dragger = document.createElement('div');
+        var initialY;
+        var initialHeight;
+        dragger.className = 'dragger';
+        $(dragger).mousedown(function(e) {
+            initialY = e.pageY;
+            initialHeight = $(this).height();
+            $(document.body).addClass('status-resizing');
+        }.bind(this));
+        $(document.body).mouseup(function(e) {
+            initialY = 0;
+            initialHeight = 0;
+            $(document.body).removeClass('status-resizing');
+        });
+        $(document.body).mousemove(function(e) {
+            if (initialY) {
+                var newHeight = initialHeight + initialY - e.pageY;
+                if (newHeight >= kMinimumStatusAreaHeightPx)
+                    $(this).height(newHeight);
+                e.preventDefault();
+            }
+        }.bind(this));
+        this.appendChild(dragger);
+
+        this.contents = document.createElement('div');
+        this.contents.className = 'contents';
+        this.appendChild(this.contents);
+
         this.className = 'status';
         document.body.appendChild(this);
         this._currentId = 0;
@@ -298,7 +327,7 @@ ui.StatusArea = base.extends('div',  {
             content = document.createElement('div');
             content.id = id;
             content.className = 'status-content';
-            this.appendChild(content);
+            this.contents.appendChild(content);
         }
 
         content.appendChild(element);
