@@ -48,6 +48,13 @@ class APIPermissionSet;
 class ManifestPermissionSet;
 class PermissionSet;
 
+// Uniquely identifies an Extension, using 32 characters from the alphabet
+// 'a'-'p'.  An empty string represents "no extension".
+//
+// Note: If this gets used heavily in files that don't otherwise need to include
+// extension.h, we should pull it into a dedicated header.
+typedef std::string ExtensionId;
+
 // Represents a Chrome extension.
 // Once created, an Extension object is immutable, with the exception of its
 // RuntimeData. This makes it safe to use on any thread, since access to the
@@ -171,7 +178,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                          Manifest::Location location,
                                          const base::DictionaryValue& value,
                                          int flags,
-                                         const std::string& explicit_id,
+                                         const ExtensionId& explicit_id,
                                          std::string* error);
 
   // Valid schemes for web extent URLPatterns.
@@ -227,7 +234,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                      bool is_public);
 
   // Returns the base extension url for a given |extension_id|.
-  static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
+  static GURL GetBaseURLFromExtensionId(const ExtensionId& extension_id);
 
   // DEPRECATED: These methods have been moved to PermissionsData.
   // TODO(rdevlin.cronin): remove these once all calls have been updated.
@@ -274,7 +281,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const base::FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
   Manifest::Location location() const;
-  const std::string& id() const;
+  const ExtensionId& id() const;
   const base::Version* version() const { return version_.get(); }
   const std::string VersionString() const;
   const std::string& name() const { return name_; }
@@ -340,7 +347,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The chosen ID will be set in |manifest|.
   static bool InitExtensionID(extensions::Manifest* manifest,
                               const base::FilePath& path,
-                              const std::string& explicit_id,
+                              const ExtensionId& explicit_id,
                               int creation_flags,
                               base::string16* error);
 
@@ -460,19 +467,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 };
 
 typedef std::vector<scoped_refptr<const Extension> > ExtensionList;
-typedef std::set<std::string> ExtensionIdSet;
-typedef std::vector<std::string> ExtensionIdList;
+typedef std::set<ExtensionId> ExtensionIdSet;
+typedef std::vector<ExtensionId> ExtensionIdList;
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {
   ExtensionInfo(const base::DictionaryValue* manifest,
-                const std::string& id,
+                const ExtensionId& id,
                 const base::FilePath& path,
                 Manifest::Location location);
   ~ExtensionInfo();
 
   scoped_ptr<base::DictionaryValue> extension_manifest;
-  std::string extension_id;
+  ExtensionId extension_id;
   base::FilePath extension_path;
   Manifest::Location extension_location;
 
