@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.3",
+  "version": "4.4",
   "entries": [
     {
       "id": 1,
@@ -692,22 +692,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_vendor": {
         "op": "beginwith",
         "value": "Qualcomm"
-      },
-      "features": [
-        "disable_multisampling"
-      ]
-    },
-    {
-      "id": 53,
-      "cr_bugs": [321701],
-      "description": "ES3 multisampling is too slow to be usable on Mali",
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
-      "gl_renderer": {
-        "op": "beginwith",
-        "value": "Mali"
       },
       "features": [
         "disable_multisampling"
