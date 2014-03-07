@@ -36,7 +36,34 @@
 
 namespace WebCore {
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::Isolate* isolate, AccessControlStatus corsStatus)
+PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::String> code, ScriptResource* resource)
+{
+    TRACE_EVENT0("v8", "v8.compile");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Compile");
+    // A pseudo-randomly chosen ID used to store and retrieve V8 ScriptData from
+    // the ScriptResource. If the format changes, this ID should be changed too.
+    static const unsigned dataTypeID = 0xECC13BD7;
+
+    // Very small scripts are not worth the effort to preparse.
+    static const int minPreparseLength = 1024;
+
+    if (!resource || code->Length() < minPreparseLength)
+        return nullptr;
+
+    CachedMetadata* cachedMetadata = resource->cachedMetadata(dataTypeID);
+    if (cachedMetadata)
+        return adoptPtr(v8::ScriptData::New(cachedMetadata->data(), cachedMetadata->size()));
+
+    OwnPtr<v8::ScriptData> scriptData = adoptPtr(v8::ScriptData::PreCompile(code));
+    if (!scriptData)
+        return nullptr;
+
+    resource->setCachedMetadata(dataTypeID, scriptData->Data(), scriptData->Length());
+
+    return scriptData.release();
+}
+
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate, AccessControlStatus corsStatus)
 {
     TRACE_EVENT0("v8", "v8.compile");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Compile");
@@ -45,7 +72,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     v8::Handle<v8::Integer> column = v8::Integer::New(isolate, scriptStartPosition.m_column.zeroBasedInt());
     v8::Handle<v8::Boolean> isSharedCrossOrigin = corsStatus == SharableCrossOrigin ? v8::True(isolate) : v8::False(isolate);
     v8::ScriptOrigin origin(name, line, column, isSharedCrossOrigin);
-    return v8::Script::Compile(code, &origin);
+    return v8::Script::Compile(code, &origin, scriptData);
 }
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ExecutionContext* context, v8::Isolate* isolate)
@@ -80,11 +107,11 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
+v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData)
 {
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "V8Execution");
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, isolate);
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, scriptData, isolate);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
