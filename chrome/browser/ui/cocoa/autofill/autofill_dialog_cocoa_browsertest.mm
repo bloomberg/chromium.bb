@@ -72,7 +72,7 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
-    autofill::test::DisableSystemServices(browser()->profile());
+    autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
 
     // Stick to local autofill mode.
     browser()->profile()->GetPrefs()->SetBoolean(

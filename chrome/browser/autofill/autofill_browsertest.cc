@@ -123,7 +123,7 @@ class AutofillTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Don't want Keychain coming up on Mac.
-    test::DisableSystemServices(browser()->profile());
+    test::DisableSystemServices(browser()->profile()->GetPrefs());
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

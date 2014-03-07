@@ -9,10 +9,6 @@
 
 class PrefService;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace autofill {
 
 class AutofillProfile;
@@ -93,7 +89,7 @@ void SetCreditCardInfo(CreditCard* credit_card,
 // TODO(isherman): We should do this automatically for all tests, not manually
 // on a per-test basis: http://crbug.com/57221
 // Disables or mocks out code that would otherwise reach out to system services.
-void DisableSystemServices(content::BrowserContext* browser_context);
+void DisableSystemServices(PrefService* prefs);
 
 }  // namespace test
 }  // namespace autofill

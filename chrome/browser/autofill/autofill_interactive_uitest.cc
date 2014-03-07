@@ -209,7 +209,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     TranslateService::SetUseInfobar(true);
 
     // Don't want Keychain coming up on Mac.
-    test::DisableSystemServices(browser()->profile());
+    test::DisableSystemServices(browser()->profile()->GetPrefs());
 
     // Inject the test delegate into the AutofillManager.
     content::WebContents* web_contents = GetWebContents();

@@ -1950,11 +1950,7 @@
         '../components/autofill/content/browser/wallet/wallet_items_unittest.cc',
         '../components/autofill/content/browser/wallet/wallet_service_url_unittest.cc',
         '../components/autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
-        '../components/autofill/core/browser/autofill_external_delegate_unittest.cc',
-        '../components/autofill/core/browser/autofill_ie_toolbar_import_win_unittest.cc',
         '../components/autofill/core/browser/autofill_metrics_unittest.cc',
-        '../components/autofill/core/browser/password_autofill_manager_unittest.cc',
-        '../components/autofill/core/browser/personal_data_manager_unittest.cc',
 
         # TODO(yael): Move to //components/components_tests.gypi once
         # nacl_defines is moved out of chrome.gyp into a common place.

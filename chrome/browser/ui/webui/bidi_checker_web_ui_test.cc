@@ -265,7 +265,7 @@ static void SetupSettingsAutofillPageTest(Profile* profile,
                                           const char* zipcode,
                                           const char* country,
                                           const char* phone) {
-  autofill::test::DisableSystemServices(profile);
+  autofill::test::DisableSystemServices(profile->GetPrefs());
   AutofillProfile autofill_profile;
   autofill::test::SetProfileInfo(&autofill_profile,
                                  first_name,

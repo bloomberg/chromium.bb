@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"

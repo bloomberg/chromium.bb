@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   net::TestURLFetcherFactory factory;
   // Disable Autofill requesting access to AddressBook data. This causes
   // the test to hang on Mac.
-  autofill::test::DisableSystemServices(browser()->profile());
+  autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
 
   // Visit a signup form.
   NavigateToFile("/password/signup_form.html");

@@ -315,7 +315,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    autofill::test::DisableSystemServices(browser()->profile());
+    autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
     InitializeController();
   }
 

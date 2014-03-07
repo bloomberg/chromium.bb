@@ -62,7 +62,7 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     // Disable Autofill requesting access to AddressBook data. This will cause
     // the tests to hang on Mac.
-    autofill::test::DisableSystemServices(browser()->profile());
+    autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
 
     // Set observer for popup.
     ChromePasswordManagerClient* client =
