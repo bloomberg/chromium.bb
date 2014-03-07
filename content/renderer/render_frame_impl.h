@@ -261,6 +261,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebFrame* frame);
   virtual void showContextMenu(const blink::WebContextMenuData& data);
+  virtual void clearContextMenu();
   virtual void willRequestAfterPreconnect(blink::WebFrame* frame,
                                           blink::WebURLRequest& request);
   virtual void willSendRequest(

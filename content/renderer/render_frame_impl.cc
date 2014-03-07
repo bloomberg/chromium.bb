@@ -1708,6 +1708,10 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 
+void RenderFrameImpl::clearContextMenu() {
+  render_view_->context_menu_node_.reset();
+}
+
 void RenderFrameImpl::willRequestAfterPreconnect(
     blink::WebFrame* frame,
     blink::WebURLRequest& request) {
