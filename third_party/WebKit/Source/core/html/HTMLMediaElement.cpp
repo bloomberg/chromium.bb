@@ -1514,8 +1514,6 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
 void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 {
     m_progressEventTimer.stop();
-    if (hasMediaControls() && m_player->didLoadingProgress())
-        mediaControls()->bufferingProgressed();
 
     // Schedule one last progress event so we guarantee that at least one is fired
     // for files that load very quickly.
@@ -1657,8 +1655,6 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
         m_sentStalledEvent = false;
         if (renderer())
             renderer()->updateFromElement();
-        if (hasMediaControls())
-            mediaControls()->bufferingProgressed();
     } else if (timedelta > 3.0 && !m_sentStalledEvent) {
         scheduleEvent(EventTypeNames::stalled);
         m_sentStalledEvent = true;

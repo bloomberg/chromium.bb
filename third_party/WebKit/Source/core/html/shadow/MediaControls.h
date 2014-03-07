@@ -54,7 +54,6 @@ public:
     void show();
     void hide();
 
-    void bufferingProgressed();
     virtual void playbackStarted();
     void playbackProgressed();
     virtual void playbackStopped();
