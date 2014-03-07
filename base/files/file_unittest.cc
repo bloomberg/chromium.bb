@@ -349,18 +349,17 @@ TEST(File, DISABLED_TouchGetInfo) {
             creation_time.ToInternalValue());
 }
 
-TEST(File, ReadFileAtCurrentPosition) {
+TEST(File, ReadAtCurrentPosition) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath file_path =
-      temp_dir.path().AppendASCII("read_file_at_current_position");
+  FilePath file_path = temp_dir.path().AppendASCII("read_at_current_position");
   File file(file_path,
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
   EXPECT_TRUE(file.IsValid());
 
   const char kData[] = "test";
-  const int kDataSize = arraysize(kData) - 1;
+  const int kDataSize = sizeof(kData) - 1;
   EXPECT_EQ(kDataSize, file.Write(0, kData, kDataSize));
 
   EXPECT_EQ(0, file.Seek(base::File::FROM_BEGIN, 0));
@@ -371,8 +370,30 @@ TEST(File, ReadFileAtCurrentPosition) {
   EXPECT_EQ(kDataSize - first_chunk_size,
             file.ReadAtCurrentPos(buffer + first_chunk_size,
                                   kDataSize - first_chunk_size));
-  EXPECT_EQ(std::string(buffer, buffer + kDataSize),
-            std::string(kData));
+  EXPECT_EQ(std::string(buffer, buffer + kDataSize), std::string(kData));
+}
+
+TEST(File, WriteAtCurrentPosition) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.path().AppendASCII("write_at_current_position");
+  File file(file_path,
+            base::File::FLAG_CREATE | base::File::FLAG_READ |
+                base::File::FLAG_WRITE);
+  EXPECT_TRUE(file.IsValid());
+
+  const char kData[] = "test";
+  const int kDataSize = sizeof(kData) - 1;
+
+  int first_chunk_size = kDataSize / 2;
+  EXPECT_EQ(first_chunk_size, file.WriteAtCurrentPos(kData, first_chunk_size));
+  EXPECT_EQ(kDataSize - first_chunk_size,
+            file.WriteAtCurrentPos(kData + first_chunk_size,
+                                   kDataSize - first_chunk_size));
+
+  char buffer[kDataSize];
+  EXPECT_EQ(kDataSize, file.Read(0, buffer, kDataSize));
+  EXPECT_EQ(std::string(buffer, buffer + kDataSize), std::string(kData));
 }
 
 #if defined(OS_WIN)
