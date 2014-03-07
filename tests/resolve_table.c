@@ -45,7 +45,7 @@ main(int argc, char **argv)
 
   // this test relies on being in the test dir, so that it can test
   // finding tables by relative path
-  chdir(TEST_SRC_DIR);
+  if (chdir(TEST_SRC_DIR)) return 1;
 
   // Full path
   setenv ("LOUIS_TABLEPATH", "", 1);
