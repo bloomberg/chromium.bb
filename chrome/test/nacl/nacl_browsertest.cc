@@ -206,14 +206,22 @@ class NaClBrowserTestPnaclDebugURL : public NaClBrowserTestPnacl {
   }
 };
 
+#if defined(OS_WIN)
+#define MAYBE_PnaclDebugURLFlagAndURL DISABLED_PnaclDebugURLFlagAndURL
+#define MAYBE_PnaclDebugURLFlagNoURL DISABLED_PnaclDebugURLFlagNoURL
+#else
+#define MAYBE_PnaclDebugURLFlagAndURL PnaclDebugURLFlagAndURL
+#define MAYBE_PnaclDebugURLFlagNoURL PnaclDebugURLFlagNoURL
+#endif
+
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PNACL(PnaclDebugURLFlagAndURL)) {
+                       MAYBE_PnaclDebugURLFlagAndURL) {
   RunLoadTest(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug.nmf"));
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PNACL(PnaclDebugURLFlagNoURL)) {
+                       MAYBE_PnaclDebugURLFlagNoURL) {
   RunLoadTest(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_no_debug.nmf"));
 }
