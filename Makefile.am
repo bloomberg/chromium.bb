@@ -1,8 +1,6 @@
 if BUILD_DOCS
-doc_subdir = doc
+SUBDIRS = doc
 endif
-
-SUBDIRS = $(doc_subdir) . tests
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
@@ -118,3 +116,78 @@ libwayland_cursor_la_CFLAGS =			\
 	-I$(top_builddir)/src			\
 	-I$(top_srcdir)/src			\
 	-DICONDIR=\"$(ICONDIR)\"
+
+
+TESTS =						\
+	array-test				\
+	client-test				\
+	display-test				\
+	connection-test				\
+	event-loop-test				\
+	fixed-test				\
+	list-test				\
+	map-test				\
+	os-wrappers-test			\
+	sanity-test				\
+	socket-test				\
+	queue-test				\
+	signal-test				\
+	resources-test
+
+check_PROGRAMS =				\
+	$(TESTS)				\
+	exec-fd-leak-checker
+
+noinst_PROGRAMS =				\
+	fixed-benchmark
+
+check_LTLIBRARIES = libtest-runner.la
+
+libtest_runner_la_SOURCES =			\
+	tests/test-runner.c			\
+	tests/test-runner.h			\
+	tests/test-helpers.c
+libtest_runner_la_LIBADD =			\
+	libwayland-util.la			\
+	libwayland-client.la			\
+	libwayland-server.la			\
+	-lrt -ldl $(FFI_LIBS)
+
+
+array_test_SOURCES = tests/array-test.c
+array_test_LDADD = libtest-runner.la
+client_test_SOURCES = tests/client-test.c
+client_test_LDADD = libtest-runner.la
+display_test_SOURCES = tests/display-test.c
+display_test_LDADD = libtest-runner.la
+connection_test_SOURCES = tests/connection-test.c
+connection_test_LDADD = libtest-runner.la
+event_loop_test_SOURCES = tests/event-loop-test.c
+event_loop_test_LDADD = libtest-runner.la
+fixed_test_SOURCES = tests/fixed-test.c
+fixed_test_LDADD = libtest-runner.la
+list_test_SOURCES = tests/list-test.c
+list_test_LDADD = libtest-runner.la
+map_test_SOURCES = tests/map-test.c
+map_test_LDADD = libtest-runner.la
+sanity_test_SOURCES = tests/sanity-test.c
+sanity_test_LDADD = libtest-runner.la
+socket_test_SOURCES = tests/socket-test.c
+socket_test_LDADD = libtest-runner.la
+queue_test_SOURCES = tests/queue-test.c
+queue_test_LDADD = libtest-runner.la
+signal_test_SOURCES = tests/signal-test.c
+signal_test_LDADD = libtest-runner.la
+resources_test_SOURCES = tests/resources-test.c
+resources_test_LDADD = libtest-runner.la
+
+fixed_benchmark_SOURCES = tests/fixed-benchmark.c
+
+os_wrappers_test_SOURCES = tests/os-wrappers-test.c
+os_wrappers_test_LDADD = libtest-runner.la
+
+AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
+
+exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
+exec_fd_leak_checker_LDADD = libtest-runner.la
