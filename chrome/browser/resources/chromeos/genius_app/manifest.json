@@ -27,6 +27,7 @@
     "chromeosInfoPrivate",
     "firstRunPrivate",
     "management",
+    "metricsPrivate",
     "webview",
     "storage",
     "unlimitedStorage",
