@@ -140,7 +140,7 @@ void LinuxSandbox::PreinitializeSandbox() {
 #if !defined(NDEBUG)
   // Open proc_fd_ only in Debug mode so that forgetting to close it doesn't
   // produce a sandbox escape in Release mode.
-  proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY);
+  proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC);
   CHECK_GE(proc_fd_, 0);
 #endif  // !defined(NDEBUG)
   // We "pre-warm" the code that detects supports for seccomp BPF.
