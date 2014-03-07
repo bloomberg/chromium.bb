@@ -277,12 +277,6 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
         CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
   }
 
-  { // -[NSColor colorUsingColorSpaceName] - 10.5.6
-    // Used in ppapi processes only. http://crbug.com/348304
-    NSColor* color = [NSColor controlTextColor];
-    [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-  }
-
   { // localtime() - 10.5.6
     time_t tv = {0};
     localtime(&tv);
@@ -329,6 +323,12 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     // Preload either the desktop GL or the osmesa so, depending on the
     // --use-gl flag.
     gfx::GLSurface::InitializeOneOff();
+  }
+
+  if (sandbox_type == SANDBOX_TYPE_PPAPI) {
+    // Preload AppKit color spaces used for Flash/ppapi. http://crbug.com/348304
+    NSColor* color = [NSColor controlTextColor];
+    [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
   }
 }
 
