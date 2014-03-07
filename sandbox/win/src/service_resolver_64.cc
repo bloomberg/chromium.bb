@@ -116,30 +116,6 @@ size_t ServiceResolverThunk::GetThunkSize() const {
   return sizeof(ServiceFullThunk);
 }
 
-NTSTATUS ServiceResolverThunk::CopyThunk(const void* target_module,
-                                         const char* target_name,
-                                         BYTE* thunk_storage,
-                                         size_t storage_bytes,
-                                         size_t* storage_used) {
-  NTSTATUS ret = ResolveTarget(target_module, target_name, &target_);
-  if (!NT_SUCCESS(ret))
-    return ret;
-
-  size_t thunk_bytes = GetThunkSize();
-  if (storage_bytes < thunk_bytes)
-    return STATUS_UNSUCCESSFUL;
-
-  ServiceFullThunk* thunk = reinterpret_cast<ServiceFullThunk*>(thunk_storage);
-
-  if (!IsFunctionAService(&thunk->original))
-    return STATUS_UNSUCCESSFUL;
-
-  if (NULL != storage_used)
-    *storage_used = thunk_bytes;
-
-  return ret;
-}
-
 bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
   ServiceFullThunk function_code;
   SIZE_T read;

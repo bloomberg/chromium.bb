@@ -46,15 +46,6 @@ class ServiceResolverThunk : public ResolverThunk {
   // Call this to set up ntdll_base_ which will allow for local patches.
   virtual void AllowLocalPatches();
 
-  // Verifies that the function specified by |target_name| in |target_module| is
-  // a service and copies the data from that function into |thunk_storage|. If
-  // |storage_bytes| is too small, then the method fails.
-  virtual NTSTATUS CopyThunk(const void* target_module,
-                             const char* target_name,
-                             BYTE* thunk_storage,
-                             size_t storage_bytes,
-                             size_t* storage_used);
-
  protected:
   // The unit test will use this member to allow local patch on a buffer.
   HMODULE ntdll_base_;
