@@ -59,8 +59,6 @@ bool BrowserPluginManagerImpl::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginManagerImpl, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AllocateInstanceID_ACK,
                         OnAllocateInstanceIDACK)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_PluginAtPositionRequest,
-                        OnPluginAtPositionRequest);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -88,27 +86,6 @@ void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
     return;
   pending_allocate_guest_instance_id_requests_.erase(request_id);
   plugin->OnInstanceIDAllocated(guest_instance_id);
-}
-
-void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
-    const IPC::Message& message,
-    int request_id,
-    const gfx::Point& position) {
-  int guest_instance_id = browser_plugin::kInstanceIDNone;
-  IDMap<BrowserPlugin>::iterator it(&instances_);
-  gfx::Point local_position = position;
-  while (!it.IsAtEnd()) {
-    const BrowserPlugin* plugin = it.GetCurrentValue();
-    if (!plugin->guest_crashed() && plugin->InBounds(position)) {
-      guest_instance_id = plugin->guest_instance_id();
-      local_position = plugin->ToLocalCoordinates(position);
-      break;
-    }
-    it.Advance();
-  }
-
-  Send(new BrowserPluginHostMsg_PluginAtPositionResponse(
-       message.routing_id(), guest_instance_id, request_id, local_position));
 }
 
 }  // namespace content

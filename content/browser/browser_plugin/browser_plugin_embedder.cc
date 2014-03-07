@@ -31,12 +31,10 @@ namespace content {
 BrowserPluginHostFactory* BrowserPluginEmbedder::factory_ = NULL;
 
 BrowserPluginEmbedder::BrowserPluginEmbedder(WebContentsImpl* web_contents)
-    : WebContentsObserver(web_contents),
-      next_get_render_view_request_id_(0) {
+    : WebContentsObserver(web_contents) {
 }
 
 BrowserPluginEmbedder::~BrowserPluginEmbedder() {
-  CleanUp();
 }
 
 // static
@@ -61,18 +59,6 @@ void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
 
 void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
   guest_started_drag_ = guest->AsWeakPtr();
-}
-
-void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
-    int x, int y, const WebContents::GetRenderViewHostCallback& callback) {
-  // Store the callback so we can call it later when we have the response.
-  pending_get_render_view_callbacks_.insert(
-      std::make_pair(next_get_render_view_request_id_, callback));
-  Send(new BrowserPluginMsg_PluginAtPositionRequest(
-      routing_id(),
-      next_get_render_view_request_id_,
-      gfx::Point(x, y)));
-  ++next_get_render_view_request_id_;
 }
 
 WebContentsImpl* BrowserPluginEmbedder::GetWebContents() {
@@ -128,18 +114,12 @@ void BrowserPluginEmbedder::SetZoomLevel(double level) {
       level));
 }
 
-void BrowserPluginEmbedder::RenderProcessGone(base::TerminationStatus status) {
-  CleanUp();
-}
-
 bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
                         OnAllocateInstanceID)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
-                        OnPluginAtPositionResponse)
     IPC_MESSAGE_HANDLER_GENERIC(DragHostMsg_UpdateDragCursor,
                                 OnUpdateDragCursor(&handled));
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -179,13 +159,6 @@ void BrowserPluginEmbedder::SystemDragEnded() {
 
 void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
   *handled = (guest_dragging_over_.get() != NULL);
-}
-
-void BrowserPluginEmbedder::CleanUp() {
-  // CleanUp gets called when BrowserPluginEmbedder's WebContents goes away
-  // or the associated RenderViewHost is destroyed or swapped out. Therefore we
-  // don't need to care about the pending callbacks anymore.
-  pending_get_render_view_callbacks_.clear();
 }
 
 BrowserPluginGuestManager*
@@ -244,29 +217,6 @@ void BrowserPluginEmbedder::OnAttach(
         extra_params);
     guest->Initialize(params, GetWebContents());
   }
-}
-
-void BrowserPluginEmbedder::OnPluginAtPositionResponse(
-    int instance_id, int request_id, const gfx::Point& position) {
-  const std::map<int, WebContents::GetRenderViewHostCallback>::iterator
-      callback_iter = pending_get_render_view_callbacks_.find(request_id);
-  if (callback_iter == pending_get_render_view_callbacks_.end())
-    return;
-
-  RenderViewHost* render_view_host;
-  BrowserPluginGuest* guest = NULL;
-  if (instance_id != browser_plugin::kInstanceIDNone) {
-    guest = GetBrowserPluginGuestManager()->GetGuestByInstanceID(
-        instance_id, GetWebContents()->GetRenderProcessHost()->GetID());
-  }
-
-  if (guest)
-    render_view_host = guest->GetWebContents()->GetRenderViewHost();
-  else  // No plugin, use embedder's RenderViewHost.
-    render_view_host = GetWebContents()->GetRenderViewHost();
-
-  callback_iter->second.Run(render_view_host, position.x(), position.y());
-  pending_get_render_view_callbacks_.erase(callback_iter);
 }
 
 }  // namespace content

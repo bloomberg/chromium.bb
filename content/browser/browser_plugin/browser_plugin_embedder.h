@@ -44,14 +44,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents);
 
-  // Returns the RenderViewHost at a point (|x|, |y|) asynchronously via
-  // |callback|. We need a roundtrip to renderer process to get this
-  // information.
-  void GetRenderViewHostAtPosition(
-      int x,
-      int y,
-      const WebContents::GetRenderViewHostCallback& callback);
-
   // Returns this embedder's WebContentsImpl.
   WebContentsImpl* GetWebContents();
 
@@ -74,7 +66,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void SetZoomLevel(double level);
 
   // WebContentsObserver implementation.
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
@@ -100,8 +91,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
-  void CleanUp();
-
   BrowserPluginGuestManager* GetBrowserPluginGuestManager();
 
   bool DidSendScreenRectsCallback(BrowserPluginGuest* guest);
@@ -123,15 +112,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   // Static factory instance (always NULL for non-test).
   static BrowserPluginHostFactory* factory_;
-
-  // Map that contains outstanding queries to |GetRenderViewHostAtPosition|.
-  // We need a roundtrip to the renderer process to retrieve the answer,
-  // so we store these callbacks until we hear back from the renderer.
-  typedef std::map<int, WebContents::GetRenderViewHostCallback>
-      GetRenderViewHostCallbackMap;
-  GetRenderViewHostCallbackMap pending_get_render_view_callbacks_;
-  // Next request id for BrowserPluginMsg_PluginAtPositionRequest query.
-  int next_get_render_view_request_id_;
 
   // Used to correctly update the cursor when dragging over a guest, and to
   // handle a race condition when dropping onto the guest that started the drag

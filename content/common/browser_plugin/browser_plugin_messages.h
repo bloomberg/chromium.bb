@@ -255,13 +255,6 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
                     blink::WebDragOperationsMask /* operation_mask */,
                     gfx::Point /* plugin_location */)
 
-// Response to BrowserPluginMsg_PluginAtPositionRequest, returns the browser
-// plugin instace id and the coordinates (local to the plugin).
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_PluginAtPositionResponse,
-                    int /* instance_id */,
-                    int /* request_id */,
-                    gfx::Point /* position */)
-
 // Sets the name of the guest window to the provided |name|.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
                     int /* instance_id */,
@@ -346,14 +339,6 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CopyFromCompositingSurface,
                      int /* request_id */,
                      gfx::Rect  /* source_rect */,
                      gfx::Size  /* dest_size */)
-
-// Requests the renderer to find out if a browser plugin is at position
-// (|x|, |y|) within the embedder.
-// The response message is BrowserPluginHostMsg_PluginAtPositionResponse.
-// The |request_id| uniquely identifies a request from an embedder.
-IPC_MESSAGE_ROUTED2(BrowserPluginMsg_PluginAtPositionRequest,
-                    int /* request_id */,
-                    gfx::Point /* position */)
 
 // Informs BrowserPlugin of a new name set for the top-level guest frame.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_UpdatedName,

@@ -9,9 +9,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
-#include "content/browser/browser_plugin/test_browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
@@ -77,15 +77,23 @@ const char kHTMLForGuestAcceptDrag[] =
     "</textarea>"
     "</body></html>";
 
-const char kHTMLForGuestWithSize[] =
-    "data:text/html,"
-    "<html>"
-    "<body style=\"margin: 0px;\">"
-    "<img style=\"width: 100%; height: 400px;\"/>"
-    "</body>"
-    "</html>";
-
 namespace content {
+
+class TestBrowserPluginEmbedder : public BrowserPluginEmbedder {
+ public:
+  TestBrowserPluginEmbedder(WebContentsImpl* web_contents)
+      : BrowserPluginEmbedder(web_contents) {
+  }
+
+  virtual ~TestBrowserPluginEmbedder() {}
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(BrowserPluginEmbedder::web_contents());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginEmbedder);
+};
 
 // Test factory for creating test instances of BrowserPluginEmbedder and
 // BrowserPluginGuest.
@@ -748,21 +756,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
   test_embedder()->web_contents()->GetRenderViewHost()->Blur();
   // Ensure that the guest is also blurred.
   test_guest()->WaitForBlur();
-}
-
-// Test for regression http://crbug.com/162961.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  const std::string embedder_code =
-      base::StringPrintf("SetSize(%d, %d);", 100, 100);
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestWithSize, true,
-                         embedder_code);
-  // Check for render view host at position (150, 150) that is outside the
-  // bounds of our guest, so this would respond with the render view host of the
-  // embedder.
-  test_embedder()->WaitForRenderViewHostAtPosition(150, 150);
-  ASSERT_EQ(test_embedder()->web_contents()->GetRenderViewHost(),
-            test_embedder()->last_rvh_at_position_response());
 }
 
 // This test verifies that if IME is enabled in the embedder, it is also enabled

@@ -370,10 +370,6 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
   }
 }
 
-void DevToolsInspectElementAt(RenderViewHost* rvh, int x, int y) {
-  DevToolsWindow::InspectElement(rvh, x, y);
-}
-
 // Helper function to escape "&" as "&&".
 void EscapeAmpersands(base::string16* text) {
   const base::char16 ampersand[] = {'&', 0};
@@ -2033,8 +2029,11 @@ void RenderViewContextMenu::GetImageThumbnailForSearch() {
 
 void RenderViewContextMenu::Inspect(int x, int y) {
   content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
-  source_web_contents_->GetRenderViewHostAtPosition(
-      x, y, base::Bind(&DevToolsInspectElementAt));
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!render_frame_host)
+    return;
+  DevToolsWindow::InspectElement(render_frame_host->GetRenderViewHost(), x, y);
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {

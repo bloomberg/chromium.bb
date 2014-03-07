@@ -126,14 +126,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
 
-  // Returns true if |point| lies within the bounds of the plugin rectangle.
-  // Not OK to use this function for making security-sensitive decision since it
-  // can return false positives when the plugin has rotation transformation
-  // applied.
-  bool InBounds(const gfx::Point& point) const;
-
-  gfx::Point ToLocalCoordinates(const gfx::Point& point) const;
-
   // Called when a guest instance ID has been allocated by the browser process.
   void OnInstanceIDAllocated(int guest_instance_id);
   // Provided that a guest instance ID has been allocated, this method attaches
