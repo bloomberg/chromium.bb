@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 
 #include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -72,17 +73,23 @@ void AppendMirrorRequestHeaderIfPossible(
      return;
    }
 
-  // Only set the header for Gaia (in the mirror world) and Drive. Gaia needs
-  // the header to redirect certain user actions to Chrome native UI. Drive
-  // needs the header to tell if the current user is connected. The drive path
-  // is a temporary workaround until the more generic chrome.principals API is
+  // Only set the header for Drive always, and other Google properties if
+  // new-profile-management is enabled.
+  // Vasquette, which is integrated with most Google properties, needs the
+  // header to redirect certain user actions to Chrome native UI. Drive needs
+  // the header to tell if the current user is connected. The drive path is a
+  // temporary workaround until the more generic chrome.principals API is
   // available.
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
-  bool is_gaia_origin = !switches::IsEnableWebBasedSignin() &&
+  bool is_google_url =
+      !switches::IsEnableWebBasedSignin() &&
       switches::IsNewProfileManagement() &&
-      gaia::IsGaiaSignonRealm(origin);
-  if (!is_gaia_origin && !IsDriveOrigin(origin))
+      google_util::IsGoogleDomainUrl(
+          url,
+          google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS);
+  if (!is_google_url && !IsDriveOrigin(origin))
     return;
 
   ExtensionRendererState* renderer_state =
