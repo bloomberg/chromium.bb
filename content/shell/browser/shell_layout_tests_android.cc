@@ -37,8 +37,8 @@ void EnsureCreateFIFO(const base::FilePath& path) {
     << "Unable to create the Android's FIFO: " << path.value().c_str();
 }
 
-base::MessagePump* CreateMessagePumpForUI() {
-  return new content::NestedMessagePumpAndroid();
+scoped_ptr<base::MessagePump> CreateMessagePumpForUI() {
+  return scoped_ptr<base::MessagePump>(new content::NestedMessagePumpAndroid());
 }
 
 }  // namespace

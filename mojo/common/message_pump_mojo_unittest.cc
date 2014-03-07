@@ -11,8 +11,8 @@ namespace mojo {
 namespace common {
 namespace test {
 
-base::MessagePump* CreateMojoMessagePump() {
-  return new MessagePumpMojo();
+scoped_ptr<base::MessagePump> CreateMojoMessagePump() {
+  return scoped_ptr<base::MessagePump>(new MessagePumpMojo());
 }
 
 RUN_MESSAGE_LOOP_TESTS(Mojo, &CreateMojoMessagePump);

@@ -36,15 +36,15 @@ namespace base {
 
 namespace {
 
-MessagePump* TypeDefaultMessagePumpFactory() {
+scoped_ptr<MessagePump> TypeDefaultMessagePumpFactory() {
   return MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_DEFAULT);
 }
 
-MessagePump* TypeIOMessagePumpFactory() {
+scoped_ptr<MessagePump> TypeIOMessagePumpFactory() {
   return MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_IO);
 }
 
-MessagePump* TypeUIMessagePumpFactory() {
+scoped_ptr<MessagePump> TypeUIMessagePumpFactory() {
   return MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_UI);
 }
 

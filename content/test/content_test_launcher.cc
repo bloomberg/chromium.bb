@@ -61,8 +61,8 @@ class ContentShellTestSuiteInitializer
 };
 
 #if defined(OS_ANDROID)
-base::MessagePump* CreateMessagePumpForUI() {
-  return new NestedMessagePumpAndroid();
+scoped_ptr<base::MessagePump> CreateMessagePumpForUI() {
+  return scoped_ptr<base::MessagePump>(new NestedMessagePumpAndroid());
 };
 #endif
 

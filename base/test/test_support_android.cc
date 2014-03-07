@@ -133,8 +133,8 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
   }
 };
 
-base::MessagePump* CreateMessagePumpForUIStub() {
-  return new MessagePumpForUIStub();
+scoped_ptr<base::MessagePump> CreateMessagePumpForUIStub() {
+  return scoped_ptr<base::MessagePump>(new MessagePumpForUIStub());
 };
 
 // Provides the test path for DIR_MODULE and DIR_ANDROID_APP_DATA.

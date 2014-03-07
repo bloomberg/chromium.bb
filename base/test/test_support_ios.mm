@@ -151,9 +151,9 @@ static char** g_argv;
 
 namespace {
 
-base::MessagePump* CreateMessagePumpForUIForTests() {
+scoped_ptr<base::MessagePump> CreateMessagePumpForUIForTests() {
   // A default MessagePump will do quite nicely in tests.
-  return new base::MessagePumpDefault();
+  return scoped_ptr<base::MessagePump>(new base::MessagePumpDefault());
 }
 
 }  // namespace
