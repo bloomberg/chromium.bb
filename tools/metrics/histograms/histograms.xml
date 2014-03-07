@@ -27989,6 +27989,7 @@ other types of suffix sets.
   <int value="282" label="HTMLMediaElementSeekToFragmentEnd"/>
   <int value="283" label="PrefixedWindowURL"/>
   <int value="284" label="PrefixedWorkerURL"/>
+  <int value="285" label="WindowOrientation"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
