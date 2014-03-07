@@ -1210,7 +1210,7 @@ bool RenderStyle::setFontDescription(const FontDescription& v)
     return false;
 }
 
-Length RenderStyle::specifiedLineHeight() const { return inherited->line_height; }
+const Length& RenderStyle::specifiedLineHeight() const { return inherited->line_height; }
 Length RenderStyle::lineHeight() const
 {
     const Length& lh = inherited->line_height;

@@ -66,8 +66,8 @@ public:
     ~FillLayer();
 
     StyleImage* image() const { return m_image.get(); }
-    Length xPosition() const { return m_xPosition; }
-    Length yPosition() const { return m_yPosition; }
+    const Length& xPosition() const { return m_xPosition; }
+    const Length& yPosition() const { return m_yPosition; }
     BackgroundEdgeOrigin backgroundXOrigin() const { return static_cast<BackgroundEdgeOrigin>(m_backgroundXOrigin); }
     BackgroundEdgeOrigin backgroundYOrigin() const { return static_cast<BackgroundEdgeOrigin>(m_backgroundYOrigin); }
     EFillAttachment attachment() const { return static_cast<EFillAttachment>(m_attachment); }
@@ -77,7 +77,7 @@ public:
     EFillRepeat repeatY() const { return static_cast<EFillRepeat>(m_repeatY); }
     CompositeOperator composite() const { return static_cast<CompositeOperator>(m_composite); }
     blink::WebBlendMode blendMode() const { return static_cast<blink::WebBlendMode>(m_blendMode); }
-    LengthSize sizeLength() const { return m_sizeLength; }
+    const LengthSize& sizeLength() const { return m_sizeLength; }
     EFillSizeType sizeType() const { return static_cast<EFillSizeType>(m_sizeType); }
     FillSize size() const { return FillSize(static_cast<EFillSizeType>(m_sizeType), m_sizeLength); }
     EMaskSourceType maskSourceType() const { return static_cast<EMaskSourceType>(m_maskSourceType); }

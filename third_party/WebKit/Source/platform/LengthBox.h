@@ -69,18 +69,18 @@ public:
     {
     }
 
-    Length left() const { return m_left; }
-    Length right() const { return m_right; }
-    Length top() const { return m_top; }
-    Length bottom() const { return m_bottom; }
+    const Length& left() const { return m_left; }
+    const Length& right() const { return m_right; }
+    const Length& top() const { return m_top; }
+    const Length& bottom() const { return m_bottom; }
 
-    Length logicalLeft(WritingMode) const;
-    Length logicalRight(WritingMode) const;
+    const Length& logicalLeft(WritingMode) const;
+    const Length& logicalRight(WritingMode) const;
 
-    Length before(WritingMode) const;
-    Length after(WritingMode) const;
-    Length start(WritingMode, TextDirection) const;
-    Length end(WritingMode, TextDirection) const;
+    const Length& before(WritingMode) const;
+    const Length& after(WritingMode) const;
+    const Length& start(WritingMode, TextDirection) const;
+    const Length& end(WritingMode, TextDirection) const;
 
     bool operator==(const LengthBox& o) const
     {

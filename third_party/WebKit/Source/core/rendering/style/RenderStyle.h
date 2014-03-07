@@ -442,16 +442,16 @@ public:
     EDisplay display() const { return static_cast<EDisplay>(noninherited_flags._effectiveDisplay); }
     EDisplay originalDisplay() const { return static_cast<EDisplay>(noninherited_flags._originalDisplay); }
 
-    Length left() const { return surround->offset.left(); }
-    Length right() const { return surround->offset.right(); }
-    Length top() const { return surround->offset.top(); }
-    Length bottom() const { return surround->offset.bottom(); }
+    const Length& left() const { return surround->offset.left(); }
+    const Length& right() const { return surround->offset.right(); }
+    const Length& top() const { return surround->offset.top(); }
+    const Length& bottom() const { return surround->offset.bottom(); }
 
     // Accessors for positioned object edges that take into account writing mode.
-    Length logicalLeft() const { return surround->offset.logicalLeft(writingMode()); }
-    Length logicalRight() const { return surround->offset.logicalRight(writingMode()); }
-    Length logicalTop() const { return surround->offset.before(writingMode()); }
-    Length logicalBottom() const { return surround->offset.after(writingMode()); }
+    const Length& logicalLeft() const { return surround->offset.logicalLeft(writingMode()); }
+    const Length& logicalRight() const { return surround->offset.logicalRight(writingMode()); }
+    const Length& logicalTop() const { return surround->offset.before(writingMode()); }
+    const Length& logicalBottom() const { return surround->offset.after(writingMode()); }
 
     // Whether or not a positioned element requires normal flow x/y to be computed
     // to determine its position.
@@ -466,19 +466,19 @@ public:
     bool hasViewportConstrainedPosition() const { return position() == FixedPosition || position() == StickyPosition; }
     EFloat floating() const { return static_cast<EFloat>(noninherited_flags._floating); }
 
-    Length width() const { return m_box->width(); }
-    Length height() const { return m_box->height(); }
-    Length minWidth() const { return m_box->minWidth(); }
-    Length maxWidth() const { return m_box->maxWidth(); }
-    Length minHeight() const { return m_box->minHeight(); }
-    Length maxHeight() const { return m_box->maxHeight(); }
+    const Length& width() const { return m_box->width(); }
+    const Length& height() const { return m_box->height(); }
+    const Length& minWidth() const { return m_box->minWidth(); }
+    const Length& maxWidth() const { return m_box->maxWidth(); }
+    const Length& minHeight() const { return m_box->minHeight(); }
+    const Length& maxHeight() const { return m_box->maxHeight(); }
 
-    Length logicalWidth() const { return isHorizontalWritingMode() ? width() : height(); }
-    Length logicalHeight() const { return isHorizontalWritingMode() ? height() : width(); }
-    Length logicalMinWidth() const { return isHorizontalWritingMode() ? minWidth() : minHeight(); }
-    Length logicalMaxWidth() const { return isHorizontalWritingMode() ? maxWidth() : maxHeight(); }
-    Length logicalMinHeight() const { return isHorizontalWritingMode() ? minHeight() : minWidth(); }
-    Length logicalMaxHeight() const { return isHorizontalWritingMode() ? maxHeight() : maxWidth(); }
+    const Length& logicalWidth() const { return isHorizontalWritingMode() ? width() : height(); }
+    const Length& logicalHeight() const { return isHorizontalWritingMode() ? height() : width(); }
+    const Length& logicalMinWidth() const { return isHorizontalWritingMode() ? minWidth() : minHeight(); }
+    const Length& logicalMaxWidth() const { return isHorizontalWritingMode() ? maxWidth() : maxHeight(); }
+    const Length& logicalMinHeight() const { return isHorizontalWritingMode() ? minHeight() : minWidth(); }
+    const Length& logicalMaxHeight() const { return isHorizontalWritingMode() ? maxHeight() : maxWidth(); }
 
     const BorderData& border() const { return surround->border; }
     const BorderValue& borderLeft() const { return surround->border.left(); }
@@ -493,14 +493,14 @@ public:
 
     const NinePieceImage& borderImage() const { return surround->border.image(); }
     StyleImage* borderImageSource() const { return surround->border.image().image(); }
-    LengthBox borderImageSlices() const { return surround->border.image().imageSlices(); }
+    const LengthBox& borderImageSlices() const { return surround->border.image().imageSlices(); }
     const BorderImageLengthBox& borderImageWidth() const { return surround->border.image().borderSlices(); }
     const BorderImageLengthBox& borderImageOutset() const { return surround->border.image().outset(); }
 
-    LengthSize borderTopLeftRadius() const { return surround->border.topLeft(); }
-    LengthSize borderTopRightRadius() const { return surround->border.topRight(); }
-    LengthSize borderBottomLeftRadius() const { return surround->border.bottomLeft(); }
-    LengthSize borderBottomRightRadius() const { return surround->border.bottomRight(); }
+    const LengthSize& borderTopLeftRadius() const { return surround->border.topLeft(); }
+    const LengthSize& borderTopRightRadius() const { return surround->border.topRight(); }
+    const LengthSize& borderBottomLeftRadius() const { return surround->border.bottomLeft(); }
+    const LengthSize& borderBottomRightRadius() const { return surround->border.bottomRight(); }
     bool hasBorderRadius() const { return surround->border.hasBorderRadius(); }
 
     unsigned borderLeftWidth() const { return surround->border.borderLeftWidth(); }
@@ -540,13 +540,13 @@ public:
 
     EVisibility visibility() const { return static_cast<EVisibility>(inherited_flags._visibility); }
     EVerticalAlign verticalAlign() const { return static_cast<EVerticalAlign>(noninherited_flags._vertical_align); }
-    Length verticalAlignLength() const { return m_box->verticalAlign(); }
+    const Length& verticalAlignLength() const { return m_box->verticalAlign(); }
 
-    Length clipLeft() const { return visual->clip.left(); }
-    Length clipRight() const { return visual->clip.right(); }
-    Length clipTop() const { return visual->clip.top(); }
-    Length clipBottom() const { return visual->clip.bottom(); }
-    LengthBox clip() const { return visual->clip; }
+    const Length& clipLeft() const { return visual->clip.left(); }
+    const Length& clipRight() const { return visual->clip.right(); }
+    const Length& clipTop() const { return visual->clip.top(); }
+    const Length& clipBottom() const { return visual->clip.bottom(); }
+    const LengthBox& clip() const { return visual->clip; }
     bool hasClip() const { return visual->hasClip; }
 
     EUnicodeBidi unicodeBidi() const { return static_cast<EUnicodeBidi>(noninherited_flags._unicodeBidi); }
@@ -564,7 +564,7 @@ public:
 
     float textAutosizingMultiplier() const { return visual->m_textAutosizingMultiplier; }
 
-    Length textIndent() const { return rareInheritedData->indent; }
+    const Length& textIndent() const { return rareInheritedData->indent; }
     TextIndentLine textIndentLine() const { return static_cast<TextIndentLine>(rareInheritedData->m_textIndentLine); }
     ETextAlign textAlign() const { return static_cast<ETextAlign>(inherited_flags._text_align); }
     TextAlignLast textAlignLast() const { return static_cast<TextAlignLast>(rareInheritedData->m_textAlignLast); }
@@ -583,7 +583,7 @@ public:
     TextDirection direction() const { return static_cast<TextDirection>(inherited_flags._direction); }
     bool isLeftToRightDirection() const { return direction() == LTR; }
 
-    Length specifiedLineHeight() const;
+    const Length& specifiedLineHeight() const;
     Length lineHeight() const;
     int computedLineHeight() const;
 
@@ -649,10 +649,10 @@ public:
     EFillAttachment backgroundAttachment() const { return static_cast<EFillAttachment>(m_background->background().attachment()); }
     EFillBox backgroundClip() const { return static_cast<EFillBox>(m_background->background().clip()); }
     EFillBox backgroundOrigin() const { return static_cast<EFillBox>(m_background->background().origin()); }
-    Length backgroundXPosition() const { return m_background->background().xPosition(); }
-    Length backgroundYPosition() const { return m_background->background().yPosition(); }
+    const Length& backgroundXPosition() const { return m_background->background().xPosition(); }
+    const Length& backgroundYPosition() const { return m_background->background().yPosition(); }
     EFillSizeType backgroundSizeType() const { return m_background->background().sizeType(); }
-    LengthSize backgroundSizeLength() const { return m_background->background().sizeLength(); }
+    const LengthSize& backgroundSizeLength() const { return m_background->background().sizeLength(); }
     FillLayer* accessBackgroundLayers() { return &(m_background.access()->m_background); }
     const FillLayer* backgroundLayers() const { return &(m_background->background()); }
 
@@ -662,16 +662,16 @@ public:
     CompositeOperator maskComposite() const { return static_cast<CompositeOperator>(rareNonInheritedData->m_mask.composite()); }
     EFillBox maskClip() const { return static_cast<EFillBox>(rareNonInheritedData->m_mask.clip()); }
     EFillBox maskOrigin() const { return static_cast<EFillBox>(rareNonInheritedData->m_mask.origin()); }
-    Length maskXPosition() const { return rareNonInheritedData->m_mask.xPosition(); }
-    Length maskYPosition() const { return rareNonInheritedData->m_mask.yPosition(); }
+    const Length& maskXPosition() const { return rareNonInheritedData->m_mask.xPosition(); }
+    const Length& maskYPosition() const { return rareNonInheritedData->m_mask.yPosition(); }
     EFillSizeType maskSizeType() const { return rareNonInheritedData->m_mask.sizeType(); }
-    LengthSize maskSizeLength() const { return rareNonInheritedData->m_mask.sizeLength(); }
+    const LengthSize& maskSizeLength() const { return rareNonInheritedData->m_mask.sizeLength(); }
     FillLayer* accessMaskLayers() { return &(rareNonInheritedData.access()->m_mask); }
     const FillLayer* maskLayers() const { return &(rareNonInheritedData->m_mask); }
 
     const NinePieceImage& maskBoxImage() const { return rareNonInheritedData->m_maskBoxImage; }
     StyleImage* maskBoxImageSource() const { return rareNonInheritedData->m_maskBoxImage.image(); }
-    LengthBox maskBoxImageSlices() const { return rareNonInheritedData->m_maskBoxImage.imageSlices(); }
+    const LengthBox& maskBoxImageSlices() const { return rareNonInheritedData->m_maskBoxImage.imageSlices(); }
     bool maskBoxImageSlicesFill() const { return rareNonInheritedData->m_maskBoxImage.fill(); }
     const BorderImageLengthBox& maskBoxImageWidth() const { return rareNonInheritedData->m_maskBoxImage.borderSlices(); }
     const BorderImageLengthBox& maskBoxImageOutset() const { return rareNonInheritedData->m_maskBoxImage.outset(); }
@@ -686,28 +686,28 @@ public:
     StyleImage* listStyleImage() const;
     EListStylePosition listStylePosition() const { return static_cast<EListStylePosition>(inherited_flags._list_style_position); }
 
-    Length marginTop() const { return surround->margin.top(); }
-    Length marginBottom() const { return surround->margin.bottom(); }
-    Length marginLeft() const { return surround->margin.left(); }
-    Length marginRight() const { return surround->margin.right(); }
-    Length marginBefore() const { return surround->margin.before(writingMode()); }
-    Length marginAfter() const { return surround->margin.after(writingMode()); }
-    Length marginStart() const { return surround->margin.start(writingMode(), direction()); }
-    Length marginEnd() const { return surround->margin.end(writingMode(), direction()); }
-    Length marginStartUsing(const RenderStyle* otherStyle) const { return surround->margin.start(otherStyle->writingMode(), otherStyle->direction()); }
-    Length marginEndUsing(const RenderStyle* otherStyle) const { return surround->margin.end(otherStyle->writingMode(), otherStyle->direction()); }
-    Length marginBeforeUsing(const RenderStyle* otherStyle) const { return surround->margin.before(otherStyle->writingMode()); }
-    Length marginAfterUsing(const RenderStyle* otherStyle) const { return surround->margin.after(otherStyle->writingMode()); }
+    const Length& marginTop() const { return surround->margin.top(); }
+    const Length& marginBottom() const { return surround->margin.bottom(); }
+    const Length& marginLeft() const { return surround->margin.left(); }
+    const Length& marginRight() const { return surround->margin.right(); }
+    const Length& marginBefore() const { return surround->margin.before(writingMode()); }
+    const Length& marginAfter() const { return surround->margin.after(writingMode()); }
+    const Length& marginStart() const { return surround->margin.start(writingMode(), direction()); }
+    const Length& marginEnd() const { return surround->margin.end(writingMode(), direction()); }
+    const Length& marginStartUsing(const RenderStyle* otherStyle) const { return surround->margin.start(otherStyle->writingMode(), otherStyle->direction()); }
+    const Length& marginEndUsing(const RenderStyle* otherStyle) const { return surround->margin.end(otherStyle->writingMode(), otherStyle->direction()); }
+    const Length& marginBeforeUsing(const RenderStyle* otherStyle) const { return surround->margin.before(otherStyle->writingMode()); }
+    const Length& marginAfterUsing(const RenderStyle* otherStyle) const { return surround->margin.after(otherStyle->writingMode()); }
 
-    LengthBox paddingBox() const { return surround->padding; }
-    Length paddingTop() const { return surround->padding.top(); }
-    Length paddingBottom() const { return surround->padding.bottom(); }
-    Length paddingLeft() const { return surround->padding.left(); }
-    Length paddingRight() const { return surround->padding.right(); }
-    Length paddingBefore() const { return surround->padding.before(writingMode()); }
-    Length paddingAfter() const { return surround->padding.after(writingMode()); }
-    Length paddingStart() const { return surround->padding.start(writingMode(), direction()); }
-    Length paddingEnd() const { return surround->padding.end(writingMode(), direction()); }
+    const LengthBox& paddingBox() const { return surround->padding; }
+    const Length& paddingTop() const { return surround->padding.top(); }
+    const Length& paddingBottom() const { return surround->padding.bottom(); }
+    const Length& paddingLeft() const { return surround->padding.left(); }
+    const Length& paddingRight() const { return surround->padding.right(); }
+    const Length& paddingBefore() const { return surround->padding.before(writingMode()); }
+    const Length& paddingAfter() const { return surround->padding.after(writingMode()); }
+    const Length& paddingStart() const { return surround->padding.start(writingMode(), direction()); }
+    const Length& paddingEnd() const { return surround->padding.end(writingMode(), direction()); }
 
     ECursor cursor() const { return static_cast<ECursor>(inherited_flags._cursor_style); }
     CursorList* cursors() const { return rareInheritedData->cursorData.get(); }
@@ -760,7 +760,7 @@ public:
     const Vector<String>& callbackSelectors() const { return rareNonInheritedData->m_callbackSelectors; }
     float flexGrow() const { return rareNonInheritedData->m_flexibleBox->m_flexGrow; }
     float flexShrink() const { return rareNonInheritedData->m_flexibleBox->m_flexShrink; }
-    Length flexBasis() const { return rareNonInheritedData->m_flexibleBox->m_flexBasis; }
+    const Length& flexBasis() const { return rareNonInheritedData->m_flexibleBox->m_flexBasis; }
     EAlignContent alignContent() const { return static_cast<EAlignContent>(rareNonInheritedData->m_alignContent); }
     ItemPosition alignItems() const { return static_cast<ItemPosition>(rareNonInheritedData->m_alignItems); }
     OverflowAlignment alignItemsOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_alignItemsOverflowAlignment); }
@@ -805,7 +805,7 @@ public:
     bool reflectionDataEquivalent(const RenderStyle* otherStyle) const { return rareNonInheritedData->reflectionDataEquivalent(*otherStyle->rareNonInheritedData); }
 
     EBoxSizing boxSizing() const { return m_box->boxSizing(); }
-    Length marqueeIncrement() const { return rareNonInheritedData->m_marquee->increment; }
+    const Length& marqueeIncrement() const { return rareNonInheritedData->m_marquee->increment; }
     int marqueeSpeed() const { return rareNonInheritedData->m_marquee->speed; }
     int marqueeLoopCount() const { return rareNonInheritedData->m_marquee->loops; }
     EMarqueeBehavior marqueeBehavior() const { return static_cast<EMarqueeBehavior>(rareNonInheritedData->m_marquee->behavior); }
@@ -856,8 +856,8 @@ public:
     EPageBreak columnBreakInside() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakInside); }
     EPageBreak columnBreakAfter() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakAfter); }
     const TransformOperations& transform() const { return rareNonInheritedData->m_transform->m_operations; }
-    Length transformOriginX() const { return rareNonInheritedData->m_transform->m_x; }
-    Length transformOriginY() const { return rareNonInheritedData->m_transform->m_y; }
+    const Length& transformOriginX() const { return rareNonInheritedData->m_transform->m_x; }
+    const Length& transformOriginY() const { return rareNonInheritedData->m_transform->m_y; }
     float transformOriginZ() const { return rareNonInheritedData->m_transform->m_z; }
     bool hasTransform() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     bool transformDataEquivalent(const RenderStyle* otherStyle) const { return rareNonInheritedData->m_transform == otherStyle->rareNonInheritedData->m_transform; }
@@ -914,9 +914,9 @@ public:
     EBackfaceVisibility backfaceVisibility() const { return static_cast<EBackfaceVisibility>(rareNonInheritedData->m_backfaceVisibility); }
     float perspective() const { return rareNonInheritedData->m_perspective; }
     bool hasPerspective() const { return rareNonInheritedData->m_perspective > 0; }
-    Length perspectiveOriginX() const { return rareNonInheritedData->m_perspectiveOriginX; }
-    Length perspectiveOriginY() const { return rareNonInheritedData->m_perspectiveOriginY; }
-    LengthSize pageSize() const { return rareNonInheritedData->m_pageSize; }
+    const Length& perspectiveOriginX() const { return rareNonInheritedData->m_perspectiveOriginX; }
+    const Length& perspectiveOriginY() const { return rareNonInheritedData->m_perspectiveOriginY; }
+    const LengthSize& pageSize() const { return rareNonInheritedData->m_pageSize; }
     PageSizeType pageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
 
     // When set, this ensures that styles compare as different. Used during accelerated animations.
@@ -1460,11 +1460,11 @@ public:
 
     static ClipPathOperation* initialClipPath() { return 0; }
 
-    Length shapePadding() const { return rareNonInheritedData->m_shapePadding; }
+    const Length& shapePadding() const { return rareNonInheritedData->m_shapePadding; }
     void setShapePadding(Length shapePadding) { SET_VAR(rareNonInheritedData, m_shapePadding, shapePadding); }
     static Length initialShapePadding() { return Length(0, Fixed); }
 
-    Length shapeMargin() const { return rareNonInheritedData->m_shapeMargin; }
+    const Length& shapeMargin() const { return rareNonInheritedData->m_shapeMargin; }
     void setShapeMargin(Length shapeMargin) { SET_VAR(rareNonInheritedData, m_shapeMargin, shapeMargin); }
     static Length initialShapeMargin() { return Length(0, Fixed); }
 
