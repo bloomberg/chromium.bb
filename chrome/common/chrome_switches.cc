@@ -1607,9 +1607,6 @@ const char kForceImmersive[]                = "force-immersive";
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceDesktop[]                  = "force-desktop";
 
-// Enable conversion from vector to raster for any page.
-const char kPrintRaster[]                   = "print-raster";
-
 // Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
 const char kRelaunchShortcut[]              = "relaunch-shortcut";
 

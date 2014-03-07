@@ -453,7 +453,6 @@ extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kForceDesktop[];
 extern const char kForceImmersive[];
-extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
 extern const char kViewerConnect[];
 extern const char kViewerLaunchViaAppId[];
