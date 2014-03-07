@@ -377,21 +377,33 @@ IN_PROC_BROWSER_TEST_F(
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio) {
+                       TestGetUserMediaAspectRatio4To3) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_4_3 = GenerateGetUserMediaCall(
       kGetUserMediaAndAnalyseAndStop, 640, 640, 480, 480, 30, 30);
-  std::string constraints_16_9 = GenerateGetUserMediaCall(
-      kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 30, 30);
 
   // TODO(mcasas): add more aspect ratios, in particular 16:10 crbug.com/275594.
 
   NavigateToURL(shell(), url);
   ASSERT_TRUE(ExecuteJavascript(constraints_4_3));
   ExpectTitle("4:3 letterbox");
+}
+
+// This test calls getUserMedia and checks for aspect ratio behavior.
+// TODO(perkj): Enable this test as soon as crbug/349450 is fixed.
+// Currently the render pipeline doesn't support cropping where the new cropped
+// frame doesn't have the same top left coordinates as the original frame.
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       DISABLED_TestGetUserMediaAspectRatio16To9) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  std::string constraints_16_9 = GenerateGetUserMediaCall(
+      kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 30, 30);
 
   NavigateToURL(shell(), url);
   ASSERT_TRUE(ExecuteJavascript(constraints_16_9));

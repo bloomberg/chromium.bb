@@ -136,8 +136,8 @@ class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
   virtual void OnFrameCaptured(
       const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
     ++number_of_capturered_frames_;
-    width_ = frame->coded_size().width();
-    height_ = frame->coded_size().height();
+    width_ = frame->visible_rect().width();
+    height_ = frame->visible_rect().height();
   }
 
   int GetLastFrameWidth() const {

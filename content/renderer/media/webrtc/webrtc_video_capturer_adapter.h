@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame.h"
@@ -44,10 +46,18 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
                                     cricket::VideoFormat* best_format) OVERRIDE;
   virtual bool IsScreencast() const OVERRIDE;
 
+  void UpdateI420Buffer(const scoped_refptr<media::VideoFrame>& src);
+
  private:
   const bool is_screencast_;
   bool running_;
   base::TimeDelta first_frame_timestamp_;
+  // |buffer_| used if cropping is needed. It is created only if needed and
+  // owned by WebRtcVideoCapturerAdapter. If its created, it exists until
+  // WebRtcVideoCapturerAdapter is destroyed.
+  uint8* buffer_;
+  size_t buffer_size_;
+  scoped_ptr<cricket::CapturedFrame> captured_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCapturerAdapter);
 };

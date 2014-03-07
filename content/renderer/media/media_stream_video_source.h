@@ -12,6 +12,7 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_pool.h"
 #include "media/video/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -118,11 +119,13 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Finds the first constraints in |requested_constraints_| that can be
   // fulfilled. |best_format| is set to the video resolution that can be
-  // fulfilled. |resulting_constraints| is set to the found constraints in
+  // fulfilled. |frame_output_size| is the requested frame size after cropping.
+  // |resulting_constraints| is set to the found constraints in
   // |requested_constraints_|.
   bool FindBestFormatWithConstraints(
       const media::VideoCaptureFormats& formats,
       media::VideoCaptureFormat* best_format,
+      gfx::Size* frame_output_size,
       blink::WebMediaConstraints* resulting_constraints);
 
   // Trigger all cached callbacks from AddTrack. AddTrack is successful
@@ -141,6 +144,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   media::VideoCaptureFormat current_format_;
   blink::WebMediaConstraints current_constraints_;
+  gfx::Size frame_output_size_;
 
   struct RequestedConstraints {
     RequestedConstraints(const blink::WebMediaConstraints& constraints,

@@ -64,8 +64,6 @@ class MediaStreamVideoSourceTest
     formats.push_back(media::VideoCaptureFormat(
         gfx::Size(640, 480), 30, media::PIXEL_FORMAT_I420));
     formats.push_back(media::VideoCaptureFormat(
-        gfx::Size(640, 400), 30, media::PIXEL_FORMAT_I420));
-    formats.push_back(media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420));
     formats.push_back(media::VideoCaptureFormat(
         gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420));
@@ -129,6 +127,34 @@ class MediaStreamVideoSourceTest
   }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
+
+  // Test that the source crops to the requested max width and
+  // height even though the camera delivers a larger frame.
+  // TODO(perkj): Frame resolution should be verified in MediaStreamVideoTrack
+  // and not in the adapter.
+  void TestSourceCropFrame(int capture_width,
+                           int capture_height,
+                           const blink::WebMediaConstraints& constraints,
+                           int expected_height,
+                           int expected_width) {
+    // Expect the source to start capture with the supported resolution.
+    CreateTrackAndStartSource(constraints, capture_width, capture_height , 30);
+
+    ASSERT_TRUE(mock_source()->GetAdapter());
+    MockVideoSource* adapter = static_cast<MockVideoSource*>(
+        mock_source()->GetAdapter());
+    EXPECT_EQ(0, adapter->GetFrameNum());
+
+    scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateBlackFrame(gfx::Size(capture_width,
+                                                      capture_height));
+    mock_source()->DeliverVideoFrame(frame);
+    EXPECT_EQ(1, adapter->GetFrameNum());
+
+    // Expect the delivered frame to be cropped.
+    EXPECT_EQ(expected_height, adapter->GetLastFrameWidth());
+    EXPECT_EQ(expected_width, adapter->GetLastFrameHeight());
+  }
 
  private:
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
@@ -352,5 +378,47 @@ TEST_F(MediaStreamVideoSourceTest, AdapterReceiveVideoFrame) {
              adapter->GetLastFrameHeight());
 }
 
+// Test that the source crops to the requested max width and
+// height even though the camera delivers a larger frame.
+TEST_F(MediaStreamVideoSourceTest, DeliverCroppedVideoFrameOptional640360) {
+  ConstraintsFactory factory;
+  factory.AddOptional(MediaStreamVideoSource::kMaxWidth, 640);
+  factory.AddOptional(MediaStreamVideoSource::kMaxHeight, 360);
+  TestSourceCropFrame(640, 480, factory.CreateConstraints(), 640, 360);
+}
+
+TEST_F(MediaStreamVideoSourceTest, DeliverCroppedVideoFrameMandatory640360) {
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMaxWidth, 640);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxHeight, 360);
+  TestSourceCropFrame(640, 480, factory.CreateConstraints(), 640, 360);
+}
+
+TEST_F(MediaStreamVideoSourceTest, DeliverCroppedVideoFrameMandatory732489) {
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMaxWidth, 732);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxHeight, 489);
+  factory.AddMandatory(MediaStreamVideoSource::kMinWidth, 732);
+  factory.AddMandatory(MediaStreamVideoSource::kMinWidth, 489);
+  TestSourceCropFrame(1280, 720, factory.CreateConstraints(), 732, 489);
+}
+
+// Test that the source crops to the requested max width and
+// height even though the requested frame has odd size.
+TEST_F(MediaStreamVideoSourceTest, DeliverCroppedVideoFrame637359) {
+  ConstraintsFactory factory;
+  factory.AddOptional(MediaStreamVideoSource::kMaxWidth, 637);
+  factory.AddOptional(MediaStreamVideoSource::kMaxHeight, 359);
+  TestSourceCropFrame(640, 480, factory.CreateConstraints(), 637, 359);
+}
+
+TEST_F(MediaStreamVideoSourceTest, DeliverSmallerSizeWhenTooLargeMax) {
+  ConstraintsFactory factory;
+  factory.AddOptional(MediaStreamVideoSource::kMaxWidth, 1920);
+  factory.AddOptional(MediaStreamVideoSource::kMaxHeight, 1080);
+  factory.AddOptional(MediaStreamVideoSource::kMinWidth, 1280);
+  factory.AddOptional(MediaStreamVideoSource::kMinHeight, 720);
+  TestSourceCropFrame(1280, 720, factory.CreateConstraints(), 1280, 720);
+}
 
 }  // namespace content
