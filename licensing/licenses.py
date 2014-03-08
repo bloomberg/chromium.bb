@@ -24,7 +24,6 @@ Recommended build:
   export board=x86-alex
   sudo rm -rf /build/$board
   cd ~/trunk/src/scripts
-  ./setup_board --board=$board
   # If you wonder why we need to build
   # chromeos just to run emerge -p -v chromeos-base/chromeos on it, we don't.
   # However, later we run ebuild unpack, and this will apply patches and run
@@ -34,6 +33,9 @@ Recommended build:
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
   cd ~/trunk/chromite/licensing
+  # This removes left over packages from an earlier build that could cause
+  # conflicts.
+  eclean-$board packages
   %(prog)s [--debug] [--all-packages] --board $board -o out.html 2>&1 | tee out
 
 You can check the licenses and/or generate a HTML file for a list of
@@ -73,10 +75,13 @@ The detailed process is listed below.
 
   When uploading, you may get a warning for file being too large to
   upload. In this case, your CL can still be reviewed. Always include
-  the diff in your commit message so that the reviwers know what the
-  changes are. You can add reviewers on the reivew page by clicking on
+  the diff in your commit message so that the reviewers know what the
+  changes are. You can add reviewers on the review page by clicking on
   "Edit issue".  (A quick reference:
   http://www.chromium.org/developers/quick-reference)
+
+  Make sure you click on 'Publish+Mail Comments' after adding reviewers
+  (the review URL looks like this https://codereview.chromium.org/183883018/ ).
 
 * After receiving LGTMs, commit your change with 'gcl commit <change_name>'.
 
@@ -252,19 +257,15 @@ SKIPPED_PACKAGES = [
     'x11-proto/xproto',
 ]
 
-# TODO(merlin): replace matching with regex matching to simplify this
-# Matching is done in lowercase, you MUST give lowercase names.
-LICENSE_FILENAMES = [
-    'copying',
-    'copyright',
-    'ipa_font_license_agreement_v1.0.txt',  # used by ja-ipafonts
-    'licence',        # used by openssh
-    'license',
-    'license.txt',    # used by hdparm, NumPy, glew
-    'licensing.txt',  # used by libatomic_ops
+LICENSE_NAMES_REGEX = [
+    r'^copyright$',
+    r'^copyright[.]txt$',
+    r'^copyright[.]regex$',                       # llvm
+    r'^copying.*$',
+    r'^licen[cs]e.*$',
+    r'^licensing.*$',                             # libatomic_ops
+    r'^ipa_font_license_agreement_v1[.]0[.]txt$', # ja-ipafonts
 ]
-# FIXME, allow for these licenses to be regexes instead. For instance,
-# sys-apps/util-linux-2.21.2-r1 should show Documentation/licenses/COPYING.BSD-3
 
 # These are _temporary_ license mappings for packages that do not have a valid
 # shared/custom license, or LICENSE file we can use.
@@ -288,7 +289,7 @@ PACKAGE_LICENSES = {
     # either BSD-Google, or BSD-Google,Google-TOS depending on how it was
     # built. We bypass this problem for now by hardcoding the Google-TOS bit as
     # per ChromeOS with non free bits
-    'chromesos-base/chromeos-chrome': ['BSD-Google', 'Google-TOS'],
+    'chromeos-base/chromeos-chrome': ['BSD-Google', 'Google-TOS'],
 
     # Currently the code cannot parse LGPL-3 || ( LGPL-2.1 MPL-1.1 )
     'dev-python/pycairo': ['LGPL-3', 'LGPL-2.1'],
@@ -536,7 +537,7 @@ class PackageInfo(object):
     plain absent, in other cases, it could be in a filename we don't look for).
 
     Otherwise, we scan the unpacked source code for what looks like license
-    files as defined in LICENSE_FILENAMES.
+    files as defined in LICENSE_NAMES_REGEX.
 
     Raises:
       AssertionError: on runtime errors
@@ -592,8 +593,17 @@ class PackageInfo(object):
     files = [x[len(workdir):].lstrip('/') for x in result]
     license_files = []
     for name in files:
-      if os.path.basename(name).lower() in LICENSE_FILENAMES:
-        license_files.append(name)
+      basename = os.path.basename(name)
+      for regex in LICENSE_NAMES_REGEX:
+        if (re.search(regex, basename, re.IGNORECASE) and
+            # Looking for license.* brings up things like license.gpl, and we
+            # never want a GPL license when looking for copyright attribution,
+            # so we skip them here. We also skip regexes that can return
+            # license.py (seen in some code).
+            not re.search(r".*GPL.*", basename) and
+            not re.search(r"\.py$", basename)):
+          license_files.append(name)
+          break
 
     if not license_files:
       if self.need_copyright_attribution:
@@ -611,7 +621,7 @@ LICENSE="BSD-Google"
 If not, go investigate the unpacked source in %s,
 and find which license to assign.  Once you found it, you should copy that
 license to a file under %s
-(or you can modify LICENSE_FILENAMES to pickup a license file that isn't
+(or you can modify LICENSE_NAMES_REGEX to pickup a license file that isn't
 being scraped currently).""",
                       self.fullnamerev, workdir, COPYRIGHT_ATTRIBUTION_DIR)
         raise PackageLicenseError()
@@ -672,11 +682,16 @@ being scraped currently).""",
 
     try:
       cpv = portage_utilities.SplitCPV(fullnamewithrev)
-      (self.category, self.name, self.version, self.revision) = (
-          cpv.category, cpv.package, cpv.version_no_rev, cpv.rev)
+      # A bad package can either raise a TypeError exception or return None,
+      # so we catch both cases.
+      if not cpv:
+        raise TypeError
     except TypeError:
       raise AssertionError("portage couldn't find %s, missing version number?" %
                            fullnamewithrev)
+
+    (self.category, self.name, self.version, self.revision) = (
+        cpv.category, cpv.package, cpv.version_no_rev, cpv.rev)
 
     if self.revision is not None:
       self.revision = str(self.revision).lstrip('r')
@@ -1145,11 +1160,19 @@ def ListInstalledPackages(board, all_packages=False):
 
     packages = []
     # [binary   R    ] x11-libs/libva-1.1.1 to /build/x86-alex/
-    pkg_rgx = re.compile(r'\[[^]]+\] (.+) to /build/.*')
+    pkg_rgx = re.compile(r'\[[^]]+R[^]]+\] (.+) to /build/.*')
+    # If we match something else without the 'R' like
+    # [binary     U  ] chromeos-base/pepper-flash-13.0.0.133-r1 [12.0.0.77-r1]
+    # this is bad and we should die on this.
+    pkg_rgx2 = re.compile(r'(\[[^]]+\] .+) to /build/.*')
     for line in emerge:
       match = pkg_rgx.search(line)
+      match2 = pkg_rgx2.search(line)
       if match:
         packages.append(match.group(1))
+      elif match2:
+        raise AssertionError("Package incorrectly installed, try eclean-%s" %
+                             board, "\n%s" % match2.group(1))
 
   return packages
 
@@ -1227,8 +1250,9 @@ def main(args):
                       help="check the license of the package, e.g.,"
                       "dev-libs/libatomic_ops-7.2d")
   parser.add_argument("-a", "--all-packages", action="store_true",
+                      dest="all_packages",
                       help="Run licensing against all packages in the "
-                      "build tree", dest="all_packages"),
+                      "build tree")
   parser.add_argument("-o", "--output", type="path",
                       help="which html file to create with output")
   opts = parser.parse_args(args)
