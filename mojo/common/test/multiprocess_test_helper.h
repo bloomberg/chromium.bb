@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_TEST_MULTIPROCESS_TEST_BASE_H_
-#define MOJO_COMMON_TEST_MULTIPROCESS_TEST_BASE_H_
+#ifndef MOJO_COMMON_TEST_MULTIPROCESS_TEST_HELPER_H_
+#define MOJO_COMMON_TEST_MULTIPROCESS_TEST_HELPER_H_
 
 #include <string>
 
@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/process/process_handle.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/test_timeouts.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -22,13 +23,10 @@ class PlatformChannelPair;
 
 namespace test {
 
-class MultiprocessTestBase : public base::MultiProcessTest {
+class MultiprocessTestHelper {
  public:
-  MultiprocessTestBase();
-  virtual ~MultiprocessTestBase();
-
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  MultiprocessTestHelper();
+  ~MultiprocessTestHelper();
 
   // Start a child process and run the "main" function "named" |test_child_name|
   // declared using |MOJO_MULTIPROCESS_TEST_CHILD_MAIN()| (below).
@@ -51,26 +49,23 @@ class MultiprocessTestBase : public base::MultiProcessTest {
   static embedder::ScopedPlatformHandle client_platform_handle;
 
  private:
-  virtual CommandLine MakeCmdLine(const std::string& procname,
-                                  bool debug_on_start) OVERRIDE;
-
   scoped_ptr<embedder::PlatformChannelPair> platform_channel_pair_;
 
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::ProcessHandle test_child_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiprocessTestBase);
+  DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };
 
 // Use this to declare the child process's "main()" function for tests using
-// |MultiprocessTestBase|. It returns an |int|, which will be the process's exit
-// code (but see the comment about |WaitForChildShutdown()|).
+// |MultiprocessTestHelper|. It returns an |int|, which will be the process's
+// exit code (but see the comment about |WaitForChildShutdown()|).
 #define MOJO_MULTIPROCESS_TEST_CHILD_MAIN(test_child_name) \
     MULTIPROCESS_TEST_MAIN_WITH_SETUP( \
         test_child_name ## TestChildMain, \
-        ::mojo::test::MultiprocessTestBase::ChildSetup)
+        ::mojo::test::MultiprocessTestHelper::ChildSetup)
 
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_TEST_MULTIPROCESS_TEST_BASE_H_
+#endif  // MOJO_COMMON_TEST_MULTIPROCESS_TEST_HELPER_H_

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/test/multiprocess_test_base.h"
+#include "mojo/common/test/multiprocess_test_helper.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "mojo/common/test/test_utils.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -55,41 +56,44 @@ bool ReadByte(const embedder::PlatformHandle& handle, char* c) {
   return bytes_read == 1;
 }
 
-typedef MultiprocessTestBase MultiprocessTestBaseTest;
+typedef testing::Test MultiprocessTestHelperTest;
 
-TEST_F(MultiprocessTestBaseTest, RunChild) {
+TEST_F(MultiprocessTestHelperTest, RunChild) {
   if (SkipTest())
     return;
 
-  EXPECT_TRUE(server_platform_handle.is_valid());
+  MultiprocessTestHelper helper;
+  EXPECT_TRUE(helper.server_platform_handle.is_valid());
 
-  StartChild("RunChild");
-  EXPECT_EQ(123, WaitForChildShutdown());
+  helper.StartChild("RunChild");
+  EXPECT_EQ(123, helper.WaitForChildShutdown());
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(RunChild) {
-  CHECK(MultiprocessTestBaseTest::client_platform_handle.is_valid());
+  CHECK(MultiprocessTestHelper::client_platform_handle.is_valid());
   return 123;
 }
 
-TEST_F(MultiprocessTestBaseTest, TestChildMainNotFound) {
+TEST_F(MultiprocessTestHelperTest, TestChildMainNotFound) {
   if (SkipTest())
     return;
 
-  StartChild("NoSuchTestChildMain");
-  int result = WaitForChildShutdown();
+  MultiprocessTestHelper helper;
+  helper.StartChild("NoSuchTestChildMain");
+  int result = helper.WaitForChildShutdown();
   EXPECT_FALSE(result >= 0 && result <= 127);
 }
 
-TEST_F(MultiprocessTestBaseTest, PassedChannel) {
+TEST_F(MultiprocessTestHelperTest, PassedChannel) {
   if (SkipTest())
     return;
 
-  EXPECT_TRUE(server_platform_handle.is_valid());
-  StartChild("PassedChannel");
+  MultiprocessTestHelper helper;
+  EXPECT_TRUE(helper.server_platform_handle.is_valid());
+  helper.StartChild("PassedChannel");
 
   // Take ownership of the handle.
-  embedder::ScopedPlatformHandle handle = server_platform_handle.Pass();
+  embedder::ScopedPlatformHandle handle = helper.server_platform_handle.Pass();
 
   // The handle should be non-blocking.
   EXPECT_TRUE(IsNonBlocking(handle.get()));
@@ -104,15 +108,15 @@ TEST_F(MultiprocessTestBaseTest, PassedChannel) {
   EXPECT_EQ(c + 1, d);
 
   // And return it, incremented again.
-  EXPECT_EQ(c + 2, WaitForChildShutdown());
+  EXPECT_EQ(c + 2, helper.WaitForChildShutdown());
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannel) {
-  CHECK(MultiprocessTestBaseTest::client_platform_handle.is_valid());
+  CHECK(MultiprocessTestHelper::client_platform_handle.is_valid());
 
   // Take ownership of the handle.
   embedder::ScopedPlatformHandle handle =
-      MultiprocessTestBaseTest::client_platform_handle.Pass();
+      MultiprocessTestHelper::client_platform_handle.Pass();
 
   // The handle should be non-blocking.
   EXPECT_TRUE(IsNonBlocking(handle.get()));

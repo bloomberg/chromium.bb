@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "mojo/common/test/multiprocess_test_base.h"
+#include "mojo/common/test/multiprocess_test_helper.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
@@ -25,11 +25,13 @@
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
 
+// TODO(vtl): Replace this with a |TestIOThread|.
 class IOThreadWrapper {
  public:
   IOThreadWrapper() : io_thread_("io_thread") {}
@@ -110,7 +112,7 @@ class IOThreadWrapper {
   DISALLOW_COPY_AND_ASSIGN(IOThreadWrapper);
 };
 
-class MultiprocessMessagePipeTest : public mojo::test::MultiprocessTestBase {
+class MultiprocessMessagePipeTest : public testing::Test {
  public:
   MultiprocessMessagePipeTest() {}
   virtual ~MultiprocessMessagePipeTest() {}
@@ -118,15 +120,18 @@ class MultiprocessMessagePipeTest : public mojo::test::MultiprocessTestBase {
   virtual void TearDown() OVERRIDE {
     if (io_thread_wrapper_.is_initialized())
       io_thread_wrapper_.Shutdown();
-    mojo::test::MultiprocessTestBase::TearDown();
   }
 
+ protected:
   void Init(scoped_refptr<MessagePipe> mp) {
-    io_thread_wrapper_.Init(server_platform_handle.Pass(), mp);
+    io_thread_wrapper_.Init(helper_.server_platform_handle.Pass(), mp);
   }
+
+  mojo::test::MultiprocessTestHelper* helper() { return &helper_; }
 
  private:
   IOThreadWrapper io_thread_wrapper_;
+  mojo::test::MultiprocessTestHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTest);
 };
@@ -153,7 +158,7 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   IOThreadWrapper io_thread_wrapper;
   embedder::ScopedPlatformHandle client_platform_handle =
-      MultiprocessMessagePipeTest::client_platform_handle.Pass();
+      mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
   scoped_refptr<MessagePipe> mp(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -203,7 +208,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
 
 // Sends "hello" to child, and expects "hellohello" back.
 TEST_F(MultiprocessMessagePipeTest, Basic) {
-  StartChild("EchoEcho");
+  helper()->StartChild("EchoEcho");
 
   scoped_refptr<MessagePipe> mp(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -233,13 +238,13 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
   mp->Close(0);
 
   // We sent one message.
-  EXPECT_EQ(1 % 100, WaitForChildShutdown());
+  EXPECT_EQ(1 % 100, helper()->WaitForChildShutdown());
 }
 
 // Sends a bunch of messages to the child. Expects them "repeated" back. Waits
 // for the child to close its end before quitting.
 TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
-  StartChild("EchoEcho");
+  helper()->StartChild("EchoEcho");
 
   scoped_refptr<MessagePipe> mp(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
@@ -287,7 +292,8 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
 
   mp->Close(0);
 
-  EXPECT_EQ(static_cast<int>(kNumMessages % 100), WaitForChildShutdown());
+  EXPECT_EQ(static_cast<int>(kNumMessages % 100),
+            helper()->WaitForChildShutdown());
 }
 
 }  // namespace

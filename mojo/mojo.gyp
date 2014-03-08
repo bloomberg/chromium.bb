@@ -262,8 +262,8 @@
         'mojo_system_impl',
       ],
       'sources': [
-        'common/test/multiprocess_test_base.cc',
-        'common/test/multiprocess_test_base.h',
+        'common/test/multiprocess_test_helper.cc',
+        'common/test/multiprocess_test_helper.h',
         'common/test/test_utils.h',
         'common/test/test_utils_posix.cc',
         'common/test/test_utils_win.cc',
@@ -289,7 +289,7 @@
         'common/common_type_converters_unittest.cc',
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
-        'common/test/multiprocess_test_base_unittest.cc',
+        'common/test/multiprocess_test_helper_unittest.cc',
       ],
     },
     {
