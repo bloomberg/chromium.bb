@@ -1421,6 +1421,7 @@
           'target_name': 'content_browsertests_apk',
           'type': 'none',
           'dependencies': [
+            'content.gyp:content_icudata',
             'content.gyp:content_java',
             'content_browsertests',
             'content_java_test_support',
@@ -1433,6 +1434,13 @@
             'native_lib_target': 'libcontent_browsertests',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
+            'conditions': [
+              ['icu_use_data_file_flag==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/icudtl.dat',
+                ],
+              }],
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
@@ -1454,6 +1462,7 @@
           'type': 'none',
           'dependencies': [
             'chromium_android_linker_test',
+            'content.gyp:content_icudata',
             'content.gyp:content_java',
             'content_shell_java',
           ],
@@ -1466,6 +1475,13 @@
             'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
             'use_chromium_linker': '1',
             'enable_chromium_linker_tests': '1',
+            'conditions': [
+              ['icu_use_data_file_flag==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/icudtl.dat',
+                ],
+              }],
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

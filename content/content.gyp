@@ -499,6 +499,22 @@
           ],
           'includes': [ 'content_jni.gypi' ],
         },
+        {
+          'target_name': 'content_icudata',
+          'type': 'none',
+          'conditions': [
+            ['icu_use_data_file_flag==1', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/content_shell/assets',
+                  'files': [
+                    '<(PRODUCT_DIR)/icudtl.dat',
+                  ],
+                },
+              ],
+            }],
+          ],
+        },
       ],
     }],  # OS == "android"
   ],

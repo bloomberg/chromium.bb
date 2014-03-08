@@ -22,6 +22,13 @@
           '<(PRODUCT_DIR)/android_webview_apk/assets/asset_icon.png',
           '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video_test.html',
         ],
+        'conditions': [
+          ['icu_use_data_file_flag==1', {
+            'additional_input_paths': [
+              '<(PRODUCT_DIR)/icudtl.dat',
+            ],
+          }],
+        ],
       },
       'copies': [
         {
@@ -30,6 +37,13 @@
             '<(java_in_dir)/assets/asset_file.html',
             '<(java_in_dir)/assets/asset_icon.png',
             '<(java_in_dir)/assets/full_screen_video_test.html',
+          ],
+	  'conditions': [
+            ['icu_use_data_file_flag==1', {
+              'files': [
+                '<(PRODUCT_DIR)/icudtl.dat',
+              ],
+	    }],
           ],
         },
       ],

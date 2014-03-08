@@ -1044,6 +1044,7 @@
           'target_name': 'content_shell_apk',
           'type': 'none',
           'dependencies': [
+            'content.gyp:content_icudata',
             'content.gyp:content_java',
             'content_java_test_support',
             'content_shell_java',
@@ -1064,6 +1065,13 @@
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
             'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
             'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
+            'conditions': [
+              ['icu_use_data_file_flag==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/icudtl.dat',
+                ],
+              }],
+            ],
           },
           'conditions': [
             ['android_webview_build==0', {

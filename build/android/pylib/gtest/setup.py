@@ -123,7 +123,7 @@ def _GenerateDepsDirUsingIsolate(suite_name):
       '--config-variable', 'OS', 'android',
       '--config-variable', 'chromeos', '0',
       '--config-variable', 'component', 'static_library',
-      '--config-variable', 'icu_use_data_file_flag', '0',
+      '--config-variable', 'icu_use_data_file_flag', '1',
       '--config-variable', 'use_openssl', '0',
   ]
   assert not cmd_helper.RunCmd(isolate_cmd)
