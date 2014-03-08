@@ -31,11 +31,6 @@ BASE_EXPORT void SplitString(const std::string& str,
                              char c,
                              std::vector<std::string>* r);
 
-BASE_EXPORT bool SplitStringIntoKeyValues(const std::string& line,
-                                          char key_value_delimiter,
-                                          std::string* key,
-                                          std::vector<std::string>* values);
-
 typedef std::vector<std::pair<std::string, std::string> > StringPairs;;
 
 BASE_EXPORT bool SplitStringIntoKeyValuePairs(

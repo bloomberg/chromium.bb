@@ -29,81 +29,6 @@ void SplitString(const std::wstring& str,
 
 }  // anonymous namespace
 
-class SplitStringIntoKeyValuesTest : public testing::Test {
- protected:
-  std::string key;
-  std::vector<std::string> values;
-};
-
-TEST_F(SplitStringIntoKeyValuesTest, EmptyInputMultipleValues) {
-  EXPECT_FALSE(SplitStringIntoKeyValues(std::string(),  // Empty input
-                                        '\t',           // Key separators
-                                        &key,
-                                        &values));
-  EXPECT_TRUE(key.empty());
-  EXPECT_TRUE(values.empty());
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, EmptyValueInputMultipleValues) {
-  EXPECT_FALSE(SplitStringIntoKeyValues("key_with_no_value\t",
-                                        '\t',  // Key separators
-                                        &key, &values));
-  EXPECT_EQ("key_with_no_value", key);
-  EXPECT_TRUE(values.empty());
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, EmptyKeyInputMultipleValues) {
-  EXPECT_TRUE(SplitStringIntoKeyValues("\tvalue for empty key",
-                                       '\t',  // Key separators
-                                       &key, &values));
-  EXPECT_TRUE(key.empty());
-  ASSERT_EQ(1U, values.size());
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, KeyWithMultipleValues) {
-  EXPECT_TRUE(SplitStringIntoKeyValues("key1\tvalue1,   value2   value3",
-                                       '\t',  // Key separators
-                                       &key, &values));
-  EXPECT_EQ("key1", key);
-  ASSERT_EQ(1U, values.size());
-  EXPECT_EQ("value1,   value2   value3", values[0]);
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, EmptyInputSingleValue) {
-  EXPECT_FALSE(SplitStringIntoKeyValues(std::string(),  // Empty input
-                                        '\t',           // Key separators
-                                        &key,
-                                        &values));
-  EXPECT_TRUE(key.empty());
-  EXPECT_TRUE(values.empty());
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, EmptyValueInputSingleValue) {
-  EXPECT_FALSE(SplitStringIntoKeyValues("key_with_no_value\t",
-                                        '\t',  // Key separators
-                                        &key, &values));
-  EXPECT_EQ("key_with_no_value", key);
-  EXPECT_TRUE(values.empty());
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, EmptyKeyInputSingleValue) {
-  EXPECT_TRUE(SplitStringIntoKeyValues("\tvalue for empty key",
-                                       '\t',  // Key separators
-                                       &key, &values));
-  EXPECT_TRUE(key.empty());
-  ASSERT_EQ(1U, values.size());
-  EXPECT_EQ("value for empty key", values[0]);
-}
-
-TEST_F(SplitStringIntoKeyValuesTest, KeyWithSingleValue) {
-  EXPECT_TRUE(SplitStringIntoKeyValues("key1\tvalue1,   value2   value3",
-                                       '\t',  // Key separators
-                                       &key, &values));
-  EXPECT_EQ("key1", key);
-  ASSERT_EQ(1U, values.size());
-  EXPECT_EQ("value1,   value2   value3", values[0]);
-}
-
 class SplitStringIntoKeyValuePairsTest : public testing::Test {
  protected:
   std::vector<std::pair<std::string, std::string> > kv_pairs;
@@ -111,16 +36,52 @@ class SplitStringIntoKeyValuePairsTest : public testing::Test {
 
 TEST_F(SplitStringIntoKeyValuePairsTest, EmptyString) {
   EXPECT_TRUE(SplitStringIntoKeyValuePairs(std::string(),
-                                           ':',  // Key-value delimiters
-                                           ',',  // Key-value pair delims
+                                           ':',  // Key-value delimiter
+                                           ',',  // Key-value pair delimiter
                                            &kv_pairs));
   EXPECT_TRUE(kv_pairs.empty());
 }
 
-TEST_F(SplitStringIntoKeyValuePairsTest, EmptySecondPair) {
+TEST_F(SplitStringIntoKeyValuePairsTest, MissingKeyValueDelimiter) {
+  EXPECT_FALSE(SplitStringIntoKeyValuePairs("key1,key2:value2",
+                                            ':',  // Key-value delimiter
+                                            ',',  // Key-value pair delimiter
+                                            &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_TRUE(kv_pairs[0].first.empty());
+  EXPECT_TRUE(kv_pairs[0].second.empty());
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsTest, EmptyKeyWithKeyValueDelimiter) {
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs(":value1,key2:value2",
+                                           ':',  // Key-value delimiter
+                                           ',',  // Key-value pair delimiter
+                                           &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_TRUE(kv_pairs[0].first.empty());
+  EXPECT_EQ("value1", kv_pairs[0].second);
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsTest, TrailingAndLeadingPairDelimiter) {
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs(",key1:value1,key2:value2,",
+                                           ':',   // Key-value delimiter
+                                           ',',   // Key-value pair delimiter
+                                           &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_EQ("key1", kv_pairs[0].first);
+  EXPECT_EQ("value1", kv_pairs[0].second);
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsTest, EmptyPair) {
   EXPECT_TRUE(SplitStringIntoKeyValuePairs("key1:value1,,key3:value3",
-                                           ':',   // Key-value delimiters
-                                           ',',   // Key-value pair delims
+                                           ':',   // Key-value delimiter
+                                           ',',   // Key-value pair delimiter
                                            &kv_pairs));
   ASSERT_EQ(2U, kv_pairs.size());
   EXPECT_EQ("key1", kv_pairs[0].first);
@@ -129,22 +90,70 @@ TEST_F(SplitStringIntoKeyValuePairsTest, EmptySecondPair) {
   EXPECT_EQ("value3", kv_pairs[1].second);
 }
 
-TEST_F(SplitStringIntoKeyValuePairsTest, EmptySecondValue) {
-  EXPECT_FALSE(SplitStringIntoKeyValuePairs("key1:value1 , key2:",
-                                            ':',   // Key-value delimiters
-                                            ',',   // Key-value pair delims
+TEST_F(SplitStringIntoKeyValuePairsTest, EmptyValue) {
+  EXPECT_FALSE(SplitStringIntoKeyValuePairs("key1:,key2:value2",
+                                            ':',   // Key-value delimiter
+                                            ',',   // Key-value pair delimiter
                                             &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_EQ("key1", kv_pairs[0].first);
+  EXPECT_EQ("", kv_pairs[0].second);
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsTest, UntrimmedWhitespace) {
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs("key1 : value1",
+                                           ':',  // Key-value delimiter
+                                           ',',  // Key-value pair delimiter
+                                           &kv_pairs));
+  ASSERT_EQ(1U, kv_pairs.size());
+  EXPECT_EQ("key1 ", kv_pairs[0].first);
+  EXPECT_EQ(" value1", kv_pairs[0].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsTest, TrimmedWhitespace) {
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs("key1:value1 , key2:value2",
+                                           ':',   // Key-value delimiter
+                                           ',',   // Key-value pair delimiter
+                                           &kv_pairs));
   ASSERT_EQ(2U, kv_pairs.size());
   EXPECT_EQ("key1", kv_pairs[0].first);
   EXPECT_EQ("value1", kv_pairs[0].second);
   EXPECT_EQ("key2", kv_pairs[1].first);
-  EXPECT_EQ("", kv_pairs[1].second);
+  EXPECT_EQ("value2", kv_pairs[1].second);
 }
 
+TEST_F(SplitStringIntoKeyValuePairsTest, MultipleKeyValueDelimiters) {
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs("key1:::value1,key2:value2",
+                                           ':',   // Key-value delimiter
+                                           ',',   // Key-value pair delimiter
+                                           &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_EQ("key1", kv_pairs[0].first);
+  EXPECT_EQ("value1", kv_pairs[0].second);
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsTest, OnlySplitAtGivenSeparator) {
+  std::string a("a ?!@#$%^&*()_+:/{}\\\t\nb");
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs(a + "X" + a + "Y" + a + "X" + a,
+                                           'X',  // Key-value delimiter
+                                           'Y',  // Key-value pair delimiter
+                                           &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_EQ(a, kv_pairs[0].first);
+  EXPECT_EQ(a, kv_pairs[0].second);
+  EXPECT_EQ(a, kv_pairs[1].first);
+  EXPECT_EQ(a, kv_pairs[1].second);
+}
+
+
 TEST_F(SplitStringIntoKeyValuePairsTest, DelimiterInValue) {
-  EXPECT_TRUE(SplitStringIntoKeyValuePairs("key1:va:ue1 , key2:value2",
-                                           ':',   // Key-value delimiters
-                                           ',',   // Key-value pair delims
+  EXPECT_TRUE(SplitStringIntoKeyValuePairs("key1:va:ue1,key2:value2",
+                                           ':',   // Key-value delimiter
+                                           ',',   // Key-value pair delimiter
                                            &kv_pairs));
   ASSERT_EQ(2U, kv_pairs.size());
   EXPECT_EQ("key1", kv_pairs[0].first);
@@ -160,7 +169,6 @@ TEST(SplitStringUsingSubstrTest, EmptyString) {
   EXPECT_THAT(results, ElementsAre(""));
 }
 
-// Test for SplitString
 TEST(StringUtilTest, SplitString) {
   std::vector<std::wstring> r;
 
