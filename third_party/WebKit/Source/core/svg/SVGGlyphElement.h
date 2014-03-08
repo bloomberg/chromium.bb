@@ -58,8 +58,6 @@ private:
     void invalidateGlyphCache();
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGGlyphElement, hasTagName(SVGNames::glyphTag));
-
 } // namespace WebCore
 
 #endif // ENABLE(SVG_FONTS)

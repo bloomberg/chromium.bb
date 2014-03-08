@@ -85,8 +85,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGTextPathSpacingType> > m_spacing;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGTextPathElement, hasTagName(SVGNames::textPathTag));
-
 } // namespace WebCore
 
 #endif

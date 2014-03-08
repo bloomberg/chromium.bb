@@ -83,8 +83,6 @@ private:
     OwnPtr<ScriptLoader> m_loader;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGScriptElement, hasTagName(SVGNames::scriptTag));
-
 } // namespace WebCore
 
 #endif

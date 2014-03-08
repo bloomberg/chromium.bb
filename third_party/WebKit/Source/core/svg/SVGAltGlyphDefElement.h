@@ -39,8 +39,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGAltGlyphDefElement, hasTagName(SVGNames::altGlyphDefTag));
-
 }
 
 #endif

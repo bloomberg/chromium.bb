@@ -41,8 +41,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFontFaceSrcElement, hasTagName(SVGNames::font_face_srcTag));
-
 } // namespace WebCore
 
 #endif // ENABLE(SVG_FONTS)

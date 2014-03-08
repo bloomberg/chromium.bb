@@ -60,8 +60,6 @@ private:
     RefPtr<SVGAnimatedLength> m_ry;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGRectElement, hasTagName(SVGNames::rectTag));
-
 } // namespace WebCore
 
 #endif

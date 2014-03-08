@@ -65,8 +65,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_maskContentUnits;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGMaskElement, hasTagName(SVGNames::maskTag));
-
 }
 
 #endif

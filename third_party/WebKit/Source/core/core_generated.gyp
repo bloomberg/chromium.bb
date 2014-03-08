@@ -348,7 +348,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
-{
+        {
           'action_name': 'HTMLElementTypeHelpers',
           'inputs': [
             '<@(make_element_type_helpers_files)',
@@ -385,6 +385,23 @@
             '../build/scripts/make_element_factory.py',
             'svg/SVGTagNames.in',
             'svg/SVGAttributeNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
+        {
+          'action_name': 'SVGElementTypeHelpers',
+          'inputs': [
+            '<@(make_element_type_helpers_files)',
+            'svg/SVGTagNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/SVGElementTypeHelpers.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_element_type_helpers.py',
+            'svg/SVGTagNames.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],

@@ -22,6 +22,7 @@
 #ifndef SVGElement_h
 #define SVGElement_h
 
+#include "SVGElementTypeHelpers.h"
 #include "core/dom/Element.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGParsingError.h"
@@ -230,6 +231,9 @@ struct SVGAttributeHashTranslator {
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGElement, isSVGElement());
+
+// Template specialization to make Traversal<SVGElement> work.
+template <> inline bool isElementOfType<const SVGElement>(const Element& element) { return element.isSVGElement(); }
 
 }
 

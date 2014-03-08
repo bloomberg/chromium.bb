@@ -67,8 +67,6 @@ private:
     SVGFontElement* m_fontElement;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFontFaceElement, hasTagName(SVGNames::font_faceTag));
-
 } // namespace WebCore
 
 #endif // ENABLE(SVG_FONTS)

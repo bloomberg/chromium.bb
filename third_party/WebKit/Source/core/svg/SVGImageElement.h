@@ -78,8 +78,6 @@ private:
     bool m_needsLoaderURIUpdate : 1;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGImageElement, hasTagName(SVGNames::imageTag));
-
 } // namespace WebCore
 
 #endif

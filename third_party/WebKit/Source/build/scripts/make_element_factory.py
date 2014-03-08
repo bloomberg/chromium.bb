@@ -45,6 +45,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         'contextConditional': None,
         'interfaceName': None,
         'noConstructor': None,
+        'noTypeHelpers': None,
         'runtimeEnabled': None,
     })
     default_parameters = dict(MakeQualifiedNamesWriter.default_parameters, **{

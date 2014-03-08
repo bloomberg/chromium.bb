@@ -34,8 +34,6 @@ private:
     explicit SVGPolylineElement(Document&);
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGPolylineElement, hasTagName(SVGNames::polylineTag));
-
 } // namespace WebCore
 
 #endif

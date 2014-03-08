@@ -58,8 +58,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFEDiffuseLightingElement, hasTagName(SVGNames::feDiffuseLightingTag));
-
 } // namespace WebCore
 
 #endif

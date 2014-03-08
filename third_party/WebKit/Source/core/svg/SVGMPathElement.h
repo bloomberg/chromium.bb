@@ -58,8 +58,6 @@ private:
 
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGMPathElement, hasTagName(SVGNames::mpathTag));
-
 } // namespace WebCore
 
 #endif // SVGMPathElement_h

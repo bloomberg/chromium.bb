@@ -40,8 +40,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGTextElement, hasTagName(SVGNames::textTag));
-
 } // namespace WebCore
 
 #endif

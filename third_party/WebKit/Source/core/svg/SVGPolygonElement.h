@@ -34,8 +34,6 @@ private:
     explicit SVGPolygonElement(Document&);
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGPolygonElement, hasTagName(SVGNames::polygonTag));
-
 } // namespace WebCore
 
 #endif

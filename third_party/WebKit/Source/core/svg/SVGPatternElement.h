@@ -82,8 +82,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_patternContentUnits;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGPatternElement, hasTagName(SVGNames::patternTag));
-
 } // namespace WebCore
 
 #endif

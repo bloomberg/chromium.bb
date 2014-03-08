@@ -54,8 +54,6 @@ private:
     RefPtr<SVGAnimatedLength> m_r;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGCircleElement, hasTagName(SVGNames::circleTag));
-
 } // namespace WebCore
 
 #endif // SVGCircleElement_h

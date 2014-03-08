@@ -56,8 +56,6 @@ private:
     RefPtr<SVGAnimatedLength> m_ry;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGEllipseElement, hasTagName(SVGNames::ellipseTag));
-
 } // namespace WebCore
 
 #endif

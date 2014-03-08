@@ -271,9 +271,9 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
     PaintBehavior oldBehavior = frame()->view()->paintBehavior();
     frame()->view()->setPaintBehavior(oldBehavior | PaintBehaviorRenderingSVGMask);
 
-    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+    for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
-        if (!childElement->isSVGElement() || !renderer)
+        if (!renderer)
             continue;
 
         RenderStyle* style = renderer->style();
@@ -311,9 +311,9 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
 void RenderSVGResourceClipper::calculateClipContentRepaintRect()
 {
     // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
-    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+    for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
-        if (!childElement->isSVGElement() || !renderer)
+        if (!renderer)
             continue;
         if (!renderer->isSVGShape() && !renderer->isSVGText() && !childElement->hasTagName(SVGNames::useTag))
             continue;
@@ -341,9 +341,9 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
 
     point = clipPathElement->animatedLocalTransform().inverse().mapPoint(point);
 
-    for (Element* childElement = ElementTraversal::firstWithin(*element()); childElement; childElement = ElementTraversal::nextSibling(*childElement)) {
+    for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
-        if (!childElement->isSVGElement() || !renderer)
+        if (!renderer)
             continue;
         if (!renderer->isSVGShape() && !renderer->isSVGText() && !childElement->hasTagName(SVGNames::useTag))
             continue;

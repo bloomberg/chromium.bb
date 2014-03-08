@@ -51,8 +51,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGAltGlyphElement, hasTagName(SVGNames::altGlyphTag));
-
 } // namespace WebCore
 
 #endif

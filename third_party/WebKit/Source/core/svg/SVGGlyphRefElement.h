@@ -62,8 +62,6 @@ private:
     float m_dy;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGGlyphRefElement, hasTagName(SVGNames::glyphRefTag));
-
 }
 
 #endif

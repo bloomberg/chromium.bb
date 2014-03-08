@@ -78,8 +78,6 @@ private:
     HashSet<RefPtr<Node> > m_clientsToAdd;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFilterElement, hasTagName(SVGNames::filterTag));
-
 }
 
 #endif

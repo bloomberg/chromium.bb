@@ -45,6 +45,7 @@
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
 
 #include "wtf/TemporaryChange.h"
@@ -251,14 +252,8 @@ String SVGElement::title() const
 
     // If we aren't an instance in a <use> or the <use> title was not found, then find the first
     // <title> child of this element.
-    Element* titleElement = ElementTraversal::firstWithin(*this);
-    for (; titleElement; titleElement = ElementTraversal::nextSkippingChildren(*titleElement, this)) {
-        if (titleElement->hasTagName(SVGNames::titleTag) && titleElement->isSVGElement())
-            break;
-    }
-
     // If a title child was found, return the text contents.
-    if (titleElement)
+    if (Element* titleElement = Traversal<SVGTitleElement>::firstChild(*this))
         return titleElement->innerText();
 
     // Otherwise return a null/empty string.

@@ -94,8 +94,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGMarkerUnitsType> > m_markerUnits;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGMarkerElement, hasTagName(SVGNames::markerTag));
-
 }
 
 #endif

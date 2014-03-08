@@ -149,11 +149,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     ColorSpace filterColorSpace = ColorSpaceDeviceRGB;
     bool useFilterColorSpace = getSVGElementColorSpace(filterElement, filterColorSpace);
 
-    for (Element* child = ElementTraversal::firstWithin(*filterElement); child; child = ElementTraversal::nextSibling(*child)) {
-        if (!child->isSVGElement())
-            continue;
-
-        SVGElement* element = toSVGElement(child);
+    for (SVGElement* element = Traversal<SVGElement>::firstChild(*filterElement); element; element = Traversal<SVGElement>::nextSibling(*element)) {
         if (!element->isFilterEffect())
             continue;
 

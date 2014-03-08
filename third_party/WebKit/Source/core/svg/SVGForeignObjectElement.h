@@ -55,8 +55,6 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGForeignObjectElement, hasTagName(SVGNames::foreignObjectTag));
-
 } // namespace WebCore
 
 #endif

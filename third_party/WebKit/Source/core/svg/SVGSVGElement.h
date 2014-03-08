@@ -175,13 +175,6 @@ private:
     friend class SVGCurrentTranslateTearOff;
 };
 
-inline bool isSVGSVGElement(const Node& node)
-{
-    return node.isSVGElement() && toSVGElement(node).isSVGSVGElement();
-}
-
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGSVGElement);
-
 } // namespace WebCore
 
 #endif

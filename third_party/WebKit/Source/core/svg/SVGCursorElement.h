@@ -62,8 +62,6 @@ private:
     HashSet<SVGElement*> m_clients;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGCursorElement, hasTagName(SVGNames::cursorTag));
-
 } // namespace WebCore
 
 #endif

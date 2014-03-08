@@ -114,8 +114,6 @@ private:
     RefPtr<SVGAnimatedPath> m_pathSegList;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGPathElement, hasTagName(SVGNames::pathTag));
-
 } // namespace WebCore
 
 #endif

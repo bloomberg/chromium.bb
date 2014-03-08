@@ -121,8 +121,6 @@ private:
     Timer<SVGElement> m_svgLoadEventTimer;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGUseElement, hasTagName(SVGNames::useTag));
-
 }
 
 #endif

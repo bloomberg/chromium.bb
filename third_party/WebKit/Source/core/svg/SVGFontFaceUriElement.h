@@ -52,8 +52,6 @@ private:
     ResourcePtr<FontResource> m_resource;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFontFaceUriElement, hasTagName(SVGNames::font_face_uriTag));
-
 } // namespace WebCore
 
 #endif // ENABLE(SVG_FONTS)

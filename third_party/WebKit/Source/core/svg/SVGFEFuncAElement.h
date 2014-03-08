@@ -34,8 +34,6 @@ private:
     explicit SVGFEFuncAElement(Document&);
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFEFuncAElement, hasTagName(SVGNames::feFuncATag));
-
 } // namespace WebCore
 
 #endif

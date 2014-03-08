@@ -57,8 +57,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y2;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGLinearGradientElement, hasTagName(SVGNames::linearGradientTag));
-
 } // namespace WebCore
 
 #endif

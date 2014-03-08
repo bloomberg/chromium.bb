@@ -14,10 +14,18 @@ import template_expander
 from in_file import InFile
 
 
+def _symbol(tag):
+    # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
+    if tag['name'].startswith('-webkit-'):
+        return tag['name'].replace('-', '_')[1:]
+    return name_utilities.cpp_name(tag).replace('-', '_')
+
 class MakeElementTypeHelpersWriter(in_generator.Writer):
     defaults = {
         'interfaceName': None,
         'noConstructor': None,
+        'noTypeHelpers': None,
+        'ImplementedAs': None,
         'JSInterfaceName': None,
         'constructorNeedsCreatedByParser': None,
         'constructorNeedsFormElement': None,
@@ -36,6 +44,7 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
     }
     filters = {
         'hash': hasher.hash,
+        'symbol': _symbol,
     }
 
     def __init__(self, in_file_path):

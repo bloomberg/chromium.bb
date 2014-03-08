@@ -61,8 +61,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFESpecularLightingElement, hasTagName(SVGNames::feSpecularLightingTag));
-
 } // namespace WebCore
 
 #endif

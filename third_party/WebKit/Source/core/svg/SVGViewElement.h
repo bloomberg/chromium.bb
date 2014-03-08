@@ -53,8 +53,6 @@ private:
     RefPtr<SVGStaticStringList> m_viewTarget;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGViewElement, hasTagName(SVGNames::viewTag));
-
 } // namespace WebCore
 
 #endif

@@ -140,15 +140,11 @@ void SVGAnimateMotionElement::updateAnimationPath()
     m_animationPath = Path();
     bool foundMPath = false;
 
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(SVGNames::mpathTag)) {
-            SVGMPathElement* mPath = toSVGMPathElement(child);
-            SVGPathElement* pathElement = mPath->pathElement();
-            if (pathElement) {
-                updatePathFromGraphicsElement(pathElement, m_animationPath);
-                foundMPath = true;
-                break;
-            }
+    for (SVGMPathElement* mpath = Traversal<SVGMPathElement>::firstChild(*this); mpath; mpath = Traversal<SVGMPathElement>::nextSibling(*mpath)) {
+        if (SVGPathElement* pathElement = mpath->pathElement()) {
+            updatePathFromGraphicsElement(pathElement, m_animationPath);
+            foundMPath = true;
+            break;
         }
     }
 

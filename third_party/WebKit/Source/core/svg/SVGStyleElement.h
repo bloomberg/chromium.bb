@@ -67,8 +67,6 @@ private:
     Timer<SVGElement> m_svgLoadEventTimer;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGStyleElement, hasTagName(SVGNames::styleTag));
-
 } // namespace WebCore
 
 #endif // SVGStyleElement_h

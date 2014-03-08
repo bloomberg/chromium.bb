@@ -51,8 +51,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGClipPathElement, hasTagName(SVGNames::clipPathTag));
-
 }
 
 #endif

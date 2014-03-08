@@ -61,8 +61,6 @@ private:
     RefPtr<SVGAnimatedLength> m_fr;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGRadialGradientElement, hasTagName(SVGNames::radialGradientTag));
-
 } // namespace WebCore
 
 #endif

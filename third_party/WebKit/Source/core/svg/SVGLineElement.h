@@ -56,8 +56,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y2;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGLineElement, hasTagName(SVGNames::lineTag));
-
 } // namespace WebCore
 
 #endif

@@ -66,8 +66,6 @@ private:
     ResourcePtr<ImageResource> m_cachedImage;
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGFEImageElement, hasTagName(SVGNames::feImageTag));
-
 } // namespace WebCore
 
 #endif

@@ -50,13 +50,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_offset;
 };
 
-inline bool isSVGStopElement(const Node& node)
-{
-    return node.isSVGElement() && toSVGElement(node).isGradientStop();
-}
-
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGStopElement);
-
 } // namespace WebCore
 
 #endif
