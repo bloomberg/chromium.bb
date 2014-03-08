@@ -7,6 +7,49 @@
     //        is updated to a more recent version.
     setup({ timeout: 120000 });
 
+    var SEGMENT_INFO_LIST = [
+        {
+            url: '/media/resources/media-source/webm/test.webm',
+            type: 'video/webm; codecs="vp8, vorbis"',
+            duration: 6.042,
+            init: { offset: 0, size: 4357 },
+            media: [
+                {  offset: 4357, size: 11830, timecode: 0 },
+                {  offset: 16187, size: 12588, timecode: 0.385 },
+                {  offset: 28775, size: 14588, timecode: 0.779 },
+                {  offset: 43363, size: 13023, timecode: 1.174 },
+                {  offset: 56386, size: 13127, timecode: 1.592 },
+                {  offset: 69513, size: 14456, timecode: 1.987 },
+                {  offset: 83969, size: 13458, timecode: 2.381 },
+                {  offset: 97427, size: 14566, timecode: 2.776 },
+                {  offset: 111993, size: 13201, timecode: 3.171 },
+                {  offset: 125194, size: 14061, timecode: 3.566 },
+                {  offset: 139255, size: 15353, timecode: 3.96 },
+                {  offset: 154608, size: 13618, timecode: 4.378 },
+                {  offset: 168226, size: 15094, timecode: 4.773 },
+                {  offset: 183320, size: 13069, timecode: 5.168 },
+                {  offset: 196389, size: 13788, timecode: 5.563 },
+                {  offset: 210177, size: 9009, timecode: 5.957 },
+            ],
+        },
+        {
+            url: '/media/resources/media-source/mp4/test.mp4',
+            type: 'video/mp4; codecs="mp4a.40.2, avc1.4D401E"',
+            duration: 6.0368,
+            init: { offset: 0, size: 1178 },
+            media: [
+                {  offset: 1246, size: 23828, timecode: 0 },
+                {  offset: 25142, size: 25394, timecode: 0.797 },
+                {  offset: 50604, size: 24761, timecode: 1.594 },
+                {  offset: 75433, size: 25138, timecode: 2.390 },
+                {  offset: 100639, size: 22935, timecode: 3.187 },
+                {  offset: 123642, size: 24995, timecode: 3.984},
+                {  offset: 148637, size: 24968, timecode: 4.781 },
+                {  offset: 173689, size: 19068, timecode: 5.578 },
+                {  offset: 192757, size: 200, timecode: 5.619 },
+            ],
+        }
+    ];
     EventExpectationsManager = function(test)
     {
         this.test_ = test;
@@ -178,12 +221,45 @@
         return "";
     }
 
+    function getSegmentInfo()
+    {
+        for (var i = 0; i < SEGMENT_INFO_LIST.length; ++i) {
+            var segmentInfo = SEGMENT_INFO_LIST[i];
+            if (MediaSource.isTypeSupported(segmentInfo.type)) {
+                return segmentInfo;
+            }
+        }
+        return null;
+    }
+
     var audioOnlyTypes = ['audio/webm;codecs="vorbis"', 'audio/mp4;codecs="mp4a.40.2"'];
     var videoOnlyTypes = ['video/webm;codecs="vp8"', 'video/mp4;codecs="avc1.4D4001"'];
     var audioVideoTypes = ['video/webm;codecs="vp8,vorbis"', 'video/mp4;codecs="mp4a.40.2"'];
     MediaSourceUtil.AUDIO_ONLY_TYPE = getFirstSupportedType(audioOnlyTypes);
     MediaSourceUtil.VIDEO_ONLY_TYPE = getFirstSupportedType(videoOnlyTypes);
     MediaSourceUtil.AUDIO_VIDEO_TYPE = getFirstSupportedType(audioVideoTypes);
+    MediaSourceUtil.SEGMENT_INFO = getSegmentInfo();
+
+    MediaSourceUtil.getSubType = function(mimetype) {
+        var slashIndex = mimetype.indexOf("/");
+        var semicolonIndex = mimetype.indexOf(";");
+        if (slashIndex <= 0) {
+            assert_unreached("Invalid mimetype '" + mimetype + "'");
+            return;
+        }
+
+        var start = slashIndex + 1;
+        if (semicolonIndex >= 0) {
+            if (semicolonIndex <= start) {
+                assert_unreached("Invalid mimetype '" + mimetype + "'");
+                return;
+            }
+
+            return mimetype.substr(start, semicolonIndex - start)
+        }
+
+        return mimetype.substr(start);
+    };
 
     // TODO: Add wrapper object to MediaSourceUtil that binds loaded mediaData to its
     // associated segmentInfo.
@@ -279,7 +355,13 @@
     {
         mediasource_test(function(test, mediaElement, mediaSource)
         {
-            var segmentInfo = WebMSegmentInfo.testWebM;
+            var segmentInfo = MediaSourceUtil.SEGMENT_INFO;
+
+            if (!segmentInfo) {
+                assert_unreached("No segment info compatible with this MediaSource implementation.");
+                return;
+            }
+
             test.failOnEvent(mediaElement, 'error');
 
             var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);

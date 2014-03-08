@@ -4,33 +4,17 @@
         <script src="/w3c/resources/testharness.js"></script>
         <script src="/w3c/resources/testharnessreport.js"></script>
         <script src="mediasource-util.js"></script>
-        <script src="/media/resources/media-source/webm/segment-info.js"></script>
         <link rel='stylesheet' href='/w3c/resources/testharness.css'>
     </head>
     <body>
         <div id="log"></div>
         <script>
-          function mediasource_duration_test(testFunction, description, options)
-          {
-              return mediasource_test(function(test, mediaElement, mediaSource)
-              {
-                  var segmentInfo = WebMSegmentInfo.testWebM;
-                  assert_greater_than(segmentInfo.duration, 2, 'Sufficient test media duration');
-                  test.failOnEvent(mediaElement, 'error');
-
-                  var sourceBuffer = mediaSource.addSourceBuffer(segmentInfo.type);
-                  MediaSourceUtil.loadBinaryData(test, segmentInfo.url, function(mediaData)
-                  {
-                      testFunction(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData);
-                  });
-              }, description, options);
-          }
-
           function mediasource_truncated_duration_seek_test(testFunction, description, options)
           {
-              return mediasource_duration_test(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer,
-                                                        mediaData)
+              return mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
               {
+                  assert_greater_than(segmentInfo.duration, 2, 'Sufficient test media duration');
+
                   var fullDuration = segmentInfo.duration;
                   var seekTo = fullDuration / 2.0;
                   var truncatedDuration = seekTo / 2.0;
@@ -152,8 +136,10 @@
               });
           }, 'Test endOfStream completes previous seek to truncated duration');
 
-          mediasource_duration_test(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
+              assert_greater_than(segmentInfo.duration, 2, 'Sufficient test media duration');
+
               var fullDuration = segmentInfo.duration;
               var newDuration = 0.5;
 

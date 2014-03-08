@@ -4,7 +4,6 @@
         <script src="/w3c/resources/testharness.js"></script>
         <script src="/w3c/resources/testharnessreport.js"></script>
         <script src="mediasource-util.js"></script>
-        <script src="/media/resources/media-source/webm/segment-info.js"></script>
         <link rel="stylesheet" href="/w3c/resources/testharness.css">
     </head>
     <body>
@@ -61,6 +60,7 @@
 
                 test.waitForExpectedEvents(function()
                 {
+                    assert_equals(mediaElement.duration, segmentInfo.duration);
                     assert_greater_than_equal(mediaElement.duration, 2.0, 'Duration is >2.0s.');
                     test.waitForCurrentTimeChange(mediaElement, function()
                     {
@@ -90,7 +90,6 @@
                 });
 
             }, 'Test seeking beyond media duration.');
-
         </script>
     </body>
 </html>

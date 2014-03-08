@@ -9,25 +9,19 @@
     <body>
         <div id="log"></div>
         <script>
-          mediasource_test(function(test, mediaElement, mediaSource)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
               test.endOnEvent(mediaElement, 'ended');
 
-              var mediaType = 'video/webm;codecs="vp8,vorbis"';
-              var mediaURL = '/media/resources/media-source/webm/test.webm';
-              var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
-
-              MediaSourceUtil.loadBinaryData(test, mediaURL, function(data)
+              sourceBuffer.addEventListener('updateend', test.step_func(function()
               {
-                  sourceBuffer.addEventListener('updateend', test.step_func(function()
-                  {
-                      mediaSource.duration = 1;
-                      mediaSource.endOfStream();
-                      mediaElement.play();
-                  }));
-                  sourceBuffer.appendBuffer(data);
-              });
+                  mediaSource.duration = 1;
+                  mediaSource.endOfStream();
+                  mediaElement.play();
+              }));
+
+              sourceBuffer.appendBuffer(mediaData);
           }, "Test normal playback case with MediaSource API", {timeout: 5000});
         </script>
     </body>

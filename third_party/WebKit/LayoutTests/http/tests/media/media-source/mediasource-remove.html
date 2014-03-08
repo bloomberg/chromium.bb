@@ -116,60 +116,51 @@
           }, "Test aborting a remove operation.");
 
 
-          mediasource_test(function(test, mediaElement, mediaSource)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              var mediaType = 'video/webm;codecs="vp8,vorbis"';
-              var mediaURL = '/media/resources/media-source/webm/test.webm';
-              var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
-              MediaSourceUtil.loadBinaryData(test, mediaURL, function(data)
+              test.expectEvent(sourceBuffer, "updatestart");
+              test.expectEvent(sourceBuffer, "update");
+              test.expectEvent(sourceBuffer, "updateend");
+              sourceBuffer.appendBuffer(mediaData);
+
+              test.waitForExpectedEvents(function()
               {
+                  mediaSource.endOfStream();
+
+                  assert_equals(mediaSource.readyState, "ended");
+
                   test.expectEvent(sourceBuffer, "updatestart");
                   test.expectEvent(sourceBuffer, "update");
                   test.expectEvent(sourceBuffer, "updateend");
-                  sourceBuffer.appendBuffer(data);
+                  sourceBuffer.remove(1, 2);
 
-                  test.waitForExpectedEvents(function()
-                  {
-                      mediaSource.endOfStream();
+                  assert_true(sourceBuffer.updating, "updating");
+                  assert_equals(mediaSource.readyState, "open");
+              });
 
-                      assert_equals(mediaSource.readyState, "ended");
-
-                      test.expectEvent(sourceBuffer, "updatestart");
-                      test.expectEvent(sourceBuffer, "update");
-                      test.expectEvent(sourceBuffer, "updateend");
-                      sourceBuffer.remove(1, 2);
-
-                      assert_true(sourceBuffer.updating, "updating");
-                      assert_equals(mediaSource.readyState, "open");
-                  });
-
-                  test.waitForExpectedEvents(function()
-                  {
-                      assert_false(sourceBuffer.updating, "updating");
-                      test.done();
-                  });
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, "updating");
+                  test.done();
               });
           }, "Test remove transitioning readyState from 'ended' to 'open'.");
 
           function removeAppendedDataTests(callback, description)
           {
-              mediasource_test(function(test, mediaElement, mediaSource)
+              mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
               {
-                  var mediaType = 'video/webm;codecs="vp8,vorbis"';
-                  var mediaURL = '/media/resources/media-source/webm/test.webm';
-                  var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
-                  MediaSourceUtil.loadBinaryData(test, mediaURL, function(data)
-                  {
-                      test.expectEvent(sourceBuffer, "updatestart");
-                      test.expectEvent(sourceBuffer, "update");
-                      test.expectEvent(sourceBuffer, "updateend");
-                      sourceBuffer.appendBuffer(data);
+                  test.expectEvent(sourceBuffer, "updatestart");
+                  test.expectEvent(sourceBuffer, "update");
+                  test.expectEvent(sourceBuffer, "updateend");
+                  sourceBuffer.appendBuffer(mediaData);
 
-                      test.waitForExpectedEvents(function()
-                      {
-                          assertBufferedEquals(sourceBuffer, "{ [0.000, 6.042) }", "Initial buffered range.");
-                          callback(test, sourceBuffer);
-                      });
+                  test.waitForExpectedEvents(function()
+                  {
+                      var duration = segmentInfo.duration.toFixed(3);
+                      var subType = MediaSourceUtil.getSubType(segmentInfo.type);
+
+                      assertBufferedEquals(sourceBuffer, "{ [0.000, " + duration + ") }", "Initial buffered range.");
+                      callback(test, sourceBuffer, duration, subType);
                   });
               }, description);
           };
@@ -188,29 +179,44 @@
               });
           }
 
-          removeAppendedDataTests(function(test, sourceBuffer)
+          removeAppendedDataTests(function(test, sourceBuffer, duration, subType)
           {
               removeAndCheckBufferedRanges(test, sourceBuffer, 0, Number.POSITIVE_INFINITY, "{ }");
           }, "Test removing all appended data.");
 
-          removeAppendedDataTests(function(test, sourceBuffer)
+          removeAppendedDataTests(function(test, sourceBuffer, duration, subType)
           {
+              var expectations = {
+                webm: ("{ [3.187, " + duration + ") }"),
+                mp4: ("{ [3.021, " + duration + ") }"),
+              };
+
               // Note: Range doesn't start exactly at the end of the remove range because there isn't
               // a keyframe there. The resulting range starts at the first keyframe >= the end time.
-              removeAndCheckBufferedRanges(test, sourceBuffer, 0, 3, "{ [3.187, 6.042) }");
+              removeAndCheckBufferedRanges(test, sourceBuffer, 0, 3, expectations[subType]);
           }, "Test removing beginning of appended data.");
 
-          removeAppendedDataTests(function(test, sourceBuffer)
+          removeAppendedDataTests(function(test, sourceBuffer, duration, subType)
           {
+              var expectations = {
+                webm: ("{ [0.000, 1.012) [3.187, " + duration + ") }"),
+                mp4: ("{ [0.000, 1.022) [3.021, " + duration + ") }"),
+              };
+
               // Note: The first resulting range ends slightly after start because the removal algorithm only removes
               // frames with a timestamp >= the start time. If a frame starts before and ends after the remove() start
               // timestamp, then it stays in the buffer.
-              removeAndCheckBufferedRanges(test, sourceBuffer, 1, 3, "{ [0.000, 1.012) [3.187, 6.042) }");
+              removeAndCheckBufferedRanges(test, sourceBuffer, 1, 3, expectations[subType]);
           }, "Test removing the middle of appended data.");
 
-          removeAppendedDataTests(function(test, sourceBuffer)
+          removeAppendedDataTests(function(test, sourceBuffer, duration, subType)
           {
-              removeAndCheckBufferedRanges(test, sourceBuffer, 1, Number.POSITIVE_INFINITY, "{ [0.000, 1.012) }");
+              var expectations = {
+                webm: "{ [0.000, 1.012) }",
+                mp4: "{ [0.000, 1.022) }",
+              };
+
+              removeAndCheckBufferedRanges(test, sourceBuffer, 1, Number.POSITIVE_INFINITY, expectations[subType]);
           }, "Test removing the end of appended data.");
         </script>
     </body>

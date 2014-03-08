@@ -9,22 +9,7 @@
     <body>
         <div id="log"></div>
         <script>
-          mediasource_loaddata_test = function(callback, description)
-          {
-              mediasource_test(function(test, mediaElement, mediaSource)
-              {
-                  var mediaType = 'video/webm;codecs="vp8,vorbis"';
-                  var mediaURL = '/media/resources/media-source/webm/test.webm';
-                  var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
-                  MediaSourceUtil.loadBinaryData(test, mediaURL, function(mediaData)
-                  {
-                      callback(test, mediaElement, mediaSource, sourceBuffer, mediaData);
-
-                  });
-              }, description);
-          };
-
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 
@@ -42,7 +27,7 @@
               });
           }, "Test SourceBuffer.appendBuffer() event dispatching.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 
@@ -66,7 +51,7 @@
               });
           }, "Test SourceBuffer.appendBuffer() call during a pending appendBuffer().");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 
@@ -88,7 +73,7 @@
               });
           }, "Test SourceBuffer.abort() call during a pending appendBuffer().");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 
@@ -129,7 +114,7 @@
               });
           }, "Test SourceBuffer.appendBuffer() triggering an 'ended' to 'open' transition.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 
@@ -157,7 +142,7 @@
               });
           }, "Test MediaSource.removeSourceBuffer() call during a pending appendBuffer().");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 
@@ -178,7 +163,7 @@
               });
           }, "Test set MediaSource.duration during a pending appendBuffer() for one of its SourceBuffers.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, "error");
               test.failOnEvent(mediaSource, "sourceended");
@@ -203,7 +188,7 @@
               });
           }, "Test MediaSource.endOfStream() during a pending appendBuffer() for one of its SourceBuffers.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.failOnEvent(mediaElement, 'error');
 

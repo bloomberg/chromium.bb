@@ -10,7 +10,7 @@
         <div id="log"></div>
         <script>
           function createMediaXHR() {
-              var mediaURL = '/media/resources/media-source/webm/test.webm';
+              var mediaURL = MediaSourceUtil.SEGMENT_INFO.url;
               var xhr = new XMLHttpRequest();
               xhr.open('GET', mediaURL, true);
               xhr.responseType = 'stream';
@@ -65,7 +65,7 @@
           {
               mediasource_test(function(test, mediaElement, mediaSource)
               {
-                  var sourceBuffer = mediaSource.addSourceBuffer('video/webm;codecs="vp8,vorbis"');
+                  var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.SEGMENT_INFO.type);
                   test.failOnEvent(mediaElement, 'error');
                   callback(test, mediaElement, mediaSource, sourceBuffer);
               }, description);

@@ -9,25 +9,9 @@
     <body>
         <div id="log"></div>
         <script>
-          var mediaType = 'video/webm;codecs="vp8,vorbis"';
-
-          mediasource_loaddata_test = function(callback, description)
-          {
-              mediasource_test(function(test, mediaElement, mediaSource)
-              {
-                  var mediaURL = '/media/resources/media-source/webm/test.webm';
-                  var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
-                  MediaSourceUtil.loadBinaryData(test, mediaURL, function(mediaData)
-                  {
-                      callback(test, mediaElement, mediaSource, sourceBuffer, mediaData);
-
-                  });
-              }, description);
-          };
-
           mediasource_test(function(test, mediaElement, mediaSource)
           {
-              var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
               assert_true(sourceBuffer != null, "New SourceBuffer returned");
 
               sourceBuffer.appendWindowStart = 100.0;
@@ -44,7 +28,7 @@
 
           mediasource_test(function(test, mediaElement, mediaSource)
           {
-              var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
               assert_true(sourceBuffer != null, "New SourceBuffer returned");
               sourceBuffer.appendWindowEnd = 500.0;
 
@@ -74,7 +58,7 @@
               test.done();
           }, "Test set wrong values to appendWindowStart and appendWindowEnd.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               mediaSource.removeSourceBuffer(sourceBuffer);
               assert_throws("InvalidStateError",
@@ -88,7 +72,7 @@
 
           }, "Test appendwindow throw error when mediasource object is not associated with a sourebuffer.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.expectEvent(sourceBuffer, "updateend", "sourceBuffer");
               sourceBuffer.appendBuffer(mediaData);
@@ -109,7 +93,7 @@
               });
           }, "Test set appendWindowStart and appendWindowEnd when source buffer updating.");
 
-          mediasource_loaddata_test(function(test, mediaElement, mediaSource, sourceBuffer, mediaData)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.expectEvent(sourceBuffer, "updateend", "sourceBuffer");
               sourceBuffer.appendBuffer(mediaData);

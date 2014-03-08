@@ -9,7 +9,7 @@
     <body>
         <div id="log"></div>
         <script>
-          mediasource_test(function(test, mediaElement, mediaSource)
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               var previousQuality = mediaElement.getVideoPlaybackQuality();
               var timeUpdateCount = 0;
@@ -41,20 +41,13 @@
 
               test.failOnEvent(mediaElement, 'error');
 
-              var mediaType = 'video/webm;codecs="vp8,vorbis"';
-              var mediaURL = '/media/resources/media-source/webm/test.webm';
-              var sourceBuffer = mediaSource.addSourceBuffer(mediaType);
-
-              MediaSourceUtil.loadBinaryData(test, mediaURL, function(data)
-              {
-                  sourceBuffer.addEventListener('updateend', test.step_func(function()
-                  {
-                      mediaSource.duration = 1;
-                      mediaSource.endOfStream();
-                      mediaElement.play();
-                  }));
-                  sourceBuffer.appendBuffer(data);
-              });
+               sourceBuffer.addEventListener('updateend', test.step_func(function()
+               {
+                   mediaSource.duration = 1;
+                   mediaSource.endOfStream();
+                   mediaElement.play();
+               }));
+               sourceBuffer.appendBuffer(mediaData);
           }, "Test HTMLVideoElement.getVideoPlaybackQuality() with MediaSource API", {timeout: 5000});
         </script>
     </body>
