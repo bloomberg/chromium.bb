@@ -503,12 +503,6 @@ bool NaClProcessHost::LaunchSelLdr() {
     return false;
   }
 
-  CommandLine::StringType nacl_loader_prefix;
-#if defined(OS_POSIX)
-  nacl_loader_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-      switches::kNaClLoaderCmdPrefix);
-#endif  // defined(OS_POSIX)
-
   // Build command line for nacl.
 
 #if defined(OS_MACOSX)
@@ -520,8 +514,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   // http://code.google.com/p/nativeclient/issues/detail?id=2043.
   int flags = ChildProcessHost::CHILD_NO_PIE;
 #elif defined(OS_LINUX)
-  int flags = nacl_loader_prefix.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
-                                           ChildProcessHost::CHILD_NORMAL;
+  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
@@ -576,9 +569,6 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
-  if (!nacl_loader_prefix.empty())
-    cmd_line->PrependWrapper(nacl_loader_prefix);
-
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
@@ -593,7 +583,7 @@ bool NaClProcessHost::LaunchSelLdr() {
                      cmd_line.release());
   }
 #elif defined(OS_POSIX)
-  process_->Launch(nacl_loader_prefix.empty(),  // use_zygote
+  process_->Launch(true,  // use_zygote
                    base::EnvironmentMap(),
                    cmd_line.release());
 #endif
