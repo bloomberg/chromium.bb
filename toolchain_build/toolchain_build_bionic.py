@@ -27,7 +27,8 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = 'a99f0135a4c30211b21050a5d3ec4438d560b75b'
+
+BIONIC_VERSION = '136890a6f6e5f72b7b0bd872a8c39ce0f8b3545a'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -49,7 +50,6 @@ X86_BIONIC = os.path.join(TOOLCHAIN, 'linux_x86_bionic')
 PROJECTS = [
   'bionic_%s_work',
   'gcc_%s_work',
-  'test_%s_work',
 ]
 
 
@@ -96,13 +96,9 @@ def Clobber():
       Rmdir(os.path.join(TOOLCHAIN_BUILD_OUT, workdir % arch))
 
 
-def FetchAndBuildGCC():
-  if 'arm' in ARCHES:
-    tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
-    toolchain_main.PackageBuilder(toolchain_build.PACKAGES, tc_args).Main()
-
-  if 'x86' in ARCHES:
-    process.Run(['make', 'sync'], cwd=os.path.join(NATIVE_CLIENT, 'tools'))
+def FetchAndBuild_gcc_libs():
+  tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
+  toolchain_main.PackageBuilder(toolchain_build.PACKAGES, tc_args).Main()
 
 
 def FetchBionicSources():
@@ -120,10 +116,6 @@ def CreateBasicToolchain():
   UpdateFromTo(ARM_NEWLIB, ARM_BIONIC,
                filters=['*arm-nacl/include*', '*arm-nacl/lib*','*.a', '*.o'])
   UpdateFromTo(ARM_NEWLIB, ARM_BIONIC, paterns=['*.s'])
-
-  UpdateFromTo(X86_NEWLIB, X86_BIONIC,
-               filters=['*x86_64-nacl/include*', '*x86_64-nacl/lib*','*.o'])
-  UpdateFromTo(X86_NEWLIB, X86_BIONIC, paterns=['*.s'])
 
   #  Static build uses:
   #     crt1.o crti.o 4.8.2/crtbeginT.o ... 4.8.2/crtend.o crtn.o
@@ -176,11 +168,6 @@ def CreateBasicToolchain():
       dstpath = ReplaceArch(os.path.join(inspath, dst), arch)
       UpdateFromTo(srcpath, dstpath)
 
-    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
-    workpath = ReplaceArch(workpath, arch)
-    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath,
-                      target='bootstrap')
-
     # Build specs file
     gcc = ReplaceArch(os.path.join(inspath, 'bin', '$NACL-nacl-gcc'), arch)
     lib = ReplaceArch(os.path.join(inspath, 'lib/gcc/$NACL-nacl/$VER'), arch)
@@ -192,14 +179,24 @@ def CreateBasicToolchain():
 
     # Replace items in the spec file
     text = ReplaceText(text, [{
-      '-lgcc': '-lgcc %{!shared: -lgcc_eh}',
+      '-lgcc': '-lgcc --as-needed %{!static: -lgcc_s} --no-as-needed %{!shared: -lgcc_eh}',
       '--hash-style=gnu': '--hash-style=sysv',
     }])
 
     open(specs, 'w').write(text)
 
 
-def ConfigureAndBuildBionic():
+def ConfigureAndBuild_libc():
+  for arch in ARCHES:
+    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
+    inspath = ReplaceArch(inspath, arch)
+
+    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
+    workpath = ReplaceArch(workpath, arch)
+    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath, )
+
+
+def ConfigureAndBuild_libc():
   for arch in ARCHES:
     inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
     inspath = ReplaceArch(inspath, arch)
@@ -220,7 +217,7 @@ def ConfigureAndBuildLinker():
     ConfigureAndBuild(arch, 'bionic/linker', workpath, inspath)
 
 
-def ConfigureAndInstallForGCC(arch, project, cfg, workpath, inspath):
+def ConfigureGCCProject(arch, project, cfg, workpath, inspath):
   # configure does not always have +x
   filepath = os.path.abspath(os.path.join(workpath, cfg[0]))
   st_info  = os.stat(filepath)
@@ -246,18 +243,29 @@ def ConfigureAndInstallForGCC(arch, project, cfg, workpath, inspath):
   else:
     print 'Reusing config for %s.' % proj
 
+
+def MakeGCCProject(arch, project, workpath, targets=[]):
+  env = os.environ
+  if arch == 'arm':
+    newpath = os.path.join(ARM_BIONIC, 'bin') + ':' + env['PATH']
+  else:
+    newpath = os.path.join(X86_BIONIC, 'bin') + ':' + env['PATH']
+  proj = '%s %s' % (project, arch)
+  setpath = ['/usr/bin/env', 'PATH=' + newpath]
+
+  if targets:
+    proj = project = ': ' + ' '.join(targets)
+  else:
+    proj = project
+
   print 'Make ' + proj
-  if process.Run(setpath + ['make', '-j16', 'V=1'],
+  if process.Run(setpath + ['make', '-j16', 'V=1'] + targets,
                   cwd=workpath, outfile=sys.stdout):
     raise RuntimeError('Failed to build %s.\n' % proj)
-  print 'Install ' + proj
-  if process.Run(setpath + ['make', '-j16', 'install', 'V=1'],
-                 cwd=workpath, outfile=sys.stdout):
-    raise RuntimeError('Failed to install %s.\n' % proj)
   print 'Done ' + proj
 
 
-def ConfigureAndBuildArmGCC(config=False):
+def ConfigureAndBuild_libgcc(config=False):
   arch = 'arm'
   project = 'libgcc'
   tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
@@ -286,7 +294,35 @@ def ConfigureAndBuildArmGCC(config=False):
     '--prefix=' + inspath,
     'CFLAGS=-I../../../gcc_lib_arm_work'
   ]
-  ConfigureAndInstallForGCC(arch, project, cfg, dstpath, inspath)
+  ConfigureGCCProject(arch, project, cfg, dstpath, inspath)
+  MakeGCCProject(arch, project, dstpath, ['libgcc.a'])
+
+  # Copy temp version of libgcc.a for linking libc.so
+  UpdateFromTo(os.path.join(dstpath, 'libgcc.a'),
+               os.path.join(tcpath, 'arm-nacl', 'lib', 'libgcc.a'))
+
+
+def BuildAndInstall_libgcc_s():
+  arch = 'arm'
+  project = 'libgcc'
+  tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
+  tcpath = ReplaceArch(tcpath, arch)
+
+  # Remove temp copy of libgcc.a, it get's installed at the end
+  os.remove(os.path.join(tcpath, 'arm-nacl', 'lib', 'libgcc.a'))
+
+  # Prep work path
+  workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_work')
+  workpath = ReplaceArch(workpath, arch)
+  dstpath = ReplaceArch(os.path.join(workpath, '$NACL-nacl/libgcc'), arch)
+
+  # Prep install path
+  inspath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_install')
+  inspath = ReplaceArch(inspath, arch)
+
+  MakeGCCProject(arch, project, dstpath)
+  MakeGCCProject(arch, project, dstpath, ['install'])
+
   UpdateFromTo(os.path.join(inspath, 'lib', 'gcc'),
                os.path.join(tcpath, 'lib', 'gcc'),
                filters=['*.o'])
@@ -296,34 +332,7 @@ def ConfigureAndBuildArmGCC(config=False):
                os.path.join(tcpath, 'arm-nacl', 'lib', 'libgcc_s.so'))
 
 
-def ConfigureAndBuildX86GCC(config=False):
-  arch = 'x86'
-  project = 'libgcc'
-
-  tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-  tcpath = ReplaceArch(tcpath, arch)
-
-  # Prep work path
-  workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_work')
-  workpath = ReplaceArch(workpath, arch)
-  Mkdir(workpath)
-  Symlink('../gcc_libs_arm_work/gcc' , os.path.join(workpath, 'gcc'))
-
-  # Prep install path
-  inspath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_install')
-  inspath = ReplaceArch(inspath, arch)
-
-  dstpath = ReplaceArch(os.path.join(workpath, '$NACL-nacl/libgcc'), arch)
-  cfg = [
-    '../../../../SRC/gcc/libgcc/configure',
-    '--target=x86_64-nacl',
-    '--enable-shared',
-    '--enable-shared-libgcc',
-    '--host=x86_64-nacl',
-    ',--build=i686-linux'
-  ]
-
-def ConfigureAndBuildArmCXX(config=False):
+def ConfigureAndBuild_libstdcpp():
   arch = 'arm'
   project = 'libstdc++'
   tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
@@ -352,15 +361,37 @@ def ConfigureAndBuildArmCXX(config=False):
     '--prefix=' + inspath,
     'CFLAGS=-I../../../gcc_lib_arm_work'
   ]
-  ConfigureAndInstallForGCC(arch, project, cfg, dstpath, inspath)
+
+  ConfigureGCCProject(arch, project, cfg, dstpath, inspath)
+  MakeGCCProject(arch, project, dstpath)
+  MakeGCCProject(arch, project, dstpath, ['install'])
+
   UpdateFromTo(os.path.join(inspath, 'lib'),
                os.path.join(tcpath, 'arm-nacl', 'lib'))
   UpdateFromTo(os.path.join(inspath, 'include'),
                os.path.join(tcpath, 'arm-nacl', 'include'))
 
 
+def GetProjectPaths(arch, project):
+  srcpath = os.path.join(BIONIC_SRC, project)
+  workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
+  instpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_install')
 
-def CreateProject(arch, src, dst, ins=None):
+  workpath = ReplaceArch(os.path.join(workpath, 'bionic', project), arch)
+  toolpath = ReplaceArch(os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic'), arch)
+  instpath = ReplaceArch(os.path.join(toolpath, '$NACL-nacl', 'lib'), arch)
+  out = {
+    'src': srcpath,
+    'work': workpath,
+    'ins': instpath,
+    'tc': toolpath,
+  }
+  return out
+
+
+def CreateProject(arch, project):
+  paths = GetProjectPaths(arch, project)
+
   MAKEFILE_TEMPLATE = """
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -390,70 +421,41 @@ include $(build_tc_path)/tc_bionic.mk
 include $(src_path)/Makefile
 """
   remap = {
-    '$(src_path)': src,
-    '$(dst_path)': dst,
-    '$(ins_path)': ins or dst,
+    '$(src_path)': paths['src'],
+    '$(dst_path)': paths['work'],
+    '$(ins_path)': paths['ins'],
     '$(tc_path)': TOOLCHAIN,
     '$(build_tc_path)': TOOLCHAIN_BUILD
   }
   text = ReplaceText(MAKEFILE_TEMPLATE, [remap])
   text = ReplaceArch(text, arch)
 
-  print 'Create dst dir: ' + dst
-  Mkdir(dst)
-  if ins:
-    print 'Create ins dir: ' + ins
-    Mkdir(ins)
-
-  UpdateText(os.path.join(dst, 'Makefile'), text)
+  Mkdir(paths['work'])
+  Mkdir(paths['ins'])
+  UpdateText(os.path.join(paths['work'], 'Makefile'), text)
 
 
-def ConfigureAndBuild(arch, project, workpath, inspath,
-                      tcpath=None, target=None):
+def ConfigureBionicProjects():
+  PROJECTS = ['libc', 'libm', 'linker', 'tests']
+  arch = 'arm'
+  for project in PROJECTS:
+    print 'Configure %s for %s.' % (project, arch)
+    CreateProject(arch, project)
 
-  # Create project for CRTx and LIBC files
-  print 'Configure %s for %s.\n' % (project, arch)
-  srcpath = os.path.join(TOOLCHAIN_BUILD_SRC, project)
-  dstpath = ReplaceArch(os.path.join(workpath, '$NACL-nacl', project), arch)
-  libpath = ReplaceArch(os.path.join(inspath, '$NACL-nacl', 'lib'), arch)
-  CreateProject(arch, srcpath, dstpath, libpath)
-  print 'Building %s for %s at %s.' % (project, arch, dstpath)
 
-  args = ['make', '-j12', 'V=1']
-  if target:
-    args.append(target)
-  if process.Run(args, cwd=dstpath, outfile=sys.stdout):
+def MakeBionicProject(project, targets=[]):
+  arch = 'arm'
+  paths = GetProjectPaths(arch, project)
+  workpath = paths['work']
+  inspath = paths['ins']
+  targetlist = ' '.join(targets)
+
+  print 'Building %s for %s at %s %s.' % (project, arch, workpath, targetlist)
+  args = ['make', '-j12', 'V=1'] + targets
+  if process.Run(args, cwd=workpath, outfile=sys.stdout):
     raise RuntimeError('Failed to build %s for %s.\n' % (project, arch))
-  if tcpath:
-    UpdateFromTo(inspath, tcpath)
+
   print 'Done with %s for %s.\n' % (project, arch)
-
-
-def ConfigureAndBuildGCC(clobber=False):
-  ConfigureAndBuildArmGCC(clobber)
-
-
-def ConfigureAndBuildCXX(clobber=False):
-  ConfigureAndBuildArmCXX(clobber)
-
-
-def ConfigureAndBuildTests(clobber=False, run=False):
-  for arch in ARCHES:
-    workpath = os.path.join(TOOLCHAIN_BUILD_OUT,
-                            ReplaceArch('bionic_$GCC_test_work', arch))
-    inspath = os.path.join(TOOLCHAIN_BUILD_OUT,
-                           ReplaceArch('bionic_$GCC_test_install', arch))
-    if clobber:
-      print 'Clobbering'
-      Rmdir(workpath)
-      Rmdir(inspath)
-    Mkdir(workpath)
-    Mkdir(inspath)
-    if run:
-      ConfigureAndBuild(arch, 'bionic/tests', workpath, inspath,
-                         target='run')
-    else:
-      ConfigureAndBuild(arch, 'bionic/tests', workpath, inspath)
 
 
 def ArchiveAndUpload(version, zipname, zippath):
@@ -522,11 +524,6 @@ def main(argv):
       help='Running on the buildbot.')
 
   parser.add_option(
-      '-e', '--empty', dest='empty',
-      default=False, action='store_true',
-      help='Only create empty toolchain')
-
-  parser.add_option(
       '-u', '--upload', dest='upload',
       default=False, action='store_true',
       help='Upload build artifacts.')
@@ -540,32 +537,46 @@ def main(argv):
   if options.buildbot or options.upload:
     version = os.environ['BUILDBOT_REVISION']
 
-  if options.clobber or options.empty:
+  if options.clobber:
     Clobber()
 
   if options.sync or options.buildbot:
     FetchBionicSources()
 
-  # Copy headers, create libc.a
+  # Copy headers and compiler tools
   CreateBasicToolchain()
 
-  # Create libgcc.a libgcc_s
-  if not options.empty and not options.skip_gcc:
-    FetchAndBuildGCC()
-    ConfigureAndBuildGCC(options.clobber)
+  # Configure Bionic Projects, libc, libm, linker, tests, ...
+  ConfigureBionicProjects()
 
-  # Copy headers, create libc.so, libm.a
-  ConfigureAndBuildBionic()
+  if not options.skip_gcc:
+    # Build newlib gcc_libs for use by bionic
+    FetchAndBuild_gcc_libs()
 
-  # Create libc++.a, libc++.so
-  if not options.empty and not options.skip_gcc:
-    ConfigureAndBuildCXX(options.clobber)
+  # Configure and build libgcc.a
+  ConfigureAndBuild_libgcc()
 
-  # Build the dynamic linker
-  ConfigureAndBuildLinker()
+  # With libgcc.a, we can now build libc.so
+  MakeBionicProject('libc')
 
-  # Can not test on buildot until sel_ldr, irt, etc.. are built
-  ConfigureAndBuildTests(clobber=False, run=not options.buildbot)
+  # With libc.so, we can build libgcc_s.so
+  BuildAndInstall_libgcc_s()
+
+  # With libc and libgcc_s, we can now build libm
+  MakeBionicProject('libm')
+
+  # With libc, libgcc, and libm, we can now build libstdc++
+  ConfigureAndBuild_libstdcpp()
+
+  # Now we can build the linker
+  MakeBionicProject('linker')
+
+  # Now we have a full toolchain, so test it
+  MakeBionicProject('tests')
+
+  # We can run only off buildbots
+  if not options.buildbot:
+    MakeBionicProject('tests', ['run'])
 
   if options.buildbot or options.upload:
     zipname = 'naclsdk_linux_arm_bionic.tgz'
