@@ -4,11 +4,11 @@
 
 import json
 
-from extensions_paths import CHROME_EXTENSIONS
+from extensions_paths import EXTENSIONS
 from test_file_system import MoveAllTo
 
 
-TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
+TABS_SCHEMA_BRANCHES = MoveAllTo(EXTENSIONS, {
   'trunk': {
     'docs': {
       'templates': {

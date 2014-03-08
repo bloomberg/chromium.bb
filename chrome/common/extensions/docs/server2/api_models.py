@@ -6,7 +6,7 @@ import os
 import posixpath
 
 from compiled_file_system import SingleFile, Unicode
-from extensions_paths import API, CHROME_API
+from extensions_paths import API
 from file_system import FileNotFoundError
 from future import Gettable, Future
 from schema_util import ProcessSchema
@@ -29,7 +29,6 @@ class APIModels(object):
     self._features_bundle = features_bundle
     self._model_cache = compiled_fs_factory.Create(
         file_system, _CreateAPIModel, APIModels)
-    self._file_system = file_system
 
   def GetNames(self):
     # API names appear alongside some of their methods/events/etc in the
@@ -46,14 +45,11 @@ class APIModels(object):
     # Callers sometimes specify a filename which includes .json or .idl - if
     # so, believe them. They may even include the 'api/' prefix.
     if os.path.splitext(api_name)[1] in ('.json', '.idl'):
-      if not api_name.startswith((API, CHROME_API)):
-        api_path = posixpath.join(API, api_name)
-        if self._file_system.Exists(api_path).Get():
-          return self._model_cache.GetFromFile(api_path)
-        api_name = posixpath.join(CHROME_API, api_name)
+      if not api_name.startswith(API):
+        api_name = posixpath.join(API, api_name)
       return self._model_cache.GetFromFile(api_name)
 
-    assert not api_name.startswith((API, CHROME_API))
+    assert not api_name.startswith(API)
 
     # API names are given as declarativeContent and app.window but file names
     # will be declarative_content and app_window.
@@ -67,15 +63,14 @@ class APIModels(object):
                                         basename.replace('devtools_' , '')))
 
     futures = [self._model_cache.GetFromFile(
-                   posixpath.join(api_path, '%s.%s' % (file_name, ext)))
-               for ext in ('json', 'idl')
-               for api_path in (API, CHROME_API)]
+                   posixpath.join(API, '%s.%s' % (file_name, ext)))
+               for ext in ('json', 'idl')]
     def resolve():
       for future in futures:
         try:
           return future.Get()
         except FileNotFoundError: pass
-      # Propagate the first FileNotFoundError if no files were found.
+      # Propagate the first FileNotFoundError if neither were found.
       futures[0].Get()
     return Future(delegate=Gettable(resolve))
 

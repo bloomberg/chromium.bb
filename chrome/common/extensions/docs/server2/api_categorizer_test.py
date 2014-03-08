@@ -6,7 +6,7 @@ import unittest
 
 from api_categorizer import APICategorizer
 from compiled_file_system import CompiledFileSystem
-from extensions_paths import CHROME_EXTENSIONS
+from extensions_paths import EXTENSIONS
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 
@@ -58,7 +58,7 @@ _TEST_DATA = {
 class APICategorizerTest(unittest.TestCase):
   def setUp(self):
     self._api_categorizer = APICategorizer(
-        TestFileSystem(_TEST_DATA, relative_to=CHROME_EXTENSIONS),
+        TestFileSystem(_TEST_DATA, relative_to=EXTENSIONS),
         CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()))
 
   def testGetAPICategory(self):

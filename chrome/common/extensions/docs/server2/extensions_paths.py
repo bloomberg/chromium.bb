@@ -7,17 +7,14 @@ from posixpath import join
 
 # Extensions-related paths within the Chromium repository.
 
-EXTENSIONS = 'extensions/common/'
-CHROME_EXTENSIONS = 'chrome/common/extensions/'
+EXTENSIONS = 'chrome/common/extensions/'
 
 API = join(EXTENSIONS, 'api/')
-CHROME_API = join(CHROME_EXTENSIONS, 'api/')
+DOCS = join(EXTENSIONS, 'docs/')
 
-DOCS = join(CHROME_EXTENSIONS, 'docs/')
-
-API_FEATURES = join(CHROME_API, '_api_features.json')
-MANIFEST_FEATURES = join(CHROME_API, '_manifest_features.json')
-PERMISSION_FEATURES = join(CHROME_API, '_permission_features.json')
+API_FEATURES = join(API, '_api_features.json')
+MANIFEST_FEATURES = join(API, '_manifest_features.json')
+PERMISSION_FEATURES = join(API, '_permission_features.json')
 
 EXAMPLES = join(DOCS, 'examples/')
 SERVER2 = join(DOCS, 'server2/')

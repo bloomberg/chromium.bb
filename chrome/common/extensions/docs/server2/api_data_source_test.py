@@ -12,7 +12,7 @@ from api_data_source import (_JSCModel,
                              _FormatValue,
                              _GetEventByNameFromEvents)
 from branch_utility import ChannelInfo
-from extensions_paths import CHROME_EXTENSIONS
+from extensions_paths import EXTENSIONS
 from file_system import FileNotFoundError
 from future import Future
 from object_store_creator import ObjectStoreCreator
@@ -96,7 +96,7 @@ class APIDataSourceTest(unittest.TestCase):
     self._base_path = Server2Path('test_data', 'test_json')
 
     server_instance = ServerInstance.ForTest(
-        TestFileSystem(CANNED_TRUNK_FS_DATA, relative_to=CHROME_EXTENSIONS))
+        TestFileSystem(CANNED_TRUNK_FS_DATA, relative_to=EXTENSIONS))
     self._json_cache = server_instance.compiled_fs_factory.ForJson(
         server_instance.host_file_system_provider.GetTrunk())
     self._api_models = server_instance.api_models

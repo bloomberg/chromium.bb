@@ -18,8 +18,7 @@ import unittest
 
 from branch_utility import BranchUtility
 from chroot_file_system import ChrootFileSystem
-from extensions_paths import (
-    CONTENT_PROVIDERS, CHROME_EXTENSIONS, PUBLIC_TEMPLATES)
+from extensions_paths import CONTENT_PROVIDERS, EXTENSIONS, PUBLIC_TEMPLATES
 from fake_fetchers import ConfigureFakeFetchers
 from special_paths import SITE_VERIFICATION_FILE
 from handler import Handler
@@ -112,7 +111,7 @@ class IntegrationTest(unittest.TestCase):
     #start_time = time.time()
     #link_error_detector = LinkErrorDetector(
     #    # TODO(kalman): Use of ChrootFileSystem here indicates a hack. Fix.
-    #    ChrootFileSystem(LocalFileSystem.Create(), CHROME_EXTENSIONS),
+    #    ChrootFileSystem(LocalFileSystem.Create(), EXTENSIONS),
     #    lambda path: Handler(Request.ForTest(path)).Get(),
     #    'templates/public',
     #    ('extensions/index.html', 'apps/about_apps.html'))

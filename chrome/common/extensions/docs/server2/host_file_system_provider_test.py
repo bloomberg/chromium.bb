@@ -6,7 +6,7 @@
 from copy import deepcopy
 import unittest
 
-from extensions_paths import CHROME_API
+from extensions_paths import API
 from file_system import FileNotFoundError
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
@@ -15,7 +15,7 @@ from test_file_system import TestFileSystem
 
 class HostFileSystemProviderTest(unittest.TestCase):
   def setUp(self):
-    self._idle_path = CHROME_API + 'idle.json'
+    self._idle_path = API + 'idle.json'
     self._canned_data = deepcopy(CANNED_API_FILE_SYSTEM_DATA)
 
   def _constructor_for_test(self, branch, **optargs):

@@ -4,7 +4,7 @@
 
 import json
 
-from extensions_paths import CHROME_EXTENSIONS
+from extensions_paths import EXTENSIONS
 from third_party.json_schema_compiler.json_parse import OrderedDict
 from test_file_system import MoveAllTo, MoveTo
 
@@ -46,7 +46,7 @@ CANNED_BRANCHES = OrderedDict([
 ])
 
 
-CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(CHROME_EXTENSIONS, {
+CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(EXTENSIONS, {
   'api': {
     '_api_features.json': json.dumps({
       'ref_test': { 'dependencies': ['permission:ref_test'] },
@@ -133,7 +133,7 @@ _TEST_WHATS_NEW_JSON = {
 }
 
 
-CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
+CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
   'trunk': {
     'api': {
       '_api_features.json': json.dumps({
