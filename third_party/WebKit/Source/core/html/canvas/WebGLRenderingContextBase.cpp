@@ -2582,18 +2582,21 @@ WebGLGetInfo WebGLRenderingContextBase::getTexParameter(GLenum target, GLenum pn
     WebGLTexture* tex = validateTextureBinding("getTexParameter", target, false);
     if (!tex)
         return WebGLGetInfo();
-    GLint value = 0;
     switch (pname) {
     case GL_TEXTURE_MAG_FILTER:
     case GL_TEXTURE_MIN_FILTER:
     case GL_TEXTURE_WRAP_S:
     case GL_TEXTURE_WRAP_T:
-        m_context->getTexParameteriv(target, pname, &value);
-        return WebGLGetInfo(static_cast<unsigned>(value));
-    case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
-        if (extensionEnabled(EXTTextureFilterAnisotropicName)) {
+        {
+            GLint value = 0;
             m_context->getTexParameteriv(target, pname, &value);
             return WebGLGetInfo(static_cast<unsigned>(value));
+        }
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
+        if (extensionEnabled(EXTTextureFilterAnisotropicName)) {
+            GLfloat value = 0.f;
+            m_context->getTexParameterfv(target, pname, &value);
+            return WebGLGetInfo(value);
         }
         synthesizeGLError(GL_INVALID_ENUM, "getTexParameter", "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
         return WebGLGetInfo();
