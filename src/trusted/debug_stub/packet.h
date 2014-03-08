@@ -69,6 +69,9 @@ class Packet {
   // interpret certain special characters such as: ":,#$"
   void AddString(const char *str);
 
+  // Add escaped data according to the GDB protocol for binary data.
+  void AddEscapedData(const char *data, size_t length);
+
   // Add a string stored as a stream of ASCII hex digit pairs.  It is safe
   // to use any character in this stream.  If this does not terminate the
   // packet, there should be a sperator (non hex digit) immediately following.
@@ -94,6 +97,7 @@ class Packet {
   // Get a string from the stream
   bool GetString(std::string *str);
   bool GetHexString(std::string *str);
+  bool GetStringSep(std::string *str, char sep);
 
   // Callback with the passed in context, and a NUL terminated string.
   // These methods provide a means to avoid an extra memcpy.
@@ -102,6 +106,7 @@ class Packet {
 
   // Return a pointer to the entire packet payload
   const char *GetPayload() const;
+  size_t GetPayloadSize() const;
 
   // Returns true and the sequence number, or false if it is unset.
   bool GetSequence(int32_t *seq) const;

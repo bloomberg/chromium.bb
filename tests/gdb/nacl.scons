@@ -105,6 +105,7 @@ AddGdbTest('detach')
 AddGdbTest('disconnect')
 AddGdbTest('invalid_memory')
 AddGdbTest('kill')
+AddGdbTest('remote_get')
 
 # Single-stepping does work reliably with ARM and MIPS in qemu due to the code
 # cache not being flushable.

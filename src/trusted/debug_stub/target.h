@@ -90,6 +90,9 @@ class Target {
   // true a request to continue (or step) is processed.
   bool ProcessPacket(Packet *pktIn, Packet *pktOut);
 
+  void EmitFileError(Packet *pktOut, int code);
+  void ProcessFilePacket(Packet *pktIn, Packet *pktOut, ErrDef *err);
+
   void SetStopReply(Packet *pktOut) const;
 
   void Destroy();

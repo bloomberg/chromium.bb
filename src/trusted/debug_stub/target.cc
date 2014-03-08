@@ -38,6 +38,23 @@ using port::MutexLock;
 namespace gdb_rsp {
 
 
+// Arbitrary descriptor to return when the main nexe is opened.
+// This can be shared as the file connections are stateless.
+static const char kMainNexeFilename[] = "nexe";
+static const uint64_t kMainNexeFd = 123;
+
+// The GDB debug protocol specifies particular values for return values,
+// errno values, and mode flags. Explicitly defining the subset used herein.
+static const uint64_t kGdbErrorResult = static_cast<uint64_t>(-1);
+static const uint64_t kGdbO_RDONLY = 0;
+static const uint64_t kGdbEPERM = 1;
+static const uint64_t kGdbENOENT = 2;
+static const uint64_t kGdbEBADF = 9;
+
+// Assume a buffer size that matches GDB's actual current request size.
+static const size_t kGdbPreadChunkSize = 4096;
+
+
 Target::Target(struct NaClApp *nap, const Abi* abi)
   : nap_(nap),
     abi_(abi),
@@ -436,6 +453,99 @@ uint64_t Target::AdjustUserAddr(uint64_t addr) {
   return addr;
 }
 
+void Target::EmitFileError(Packet *pktOut, int code) {
+  pktOut->AddString("F");
+  pktOut->AddNumberSep(kGdbErrorResult, ',');
+  pktOut->AddNumberSep(code, 0);
+}
+
+void Target::ProcessFilePacket(Packet *pktIn, Packet *pktOut, ErrDef *err) {
+  std::string cmd;
+  if (!pktIn->GetStringSep(&cmd, ':')) {
+    *err = BAD_FORMAT;
+    return;
+  }
+  CHECK(cmd == "File");
+  std::string subcmd;
+  if (!pktIn->GetStringSep(&subcmd, ':')) {
+    *err = BAD_FORMAT;
+    return;
+  }
+  if (subcmd == "open") {
+    std::string filename;
+    char sep;
+    uint64_t flags;
+    uint64_t mode;
+    if (!pktIn->GetHexString(&filename) ||
+        !pktIn->GetRawChar(&sep) ||
+        sep != ',' ||
+        !pktIn->GetNumberSep(&flags, NULL) ||
+        !pktIn->GetNumberSep(&mode, NULL)) {
+      *err = BAD_ARGS;
+      return;
+    }
+    if (filename == kMainNexeFilename) {
+      if (flags == kGdbO_RDONLY) {
+        pktOut->AddString("F");
+        pktOut->AddNumberSep(kMainNexeFd, 0);
+      } else {
+        EmitFileError(pktOut, kGdbEPERM);
+      }
+    } else {
+      EmitFileError(pktOut, kGdbENOENT);
+    }
+    return;
+  } else if (subcmd == "close") {
+    uint64_t fd;
+    if (!pktIn->GetNumberSep(&fd, NULL)) {
+      *err = BAD_ARGS;
+      return;
+    }
+    if (fd == kMainNexeFd) {
+      pktOut->AddString("F");
+      pktOut->AddNumberSep(0, 0);
+    } else {
+      EmitFileError(pktOut, kGdbEBADF);
+    }
+    return;
+  } else if (subcmd == "pread") {
+    uint64_t fd;
+    uint64_t count;
+    uint64_t offset;
+    std::string data;
+    if (!pktIn->GetNumberSep(&fd, NULL) ||
+        !pktIn->GetNumberSep(&count, NULL) ||
+        !pktIn->GetNumberSep(&offset, NULL)) {
+      *err = BAD_ARGS;
+      return;
+    }
+    if (fd != kMainNexeFd) {
+      EmitFileError(pktOut, kGdbEBADF);
+      return;
+    }
+    if (count > kGdbPreadChunkSize) {
+      count = kGdbPreadChunkSize;
+    }
+    nacl::scoped_array<char> buffer(new char[kGdbPreadChunkSize]);
+    CHECK(NULL != nap_->main_nexe_desc);
+    ssize_t result = (*NACL_VTBL(NaClDesc, nap_->main_nexe_desc)->PRead)(
+        nap_->main_nexe_desc, buffer.get(),
+        static_cast<size_t>(count),
+        static_cast<nacl_off64_t>(offset));
+    pktOut->AddString("F");
+    if (result < 0) {
+      pktOut->AddNumberSep(kGdbErrorResult, ',');
+      pktOut->AddNumberSep(static_cast<uint64_t>(-result), 0);
+    } else {
+      pktOut->AddNumberSep(static_cast<uint64_t>(result), ';');
+      pktOut->AddEscapedData(buffer.get(), static_cast<size_t>(result));
+    }
+    return;
+  }
+  NaClLog(LOG_ERROR, "Unknown vFile command: %s\n", pktIn->GetPayload());
+  *err = BAD_FORMAT;
+}
+
 bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
   char cmd;
   int32_t seq = -1;
@@ -800,6 +910,9 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
 
         // Unsupported form of vCont.
         err = BAD_FORMAT;
+        break;
+      } else if (strncmp(str, "File:", 5) == 0) {
+        ProcessFilePacket(pktIn, pktOut, &err);
         break;
       }
 

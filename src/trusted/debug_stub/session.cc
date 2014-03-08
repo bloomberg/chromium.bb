@@ -96,6 +96,7 @@ bool Session::SendPacketOnly(Packet *pkt) {
   int32_t seq;
 
   ptr = pkt->GetPayload();
+  size_t size = pkt->GetPayloadSize();
 
   if (!pkt->GetSequence(&seq) && (GetFlags() & USE_SEQ)) {
     pkt->SetSequence(seq_++);
@@ -120,8 +121,8 @@ bool Session::SendPacketOnly(Packet *pkt) {
   }
 
   // Send the main payload
-  int offs = 0;
-  while ((ch = ptr[offs++]) != 0) {
+  for (size_t offs = 0; offs < size; ++offs) {
+    ch = ptr[offs];
     outstr << ch;
     run_xsum += ch;
   }

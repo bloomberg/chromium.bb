@@ -100,6 +100,45 @@ void Packet::AddString(const char *str) {
   }
 }
 
+void Packet::AddEscapedData(const char *data, size_t length) {
+  while (length > 0) {
+    char ch = *data;
+    // Escape certain characters by sending 0x7d ('}') followed by the original
+    // character xor-ed with 0x20.
+    if (ch == '}' || ch == '#' || ch == '$' || ch == '*') {
+      AddRawChar('}');
+      AddRawChar(ch ^ 0x20);
+    } else {
+      AddRawChar(ch);
+    }
+    ++data;
+    --length;
+    // See if run length encoding can be used.
+    // Limit runs to 97 copies, as character 126 is the highest that can be
+    // used in the encoding.
+    size_t count = 0;
+    while (count < 97 && length > count && data[count] == ch) {
+      count++;
+    }
+    // We can only use run length encoding if there are 3 or more of the same
+    // character (not including the initial character). This is the minimum run
+    // length allowed by the protocol.
+    if (count >= 3) {
+      // An odd quirk of the protocol is that because the characters
+      // '#' and '$' cannot appear in a packet, they also are not valid as a
+      // run length. Since these correspond to lengths 6 and 7, runs of this
+      // size must be clipped down to length 5.
+      if (count == 6 || count == 7) {
+        count = 5;
+      }
+      AddRawChar('*');
+      AddRawChar(static_cast<char>(count + 29));
+      data += count;
+      length -= count;
+    }
+  }
+}
+
 void Packet::AddHexString(const char *str) {
   assert(str);
 
@@ -314,20 +353,50 @@ bool Packet::GetString(string* str) {
 }
 
 bool Packet::GetHexString(string* str) {
+  // Decode a string encoded as a series of 2-hex digit pairs.
+
+  char ch1;
+  char ch2;
+  int nib1;
+  int nib2;
+
+  if (EndOfPacket()) {
+    return false;
+  }
+
+  // Pull values until we hit a separator
+  str->clear();
+  while (GetRawChar(&ch1)) {
+    if (!NibbleToInt(ch1, &nib1)) {
+      read_index_--;
+      break;
+    }
+    if (!GetRawChar(&ch2) ||
+        !NibbleToInt(ch2, &nib2)) {
+      return false;
+    }
+    *str += static_cast<char>((nib1 << 4) + nib2);
+  }
+  return true;
+}
+
+bool Packet::GetStringSep(std::string *str, char sep) {
   char ch;
-  if (EndOfPacket()) return false;
+
+  if (EndOfPacket()) {
+    return false;
+  }
 
   // Pull values until we hit a separator
   str->clear();
   while (GetRawChar(&ch)) {
-    if (NibbleToInt(ch, NULL)) {
-      *str += ch;
+    if (ch == sep) {
+      return true;
     } else {
-      read_index_--;
-      break;
+      *str += ch;
     }
   }
-  return true;
+  return false;
 }
 
 bool Packet::GetStringCB(void *ctx, StrFunc_t cb) {
@@ -372,6 +441,10 @@ bool Packet::GetHexStringCB(void *ctx, StrFunc_t cb) {
 
 const char *Packet::GetPayload() const {
   return &data_[0];
+}
+
+size_t Packet::GetPayloadSize() const {
+  return write_index_;
 }
 
 bool Packet::GetSequence(int32_t *ch) const {

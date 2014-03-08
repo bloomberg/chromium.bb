@@ -22,6 +22,9 @@ NACL_SIGILL = 4
 NACL_SIGTRAP = 5
 NACL_SIGSEGV = 11
 
+# GDB specific errno constants.
+GDB_EBADF = 9
+
 
 # These are set up by Main().
 ARCH = None
@@ -42,6 +45,33 @@ def DecodeHex(data):
 
 def EncodeHex(data):
   return ''.join('%02x' % ord(byte) for byte in data)
+
+
+def DecodeEscaping(data):
+  ret = ''
+  last = None
+  repeat = False
+  escape = False
+  for byte in data:
+    if escape:
+      ret += chr(ord(byte) ^ 0x20)
+      escape = False
+      last = byte
+    elif repeat:
+      count = ord(byte) - 29
+      assert count >= 3 and count <= 97
+      assert byte != '$' and byte != '#'
+      ret += last * count
+      repeat = False
+    elif byte == '}':
+      escape = True
+    elif byte == '*':
+      assert last is not None
+      repeat = True
+    else:
+      ret += byte
+      last = byte
+  return ret
 
 
 X86_32_REG_DEFS = [
@@ -179,6 +209,14 @@ ARM_USER_CPSR_FLAGS_MASK = (
 
 def UsingQemu():
   return SEL_LDR_COMMAND[0].endswith('/run_under_qemu_arm')
+
+
+def MainNexe():
+  # Assume that the last parameter ending in .nexe is the main nexe.
+  for arg in reversed(SEL_LDR_COMMAND):
+    if arg.endswith('.nexe'):
+      return arg
+  assert False
 
 
 def DecodeRegs(reply):
@@ -688,6 +726,45 @@ class DebugStubTest(unittest.TestCase):
         connection.Close()
     finally:
       KillProcess(sel_ldr)
+
+  def test_remote_get(self):
+    with LaunchDebugStub('test_interrupt') as connection:
+      # Open the nexe.
+      reply = connection.RspRequest('vFile:open:%s,0,0' % EncodeHex('nexe'))
+      self.assertEqual(reply[0], 'F')
+      fd = int(reply[1:], 16)
+      self.assertGreaterEqual(fd, 0)
+      # Read in the full contents of the file.
+      data = ''
+      offset = 0
+      while True:
+        # Read up to 4096 bytes at a time.
+        reply = connection.RspRequest(
+            'vFile:pread:%x,%x,%x' % (fd, 4096, offset))
+        self.assertEqual(reply[0], 'F')
+        retcode, chunk = reply[1:].split(';', 1)
+        retcode = int(retcode, 16)
+        self.assertGreaterEqual(retcode, 0)
+        chunk = DecodeEscaping(chunk)
+        self.assertEqual(len(chunk), retcode)
+        if retcode == 0:
+          break
+        data += chunk
+        offset += retcode
+      expected_data = open(MainNexe(), 'rb').read()
+      # Check that the length matches first, so that large data mismatch spew
+      # is only emitted in the case of more subtle mismatches.
+      self.assertEqual(len(data), len(expected_data))
+      self.assertEqual(data, expected_data)
+      # Close the file handle.
+      reply = connection.RspRequest('vFile:close:%x' % fd)
+      self.assertEqual(reply, 'F0')
+
+  def test_remote_get_bad_fd(self):
+    with LaunchDebugStub('test_interrupt') as connection:
+      # Test closing a not-yet-opened nexe.
+      reply = connection.RspRequest('vFile:close:%x' % 13)
+      self.assertEqual(reply, 'F-1,%x' % GDB_EBADF)
 
 
 class DebugStubBreakpointTest(unittest.TestCase):

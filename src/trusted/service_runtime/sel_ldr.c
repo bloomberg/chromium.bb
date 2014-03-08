@@ -264,6 +264,8 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 #endif
 
   nap->debug_stub_callbacks = NULL;
+  nap->main_nexe_desc = NULL;
+
   nap->exception_handler = 0;
   if (!NaClMutexCtor(&nap->exception_mu)) {
     goto cleanup_desc_mu;
@@ -1051,6 +1053,9 @@ void NaClAppLoadModule(struct NaClApp   *nap,
    * RPC reply to increase parallelism.
    */
   NaClXMutexLock(&nap->mu);
+  CHECK(nap->main_nexe_desc == NULL);
+  NaClDescRef(nexe);
+  nap->main_nexe_desc = nexe;
   if (nap->module_initialization_state != NACL_MODULE_UNINITIALIZED) {
     NaClLog(LOG_ERROR, "NaClAppLoadModule: repeated invocation\n");
     status = LOAD_DUP_LOAD_MODULE;

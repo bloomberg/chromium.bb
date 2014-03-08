@@ -314,6 +314,17 @@ class Gdb(object):
       self.Command('file ' + FilenameToUnix(self._options.nexe))
     self.Command('target remote :4014')
 
+  def FetchMainNexe(self):
+    nexe_filename = MakeOutFileName(
+        self._options.output_dir, 'remote', '.nexe')
+    self.Command('remote get nexe ' + FilenameToUnix(nexe_filename))
+    return nexe_filename
+
+  def GetMainNexe(self):
+    if self._options.ld_so is not None:
+      return self._options.ld_so
+    return self._options.nexe
+
 
 def DecodeOptions():
   parser = optparse.OptionParser()
