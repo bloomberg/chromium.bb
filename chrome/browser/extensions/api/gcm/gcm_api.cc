@@ -15,7 +15,6 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/extensions/api/gcm.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
@@ -179,9 +178,21 @@ bool GcmSendFunction::ValidateMessageData(
   return total_size != 0;
 }
 
-GcmJsEventRouter::GcmJsEventRouter(Profile* profile) : profile_(profile) {}
+GcmJsEventRouter::GcmJsEventRouter(Profile* profile) : profile_(profile) {
+  if (ExtensionSystem::Get(profile_)->event_router()) {
+    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+        this, api::gcm::OnMessage::kEventName);
+    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+        this, api::gcm::OnMessagesDeleted::kEventName);
+    ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+        this, api::gcm::OnSendError::kEventName);
+  }
+}
 
-GcmJsEventRouter::~GcmJsEventRouter() {}
+GcmJsEventRouter::~GcmJsEventRouter() {
+  if (ExtensionSystem::Get(profile_)->event_router())
+    ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
 
 void GcmJsEventRouter::OnMessage(
     const std::string& app_id,
@@ -221,6 +232,14 @@ void GcmJsEventRouter::OnSendError(const std::string& app_id,
       profile_));
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
       app_id, event.Pass());
+}
+
+void GcmJsEventRouter::OnListenerAdded(const EventListenerInfo& details) {
+  if (gcm::GCMProfileService::GetGCMEnabledState(profile_) ==
+      gcm::GCMProfileService::ALWAYS_DISABLED) {
+    return;
+  }
+  gcm::GCMProfileServiceFactory::GetForProfile(profile_)->Start();
 }
 
 }  // namespace extensions

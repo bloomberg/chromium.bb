@@ -7,6 +7,7 @@
 
 #include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/common/extensions/api/gcm.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
 #include "google_apis/gcm/gcm_client.h"
 
@@ -75,7 +76,8 @@ class GcmSendFunction : public GcmApiFunction {
   bool ValidateMessageData(const gcm::GCMClient::MessageData& data) const;
 };
 
-class GcmJsEventRouter : public gcm::GCMEventRouter {
+class GcmJsEventRouter : public gcm::GCMEventRouter,
+                         public EventRouter::Observer {
  public:
   explicit GcmJsEventRouter(Profile* profile);
 
@@ -89,6 +91,9 @@ class GcmJsEventRouter : public gcm::GCMEventRouter {
   virtual void OnSendError(const std::string& app_id,
                            const std::string& message_id,
                            gcm::GCMClient::Result result) OVERRIDE;
+
+  // EventRouter::Observer:
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
  private:
   // The application we route the event to is running in context of the

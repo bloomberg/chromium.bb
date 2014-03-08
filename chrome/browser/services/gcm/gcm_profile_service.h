@@ -86,6 +86,9 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   void Stop();
 
+  // BrowserContextKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.
   // |app_id|: application ID.

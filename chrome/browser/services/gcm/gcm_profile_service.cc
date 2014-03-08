@@ -569,6 +569,10 @@ void GCMProfileService::Initialize(
                  chrome:: NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
 
+#if !defined(OS_ANDROID)
+  js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
+#endif
+
   // Get the list of available accounts.
   std::vector<std::string> account_ids;
 #if !defined(OS_ANDROID)
@@ -616,6 +620,12 @@ void GCMProfileService::Stop() {
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&GCMProfileService::IOWorker::Stop, io_worker_));
+}
+
+void GCMProfileService::Shutdown() {
+#if !defined(OS_ANDROID)
+  js_event_router_.reset();
+#endif
 }
 
 void GCMProfileService::Register(const std::string& app_id,
@@ -824,11 +834,6 @@ void GCMProfileService::EnsureLoaded() {
   if (username_ == username)
     return;
   username_ = username;
-
-#if !defined(OS_ANDROID)
-  if (!js_event_router_)
-    js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
-#endif
 
   DCHECK(!delayed_task_controller_);
   delayed_task_controller_.reset(new DelayedTaskController);

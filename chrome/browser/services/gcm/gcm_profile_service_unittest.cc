@@ -30,6 +30,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -293,6 +295,12 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
     extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_ = extension_system->Get(profile())->extension_service();
+
+    // EventRouter is needed for GcmJsEventRouter.
+    if (!extension_system->event_router()) {
+      extension_system->SetEventRouter(scoped_ptr<EventRouter>(
+          new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
+    }
 
     // Enable GCM such that tests could be run on all channels.
     profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
