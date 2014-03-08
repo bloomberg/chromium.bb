@@ -442,24 +442,23 @@
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_TOP" file="common/aura_scrollbar_base_top.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_TOP_LEFT" file="common/aura_scrollbar_base_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_TOP_RIGHT" file="common/aura_scrollbar_base_top_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_BOTTOM" file="common/aura_scrollbar_overlay_thumb_active_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_BOTTOM_LEFT" file="common/aura_scrollbar_overlay_thumb_active_bottom_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_BOTTOM_RIGHT" file="common/aura_scrollbar_overlay_thumb_active_bottom_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_CENTER" file="common/aura_scrollbar_overlay_thumb_active_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_LEFT" file="common/aura_scrollbar_overlay_thumb_active_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_RIGHT" file="common/aura_scrollbar_overlay_thumb_active_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_TOP" file="common/aura_scrollbar_overlay_thumb_active_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_TOP_LEFT" file="common/aura_scrollbar_overlay_thumb_active_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_ACTIVE_TOP_RIGHT" file="common/aura_scrollbar_overlay_thumb_active_top_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_BOTTOM" file="common/aura_scrollbar_overlay_thumb_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_BOTTOM_LEFT" file="common/aura_scrollbar_overlay_thumb_bottom_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_BOTTOM_RIGHT" file="common/aura_scrollbar_overlay_thumb_bottom_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_CENTER" file="common/aura_scrollbar_overlay_thumb_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_LEFT" file="common/aura_scrollbar_overlay_thumb_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_RIGHT" file="common/aura_scrollbar_overlay_thumb_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_TOP" file="common/aura_scrollbar_overlay_thumb_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_TOP_LEFT" file="common/aura_scrollbar_overlay_thumb_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_TOP_RIGHT" file="common/aura_scrollbar_overlay_thumb_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_BOTTOM" file="common/aura_scrollbar_overlay_thumb_fill_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_BOTTOM_LEFT" file="common/aura_scrollbar_overlay_thumb_fill_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_BOTTOM_RIGHT" file="common/aura_scrollbar_overlay_thumb_fill_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_CENTER" file="common/aura_scrollbar_overlay_thumb_fill_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_LEFT" file="common/aura_scrollbar_overlay_thumb_fill_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_RIGHT" file="common/aura_scrollbar_overlay_thumb_fill_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_TOP" file="common/aura_scrollbar_overlay_thumb_fill_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_TOP_LEFT" file="common/aura_scrollbar_overlay_thumb_fill_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_FILL_TOP_RIGHT" file="common/aura_scrollbar_overlay_thumb_fill_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_BOTTOM" file="common/aura_scrollbar_overlay_thumb_stroke_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_BOTTOM_LEFT" file="common/aura_scrollbar_overlay_thumb_stroke_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_BOTTOM_RIGHT" file="common/aura_scrollbar_overlay_thumb_stroke_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_LEFT" file="common/aura_scrollbar_overlay_thumb_stroke_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_RIGHT" file="common/aura_scrollbar_overlay_thumb_stroke_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_TOP" file="common/aura_scrollbar_overlay_thumb_stroke_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_TOP_LEFT" file="common/aura_scrollbar_overlay_thumb_stroke_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_OVERLAY_THUMB_STROKE_TOP_RIGHT" file="common/aura_scrollbar_overlay_thumb_stroke_top_right.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_BOTTOM" file="common/aura_scrollbar_thumb_base_hover_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_BOTTOM_LEFT" file="common/aura_scrollbar_thumb_base_hover_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_BOTTOM_RIGHT" file="common/aura_scrollbar_thumb_base_hover_bottom_right.png" />
