@@ -5,6 +5,7 @@
 """Library to make common google storage operations more reliable."""
 
 import contextlib
+import datetime
 import getpass
 import hashlib
 import logging
@@ -23,6 +24,15 @@ from chromite.lib import timeout_util
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
 PRIVATE_BASE_HTTPS_URL = 'https://storage.cloud.google.com/'
 BASE_GS_URL = 'gs://'
+
+# Format used by "gsutil ls -l" when reporting modified time.
+DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+# Regexp for parsing each line of output from "gsutil ls -l".
+# This regexp is prepared for the generation and meta_generation values,
+# too, even though they are not expected until we use "-a".
+LS_LA_RE = re.compile(
+    r'^\s*(\d*?)\s+(\S*?)\s+([^#$]+).*?(#(\d+)\s+meta_?generation=(\d+))?\s*$')
 
 
 def CanonicalizeURL(url, strict=False):
@@ -596,6 +606,43 @@ class GSContext(object):
 
     return self.DoCommand(cmd, **kwargs)
 
+  # TODO(mtennant): Merge with LS() after it supports returning details.
+  def LSWithDetails(self, path, **kwargs):
+    """Does a detailed directory listing of the given gs path.
+
+    Args:
+      path: The path to get a listing of.
+
+    Returns:
+      List of tuples, where each tuple is (gs path, file size in bytes integer,
+        file modified time as datetime.datetime object).
+    """
+    kwargs['redirect_stdout'] = True
+    result = self.DoCommand(['ls', '-l', '--', path], **kwargs)
+
+    lines = result.output.splitlines()
+
+    # Output like the followig is expected:
+    #    99908  2014-03-01T05:50:08Z  gs://somebucket/foo/abc
+    #    99908  2014-03-04T01:16:55Z  gs://somebucket/foo/def
+    # TOTAL: 2 objects, 199816 bytes (495.36 KB)
+
+    # The last line is expected to be a summary line.  Ignore it.
+    url_tuples = []
+    for line in lines[:-1]:
+      match = LS_LA_RE.search(line)
+      size, timestamp, url = (match.group(1), match.group(2), match.group(3))
+      if timestamp:
+        timestamp = datetime.datetime.strptime(timestamp, DATETIME_FORMAT)
+      else:
+        timestamp = None
+      size = int(size) if size else None
+      url_tuples.append((url, size, timestamp))
+
+    return url_tuples
+
+  # TODO(mtennant): Enhance to add details to returned results, such as
+  # size, modified time, generation.
   def LS(self, path, raw=False, **kwargs):
     """Does a directory listing of the given gs path.
 

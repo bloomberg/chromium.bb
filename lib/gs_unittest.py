@@ -6,6 +6,7 @@
 """Unittests for the gs.py module."""
 
 import functools
+import datetime
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
@@ -149,6 +150,65 @@ class VersionTest(AbstractGSContextTest):
                               output='gobblety gook\n')
     self.assertRaises(gs.GSContextException, getattr, self.ctx,
                       'gsutil_version')
+
+
+class LSTest(AbstractGSContextTest):
+  """Tests GSContext.LS() and GSContext.LSWithDetails() functionality."""
+
+  LS_PATH = 'gs://test/path/to/list'
+  LS_OUTPUT_LINES = ['%s/foo' % LS_PATH, '%s/bar' % LS_PATH]
+  LS_OUTPUT = '\n'.join(LS_OUTPUT_LINES)
+
+  SIZE1 = 12345
+  SIZE2 = 654321
+  DT1 = datetime.datetime(2000, 1, 2, 10, 10, 10)
+  DT2 = datetime.datetime(2010, 3, 14)
+  DT_STR1 = DT1.strftime(gs.DATETIME_FORMAT)
+  DT_STR2 = DT2.strftime(gs.DATETIME_FORMAT)
+  DETAILED_LS_OUTPUT_LINES = [
+      '%10d  %s  %s/foo' % (SIZE1, DT_STR1, LS_PATH),
+      '%10d  %s  %s/bar bell' % (SIZE2, DT_STR2, LS_PATH),
+      '          %s/nada/' % LS_PATH,
+      'TOTAL: 3 objects, XXXXX bytes (X.XX GB)',
+  ]
+  DETAILED_LS_OUTPUT = '\n'.join(DETAILED_LS_OUTPUT_LINES)
+  DETAILED_LS_RESULT = [
+      ('%s/foo' % LS_PATH, SIZE1, DT1),
+      ('%s/bar bell' % LS_PATH, SIZE2, DT2),
+      ('%s/nada/' % LS_PATH, None, None),
+  ]
+
+  def _LS(self, ctx, path, **kwargs):
+    return ctx.LS(path, **kwargs)
+
+  def LS(self, ctx=None, **kwargs):
+    if ctx is None:
+      ctx = self.ctx
+    return self._LS(ctx, self.LS_PATH, **kwargs)
+
+  def _LSWithDetails(self, ctx, path, **kwargs):
+    return ctx.LSWithDetails(path, **kwargs)
+
+  def LSWithDetails(self, ctx=None, **kwargs):
+    if ctx is None:
+      ctx = self.ctx
+    return self._LSWithDetails(ctx, self.LS_PATH, **kwargs)
+
+  def testBasicLS(self):
+    """Simple LS test."""
+    self.gs_mock.SetDefaultCmdResult(output=self.LS_OUTPUT)
+    result = self.LS()
+    self.gs_mock.assertCommandContains(['ls', '--', self.LS_PATH])
+
+    self.assertEqual(self.LS_OUTPUT_LINES, result)
+
+  def testBasicLSWithDetails(self):
+    """Simple LSWithDetails test."""
+    self.gs_mock.SetDefaultCmdResult(output=self.DETAILED_LS_OUTPUT)
+    result = self.LSWithDetails()
+    self.gs_mock.assertCommandContains(['ls', '-l', '--', self.LS_PATH])
+
+    self.assertEqual(self.DETAILED_LS_RESULT, result)
 
 
 class CopyTest(AbstractGSContextTest):
