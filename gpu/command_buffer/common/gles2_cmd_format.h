@@ -12,6 +12,7 @@
 
 #include <string.h>
 
+#include "base/atomicops.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gles2_cmd_ids.h"
@@ -147,7 +148,7 @@ struct QuerySync {
     result = 0;
   }
 
-  uint32 process_count;
+  base::subtle::Atomic32 process_count;
   uint64 result;
 };
 

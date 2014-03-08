@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <vector>
+#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -61,7 +62,7 @@ class GPU_EXPORT QueryManager {
     virtual bool Begin() = 0;
 
     // Returns false if shared memory for sync is invalid.
-    virtual bool End(uint32 submit_count) = 0;
+    virtual bool End(base::subtle::Atomic32 submit_count) = 0;
 
     // Returns false if shared memory for sync is invalid.
     virtual bool Process() = 0;
@@ -84,7 +85,7 @@ class GPU_EXPORT QueryManager {
     // Returns false if shared memory for sync is invalid.
     bool MarkAsCompleted(uint64 result);
 
-    void MarkAsPending(uint32 submit_count) {
+    void MarkAsPending(base::subtle::Atomic32 submit_count) {
       DCHECK(!pending_);
       pending_ = true;
       submit_count_ = submit_count;
@@ -96,12 +97,12 @@ class GPU_EXPORT QueryManager {
     }
 
     // Returns false if shared memory for sync is invalid.
-    bool AddToPendingQueue(uint32 submit_count) {
+    bool AddToPendingQueue(base::subtle::Atomic32 submit_count) {
       return manager_->AddPendingQuery(this, submit_count);
     }
 
     // Returns false if shared memory for sync is invalid.
-    bool AddToPendingTransferQueue(uint32 submit_count) {
+    bool AddToPendingTransferQueue(base::subtle::Atomic32 submit_count) {
       return manager_->AddPendingTransferQuery(this, submit_count);
     }
 
@@ -113,9 +114,7 @@ class GPU_EXPORT QueryManager {
       manager_->EndQueryHelper(target);
     }
 
-    uint32 submit_count() const {
-      return submit_count_;
-    }
+    base::subtle::Atomic32 submit_count() const { return submit_count_; }
 
    private:
     friend class QueryManager;
@@ -135,7 +134,7 @@ class GPU_EXPORT QueryManager {
     uint32 shm_offset_;
 
     // Count to set process count do when completed.
-    uint32 submit_count_;
+    base::subtle::Atomic32 submit_count_;
 
     // True if in the queue.
     bool pending_;
@@ -169,7 +168,7 @@ class GPU_EXPORT QueryManager {
   bool BeginQuery(Query* query);
 
   // Returns false if any query is pointing to invalid shared memory.
-  bool EndQuery(Query* query, uint32 submit_count);
+  bool EndQuery(Query* query, base::subtle::Atomic32 submit_count);
 
   // Processes pending queries. Returns false if any queries are pointing
   // to invalid shared memory.
@@ -200,11 +199,12 @@ class GPU_EXPORT QueryManager {
 
   // Adds to queue of queries waiting for completion.
   // Returns false if any query is pointing to invalid shared memory.
-  bool AddPendingQuery(Query* query, uint32 submit_count);
+  bool AddPendingQuery(Query* query, base::subtle::Atomic32 submit_count);
 
   // Adds to queue of transfer queries waiting for completion.
   // Returns false if any query is pointing to invalid shared memory.
-  bool AddPendingTransferQuery(Query* query, uint32 submit_count);
+  bool AddPendingTransferQuery(Query* query,
+                               base::subtle::Atomic32 submit_count);
 
   // Removes a query from the queue of pending queries.
   // Returns false if any query is pointing to invalid shared memory.

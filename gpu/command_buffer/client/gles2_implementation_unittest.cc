@@ -2926,7 +2926,7 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
 
   // Test 2nd Begin/End increments count.
-  uint32 old_submit_count = query->submit_count();
+  base::subtle::Atomic32 old_submit_count = query->submit_count();
   gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id1);
   EXPECT_NE(old_submit_count, query->submit_count());
   expected_end_cmds.end_query.Init(

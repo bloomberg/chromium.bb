@@ -10,6 +10,7 @@
 #include <deque>
 #include <list>
 
+#include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -105,6 +106,8 @@ class GLES2_IMPL_EXPORT QueryTracker {
     void MarkAsActive() {
       state_ = kActive;
       ++submit_count_;
+      if (submit_count_ == INT_MAX)
+        submit_count_ = 1;
     }
 
     void MarkAsPending(int32 token) {
@@ -113,9 +116,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
       flushed_ = false;
     }
 
-    uint32 submit_count() const {
-      return submit_count_;
-    }
+    base::subtle::Atomic32 submit_count() const { return submit_count_; }
 
     int32 token() const {
       return token_;
@@ -144,7 +145,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
     GLenum target_;
     QuerySyncManager::QueryInfo info_;
     State state_;
-    uint32 submit_count_;
+    base::subtle::Atomic32 submit_count_;
     int32 token_;
     bool flushed_;
     uint64 client_begin_time_us_; // Only used for latency query target.

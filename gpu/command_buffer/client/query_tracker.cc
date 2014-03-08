@@ -8,6 +8,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include "base/atomicops.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
@@ -146,11 +147,9 @@ void QueryTracker::Query::End(GLES2Implementation* gl) {
 bool QueryTracker::Query::CheckResultsAvailable(
     CommandBufferHelper* helper) {
   if (Pending()) {
-    if (info_.sync->process_count == submit_count_ ||
+    if (base::subtle::Acquire_Load(&info_.sync->process_count) ==
+            submit_count_ ||
         helper->IsContextLost()) {
-      // Need a MemoryBarrier here so that sync->result read after
-      // sync->process_count.
-      base::subtle::MemoryBarrier();
       switch (target()) {
         case GL_COMMANDS_ISSUED_CHROMIUM:
           result_ = std::min(info_.sync->result,
@@ -249,7 +248,8 @@ void QueryTracker::FreeCompletedQueries() {
   while (it != removed_queries_.end()) {
     Query* query = *it;
     if (query->Pending() &&
-        query->info_.sync->process_count != query->submit_count()) {
+        base::subtle::Acquire_Load(&query->info_.sync->process_count) !=
+            query->submit_count()) {
       ++it;
       continue;
     }

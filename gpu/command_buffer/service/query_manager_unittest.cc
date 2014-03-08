@@ -69,8 +69,9 @@ class QueryManagerTest : public testing::Test {
     return manager_->CreateQuery(target, client_id, shm_id, shm_offset);
   }
 
-  void QueueQuery(
-    QueryManager::Query* query, GLuint service_id, uint32 submit_count) {
+  void QueueQuery(QueryManager::Query* query,
+                  GLuint service_id,
+                  base::subtle::Atomic32 submit_count) {
     EXPECT_CALL(*gl_, BeginQueryARB(query->target(), service_id))
         .Times(1)
         .RetiresOnSaturation();
@@ -214,7 +215,7 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
   const GLuint kResult = 1;
 
   // Check nothing happens if there are no pending queries.
@@ -245,7 +246,7 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
       .RetiresOnSaturation();
   EXPECT_TRUE(manager_->ProcessPendingQueries());
   EXPECT_TRUE(query->pending());
-  EXPECT_EQ(0u, sync->process_count);
+  EXPECT_EQ(0, sync->process_count);
   EXPECT_EQ(0u, sync->result);
 
   // Process with return available.
@@ -277,9 +278,9 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   const GLuint kClient3Id = 3;
   const GLuint kService3Id = 13;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
-  const uint32 kSubmitCount1 = 123;
-  const uint32 kSubmitCount2 = 123;
-  const uint32 kSubmitCount3 = 123;
+  const base::subtle::Atomic32 kSubmitCount1 = 123;
+  const base::subtle::Atomic32 kSubmitCount2 = 123;
+  const base::subtle::Atomic32 kSubmitCount3 = 123;
   const GLuint kResult1 = 1;
   const GLuint kResult2 = 1;
   const GLuint kResult3 = 1;
@@ -355,7 +356,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   EXPECT_EQ(kSubmitCount2, sync2->process_count);
   EXPECT_EQ(kResult1, sync1->result);
   EXPECT_EQ(kResult2, sync2->result);
-  EXPECT_EQ(0u, sync3->process_count);
+  EXPECT_EQ(0, sync3->process_count);
   EXPECT_EQ(0u, sync3->result);
   EXPECT_TRUE(manager_->HavePendingQueries());
 
@@ -367,7 +368,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
       .RetiresOnSaturation();
   EXPECT_TRUE(manager_->ProcessPendingQueries());
   EXPECT_TRUE(query3->pending());
-  EXPECT_EQ(0u, sync3->process_count);
+  EXPECT_EQ(0, sync3->process_count);
   EXPECT_EQ(0u, sync3->result);
   EXPECT_TRUE(manager_->HavePendingQueries());
 
@@ -392,7 +393,7 @@ TEST_F(QueryManagerTest, ProcessPendingBadSharedMemoryId) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
   const GLuint kResult = 1;
 
   // Create Query.
@@ -421,7 +422,7 @@ TEST_F(QueryManagerTest, ProcessPendingBadSharedMemoryOffset) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
   const GLuint kResult = 1;
 
   // Create Query.
@@ -450,7 +451,7 @@ TEST_F(QueryManagerTest, ExitWithPendingQuery) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
 
   // Create Query.
   scoped_refptr<QueryManager::Query> query(
@@ -468,7 +469,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
 
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(),
@@ -502,7 +503,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
 
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(),
@@ -533,7 +534,7 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
 TEST_F(QueryManagerTest, GetErrorQuery) {
   const GLuint kClient1Id = 1;
   const GLenum kTarget = GL_GET_ERROR_QUERY_CHROMIUM;
-  const uint32 kSubmitCount = 123;
+  const base::subtle::Atomic32 kSubmitCount = 123;
 
   TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), "");
   scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());

@@ -54,7 +54,7 @@ TEST_F(QuerySyncManagerTest, Basic) {
     EXPECT_TRUE(sync_manager_->Alloc(&infos[ii]));
     EXPECT_NE(0, infos[ii].shm_id);
     ASSERT_TRUE(infos[ii].sync != NULL);
-    EXPECT_EQ(0u, infos[ii].sync->process_count);
+    EXPECT_EQ(0, infos[ii].sync->process_count);
     EXPECT_EQ(0u, infos[ii].sync->result);
   }
 
@@ -138,21 +138,21 @@ TEST_F(QueryTrackerTest, Query) {
   EXPECT_TRUE(query->NeverUsed());
   EXPECT_FALSE(query->Pending());
   EXPECT_EQ(0, query->token());
-  EXPECT_EQ(0u, query->submit_count());
+  EXPECT_EQ(0, query->submit_count());
 
   // Check MarkAsActive.
   query->MarkAsActive();
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_FALSE(query->Pending());
   EXPECT_EQ(0, query->token());
-  EXPECT_EQ(1u, query->submit_count());
+  EXPECT_EQ(1, query->submit_count());
 
   // Check MarkAsPending.
   query->MarkAsPending(kToken);
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_TRUE(query->Pending());
   EXPECT_EQ(kToken, query->token());
-  EXPECT_EQ(1u, query->submit_count());
+  EXPECT_EQ(1, query->submit_count());
 
   // Check CheckResultsAvailable.
   EXPECT_FALSE(query->CheckResultsAvailable(helper_.get()));
