@@ -982,8 +982,7 @@ WebViewInternal.prototype.setupWebRequestEvents = function() {
       'request',
       {
         value: request,
-        enumerable: true,
-        writable: false
+        enumerable: true
       }
   );
 };

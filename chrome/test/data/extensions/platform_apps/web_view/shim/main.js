@@ -386,6 +386,11 @@ function testWebRequestAPIExistence() {
           'function',
           typeof webview.request[apiPropertiesToCheck[i]].removeRules);
     }
+
+    // Try to overwrite webview.request, shall not succeed.
+    webview.request = '123';
+    embedder.test.assertTrue(typeof webview.request !== 'string');
+
     embedder.test.succeed();
   });
   webview.setAttribute('src', 'data:text/html,webview check api');
