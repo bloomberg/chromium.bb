@@ -78,7 +78,7 @@ inline bool isSVGGradientElement(const Node& node)
     return node.hasTagName(SVGNames::radialGradientTag) || node.hasTagName(SVGNames::linearGradientTag);
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
 
 } // namespace WebCore
 

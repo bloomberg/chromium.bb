@@ -80,7 +80,7 @@ inline bool isSVGAnimateElement(const Node& node)
         || node.hasTagName(SVGNames::setTag);
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
 
 } // namespace WebCore
 

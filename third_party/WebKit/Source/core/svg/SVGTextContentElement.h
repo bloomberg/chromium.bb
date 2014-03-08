@@ -89,7 +89,7 @@ inline bool isSVGTextContentElement(const Node& node)
     return node.isSVGElement() && toSVGElement(node).isTextContent();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);
 
 } // namespace WebCore
 

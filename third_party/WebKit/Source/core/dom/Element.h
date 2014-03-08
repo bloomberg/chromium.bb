@@ -888,6 +888,16 @@ inline bool isShadowHost(const Element* element)
     return element && element->shadow();
 }
 
+// These macros do the same as their NODE equivalents but additionally provide a template specialization
+// for isElementOfType<>() so that the Traversal<> API works for these Element types.
+#define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate) \
+    template <> inline bool isElementOfType<const thisType>(const Element& element) { return element.predicate; } \
+    DEFINE_NODE_TYPE_CASTS(thisType, predicate)
+
+#define DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType) \
+    template <> inline bool isElementOfType<const thisType>(const Element& element) { return is##thisType(element); } \
+    DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
+
 } // namespace
 
 #endif

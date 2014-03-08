@@ -57,7 +57,7 @@ inline bool isSVGPolyElement(const Node& node)
     return node.hasTagName(SVGNames::polygonTag) || node.hasTagName(SVGNames::polylineTag);
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);
 
 } // namespace WebCore
 

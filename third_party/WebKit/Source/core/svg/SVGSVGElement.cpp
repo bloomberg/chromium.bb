@@ -72,7 +72,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_useCurrentView(false)
-    , m_timeContainer(SMILTimeContainer::create(this))
+    , m_timeContainer(SMILTimeContainer::create(*this))
     , m_translation(SVGPoint::create())
 {
     ScriptWrappable::init(this);
@@ -389,14 +389,9 @@ PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const Flo
         }
     }
 
-    for (Element* element = ElementTraversal::firstWithin(*root); element;
-        element = ElementTraversal::next(*element, root)) {
-
-        if (!WebCore::isSVGGraphicsElement(*element))
-            continue;
-
-        SVGElement* svgElement = toSVGElement(element);
-        if (checkIntersectionOrEnclosure(*svgElement, rect, mode))
+    for (SVGGraphicsElement* element = Traversal<SVGGraphicsElement>::firstWithin(*root); element;
+        element = Traversal<SVGGraphicsElement>::next(*element, root)) {
+        if (checkIntersectionOrEnclosure(*element, rect, mode))
             nodes.append(element);
     }
 

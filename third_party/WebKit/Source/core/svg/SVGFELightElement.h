@@ -84,7 +84,7 @@ inline bool isSVGFELightElement(const Node& node)
     return node.hasTagName(SVGNames::feDistantLightTag) || node.hasTagName(SVGNames::fePointLightTag) || node.hasTagName(SVGNames::feSpotLightTag);
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGFELightElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGFELightElement);
 
 } // namespace WebCore
 

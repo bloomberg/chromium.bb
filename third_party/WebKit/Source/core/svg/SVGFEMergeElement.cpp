@@ -44,13 +44,11 @@ PassRefPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* filterBuilde
 {
     RefPtr<FilterEffect> effect = FEMerge::create(filter);
     FilterEffectVector& mergeInputs = effect->inputEffects();
-    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::nextSibling(*element)) {
-        if (element->hasTagName(SVGNames::feMergeNodeTag)) {
-            FilterEffect* mergeEffect = filterBuilder->getEffectById(AtomicString(toSVGFEMergeNodeElement(element)->in1()->currentValue()->value()));
-            if (!mergeEffect)
-                return nullptr;
-            mergeInputs.append(mergeEffect);
-        }
+    for (SVGFEMergeNodeElement* element = Traversal<SVGFEMergeNodeElement>::firstChild(*this); element; element = Traversal<SVGFEMergeNodeElement>::nextSibling(*element)) {
+        FilterEffect* mergeEffect = filterBuilder->getEffectById(AtomicString(element->in1()->currentValue()->value()));
+        if (!mergeEffect)
+            return nullptr;
+        mergeInputs.append(mergeEffect);
     }
 
     if (mergeInputs.isEmpty())

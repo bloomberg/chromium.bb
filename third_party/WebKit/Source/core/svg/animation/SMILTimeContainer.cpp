@@ -37,7 +37,7 @@ using namespace std;
 
 namespace WebCore {
 
-SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner)
+SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : m_beginTime(0)
     , m_pauseTime(0)
     , m_resumeTime(0)
@@ -268,10 +268,8 @@ void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
 void SMILTimeContainer::updateDocumentOrderIndexes()
 {
     unsigned timingElementCount = 0;
-    for (Element* element = m_ownerSVGElement; element; element = ElementTraversal::next(*element, m_ownerSVGElement)) {
-        if (isSVGSMILElement(*element))
-            toSVGSMILElement(element)->setDocumentOrderIndex(timingElementCount++);
-    }
+    for (SVGSMILElement* element = Traversal<SVGSMILElement>::firstWithin(m_ownerSVGElement); element; element = Traversal<SVGSMILElement>::next(*element, &m_ownerSVGElement))
+        element->setDocumentOrderIndex(timingElementCount++);
     m_documentOrderIndexesDirty = false;
 }
 
@@ -294,8 +292,7 @@ struct PriorityCompare {
 
 Document& SMILTimeContainer::document() const
 {
-    ASSERT(m_ownerSVGElement);
-    return m_ownerSVGElement->document();
+    return m_ownerSVGElement.document();
 }
 
 AnimationClock& SMILTimeContainer::animationClock() const

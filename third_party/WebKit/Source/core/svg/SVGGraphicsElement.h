@@ -89,7 +89,7 @@ inline bool isSVGGraphicsElement(const Node& node)
     return node.isSVGElement() && toSVGElement(node).isSVGGraphicsElement();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGGraphicsElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGraphicsElement);
 
 } // namespace WebCore
 

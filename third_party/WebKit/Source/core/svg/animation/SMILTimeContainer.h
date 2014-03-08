@@ -46,7 +46,7 @@ class SVGSVGElement;
 
 class SMILTimeContainer : public RefCounted<SMILTimeContainer>  {
 public:
-    static PassRefPtr<SMILTimeContainer> create(SVGSVGElement* owner) { return adoptRef(new SMILTimeContainer(owner)); }
+    static PassRefPtr<SMILTimeContainer> create(SVGSVGElement& owner) { return adoptRef(new SMILTimeContainer(owner)); }
     ~SMILTimeContainer();
 
     void schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
@@ -69,7 +69,7 @@ public:
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
 private:
-    SMILTimeContainer(SVGSVGElement* owner);
+    SMILTimeContainer(SVGSVGElement& owner);
 
     enum FrameSchedulingState {
         // No frame scheduled.
@@ -113,7 +113,7 @@ private:
     typedef HashMap<ElementAttributePair, OwnPtr<AnimationsVector> > GroupedAnimationsMap;
     GroupedAnimationsMap m_scheduledAnimations;
 
-    SVGSVGElement* m_ownerSVGElement;
+    SVGSVGElement& m_ownerSVGElement;
 
 #ifndef NDEBUG
     bool m_preventScheduledAnimationsChanges;

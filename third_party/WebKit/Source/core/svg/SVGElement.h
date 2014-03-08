@@ -230,10 +230,7 @@ struct SVGAttributeHashTranslator {
     static bool equal(const QualifiedName& a, const QualifiedName& b) { return a.matches(b); }
 };
 
-DEFINE_NODE_TYPE_CASTS(SVGElement, isSVGElement());
-
-// Template specialization to make Traversal<SVGElement> work.
-template <> inline bool isElementOfType<const SVGElement>(const Element& element) { return element.isSVGElement(); }
+DEFINE_ELEMENT_TYPE_CASTS(SVGElement, isSVGElement());
 
 }
 

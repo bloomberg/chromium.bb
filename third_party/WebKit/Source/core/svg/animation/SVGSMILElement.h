@@ -252,7 +252,7 @@ inline bool isSVGSMILElement(const Node& node)
         || node.hasTagName(SVGNames::animateTransformTag) || node.hasTagName((SVGNames::discardTag));
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 
 }
 
