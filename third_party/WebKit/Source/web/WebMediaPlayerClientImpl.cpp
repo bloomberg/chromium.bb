@@ -566,6 +566,11 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     ASSERT(m_client);
 }
 
+WebCore::HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
+{
+    return *static_cast<HTMLMediaElement*>(m_client);
+}
+
 #if ENABLE(WEB_AUDIO)
 void WebMediaPlayerClientImpl::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
 {
@@ -617,11 +622,6 @@ void WebMediaPlayerClientImpl::AudioClientImpl::setFormat(size_t numberOfChannel
 {
     if (m_client)
         m_client->setFormat(numberOfChannels, sampleRate);
-}
-
-WebCore::HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
-{
-    return *static_cast<HTMLMediaElement*>(m_client);
 }
 
 #endif
