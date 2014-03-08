@@ -77,7 +77,12 @@ class CreateTemporaryHelper {
   void RunWork(int additional_file_flags) {
     // TODO(darin): file_util should have a variant of CreateTemporaryFile
     // that returns a FilePath and a PlatformFile.
-    base::CreateTemporaryFile(&file_path_);
+    if (!base::CreateTemporaryFile(&file_path_)) {
+      // TODO(davidben): base::CreateTemporaryFile should preserve the error
+      // code.
+      error_ = File::FILE_ERROR_FAILED;
+      return;
+    }
 
     int file_flags =
         PLATFORM_FILE_WRITE |
@@ -90,6 +95,10 @@ class CreateTemporaryHelper {
     file_handle_ =
         CreatePlatformFile(file_path_, file_flags, NULL,
                            reinterpret_cast<PlatformFileError*>(&error_));
+    if (error_ != File::FILE_OK) {
+      base::DeleteFile(file_path_, false);
+      file_path_.clear();
+    }
   }
 
   void Reply(const FileUtilProxy::CreateTemporaryCallback& callback) {
