@@ -57,8 +57,10 @@ public:
     }
     void addBytes(const uint8_t* input, size_t length);
 
+    static const size_t outputSizeBytes = 20;
+
     // computeHash has a side effect of resetting the state of the object.
-    void computeHash(Vector<uint8_t, 20>&);
+    void computeHash(Vector<uint8_t, outputSizeBytes>&);
 
 private:
     void finalize();
