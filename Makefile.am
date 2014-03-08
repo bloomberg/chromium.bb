@@ -177,7 +177,11 @@ fixed_benchmark_SOURCES = tests/fixed-benchmark.c
 os_wrappers_test_SOURCES = tests/os-wrappers-test.c
 os_wrappers_test_LDADD = libtest-runner.la
 
-AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CPPFLAGS =					\
+	-I$(top_builddir)/src			\
+	-I$(top_srcdir)/src			\
+	-I$(top_builddir)/protocol
+
 AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
 
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
