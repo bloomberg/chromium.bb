@@ -358,7 +358,7 @@ crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.h
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/generic-from-to.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ Pass Timeout ]
-crbug.com/248938 [ Linux ] virtual/threaded/animations/keyframe-timing-functions.html [ Pass Timeout ]
+crbug.com/248938 [ Linux Win ] virtual/threaded/animations/keyframe-timing-functions.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/keyframe-timing-functions-transform.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/keyframes.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/keyframes-comma-separated.html [ Pass Timeout ]
