@@ -1802,9 +1802,8 @@ void RenderObject::handleDynamicFloatPositionChange()
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
 {
     // If transform changed, and the layer does not paint into its own separate backing, then we need to do a layout.
-    // FIXME: The comment above is what the code does, but it is technically not following spec. This means we will
-    // not to layout for 3d transforms, but we should be invoking a simplified relayout. Is it possible we are avoiding
-    // doing this for some performance reason at this time?
+    // FIXME: Patching style diff like this is error-prone. It is not clear why we can't use
+    // a static style diff and make repaint decision at styleWillChange() based on compositing state.
     if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
@@ -1818,8 +1817,10 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
                 diff = StyleDifferenceSimplifiedLayout;
             else if (diff < StyleDifferenceSimplifiedLayout)
                 diff = StyleDifferenceSimplifiedLayoutAndPositionedMovement;
-        } else if (diff < StyleDifferenceRecompositeLayer)
-            diff = StyleDifferenceRecompositeLayer;
+        } else if (diff < StyleDifferenceSimplifiedLayout) {
+            // Need to recalculate layout overflow.
+            diff = StyleDifferenceSimplifiedLayout;
+        }
     }
 
     // If opacity or filters changed, and the layer does not paint into its own separate backing, then we need to repaint (also

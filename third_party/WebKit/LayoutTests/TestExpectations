@@ -748,6 +748,10 @@ crbug.com/332944 fast/text-autosizing/hackernews-comments.html [ Failure ]
 crbug.com/302005 fast/text-autosizing/list-item-above-dbcat.html [ Missing ]
 crbug.com/302005 fast/text-autosizing/similar-clusters.html [ Missing ]
 
+# <iframe> will be repainted due to the extra simplified layout (which is supposed to be overflow calculation).
+crbug.com/338698 compositing/iframes/iframe-content-flipping.html [ NeedsRebaseline ]
+crbug.com/338698 virtual/softwarecompositing/iframes/iframe-content-flipping.html [ NeedsRebaseline ]
+
 # Started failing after r162755.
 crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]
 
