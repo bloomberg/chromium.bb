@@ -74,18 +74,20 @@ class AudioRendererHost::AudioEntry
   // The routing ID of the source render view.
   const int render_view_id_;
 
-  // The AudioOutputController that manages the audio stream.
-  const scoped_refptr<media::AudioOutputController> controller_;
-
-  // Shared memory for transmission of the audio data.
+  // Shared memory for transmission of the audio data.  Used by |reader_|.
   const scoped_ptr<base::SharedMemory> shared_memory_;
 
-  // The synchronous reader to be used by the controller.
+  // The synchronous reader to be used by |controller_|.
   const scoped_ptr<media::AudioOutputController::SyncReader> reader_;
+
+  // The AudioOutputController that manages the audio stream.
+  const scoped_refptr<media::AudioOutputController> controller_;
 };
 
 AudioRendererHost::AudioEntry::AudioEntry(
-    AudioRendererHost* host, int stream_id, int render_view_id,
+    AudioRendererHost* host,
+    int stream_id,
+    int render_view_id,
     const media::AudioParameters& params,
     const std::string& output_device_id,
     scoped_ptr<base::SharedMemory> shared_memory,
@@ -93,10 +95,13 @@ AudioRendererHost::AudioEntry::AudioEntry(
     : host_(host),
       stream_id_(stream_id),
       render_view_id_(render_view_id),
-      controller_(media::AudioOutputController::Create(
-          host->audio_manager_, this, params, output_device_id, reader.get())),
       shared_memory_(shared_memory.Pass()),
-      reader_(reader.Pass()) {
+      reader_(reader.Pass()),
+      controller_(media::AudioOutputController::Create(host->audio_manager_,
+                                                       this,
+                                                       params,
+                                                       output_device_id,
+                                                       reader_.get())) {
   DCHECK(controller_.get());
 }
 

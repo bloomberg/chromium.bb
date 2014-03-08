@@ -215,11 +215,6 @@ class MEDIA_EXPORT AudioOutputController
   // Helper method that stops, closes, and NULLs |*stream_|.
   void DoStopCloseAndClearStream();
 
-  // Sanity-check that entry/exit to OnMoreIOData() by the hardware audio thread
-  // happens only between AudioOutputStream::Start() and Stop().
-  void AllowEntryToOnMoreIOData();
-  void DisallowEntryToOnMoreIOData();
-
   // Checks if a stream was started successfully but never calls OnMoreIOData().
   void WedgeCheck();
 
@@ -244,12 +239,10 @@ class MEDIA_EXPORT AudioOutputController
   // is not required for reading on the audio manager thread.
   State state_;
 
-  // Binary semaphore, used to ensure that only one thread enters the
-  // OnMoreIOData() method, and only when it is valid to do so.  This is for
-  // sanity-checking the behavior of platform implementations of
-  // AudioOutputStream.  In other words, multiple contention is not expected,
-  // nor in the design here.
-  base::AtomicRefCount num_allowed_io_;
+  // Atomic ref count indicating when when we're in the middle of handling an
+  // OnMoreIOData() callback.  Will be CHECK'd to find crashes.
+  // TODO(dalecurtis): Remove debug helpers for http://crbug.com/349651
+  base::AtomicRefCount not_currently_in_on_more_io_data_;
 
   // SyncReader is used only in low latency mode for synchronous reading.
   SyncReader* const sync_reader_;

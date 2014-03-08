@@ -45,7 +45,7 @@ AudioOutputController::AudioOutputController(
       diverting_to_stream_(NULL),
       volume_(1.0),
       state_(kEmpty),
-      num_allowed_io_(0),
+      not_currently_in_on_more_io_data_(1),
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetTaskRunner()),
 #if defined(AUDIO_POWER_MONITORING)
@@ -62,6 +62,8 @@ AudioOutputController::AudioOutputController(
 
 AudioOutputController::~AudioOutputController() {
   DCHECK_EQ(kClosed, state_);
+  // TODO(dalecurtis): Remove debugging for http://crbug.com/349651
+  CHECK(!base::AtomicRefCountDec(&not_currently_in_on_more_io_data_));
 }
 
 // static
@@ -191,8 +193,6 @@ void AudioOutputController::DoPlay() {
   power_poll_callback_.callback().Run();
 #endif
 
-  on_more_io_data_called_ = 0;
-  AllowEntryToOnMoreIOData();
   stream_->Start(this);
 
   // For UMA tracking purposes, start the wedge detection timer.  This allows us
@@ -232,7 +232,6 @@ void AudioOutputController::StopStream() {
   if (state_ == kPlaying) {
     wedge_timer_.reset();
     stream_->Stop();
-    DisallowEntryToOnMoreIOData();
 
 #if defined(AUDIO_POWER_MONITORING)
     power_poll_callback_.Cancel();
@@ -334,7 +333,7 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
 int AudioOutputController::OnMoreIOData(AudioBus* source,
                                         AudioBus* dest,
                                         AudioBuffersState buffers_state) {
-  DisallowEntryToOnMoreIOData();
+  CHECK(!base::AtomicRefCountDec(&not_currently_in_on_more_io_data_));
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreIOData");
 
   // Indicate that we haven't wedged (at least not indefinitely, WedgeCheck()
@@ -354,7 +353,7 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   power_monitor_.Scan(*dest, frames);
 #endif
 
-  AllowEntryToOnMoreIOData();
+  base::AtomicRefCountInc(&not_currently_in_on_more_io_data_);
   return frames;
 }
 
@@ -454,16 +453,6 @@ void AudioOutputController::DoStopDiverting() {
   // back to NULL.
   OnDeviceChange();
   DCHECK(!diverting_to_stream_);
-}
-
-void AudioOutputController::AllowEntryToOnMoreIOData() {
-  DCHECK(base::AtomicRefCountIsZero(&num_allowed_io_));
-  base::AtomicRefCountInc(&num_allowed_io_);
-}
-
-void AudioOutputController::DisallowEntryToOnMoreIOData() {
-  const bool is_zero = !base::AtomicRefCountDec(&num_allowed_io_);
-  DCHECK(is_zero);
 }
 
 void AudioOutputController::WedgeCheck() {
