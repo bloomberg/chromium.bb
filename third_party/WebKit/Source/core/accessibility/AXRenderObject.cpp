@@ -2156,11 +2156,11 @@ void AXRenderObject::addImageMapChildren()
     if (!map)
         return;
 
-    for (Element* current = ElementTraversal::firstWithin(*map); current; current = ElementTraversal::next(*current, map)) {
+    for (HTMLAreaElement* area = Traversal<HTMLAreaElement>::firstWithin(*map); area; area = Traversal<HTMLAreaElement>::next(*area, map)) {
         // add an <area> element for this child if it has a link
-        if (isHTMLAreaElement(*current) && current->isLink()) {
+        if (area->isLink()) {
             AXImageMapLink* areaObject = toAXImageMapLink(axObjectCache()->getOrCreate(ImageMapLinkRole));
-            areaObject->setHTMLAreaElement(toHTMLAreaElement(current));
+            areaObject->setHTMLAreaElement(area);
             areaObject->setHTMLMapElement(map);
             areaObject->setParent(this);
             if (!areaObject->accessibilityIsIgnored())
