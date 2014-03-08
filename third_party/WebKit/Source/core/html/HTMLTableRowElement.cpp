@@ -66,32 +66,29 @@ int HTMLTableRowElement::rowIndex() const
     int rIndex = 0;
 
     if (HTMLTableSectionElement* head = toHTMLTableElement(table)->tHead()) {
-        for (Element* row = ElementTraversal::firstWithin(*head); row; row = ElementTraversal::nextSibling(*row)) {
+        for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*head); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {
             if (row == this)
                 return rIndex;
-            if (row->hasTagName(trTag))
-                ++rIndex;
+            ++rIndex;
         }
     }
 
     for (Element* child = ElementTraversal::firstWithin(*table); child; child = ElementTraversal::nextSibling(*child)) {
         if (child->hasTagName(tbodyTag)) {
             HTMLTableSectionElement* section = toHTMLTableSectionElement(child);
-            for (Element* row = ElementTraversal::firstWithin(*section); row; row = ElementTraversal::nextSibling(*row)) {
+            for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*section); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {
                 if (row == this)
                     return rIndex;
-                if (row->hasTagName(trTag))
-                    ++rIndex;
+                ++rIndex;
             }
         }
     }
 
     if (HTMLTableSectionElement* foot = toHTMLTableElement(table)->tFoot()) {
-        for (Element* row = ElementTraversal::firstWithin(*foot); row; row = ElementTraversal::nextSibling(*row)) {
+        for (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*foot); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row)) {
             if (row == this)
                 return rIndex;
-            if (row->hasTagName(trTag))
-                ++rIndex;
+            ++rIndex;
         }
     }
 

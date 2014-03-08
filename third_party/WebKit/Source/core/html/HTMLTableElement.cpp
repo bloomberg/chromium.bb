@@ -66,11 +66,7 @@ PassRefPtr<HTMLTableElement> HTMLTableElement::create(Document& document)
 
 HTMLTableCaptionElement* HTMLTableElement::caption() const
 {
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(captionTag))
-            return toHTMLTableCaptionElement(child);
-    }
-    return 0;
+    return Traversal<HTMLTableCaptionElement>::firstChild(*this);
 }
 
 void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& exceptionState)

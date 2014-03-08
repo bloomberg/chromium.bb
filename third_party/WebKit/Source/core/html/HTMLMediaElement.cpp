@@ -430,12 +430,8 @@ void HTMLMediaElement::finishParsingChildren()
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
         return;
 
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(trackTag)) {
-            scheduleDelayedAction(LoadTextTrackResource);
-            break;
-        }
-    }
+    if (Traversal<HTMLTrackElement>::firstChild(*this))
+        scheduleDelayedAction(LoadTextTrackResource);
 }
 
 bool HTMLMediaElement::rendererIsNeeded(const RenderStyle& style)
@@ -737,16 +733,10 @@ void HTMLMediaElement::selectMediaResource()
     // 3 - If the media element has a src attribute, then let mode be attribute.
     Mode mode = attribute;
     if (!fastHasAttribute(srcAttr)) {
-        Element* element;
-        for (element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::nextSibling(*element)) {
-            if (element->hasTagName(sourceTag))
-                break;
-        }
-
         // Otherwise, if the media element does not have a src attribute but has a source
         // element child, then let mode be children and let candidate be the first such
         // source element child in tree order.
-        if (element) {
+        if (HTMLSourceElement* element = Traversal<HTMLSourceElement>::firstChild(*this)) {
             mode = children;
             m_nextChildNodeToConsider = element;
             m_currentSourceNode = nullptr;
@@ -1187,10 +1177,7 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
         // or showing by default for the first time, the user agent must immediately and synchronously
         // run the following algorithm ...
 
-        for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-            if (!child->hasTagName(trackTag))
-                continue;
-            HTMLTrackElement* trackElement = toHTMLTrackElement(child);
+        for (HTMLTrackElement* trackElement = Traversal<HTMLTrackElement>::firstChild(*this); trackElement; trackElement = Traversal<HTMLTrackElement>::nextSibling(*trackElement)) {
             if (trackElement->track() != track)
                 continue;
 
@@ -1206,8 +1193,9 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
             }
             break;
         }
-    } else if (track->trackType() == TextTrack::AddTrack && track->mode() != TextTrack::disabledKeyword())
+    } else if (track->trackType() == TextTrack::AddTrack && track->mode() != TextTrack::disabledKeyword()) {
         textTrackAddCues(track, track->cues());
+    }
 
     configureTextTrackDisplay(AssumeVisibleChange);
 
@@ -1420,10 +1408,8 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
     WTF_LOG(Media, "HTMLMediaElement::cancelPendingEventsAndCallbacks");
     m_asyncEventQueue->cancelAllEvents();
 
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(sourceTag))
-            toHTMLSourceElement(child)->cancelPendingErrorEvent();
-    }
+    for (HTMLSourceElement* source = Traversal<HTMLSourceElement>::firstChild(*this); source; source = Traversal<HTMLSourceElement>::nextSibling(*source))
+        source->cancelPendingErrorEvent();
 }
 
 void HTMLMediaElement::mediaPlayerNetworkStateChanged()

@@ -145,11 +145,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
 
     // Scan the PARAM children and store their name/value pairs.
     // Get the URL and type from the params if we don't already have them.
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (!child->hasTagName(paramTag))
-            continue;
-
-        HTMLParamElement* p = toHTMLParamElement(child);
+    for (HTMLParamElement* p = Traversal<HTMLParamElement>::firstChild(*this); p; p = Traversal<HTMLParamElement>::nextSibling(*p)) {
         String name = p->name();
         if (name.isEmpty())
             continue;

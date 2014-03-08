@@ -167,11 +167,7 @@ void HTMLAppletElement::updateWidgetInternal()
         paramValues.append(mayScript.string());
     }
 
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (!child->hasTagName(paramTag))
-            continue;
-
-        HTMLParamElement* param = toHTMLParamElement(child);
+    for (HTMLParamElement* param = Traversal<HTMLParamElement>::firstChild(*this); param; param = Traversal<HTMLParamElement>::nextSibling(*param)) {
         if (param->name().isEmpty())
             continue;
 

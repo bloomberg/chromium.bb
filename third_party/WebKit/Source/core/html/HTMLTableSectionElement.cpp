@@ -97,10 +97,8 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionStat
 int HTMLTableSectionElement::numRows() const
 {
     int rowCount = 0;
-    for (const Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(trTag))
-            ++rowCount;
-    }
+    for (const HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::firstChild(*this); row; row = Traversal<HTMLTableRowElement>::nextSibling(*row))
+        ++rowCount;
     return rowCount;
 }
 

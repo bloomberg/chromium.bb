@@ -155,10 +155,10 @@ size_t LoadableTextTrack::trackElementIndex()
     ASSERT(m_trackElement->parentNode());
 
     size_t index = 0;
-    for (Element* child = ElementTraversal::firstWithin(*m_trackElement->parentNode()); child; child = ElementTraversal::nextSibling(*child)) {
-        if (!child->hasTagName(trackTag) || !child->parentNode())
+    for (HTMLTrackElement* track = Traversal<HTMLTrackElement>::firstChild(*m_trackElement->parentNode()); track; track = Traversal<HTMLTrackElement>::nextSibling(*track)) {
+        if (!track->parentNode())
             continue;
-        if (child == m_trackElement)
+        if (track == m_trackElement)
             return index;
         ++index;
     }
