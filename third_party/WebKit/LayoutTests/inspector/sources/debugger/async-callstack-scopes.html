@@ -1,0 +1,132 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function makeClosure(n, callback, withScope)
+{
+    var makeClosureLocalVar = 'local.' + n;
+    return function innerFunction(x) {
+        var innerFunctionLocalVar = x + 2;
+        try {
+            throw new Error("An exception");
+        } catch (e) {
+            e.toString();
+            if (withScope) {
+                with (withScope) {
+                    callback();
+                }
+            } else {
+                callback();
+            }
+        }
+        return n + makeClosureLocalVar + x + innerFunctionLocalVar;
+    }
+}
+
+function testFunction()
+{
+    var delay1 = 0;
+    setTimeout(timeout1, delay1);
+}
+
+function timeout1()
+{
+    var localInTimeout1 = "timeout1";
+    function innerTimeout1()
+    {
+        var localInInnerTimeout1 = "innerTimeout1";
+        setTimeout(timeout2, Number(localInInnerTimeout1 + localInTimeout1) || 0);
+    }
+    makeClosure(1, innerTimeout1)(100);
+}
+
+function timeout2()
+{
+    var localInTimeout2 = "timeout2";
+    function innerTimeout2()
+    {
+        var localInInnerTimeout2 = "innerTimeout2";
+        debugger;
+    }
+    makeClosure(2, innerTimeout2, { foo: "bar", __proto__: null })(200);
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+    }
+
+    function didPaused()
+    {
+        var callStackPane = WebInspector.inspectorView.currentPanel().sidebarPanes.callstack;
+        var scopeChainPane = WebInspector.inspectorView.currentPanel().sidebarPanes.scopechain;
+        InspectorTest.addResult("Dumping call frames with scope chains:\n");
+        printNextCallFrame();
+
+        function printNextCallFrame()
+        {
+            var index = callStackPane._selectedCallFrameIndex();
+            InspectorTest.assertGreaterOrEqual(index, 0);
+            var placard = callStackPane.placards[index];
+            InspectorTest.addResult((index + 1) + ") " + placard.title + " " + placard.subtitle);
+            expandScopeChain();
+        }
+
+        function expandScopeChain()
+        {
+            // Expand all but global scopes. Expanding global scope takes for too long
+            // so we keep it collapsed.
+            var sections = scopeChainPane._sections;
+            // global scope is always the last one.
+            for (var i = 0; i < sections.length - 1; ++i)
+                sections[i].expand();
+            InspectorTest.runAfterPendingDispatches(printScopeChain);
+        }
+
+        function printScopeChain()
+        {
+            var sections = scopeChainPane._sections;
+            for (var i = 0; i < sections.length; ++i) {
+                var section = sections[i];
+                var properties = section.propertiesForTest;
+                InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(section.element));
+                if (!section.expanded)
+                    InspectorTest.addResult("    <section collapsed>");
+            }
+            InspectorTest.addResult("");
+
+            // Dump up to the testFunction() - we don't care what was before.
+            var index = callStackPane._selectedCallFrameIndex();
+            var placard = callStackPane.placards[index];
+            if (placard.title !== "testFunction" && callStackPane._selectNextCallFrameOnStack())
+                InspectorTest.runAfterPendingDispatches(printNextCallFrame);
+            else
+                InspectorTest.completeDebuggerTest();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Test that sections representing scopes are expandable and contain correct data for async call frames.
+</p>
+</body>
+</html>
