@@ -425,6 +425,7 @@ void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {
 }
 
 void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
+  const QuicConnectionStats& stats = session->connection()->GetStats();
   const AliasSet& aliases = session_aliases_[session];
   for (AliasSet::const_iterator it = aliases.begin(); it != aliases.end();
        ++it) {
@@ -446,14 +447,16 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
       // differently so that we still race TCP but we don't consider the
       // session connected until the handshake has been confirmed.
       http_server_properties_->SetBrokenAlternateProtocol(it->first);
-    } else {
-      QuicConnectionStats stats = session->connection()->GetStats();
-      HttpServerProperties::NetworkStats network_stats;
-      network_stats.rtt = base::TimeDelta::FromMicroseconds(stats.rtt);
-      network_stats.bandwidth_estimate = stats.estimated_bandwidth;
-      http_server_properties_->SetServerNetworkStats(
-          it->first, network_stats);
+      UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
+                           stats.packets_received);
+      continue;
     }
+
+    HttpServerProperties::NetworkStats network_stats;
+    network_stats.rtt = base::TimeDelta::FromMicroseconds(stats.rtt);
+    network_stats.bandwidth_estimate = stats.estimated_bandwidth;
+    http_server_properties_->SetServerNetworkStats(
+        it->first, network_stats);
   }
   IPEndPoint peer_address = session->connection()->peer_address();
   ip_aliases_[peer_address].erase(session);

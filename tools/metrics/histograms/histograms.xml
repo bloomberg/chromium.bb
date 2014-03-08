@@ -10267,6 +10267,13 @@ other types of suffix sets.
   <summary>The number of ports suggested per server.</summary>
 </histogram>
 
+<histogram name="Net.QuicHandshakeNotConfirmedNumPacketsReceived">
+  <summary>
+    The number of QUIC packets received by a QUIC connection whose handshake was
+    not confirmed when that connection is closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicHandshakeState" enum="QuicHandshakeState">
   <summary>
     The state of a QUIC connection's crypto hanshake as it progresses from
