@@ -45,6 +45,8 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   static const SkColor kWarningTextColor;
 
  private:
+  friend class AutofillPopupBaseViewTest;
+
   // views::Views implementation.
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;

@@ -186,7 +186,7 @@ void AutofillPopupBaseView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
       if (HitTestPoint(event->location()))
-        SetSelection(event->location());
+        AcceptSelection(event->location());
       else
         ClearSelection();
       break;
