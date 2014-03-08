@@ -17,6 +17,59 @@ class CommandLine;
 
 namespace base {
 
+// Helpers to spawn a child for a multiprocess test and execute a designated
+// function. Use these when you already have another base class for your test
+// fixture, but you want (some) of your tests to be multiprocess (otherwise you
+// may just want to derive your fixture from |MultiProcessTest|, below).
+//
+// Use these helpers as follows:
+//
+//   TEST_F(MyTest, ATest) {
+//     CommandLine command_line(
+//         base::GetMultiProcessTestChildBaseCommandLine());
+//     // Maybe add our own switches to |command_line|....
+//
+//     LaunchOptions options;
+//     // Maybe set some options (e.g., |start_hidden| on Windows)....
+//
+//     // Start a child process and run |a_test_func|.
+//     base::ProcessHandle test_child_handle =
+//         base::SpawnMultiProcessTestChild("a_test_func", command_line,
+//                                          options, false);
+//
+//     // Do stuff involving |test_child_handle| and the child process....
+//
+//     int rv = -1;
+//     ASSERT_TRUE(base::WaitForExitCodeWithTimeout(
+//         test_child_handle, &rv, TestTimeouts::action_timeout()));
+//     base::CloseProcessHandle(test_child_handle);
+//     EXPECT_EQ(0, rv);
+//   }
+//
+//   // Note: |MULTIPROCESS_TEST_MAIN()| is defined in
+//   // testing/multi_process_function_list.h.
+//   MULTIPROCESS_TEST_MAIN(a_test_func) {
+//     // Code here runs in a child process....
+//     return 0;
+//   }
+
+// Spawns a child process and executes the function |procname| declared using
+// |MULTIPROCESS_TEST_MAIN()| or |MULTIPROCESS_TEST_MAIN_WITH_SETUP()|.
+// |command_line| should be as provided by
+// |GetMultiProcessTestChildBaseCommandLine()| (below), possibly with arguments
+// added. Note: On Windows, you probably want to set |options.start_hidden|.
+ProcessHandle SpawnMultiProcessTestChild(
+    const std::string& procname,
+    const CommandLine& command_line,
+    const LaunchOptions& options,
+    bool debug_on_start);
+
+// Gets the base command line for |SpawnMultiProcessTestChild()|. To this, you
+// may add any flags needed for your child process.
+CommandLine GetMultiProcessTestChildBaseCommandLine();
+
+// MultiProcessTest ------------------------------------------------------------
+
 // A MultiProcessTest is a test class which makes it easier to
 // write a test which requires code running out of process.
 //
@@ -64,6 +117,12 @@ class MultiProcessTest : public PlatformTest {
                                       bool debug_on_start);
 
   // Set up the command line used to spawn the child process.
+  // Override this to add things to the command line (calling this first in the
+  // override).
+  // Note that currently some tests rely on this providing a full command line,
+  // which they then use directly with |LaunchProcess()|.
+  // TODO(viettrungluu): Remove this and add a virtual
+  // |ModifyChildCommandLine()|; make the two divergent uses more sane.
   virtual CommandLine MakeCmdLine(const std::string& procname,
                                   bool debug_on_start);
 
