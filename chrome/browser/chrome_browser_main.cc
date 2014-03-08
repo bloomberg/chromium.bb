@@ -1464,12 +1464,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
 #if !defined(DISABLE_NACL)
-  if (parsed_command_line().HasSwitch(switches::kPnaclDir)) {
-    PathService::Override(chrome::DIR_PNACL_BASE,
-                          parsed_command_line().GetSwitchValuePath(
-                              switches::kPnaclDir));
-  }
-
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

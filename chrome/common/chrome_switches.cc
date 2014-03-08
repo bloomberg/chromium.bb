@@ -1120,9 +1120,6 @@ const char kPerformanceMonitorGathering[]   = "performance-monitor-gathering";
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";
 
-// Overrides the path to the location that PNaCl is installed.
-const char kPnaclDir[]                      = "pnacl-dir";
-
 // Use the PPAPI (Pepper) Flash found at the given path.
 const char kPpapiFlashPath[]                = "ppapi-flash-path";
 

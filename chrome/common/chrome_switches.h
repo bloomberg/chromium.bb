@@ -306,7 +306,6 @@ extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
 extern const char kPerformanceMonitorGathering[];
 extern const char kPlaybackMode[];
-extern const char kPnaclDir[];
 extern const char kPpapiFlashPath[];
 extern const char kPpapiFlashVersion[];
 extern const char kPrefetchSearchResults[];
