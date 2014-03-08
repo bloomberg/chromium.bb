@@ -32,7 +32,6 @@
 #define DirectoryReaderSync_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/fileapi/FileError.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -55,25 +54,8 @@ public:
 
     EntrySyncVector readEntries(ExceptionState&);
 
-    void addEntries(const EntrySyncVector& entries)
-    {
-        m_entries.appendVector(entries);
-    }
-
-    void setError(FileError::ErrorCode code)
-    {
-        m_errorCode = code;
-    }
-
 private:
-    class EntriesCallbackHelper;
-    class ErrorCallbackHelper;
-
     DirectoryReaderSync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
-
-    int m_callbacksId;
-    EntrySyncVector m_entries;
-    FileError::ErrorCode m_errorCode;
 };
 
 } // namespace

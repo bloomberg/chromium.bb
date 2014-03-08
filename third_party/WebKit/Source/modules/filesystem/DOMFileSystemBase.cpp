@@ -320,19 +320,15 @@ void DOMFileSystemBase::getDirectory(const EntryBase* entry, const String& path,
         fileSystem()->directoryExists(createFileSystemURL(absolutePath), callbacks.release());
 }
 
-int DOMFileSystemBase::readDirectory(PassRefPtr<DirectoryReaderBase> reader, const String& path, PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
+bool DOMFileSystemBase::readDirectory(PassRefPtr<DirectoryReaderBase> reader, const String& path, PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
 {
     ASSERT(DOMFilePath::isAbsolute(path));
 
     OwnPtr<AsyncFileSystemCallbacks> callbacks(EntriesCallbacks::create(successCallback, errorCallback, reader, path));
     callbacks->setShouldBlockUntilCompletion(synchronousType == Synchronous);
 
-    return fileSystem()->readDirectory(createFileSystemURL(path), callbacks.release());
-}
-
-bool DOMFileSystemBase::waitForAdditionalResult(int callbacksId)
-{
-    return fileSystem()->waitForAdditionalResult(callbacksId);
+    fileSystem()->readDirectory(createFileSystemURL(path), callbacks.release());
+    return true;
 }
 
 } // namespace WebCore
