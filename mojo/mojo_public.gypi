@@ -23,6 +23,20 @@
         'public/system/macros.h',
         'public/system/system_export.h',
       ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@rpath',
+          },
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              # Look for run-path dependent libraries in the loader's directory.
+              'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
+            },
+          }, 
+        }],
+      ],
     },
     {
       'target_name': 'mojo_gles2',
@@ -51,6 +65,20 @@
         'public/gles2/gles2_private.cc',
         'public/gles2/gles2_private.h',
       ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@rpath',
+          },
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              # Look for run-path dependent libraries in the loader's directory.
+              'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
+            },
+          }, 
+        }],
+      ],
     },
     {
       'target_name': 'mojo_test_support',
@@ -71,6 +99,20 @@
         'public/tests/test_support_private.cc',
         'public/tests/test_support_private.h',
         'public/tests/test_support_export.h',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@rpath',
+          },
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              # Look for run-path dependent libraries in the loader's directory.
+              'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
+            },
+          }, 
+        }],
       ],
     },
     {
