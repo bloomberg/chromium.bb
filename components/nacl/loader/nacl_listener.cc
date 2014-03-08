@@ -402,6 +402,11 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     // PNaCl because it might break existing NaCl apps, and this limit
     // is only useful if the dyncode syscalls are disabled.
     args->initial_nexe_max_code_bytes = 32 << 20;  // 32 MB
+
+    // Indicate that this is a PNaCl module.
+    // TODO(jvoung): Plumb through something indicating that this is PNaCl
+    // instead of relying on enable_dyncode_syscalls.
+    args->pnacl_mode = 1;
   }
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   args->debug_stub_server_bound_socket_fd = nacl::ToNativeHandle(
