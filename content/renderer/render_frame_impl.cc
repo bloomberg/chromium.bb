@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
@@ -24,6 +25,7 @@
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/swapped_out_messages.h"
@@ -94,11 +96,13 @@ using blink::WebContextMenuData;
 using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
+using blink::WebElement;
 using blink::WebFrame;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
+using blink::WebNode;
 using blink::WebPluginParams;
 using blink::WebReferrerPolicy;
 using blink::WebSearchableFormData;
@@ -358,10 +362,8 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
     return;
 
   GetRenderWidget()->UpdateTextInputType();
-  if (render_view_->renderer_accessibility()) {
-    render_view_->renderer_accessibility()->FocusedNodeChanged(
-        blink::WebNode());
-  }
+  if (render_view_->renderer_accessibility())
+    render_view_->renderer_accessibility()->FocusedNodeChanged(WebNode());
 }
 
 void RenderFrameImpl::PepperCaretPositionChanged(
@@ -542,6 +544,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
+    IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)
+    IPC_MESSAGE_HANDLER(InputMsg_Copy, OnCopy)
+    IPC_MESSAGE_HANDLER(InputMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -841,6 +846,26 @@ void RenderFrameImpl::OnCustomContextMenuAction(
   }
 }
 
+void RenderFrameImpl::OnCut() {
+  base::AutoReset<bool> handling_select_range(
+      &render_view_->handling_select_range_, true);
+  frame_->executeCommand(WebString::fromUTF8("Cut"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnCopy() {
+  base::AutoReset<bool> handling_select_range(
+      &render_view_->handling_select_range_, true);
+  WebNode current_node = render_view_->context_menu_node_.isNull() ?
+      GetFocusedElement() : render_view_->context_menu_node_;
+  frame_->executeCommand(WebString::fromUTF8("Copy"), current_node);
+}
+
+void RenderFrameImpl::OnPaste() {
+  base::AutoReset<bool> handling_select_range(
+      &render_view_->handling_select_range_, true);
+  frame_->executeCommand(WebString::fromUTF8("Paste"), GetFocusedElement());
+}
+
 void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
   frame_->document().insertStyleSheet(WebString::fromUTF8(css));
 }
@@ -1105,6 +1130,10 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
     delete this;
     // Object is invalid after this point.
   }
+}
+
+void RenderFrameImpl::frameFocused() {
+  Send(new FrameHostMsg_FrameFocused(routing_id_));
 }
 
 void RenderFrameImpl::willClose(blink::WebFrame* frame) {
@@ -2366,6 +2395,14 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
   navigation_state->set_transition_type(PAGE_TRANSITION_LINK);
+}
+
+WebElement RenderFrameImpl::GetFocusedElement() {
+  WebDocument doc = frame_->document();
+  if (!doc.isNull())
+    return doc.focusedElement();
+
+  return WebElement();
 }
 
 void RenderFrameImpl::didStartLoading() {

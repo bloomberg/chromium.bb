@@ -100,8 +100,8 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -1419,19 +1419,19 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
 void BrowserView::Cut() {
-  // If a WebContent is focused, call RenderWidgetHost::Cut. Otherwise, e.g. if
+  // If a WebContent is focused, call RenderFrameHost::Cut. Otherwise, e.g. if
   // Omnibox is focused, send a Ctrl+x key event to Chrome. Using RWH interface
   // rather than the fake key event for a WebContent is important since the fake
   // event might be consumed by the web content (crbug.com/137908).
-  DoCutCopyPaste(&content::RenderWidgetHost::Cut, IDS_APP_CUT);
+  DoCutCopyPaste(&content::RenderFrameHost::Cut, IDS_APP_CUT);
 }
 
 void BrowserView::Copy() {
-  DoCutCopyPaste(&content::RenderWidgetHost::Copy, IDS_APP_COPY);
+  DoCutCopyPaste(&content::RenderFrameHost::Copy, IDS_APP_COPY);
 }
 
 void BrowserView::Paste() {
-  DoCutCopyPaste(&content::RenderWidgetHost::Paste, IDS_APP_PASTE);
+  DoCutCopyPaste(&content::RenderFrameHost::Paste, IDS_APP_PASTE);
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -2508,7 +2508,7 @@ void BrowserView::ShowBrowserActionPopup(
   toolbar_->ShowBrowserActionPopup(extension);
 }
 
-void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
+void BrowserView::DoCutCopyPaste(void (content::RenderFrameHost::*method)(),
                                  int command_id) {
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
@@ -2535,7 +2535,7 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
 
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
-    void (content::RenderWidgetHost::*method)()) {
+    void (content::RenderFrameHost::*method)()) {
   gfx::NativeView native_view = contents->GetView()->GetContentNativeView();
   if (!native_view)
     return false;
@@ -2544,7 +2544,9 @@ bool BrowserView::DoCutCopyPasteForWebContents(
 #elif defined(OS_WIN)
   if (native_view == ::GetFocus()) {
 #endif
-    (contents->GetRenderViewHost()->*method)();
+    content::RenderFrameHost* frame = contents->GetFocusedFrame();
+    if (frame)
+      (frame->*method)();
     return true;
   }
 

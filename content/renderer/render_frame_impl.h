@@ -201,6 +201,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                              const blink::WebString& name);
   virtual void didDisownOpener(blink::WebFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame);
+  virtual void frameFocused();
   virtual void willClose(blink::WebFrame* frame);
   virtual void didChangeName(blink::WebFrame* frame,
                              const blink::WebString& name);
@@ -350,6 +351,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void UpdateURL(blink::WebFrame* frame);
 
+  // Gets the focused element. If no such element exists then the element will
+  // be NULL.
+  blink::WebElement GetFocusedElement();
+
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in
@@ -362,7 +367,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
                                  unsigned action);
+  void OnCut();
+  void OnCopy();
+  void OnPaste();
   void OnCSSInsertRequest(const std::string& css);
+
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
       RenderFrame* render_frame,

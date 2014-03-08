@@ -1145,8 +1145,9 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
 
 void WebContentsViewAura::ShowContextMenu(RenderFrameHost* render_frame_host,
                                           const ContextMenuParams& params) {
-  if (touch_editable_)
+  if (touch_editable_) {
     touch_editable_->EndTouchEditing(false);
+  }
   if (delegate_) {
     delegate_->ShowContextMenu(render_frame_host, params);
     // WARNING: we may have been deleted during the call to ShowContextMenu().

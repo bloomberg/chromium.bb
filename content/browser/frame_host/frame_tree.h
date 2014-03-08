@@ -88,6 +88,12 @@ class CONTENT_EXPORT FrameTree {
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;
 
+  // Returns the focused frame.
+  FrameTreeNode* GetFocusedFrame();
+
+  // Sets the focused frame.
+  void SetFocusedFrame(FrameTreeNode* node);
+
   // Allows a client to listen for frame removal.  The listener should expect
   // to receive the RenderViewHostImpl containing the frame and the renderer-
   // specific frame routing ID of the removed frame.
@@ -144,6 +150,8 @@ class CONTENT_EXPORT FrameTree {
   RenderViewHostMultiMap render_view_host_pending_shutdown_map_;
 
   scoped_ptr<FrameTreeNode> root_;
+
+  int64 focused_frame_tree_node_id_;
 
   base::Callback<void(RenderViewHostImpl*, int)> on_frame_removed_;
 

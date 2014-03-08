@@ -186,6 +186,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderFrameHost* GetMainFrame() OVERRIDE;
+  virtual RenderFrameHost* GetFocusedFrame() OVERRIDE;
   virtual void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) OVERRIDE;
   virtual void SendToAllFrames(IPC::Message* message) OVERRIDE;

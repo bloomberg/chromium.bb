@@ -2233,27 +2233,12 @@ void RenderWidgetHostImpl::Redo() {
   RecordAction(base::UserMetricsAction("Redo"));
 }
 
-void RenderWidgetHostImpl::Cut() {
-  Send(new InputMsg_Cut(GetRoutingID()));
-  RecordAction(base::UserMetricsAction("Cut"));
-}
-
-void RenderWidgetHostImpl::Copy() {
-  Send(new InputMsg_Copy(GetRoutingID()));
-  RecordAction(base::UserMetricsAction("Copy"));
-}
-
 void RenderWidgetHostImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
   Send(new InputMsg_CopyToFindPboard(GetRoutingID()));
   RecordAction(base::UserMetricsAction("CopyToFindPboard"));
 #endif
-}
-
-void RenderWidgetHostImpl::Paste() {
-  Send(new InputMsg_Paste(GetRoutingID()));
-  RecordAction(base::UserMetricsAction("Paste"));
 }
 
 void RenderWidgetHostImpl::PasteAndMatchStyle() {

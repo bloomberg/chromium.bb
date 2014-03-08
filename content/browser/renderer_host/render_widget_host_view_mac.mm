@@ -27,6 +27,9 @@
 #include "base/sys_info.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
@@ -72,7 +75,10 @@ using content::BackingStoreMac;
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
 using content::EditCommand;
+using content::FrameTreeNode;
 using content::NativeWebKeyboardEvent;
+using content::RenderFrameHost;
+using content::RenderViewHost;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostViewMac;
@@ -1712,6 +1718,21 @@ gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
   return gfx::Range(
       request_range.start() - composition_range_.start(),
       request_range.end() - composition_range_.start());
+}
+
+RenderFrameHost* RenderWidgetHostViewMac::GetFocusedFrame() {
+  if (!render_widget_host_->IsRenderView())
+    return NULL;
+
+  RenderViewHost* rvh = RenderViewHost::From(render_widget_host_);
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
+  FrameTreeNode* focused_frame =
+      rfh->frame_tree_node()->frame_tree()->GetFocusedFrame();
+  if (!focused_frame)
+    return NULL;
+
+  return focused_frame->current_frame_host();
 }
 
 bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
@@ -3967,17 +3988,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)cut:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->Cut();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->Cut();
 }
 
 - (void)copy:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->Copy();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->Copy();
 }
 
 - (void)copyToFindPboard:(id)sender {
@@ -3988,10 +4007,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)paste:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHostImpl*>(
-        renderWidgetHostView_->render_widget_host_)->Paste();
-  }
+  RenderFrameHost* host = renderWidgetHostView_->GetFocusedFrame();
+  if (host)
+    host->Paste();
 }
 
 - (void)pasteAndMatchStyle:(id)sender {

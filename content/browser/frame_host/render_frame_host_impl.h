@@ -55,6 +55,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteCustomContextMenuCommand(
       int action, const CustomContextMenuContext& context) OVERRIDE;
+  virtual void Cut() OVERRIDE;
+  virtual void Copy() OVERRIDE;
+  virtual void Paste() OVERRIDE;
   virtual void InsertCSS(const std::string& css) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
@@ -150,6 +153,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // IPC Message handlers.
   void OnDetach();
+  void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
                                          bool main_frame,

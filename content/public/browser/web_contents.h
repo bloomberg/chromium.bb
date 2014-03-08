@@ -174,6 +174,9 @@ class WebContents : public PageNavigator,
   // Returns the main frame for the currently active view.
   virtual RenderFrameHost* GetMainFrame() = 0;
 
+  // Returns the focused frame for the currently active view.
+  virtual RenderFrameHost* GetFocusedFrame() = 0;
+
   // Calls |on_frame| for each frame in the currently active view.
   virtual void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) = 0;

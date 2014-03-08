@@ -5,6 +5,7 @@
 #include "content/shell/browser/shell_web_contents_view_delegate.h"
 
 #include "base/command_line.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -220,15 +221,21 @@ void ShellWebContentsViewDelegate::OnOpenURLMenuActivated(GtkWidget* widget) {
 }
 
 void ShellWebContentsViewDelegate::OnCutMenuActivated(GtkWidget* widget) {
-  web_contents_->GetRenderViewHost()->Cut();
+  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
+  if (frame)
+    frame->Cut();
 }
 
 void ShellWebContentsViewDelegate::OnCopyMenuActivated(GtkWidget* widget) {
-  web_contents_->GetRenderViewHost()->Copy();
+  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
+  if (frame)
+    frame->Copy();
 }
 
 void ShellWebContentsViewDelegate::OnPasteMenuActivated(GtkWidget* widget) {
-  web_contents_->GetRenderViewHost()->Paste();
+  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
+  if (frame)
+    frame->Paste();
 }
 
 void ShellWebContentsViewDelegate::OnDeleteMenuActivated(GtkWidget* widget) {

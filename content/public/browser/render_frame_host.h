@@ -60,6 +60,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void ExecuteCustomContextMenuCommand(
       int action, const CustomContextMenuContext& context) = 0;
 
+  // Edit operations.
+  virtual void Cut() = 0;
+  virtual void Copy() = 0;
+  virtual void Paste() = 0;
+
   // Requests the renderer to insert CSS into the frame's document.
   virtual void InsertCSS(const std::string& css) = 0;
 

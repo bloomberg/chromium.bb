@@ -1445,6 +1445,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   RecordUsedItem(id);
 
   RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
 
   // Process custom actions range.
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
@@ -1457,8 +1459,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         source_web_contents_, false, std::string());
     }
 #endif
-    RenderFrameHost* render_frame_host =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (render_frame_host)
       render_frame_host->ExecuteCustomContextMenuCommand(action, context);
     return;
@@ -1798,15 +1798,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_CUT:
-      rvh->Cut();
+      if (render_frame_host)
+        render_frame_host->Cut();
       break;
 
     case IDC_CONTENT_CONTEXT_COPY:
-      rvh->Copy();
+      if (render_frame_host)
+        render_frame_host->Copy();
       break;
 
     case IDC_CONTENT_CONTEXT_PASTE:
-      rvh->Paste();
+      if (render_frame_host)
+        render_frame_host->Paste();
       break;
 
     case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:

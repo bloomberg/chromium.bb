@@ -71,7 +71,8 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_view_delegate,
                               render_widget_delegate,
                               manager_delegate,
-                              std::string())) {
+                              std::string())),
+      focused_frame_tree_node_id_(-1) {
 }
 
 FrameTree::~FrameTree() {
@@ -138,6 +139,7 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
 
 void FrameTree::ResetForMainFrameSwap() {
   root_->ResetForNewProcess();
+  focused_frame_tree_node_id_ = -1;
 }
 
 void FrameTree::RenderProcessGone(RenderViewHost* render_view_host) {
@@ -152,6 +154,14 @@ void FrameTree::RenderProcessGone(RenderViewHost* render_view_host) {
 
 RenderFrameHostImpl* FrameTree::GetMainFrame() const {
   return root_->current_frame_host();
+}
+
+FrameTreeNode* FrameTree::GetFocusedFrame() {
+  return FindByID(focused_frame_tree_node_id_);
+}
+
+void FrameTree::SetFocusedFrame(FrameTreeNode* node) {
+  focused_frame_tree_node_id_ = node->frame_tree_node_id();
 }
 
 void FrameTree::SetFrameRemoveListener(

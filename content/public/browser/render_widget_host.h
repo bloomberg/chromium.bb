@@ -124,12 +124,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual ~RenderWidgetHost() {}
 
   // Edit operations.
+  // TODO(jam): move the rest of these to RenderFrameHost
   virtual void Undo() = 0;
   virtual void Redo() = 0;
-  virtual void Cut() = 0;
-  virtual void Copy() = 0;
   virtual void CopyToFindPboard() = 0;
-  virtual void Paste() = 0;
   virtual void PasteAndMatchStyle() = 0;
   virtual void Delete() = 0;
   virtual void SelectAll() = 0;

@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -131,6 +132,21 @@ void RenderFrameHostImpl::ExecuteCustomContextMenuCommand(
   Send(new FrameMsg_CustomContextMenuAction(routing_id_, context, action));
 }
 
+void RenderFrameHostImpl::Cut() {
+  Send(new InputMsg_Cut(routing_id_));
+  RecordAction(base::UserMetricsAction("Cut"));
+}
+
+void RenderFrameHostImpl::Copy() {
+  Send(new InputMsg_Copy(routing_id_));
+  RecordAction(base::UserMetricsAction("Copy"));
+}
+
+void RenderFrameHostImpl::Paste() {
+  Send(new InputMsg_Paste(routing_id_));
+  RecordAction(base::UserMetricsAction("Paste"));
+}
+
 void RenderFrameHostImpl::InsertCSS(const std::string& css) {
   Send(new FrameMsg_CSSInsertRequest(routing_id_, css));
 }
@@ -155,6 +171,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameHostImpl, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
@@ -196,6 +213,10 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
 
 void RenderFrameHostImpl::OnDetach() {
   frame_tree_->RemoveFrame(frame_tree_node_);
+}
+
+void RenderFrameHostImpl::OnFrameFocused() {
+  frame_tree_->SetFocusedFrame(frame_tree_node_);
 }
 
 void RenderFrameHostImpl::OnOpenURL(
@@ -428,7 +449,7 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
     // completing a RVH swap or unload handler.
     render_view_host_->SetState(RenderViewHostImpl::STATE_DEFAULT);
 
-    Send(new FrameMsg_Navigate(GetRoutingID(), params));
+    Send(new FrameMsg_Navigate(routing_id_, params));
   }
 
   // Force the throbber to start. We do this because Blink's "started

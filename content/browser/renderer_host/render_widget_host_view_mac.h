@@ -30,6 +30,7 @@
 namespace content {
 class CompositingIOSurfaceMac;
 class CompositingIOSurfaceContext;
+class RenderFrameHost;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 }
@@ -401,6 +402,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // the conversion failed, return gfx::Range::InvalidRange.
   gfx::Range ConvertCharacterRangeToCompositionRange(
       const gfx::Range& request_range);
+
+  // Returns the focused frame. May return NULL.
+  RenderFrameHost* GetFocusedFrame();
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.

@@ -29,6 +29,12 @@ specific_include_rules = {
   "render_process_host_impl\.cc": [
     "+content/browser/frame_host/render_frame_message_filter.h",
   ],
+  "render_widget_host_view_mac\.mm": [
+    "+content/browser/frame_host",
+  ],
+  "ime_adapter_android\.cc": [
+    "+content/browser/frame_host",
+  ],
   # TODO(nasko): Remove these exceptions once we've untangled the dependency
   # of RenderViewHost on the FrameTree.
   "render_view_host_impl\.(cc|h)": [

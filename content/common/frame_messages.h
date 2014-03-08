@@ -316,6 +316,9 @@ IPC_SYNC_MESSAGE_CONTROL2_1(FrameHostMsg_CreateChildFrame,
 // detached from the DOM.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
+// Sent by the renderer when the frame becomes focused.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
+
 // Sent when the renderer starts a provisional load for a frame.
 IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoadForFrame,
                     int32 /* parent_routing_id */,

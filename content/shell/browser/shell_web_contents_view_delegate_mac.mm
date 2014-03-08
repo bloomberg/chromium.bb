@@ -7,6 +7,7 @@
 #import  <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -222,15 +223,19 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 }
 
 void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
+  RenderFrameHost* frame = web_contents_->GetFocusedFrame();
   switch (tag) {
     case ShellContextMenuItemCutTag:
-      web_contents_->GetRenderViewHost()->Cut();
+      if (frame)
+        frame->Cut();
       break;
     case ShellContextMenuItemCopyTag:
-      web_contents_->GetRenderViewHost()->Copy();
+      if (frame)
+        frame->Copy();
       break;
     case ShellContextMenuItemPasteTag:
-      web_contents_->GetRenderViewHost()->Paste();
+      if (frame)
+        frame->Paste();
       break;
     case ShellContextMenuItemDeleteTag:
       web_contents_->GetRenderViewHost()->Delete();

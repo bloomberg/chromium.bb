@@ -123,10 +123,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // RenderWidgetHost implementation.
   virtual void Undo() OVERRIDE;
   virtual void Redo() OVERRIDE;
-  virtual void Cut() OVERRIDE;
-  virtual void Copy() OVERRIDE;
   virtual void CopyToFindPboard() OVERRIDE;
-  virtual void Paste() OVERRIDE;
   virtual void PasteAndMatchStyle() OVERRIDE;
   virtual void Delete() OVERRIDE;
   virtual void SelectAll() OVERRIDE;
