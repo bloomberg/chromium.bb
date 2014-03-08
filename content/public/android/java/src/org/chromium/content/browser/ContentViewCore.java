@@ -32,10 +32,8 @@ import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
@@ -56,6 +54,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.R;
+import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationObserver;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.input.AdapterInputConnection;
@@ -89,7 +88,8 @@ import java.util.Map;
  * being tied to the view system.
  */
 @JNINamespace("content")
-public class ContentViewCore implements NavigationClient, AccessibilityStateChangeListener {
+public class ContentViewCore
+        implements NavigationClient, AccessibilityStateChangeListener, ScreenOrientationObserver {
 
     private static final String TAG = "ContentViewCore";
 
@@ -708,8 +708,6 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
                 resetGestureDetectors();
             }
         };
-
-        sendOrientationChangeEvent();
     }
 
     @CalledByNative
@@ -823,6 +821,7 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
         mRetainedJavaScriptObjects.clear();
         unregisterAccessibilityContentObserver();
         mGestureStateListeners.clear();
+        ScreenOrientationListener.getInstance().removeObserver(this);
     }
 
     private void unregisterAccessibilityContentObserver() {
@@ -1445,6 +1444,8 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
     @SuppressWarnings("javadoc")
     public void onAttachedToWindow() {
         setAccessibilityState(mAccessibilityManager.isEnabled());
+
+        ScreenOrientationListener.getInstance().addObserver(this, mContext);
     }
 
     /**
@@ -1457,6 +1458,8 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
         hidePopupDialog();
         mZoomControlsDelegate.dismissZoomPicker();
         unregisterAccessibilityContentObserver();
+
+        ScreenOrientationListener.getInstance().removeObserver(this);
     }
 
     /**
@@ -1509,15 +1512,7 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
             mInputMethodManagerWrapper.restartInput(mContainerView);
         }
         mContainerViewInternals.super_onConfigurationChanged(newConfig);
-        // Make sure the size is up to date in JavaScript's window.onorientationchanged.
-        mContainerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                mContainerView.removeOnLayoutChangeListener(this);
-                sendOrientationChangeEvent();
-            }
-        });
+
         // To request layout has side effect, but it seems OK as it only happen in
         // onConfigurationChange and layout has to be changed in most case.
         mContainerView.requestLayout();
@@ -1943,32 +1938,12 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
     }
 
     /**
-     * Get the screen orientation from the OS and push it to WebKit.
-     *
-     * TODO(husky): Add a hook for mock orientations.
+     * Send the screen orientation value to the renderer.
      */
-    private void sendOrientationChangeEvent() {
+    private void sendOrientationChangeEvent(int orientation) {
         if (mNativeContentViewCore == 0) return;
 
-        WindowManager windowManager =
-                (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        switch (windowManager.getDefaultDisplay().getRotation()) {
-            case Surface.ROTATION_90:
-                nativeSendOrientationChangeEvent(mNativeContentViewCore, 90);
-                break;
-            case Surface.ROTATION_180:
-                nativeSendOrientationChangeEvent(mNativeContentViewCore, 180);
-                break;
-            case Surface.ROTATION_270:
-                nativeSendOrientationChangeEvent(mNativeContentViewCore, -90);
-                break;
-            case Surface.ROTATION_0:
-                nativeSendOrientationChangeEvent(mNativeContentViewCore, 0);
-                break;
-            default:
-                Log.w(TAG, "Unknown rotation!");
-                break;
-        }
+        nativeSendOrientationChangeEvent(mNativeContentViewCore, orientation);
     }
 
     /**
@@ -3140,6 +3115,11 @@ public class ContentViewCore implements NavigationClient, AccessibilityStateChan
         // point, but we reset it anyway as another failsafe.
         mTouchScrollInProgress = false;
         updateGestureStateListener(GestureEventType.FLING_END);
+    }
+
+    @Override
+    public void onScreenOrientationChanged(int orientation) {
+        sendOrientationChangeEvent(orientation);
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);
