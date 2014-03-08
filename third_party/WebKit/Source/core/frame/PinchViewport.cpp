@@ -31,14 +31,13 @@
 #include "config.h"
 #include "PinchViewport.h"
 
-#include "WebSettingsImpl.h"
-#include "WebViewImpl.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -50,13 +49,18 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
+#include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarLayer.h"
 
+using blink::WebLayer;
+using blink::WebLayerTreeView;
+using blink::WebScrollbar;
+using blink::WebScrollbarLayer;
 using WebCore::FrameHost;
 using WebCore::GraphicsLayer;
 using WebCore::GraphicsLayerFactory;
 
-namespace blink {
+namespace WebCore {
 
 PassOwnPtr<PinchViewport> PinchViewport::create(FrameHost& owner, GraphicsLayerFactory* graphicsLayerFactory)
 {
@@ -236,4 +240,4 @@ String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)
     return name;
 }
 
-} // namespace blink
+} // namespace WebCore

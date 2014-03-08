@@ -67,8 +67,6 @@
       'PageScaleConstraintsSet.h',
       'PageWidgetDelegate.cpp',
       'PageWidgetDelegate.h',
-      'PinchViewport.cpp',
-      'PinchViewport.h',
       'PopupContainer.cpp',
       'PopupContainer.h',
       'PopupListBox.cpp',

@@ -72,6 +72,7 @@ class KeyboardEvent;
 class Page;
 class PagePopup;
 class PagePopupClient;
+class PinchViewport;
 class PlatformKeyboardEvent;
 class PopupMenuClient;
 class RenderLayerCompositor;
@@ -84,7 +85,6 @@ class ContextMenuClientImpl;
 class GeolocationClientProxy;
 class LinkHighlight;
 class MIDIClientProxy;
-class PinchViewport;
 class PopupContainer;
 class PrerendererClientImpl;
 class SpeechInputClientImpl;
@@ -739,7 +739,7 @@ private:
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
-    OwnPtr<PinchViewport> m_pinchViewports;
+    OwnPtr<WebCore::PinchViewport> m_pinchViewports;
 
 #if ENABLE(INPUT_SPEECH)
     OwnPtr<SpeechInputClientImpl> m_speechInputClient;

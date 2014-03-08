@@ -1088,6 +1088,8 @@
             'frame/NavigatorID.h',
             'frame/NavigatorOnLine.h',
             'frame/PageConsole.cpp',
+            'frame/PinchViewport.cpp',
+            'frame/PinchViewport.h',
             'frame/RemoteFrame.cpp',
             'frame/RemoteFrame.h',
             'frame/Screen.cpp',

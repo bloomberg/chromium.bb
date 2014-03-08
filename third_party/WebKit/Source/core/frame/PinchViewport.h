@@ -38,20 +38,19 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
+namespace blink {
+class WebLayerTreeView;
+class WebScrollbarLayer;
+}
+
 namespace WebCore {
+
 class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class IntRect;
 class IntSize;
-}
-
-namespace blink {
-
-class WebLayerTreeView;
-class WebScrollbarLayer;
-class WebViewImpl;
 
 class PinchViewport FINAL : WebCore::GraphicsLayerClient {
 public:
@@ -65,8 +64,8 @@ public:
     }
     void setViewportSize(const WebCore::IntSize&);
 
-    void registerViewportLayersWithTreeView(WebLayerTreeView*) const;
-    void clearViewportLayersForTreeView(WebLayerTreeView*) const;
+    void registerViewportLayersWithTreeView(blink::WebLayerTreeView*) const;
+    void clearViewportLayersForTreeView(blink::WebLayerTreeView*) const;
 
 private:
 
@@ -85,10 +84,10 @@ private:
     OwnPtr<WebCore::GraphicsLayer> m_innerViewportScrollLayer;
     OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarHorizontal;
     OwnPtr<WebCore::GraphicsLayer> m_overlayScrollbarVertical;
-    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
-    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
+    OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
+    OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarVertical;
 };
 
-} // namespace blink
+} // namespace WebCore
 
 #endif // PinchViewport_h
