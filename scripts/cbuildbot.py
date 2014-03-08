@@ -27,6 +27,7 @@ from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_run
 from chromite.buildbot import constants
+from chromite.buildbot import manifest_version
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.buildbot import tee
@@ -1693,8 +1694,10 @@ def main(argv):
 
     if options.mock_slave_status is not None:
       with open(options.mock_slave_status, 'r') as f:
-        mock_status = pickle.load(f)
+        mock_statuses = pickle.load(f)
+        for key, value in mock_statuses.iteritems():
+          mock_statuses[key] = manifest_version.BuilderStatus(**value)
       stack.Add(mock.patch.object, stages.MasterSlaveSyncCompletionStage,
-                '_FetchSlaveStatuses', return_value=mock_status)
+                '_FetchSlaveStatuses', return_value=mock_statuses)
 
     _RunBuildStagesWrapper(options, build_config)
