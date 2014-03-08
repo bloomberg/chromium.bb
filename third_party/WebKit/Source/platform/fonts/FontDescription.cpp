@@ -99,43 +99,13 @@ FontTraitsMask FontDescription::traitsMask() const
 {
     return static_cast<FontTraitsMask>((m_italic ? FontStyleItalicMask : FontStyleNormalMask)
             | (m_smallCaps ? FontVariantSmallCapsMask : FontVariantNormalMask)
-            | (FontWeight100Mask << (m_weight - FontWeight100))
+            | weightToTraitsMask(weight())
             | (m_stretch << FontStretchBit1));
 }
 
 void FontDescription::setTraitsMask(FontTraitsMask traitsMask)
 {
-    switch (traitsMask & FontWeightMask) {
-    case FontWeight100Mask:
-        setWeight(FontWeight100);
-        break;
-    case FontWeight200Mask:
-        setWeight(FontWeight200);
-        break;
-    case FontWeight300Mask:
-        setWeight(FontWeight300);
-        break;
-    case FontWeight400Mask:
-        setWeight(FontWeight400);
-        break;
-    case FontWeight500Mask:
-        setWeight(FontWeight500);
-        break;
-    case FontWeight600Mask:
-        setWeight(FontWeight600);
-        break;
-    case FontWeight700Mask:
-        setWeight(FontWeight700);
-        break;
-    case FontWeight800Mask:
-        setWeight(FontWeight800);
-        break;
-    case FontWeight900Mask:
-        setWeight(FontWeight900);
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    setWeight(traitsMaskToWeight(traitsMask));
     setItalic((traitsMask & FontStyleItalicMask) ? FontItalicOn : FontItalicOff);
     setSmallCaps((traitsMask & FontVariantSmallCapsMask) ? FontSmallCapsOn : FontSmallCapsOff);
     setStretch(static_cast<FontStretch>((traitsMask & FontStretchMask) >> FontStretchBit1));

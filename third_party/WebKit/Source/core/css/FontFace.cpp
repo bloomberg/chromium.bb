@@ -410,6 +410,7 @@ unsigned FontFace::traitsMask() const
         traitsMask |= FontStyleNormalMask;
     }
 
+    FontWeight weight = FontWeight400;
     if (m_weight) {
         if (!m_weight->isPrimitiveValue())
             return 0;
@@ -417,41 +418,40 @@ unsigned FontFace::traitsMask() const
         switch (toCSSPrimitiveValue(m_weight.get())->getValueID()) {
         case CSSValueBold:
         case CSSValue700:
-            traitsMask |= FontWeight700Mask;
+            weight = FontWeight700;
             break;
         case CSSValueNormal:
         case CSSValue400:
-            traitsMask |= FontWeight400Mask;
+            weight = FontWeight400;
             break;
         case CSSValue900:
-            traitsMask |= FontWeight900Mask;
+            weight = FontWeight900;
             break;
         case CSSValue800:
-            traitsMask |= FontWeight800Mask;
+            weight = FontWeight800;
             break;
         case CSSValue600:
-            traitsMask |= FontWeight600Mask;
+            weight = FontWeight600;
             break;
         case CSSValue500:
-            traitsMask |= FontWeight500Mask;
+            weight = FontWeight500;
             break;
         case CSSValue300:
-            traitsMask |= FontWeight300Mask;
+            weight = FontWeight300;
             break;
         case CSSValue200:
-            traitsMask |= FontWeight200Mask;
+            weight = FontWeight200;
             break;
         case CSSValueLighter:
         case CSSValue100:
-            traitsMask |= FontWeight100Mask;
+            weight = FontWeight100;
             break;
         default:
             ASSERT_NOT_REACHED();
             break;
         }
-    } else {
-        traitsMask |= FontWeight400Mask;
     }
+    traitsMask |= weightToTraitsMask(weight);
 
     if (RefPtrWillBeRawPtr<CSSValue> fontVariant = m_variant) {
         // font-variant descriptor can be a value list.

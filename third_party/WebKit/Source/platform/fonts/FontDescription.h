@@ -296,6 +296,47 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_subpixelTextPosition == other.m_subpixelTextPosition;
 }
 
+inline FontWeight traitsMaskToWeight(unsigned mask)
+{
+    switch (mask & FontWeightMask) {
+    case FontWeight100Mask:
+        return FontWeight100;
+        break;
+    case FontWeight200Mask:
+        return FontWeight200;
+        break;
+    case FontWeight300Mask:
+        return FontWeight300;
+        break;
+    case FontWeight400Mask:
+        return FontWeight400;
+        break;
+    case FontWeight500Mask:
+        return FontWeight500;
+        break;
+    case FontWeight600Mask:
+        return FontWeight600;
+        break;
+    case FontWeight700Mask:
+        return FontWeight700;
+        break;
+    case FontWeight800Mask:
+        return FontWeight800;
+        break;
+    case FontWeight900Mask:
+        return FontWeight900;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        return FontWeight400;
+    }
+}
+
+inline unsigned weightToTraitsMask(FontWeight weight)
+{
+    return FontWeight100Mask << (weight - FontWeight100);
+}
+
 }
 
 #endif
