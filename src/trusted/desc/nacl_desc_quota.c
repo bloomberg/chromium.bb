@@ -258,14 +258,6 @@ nacl_off64_t NaClDescQuotaSeek(struct NaClDesc  *vself,
   return rv;
 }
 
-int NaClDescQuotaIoctl(struct NaClDesc  *vself,
-                       int              request,
-                       void             *arg) {
-  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
-
-  return (*NACL_VTBL(NaClDesc, self->desc)->Ioctl)(self->desc, request, arg);
-}
-
 int NaClDescQuotaFstat(struct NaClDesc      *vself,
                        struct nacl_abi_stat *statbuf) {
   struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
@@ -525,7 +517,6 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaSeek,
   NaClDescQuotaPRead,
   NaClDescQuotaPWrite,
-  NaClDescQuotaIoctl,
   NaClDescQuotaFstat,
   NaClDescQuotaGetdents,
   NaClDescQuotaExternalizeSize,

@@ -208,7 +208,6 @@ static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
-  NaClDescIoctlNotImplemented,
   NaClDescImcBoundDescFstat,
   NaClDescGetdentsNotImplemented,
   NaClDescExternalizeSizeNotImplemented,

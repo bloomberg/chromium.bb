@@ -135,7 +135,6 @@ static struct NaClDescVtbl const kNaClDescCondVarVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
-  NaClDescIoctlNotImplemented,
   NaClDescCondVarFstat,
   NaClDescGetdentsNotImplemented,
   NaClDescExternalizeSizeNotImplemented,

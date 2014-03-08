@@ -365,19 +365,6 @@ ssize_t NaClDescPWriteNotImplemented(struct NaClDesc *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
-                                int                     request,
-                                void                    *arg) {
-  UNREFERENCED_PARAMETER(request);
-  UNREFERENCED_PARAMETER(arg);
-
-  NaClLog(LOG_ERROR,
-          "Ioctl method is not implemented for object of type %s\n",
-          NaClDescTypeString(((struct NaClDescVtbl const *)
-                              vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
-}
-
 int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
                                 struct nacl_abi_stat    *statbuf) {
   UNREFERENCED_PARAMETER(statbuf);
@@ -733,7 +720,6 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
-  NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
   NaClDescGetdentsNotImplemented,
   NaClDescExternalizeSizeNotImplemented,

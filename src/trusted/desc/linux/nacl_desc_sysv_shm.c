@@ -351,7 +351,6 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
-  NaClDescIoctlNotImplemented,
   NaClDescSysvShmFstat,
   NaClDescGetdentsNotImplemented,
   NaClDescSysvShmExternalizeSize,

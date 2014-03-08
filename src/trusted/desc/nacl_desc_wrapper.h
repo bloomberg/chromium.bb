@@ -112,10 +112,6 @@ class DescWrapper {
   // Returns updated position on success, negative NaCl ABI errno on failure.
   nacl_off64_t Seek(nacl_off64_t offset, int whence);
 
-  // The generic I/O control function.
-  // Returns zero on success, negative NaCl ABI errno on failure.
-  int Ioctl(int request, void* arg);
-
   // Get descriptor information.
   // Returns zero on success, negative NaCl ABI errno on failure.
   int Fstat(struct nacl_abi_stat* statbuf);

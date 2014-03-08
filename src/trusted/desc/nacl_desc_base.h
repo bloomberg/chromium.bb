@@ -219,15 +219,6 @@ struct NaClDescVtbl {
                     size_t len,
                     nacl_off64_t offset) NACL_WUR;
 
-  /*
-   * TODO(bsy): Need to figure out which requests we support, if any.
-   * Also, request determines arg size and whether it is an input or
-   * output arg!
-   */
-  int (*Ioctl)(struct NaClDesc  *vself,
-               int              request,
-               void             *arg) NACL_WUR;
-
   int (*Fstat)(struct NaClDesc      *vself,
                struct nacl_abi_stat *statbuf);
 
@@ -600,10 +591,6 @@ ssize_t NaClDescPWriteNotImplemented(struct NaClDesc *vself,
                                      void const *buf,
                                      size_t len,
                                      nacl_off64_t offset);
-
-int NaClDescIoctlNotImplemented(struct NaClDesc *vself,
-                                int             request,
-                                void            *arg);
 
 int NaClDescFstatNotImplemented(struct NaClDesc       *vself,
                                 struct nacl_abi_stat  *statbuf);

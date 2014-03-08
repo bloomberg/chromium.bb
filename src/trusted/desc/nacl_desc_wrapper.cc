@@ -414,11 +414,6 @@ nacl_off64_t DescWrapper::Seek(nacl_off64_t offset, int whence) {
            whence);
 }
 
-int DescWrapper::Ioctl(int request, void* arg) {
-  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
-      Ioctl(desc_, request, arg);
-}
-
 int DescWrapper::Fstat(struct nacl_abi_stat* statbuf) {
   return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
       Fstat(desc_, statbuf);
