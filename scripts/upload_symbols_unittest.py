@@ -341,6 +341,7 @@ class UtilTest(cros_test_lib.TempDirTestCase):
     q = multiprocessing.Queue()
     for f in exp_list:
       q.put(os.path.join(relpath, f))
+    q.put(None)
     upload_symbols.WriteQueueToFile(listing, q, '/a')
 
     got_list = osutils.ReadFile(listing).splitlines()

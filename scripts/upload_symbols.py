@@ -476,6 +476,8 @@ def SymbolFinder(tempdir, paths):
 def WriteQueueToFile(listing, queue, relpath=None):
   """Write all the items in |queue| to the |listing|.
 
+  Note: The queue must have a sentinel None appended to the end.
+
   Args:
     listing: Where to write out the list of files.
     queue: The queue of paths to drain.
@@ -485,8 +487,10 @@ def WriteQueueToFile(listing, queue, relpath=None):
     return
 
   with cros_build_lib.Open(listing, 'wb+') as f:
-    while not queue.empty():
+    while True:
       path = queue.get()
+      if path is None:
+        return
       if relpath:
         path = os.path.relpath(path, relpath)
       f.write('%s\n' % path)
@@ -617,8 +621,13 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
         break
 
       sym_paths = []
-      while not failed_queue.empty():
-        sym_paths.append(failed_queue.get())
+      failed_queue.put(None)
+      while True:
+        sym_path = failed_queue.get()
+        if sym_path is None:
+          break
+        sym_paths.append(sym_path)
+
       if sym_paths:
         cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
         if counters.upload_limit is not None:
@@ -633,6 +642,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
 
   # If the user has requested it, save all the symbol files that we failed to
   # upload to a listing file.  This should help with recovery efforts later.
+  failed_queue.put(None)
   WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
 
   if dedupe_queue:
