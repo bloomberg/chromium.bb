@@ -824,9 +824,6 @@ const char kSitePerProcess[]                = "site-per-process";
 // TODO(gab): Get rid of this switch entirely.
 const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 
-// Specifies the request key for the continuous speech recognition webservice.
-const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
-
 // Specifies if the browser should start in fullscreen mode, like if the user
 // had pressed F11 right after startup.
 const char kStartFullscreen[] = "start-fullscreen";

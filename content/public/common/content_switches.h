@@ -234,7 +234,6 @@ CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
-extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kStartFullscreen[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
 CONTENT_EXPORT extern const char kTabCaptureDownscaleQuality[];
