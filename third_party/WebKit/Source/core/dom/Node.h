@@ -562,7 +562,7 @@ public:
     //
     // There are another callback named didNotifySubtreeInsertionsToDocument(), which is called after all the descendant is notified,
     // if this node was inserted into the document tree. Only a few subclasses actually need this. To utilize this, the node should
-    // return InsertionShouldCallDidNotifySubtreeInsertions from insrtedInto().
+    // return InsertionShouldCallDidNotifySubtreeInsertions from insertedInto().
     //
     enum InsertionNotificationRequest {
         InsertionDone,
