@@ -70,7 +70,7 @@ function getAudioLevelFromStats_(response) {
     }
   }
   // Should only be one audio level reported, otherwise we get confused.
-  expectEquals(1, audioOutputLevels.length);
+  assertEquals(1, audioOutputLevels.length);
 
   return audioOutputLevels[0];
 }

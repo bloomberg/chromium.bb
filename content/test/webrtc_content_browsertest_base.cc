@@ -33,11 +33,6 @@ void WebRtcContentBrowserTest::SetUp() {
   ContentBrowserTest::SetUp();
 }
 
-bool WebRtcContentBrowserTest::ExecuteJavascript(
-    const std::string& javascript) {
-  return ExecuteScript(shell()->web_contents(), javascript);
-}
-
 // Executes |javascript|. The script is required to use
 // window.domAutomationController.send to send a string value back to here.
 std::string WebRtcContentBrowserTest::ExecuteJavascriptAndReturnResult(
@@ -49,12 +44,14 @@ std::string WebRtcContentBrowserTest::ExecuteJavascriptAndReturnResult(
   return result;
 }
 
-void WebRtcContentBrowserTest::ExpectTitle(
-    const std::string& expected_title) const {
-  base::string16 expected_title16(base::ASCIIToUTF16(expected_title));
-  TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
-  EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
-}
+void WebRtcContentBrowserTest::ExecuteJavascriptAndWaitForOk(
+    const std::string& javascript) {
+   std::string result = ExecuteJavascriptAndReturnResult(javascript);
+   if (result != "OK") {
+     printf("From javascript: %s", result.c_str());
+     FAIL();
+   }
+ }
 
 std::string WebRtcContentBrowserTest::GenerateGetUserMediaCall(
     const char* function_name,

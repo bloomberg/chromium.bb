@@ -37,6 +37,7 @@
           '');
       return sdp;
     };
+    sendValueToTest('isac-forced');
   }
 
   // When using external SDES, the crypto key is chosen by javascript.
@@ -53,10 +54,7 @@
   var EXTERNAL_GICE_UFRAG = '1234567890123456';
   var EXTERNAL_GICE_PWD = '123456789012345678901234';
 
-  setAllEventsOccuredHandler(function() {
-    // The C++ tests look for this 'OK' in the title.
-    document.title = 'OK';
-  });
+  setAllEventsOccuredHandler(reportTestSuccess);
 
   // Test that we can setup call with an audio and video track.
   function call(constraints) {
@@ -144,14 +142,13 @@
   function negotiateUnsupportedVideoCodec() {
     createConnections(null);
     transformSdp = removeVideoCodec;
+
     onLocalDescriptionError = function(error) {
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Session error code: ERROR_CONTENT. Session error description:' +
               ' Failed to set video receive codecs..';
-      expectEquals(expectedMsg, error);
-
-      // Got the right message, test succeeded.
-      document.title = 'OK';
+      assertEquals(expectedMsg, error);
+      reportTestSuccess();
     };
     navigator.webkitGetUserMedia({audio: true, video: true},
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
@@ -164,10 +161,9 @@
     onLocalDescriptionError = function(error) {
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Called with SDP without DTLS fingerprint.';
-      expectEquals(expectedMsg, error);
 
-      // Got the right message, test succeeded.
-      document.title = 'OK';
+      assertEquals(expectedMsg, error);
+      reportTestSuccess();
     };
     navigator.webkitGetUserMedia({audio: true, video: true},
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
@@ -179,7 +175,7 @@
     createConnections(null);
     transformSdp = addBandwithControl;
     navigator.webkitGetUserMedia({audio: true, video: true},
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError); 
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
   }
@@ -244,9 +240,7 @@
     // Set an event handler for when the data channel has been closed.
     setAllEventsOccuredHandler(function() {
       // When the video is flowing the test is done.
-      setAllEventsOccuredHandler(function() {
-        document.title = 'OK';
-      });
+      setAllEventsOccuredHandler(reportTestSuccess);
       navigator.webkitGetUserMedia({audio: true, video: true},
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
       waitForVideo('remote-view-1');
@@ -266,7 +260,6 @@
       dtmfSender.ontonechange = onToneChange;
       dtmfSender.insertDTMF(tones);
       // Wait for the DTMF tones callback.
-      document.title = 'Waiting for dtmf...';
       addExpectedEvent();
       var waitDtmf = setInterval(function() {
         if (gSentTones == tones) {
@@ -323,7 +316,7 @@
       setTimeout(function() {
         gatherAudioLevelSamples(gSecondConnection, 200, 100, function(samples) {
           verifyIsSilent(samples);
-          document.title = 'OK';
+          reportTestSuccess();
         });
       }, 500);
     });
@@ -384,7 +377,7 @@
       // received.
       addExpectedEvent();
       remote_stream_1.onaddtrack = function(){
-        expectEquals(remote_stream_1.getAudioTracks()[0].id,
+        assertEquals(remote_stream_1.getAudioTracks()[0].id,
                      local_stream.getAudioTracks()[0].id);
         eventOccured();
       }
@@ -402,7 +395,7 @@
       remote_stream_2 = gSecondConnection.getRemoteStreams()[0];
       addExpectedEvent();
       remote_stream_2.onaddtrack = function() {
-        expectEquals(remote_stream_2.getAudioTracks()[0].id,
+        assertEquals(remote_stream_2.getAudioTracks()[0].id,
                      local_stream.getAudioTracks()[0].id);
         eventOccured();
       }
@@ -414,7 +407,7 @@
         eventOccured();
       }
       // When all the above events have occurred- the test pass.
-      setAllEventsOccuredHandler(function() { document.title = 'OK'; });
+      setAllEventsOccuredHandler(reportTestSuccess);
 
       local_stream.addTrack(gLocalStream.getAudioTracks()[0]);
       local_stream.removeTrack(local_stream.getVideoTracks()[0]);
@@ -433,26 +426,28 @@
     var sendDataString = "send some text on a data channel."
     firstDataChannel = gFirstConnection.createDataChannel(
         "sendDataChannel", params);
-    expectEquals('connecting', firstDataChannel.readyState);
+    assertEquals('connecting', firstDataChannel.readyState);
 
     // When |firstDataChannel| transition to open state, send a text string.
     firstDataChannel.onopen = function() {
-      expectEquals('open', firstDataChannel.readyState);
+      assertEquals('open', firstDataChannel.readyState);
       firstDataChannel.send(sendDataString);
     }
 
     // When |firstDataChannel| receive a message, close the channel and
     // initiate a new offer/answer exchange to complete the closure.
     firstDataChannel.onmessage = function(event) {
-      expectEquals(event.data, sendDataString);
+      assertEquals(event.data, sendDataString);
       firstDataChannel.close();
       negotiate();
     }
 
     // When |firstDataChannel| transition to closed state, the test pass.
+    // TODO(phoglund): This is flaky, at least in the setupLegacyCall case.
+    // See http://crbug.com/350388.
     addExpectedEvent();
     firstDataChannel.onclose = function() {
-      expectEquals('closed', firstDataChannel.readyState);
+      assertEquals('closed', firstDataChannel.readyState);
       eventOccured();
     }
 
@@ -462,8 +457,8 @@
 
       // When |secondDataChannel| receive a message, send a message back.
       secondDataChannel.onmessage = function(event) {
-        expectEquals(event.data, sendDataString);
-        expectEquals('open', secondDataChannel.readyState);
+        assertEquals(event.data, sendDataString);
+        assertEquals('open', secondDataChannel.readyState);
         secondDataChannel.send(sendDataString);
       }
     }
@@ -478,18 +473,18 @@
     var sendDataString = "send some text on a data channel."
     firstDataChannel = gFirstConnection.createDataChannel(
         "sendDataChannel", params);
-    expectEquals('connecting', firstDataChannel.readyState);
+    assertEquals('connecting', firstDataChannel.readyState);
 
     // When |firstDataChannel| transition to open state, send a text string.
     firstDataChannel.onopen = function() {
-      expectEquals('open', firstDataChannel.readyState);
+      assertEquals('open', firstDataChannel.readyState);
     }
 
     // When |firstDataChannel| receive a message, send message back.
     // initiate a new offer/answer exchange to complete the closure.
     firstDataChannel.onmessage = function(event) {
-      expectEquals('open', firstDataChannel.readyState);
-      expectEquals(event.data, sendDataString);
+      assertEquals('open', firstDataChannel.readyState);
+      assertEquals(event.data, sendDataString);
       firstDataChannel.send(sendDataString);
     }
 
@@ -504,8 +499,8 @@
       // When |secondDataChannel| receive a message, close the channel and
       // initiate a new offer/answer exchange to complete the closure.
       secondDataChannel.onmessage = function(event) {
-        expectEquals(event.data, sendDataString);
-        expectEquals('open', secondDataChannel.readyState);
+        assertEquals(event.data, sendDataString);
+        assertEquals('open', secondDataChannel.readyState);
         secondDataChannel.close();
         negotiate();
       }
@@ -513,7 +508,7 @@
       // When |secondDataChannel| transition to closed state, the test pass.
       addExpectedEvent();
       secondDataChannel.onclose = function() {
-        expectEquals('closed', secondDataChannel.readyState);
+        assertEquals('closed', secondDataChannel.readyState);
         eventOccured();
       }
     }
@@ -529,15 +524,14 @@
 
   function onToneChange(tone) {
     gSentTones += tone.tone;
-    document.title = gSentTones;
   }
 
   function createConnections(constraints) {
     gFirstConnection = createConnection(constraints, 'remote-view-1');
-    expectEquals('stable', gFirstConnection.signalingState);
+    assertEquals('stable', gFirstConnection.signalingState);
 
     gSecondConnection = createConnection(constraints, 'remote-view-2');
-    expectEquals('stable', gSecondConnection.signalingState);
+    assertEquals('stable', gSecondConnection.signalingState);
   }
 
   function createConnection(constraints, remoteView) {
@@ -557,12 +551,12 @@
 
   // Called if getUserMedia fails.
   function printGetUserMediaError(error) {
-    document.title = 'getUserMedia request failed:';
+    var message = 'getUserMedia request unexpectedly failed:';
     if (error.constraintName)
-      document.title += ' could not satisfy constraint ' + error.constraintName;
+      message += ' could not satisfy constraint ' + error.constraintName;
     else
-      document.title += ' devices not working/user denied access.';
-    console.log(document.title);
+      message += ' devices not working/user denied access.';
+    failTest(message);
   }
 
   // Called if getUserMedia succeeds and we want to send from both connections.
@@ -581,8 +575,8 @@
   }
 
   function verifyHasOneAudioAndVideoTrack(stream) {
-    expectEquals(1, stream.getAudioTracks().length);
-    expectEquals(1, stream.getVideoTracks().length);
+    assertEquals(1, stream.getAudioTracks().length);
+    assertEquals(1, stream.getVideoTracks().length);
   }
 
   // Called if getUserMedia succeeds, then clone the stream, send two streams
@@ -601,7 +595,7 @@
     gFirstConnection.addStream(clonedStream);
 
     // Verify the local streams are correct.
-    expectEquals(2, gFirstConnection.getLocalStreams().length);
+    assertEquals(2, gFirstConnection.getLocalStreams().length);
     verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[0]);
     verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[1]);
 
@@ -614,11 +608,11 @@
     }
     setAllEventsOccuredHandler(function() {
       // Negotiation complete, verify remote streams on the receiving side.
-      expectEquals(2, gSecondConnection.getRemoteStreams().length);
+      assertEquals(2, gSecondConnection.getRemoteStreams().length);
       verifyHasOneAudioAndVideoTrack(gSecondConnection.getRemoteStreams()[0]);
       verifyHasOneAudioAndVideoTrack(gSecondConnection.getRemoteStreams()[1]);
 
-      document.title = "OK";
+      reportTestSuccess();
     });
 
     negotiate();
@@ -658,7 +652,7 @@
   function onOfferCreated(offer, caller, callee) {
     offer.sdp = maybeForceIsac16K(transformSdp(offer.sdp));
     caller.setLocalDescription(offer, function() {
-      expectEquals('have-local-offer', caller.signalingState);
+      assertEquals('have-local-offer', caller.signalingState);
       receiveOffer(offer.sdp, caller, callee);
     }, onLocalDescriptionError);
   }
@@ -673,7 +667,7 @@
     callee.createAnswer(function (answer) {
                           onAnswerCreated(answer, caller, callee);
                         });
-    expectEquals('have-remote-offer', callee.signalingState);
+    assertEquals('have-remote-offer', callee.signalingState);
   }
 
   function removeMsid(offerSdp) {
@@ -703,7 +697,7 @@
                                 'b=AS:512\r\n');
     return offerSdp;
   }
-  
+
   function removeBundle(sdp) {
     return sdp.replace(/a=group:BUNDLE .*\r\n/g, '');
   }
@@ -733,7 +727,7 @@
   function onAnswerCreated(answer, caller, callee) {
     answer.sdp = maybeForceIsac16K(transformSdp(answer.sdp));
     callee.setLocalDescription(answer);
-    expectEquals('stable', callee.signalingState);
+    assertEquals('stable', callee.signalingState);
     receiveAnswer(answer.sdp, caller);
   }
 
@@ -743,7 +737,7 @@
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
     caller.setRemoteDescription(parsedAnswer);
-    expectEquals('stable', caller.signalingState);
+    assertEquals('stable', caller.signalingState);
   }
 
   function connectOnIceCandidate(caller, callee) {
@@ -768,9 +762,8 @@
   function onRemoteStream(e, target) {
     console.log("Receiving remote stream...");
     if (gTestWithoutMsid && e.stream.id != "default") {
-      document.title = 'a default remote stream was expected but instead ' +
-          e.stream.id + ' was received.';
-      return;
+      failTest('a default remote stream was expected but instead ' +
+          e.stream.id + ' was received.');
     }
     gRemoteStreams[target] = e.stream;
     var remoteStreamUrl = URL.createObjectURL(e.stream);

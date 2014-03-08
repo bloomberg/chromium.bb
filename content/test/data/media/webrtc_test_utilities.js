@@ -24,6 +24,23 @@ function setAllEventsOccuredHandler(handler) {
   gAllEventsOccured = handler;
 }
 
+// Tells the C++ code we succeeded, which will generally exit the test.
+function reportTestSuccess() {
+  window.domAutomationController.send('OK');
+}
+
+// Returns a custom return value to the test.
+function sendValueToTest(value) {
+  window.domAutomationController.send(value);
+}
+
+// Immediately fails the test on the C++ side and throw an exception to
+// stop execution on the javascript side.
+function failTest(reason) {
+  var error = new Error(reason);
+  window.domAutomationController.send(error.stack);
+}
+
 function detectVideoPlaying(videoElementName, callback) {
   detectVideo(videoElementName, isVideoPlaying, callback);
 }
@@ -62,13 +79,11 @@ function detectVideo(videoElementName, predicate, callback) {
 }
 
 function waitForVideo(videoElement) {
-  document.title = 'Waiting for video...';
   addExpectedEvent();
   detectVideoPlaying(videoElement, function () { eventOccured(); });
 }
 
 function waitForVideoToStop(videoElement) {
-  document.title = 'Waiting for video to stop...';
   addExpectedEvent();
   detectVideoStopped(videoElement, function () { eventOccured(); });
 }
@@ -82,10 +97,15 @@ function waitForConnectionToStabilize(peerConnection, callback) {
   }, 100);
 }
 
+// Adds an expected event. You may call this function many times to add more
+// expected events. Each expected event must later be matched by a call to
+// eventOccurred. When enough events have occurred, the "all events occurred
+// handler" will be called.
 function addExpectedEvent() {
   ++gNumberOfExpectedEvents;
 }
 
+// See addExpectedEvent.
 function eventOccured() {
   ++gNumberOfEvents;
   if (gNumberOfEvents == gNumberOfExpectedEvents) {
@@ -104,99 +124,11 @@ function isVideoPlaying(pixels, previousPixels) {
   return false;
 }
 
-// This function matches |left| and |right| and throws an exception if the
-// values don't match.
-function expectEquals(left, right) {
-  if (left != right) {
-    var s = "expectEquals failed left: " + left + " right: " + right;
-    document.title = s;
-    throw s;
+// This function matches |left| and |right| and fails the test if the
+// values don't match using normal javascript equality (i.e. the hard
+// types of the operands aren't checked).
+function assertEquals(expected, actual) {
+  if (actual != expected) {
+    failTest("expected '" + expected + "', got '" + actual + "'.");
   }
-}
-
-// This function tries to calculate the aspect ratio shown by the fake capture
-// device in the video tag. For this, we count the amount of light green pixels
-// along |aperture| pixels on the positive X and Y axis starting from the
-// center of the image. In this very center there should be a time-varying
-// pacman; the algorithm counts for a couple of iterations and keeps the
-// maximum amount of light green pixels on both directions. From this data
-// the aspect ratio is calculated relative to a 320x240 window, so 4:3 would
-// show as a 1. Furthermore, since an original non-4:3 might be letterboxed or
-// cropped, the actual X and Y pixel amounts are compared with the fake video
-// capture expected pacman radius (see further below).
-function detectAspectRatio(callback) {
-  var width = VIDEO_TAG_WIDTH;
-  var height = VIDEO_TAG_HEIGHT;
-  var videoElement = $('local-view');
-  var canvas = $('local-view-canvas');
-
-  var maxLightGreenPixelsX = 0;
-  var maxLightGreenPixelsY = 0;
-
-  var aperture = Math.min(width, height) / 2;
-  var iterations = 0;
-  var maxIterations = 10;
-
-  var waitVideo = setInterval(function() {
-    var context = canvas.getContext('2d');
-    context.drawImage(videoElement, 0, 0, width, height);
-
-    // We are interested in a window starting from the center of the image
-    // where we expect the circle from the fake video capture to be rolling.
-    var pixels =
-        context.getImageData(width / 2, height / 2, aperture, aperture);
-
-    var lightGreenPixelsX = 0;
-    var lightGreenPixelsY = 0;
-
-    // Walk horizontally counting light green pixels.
-    for (var x = 0; x < aperture; ++x) {
-      if (pixels.data[4 * x + 1] != COLOR_BACKGROUND_GREEN)
-        lightGreenPixelsX++;
-    }
-    // Walk vertically counting light green pixels.
-    for (var y = 0; y < aperture; ++y) {
-      if (pixels.data[4 * y * aperture + 1] != 135)
-        lightGreenPixelsY++;
-    }
-    if (lightGreenPixelsX > maxLightGreenPixelsX &&
-        lightGreenPixelsX < aperture)
-      maxLightGreenPixelsX = lightGreenPixelsX;
-    if (lightGreenPixelsY > maxLightGreenPixelsY &&
-        lightGreenPixelsY < aperture)
-      maxLightGreenPixelsY = lightGreenPixelsY;
-
-    var detectedAspectRatioString = "";
-    if (++iterations > maxIterations) {
-      clearInterval(waitVideo);
-      observedAspectRatio = maxLightGreenPixelsY / maxLightGreenPixelsX;
-      // At this point the observed aspect ratio is either 1, for undistorted
-      // 4:3, or some other aspect ratio that is seen as distorted.
-      if (Math.abs(observedAspectRatio - 1.333) < 0.1)
-        detectedAspectRatioString = "16:9";
-      else if (Math.abs(observedAspectRatio - 1.20) < 0.1)
-        detectedAspectRatioString = "16:10";
-      else if (Math.abs(observedAspectRatio - 1.0) < 0.1)
-        detectedAspectRatioString = "4:3";
-      else
-        detectedAspectRatioString = "UNKNOWN aspect ratio";
-      console.log(detectedAspectRatioString + " observed aspect ratio (" +
-                  observedAspectRatio + ")");
-
-      // The FakeVideoCapture calculates the circle radius as
-      // std::min(capture_format_.width, capture_format_.height) / 4;
-      // we do the same and see if both dimensions are scaled, meaning
-      // we started from a cropped or stretched image.
-      var nonDistortedRadius = Math.min(width, height) / 4;
-      if ((maxLightGreenPixelsX != nonDistortedRadius) &&
-          (maxLightGreenPixelsY != nonDistortedRadius)) {
-        detectedAspectRatioString += " cropped";
-      } else
-        detectedAspectRatioString += " letterbox";
-
-      console.log("Original image is: " + detectedAspectRatioString);
-      callback(detectedAspectRatioString);
-    }
-  },
-                              50);
 }

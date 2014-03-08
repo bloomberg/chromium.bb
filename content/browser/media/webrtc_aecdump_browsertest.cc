@@ -67,12 +67,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
   NavigateToURL(shell(), url);
 
 #if defined (OS_ANDROID)
-    // Always force iSAC 16K on Android for now (Opus is broken).
-    ASSERT_TRUE(ExecuteJavascript("forceIsac16KInSdp();"));
+  // Always force iSAC 16K on Android for now (Opus is broken).
+  EXPECT_EQ("isac-forced",
+            ExecuteJavascriptAndReturnResult("forceIsac16KInSdp();"));
 #endif
 
-  EXPECT_TRUE(ExecuteJavascript("call({video: true, audio: true});"));
-  ExpectTitle("OK");
+  ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
   EXPECT_TRUE(base::PathExists(dump_file_));
   int64 file_size = 0;

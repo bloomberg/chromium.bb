@@ -28,14 +28,14 @@ using trace_analyzer::TraceEventVector;
 namespace {
 
 static const char kGetUserMediaAndStop[] = "getUserMediaAndStop";
-static const char kGetUserMediaAndWaitAndStop[] = "getUserMediaAndWaitAndStop";
+static const char kGetUserMediaAndGetStreamUp[] = "getUserMediaAndGetStreamUp";
 static const char kGetUserMediaAndAnalyseAndStop[] =
     "getUserMediaAndAnalyseAndStop";
+static const char kGetUserMediaAndExpectFailure[] =
+    "getUserMediaAndExpectFailure";
 
 // Results returned by JS.
 static const char kOK[] = "OK";
-static const char kGetUserMediaFailed[] =
-    "GetUserMedia call failed with code undefined";
 
 std::string GenerateGetUserMediaWithMandatorySourceID(
     const std::string& function_name,
@@ -109,20 +109,23 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
 
     GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
     NavigateToURL(shell(), url);
+
     // Put getUserMedia to work and let it run for a couple of seconds.
     DCHECK(time_to_sample_secs);
-    ASSERT_TRUE(
-        ExecuteJavascript(base::StringPrintf("%s({video: true}, %d);",
-                                             kGetUserMediaAndWaitAndStop,
-                                             time_to_sample_secs)));
+    ASSERT_EQ("ok-stream-running",
+        ExecuteJavascriptAndReturnResult(
+            base::StringPrintf("%s({video: true});",
+                               kGetUserMediaAndGetStreamUp)));
 
-    // Make sure the stream is up and running, then start collecting traces.
-    ExpectTitle("Running...");
+    // Now the stream is up and running, start collecting traces.
     StartTracing();
+
+    // Let the stream run for a while in javascript.
+    ExecuteJavascriptAndWaitForOk(
+        base::StringPrintf("waitAndStopVideoTrack(%d);", time_to_sample_secs));
 
     // Wait until the page title changes to "OK". Do not sleep() here since that
     // would stop both this code and the browser underneath.
-    ExpectTitle("OK");
     StopTracing();
 
     scoped_ptr<TraceAnalyzer> analyzer(CreateTraceAnalyzer());
@@ -214,10 +217,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, GetVideoStreamAndStop) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  ASSERT_TRUE(ExecuteJavascript(
-      base::StringPrintf("%s({video: true});", kGetUserMediaAndStop)));
-
-  ExpectTitle("OK");
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s({video: true});", kGetUserMediaAndStop));
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
@@ -227,10 +228,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  ASSERT_TRUE(ExecuteJavascript(base::StringPrintf(
-      "%s({video: true, audio: true});", kGetUserMediaAndStop)));
-
-  ExpectTitle("OK");
+  ExecuteJavascriptAndWaitForOk(base::StringPrintf(
+      "%s({video: true, audio: true});", kGetUserMediaAndStop));
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
@@ -240,9 +239,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  ASSERT_TRUE(ExecuteJavascript("getUserMediaAndClone();"));
-
-  ExpectTitle("OK");
+  ExecuteJavascriptAndWaitForOk("getUserMediaAndClone();");
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
@@ -282,25 +279,25 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
   // Test with invalid mandatory audio sourceID.
   NavigateToURL(shell(), url);
-  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
+  ExecuteJavascriptAndWaitForOk(
       GenerateGetUserMediaWithMandatorySourceID(
-          kGetUserMediaAndStop,
+          kGetUserMediaAndExpectFailure,
           "something invalid",
-          video_ids[0])));
+          video_ids[0]));
 
   // Test with invalid mandatory video sourceID.
-  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
+  ExecuteJavascriptAndWaitForOk(
       GenerateGetUserMediaWithMandatorySourceID(
-          kGetUserMediaAndStop,
+          kGetUserMediaAndExpectFailure,
           audio_ids[0],
-          "something invalid")));
+          "something invalid"));
 
   // Test with empty mandatory audio sourceID.
-  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
+  ExecuteJavascriptAndWaitForOk(
       GenerateGetUserMediaWithMandatorySourceID(
-          kGetUserMediaAndStop,
+          kGetUserMediaAndExpectFailure,
           "",
-          video_ids[0])));
+          video_ids[0]));
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
@@ -342,10 +339,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  ASSERT_TRUE(ExecuteJavascript(
-      "twoGetUserMediaAndStop({video: true, audio: true});"));
-
-  ExpectTitle("OK");
+  ExecuteJavascriptAndWaitForOk(
+      "twoGetUserMediaAndStop({video: true, audio: true});");
 }
 
 // This test will make a simple getUserMedia page, verify that video is playing
@@ -388,8 +383,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   // TODO(mcasas): add more aspect ratios, in particular 16:10 crbug.com/275594.
 
   NavigateToURL(shell(), url);
-  ASSERT_TRUE(ExecuteJavascript(constraints_4_3));
-  ExpectTitle("4:3 letterbox");
+  ASSERT_EQ("4:3 letterbox",
+            ExecuteJavascriptAndReturnResult(constraints_4_3));
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
@@ -406,8 +401,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
       kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 30, 30);
 
   NavigateToURL(shell(), url);
-  ASSERT_TRUE(ExecuteJavascript(constraints_16_9));
-  ExpectTitle("16:9 letterbox");
+  ASSERT_EQ("16:9 letterbox",
+            ExecuteJavascriptAndReturnResult(constraints_16_9));
 }
 
 namespace {
@@ -449,8 +444,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest, GetUserMediaConstraints) {
                                               user_media().max_frame_rate);
   DVLOG(1) << "Calling getUserMedia: " << call;
   NavigateToURL(shell(), url);
-  ASSERT_TRUE(ExecuteJavascript(call));
-  ExpectTitle("OK");
+  ExecuteJavascriptAndWaitForOk(call);
 }
 
 static const UserMediaSizes kAllUserMediaSizes[] = {

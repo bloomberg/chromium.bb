@@ -15,16 +15,14 @@ class WebRtcContentBrowserTest: public ContentBrowserTest {
   virtual void SetUp() OVERRIDE;
 
  protected:
-  // Executes |javascript| and returns after it has been executed.
-  bool ExecuteJavascript(const std::string& javascript);
-
   // Executes |javascript|. The script is required to use
   // window.domAutomationController.send to send a string value back to here.
   std::string ExecuteJavascriptAndReturnResult(
       const std::string& javascript);
 
-  // Waits for the page title to be set to |expected_title|.
-  void ExpectTitle(const std::string& expected_title) const;
+  // Waits for the javascript to return OK via the automation controller.
+  // If the javascript returns != OK or times out, we fail the test.
+  void ExecuteJavascriptAndWaitForOk(const std::string& javascript);
 
   // Generates javascript code for a getUserMedia call.
   std::string GenerateGetUserMediaCall(const char* function_name,
