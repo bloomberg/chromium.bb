@@ -134,6 +134,10 @@ IN_PROC_BROWSER_TEST_F(PanelMessagingTest, MessagingPanel) {
   ASSERT_TRUE(RunExtensionTest("messaging/connect_panel")) << message_;
 }
 
+// XXX(kalman): All web messaging tests disabled on windows due to extreme
+// flakiness. See http://crbug.com/350517.
+#if !defined(OS_WIN)
+
 // Tests externally_connectable between a web page and an extension.
 //
 // TODO(kalman): Test between extensions. This is already tested in this file,
@@ -952,6 +956,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR ,
             CanConnectAndSendMessages("invalid"));
 }
+
+#endif  // !defined(OS_WIN) - http://crbug.com/350517.
 
 }  // namespace
 
