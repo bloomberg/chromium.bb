@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#define NACL_LOG_MODULE_NAME "manifest_proxy"
+
 #include <string.h>
 
 #include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"

@@ -3,6 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#define NACL_LOG_MODULE_NAME "reverse_service_c"
 
 #include "native_client/src/trusted/reverse_service/reverse_service_c.h"
 

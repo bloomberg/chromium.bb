@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#define NACL_LOG_MODULE_NAME "reverse_service"
+
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 
 #include <string.h>
