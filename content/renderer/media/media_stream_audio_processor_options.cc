@@ -144,29 +144,21 @@ void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing) {
   audio_processing->SetExtraOptions(config);
 }
 
-void StartAecDump(AudioProcessing* audio_processing) {
-  // TODO(grunell): Figure out a more suitable directory for the audio dump
-  // data.
-  base::FilePath path;
-#if defined(CHROMEOS)
-  PathService::Get(base::DIR_TEMP, &path);
-#elif defined(ANDROID)
-  path = base::FilePath(FILE_PATH_LITERAL("sdcard"));
-#else
-  PathService::Get(base::DIR_EXE, &path);
-#endif
-  base::FilePath file = path.Append(FILE_PATH_LITERAL("audio.aecdump"));
+void StartEchoCancellationDump(AudioProcessing* audio_processing,
+                               const base::PlatformFile& aec_dump_file) {
+  DCHECK_NE(aec_dump_file, base::kInvalidPlatformFileValue);
 
-#if defined(OS_WIN)
-  const std::string file_name = base::WideToUTF8(file.value());
-#else
-  const std::string file_name = file.value();
-#endif
-  if (audio_processing->StartDebugRecording(file_name.c_str()))
+  FILE* stream = base::FdopenPlatformFile(aec_dump_file, "w");
+  if (!stream) {
+    LOG(ERROR) << "Failed to open AEC dump file";
+    return;
+  }
+
+  if (audio_processing->StartDebugRecording(stream))
     DLOG(ERROR) << "Fail to start AEC debug recording";
 }
 
-void StopAecDump(AudioProcessing* audio_processing) {
+void StopEchoCancellationDump(AudioProcessing* audio_processing) {
   if (audio_processing->StopDebugRecording())
     DLOG(ERROR) << "Fail to stop AEC debug recording";
 }

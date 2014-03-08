@@ -140,7 +140,6 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
 };
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
-    const media::AudioParameters& source_params,
     const blink::WebMediaConstraints& constraints,
     int effects,
     WebRtcPlayoutDataSource* playout_data_source)
@@ -151,7 +150,6 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
-  InitializeCaptureConverter(source_params);
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -159,8 +157,26 @@ MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
   StopAudioProcessing();
 }
 
+void MediaStreamAudioProcessor::OnCaptureFormatChanged(
+    const media::AudioParameters& source_params) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  // There is no need to hold a lock here since the caller guarantees that
+  // there is no more PushCaptureData() and ProcessAndConsumeData() callbacks
+  // on the capture thread.
+  InitializeCaptureConverter(source_params);
+
+  // Reset the |capture_thread_checker_| since the capture data will come from
+  // a new capture thread.
+  capture_thread_checker_.DetachFromThread();
+}
+
 void MediaStreamAudioProcessor::PushCaptureData(media::AudioBus* audio_source) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(audio_source->channels(),
+            capture_converter_->source_parameters().channels());
+  DCHECK_EQ(audio_source->frames(),
+            capture_converter_->source_parameters().frames_per_buffer());
+
   if (audio_mirroring_ &&
       capture_converter_->source_parameters().channel_layout() ==
           media::CHANNEL_LAYOUT_STEREO) {
@@ -193,6 +209,17 @@ const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
 
 const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return capture_converter_->sink_parameters();
+}
+
+void MediaStreamAudioProcessor::StartAecDump(
+    const base::PlatformFile& aec_dump_file) {
+  if (audio_processing_)
+    StartEchoCancellationDump(audio_processing_.get(), aec_dump_file);
+}
+
+void MediaStreamAudioProcessor::StopAecDump() {
+  if (audio_processing_)
+    StopEchoCancellationDump(audio_processing_.get());
 }
 
 void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
@@ -332,6 +359,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
 void MediaStreamAudioProcessor::InitializeCaptureConverter(
     const media::AudioParameters& source_params) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(source_params.IsValid());
 
   // Create and initialize audio converter for the source data.
@@ -444,6 +472,8 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
 void MediaStreamAudioProcessor::StopAudioProcessing() {
   if (!audio_processing_.get())
     return;
+
+  StopAecDump();
 
   if (playout_data_source_)
     playout_data_source_->RemovePlayoutSink(this);

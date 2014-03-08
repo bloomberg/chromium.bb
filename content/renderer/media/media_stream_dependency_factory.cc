@@ -753,18 +753,34 @@ bool MediaStreamDependencyFactory::OnControlMessageReceived(
 void MediaStreamDependencyFactory::OnAecDumpFile(
     IPC::PlatformFileForTransit file_handle) {
   DCHECK_EQ(aec_dump_file_, base::kInvalidPlatformFileValue);
-  if (PeerConnectionFactoryCreated()) {
-    base::PlatformFile file =
-        IPC::PlatformFileForTransitToPlatformFile(file_handle);
-    DCHECK_NE(file, base::kInvalidPlatformFileValue);
-    StartAecDump(file);
-  } else {
-    aec_dump_file_ = IPC::PlatformFileForTransitToPlatformFile(file_handle);
-    DCHECK_NE(aec_dump_file_, base::kInvalidPlatformFileValue);
+  base::PlatformFile file =
+      IPC::PlatformFileForTransitToPlatformFile(file_handle);
+  DCHECK_NE(file, base::kInvalidPlatformFileValue);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAudioTrackProcessing)) {
+    EnsureWebRtcAudioDeviceImpl();
+    GetWebRtcAudioDevice()->EnableAecDump(file);
+    return;
   }
+
+  // TODO(xians): Remove the following code after kEnableAudioTrackProcessing
+  // is removed.
+  if (PeerConnectionFactoryCreated())
+    StartAecDump(file);
+  else
+    aec_dump_file_ = file;
 }
 
 void MediaStreamDependencyFactory::OnDisableAecDump() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAudioTrackProcessing)) {
+    GetWebRtcAudioDevice()->DisableAecDump();
+    return;
+  }
+
+  // TODO(xians): Remove the following code after kEnableAudioTrackProcessing
+  // is removed.
   if (aec_dump_file_ != base::kInvalidPlatformFileValue)
     base::ClosePlatformFile(aec_dump_file_);
   aec_dump_file_ = base::kInvalidPlatformFileValue;

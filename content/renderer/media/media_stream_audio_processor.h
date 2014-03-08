@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_PROCESSOR_H_
 
 #include "base/atomicops.h"
+#include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -48,10 +49,16 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
   // |playout_data_source| won't be used.
-  MediaStreamAudioProcessor(const media::AudioParameters& source_params,
-                            const blink::WebMediaConstraints& constraints,
+  MediaStreamAudioProcessor(const blink::WebMediaConstraints& constraints,
                             int effects,
                             WebRtcPlayoutDataSource* playout_data_source);
+
+  // Called when format of the capture data has changed.
+  // Called on the main render thread.  The caller is responsible for stopping
+  // the capture thread before calling this method.
+  // After this method, the capture thread will be changed to a new capture
+  // thread.
+  void OnCaptureFormatChanged(const media::AudioParameters& source_params);
 
   // Pushes capture data in |audio_source| to the internal FIFO.
   // Called on the capture audio thread.
@@ -76,7 +83,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                              int* new_volume,
                              int16** out);
 
-
   // The audio format of the input to the processor.
   const media::AudioParameters& InputFormat() const;
 
@@ -85,6 +91,12 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Accessor to check if the audio processing is enabled or not.
   bool has_audio_processing() const { return audio_processing_ != NULL; }
+
+  // Starts/Stops the Aec dump on the |audio_processing_|.
+  // Called on the main render thread.
+  // This method takes the ownership of |aec_dump_file|.
+  void StartAecDump(const base::PlatformFile& aec_dump_file);
+  void StopAecDump();
 
  protected:
   friend class base::RefCountedThreadSafe<MediaStreamAudioProcessor>;

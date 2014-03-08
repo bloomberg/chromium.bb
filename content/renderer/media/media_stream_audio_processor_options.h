@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/platform_file.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace blink {
@@ -70,10 +71,13 @@ void EnableTypingDetection(AudioProcessing* audio_processing,
 void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing);
 
 // Starts the echo cancellation dump in |audio_processing|.
-void StartAecDump(AudioProcessing* audio_processing);
+void StartEchoCancellationDump(AudioProcessing* audio_processing,
+                  const base::PlatformFile& aec_dump_file);
 
 // Stops the echo cancellation dump in |audio_processing|.
-void StopAecDump(AudioProcessing* audio_processing);
+// This method has no impact if echo cancellation dump has not been started on
+// |audio_processing|.
+void StopEchoCancellationDump(AudioProcessing* audio_processing);
 
 void EnableAutomaticGainControl(AudioProcessing* audio_processing);
 

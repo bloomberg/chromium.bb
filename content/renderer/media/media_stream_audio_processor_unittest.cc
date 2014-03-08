@@ -156,8 +156,9 @@ TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
       new WebRtcAudioDeviceImpl());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
-          params_, constraints, 0, webrtc_audio_device.get()));
+          constraints, 0, webrtc_audio_device.get()));
   EXPECT_FALSE(audio_processor->has_audio_processing());
+  audio_processor->OnCaptureFormatChanged(params_);
 
   ProcessDataAndVerifyFormat(audio_processor,
                              params_.sample_rate(),
@@ -177,8 +178,9 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
       new WebRtcAudioDeviceImpl());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
-          params_, constraints, 0, webrtc_audio_device.get()));
+          constraints, 0, webrtc_audio_device.get()));
   EXPECT_TRUE(audio_processor->has_audio_processing());
+  audio_processor->OnCaptureFormatChanged(params_);
   VerifyDefaultComponents(audio_processor);
 
   ProcessDataAndVerifyFormat(audio_processor,

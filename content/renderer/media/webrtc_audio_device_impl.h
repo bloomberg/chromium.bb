@@ -18,6 +18,7 @@
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_not_impl.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
+#include "ipc/ipc_platform_file.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
 
@@ -351,6 +352,15 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
     return renderer_;
   }
 
+  // Enables the Aec dump.  If the default capturer exists, it will call
+  // StartAecDump() on the capturer and pass the ownership of the file to
+  // WebRtc. Otherwise it will hold the file until a capturer is added.
+  void EnableAecDump(const base::PlatformFile& aec_dump_file);
+
+  // Disables the Aec dump.  When this method is called, the ongoing Aec dump
+  // on WebRtc will be stopped.
+  void DisableAecDump();
+
  private:
   typedef std::list<scoped_refptr<WebRtcAudioCapturer> > CapturerList;
   typedef std::list<WebRtcPlayoutDataSource::Sink*> PlayoutDataSinkList;
@@ -388,6 +398,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // WebRtcPlayoutDataSource implementation.
   virtual void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) OVERRIDE;
   virtual void RemovePlayoutSink(WebRtcPlayoutDataSource::Sink* sink) OVERRIDE;
+
+  // Helper to start the Aec dump if the default capturer exists.
+  void MaybeStartAecDump();
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
@@ -436,6 +449,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Buffer used for temporary storage during render callback.
   // It is only accessed by the audio render thread.
   std::vector<int16> render_buffer_;
+
+  // Used for start the Aec dump on the default capturer.
+  base::PlatformFile aec_dump_file_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };
