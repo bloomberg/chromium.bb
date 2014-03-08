@@ -64,6 +64,10 @@ void SolidColorScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetClipLayerById(clip_layer_id_);
 }
 
+void SolidColorScrollbarLayer::SetNeedsDisplayRect(const gfx::RectF&) {
+  // Never needs repaint.
+}
+
 bool SolidColorScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return true;
 }
