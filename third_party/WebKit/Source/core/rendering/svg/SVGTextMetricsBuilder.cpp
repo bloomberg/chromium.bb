@@ -129,7 +129,7 @@ struct MeasureTextData {
     unsigned valueListPosition;
 };
 
-void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data, bool processRenderer)
+static void measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data, bool processRenderer)
 {
     ASSERT(text);
 
@@ -185,7 +185,7 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
     data->valueListPosition += textPosition - skippedCharacters;
 }
 
-void SVGTextMetricsBuilder::walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
+static void walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
 {
     RenderObject* child = start->firstChild();
     while (child) {

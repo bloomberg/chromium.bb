@@ -24,23 +24,15 @@
 
 namespace WebCore {
 
-class RenderObject;
 class RenderSVGInlineText;
 class RenderSVGText;
-struct MeasureTextData;
 
-class SVGTextMetricsBuilder {
-    WTF_MAKE_NONCOPYABLE(SVGTextMetricsBuilder);
-public:
-    SVGTextMetricsBuilder() { }
+namespace SVGTextMetricsBuilder {
 
-    void measureTextRenderer(RenderSVGInlineText*);
-    void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
+void measureTextRenderer(RenderSVGInlineText*);
+void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAtLeaf, SVGCharacterDataMap& allCharactersMap);
 
-private:
-    void walkTree(RenderObject*, RenderSVGInlineText* stopAtLeaf, MeasureTextData*);
-    void measureTextRenderer(RenderSVGInlineText*, MeasureTextData*, bool processRenderer);
-};
+} // namespace SVGTextMetricsBuilder
 
 } // namespace WebCore
 

@@ -20,7 +20,7 @@
 #ifndef SVGTextLayoutAttributesBuilder_h
 #define SVGTextLayoutAttributesBuilder_h
 
-#include "core/rendering/svg/SVGTextMetricsBuilder.h"
+#include "core/rendering/svg/SVGTextLayoutAttributes.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -73,7 +73,6 @@ private:
     unsigned m_textLength;
     Vector<TextPosition> m_textPositions;
     SVGCharacterDataMap m_characterDataMap;
-    SVGTextMetricsBuilder m_metricsBuilder;
 };
 
 } // namespace WebCore

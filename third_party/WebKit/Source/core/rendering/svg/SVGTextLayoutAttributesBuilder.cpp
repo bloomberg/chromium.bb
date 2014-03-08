@@ -23,6 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
+#include "core/rendering/svg/SVGTextMetricsBuilder.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
 namespace WebCore {
@@ -53,7 +54,7 @@ void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(Render
         buildCharacterDataMap(textRoot);
     }
 
-    m_metricsBuilder.buildMetricsAndLayoutAttributes(textRoot, text, m_characterDataMap);
+    SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(textRoot, text, m_characterDataMap);
 }
 
 bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(RenderSVGText* textRoot)
@@ -72,14 +73,14 @@ bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(RenderSV
         return false;
 
     buildCharacterDataMap(textRoot);
-    m_metricsBuilder.buildMetricsAndLayoutAttributes(textRoot, 0, m_characterDataMap);
+    SVGTextMetricsBuilder::buildMetricsAndLayoutAttributes(textRoot, 0, m_characterDataMap);
     return true;
 }
 
 void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextRenderer(RenderSVGInlineText* text)
 {
     ASSERT(text);
-    m_metricsBuilder.measureTextRenderer(text);
+    SVGTextMetricsBuilder::measureTextRenderer(text);
 }
 
 static inline void processRenderSVGInlineText(RenderSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)
