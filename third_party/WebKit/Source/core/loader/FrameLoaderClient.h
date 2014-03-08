@@ -31,6 +31,7 @@
 #define FrameLoaderClient_h
 
 #include "core/dom/IconURL.h"
+#include "core/frame/FrameClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -87,21 +88,12 @@ class FetchRequest;
     class SubstituteData;
     class Widget;
 
-    class FrameLoaderClient {
+    class FrameLoaderClient : public FrameClient {
     public:
         virtual ~FrameLoaderClient() { }
 
         virtual bool hasWebView() const = 0; // mainly for assertions
 
-        virtual LocalFrame* opener() const = 0;
-        virtual void setOpener(LocalFrame*) = 0;
-
-        virtual LocalFrame* parent() const = 0;
-        virtual LocalFrame* top() const = 0;
-        virtual LocalFrame* previousSibling() const = 0;
-        virtual LocalFrame* nextSibling() const = 0;
-        virtual LocalFrame* firstChild() const = 0;
-        virtual LocalFrame* lastChild() const = 0;
         virtual void detachedFromParent() = 0;
 
         virtual void dispatchWillRequestAfterPreconnect(ResourceRequest&) { }

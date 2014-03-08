@@ -244,48 +244,49 @@ bool FrameLoaderClientImpl::hasWebView() const
     return m_webFrame->viewImpl();
 }
 
-LocalFrame* FrameLoaderClientImpl::opener() const
+Frame* FrameLoaderClientImpl::opener() const
 {
     WebFrameImpl* opener = toWebFrameImpl(m_webFrame->opener());
     return opener ? opener->frame() : 0;
 }
 
-void FrameLoaderClientImpl::setOpener(LocalFrame* opener)
+void FrameLoaderClientImpl::setOpener(Frame* opener)
 {
-    m_webFrame->setOpener(WebFrameImpl::fromFrame(opener));
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    m_webFrame->setOpener(WebFrameImpl::fromFrame(toLocalFrame(opener)));
 }
 
-LocalFrame* FrameLoaderClientImpl::parent() const
+Frame* FrameLoaderClientImpl::parent() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->parent());
     return frame ? frame->frame() : 0;
 }
 
-LocalFrame* FrameLoaderClientImpl::top() const
+Frame* FrameLoaderClientImpl::top() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->top());
     return frame ? frame->frame() : 0;
 }
 
-LocalFrame* FrameLoaderClientImpl::previousSibling() const
+Frame* FrameLoaderClientImpl::previousSibling() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->previousSibling());
     return frame ? frame->frame() : 0;
 }
 
-LocalFrame* FrameLoaderClientImpl::nextSibling() const
+Frame* FrameLoaderClientImpl::nextSibling() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->nextSibling());
     return frame ? frame->frame() : 0;
 }
 
-LocalFrame* FrameLoaderClientImpl::firstChild() const
+Frame* FrameLoaderClientImpl::firstChild() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->firstChild());
     return frame ? frame->frame() : 0;
 }
 
-LocalFrame* FrameLoaderClientImpl::lastChild() const
+Frame* FrameLoaderClientImpl::lastChild() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->lastChild());
     return frame ? frame->frame() : 0;

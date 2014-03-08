@@ -68,7 +68,8 @@ LocalFrame* FrameTree::parent() const
 {
     if (!m_thisFrame->loader().client())
         return 0;
-    return m_thisFrame->loader().client()->parent();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    return toLocalFrame(m_thisFrame->loader().client()->parent());
 }
 
 LocalFrame* FrameTree::top() const
@@ -78,7 +79,8 @@ LocalFrame* FrameTree::top() const
     // already...
     if (!m_thisFrame->loader().client())
         return m_thisFrame;
-    LocalFrame* candidate = m_thisFrame->loader().client()->top();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    LocalFrame* candidate = toLocalFrame(m_thisFrame->loader().client()->top());
     return candidate ? candidate : m_thisFrame;
 }
 
@@ -86,28 +88,32 @@ LocalFrame* FrameTree::previousSibling() const
 {
     if (!m_thisFrame->loader().client())
         return 0;
-    return m_thisFrame->loader().client()->previousSibling();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    return toLocalFrame(m_thisFrame->loader().client()->previousSibling());
 }
 
 LocalFrame* FrameTree::nextSibling() const
 {
     if (!m_thisFrame->loader().client())
         return 0;
-    return m_thisFrame->loader().client()->nextSibling();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    return toLocalFrame(m_thisFrame->loader().client()->nextSibling());
 }
 
 LocalFrame* FrameTree::firstChild() const
 {
     if (!m_thisFrame->loader().client())
         return 0;
-    return m_thisFrame->loader().client()->firstChild();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    return toLocalFrame(m_thisFrame->loader().client()->firstChild());
 }
 
 LocalFrame* FrameTree::lastChild() const
 {
     if (!m_thisFrame->loader().client())
         return 0;
-    return m_thisFrame->loader().client()->lastChild();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    return toLocalFrame(m_thisFrame->loader().client()->lastChild());
 }
 
 AtomicString FrameTree::uniqueChildName(const AtomicString& requestedName) const

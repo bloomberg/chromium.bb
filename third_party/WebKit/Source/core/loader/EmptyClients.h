@@ -175,15 +175,15 @@ public:
 
     virtual bool hasWebView() const OVERRIDE { return true; } // mainly for assertions
 
-    virtual LocalFrame* opener() const OVERRIDE { return 0; }
-    virtual void setOpener(LocalFrame*) OVERRIDE { }
+    virtual Frame* opener() const OVERRIDE { return 0; }
+    virtual void setOpener(Frame*) OVERRIDE { }
 
-    virtual LocalFrame* parent() const OVERRIDE { return 0; }
-    virtual LocalFrame* top() const OVERRIDE { return 0; }
-    virtual LocalFrame* previousSibling() const OVERRIDE { return 0; }
-    virtual LocalFrame* nextSibling() const OVERRIDE { return 0; }
-    virtual LocalFrame* firstChild() const OVERRIDE { return 0; }
-    virtual LocalFrame* lastChild() const OVERRIDE { return 0; }
+    virtual Frame* parent() const OVERRIDE { return 0; }
+    virtual Frame* top() const OVERRIDE { return 0; }
+    virtual Frame* previousSibling() const OVERRIDE { return 0; }
+    virtual Frame* nextSibling() const OVERRIDE { return 0; }
+    virtual Frame* firstChild() const OVERRIDE { return 0; }
+    virtual Frame* lastChild() const OVERRIDE { return 0; }
     virtual void detachedFromParent() OVERRIDE { }
 
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) OVERRIDE { }

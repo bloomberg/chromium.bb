@@ -69,14 +69,14 @@ public:
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) OVERRIDE;
 
     virtual bool hasWebView() const OVERRIDE;
-    virtual WebCore::LocalFrame* opener() const OVERRIDE;
-    virtual void setOpener(WebCore::LocalFrame*) OVERRIDE;
-    virtual WebCore::LocalFrame* parent() const OVERRIDE;
-    virtual WebCore::LocalFrame* top() const OVERRIDE;
-    virtual WebCore::LocalFrame* previousSibling() const OVERRIDE;
-    virtual WebCore::LocalFrame* nextSibling() const OVERRIDE;
-    virtual WebCore::LocalFrame* firstChild() const OVERRIDE;
-    virtual WebCore::LocalFrame* lastChild() const OVERRIDE;
+    virtual WebCore::Frame* opener() const OVERRIDE;
+    virtual void setOpener(WebCore::Frame*) OVERRIDE;
+    virtual WebCore::Frame* parent() const OVERRIDE;
+    virtual WebCore::Frame* top() const OVERRIDE;
+    virtual WebCore::Frame* previousSibling() const OVERRIDE;
+    virtual WebCore::Frame* nextSibling() const OVERRIDE;
+    virtual WebCore::Frame* firstChild() const OVERRIDE;
+    virtual WebCore::Frame* lastChild() const OVERRIDE;
     virtual void detachedFromParent() OVERRIDE;
     virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&) OVERRIDE;
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse) OVERRIDE;

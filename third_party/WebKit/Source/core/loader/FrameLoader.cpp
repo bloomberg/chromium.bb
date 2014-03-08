@@ -542,7 +542,8 @@ void FrameLoader::scheduleCheckCompleted()
 LocalFrame* FrameLoader::opener()
 {
     ASSERT(m_client);
-    return m_client->opener();
+    // FIXME: Temporary hack to stage converting locations that really should be Frame.
+    return toLocalFrame(m_client->opener());
 }
 
 void FrameLoader::setOpener(LocalFrame* opener)
