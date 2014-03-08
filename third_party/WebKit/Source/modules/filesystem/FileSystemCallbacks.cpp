@@ -127,8 +127,10 @@ void EntriesCallbacks::didReadDirectoryEntry(const String& name, bool isDirector
 void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
 {
     m_directoryReader->setHasMoreEntries(hasMore);
+    EntryVector entries;
+    entries.swap(m_entries);
     if (m_successCallback)
-        m_successCallback->handleEvent(m_entries);
+        m_successCallback->handleEvent(entries);
 }
 
 // FileSystemCallbacks --------------------------------------------------------

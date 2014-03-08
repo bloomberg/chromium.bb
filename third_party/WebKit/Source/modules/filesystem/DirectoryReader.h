@@ -56,7 +56,20 @@ public:
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 
 private:
+    class EntriesCallbackHelper;
+    class ErrorCallbackHelper;
+
     DirectoryReader(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
+
+    void addEntries(const Vector<RefPtr<Entry> >& entries);
+
+    void onError(FileError*);
+
+    bool m_isReading;
+    Vector<RefPtr<Entry> > m_entries;
+    RefPtr<FileError> m_error;
+    OwnPtr<EntriesCallback> m_entriesCallback;
+    OwnPtr<ErrorCallback> m_errorCallback;
 };
 
 }
