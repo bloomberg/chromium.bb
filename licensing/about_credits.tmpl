@@ -59,7 +59,6 @@ body {
 </style>
 <script>
 //<![CDATA[
-function $(o) {return document.getElementById(o);}
 function toggle(o) {
   var licence = o.nextSibling;
 
@@ -67,7 +66,10 @@ function toggle(o) {
     if (!licence) return false;
     licence = licence.nextSibling;
   }
+  toggleblock(licence, o);
+}
 
+function toggleblock(licence, o) {
   if (licence.style && licence.style.display == 'block') {
     licence.style.display = 'none';
     o.innerHTML = 'show license text';
@@ -77,12 +79,22 @@ function toggle(o) {
   }
   return false;
 }
+
+function toggleall() {
+  var a = window.document.getElementsByClassName('licence');
+  for (var i = 0; i < a.length; i++) {
+    toggleblock(a[i], a[i].previousSibling.previousSibling.previousSibling.previousSibling);
+  }
+}
 //]]>
 </script>
 </head>
 <body>
 <span class="page-title" style="float:left;">Credits</span>
-<a href="javascript:window.print();" style="float:right;">Print</a>
+<span style="float:right">
+<a href="javascript:toggleall()">Toggle All</a>
+<a href="javascript:window.print();">Print</a>
+</span>
 <div style="clear:both; overflow:auto;">
 <h2>List of Packages used in Google Chrome OS:</h2>
 <!-- Chromium <3s the following projects -->
