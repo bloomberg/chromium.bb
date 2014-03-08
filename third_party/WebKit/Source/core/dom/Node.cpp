@@ -1706,7 +1706,9 @@ static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, 
         return;
 
     stringBuilder.append(attrDesc);
+    stringBuilder.append("=\"");
     stringBuilder.append(attr);
+    stringBuilder.append("\"");
 }
 
 void Node::showNode(const char* prefix) const
@@ -1720,8 +1722,9 @@ void Node::showNode(const char* prefix) const
         fprintf(stderr, "%s%s\t%p \"%s\"\n", prefix, nodeName().utf8().data(), this, value.utf8().data());
     } else {
         StringBuilder attrs;
-        appendAttributeDesc(this, attrs, classAttr, " CLASS=");
-        appendAttributeDesc(this, attrs, styleAttr, " STYLE=");
+        appendAttributeDesc(this, attrs, idAttr, " ID");
+        appendAttributeDesc(this, attrs, classAttr, " CLASS");
+        appendAttributeDesc(this, attrs, styleAttr, " STYLE");
         fprintf(stderr, "%s%s\t%p%s\n", prefix, nodeName().utf8().data(), this, attrs.toString().utf8().data());
     }
 }
@@ -2516,6 +2519,12 @@ void Node::setCustomElementState(CustomElementState newState)
 } // namespace WebCore
 
 #ifndef NDEBUG
+
+void showNode(const WebCore::Node* node)
+{
+    if (node)
+        node->showNode("");
+}
 
 void showTree(const WebCore::Node* node)
 {

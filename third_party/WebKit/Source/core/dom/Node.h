@@ -909,6 +909,7 @@ inline bool operator!=(const Node& a, const PassRefPtr<Node>& b) { return !(a ==
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
+void showNode(const WebCore::Node*);
 void showTree(const WebCore::Node*);
 void showNodePath(const WebCore::Node*);
 #endif
