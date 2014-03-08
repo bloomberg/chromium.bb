@@ -786,7 +786,7 @@ TEST_F(PasswordAutofillAgentTest, IframeNoFillTest) {
       "       <title>Title</title>"
       "   </head>"
       "   <body>"
-      "       <iframe id='iframe' src=\"";
+      "       <iframe name='iframe' src=\"";
   const char kWebpageWithIframeEnd[] =
       "\"></iframe>"
       "   </body>"

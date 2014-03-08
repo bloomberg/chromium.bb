@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape2) {
   ASSERT_EQ(2UL, root->child_at(2)->child_count());
   EXPECT_EQ(1UL, root->child_at(2)->child_at(1)->child_count());
   EXPECT_EQ(0UL, root->child_at(2)->child_at(1)->child_at(0)->child_count());
-  EXPECT_STREQ("3-1-id",
+  EXPECT_STREQ("3-1-name",
       root->child_at(2)->child_at(1)->child_at(0)->frame_name().c_str());
 
   // Navigate to about:blank, which should leave only the root node of the frame
