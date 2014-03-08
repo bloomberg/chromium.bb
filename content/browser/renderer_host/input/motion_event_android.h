@@ -11,13 +11,30 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace content {
 
 // Implementation of ui::MotionEvent wrapping a native Android MotionEvent.
 class MotionEventAndroid : public ui::MotionEvent {
  public:
-  MotionEventAndroid(JNIEnv* env, jobject event, bool recycle);
+  // Forcing the caller to provide all cached values upon construction
+  // eliminates the need to perform a JNI call to retrieve values individually.
+  MotionEventAndroid(JNIEnv* env,
+                     jobject event,
+                     jlong time_ms,
+                     jint android_action,
+                     jint pointer_count,
+                     jint history_size,
+                     jint action_index,
+                     jfloat pos_x_0,
+                     jfloat pos_y_0,
+                     jfloat pos_x_1,
+                     jfloat pos_y_1,
+                     jint pointer_id_0,
+                     jint pointer_id_1,
+                     jfloat touch_major_0,
+                     jfloat touch_major_1);
   virtual ~MotionEventAndroid();
 
   // ui::MotionEvent methods.
@@ -64,8 +81,14 @@ class MotionEventAndroid : public ui::MotionEvent {
 
  private:
   MotionEventAndroid();
+  MotionEventAndroid(JNIEnv* env, jobject event);
   MotionEventAndroid(const MotionEventAndroid&);
   MotionEventAndroid& operator=(const MotionEventAndroid&);
+
+  // Cache pointer coords, id's and major lengths for the most common
+  // touch-related scenarios, i.e., scrolling and pinching.  This prevents
+  // redundant JNI fetches for the same bits.
+  enum { MAX_POINTERS_TO_CACHE = 2 };
 
   // The Java reference to the underlying MotionEvent.
   base::android::ScopedJavaGlobalRef<jobject> event_;
@@ -75,8 +98,9 @@ class MotionEventAndroid : public ui::MotionEvent {
   size_t cached_pointer_count_;
   size_t cached_history_size_;
   int cached_action_index_;
-  float cached_x_;
-  float cached_y_;
+  gfx::PointF cached_positions_[MAX_POINTERS_TO_CACHE];
+  int cached_pointer_ids_[MAX_POINTERS_TO_CACHE];
+  float cached_touch_majors_[MAX_POINTERS_TO_CACHE];
 
   // Whether |event_| should be recycled on destruction. This will only be true
   // for those events generated via |Obtain(...)|.

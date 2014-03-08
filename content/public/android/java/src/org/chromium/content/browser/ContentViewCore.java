@@ -1171,7 +1171,15 @@ public class ContentViewCore
         }
 
         if (mNativeContentViewCore == 0) return false;
-        return nativeOnTouchEvent(mNativeContentViewCore, event);
+        final int pointerCount = event.getPointerCount();
+        return nativeOnTouchEvent(mNativeContentViewCore, event,
+                event.getEventTime(), eventAction,
+                pointerCount, event.getHistorySize(), event.getActionIndex(),
+                event.getX(), event.getY(),
+                pointerCount > 1 ? event.getX(1) : 0,
+                pointerCount > 1 ? event.getY(1) : 0,
+                event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
+                event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0);
     }
 
     public void setIgnoreRemainingTouchEvents() {
@@ -3154,7 +3162,12 @@ public class ContentViewCore
             long nativeContentViewCoreImpl, int orientation);
 
     // All touch events (including flings, scrolls etc) accept coordinates in physical pixels.
-    private native boolean nativeOnTouchEvent(long nativeContentViewCoreImpl, MotionEvent event);
+    private native boolean nativeOnTouchEvent(
+            long nativeContentViewCoreImpl, MotionEvent event,
+            long timeMs, int action, int pointerCount, int historySize, int actionIndex,
+            float x0, float y0, float x1, float y1,
+            int pointerId0, int pointerId1,
+            float touchMajor0, float touchMajor1);
 
     private native int nativeSendMouseMoveEvent(
             long nativeContentViewCoreImpl, long timeMs, float x, float y);

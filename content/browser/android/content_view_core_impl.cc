@@ -1027,12 +1027,39 @@ void ContentViewCoreImpl::CancelActiveTouchSequenceIfNecessary() {
 
 jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                            jobject obj,
-                                           jobject motion_event) {
+                                           jobject motion_event,
+                                           jlong time_ms,
+                                           jint android_action,
+                                           jint pointer_count,
+                                           jint history_size,
+                                           jint action_index,
+                                           jfloat pos_x_0,
+                                           jfloat pos_y_0,
+                                           jfloat pos_x_1,
+                                           jfloat pos_y_1,
+                                           jint pointer_id_0,
+                                           jint pointer_id_1,
+                                           jfloat touch_major_0,
+                                           jfloat touch_major_1) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (!rwhv)
     return false;
 
-  MotionEventAndroid event(env, motion_event, false);
+  MotionEventAndroid event(env,
+                           motion_event,
+                           time_ms,
+                           android_action,
+                           pointer_count,
+                           history_size,
+                           action_index,
+                           pos_x_0,
+                           pos_y_0,
+                           pos_x_1,
+                           pos_y_1,
+                           pointer_id_0,
+                           pointer_id_1,
+                           touch_major_0,
+                           touch_major_1);
 
   if (!gesture_provider_.OnTouchEvent(event))
     return false;
