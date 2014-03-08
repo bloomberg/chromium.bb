@@ -91,7 +91,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   // Encrypted media related methods.
   void InitializeCdm(int cdm_id,
                      ProxyMediaKeys* media_keys,
-                     const std::vector<uint8>& uuid,
+                     const std::string& key_system,
                      const GURL& frame_url);
   void CreateSession(int cdm_id,
                      uint32 session_id,

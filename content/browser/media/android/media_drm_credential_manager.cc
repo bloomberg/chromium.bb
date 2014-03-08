@@ -14,6 +14,8 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "url/gurl.h"
 
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
 using base::android::ScopedJavaGlobalRef;
 
 namespace {
@@ -29,11 +31,6 @@ void MediaDrmCredentialManagerCallback(
 }  // namespace
 
 namespace content {
-
-// TODO(qinmin): Move the UUID definition to some common places.
-static const uint8 kWidevineUuid[16] = {
-    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
-    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
 
 MediaDrmCredentialManager::MediaDrmCredentialManager() {};
 
@@ -92,8 +89,8 @@ void MediaDrmCredentialManager::OnResetCredentialsCompleted(
 
 bool MediaDrmCredentialManager::ResetCredentialsInternal(
     SecurityLevel security_level) {
-  std::vector<uint8> uuid(kWidevineUuid, kWidevineUuid + 16);
-  media_drm_bridge_ = media::MediaDrmBridge::Create(0, uuid, GURL(), NULL);
+  media_drm_bridge_ =
+      media::MediaDrmBridge::Create(0, kWidevineKeySystem, GURL(), NULL);
   if (!media_drm_bridge_)
     return false;
 

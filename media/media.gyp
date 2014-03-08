@@ -913,6 +913,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
@@ -1045,6 +1046,10 @@
         'formats/webm/webm_parser_unittest.cc',
         'formats/webm/webm_tracks_parser_unittest.cc',
         'formats/webm/webm_webvtt_parser_unittest.cc',
+      ],
+      'include_dirs': [
+        # Needed by media_drm_bridge.cc.
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'conditions': [
         ['arm_neon==1', {
@@ -1576,9 +1581,14 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
+            '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
             '../ui/gl/gl.gyp:gl',
             '../url/url.gyp:url_lib',
             'media_android_jni_headers',
+          ],
+          'include_dirs': [
+            # Needed by media_drm_bridge.cc.
+            '<(SHARED_INTERMEDIATE_DIR)',
           ],
           'defines': [
             'MEDIA_IMPLEMENTATION',

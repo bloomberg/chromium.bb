@@ -148,10 +148,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WEBM_VP8_AND_VORBIS);
 COMPILE_ASSERT_MATCHING_ENUM(MP4_AAC);
 COMPILE_ASSERT_MATCHING_ENUM(MP4_AVC1);
 #undef COMPILE_ASSERT_MATCHING_ENUM
-
-static const uint8 kWidevineUuid[16] = {
-    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
-    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
 #else
 static bool IsWidevineHrSupported() {
   // TODO(jrummell): Need to call CheckPlatformState() but it is
@@ -213,8 +209,6 @@ static void AddWidevineWithCodecs(
 
 #if defined(ENABLE_PEPPER_CDMS)
   info.pepper_type = kWidevineCdmPluginMimeType;
-#elif defined(OS_ANDROID)
-  info.uuid.assign(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   concrete_key_systems->push_back(info);
@@ -297,8 +291,7 @@ static void AddAndroidWidevine(
   SupportedKeySystemRequest request;
   SupportedKeySystemResponse response;
 
-  request.uuid.insert(request.uuid.begin(), kWidevineUuid,
-                      kWidevineUuid + arraysize(kWidevineUuid));
+  request.key_system = kWidevineKeySystem;
 #if defined(USE_PROPRIETARY_CODECS)
   request.codecs = static_cast<android::SupportedCodecs>(
       android::MP4_AAC | android::MP4_AVC1);

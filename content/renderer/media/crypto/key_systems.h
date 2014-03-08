@@ -49,10 +49,6 @@ CONTENT_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
 // Returns empty string if |concrete_key_system| is unknown or not Pepper-based.
 CONTENT_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
-#elif defined(OS_ANDROID)
-// Convert |concrete_key_system| to 16-byte Android UUID.
-CONTENT_EXPORT std::vector<uint8> GetUUID(
-    const std::string& concrete_key_system);
 #endif
 
 }  // namespace content

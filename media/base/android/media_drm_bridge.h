@@ -41,23 +41,27 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Checks whether MediaDRM is available.
   static bool IsAvailable();
 
-  static bool IsSecurityLevelSupported(const std::vector<uint8>& scheme_uuid,
+  // TODO(xhwang): Add tests for MediaDrmBridge. See http://crbug.com/303864
+  static bool IsSecurityLevelSupported(const std::string& key_system,
                                        SecurityLevel security_level);
 
-  static bool IsCryptoSchemeSupported(const std::vector<uint8>& scheme_uuid,
-                                      const std::string& container_mime_type);
+  // TODO(xhwang): The |container_mime_type| is not the same as contentType in
+  // the EME spec. Revisit this once the spec issue with initData type is
+  // resolved.
+  static bool IsKeySystemSupportedWithType(
+      const std::string& key_system,
+      const std::string& container_mime_type);
 
   static bool IsSecureDecoderRequired(SecurityLevel security_level);
 
   static bool RegisterMediaDrmBridge(JNIEnv* env);
 
-  // Returns a MediaDrmBridge instance if |scheme_uuid| is supported, or a NULL
+  // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
   // pointer otherwise.
-  static scoped_ptr<MediaDrmBridge> Create(
-      int cdm_id,
-      const std::vector<uint8>& scheme_uuid,
-      const GURL& frame_url,
-      MediaPlayerManager* manager);
+  static scoped_ptr<MediaDrmBridge> Create(int cdm_id,
+                                           const std::string& key_system,
+                                           const GURL& frame_url,
+                                           MediaPlayerManager* manager);
 
   // Returns true if |security_level| is successfully set, or false otherwise.
   // Call this function right after Create() and before any other calls.

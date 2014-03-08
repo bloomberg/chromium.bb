@@ -66,12 +66,6 @@ class TestContentRendererClient : public ContentRendererClient {
 
 void TestContentRendererClient::AddKeySystems(
     std::vector<content::KeySystemInfo>* key_systems) {
-#if defined(OS_ANDROID)
-  static const uint8 kExternalUuid[16] = {
-      0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
-      0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF };
-#endif
-
   KeySystemInfo aes(kUsesAes);
 
   aes.supported_types.push_back(std::make_pair(kAudioWebM, kWebMAudioCodecs));
@@ -96,8 +90,6 @@ void TestContentRendererClient::AddKeySystems(
 
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
-#elif defined(OS_ANDROID)
-  ext.uuid.assign(kExternalUuid, kExternalUuid + arraysize(kExternalUuid));
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   key_systems->push_back(ext);
@@ -194,8 +186,7 @@ class KeySystemsTest : public testing::Test {
   TestContentRendererClient content_renderer_client_;
 };
 
-// TODO(ddorwin): Consider moving GetUUID() into these tests or moving
-// GetPepperType() calls out to their own test.
+// TODO(ddorwin): Consider moving GetPepperType() calls out to their own test.
 
 TEST_F(KeySystemsTest, EmptyKeySystem) {
   EXPECT_FALSE(IsConcreteSupportedKeySystem(std::string()));
@@ -571,28 +562,6 @@ TEST_F(
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kAudioFoo, vorbis_codec(), kExternal));
 }
-
-#if defined(OS_ANDROID)
-TEST_F(KeySystemsTest, GetUUID_RegisteredExternalDecryptor) {
-  std::vector<uint8> uuid = GetUUID(kExternal);
-  EXPECT_EQ(16u, uuid.size());
-  EXPECT_EQ(0xef, uuid[15]);
-}
-
-TEST_F(KeySystemsTest, GetUUID_RegisteredAesDecryptor) {
-  EXPECT_TRUE(GetUUID(kUsesAes).empty());
-}
-
-TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
-  std::vector<uint8> uuid;
-  EXPECT_DEBUG_DEATH_PORTABLE(uuid = GetUUID(kExternalParent),
-                              "com.example is not a known concrete system");
-  EXPECT_TRUE(uuid.empty());
-
-  EXPECT_DEBUG_DEATH_PORTABLE(uuid = GetUUID(""), " is not a concrete system");
-  EXPECT_TRUE(uuid.empty());
-}
-#endif  // defined(OS_ANDROID)
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
   EXPECT_EQ("ClearKey", KeySystemNameForUMA(kClearKey));

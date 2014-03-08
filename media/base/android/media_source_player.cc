@@ -33,17 +33,17 @@ namespace media {
 
 // static
 bool MediaSourcePlayer::IsTypeSupported(
-    const std::vector<uint8>& scheme_uuid,
+    const std::string& key_system,
     MediaDrmBridge::SecurityLevel security_level,
     const std::string& container,
     const std::vector<std::string>& codecs) {
-  if (!MediaDrmBridge::IsCryptoSchemeSupported(scheme_uuid, container)) {
-    DVLOG(1) << "UUID and container '" << container << "' not supported.";
+  if (!MediaDrmBridge::IsKeySystemSupportedWithType(key_system, container)) {
+    DVLOG(1) << "Key system and container '" << container << "' not supported.";
     return false;
   }
 
-  if (!MediaDrmBridge::IsSecurityLevelSupported(scheme_uuid, security_level)) {
-    DVLOG(1) << "UUID and security level '" << security_level
+  if (!MediaDrmBridge::IsSecurityLevelSupported(key_system, security_level)) {
+    DVLOG(1) << "Key system and security level '" << security_level
              << "' not supported.";
     return false;
   }

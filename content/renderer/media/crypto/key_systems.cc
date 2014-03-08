@@ -66,8 +66,6 @@ class KeySystems {
 
 #if defined(ENABLE_PEPPER_CDMS)
   std::string GetPepperType(const std::string& concrete_key_system);
-#elif defined(OS_ANDROID)
-  std::vector<uint8> GetUUID(const std::string& concrete_key_system);
 #endif
 
  private:
@@ -79,12 +77,9 @@ class KeySystems {
       bool use_aes_decryptor,
 #if defined(ENABLE_PEPPER_CDMS)
       const std::string& pepper_type,
-#elif defined(OS_ANDROID)
-      const std::vector<uint8>& uuid,
 #endif
       const std::vector<KeySystemInfo::ContainerCodecsPair>& supported_types,
       const std::string& parent_key_system);
-
 
   friend struct base::DefaultLazyInstanceTraits<KeySystems>;
 
@@ -97,8 +92,6 @@ class KeySystems {
     bool use_aes_decryptor;
 #if defined(ENABLE_PEPPER_CDMS)
     std::string pepper_type;
-#elif defined(OS_ANDROID)
-    std::vector<uint8> uuid;
 #endif
     MimeTypeMap types;
   };
@@ -157,8 +150,6 @@ void KeySystems::AddConcreteSupportedKeySystems(
                                   key_system_info.use_aes_decryptor,
 #if defined(ENABLE_PEPPER_CDMS)
                                   key_system_info.pepper_type,
-#elif defined(OS_ANDROID)
-                                  key_system_info.uuid,
 #endif
                                   key_system_info.supported_types,
                                   key_system_info.parent_key_system);
@@ -170,8 +161,6 @@ void KeySystems::AddConcreteSupportedKeySystem(
     bool use_aes_decryptor,
 #if defined(ENABLE_PEPPER_CDMS)
     const std::string& pepper_type,
-#elif defined(OS_ANDROID)
-    const std::vector<uint8>& uuid,
 #endif
     const std::vector<KeySystemInfo::ContainerCodecsPair>& supported_types,
     const std::string& parent_key_system) {
@@ -186,10 +175,6 @@ void KeySystems::AddConcreteSupportedKeySystem(
 #if defined(ENABLE_PEPPER_CDMS)
   DCHECK_EQ(use_aes_decryptor, pepper_type.empty());
   properties.pepper_type = pepper_type;
-#elif defined(OS_ANDROID)
-  DCHECK_EQ(use_aes_decryptor, uuid.empty());
-  DCHECK(use_aes_decryptor || uuid.size() == 16);
-  properties.uuid = uuid;
 #endif
 
   for (size_t i = 0; i < supported_types.size(); ++i) {
@@ -320,17 +305,6 @@ std::string KeySystems::GetPepperType(const std::string& concrete_key_system) {
   DLOG_IF(FATAL, type.empty()) << concrete_key_system << " is not Pepper-based";
   return type;
 }
-#elif defined(OS_ANDROID)
-std::vector<uint8> KeySystems::GetUUID(const std::string& concrete_key_system) {
-  KeySystemPropertiesMap::iterator key_system_iter =
-      concrete_key_system_map_.find(concrete_key_system);
-  if (key_system_iter == concrete_key_system_map_.end()) {
-      DLOG(FATAL) << concrete_key_system << " is not a known concrete system";
-      return std::vector<uint8>();
-  }
-
-  return key_system_iter->second.uuid;
-}
 #endif
 
 //------------------------------------------------------------------------------
@@ -383,10 +357,6 @@ bool CanUseAesDecryptor(const std::string& concrete_key_system) {
 #if defined(ENABLE_PEPPER_CDMS)
 std::string GetPepperType(const std::string& concrete_key_system) {
   return KeySystems::GetInstance().GetPepperType(concrete_key_system);
-}
-#elif defined(OS_ANDROID)
-std::vector<uint8> GetUUID(const std::string& concrete_key_system) {
-  return KeySystems::GetInstance().GetUUID(concrete_key_system);
 }
 #endif
 

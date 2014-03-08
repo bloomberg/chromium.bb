@@ -33,18 +33,18 @@ using media::MediaPlayerBridge;
 using media::MediaPlayerManager;
 using media::MediaSourcePlayer;
 
+namespace content {
+
 // Threshold on the number of media players per renderer before we start
 // attempting to release inactive media players.
-static const int kMediaPlayerThreshold = 1;
+const int kMediaPlayerThreshold = 1;
 
-// Maximum sizes for various EME message parameters. These are checks to
-// prevent unnecessarily large messages from being passed around, and the sizes
-// are somewhat arbitrary as the EME specification doesn't specify any limits.
-static const size_t kEmeUuidSize = 16;
-static const size_t kEmeInitDataMaximum = 64 * 1024;  // 64 KB
-static const size_t kEmeResponseMaximum = 64 * 1024;  // 64 KB
-
-namespace content {
+// Maximum lengths for various EME API parameters. These are checks to
+// prevent unnecessarily large parameters from being passed around, and the
+// lengths are somewhat arbitrary as the EME spec doesn't specify any limits.
+const size_t kMaxInitDataLength = 64 * 1024;  // 64 KB
+const size_t kMaxSessionResponseLength = 64 * 1024;  // 64 KB
+const size_t kMaxKeySystemLength = 256;
 
 static BrowserMediaPlayerManager::Factory g_factory = NULL;
 
@@ -573,16 +573,21 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
 }
 
 void BrowserMediaPlayerManager::OnInitializeCdm(int cdm_id,
-                                                const std::vector<uint8>& uuid,
+                                                const std::string& key_system,
                                                 const GURL& frame_url) {
-  if (uuid.size() != kEmeUuidSize) {
+  if (key_system.size() > kMaxKeySystemLength) {
     // This failure will be discovered and reported by OnCreateSession()
     // as GetDrmBridge() will return null.
-    NOTREACHED() << "Invalid UUID for ID: " << cdm_id;
+    NOTREACHED() << "Invalid key system: " << key_system;
     return;
   }
 
-  AddDrmBridge(cdm_id, uuid, frame_url);
+  if (!MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "")) {
+    NOTREACHED() << "Unsupported key system: " << key_system;
+    return;
+  }
+
+  AddDrmBridge(cdm_id, key_system, frame_url);
   // In EME v0.1b MediaKeys lives in the media element. So the |cdm_id|
   // is the same as the |player_id|.
   OnSetMediaKeys(cdm_id, cdm_id);
@@ -593,7 +598,7 @@ void BrowserMediaPlayerManager::OnCreateSession(
     uint32 session_id,
     CdmHostMsg_CreateSession_ContentType content_type,
     const std::vector<uint8>& init_data) {
-  if (init_data.size() > kEmeInitDataMaximum) {
+  if (init_data.size() > kMaxInitDataLength) {
     LOG(WARNING) << "InitData for ID: " << cdm_id
                  << " too long: " << init_data.size();
     OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
@@ -662,7 +667,7 @@ void BrowserMediaPlayerManager::OnUpdateSession(
     return;
   }
 
-  if (response.size() > kEmeResponseMaximum) {
+  if (response.size() > kMaxSessionResponseLength) {
     LOG(WARNING) << "Response for ID: " << cdm_id
                  << " too long: " << response.size();
     OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
@@ -751,12 +756,12 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
 }
 
 void BrowserMediaPlayerManager::AddDrmBridge(int cdm_id,
-                                             const std::vector<uint8>& uuid,
+                                             const std::string& key_system,
                                              const GURL& frame_url) {
   DCHECK(!GetDrmBridge(cdm_id));
 
   scoped_ptr<MediaDrmBridge> drm_bridge(
-      MediaDrmBridge::Create(cdm_id, uuid, frame_url, this));
+      MediaDrmBridge::Create(cdm_id, key_system, frame_url, this));
   if (!drm_bridge) {
     // This failure will be discovered and reported by OnCreateSession()
     // as GetDrmBridge() will return null.

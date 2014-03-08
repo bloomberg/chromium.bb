@@ -20,10 +20,6 @@ const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
 const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 
-const uint8 kWidevineUuid[16] = {
-    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
-    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
-
 // Return |name|'s parent key system.
 std::string GetDirectParentName(const std::string& name) {
   int last_period = name.find_last_of('.');
@@ -31,10 +27,9 @@ std::string GetDirectParentName(const std::string& name) {
   return name.substr(0, last_period);
 }
 
-void AddWidevineWithCodecs(
-    const std::string& key_system_name,
-    bool add_parent_name,
-    std::vector<KeySystemInfo>* concrete_key_systems) {
+void AddWidevineWithCodecs(const std::string& key_system_name,
+                           bool add_parent_name,
+                           std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info(key_system_name);
 
   if (add_parent_name)
@@ -42,8 +37,6 @@ void AddWidevineWithCodecs(
 
   info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
   info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1Avc3));
-
-  info.uuid.assign(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
 
   concrete_key_systems->push_back(info);
 }

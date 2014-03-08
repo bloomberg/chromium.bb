@@ -55,8 +55,6 @@ struct CONTENT_EXPORT KeySystemInfo {
   bool use_aes_decryptor;
 #if defined(ENABLE_PEPPER_CDMS)
   std::string pepper_type;
-#elif defined(OS_ANDROID)
-  std::vector<uint8> uuid;
 #endif
 };
 

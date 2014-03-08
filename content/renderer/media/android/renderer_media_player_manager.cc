@@ -13,13 +13,13 @@
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "ui/gfx/rect_f.h"
 
-// Maximum sizes for various EME message parameters. These are checks to
-// prevent unnecessarily large messages from being passed around, and the sizes
-// are somewhat arbitrary as the EME specification doesn't specify any limits.
-static const size_t kEmeWebSessionIdMaximum = 512;
-static const size_t kEmeMessageMaximum = 10240;  // 10 KB
-
 namespace content {
+
+// Maximum sizes for various EME API parameters. These are checks to prevent
+// unnecessarily large messages from being passed around, and the sizes
+// are somewhat arbitrary as the EME spec doesn't specify any limits.
+const size_t kMaxWebSessionIdLength = 512;
+const size_t kMaxSessionMessageLength = 10240;  // 10 KB
 
 RendererMediaPlayerManager::RendererMediaPlayerManager(RenderView* render_view)
     : RenderViewObserver(render_view),
@@ -241,10 +241,11 @@ void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
 
 void RendererMediaPlayerManager::InitializeCdm(int cdm_id,
                                                ProxyMediaKeys* media_keys,
-                                               const std::vector<uint8>& uuid,
+                                               const std::string& key_system,
                                                const GURL& frame_url) {
   RegisterMediaKeys(cdm_id, media_keys);
-  Send(new CdmHostMsg_InitializeCdm(routing_id(), cdm_id, uuid, frame_url));
+  Send(new CdmHostMsg_InitializeCdm(
+      routing_id(), cdm_id, key_system, frame_url));
 }
 
 void RendererMediaPlayerManager::CreateSession(
@@ -276,7 +277,7 @@ void RendererMediaPlayerManager::OnSessionCreated(
     int cdm_id,
     uint32 session_id,
     const std::string& web_session_id) {
-  if (web_session_id.length() > kEmeWebSessionIdMaximum) {
+  if (web_session_id.length() > kMaxWebSessionIdLength) {
     OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
@@ -291,7 +292,7 @@ void RendererMediaPlayerManager::OnSessionMessage(
     uint32 session_id,
     const std::vector<uint8>& message,
     const GURL& destination_url) {
-  if (message.size() > kEmeMessageMaximum) {
+  if (message.size() > kMaxSessionMessageLength) {
     OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }

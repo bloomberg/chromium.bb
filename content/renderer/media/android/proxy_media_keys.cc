@@ -37,13 +37,7 @@ ProxyMediaKeys::~ProxyMediaKeys() {
 
 void ProxyMediaKeys::InitializeCdm(const std::string& key_system,
                                    const GURL& frame_url) {
-#if defined(ENABLE_PEPPER_CDMS)
-  NOTIMPLEMENTED();
-#elif defined(OS_ANDROID)
-  std::vector<uint8> uuid = GetUUID(key_system);
-  DCHECK(!uuid.empty());
-  manager_->InitializeCdm(cdm_id_, this, uuid, frame_url);
-#endif
+  manager_->InitializeCdm(cdm_id_, this, key_system, frame_url);
 }
 
 bool ProxyMediaKeys::CreateSession(uint32 session_id,

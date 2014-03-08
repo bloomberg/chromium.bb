@@ -46,7 +46,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
                     scoped_ptr<DemuxerAndroid> demuxer);
   virtual ~MediaSourcePlayer();
 
-  static bool IsTypeSupported(const std::vector<uint8>& scheme_uuid,
+  static bool IsTypeSupported(const std::string& key_system,
                               MediaDrmBridge::SecurityLevel security_level,
                               const std::string& container,
                               const std::vector<std::string>& codecs);

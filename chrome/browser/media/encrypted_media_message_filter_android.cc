@@ -17,6 +17,8 @@ using media::MediaDrmBridge;
 
 namespace chrome {
 
+const size_t kMaxKeySystemLength = 256;
+
 // Check whether the available codecs are supported.
 static android::SupportedCodecs GetSupportedCodecs(
     android::SupportedCodecs requested_codecs,
@@ -72,21 +74,29 @@ void EncryptedMediaMessageFilterAndroid::OverrideThreadForMessage(
 void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
     const SupportedKeySystemRequest& request,
     SupportedKeySystemResponse* response) {
+  if (!response) {
+    NOTREACHED() << "NULL response pointer provided.";
+    return;
+  }
+
+  if (request.key_system.size() > kMaxKeySystemLength) {
+    NOTREACHED() << "Invalid key system: " << request.key_system;
+    return;
+  }
+
   if (!MediaDrmBridge::IsAvailable() || !MediaCodecBridge::IsAvailable())
     return;
 
   // TODO(qinmin): Convert codecs to container types and check whether they
   // are supported with the key system.
-  if (!MediaDrmBridge::IsCryptoSchemeSupported(request.uuid, ""))
+  if (!MediaDrmBridge::IsKeySystemSupportedWithType(request.key_system, ""))
     return;
 
   DCHECK_EQ(request.codecs >> 3, 0) << "unrecognized codec";
-  response->uuid = request.uuid;
+  response->key_system = request.key_system;
   // TODO(qinmin): check composition is supported or not.
-  response->compositing_codecs =
-      GetSupportedCodecs(request.codecs, true);
-  response->non_compositing_codecs =
-      GetSupportedCodecs(request.codecs, false);
+  response->compositing_codecs = GetSupportedCodecs(request.codecs, true);
+  response->non_compositing_codecs = GetSupportedCodecs(request.codecs, false);
 }
 
 }  // namespace chrome

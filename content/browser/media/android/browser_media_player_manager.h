@@ -137,7 +137,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnDestroyPlayer(int player_id);
   virtual void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player);
   void OnInitializeCdm(int cdm_id,
-                       const std::vector<uint8>& uuid,
+                       const std::string& key_system,
                        const GURL& frame_url);
   void OnCreateSession(int cdm_id,
                        uint32 session_id,
@@ -171,10 +171,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
-  // Adds a new MediaDrmBridge for the given |uuid|, |cdm_id|, and
+  // Adds a new MediaDrmBridge for the given |key_system|, |cdm_id|, and
   // |frame_url|.
   void AddDrmBridge(int cdm_id,
-                    const std::vector<uint8>& uuid,
+                    const std::string& key_system,
                     const GURL& frame_url);
 
   // Removes the DRM bridge with the specified id.
