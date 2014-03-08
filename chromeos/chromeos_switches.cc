@@ -76,10 +76,6 @@ const char kDisableOOBEBlockingUpdate[] =
 // Useful for testing.
 const char kEchoExtensionPath[]             = "echo-ext-path";
 
-// Enables component extension that initializes background pages of
-// certain hosted applications.
-const char kEnableBackgroundLoader[]        = "enable-background-loader";
-
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 

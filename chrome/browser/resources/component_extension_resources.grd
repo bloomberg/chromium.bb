@@ -71,12 +71,6 @@
       <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />
       <include name="IDR_HOTWORD_HELPER_OPTIN_CLIENT_JS" file="hotword_helper/optin_client.js" type="BINDATA" />
       <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />
-      <if expr="chromeos">
-        <!-- Background page loader  -->
-        <include name="IDR_BACKLOADER_BACKGROUND_HTML" file="backloader/background.html" type="BINDATA" />
-        <include name="IDR_BACKLOADER_BACKGROUND_JS" file="backloader/scripts/background.js" type="BINDATA" />
-        <include name="IDR_BACKLOADER_PAGES_JS" file="backloader/scripts/pages.js" type="BINDATA" />
-      </if>
       <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_FEEDBACK_EVENT_HANDLER_JS" file="feedback/js/event_handler.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FEEDBACK_FEEDBACK_JS" file="feedback/js/feedback.js" flattenhtml="true" type="BINDATA" />

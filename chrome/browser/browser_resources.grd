@@ -295,7 +295,6 @@
       <include name="IDR_GAIA_AUTH_SAML_MANIFEST" file="resources\gaia_auth\manifest_saml.json" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_DESKTOP_MANIFEST" file="resources\gaia_auth\manifest_desktop.json" type="BINDATA" />
       <if expr="chromeos">
-        <include name="IDR_BACKLOADER_MANIFEST" file="resources\backloader\manifest.json" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_HTML" file="resources\chromeos\choose_mobile_network.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_JS" file="resources\chromeos\choose_mobile_network.js" type="BINDATA" />
         <include name="IDR_CROSH_BUILTIN_MANIFEST" file="resources\chromeos\crosh_builtin\manifest.json" type="BINDATA" />

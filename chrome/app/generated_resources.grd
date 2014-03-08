@@ -5695,12 +5695,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_COMPOSITOR_TOUCH_HIT_TESTING_DESCRIPTION" desc="Description of the disable compositor touch hit testing flags.">
         Disables an optimization intended to improve touch scrolling responsiveness.  Forces all touch events to go to the blink main thread to look for handlers, instead of potentially short-circuiting from the compositor thread.
       </message>
-      <message name="IDS_ENABLE_BACKLOADER_NAME" desc="Title of the enable background loader flag." >
-        Enable background loader component for hosted applications
-      </message>
-      <message name="IDS_ENABLE_BACKLOADER_DESCRIPTION" desc="Description of the enable background loader flag.">
-        Enable background loader component for hosted applications.
-      </message>
       <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
         Check for known conflicts with 3rd party modules.
       </message>
