@@ -464,11 +464,6 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
   return InputHandler::ScrollStarted;
 }
 
-bool LayerImpl::DrawCheckerboardForMissingTiles() const {
-  return draw_checkerboard_for_missing_tiles_ &&
-      !layer_tree_impl()->settings().background_color_instead_of_checkerboard;
-}
-
 gfx::Rect LayerImpl::LayerRectToContentRect(
     const gfx::RectF& layer_rect) const {
   gfx::RectF content_rect =

@@ -167,8 +167,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.background_color_instead_of_checkerboard =
-      cmd->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
   settings.show_overdraw_in_tracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
   settings.can_use_lcd_text = cc::switches::IsLCDTextEnabled();
@@ -240,7 +238,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.use_map_image = cc::switches::IsMapImageEnabled();
 
 #if defined(OS_ANDROID)
-  // TODO(danakj): Move these to the android code.
   settings.max_partial_texture_updates = 0;
   settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
   settings.solid_color_scrollbar_color =

@@ -425,7 +425,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetDrawCheckerboardForMissingTiles(bool checkerboard) {
     draw_checkerboard_for_missing_tiles_ = checkerboard;
   }
-  bool DrawCheckerboardForMissingTiles() const;
+  bool draw_checkerboard_for_missing_tiles() const {
+    return draw_checkerboard_for_missing_tiles_;
+  }
 
   InputHandler::ScrollStatus TryScroll(
       const gfx::PointF& screen_space_point,

@@ -298,7 +298,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
 
   void SetDrawCheckerboardForMissingTiles(bool checkerboard);
-  bool DrawCheckerboardForMissingTiles() const {
+  bool draw_checkerboard_for_missing_tiles() const {
     return draw_checkerboard_for_missing_tiles_;
   }
 

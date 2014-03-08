@@ -564,8 +564,10 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetDoubleSided(false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTouchEventHandlerRegion(
       gfx::Rect(10, 10)));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetDrawCheckerboardForMissingTiles(
-      !test_layer->DrawCheckerboardForMissingTiles()));
+  EXPECT_SET_NEEDS_COMMIT(
+      1,
+      test_layer->SetDrawCheckerboardForMissingTiles(
+          !test_layer->draw_checkerboard_for_missing_tiles()));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurface(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
 

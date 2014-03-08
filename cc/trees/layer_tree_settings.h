@@ -26,7 +26,6 @@ class CC_EXPORT LayerTreeSettings {
   bool per_tile_painting_enabled;
   bool partial_swap_enabled;
   bool accelerated_animation_enabled;
-  bool background_color_instead_of_checkerboard;
   bool show_overdraw_in_tracing;
   bool can_use_lcd_text;
   bool should_clear_root_render_pass;

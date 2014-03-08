@@ -9,11 +9,6 @@
 namespace cc {
 namespace switches {
 
-// On platforms where checkerboards are used, prefer background colors instead
-// of checkerboards.
-const char kBackgroundColorInsteadOfCheckerboard[] =
-    "background-color-instead-of-checkerboard";
-
 // Disables LCD text.
 const char kDisableLCDText[] = "disable-lcd-text";
 

@@ -16,7 +16,6 @@ namespace cc {
 namespace switches {
 
 // Switches for the renderer compositor only.
-CC_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
 CC_EXPORT extern const char kDisableLCDText[];
 CC_EXPORT extern const char kDisableGPURasterization[];
 CC_EXPORT extern const char kDisableImplSidePainting[];

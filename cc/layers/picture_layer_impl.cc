@@ -222,7 +222,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::Rect visible_geometry_rect = geometry_rect;
     if (!*iter || !iter->IsReadyToDraw()) {
-      if (DrawCheckerboardForMissingTiles()) {
+      if (draw_checkerboard_for_missing_tiles()) {
         // TODO(enne): Figure out how to show debug "invalidated checker" color
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
         SkColor color = DebugColors::DefaultCheckerboardColor();
