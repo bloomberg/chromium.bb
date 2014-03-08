@@ -3,15 +3,15 @@
 # found in the LICENSE file.
 
 """A utility to run functions with timeouts and retries."""
+# pylint: disable=W0702
 
-import functools
 import threading
 
-import reraiser_thread
-import watchdog_timer
+from pylib.utils import reraiser_thread
+from pylib.utils import watchdog_timer
 
 
-def Run(func, timeout, retries, args=[], kwargs={}):
+def Run(func, timeout, retries, args=None, kwargs=None):
   """Runs the passed function in a separate thread with timeouts and retries.
 
   Args:
@@ -24,6 +24,11 @@ def Run(func, timeout, retries, args=[], kwargs={}):
   Returns:
     The return value of func(*args, **kwargs).
   """
+  if not args:
+    args = []
+  if not kwargs:
+    kwargs = {}
+
   # The return value uses a list because Python variables are references, not
   # values. Closures make a copy of the reference, so updating the closure's
   # reference wouldn't update where the original reference pointed.

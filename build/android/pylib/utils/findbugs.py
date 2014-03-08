@@ -62,7 +62,7 @@ def _DiffKnownWarnings(current_warnings_set, known_bugs_file):
 def _Rebaseline(current_warnings_set, known_bugs_file):
   with file(known_bugs_file, 'w') as known_bugs:
     for warning in sorted(current_warnings_set):
-      print >>known_bugs, warning
+      print >> known_bugs, warning
   return 0
 
 
@@ -142,7 +142,7 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
 
   proc = subprocess.Popen(shlex.split(cmd),
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  out, err = proc.communicate()
+  out, _err = proc.communicate()
   current_warnings_set = set(_StripLineNumbers(filter(None, out.splitlines())))
 
   if rebaseline:
@@ -230,7 +230,7 @@ def GetCommonParser():
   return parser
 
 
-def main(argv):
+def main():
   parser = GetCommonParser()
   options, _ = parser.parse_args()
 
@@ -238,4 +238,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
