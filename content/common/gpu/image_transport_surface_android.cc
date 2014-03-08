@@ -92,8 +92,11 @@ bool ImageTransportSurfaceAndroid::Initialize() {
 
   GpuChannel* parent_channel =
       GetHelper()->manager()->LookupChannel(parent_client_id_);
-  if (parent_channel)
-    GetHelper()->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
+  if (parent_channel) {
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
+      GetHelper()->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
+  }
 
   return true;
 }

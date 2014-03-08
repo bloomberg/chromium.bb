@@ -1105,6 +1105,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #if defined(OS_CHROMEOS)
     chromeos::switches::kGpuSandboxFailuresNonfatal,
 #endif
+#if defined(USE_AURA)
+    switches::kUIPrioritizeInGpuProcess,
+#endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
 #endif
