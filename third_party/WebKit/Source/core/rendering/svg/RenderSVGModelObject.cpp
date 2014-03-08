@@ -75,7 +75,7 @@ const RenderObject* RenderSVGModelObject::pushMappingToContainer(const RenderLay
 LayoutRect RenderSVGModelObject::outlineBoundsForRepaint(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap*) const
 {
     LayoutRect box = enclosingLayoutRect(repaintRectInLocalCoordinates());
-    adjustRectForOutlineAndShadow(box);
+    adjustRectForOutline(box);
 
     FloatQuad containerRelativeQuad = localToContainerQuad(FloatRect(box), repaintContainer);
     return containerRelativeQuad.enclosingBoundingBox();

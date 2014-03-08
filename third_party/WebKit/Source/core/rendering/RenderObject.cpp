@@ -3097,15 +3097,9 @@ int RenderObject::nextOffset(int current) const
     return current + 1;
 }
 
-void RenderObject::adjustRectForOutlineAndShadow(LayoutRect& rect) const
+void RenderObject::adjustRectForOutline(LayoutRect& rect) const
 {
-    int outlineSize = outlineStyleForRepaint()->outlineSize();
-    if (const ShadowList* boxShadow = style()->boxShadow()) {
-        boxShadow->adjustRectForShadow(rect, outlineSize);
-        return;
-    }
-
-    rect.inflate(outlineSize);
+    rect.inflate(outlineStyleForRepaint()->outlineSize());
 }
 
 bool RenderObject::isInert() const

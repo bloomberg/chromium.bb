@@ -4,8 +4,10 @@ Tests the repainting of box shadows when boxes are resized.
   (rect 28 72 30 70)
   (rect 28 72 30 50)
   (rect 18 127 55 20)
+  (rect 18 122 50 5)
   (rect 28 192 30 30)
   (rect 28 192 30 50)
   (rect 18 227 55 20)
+  (rect 18 222 50 5)
 )
 
