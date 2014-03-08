@@ -60,7 +60,7 @@ String TextEncoding::decode(const char* data, size_t length, bool stopOnError, b
     if (!m_name)
         return String();
 
-    return newTextCodec(*this)->decode(data, length, true, stopOnError, sawError);
+    return newTextCodec(*this)->decode(data, length, DataEOF, stopOnError, sawError);
 }
 
 CString TextEncoding::encode(const String& string, UnencodableHandling handling) const

@@ -7,21 +7,30 @@ description("Edge cases around non-fatal errors at EOF");
 shouldThrow("new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xff]))");
 
 debug("");
-debug("Should not throw or hang:");
-evalAndLog("new TextDecoder('utf-8').decode(new Uint8Array([0xff]))");
+shouldBe("new TextDecoder('utf-8').decode(new Uint8Array([0xff]))", "'\uFFFD'");
 
 debug("");
 shouldThrow("new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00]))");
 
 debug("");
-debug("Should not throw or hang:");
-evalAndLog("new TextDecoder('utf-16le').decode(new Uint8Array([0x00]))");
+shouldBe("new TextDecoder('utf-16le').decode(new Uint8Array([0x00]))", "'\uFFFD'");
 
 debug("");
 shouldThrow("new TextDecoder('utf-16be', {fatal: true}).decode(new Uint8Array([0x00]))");
 
 debug("");
-debug("Should not throw or hang:");
-evalAndLog("new TextDecoder('utf-16be').decode(new Uint8Array([0x00]));");
+shouldBe("new TextDecoder('utf-16be').decode(new Uint8Array([0x00]))", "'\uFFFD'");
+
+debug("");
+debug("Streaming cases:");
+evalAndLog("decoder = new TextDecoder('utf-16le', {fatal: true})");
+evalAndLog("odd = new Uint8Array([0x00])");
+evalAndLog("even = new Uint8Array([0x00, 0x00])");
+
+debug("");
+shouldNotThrow("decoder.decode(odd, {stream: true}); decoder.decode(odd)");
+shouldThrow("decoder.decode(even, {stream: true}); decoder.decode(odd)");
+shouldThrow("decoder.decode(odd, {stream: true}); decoder.decode(even)");
+shouldNotThrow("decoder.decode(even, {stream: true}); decoder.decode(even)");
 
 </script>

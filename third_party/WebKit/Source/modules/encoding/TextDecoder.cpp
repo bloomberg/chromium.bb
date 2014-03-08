@@ -85,10 +85,7 @@ String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, Ex
     const char* start = input ? static_cast<const char*>(input->baseAddress()) : 0;
     size_t length = input ? input->byteLength() : 0;
 
-    bool flush = !stream;
-
-    // FIXME: Not all TextCodec implementations handle |flush| - notably TextCodecUTF16
-    // ignores it and never flushes!
+    WTF::FlushBehavior flush = stream ? WTF::DoNotFlush : WTF::DataEOF;
 
     bool sawError = false;
     String s = m_codec->decode(start, length, flush, m_fatal, sawError);

@@ -337,7 +337,7 @@ private:
     UConverterToUCallback m_savedAction;
 };
 
-String TextCodecICU::decode(const char* bytes, size_t length, bool flush, bool stopOnError, bool& sawError)
+String TextCodecICU::decode(const char* bytes, size_t length, FlushBehavior flush, bool stopOnError, bool& sawError)
 {
     // Get a converter for the passed-in encoding.
     if (!m_converterICU) {
@@ -361,7 +361,7 @@ String TextCodecICU::decode(const char* bytes, size_t length, bool flush, bool s
     UErrorCode err = U_ZERO_ERROR;
 
     do {
-        int ucharsDecoded = decodeToBuffer(buffer, bufferLimit, source, sourceLimit, offsets, flush, err);
+        int ucharsDecoded = decodeToBuffer(buffer, bufferLimit, source, sourceLimit, offsets, flush != DoNotFlush, err);
         result.append(buffer, ucharsDecoded);
     } while (err == U_BUFFER_OVERFLOW_ERROR);
 

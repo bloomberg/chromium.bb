@@ -1,14 +1,3 @@
-function hex(number)
-{
-    var hexDigit = "0123456789ABCDEF";
-    var hex = hexDigit.substr(number & 0xf, 1);
-    while (number > 15) {
-        number >>= 4;
-        hex = hexDigit.substr(number & 15, 1) + hex;
-    }
-    return hex;
-}
-
 function decodeText(charsetName, characterSequence)
 {
     var req = new XMLHttpRequest;
@@ -23,10 +12,10 @@ function decode(charsetName, characterSequence)
     var decodedText = decodeText(charsetName, characterSequence);
     var result = "";
     for (var i = 0; i < decodedText.length; ++i) {
-        var code = hex(decodedText.charCodeAt(i));
+        var code = decodedText.charCodeAt(i).toString(16).toUpperCase();
         if (i)
             result += "/";
-        result += "U+" + ("0000" + code).substr(code.length, 4);
+        result += "U+" + ("0000" + code).slice(-4);
     }
     return result;
 }
@@ -43,4 +32,3 @@ function batchTestDecode(inputData)
             testDecode(inputData.encodings[i], inputData.encoded[j], inputData.unicode[j]);
     }
 }
-

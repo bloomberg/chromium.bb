@@ -30,6 +30,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
 
@@ -66,18 +67,26 @@ void TextCodecUTF16::registerCodecs(TextCodecRegistrar registrar)
     registrar("UTF-16BE", newStreamingTextDecoderUTF16BE, 0);
 }
 
-String TextCodecUTF16::decode(const char* bytes, size_t length, bool, bool, bool&)
+String TextCodecUTF16::decode(const char* bytes, size_t length, FlushBehavior flush, bool, bool& sawError)
 {
-    if (!length)
-        return String();
+    // For compatibility reasons, ignore flush from fetch EOF.
+    const bool reallyFlush = flush != DoNotFlush && flush != FetchEOF;
+
+    if (!length) {
+        if (!reallyFlush || !m_haveBufferedByte)
+            return String();
+        sawError = true;
+        return String(&Unicode::replacementCharacter, 1);
+    }
 
     // FIXME: This should generate an error if there is an unpaired surrogate.
 
     const unsigned char* p = reinterpret_cast<const unsigned char*>(bytes);
     size_t numBytes = length + m_haveBufferedByte;
-    size_t numChars = numBytes / 2;
+    size_t numCharsIn = numBytes / 2;
+    size_t numCharsOut = ((numBytes & 1) && reallyFlush) ? numCharsIn + 1 : numCharsIn;
 
-    StringBuffer<UChar> buffer(numChars);
+    StringBuffer<UChar> buffer(numCharsOut);
     UChar* q = buffer.characters();
 
     if (m_haveBufferedByte) {
@@ -89,17 +98,17 @@ String TextCodecUTF16::decode(const char* bytes, size_t length, bool, bool, bool
         *q++ = c;
         m_haveBufferedByte = false;
         p += 1;
-        numChars -= 1;
+        numCharsIn -= 1;
     }
 
     if (m_littleEndian) {
-        for (size_t i = 0; i < numChars; ++i) {
+        for (size_t i = 0; i < numCharsIn; ++i) {
             UChar c = p[0] | (p[1] << 8);
             p += 2;
             *q++ = c;
         }
     } else {
-        for (size_t i = 0; i < numChars; ++i) {
+        for (size_t i = 0; i < numCharsIn; ++i) {
             UChar c = (p[0] << 8) | p[1];
             p += 2;
             *q++ = c;
@@ -108,8 +117,14 @@ String TextCodecUTF16::decode(const char* bytes, size_t length, bool, bool, bool
 
     if (numBytes & 1) {
         ASSERT(!m_haveBufferedByte);
-        m_haveBufferedByte = true;
-        m_bufferedByte = p[0];
+
+        if (reallyFlush) {
+            sawError = true;
+            *q++ = Unicode::replacementCharacter;
+        } else {
+            m_haveBufferedByte = true;
+            m_bufferedByte = p[0];
+        }
     }
 
     buffer.shrink(q - buffer.characters());

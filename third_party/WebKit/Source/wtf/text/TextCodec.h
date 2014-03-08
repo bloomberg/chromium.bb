@@ -56,19 +56,35 @@ enum UnencodableHandling {
 
 typedef char UnencodableReplacementArray[32];
 
+enum FlushBehavior {
+    // More bytes are coming, don't flush the codec.
+    DoNotFlush = 0,
+
+    // A fetch has hit EOF. Some codecs handle fetches differently, for compat reasons.
+    FetchEOF,
+
+    // Do a full flush of the codec.
+    DataEOF
+};
+
+COMPILE_ASSERT(!DoNotFlush, DoNotFlush_is_falsy);
+COMPILE_ASSERT(FetchEOF, FetchEOF_is_truthy);
+COMPILE_ASSERT(DataEOF, DataEOF_is_truthy);
+
+
 class TextCodec {
     WTF_MAKE_NONCOPYABLE(TextCodec); WTF_MAKE_FAST_ALLOCATED;
 public:
     TextCodec() { }
     virtual ~TextCodec();
 
-    String decode(const char* str, size_t length, bool flush = false)
+    String decode(const char* str, size_t length, FlushBehavior flush = DoNotFlush)
     {
         bool ignored;
         return decode(str, length, flush, false, ignored);
     }
 
-    virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError) = 0;
+    virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) = 0;
     virtual CString encode(const UChar*, size_t length, UnencodableHandling) = 0;
     virtual CString encode(const LChar*, size_t length, UnencodableHandling) = 0;
 

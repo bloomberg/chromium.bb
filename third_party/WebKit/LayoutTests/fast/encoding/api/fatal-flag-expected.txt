@@ -12,7 +12,7 @@ PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0xC0])
 PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0x80, 0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
 PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xE0, 0x80, 0xC0])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
 PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xFC, 0x80, 0x80, 0x80, 0x80, 0x80])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
-FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00])) should throw an exception. Was .
+PASS new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
 FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xd8])) should throw an exception. Was í €.
 FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xd8, 0x00, 0x00])) should throw an exception. Was í €\0.
 FAIL new TextDecoder('utf-16le', {fatal: true}).decode(new Uint8Array([0x00, 0xdc, 0x00, 0x00])) should throw an exception. Was í°€\0.

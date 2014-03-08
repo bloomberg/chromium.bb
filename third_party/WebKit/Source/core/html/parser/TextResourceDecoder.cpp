@@ -406,7 +406,7 @@ String TextResourceDecoder::decode(const char* data, size_t len)
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);
 
-    String result = m_codec->decode(dataForDecode, lengthForDecode, false, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
+    String result = m_codec->decode(dataForDecode, lengthForDecode, DoNotFlush, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
 
     m_buffer.clear();
     return result;
@@ -427,7 +427,7 @@ String TextResourceDecoder::flush()
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);
 
-    String result = m_codec->decode(m_buffer.data(), m_buffer.size(), true, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
+    String result = m_codec->decode(m_buffer.data(), m_buffer.size(), FetchEOF, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
     m_buffer.clear();
     m_codec.clear();
     m_checkedForBOM = false; // Skip BOM again when re-decoding.

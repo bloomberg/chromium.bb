@@ -49,7 +49,7 @@ void TextCodecUserDefined::registerCodecs(TextCodecRegistrar registrar)
     registrar("x-user-defined", newStreamingTextDecoderUserDefined, 0);
 }
 
-String TextCodecUserDefined::decode(const char* bytes, size_t length, bool, bool, bool&)
+String TextCodecUserDefined::decode(const char* bytes, size_t length, FlushBehavior, bool, bool&)
 {
     StringBuilder result;
     result.reserveCapacity(length);

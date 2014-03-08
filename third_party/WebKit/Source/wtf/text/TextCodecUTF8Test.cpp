@@ -52,7 +52,7 @@ TEST(TextCodecUTF8, DecodeAscii)
     size_t testCaseSize = sizeof(testCase) - 1;
 
     bool sawError = false;
-    const String& result = codec->decode(testCase, testCaseSize, true, false, sawError);
+    const String& result = codec->decode(testCase, testCaseSize, DataEOF, false, sawError);
     EXPECT_FALSE(sawError);
     ASSERT_EQ(testCaseSize, result.length());
     for (size_t i = 0; i < testCaseSize; ++i) {
@@ -70,7 +70,7 @@ TEST(TextCodecUTF8, DecodeChineseCharacters)
     size_t testCaseSize = sizeof(testCase) - 1;
 
     bool sawError = false;
-    const String& result = codec->decode(testCase, testCaseSize, true, false, sawError);
+    const String& result = codec->decode(testCase, testCaseSize, DataEOF, false, sawError);
     EXPECT_FALSE(sawError);
     ASSERT_EQ(2u, result.length());
     EXPECT_EQ(0x6f22U, result[0]);
@@ -83,7 +83,7 @@ TEST(TextCodecUTF8, Decode0xFF)
     OwnPtr<TextCodec> codec(newTextCodec(encoding));
 
     bool sawError = false;
-    const String& result = codec->decode("\xff", 1, true, false, sawError);
+    const String& result = codec->decode("\xff", 1, DataEOF, false, sawError);
     EXPECT_TRUE(sawError);
     ASSERT_EQ(1u, result.length());
     EXPECT_EQ(0xFFFDU, result[0]);

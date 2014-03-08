@@ -265,7 +265,7 @@ bool TextCodecUTF8::handlePartialSequence<UChar>(UChar*& destination, const uint
     return false;
 }
 
-String TextCodecUTF8::decode(const char* bytes, size_t length, bool flush, bool stopOnError, bool& sawError)
+String TextCodecUTF8::decode(const char* bytes, size_t length, FlushBehavior flush, bool stopOnError, bool& sawError)
 {
     // Each input byte might turn into a character.
     // That includes all bytes in the partial-sequence buffer because
