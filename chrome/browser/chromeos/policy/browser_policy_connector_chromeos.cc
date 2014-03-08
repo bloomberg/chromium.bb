@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -126,21 +125,18 @@ void BrowserPolicyConnectorChromeOS::Init(
         local_state, device_management_service(), status_provider.Pass());
   }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(chromeos::switches::kDisableLocalAccounts)) {
-    device_local_account_policy_service_.reset(
-        new DeviceLocalAccountPolicyService(
-            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-            chromeos::DeviceSettingsService::Get(),
-            chromeos::CrosSettings::Get(),
-            GetBackgroundTaskRunner(),
-            GetBackgroundTaskRunner(),
-            GetBackgroundTaskRunner(),
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::IO),
-            request_context));
-    device_local_account_policy_service_->Connect(device_management_service());
-  }
+  device_local_account_policy_service_.reset(
+      new DeviceLocalAccountPolicyService(
+          chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+          chromeos::DeviceSettingsService::Get(),
+          chromeos::CrosSettings::Get(),
+          GetBackgroundTaskRunner(),
+          GetBackgroundTaskRunner(),
+          GetBackgroundTaskRunner(),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO),
+          request_context));
+  device_local_account_policy_service_->Connect(device_management_service());
 
   // request_context is NULL in unit tests.
   if (request_context && install_attributes_) {
