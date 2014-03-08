@@ -44,7 +44,6 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
       num_lock_mask_(0),
-      pressed_modifiers_(0),
       xkb_event_base_(0) {
   input_method::XKeyboard* xkeyboard =
       input_method::InputMethodManager::Get()->GetXKeyboard();
@@ -87,18 +86,9 @@ void SystemKeyEventListener::AddCapsLockObserver(CapsLockObserver* observer) {
   caps_lock_observers_.AddObserver(observer);
 }
 
-void SystemKeyEventListener::AddModifiersObserver(ModifiersObserver* observer) {
-  modifiers_observers_.AddObserver(observer);
-}
-
 void SystemKeyEventListener::RemoveCapsLockObserver(
     CapsLockObserver* observer) {
   caps_lock_observers_.RemoveObserver(observer);
-}
-
-void SystemKeyEventListener::RemoveModifiersObserver(
-    ModifiersObserver* observer) {
-  modifiers_observers_.RemoveObserver(observer);
 }
 
 base::EventStatus SystemKeyEventListener::WillProcessEvent(
@@ -113,12 +103,6 @@ void SystemKeyEventListener::OnCapsLock(bool enabled) {
   FOR_EACH_OBSERVER(CapsLockObserver,
                     caps_lock_observers_,
                     OnCapsLockChange(enabled));
-}
-
-void SystemKeyEventListener::OnModifiers(int state) {
-  FOR_EACH_OBSERVER(ModifiersObserver,
-                    modifiers_observers_,
-                    OnModifiersChange(state));
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
@@ -140,17 +124,6 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
         input_method_manager->GetXKeyboard()->SetLockedModifiers(
             input_method::kDontChange  /* caps lock */,
             input_method::kDisableLock  /* num lock */);
-      }
-      int current_modifiers = 0;
-      if (xkey_event->state.mods & ShiftMask)
-        current_modifiers |= ModifiersObserver::SHIFT_PRESSED;
-      if (xkey_event->state.mods & ControlMask)
-        current_modifiers |= ModifiersObserver::CTRL_PRESSED;
-      if (xkey_event->state.mods & Mod1Mask)
-        current_modifiers |= ModifiersObserver::ALT_PRESSED;
-      if (current_modifiers != pressed_modifiers_) {
-        pressed_modifiers_ = current_modifiers;
-        OnModifiers(pressed_modifiers_);
       }
       return true;
     }
