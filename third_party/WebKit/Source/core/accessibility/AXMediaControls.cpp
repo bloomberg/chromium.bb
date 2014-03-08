@@ -259,7 +259,7 @@ PassRefPtr<AXObject> AccessibilityMediaTimeline::create(RenderObject* renderer)
 String AccessibilityMediaTimeline::valueDescription() const
 {
     Node* node = m_renderer->node();
-    if (!node->hasTagName(inputTag))
+    if (!isHTMLInputElement(node))
         return String();
 
     return localizedMediaTimeDescription(toHTMLInputElement(node)->value().toFloat());

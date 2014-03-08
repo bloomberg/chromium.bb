@@ -167,7 +167,7 @@ AXObject* AXObjectCache::focusedUIElementForPage(const Page* page)
     if (!focusedNode)
         focusedNode = focusedDocument;
 
-    if (focusedNode->hasTagName(areaTag))
+    if (isHTMLAreaElement(*focusedNode))
         return focusedImageMapUIElement(toHTMLAreaElement(focusedNode));
 
     AXObject* obj = focusedNode->document().axObjectCache()->getOrCreate(focusedNode);

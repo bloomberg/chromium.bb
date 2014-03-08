@@ -106,7 +106,7 @@ bool AXTable::isDataTable() const
 
     RenderTable* table = toRenderTable(m_renderer);
     Node* tableNode = table->node();
-    if (!tableNode || !tableNode->hasTagName(tableTag))
+    if (!isHTMLTableElement(tableNode))
         return false;
 
     // if there is a caption element, summary, THEAD, or TFOOT section, it's most certainly a data table
@@ -535,7 +535,7 @@ String AXTable::title() const
 
     // see if there is a caption
     Node* tableElement = m_renderer->node();
-    if (tableElement && tableElement->hasTagName(tableTag)) {
+    if (isHTMLTableElement(tableElement)) {
         HTMLTableCaptionElement* caption = toHTMLTableElement(tableElement)->caption();
         if (caption)
             title = caption->innerText();

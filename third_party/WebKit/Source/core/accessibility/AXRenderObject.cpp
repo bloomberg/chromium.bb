@@ -310,16 +310,16 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (cssBox && cssBox->isTextArea())
         return TextAreaRole;
 
-    if (node && node->hasTagName(inputTag)) {
-        HTMLInputElement* input = toHTMLInputElement(node);
-        if (input->isCheckbox())
+    if (isHTMLInputElement(node)) {
+        HTMLInputElement& input = toHTMLInputElement(*node);
+        if (input.isCheckbox())
             return CheckBoxRole;
-        if (input->isRadioButton())
+        if (input.isRadioButton())
             return RadioButtonRole;
-        if (input->isTextButton())
+        if (input.isTextButton())
             return buttonRoleType();
 
-        const AtomicString& type = input->getAttribute(typeAttr);
+        const AtomicString& type = input.getAttribute(typeAttr);
         if (equalIgnoringCase(type, "color"))
             return ColorWellRole;
     }
@@ -446,9 +446,9 @@ bool AXRenderObject::isAttachment() const
 
 bool AXRenderObject::isFileUploadButton() const
 {
-    if (m_renderer && m_renderer->node() && m_renderer->node()->hasTagName(inputTag)) {
-        HTMLInputElement* input = toHTMLInputElement(m_renderer->node());
-        return input->isFileUpload();
+    if (m_renderer && isHTMLInputElement(m_renderer->node())) {
+        HTMLInputElement& input = toHTMLInputElement(*m_renderer->node());
+        return input.isFileUpload();
     }
 
     return false;
@@ -470,10 +470,10 @@ bool AXRenderObject::isLinked() const
         return false;
 
     Element* anchor = anchorElement();
-    if (!anchor || !anchor->hasTagName(aTag))
+    if (!isHTMLAnchorElement(anchor))
         return false;
 
-    return !toHTMLAnchorElement(anchor)->href().isEmpty();
+    return !toHTMLAnchorElement(*anchor).href().isEmpty();
 }
 
 bool AXRenderObject::isLoaded() const
@@ -808,7 +808,7 @@ int AXRenderObject::textLength() const
 
 KURL AXRenderObject::url() const
 {
-    if (isAnchor() && m_renderer->node()->hasTagName(aTag)) {
+    if (isAnchor() && isHTMLAnchorElement(m_renderer->node())) {
         if (HTMLAnchorElement* anchor = toHTMLAnchorElement(anchorElement()))
             return anchor->href();
     }
@@ -816,8 +816,8 @@ KURL AXRenderObject::url() const
     if (isWebArea())
         return m_renderer->document().url();
 
-    if (isImage() && m_renderer->node() && m_renderer->node()->hasTagName(imgTag))
-        return toHTMLImageElement(m_renderer->node())->src();
+    if (isImage() && isHTMLImageElement(m_renderer->node()))
+        return toHTMLImageElement(*m_renderer->node()).src();
 
     if (isInputImage())
         return toHTMLInputElement(m_renderer->node())->src();
@@ -1264,11 +1264,11 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
         return 0;
     Node* node = hitTestResult.innerNode()->deprecatedShadowAncestorNode();
 
-    if (node->hasTagName(areaTag))
+    if (isHTMLAreaElement(node))
         return accessibilityImageMapHitTest(toHTMLAreaElement(node), point);
 
-    if (node->hasTagName(optionTag))
-        node = toHTMLOptionElement(node)->ownerSelectElement();
+    if (isHTMLOptionElement(node))
+        node = toHTMLOptionElement(*node).ownerSelectElement();
 
     RenderObject* obj = node->renderer();
     if (!obj)
@@ -1596,11 +1596,10 @@ void AXRenderObject::setValue(const String& string)
         return;
 
     RenderBoxModelObject* renderer = toRenderBoxModelObject(m_renderer);
-    if (renderer->isTextField() && node()->hasTagName(inputTag)) {
-        toHTMLInputElement(node())->setValue(string);
-    } else if (renderer->isTextArea() && node()->hasTagName(textareaTag)) {
-        toHTMLTextAreaElement(node())->setValue(string);
-    }
+    if (renderer->isTextField() && isHTMLInputElement(*node()))
+        toHTMLInputElement(*node()).setValue(string);
+    else if (renderer->isTextArea() && isHTMLTextAreaElement(*node()))
+        toHTMLTextAreaElement(*node()).setValue(string);
 }
 
 // FIXME: This function should use an IntSize to avoid the conversion below.
@@ -1897,15 +1896,12 @@ bool AXRenderObject::isTabItemSelected() const
 AXObject* AXRenderObject::internalLinkElement() const
 {
     Element* element = anchorElement();
-    if (!element)
-        return 0;
-
     // Right now, we do not support ARIA links as internal link elements
-    if (!element->hasTagName(aTag))
+    if (!isHTMLAnchorElement(element))
         return 0;
-    HTMLAnchorElement* anchor = toHTMLAnchorElement(element);
+    HTMLAnchorElement& anchor = toHTMLAnchorElement(*element);
 
-    KURL linkURL = anchor->href();
+    KURL linkURL = anchor.href();
     String fragmentIdentifier = linkURL.fragmentIdentifier();
     if (fragmentIdentifier.isEmpty())
         return 0;
@@ -2136,11 +2132,11 @@ void AXRenderObject::addHiddenChildren()
 void AXRenderObject::addTextFieldChildren()
 {
     Node* node = this->node();
-    if (!node || !node->hasTagName(inputTag))
+    if (!isHTMLInputElement(node))
         return;
 
-    HTMLInputElement* input = toHTMLInputElement(node);
-    Element* spinButtonElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton());
+    HTMLInputElement& input = toHTMLInputElement(*node);
+    Element* spinButtonElement = input.userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton());
     if (!spinButtonElement || !spinButtonElement->isSpinButtonElement())
         return;
 
@@ -2162,7 +2158,7 @@ void AXRenderObject::addImageMapChildren()
 
     for (Element* current = ElementTraversal::firstWithin(*map); current; current = ElementTraversal::next(*current, map)) {
         // add an <area> element for this child if it has a link
-        if (current->hasTagName(areaTag) && current->isLink()) {
+        if (isHTMLAreaElement(*current) && current->isLink()) {
             AXImageMapLink* areaObject = toAXImageMapLink(axObjectCache()->getOrCreate(ImageMapLinkRole));
             areaObject->setHTMLAreaElement(toHTMLAreaElement(current));
             areaObject->setHTMLMapElement(map);
