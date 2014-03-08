@@ -33,8 +33,6 @@
 namespace gdb_rsp {
 
 class Packet {
-  typedef void (*StrFunc_t)(void *ctx, const char *str);
-
  public:
   Packet();
 
@@ -98,11 +96,6 @@ class Packet {
   bool GetString(std::string *str);
   bool GetHexString(std::string *str);
   bool GetStringSep(std::string *str, char sep);
-
-  // Callback with the passed in context, and a NUL terminated string.
-  // These methods provide a means to avoid an extra memcpy.
-  bool GetStringCB(void *ctx, StrFunc_t cb);
-  bool GetHexStringCB(void *ctx, StrFunc_t cb);
 
   // Return a pointer to the entire packet payload
   const char *GetPayload() const;

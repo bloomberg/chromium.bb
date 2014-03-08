@@ -171,7 +171,9 @@ void Packet::AddNumberSep(uint64_t val, char sep) {
       val >>= 8;
 
       // Supress leading zeros, so we are done when val hits zero
-      if (val == 0) break;
+      if (val == 0) {
+        break;
+      }
     }
 
     // Strip the high zero for this byte if needed
@@ -192,18 +194,24 @@ bool Packet::GetNumberSep(uint64_t *val, char *sep) {
   uint64_t out = 0;
   char ch;
 
-  if (!GetRawChar(&ch)) return false;
+  if (!GetRawChar(&ch)) {
+    return false;
+  }
 
   // Check for -1
   if (ch == '-') {
-    if (!GetRawChar(&ch)) return false;
+    if (!GetRawChar(&ch)) {
+      return false;
+    }
 
     if (ch == '1') {
       *val = -1;
 
       ch = 0;
       GetRawChar(&ch);
-      if (sep) *sep = ch;
+      if (sep) {
+        *sep = ch;
+      }
       return true;
     }
     return false;
@@ -213,14 +221,18 @@ bool Packet::GetNumberSep(uint64_t *val, char *sep) {
     int nib;
 
     // Check for separator
-    if (!NibbleToInt(ch, &nib)) break;
+    if (!NibbleToInt(ch, &nib)) {
+      break;
+    }
 
     // Add this nibble.
     out = (out << 4) + nib;
 
     // Get the next character (if availible)
     ch = 0;
-    if (!GetRawChar(&ch)) break;
+    if (!GetRawChar(&ch)) {
+      break;
+    }
   } while (1);
 
   // Set the value;
@@ -303,12 +315,20 @@ bool Packet::GetWord8(uint8_t *ch) {
   int  val1, val2;
 
   // Get two ASCII hex values
-  if (!GetRawChar(&seq1)) return false;
-  if (!GetRawChar(&seq2)) return false;
+  if (!GetRawChar(&seq1)) {
+    return false;
+  }
+  if (!GetRawChar(&seq2)) {
+    return false;
+  }
 
   // Convert them to ints
-  if (!NibbleToInt(seq1, &val1)) return false;
-  if (!NibbleToInt(seq2, &val2)) return false;
+  if (!NibbleToInt(seq1, &val1)) {
+    return false;
+  }
+  if (!NibbleToInt(seq2, &val2)) {
+    return false;
+  }
 
   *ch = (val1 << 4) + val2;
   return true;
@@ -322,7 +342,9 @@ bool Packet::GetBlock(void *ptr, uint32_t len) {
 
   for (uint32_t offs = 0; offs < len; offs++) {
     res = GetWord8(&p[offs]);
-    if (false == res) break;
+    if (false == res) {
+      break;
+    }
   }
 
   return res;
@@ -345,7 +367,9 @@ bool Packet::GetWord64(uint64_t *ptr) {
 
 
 bool Packet::GetString(string* str) {
-  if (EndOfPacket()) return false;
+  if (EndOfPacket()) {
+    return false;
+  }
 
   *str = &data_[read_index_];
   read_index_ = write_index_;
@@ -398,46 +422,6 @@ bool Packet::GetStringSep(std::string *str, char sep) {
   }
   return false;
 }
-
-bool Packet::GetStringCB(void *ctx, StrFunc_t cb) {
-  assert(NULL != ctx);
-
-  if (EndOfPacket()) {
-    cb(ctx, NULL);
-    return false;
-  }
-
-  cb(ctx, &data_[read_index_]);
-  read_index_ = write_index_;
-  return true;
-}
-
-bool Packet::GetHexStringCB(void *ctx, StrFunc_t cb) {
-  assert(NULL != ctx);
-
-  std::string out;
-  char ch;
-
-  if (EndOfPacket()) {
-    cb(ctx, NULL);
-    return false;
-  }
-
-  // Pull values until we hit a separator
-  while (GetRawChar(&ch)) {
-    if (NibbleToInt(ch, NULL)) {
-      out += ch;
-    } else {
-      read_index_--;
-      break;
-    }
-  }
-
-  // Call the CB with the availible string
-  cb(ctx, out.data());
-  return true;
-}
-
 
 const char *Packet::GetPayload() const {
   return &data_[0];
