@@ -43,19 +43,11 @@ BrowserProcessResource::BrowserProcessResource()
       default_icon_ = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
     }
   }
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX)
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
   }
-#elif defined(OS_MACOSX)
-  if (!default_icon_) {
-    // IDR_PRODUCT_LOGO_16 doesn't quite look like chrome/mac's icns icon. Load
-    // the real app icon (requires a nsimage->image_skia->nsimage
-    // conversion :-().
-    default_icon_ = new gfx::ImageSkia(gfx::ApplicationIconAtSize(16));
-  }
-#else
   // TODO(port): Port icon code.
   NOTIMPLEMENTED();
 #endif  // defined(OS_WIN)

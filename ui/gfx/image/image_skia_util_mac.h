@@ -31,10 +31,6 @@ GFX_EXPORT gfx::ImageSkia ImageSkiaFromNSImage(NSImage* image);
 GFX_EXPORT gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
                                                       NSSize size);
 
-// Resizes |[NSImage imageNamed:@NSApplicationIcon]| to have edge width of
-// |size| DIP and returns result as ImageSkia.
-GFX_EXPORT gfx::ImageSkia ApplicationIconAtSize(int size);
-
 // Converts to NSImage from ImageSkia.
 GFX_EXPORT NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia);
 

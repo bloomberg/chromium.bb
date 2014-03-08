@@ -78,12 +78,6 @@ gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
   return image_skia;
 }
 
-gfx::ImageSkia ApplicationIconAtSize(int desired_size) {
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  return ImageSkiaFromResizedNSImage(image,
-                                     NSMakeSize(desired_size, desired_size));
-}
-
 NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
   if (image_skia.isNull())
     return nil;
