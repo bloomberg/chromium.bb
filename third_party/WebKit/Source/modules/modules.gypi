@@ -189,6 +189,8 @@
       'battery/NavigatorBattery.idl',
       'crypto/WindowCrypto.idl',
       'crypto/WorkerGlobalScopeCrypto.idl',
+      'device_orientation/WindowDeviceMotion.idl',
+      'device_orientation/WindowDeviceOrientation.idl',
       'donottrack/NavigatorDoNotTrack.idl',
       'encryptedmedia/HTMLMediaElementEncryptedMedia.idl',
       'filesystem/DataTransferItemFileSystem.idl',

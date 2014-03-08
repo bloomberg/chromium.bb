@@ -267,9 +267,6 @@ enum PageshowEventPersistence {
 
         void finishedLoading();
 
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(devicemotion);
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(deviceorientation);
-
         // HTML 5 key/value storage
         Storage* sessionStorage(ExceptionState&) const;
         Storage* localStorage(ExceptionState&) const;

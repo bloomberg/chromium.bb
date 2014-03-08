@@ -178,8 +178,6 @@
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
-    [RuntimeEnabled=DeviceMotion] attribute EventHandler ondevicemotion;
-    [RuntimeEnabled=DeviceOrientation] attribute EventHandler ondeviceorientation;
     [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
     attribute EventHandler onsearch;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
