@@ -3348,6 +3348,7 @@ void HTMLMediaElement::configureMediaControls()
     if (!hasMediaControls() && !createMediaControls())
         return;
 
+    mediaControls()->reset();
     mediaControls()->show();
 }
 
