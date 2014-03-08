@@ -10,10 +10,20 @@
 
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
+
+void TestIrtInterfaceHidden(void) {
+  struct nacl_irt_dyncode interface;
+  size_t result = __nacl_irt_query(NACL_IRT_DYNCODE_v0_1,
+                                   &interface, sizeof(interface));
+  EXPECT(result == 0);
+
+  TEST_PASSED;
+}
 
 void TestDyncodeCreate(void) {
   EXPECT(nacl_dyncode_create(NULL, NULL, 0) == -1);
@@ -39,6 +49,7 @@ void TestDyncodeDelete(void) {
 }  // namespace
 
 void SetupTests() {
+  RegisterTest("TestIrtInterfaceHidden", TestIrtInterfaceHidden);
   RegisterTest("TestDyncodeCreate", TestDyncodeCreate);
   RegisterTest("TestDyncodeModify", TestDyncodeModify);
   RegisterTest("TestDyncodeDelete", TestDyncodeDelete);

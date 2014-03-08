@@ -8,10 +8,20 @@
 #include <unistd.h>
 
 #include "native_client/src/include/nacl/nacl_exception.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
+
+void TestIrtInterfaceHidden(void) {
+  struct nacl_irt_exception_handling interface;
+  size_t result = __nacl_irt_query(NACL_IRT_EXCEPTION_HANDLING_v0_1,
+                                   &interface, sizeof(interface));
+  EXPECT(result == 0);
+
+  TEST_PASSED;
+}
 
 void TestExceptionSetHandler(void) {
   int retval = nacl_exception_set_handler(NULL);
@@ -37,6 +47,7 @@ void TestExceptionClearFlag(void) {
 }  // namespace
 
 void SetupTests() {
+  RegisterTest("TestIrtInterfaceHidden", TestIrtInterfaceHidden);
   RegisterTest("TestExceptionSetHandler", TestExceptionSetHandler);
   RegisterTest("TestExceptionSetStack", TestExceptionSetStack);
   RegisterTest("TestExceptionClearFlag", TestExceptionClearFlag);
