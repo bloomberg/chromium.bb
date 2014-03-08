@@ -1,0 +1,126 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var settingIndex = 0;
+    function createAndShowSplitView(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, useDip, shouldSaveShowMode)
+    {
+        var splitView = new WebInspector.SplitView(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, useDip);
+        if (shouldSaveShowMode)
+            splitView.enableShowModeSaving();
+        splitView.element.style.position = "absolute";
+        splitView.element.style.top = "0";
+        splitView.element.style.left = "0";
+        splitView.element.style.height = "500px";
+        splitView.element.style.width = "500px";
+        splitView.markAsRoot();
+        splitView.show(document.body);
+        return splitView;
+    }
+
+    function dumpSplitViewOrientationShowModeAndSidebarSize(splitView)
+    {
+        var sidebarSize = splitView.isVertical() ? splitView.sidebarElement().offsetWidth : splitView.sidebarElement().offsetHeight;
+        var orientation = splitView.isVertical() ? "vertical" : "horizontal";
+        InspectorTest.addResult("    Sidebar size = " + sidebarSize + ", showMode = " + splitView.showMode() + ", " + orientation);
+        InspectorTest.addResult("    Setting value: " + localStorage[splitView._settingName]);
+    }
+
+    function testSplitViewSizes(useFraction, shouldSaveShowMode)
+    {
+        var secondIsSidebar = true;
+        var settingName = "splitViewStateSettingName" + (++settingIndex);
+        var defaultSidebarWidth = useFraction ? 0.23 : 101;
+        var defaultSidebarHeight = useFraction ? 0.24 : 102;
+        var newWidth = useFraction ? 125 : 201;
+        var newHeight = useFraction ? 130 : 202;
+        
+        var splitView;
+        InspectorTest.addResult("Create default split view");
+        var params = "useFraction = " + useFraction + ", shouldSaveShowMode = " + shouldSaveShowMode;
+        InspectorTest.addResult("Running split view test with the following parameters: " + params);
+
+        InspectorTest.addResult("Creating split view");
+        splitView = createAndShowSplitView(true, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, false, shouldSaveShowMode);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Hiding sidebar");
+        splitView.hideSidebar();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Showing sidebar");
+        splitView.showBoth();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Resizing");
+        splitView.setSidebarSize(newWidth);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Hiding sidebar");
+        splitView.hideSidebar();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Showing sidebar");
+        splitView.showBoth();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Making horizontal");
+        splitView.setVertical(false);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Resizing");
+        splitView.setSidebarSize(newHeight);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Hiding sidebar");
+        splitView.hideSidebar();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        splitView.element.remove();
+
+        InspectorTest.addResult("Recreating split view");
+        splitView = createAndShowSplitView(true, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, false, shouldSaveShowMode);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Hiding sidebar");
+        splitView.hideSidebar();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Making horizontal");
+        splitView.setVertical(false);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Showing sidebar");
+        splitView.showBoth();
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        splitView.element.remove();
+
+        InspectorTest.addResult("Recreating split view");
+        splitView = createAndShowSplitView(true, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, false, shouldSaveShowMode);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        InspectorTest.addResult("Making horizontal");
+        splitView.setVertical(false);
+        dumpSplitViewOrientationShowModeAndSidebarSize(splitView);
+
+        splitView.element.remove();
+        InspectorTest.addResult("");
+    }
+
+    // Test all combinations of useFraction and shouldSaveShowMode flags
+    testSplitViewSizes(false, false);
+    testSplitViewSizes(false, true);
+    testSplitViewSizes(true, false);
+    testSplitViewSizes(true, true);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests how split view saving to settings works.</p>
+</body>
+</html>
