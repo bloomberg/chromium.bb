@@ -104,8 +104,6 @@
         'test/test_compositor_host_ozone.cc',
         'test/test_compositor_host_win.cc',
         'test/test_compositor_host_x11.cc',
-        'test/test_context_factory.cc',
-        'test/test_context_factory.h',
         'test/test_layer_animation_delegate.cc',
         'test/test_layer_animation_delegate.h',
         'test/test_layer_animation_observer.cc',

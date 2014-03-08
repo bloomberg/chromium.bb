@@ -8,8 +8,6 @@
 
 namespace switches {
 
-const char kDisableTestCompositor[] = "disable-test-compositor";
-
 // Forces tests to produce pixel output when they normally wouldn't.
 const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
