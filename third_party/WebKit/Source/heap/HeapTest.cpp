@@ -32,7 +32,6 @@
 
 #include "heap/Handle.h"
 #include "heap/Heap.h"
-#include "heap/HeapTerminatedArrayBuilder.h"
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
@@ -976,23 +975,6 @@ public:
 
 private:
     Member<SimpleFinalizedObject> m_value;
-};
-
-class TerminatedArrayItem {
-    ALLOW_ONLY_INLINE_ALLOCATION();
-public:
-    TerminatedArrayItem(IntWrapper* payload) : m_payload(payload), m_isLast(false) { }
-
-    void trace(Visitor* visitor) { visitor->trace(m_payload); }
-
-    bool isLastInArray() const { return m_isLast; }
-    void setLastInArray(bool value) { m_isLast = value; }
-
-    IntWrapper* payload() const { return m_payload; }
-
-private:
-    Member<IntWrapper> m_payload;
-    bool m_isLast;
 };
 
 TEST(HeapTest, Transition)
@@ -2635,61 +2617,6 @@ TEST(HeapTest, RawPtrInHash)
     EXPECT_EQ(2u, set.size());
     for (HashSet<RawPtr<int> >::iterator it = set.begin(); it != set.end(); ++it)
         EXPECT_EQ(42, **it);
-}
-
-TEST(HeapTest, HeapTerminatedArray)
-{
-    HeapStats initialHeapSize;
-    clearOutOldGarbage(&initialHeapSize);
-    IntWrapper::s_destructorCalls = 0;
-
-    HeapTerminatedArray<TerminatedArrayItem>* arr = 0;
-
-    const size_t prefixSize = 4;
-    const size_t suffixSize = 4;
-
-    {
-        HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
-        builder.grow(prefixSize);
-        for (size_t i = 0; i < prefixSize; i++)
-            builder.append(TerminatedArrayItem(IntWrapper::create(i)));
-        arr = builder.release();
-    }
-
-    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-    EXPECT_EQ(prefixSize, arr->size());
-    for (size_t i = 0; i < prefixSize; i++)
-        EXPECT_EQ(i, static_cast<size_t>(arr->at(i).payload()->value()));
-
-    {
-        HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
-        builder.grow(suffixSize);
-        for (size_t i = 0; i < suffixSize; i++)
-            builder.append(TerminatedArrayItem(IntWrapper::create(prefixSize + i)));
-        arr = builder.release();
-    }
-
-    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-    EXPECT_EQ(prefixSize + suffixSize, arr->size());
-    for (size_t i = 0; i < prefixSize + suffixSize; i++)
-        EXPECT_EQ(i, static_cast<size_t>(arr->at(i).payload()->value()));
-
-    {
-        Persistent<HeapTerminatedArray<TerminatedArrayItem> > persistentArr = arr;
-        arr = 0;
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        arr = persistentArr.get();
-        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-        EXPECT_EQ(prefixSize + suffixSize, arr->size());
-        for (size_t i = 0; i < prefixSize + suffixSize; i++)
-            EXPECT_EQ(i, static_cast<size_t>(arr->at(i).payload()->value()));
-    }
-
-    arr = 0;
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(8, IntWrapper::s_destructorCalls);
 }
 
 } // WebCore namespace
