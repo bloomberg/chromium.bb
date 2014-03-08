@@ -248,7 +248,7 @@ class WinPort(base.Port):
         result = self._check_file_exists(self._path_to_crash_service(), "content_shell_crash_service.exe")
         if not result:
             _log.error("    Could not find crash service, unexpected crashes won't be symbolized.")
-            _log.error('    Did you build the target all_webkit?')
+            _log.error('    Did you build the target blink_tests?')
             _log.error('')
         return result
 
