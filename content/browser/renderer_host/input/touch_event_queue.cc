@@ -426,6 +426,9 @@ void TouchEventQueue::OnGestureScrollEvent(
   if (gesture_event.event.type != blink::WebInputEvent::GestureScrollBegin)
     return;
 
+  if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE)
+    absorbing_touch_moves_ = true;
+
   if (touch_scrolling_mode_ != TOUCH_SCROLLING_MODE_TOUCHCANCEL)
     return;
 
@@ -466,8 +469,6 @@ void TouchEventQueue::OnGestureEventAck(
   // gesture event (or even part of the current sequence).  Worst case, the
   // delay in updating the absorption state should only result in minor UI
   // glitches.
-  // TODO(rbyers): Define precise timing requirements and potentially implement
-  // mitigations for races.
   absorbing_touch_moves_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 

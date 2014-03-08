@@ -5976,15 +5976,73 @@ class LayerTreeHostImplWithTopControlsTest : public LayerTreeHostImplTest {
   virtual void SetUp() OVERRIDE {
     LayerTreeSettings settings = DefaultSettings();
     settings.calculate_top_controls_position = true;
+    settings.top_controls_height = top_controls_height_;
     CreateHostImpl(settings, CreateOutputSurface());
   }
+
+ protected:
+  static const int top_controls_height_;
 };
+
+const int LayerTreeHostImplWithTopControlsTest::top_controls_height_ = 50;
 
 TEST_F(LayerTreeHostImplWithTopControlsTest, NoIdleAnimations) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100))
       ->SetScrollOffset(gfx::Vector2d(0, 10));
   host_impl_->Animate(base::TimeTicks(), base::Time());
   EXPECT_FALSE(did_request_redraw_);
+}
+
+TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // Scroll just the top controls and verify that the scroll succeeds.
+  const float residue = 10;
+  float offset = top_controls_height_ - residue;
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // Scroll across the boundary
+  const float content_scroll = 20;
+  offset = residue + content_scroll;
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(-top_controls_height_,
+            host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF(0, content_scroll).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // Now scroll back to the top of the content
+  offset = -content_scroll;
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(-top_controls_height_,
+            host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // And scroll the top controls completely into view
+  offset = -top_controls_height_;
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // And attempt to scroll past the end
+  EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  host_impl_->ScrollEnd();
 }
 
 class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {

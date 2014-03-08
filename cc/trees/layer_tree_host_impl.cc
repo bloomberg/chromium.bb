@@ -2217,6 +2217,7 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
   gfx::Vector2dF unused_root_delta;
   bool did_scroll_x = false;
   bool did_scroll_y = false;
+  bool did_scroll_top_controls = false;
   // TODO(wjmaclean) Should we guard against CurrentlyScrollingLayer() == 0
   // here?
   bool consume_by_top_controls =
@@ -2242,8 +2243,10 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
         applied_delta = pending_delta - excess_delta;
         pending_delta = excess_delta;
         // Force updating of vertical adjust values if needed.
-        if (applied_delta.y() != 0)
+        if (applied_delta.y() != 0) {
+          did_scroll_top_controls = true;
           layer_impl->ScrollbarParametersDidChange();
+        }
       }
       // Track root layer deltas for reporting overscroll.
       unused_root_delta = pending_delta;
@@ -2307,8 +2310,8 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
       break;
   }
 
-  bool did_scroll = did_scroll_x || did_scroll_y;
-  if (did_scroll) {
+  bool did_scroll_content = did_scroll_x || did_scroll_y;
+  if (did_scroll_content) {
     client_->SetNeedsCommitOnImplThread();
     SetNeedsRedraw();
     client_->RenewTreePriority();
@@ -2330,7 +2333,7 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
     input_handler_client_->DidOverscroll(params);
   }
 
-  return did_scroll;
+  return did_scroll_content || did_scroll_top_controls;
 }
 
 // This implements scrolling by page as described here:

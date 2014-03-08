@@ -6957,6 +6957,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_OUT_OF_PROCESS_PDF_DESCRIPTION" desc="Description for the flag to enable out of process PDF.">
         Enable the out of process PDF plugin.
       </message>
+      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_NAME" desc="Title for the flag to change the touch scrolling mode.">
+        Touch scrolling mode.
+      </message>
+      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_DESCRIPTION" desc="Description for the flag to control touch scrolling mode.">
+        Change the touch event behavior while scrolling.  "touchcancel" is what chrome has historically used, and "absorb-touchmove" is the new preferred mode.
+      </message>
+      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_TOUCHCANCEL" desc="Name for the touchcancel scrolling mode">
+        touchcancel
+      </message>
+      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE" desc="Name for the absorb-touchmove scrolling mode">
+        absorb-touchmove
+      </message>
+      <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE" desc="Name for the sync-touchmove scrolling mode">
+        sync-touchmove
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

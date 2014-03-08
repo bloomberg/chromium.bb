@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
@@ -181,10 +182,14 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchstart"));
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchmove"));
-  // Note, if we ship touch-absorption (crbug.com/346693) this will change to
-  // 1 end event and 0 cancel events.
-  EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchend"));
-  EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
+  if (TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT ==
+      TouchEventQueue::TOUCH_SCROLLING_MODE_TOUCHCANCEL) {
+    EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchend"));
+    EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
+  } else {
+    EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchend"));
+    EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
+  }
 }
 
 // Verify that touching a touch-action: none region disables scrolling and

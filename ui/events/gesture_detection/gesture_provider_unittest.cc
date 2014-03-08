@@ -516,6 +516,57 @@ TEST_F(GestureProviderTest, ScrollUpdateValues) {
   EXPECT_EQ(-delta_y / 2, gesture.details.scroll_update.delta_y);
 }
 
+// Verify that fractional scroll deltas are rounded as expected and that
+// fractional scrolling doesn't break scroll snapping.
+TEST_F(GestureProviderTest, FractionalScroll) {
+  const float delta_x = 0.4f;
+  const float delta_y = 5.2f;
+
+  const base::TimeTicks event_time = TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // Skip past the touch slop and move back.
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX,
+                            kFakeCoordY + 100);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // Now move up slowly, mostly vertically but with a (fractional) bit of
+  // horizontal motion.
+  for(int i = 1; i <= 10; i++) {
+    event = ObtainMotionEvent(event_time + kFiveMilliseconds * i,
+                              MotionEvent::ACTION_MOVE,
+                              kFakeCoordX + delta_x * i,
+                              kFakeCoordY + delta_y * i);
+    EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+    ASSERT_LT(0U, GetReceivedGestureCount());
+    GestureEventData gesture = GetMostRecentGestureEvent();
+    EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, gesture.type);
+    EXPECT_EQ(event_time + kFiveMilliseconds * i, gesture.time);
+
+    // Verify that the event co-ordinates are still the precise values we
+    // supplied.
+    EXPECT_EQ(kFakeCoordX + delta_x * i, gesture.x);
+    EXPECT_EQ(kFakeCoordY + delta_y * i, gesture.y);
+
+    // Verify that we're scrolling vertically by the expected amount
+    // (modulo rounding).
+    EXPECT_GE(gesture.details.scroll_update.delta_y, (int)delta_y);
+    EXPECT_LE(gesture.details.scroll_update.delta_y, ((int)delta_y) + 1);
+
+    // And that there has been no horizontal motion at all.
+    EXPECT_EQ(0, gesture.details.scroll_update.delta_x);
+  }
+}
+
 // Generate a scroll gesture and verify that the resulting scroll begin event
 // has the expected hint values.
 TEST_F(GestureProviderTest, ScrollBeginValues) {

@@ -374,6 +374,19 @@ const Experiment::Choice kNotificationCenterTrayBehaviorChoices[] = {
     message_center::switches::kNotificationCenterTrayBehavior, "unread" }
 };
 
+const Experiment::Choice kTouchScrollingModeChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_TOUCH_SCROLLING_MODE_TOUCHCANCEL,
+    switches::kTouchScrollingMode,
+    switches::kTouchScrollingModeTouchcancel },
+  { IDS_FLAGS_TOUCH_SCROLLING_MODE_ABSORB_TOUCHMOVE,
+    switches::kTouchScrollingMode,
+    switches::kTouchScrollingModeAbsorbTouchmove },
+  { IDS_FLAGS_TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE,
+    switches::kTouchScrollingMode,
+    switches::kTouchScrollingModeSyncTouchmove },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1875,6 +1888,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppList)
   },
 #endif
+  {
+    "touch-scrolling-mode",
+    IDS_FLAGS_TOUCH_SCROLLING_MODE_NAME,
+    IDS_FLAGS_TOUCH_SCROLLING_MODE_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
+    MULTI_VALUE_TYPE(kTouchScrollingModeChoices)
+  },
 };
 
 const Experiment* experiments = kExperiments;
