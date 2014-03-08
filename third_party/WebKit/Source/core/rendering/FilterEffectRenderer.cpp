@@ -91,9 +91,11 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
 
     // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
     const RenderStyle* style = renderer->style();
-    // FIXME: The effects now contain high dpi information, but the software path doesn't (yet) scale its backing.
-    //        When the proper dpi dependant backing size is allocated, we should remove deviceScaleFactor(...) here.
+#ifdef BLINK_SCALE_FILTERS_AT_RECORD_TIME
     float invZoom = 1.0f / ((style ? style->effectiveZoom() : 1.0f) * deviceScaleFactor(renderer->frame()));
+#else
+    float invZoom = style ? 1.0f / style->effectiveZoom() : 1.0f;
+#endif
 
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {
