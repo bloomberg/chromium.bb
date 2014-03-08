@@ -43,7 +43,7 @@ bool shouldAppendLayer(const RenderLayer& layer)
     if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
         return true;
     Node* node = layer.renderer()->node();
-    if (isHTMLMediaElement(*node) && toHTMLMediaElement(node)->isFullscreen())
+    if (node && isHTMLMediaElement(*node) && toHTMLMediaElement(node)->isFullscreen())
         return false;
     return true;
 }
