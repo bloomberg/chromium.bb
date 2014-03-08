@@ -584,3 +584,13 @@ TEST(StaticWebPTests, truncatedImage)
     // Chunk size in RIFF header doesn't match the file size.
     testInvalidImage("/LayoutTests/fast/images/resources/truncated2.webp", true);
 }
+
+TEST(StaticWebPTests, notAnimated)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+    EXPECT_EQ(1u, decoder->frameCount());
+    EXPECT_EQ(cAnimationNone, decoder->repetitionCount());
+}

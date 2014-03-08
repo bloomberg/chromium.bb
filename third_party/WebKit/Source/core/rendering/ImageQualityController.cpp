@@ -137,6 +137,10 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
     if (object->style()->imageRendering() == ImageRenderingOptimizeContrast)
         return true;
 
+    // For images that are potentially animated we paint them at low quality.
+    if (image->maybeAnimated())
+        return true;
+
     // Look ourselves up in the hashtables.
     ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(object);
     LayerSizeMap* innerMap = i != m_objectLayerSizeMap.end() ? &i->value : 0;

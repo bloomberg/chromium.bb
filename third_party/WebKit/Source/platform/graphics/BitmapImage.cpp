@@ -530,6 +530,15 @@ void BitmapImage::resetAnimation()
     destroyDecodedDataIfNecessary();
 }
 
+bool BitmapImage::maybeAnimated()
+{
+    if (m_animationFinished)
+        return false;
+    if (frameCount() > 1)
+        return true;
+    return m_source.repetitionCount() != cAnimationNone;
+}
+
 void BitmapImage::advanceAnimation(Timer<BitmapImage>*)
 {
     internalAdvanceAnimation(false);

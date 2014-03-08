@@ -75,7 +75,7 @@ public:
 
     void loadImage(const char* fileName)
     {
-        RefPtr<SharedBuffer> imageData = readFile("/LayoutTests/fast/images/resources/animated-10color.gif");
+        RefPtr<SharedBuffer> imageData = readFile(fileName);
         ASSERT_TRUE(imageData.get());
 
         m_image->setData(imageData, true);
@@ -98,6 +98,11 @@ public:
         for (size_t i = 0; i < decodedFramesCount(); ++i)
             size += frameDecodedSize(i);
         return size;
+    }
+
+    void advanceAnimation()
+    {
+        m_image->advanceAnimation(0);
     }
 
 protected:
@@ -141,6 +146,16 @@ TEST_F(BitmapImageTest, destroyAllDecodedData)
     destroyDecodedData(true);
     EXPECT_EQ(-static_cast<int>(totalSize), m_imageObserver.m_lastDecodedSizeChangedDelta);
     EXPECT_EQ(0u, decodedSize());
+}
+
+TEST_F(BitmapImageTest, maybeAnimated)
+{
+    loadImage("/LayoutTests/fast/images/resources/gif-loop-count.gif");
+    for (size_t i = 0; i < frameCount(); ++i) {
+        EXPECT_TRUE(m_image->maybeAnimated());
+        advanceAnimation();
+    }
+    EXPECT_FALSE(m_image->maybeAnimated());
 }
 
 } // namespace

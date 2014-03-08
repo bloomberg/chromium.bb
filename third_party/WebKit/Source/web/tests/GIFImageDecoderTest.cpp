@@ -281,6 +281,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
 
     // Compute hashes when the file is progressively decoded.
     decoder = createDecoder();
+    EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
     for (size_t i = 1; i <= fullLength; i += increment) {
         RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), i);
         decoder->setData(data.get(), i == fullLength);
@@ -291,6 +292,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
         }
         progressiveHashes.append(hashSkBitmap(frame->getSkBitmap()));
     }
+    EXPECT_EQ(cAnimationNone, decoder->repetitionCount());
 
     bool match = true;
     for (size_t i = 0; i < truncatedHashes.size(); ++i) {
@@ -334,6 +336,7 @@ TEST(GIFImageDecoderTest, frameIsComplete)
     EXPECT_FALSE(decoder->failed());
     EXPECT_TRUE(decoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(decoder->frameIsCompleteAtIndex(1));
+    EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
 TEST(GIFImageDecoderTest, frameIsCompleteLoading)

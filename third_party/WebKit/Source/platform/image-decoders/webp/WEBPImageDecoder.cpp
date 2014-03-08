@@ -210,6 +210,8 @@ bool WEBPImageDecoder::updateDemuxer()
     if (!ImageDecoder::isSizeAvailable()) {
         m_formatFlags = WebPDemuxGetI(m_demux, WEBP_FF_FORMAT_FLAGS);
         hasAnimation = (m_formatFlags & ANIMATION_FLAG);
+        if (!hasAnimation)
+            m_repetitionCount = cAnimationNone;
         if (!setSize(WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_WIDTH), WebPDemuxGetI(m_demux, WEBP_FF_CANVAS_HEIGHT)))
             return setFailed();
     }

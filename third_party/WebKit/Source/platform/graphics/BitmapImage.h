@@ -74,6 +74,7 @@ public:
     // automatically pause once all observers no longer want to render the image anywhere.
     virtual void stopAnimation() OVERRIDE;
     virtual void resetAnimation() OVERRIDE;
+    virtual bool maybeAnimated() OVERRIDE;
 
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;

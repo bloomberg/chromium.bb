@@ -102,6 +102,9 @@ public:
     virtual void stopAnimation() {}
     virtual void resetAnimation() {}
 
+    // True if this image can potentially animate.
+    virtual bool maybeAnimated() { return false; }
+
     // Typically the ImageResource that owns us.
     ImageObserver* imageObserver() const { return m_imageObserver; }
     void setImageObserver(ImageObserver* observer) { m_imageObserver = observer; }
