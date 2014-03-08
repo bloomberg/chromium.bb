@@ -108,6 +108,7 @@ public:
         , m_commonLigaturesState(NormalLigaturesState)
         , m_discretionaryLigaturesState(NormalLigaturesState)
         , m_historicalLigaturesState(NormalLigaturesState)
+        , m_contextualLigaturesState(NormalLigaturesState)
         , m_keywordSize(0)
         , m_fontSmoothing(AutoSmoothing)
         , m_textRendering(AutoTextRendering)
@@ -147,6 +148,7 @@ public:
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_discretionaryLigaturesState); }
     LigaturesState historicalLigaturesState() const { return static_cast<LigaturesState>(m_historicalLigaturesState); }
+    LigaturesState contextualLigaturesState() const { return static_cast<LigaturesState>(m_contextualLigaturesState); }
     unsigned keywordSize() const { return m_keywordSize; }
     FontSmoothingMode fontSmoothing() const { return static_cast<FontSmoothingMode>(m_fontSmoothing); }
     TextRenderingMode textRendering() const { return static_cast<TextRenderingMode>(m_textRendering); }
@@ -184,6 +186,7 @@ public:
     void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; updateTypesettingFeatures(); }
     void setDiscretionaryLigaturesState(LigaturesState discretionaryLigaturesState) { m_discretionaryLigaturesState = discretionaryLigaturesState; }
     void setHistoricalLigaturesState(LigaturesState historicalLigaturesState) { m_historicalLigaturesState = historicalLigaturesState; }
+    void setContextualLigaturesState(LigaturesState contextualLigaturesState) { m_contextualLigaturesState = contextualLigaturesState; }
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
     void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
     void setTextRendering(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }
@@ -239,6 +242,7 @@ private:
     unsigned m_commonLigaturesState : 2;
     unsigned m_discretionaryLigaturesState : 2;
     unsigned m_historicalLigaturesState : 2;
+    unsigned m_contextualLigaturesState : 2;
 
     unsigned m_keywordSize : 4; // We cache whether or not a font is currently represented by a CSS keyword (e.g., medium).  If so,
                            // then we can accurately translate across different generic families to adjust for different preference settings
@@ -277,6 +281,7 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_commonLigaturesState == other.m_commonLigaturesState
         && m_discretionaryLigaturesState == other.m_discretionaryLigaturesState
         && m_historicalLigaturesState == other.m_historicalLigaturesState
+        && m_contextualLigaturesState == other.m_contextualLigaturesState
         && m_keywordSize == other.m_keywordSize
         && m_fontSmoothing == other.m_fontSmoothing
         && m_textRendering == other.m_textRendering

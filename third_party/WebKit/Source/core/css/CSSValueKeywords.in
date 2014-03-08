@@ -61,6 +61,8 @@ discretionary-ligatures
 no-discretionary-ligatures
 historical-ligatures
 no-historical-ligatures
+contextual
+no-contextual
 
 //
 // CSS_PROP_FONT_WEIGHT:

@@ -503,6 +503,17 @@ void HarfBuzzShaper::setFontFeatures()
     case FontDescription::NormalLigaturesState:
         break;
     }
+    static hb_feature_t noCalt = { HB_TAG('c', 'a', 'l', 't'), 0, 0, static_cast<unsigned>(-1) };
+    switch (description.contextualLigaturesState()) {
+    case FontDescription::DisabledLigaturesState:
+        m_features.append(noCalt);
+        break;
+    case FontDescription::EnabledLigaturesState:
+        // calt is on by default
+        break;
+    case FontDescription::NormalLigaturesState:
+        break;
+    }
 
     FontFeatureSettings* settings = description.featureSettings();
     if (!settings)

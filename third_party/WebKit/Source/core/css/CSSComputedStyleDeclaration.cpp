@@ -2314,8 +2314,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             FontDescription::LigaturesState commonLigaturesState = style->fontDescription().commonLigaturesState();
             FontDescription::LigaturesState discretionaryLigaturesState = style->fontDescription().discretionaryLigaturesState();
             FontDescription::LigaturesState historicalLigaturesState = style->fontDescription().historicalLigaturesState();
+            FontDescription::LigaturesState contextualLigaturesState = style->fontDescription().contextualLigaturesState();
             if (commonLigaturesState == FontDescription::NormalLigaturesState && discretionaryLigaturesState == FontDescription::NormalLigaturesState
-                && historicalLigaturesState == FontDescription::NormalLigaturesState)
+                && historicalLigaturesState == FontDescription::NormalLigaturesState && contextualLigaturesState == FontDescription::NormalLigaturesState)
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
 
             RefPtrWillBeRawPtr<CSSValueList> valueList = CSSValueList::createSpaceSeparated();
@@ -2325,6 +2326,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                 valueList->append(cssValuePool().createIdentifierValue(discretionaryLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoDiscretionaryLigatures : CSSValueDiscretionaryLigatures));
             if (historicalLigaturesState != FontDescription::NormalLigaturesState)
                 valueList->append(cssValuePool().createIdentifierValue(historicalLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoHistoricalLigatures : CSSValueHistoricalLigatures));
+            if (contextualLigaturesState != FontDescription::NormalLigaturesState)
+                valueList->append(cssValuePool().createIdentifierValue(contextualLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoContextual : CSSValueContextual));
             return valueList;
         }
         case CSSPropertyZIndex:

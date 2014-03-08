@@ -7852,6 +7852,7 @@ bool CSSPropertyParser::parseFontVariantLigatures(bool important)
     bool sawCommonLigaturesValue = false;
     bool sawDiscretionaryLigaturesValue = false;
     bool sawHistoricalLigaturesValue = false;
+    bool sawContextualLigaturesValue = false;
 
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
         if (value->unit != CSSPrimitiveValue::CSS_IDENT)
@@ -7877,6 +7878,13 @@ bool CSSPropertyParser::parseFontVariantLigatures(bool important)
             if (sawHistoricalLigaturesValue)
                 return false;
             sawHistoricalLigaturesValue = true;
+            ligatureValues->append(cssValuePool().createIdentifierValue(value->id));
+            break;
+        case CSSValueNoContextual:
+        case CSSValueContextual:
+            if (sawContextualLigaturesValue)
+                return false;
+            sawContextualLigaturesValue = true;
             ligatureValues->append(cssValuePool().createIdentifierValue(value->id));
             break;
         default:

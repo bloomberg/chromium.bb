@@ -381,6 +381,7 @@ void FontBuilder::setFontVariantLigaturesInitial()
     scope.fontDescription().setCommonLigaturesState(FontDescription::NormalLigaturesState);
     scope.fontDescription().setDiscretionaryLigaturesState(FontDescription::NormalLigaturesState);
     scope.fontDescription().setHistoricalLigaturesState(FontDescription::NormalLigaturesState);
+    scope.fontDescription().setContextualLigaturesState(FontDescription::NormalLigaturesState);
 }
 
 void FontBuilder::setFontVariantLigaturesInherit(const FontDescription& parentFontDescription)
@@ -390,6 +391,7 @@ void FontBuilder::setFontVariantLigaturesInherit(const FontDescription& parentFo
     scope.fontDescription().setCommonLigaturesState(parentFontDescription.commonLigaturesState());
     scope.fontDescription().setDiscretionaryLigaturesState(parentFontDescription.discretionaryLigaturesState());
     scope.fontDescription().setHistoricalLigaturesState(parentFontDescription.historicalLigaturesState());
+    scope.fontDescription().setContextualLigaturesState(parentFontDescription.historicalLigaturesState());
 }
 
 void FontBuilder::setFontVariantLigaturesValue(CSSValue* value)
@@ -399,6 +401,7 @@ void FontBuilder::setFontVariantLigaturesValue(CSSValue* value)
     FontDescription::LigaturesState commonLigaturesState = FontDescription::NormalLigaturesState;
     FontDescription::LigaturesState discretionaryLigaturesState = FontDescription::NormalLigaturesState;
     FontDescription::LigaturesState historicalLigaturesState = FontDescription::NormalLigaturesState;
+    FontDescription::LigaturesState contextualLigaturesState = FontDescription::NormalLigaturesState;
 
     if (value->isValueList()) {
         CSSValueList* valueList = toCSSValueList(value);
@@ -426,6 +429,12 @@ void FontBuilder::setFontVariantLigaturesValue(CSSValue* value)
                 case CSSValueHistoricalLigatures:
                     historicalLigaturesState = FontDescription::EnabledLigaturesState;
                     break;
+                case CSSValueNoContextual:
+                    contextualLigaturesState = FontDescription::DisabledLigaturesState;
+                    break;
+                case CSSValueContextual:
+                    contextualLigaturesState = FontDescription::EnabledLigaturesState;
+                    break;
                 default:
                     ASSERT_NOT_REACHED();
                     break;
@@ -443,6 +452,7 @@ void FontBuilder::setFontVariantLigaturesValue(CSSValue* value)
     scope.fontDescription().setCommonLigaturesState(commonLigaturesState);
     scope.fontDescription().setDiscretionaryLigaturesState(discretionaryLigaturesState);
     scope.fontDescription().setHistoricalLigaturesState(historicalLigaturesState);
+    scope.fontDescription().setContextualLigaturesState(contextualLigaturesState);
 }
 
 void FontBuilder::setScript(const String& locale)
