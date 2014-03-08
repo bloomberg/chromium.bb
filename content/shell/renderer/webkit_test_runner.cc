@@ -115,7 +115,7 @@ void MakeBitmapOpaque(SkBitmap* bitmap) {
 void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
   SkBaseDevice* device = skia::GetTopDevice(*canvas);
   const SkBitmap& bitmap = device->accessBitmap(false);
-  const bool success = bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config);
+  const bool success = bitmap.copyTo(snapshot, kPMColor_SkColorType);
   DCHECK(success);
 
 #if !defined(OS_MACOSX)
