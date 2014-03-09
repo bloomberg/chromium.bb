@@ -5,14 +5,16 @@
  */
 
 #include "native_client/src/public/irt_core.h"
+#include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_private.h"
 #include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/native_client/src/untrusted/pnacl_irt_shim/irt_shim_ppapi.h"
 #include "ppapi/proxy/plugin_main_irt.h"
 
-struct PP_StartFunctions g_pp_functions;
+static struct PP_StartFunctions g_pp_functions;
 
-static int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
+int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
   /* Disable NaCl's open_resource() interface on this thread. */
   g_is_main_thread = 1;
 
@@ -38,9 +40,19 @@ static const struct nacl_irt_ppapihook nacl_irt_ppapihook = {
   PpapiPluginRegisterThreadCreator,
 };
 
+static int ppapihook_pnacl_private_filter(void) {
+  int pnacl_mode = sysconf(NACL_ABI__SC_NACL_PNACL_MODE);
+  if (pnacl_mode == -1)
+    return 0;
+  return pnacl_mode;
+}
+
 static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_PPAPIHOOK_v0_1, &nacl_irt_ppapihook, sizeof(nacl_irt_ppapihook),
     NULL },
+  { NACL_IRT_PPAPIHOOK_PNACL_PRIVATE_v0_1,
+    &nacl_irt_ppapihook_pnacl_private, sizeof(nacl_irt_ppapihook_pnacl_private),
+    ppapihook_pnacl_private_filter },
 };
 
 static size_t chrome_irt_query(const char* interface_ident,

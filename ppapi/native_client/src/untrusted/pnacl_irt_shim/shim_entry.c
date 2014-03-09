@@ -28,15 +28,15 @@ void _pnacl_wrapper_start(uint32_t *info) {
 
   if (entry != NULL) {
     /*
-     * Save the real irt interface.
+     * Save the real irt interface query function.
      */
-    __pnacl_real_irt_interface = (TYPE_nacl_irt_query) entry->a_un.a_val;
+    __pnacl_real_irt_query_func = (TYPE_nacl_irt_query) entry->a_un.a_val;
 
     /*
      * Overwrite the auxv slot with the pnacl IRT shim query function.
      */
     entry->a_type = AT_SYSINFO;
-    entry->a_un.a_val = (uintptr_t) __pnacl_irt_interface_wrapper;
+    entry->a_un.a_val = (uintptr_t) __pnacl_wrap_irt_query_func;
   }
 
   /* If entry is NULL still allow startup to continue.  It may be the case
