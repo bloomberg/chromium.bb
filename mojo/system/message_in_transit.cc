@@ -175,7 +175,7 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   // table, and add to it as we go along.
   size_t size = handle_table_size;
   for (size_t i = 0; i < dispatchers_->size(); i++) {
-    if (Dispatcher* dispatcher = (*dispatchers_)[i]) {
+    if (Dispatcher* dispatcher = (*dispatchers_)[i].get()) {
       size += RoundUpMessageAlignment(
           Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
               dispatcher, channel));
@@ -195,10 +195,10 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
       static_cast<HandleTableEntry*>(secondary_buffer_);
   size_t current_offset = handle_table_size;
   for (size_t i = 0; i < dispatchers_->size(); i++) {
-    Dispatcher* dispatcher = (*dispatchers_)[i];
+    Dispatcher* dispatcher = (*dispatchers_)[i].get();
     if (!dispatcher) {
       COMPILE_ASSERT(Dispatcher::kTypeUnknown == 0,
-                     need_Dispatcher_kTypeUnknown_to_be_zero);
+                     value_of_Dispatcher_kTypeUnknown_must_be_zero);
       continue;
     }
 

@@ -197,7 +197,8 @@ WatcherID WatcherThreadManager::StartWatching(
   data.wait_flags = wait_flags;
   data.deadline = deadline;
   data.message_loop = base::MessageLoopProxy::current();
-  DCHECK_NE(static_cast<base::MessageLoopProxy*>(NULL), data.message_loop);
+  DCHECK_NE(static_cast<base::MessageLoopProxy*>(NULL),
+            data.message_loop.get());
   // We outlive |thread_|, so it's safe to use Unretained() here.
   thread_.message_loop()->PostTask(
       FROM_HERE,
