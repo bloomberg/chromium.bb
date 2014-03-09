@@ -308,13 +308,13 @@ bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
 
     // Take size from nearest viewport element.
     SVGElement* viewportElement = m_context->viewportElement();
-    if (!viewportElement || !viewportElement->isSVGSVGElement())
+    if (!isSVGSVGElement(viewportElement))
         return false;
 
-    const SVGSVGElement* svg = toSVGSVGElement(viewportElement);
-    viewportSize = svg->currentViewBoxRect().size();
+    const SVGSVGElement& svg = toSVGSVGElement(*viewportElement);
+    viewportSize = svg.currentViewBoxRect().size();
     if (viewportSize.isEmpty())
-        viewportSize = svg->currentViewportSize();
+        viewportSize = svg.currentViewportSize();
 
     return true;
 }

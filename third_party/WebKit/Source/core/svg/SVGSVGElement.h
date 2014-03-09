@@ -134,8 +134,6 @@ private:
     explicit SVGSVGElement(Document&);
     virtual ~SVGSVGElement();
 
-    virtual bool isSVGSVGElement() const OVERRIDE { return true; }
-
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;

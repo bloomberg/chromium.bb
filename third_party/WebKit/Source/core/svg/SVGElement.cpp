@@ -477,7 +477,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     }
 
     // Register root SVG elements for top level viewport change notifications.
-    if (clientElement->isSVGSVGElement()) {
+    if (isSVGSVGElement(*clientElement)) {
         SVGDocumentExtensions& svgExtensions = accessDocumentSVGExtensions();
         if (clientElement->hasRelativeLengths())
             svgExtensions.addSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
@@ -867,7 +867,7 @@ void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
         if (sendParentLoadEvents)
             parent = currentTarget->parentOrShadowHostElement(); // save the next parent to dispatch too incase dispatching the event changes the tree
         if (hasLoadListener(currentTarget.get())
-            && (currentTarget->isStructurallyExternal() || currentTarget->isSVGSVGElement()))
+            && (currentTarget->isStructurallyExternal() || isSVGSVGElement(*currentTarget)))
             currentTarget->dispatchEvent(Event::create(EventTypeNames::load));
         currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : RefPtr<SVGElement>();
         SVGElement* element = currentTarget.get();
@@ -913,7 +913,7 @@ void SVGElement::finishParsingChildren()
 
     // finishParsingChildren() is called when the close tag is reached for an element (e.g. </svg>)
     // we send SVGLoad events here if we can, otherwise they'll be sent when any required loads finish
-    if (isSVGSVGElement())
+    if (isSVGSVGElement(*this))
         sendSVGLoadEventIfPossible();
 }
 
