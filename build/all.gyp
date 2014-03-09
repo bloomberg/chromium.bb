@@ -113,11 +113,6 @@
             '../chrome/tools/profile_reset/jtl_compiler.gyp:*',
           ],
         }],
-        ['os_posix==1 and OS!="android" and OS!="ios"', {
-          'dependencies': [
-            '../third_party/yasm/yasm.gyp:*#host',
-          ],
-        }],
         ['OS=="mac" or OS=="ios" or OS=="win"', {
           'dependencies': [
             '../third_party/nss/nss.gyp:*',
