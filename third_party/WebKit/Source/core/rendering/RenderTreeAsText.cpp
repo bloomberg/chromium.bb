@@ -709,7 +709,7 @@ String externalRepresentation(LocalFrame* frame, RenderAsTextBehavior behavior)
 
     PrintContext printContext(frame);
     if (behavior & RenderAsTextPrintingMode)
-        printContext.begin(toRenderBox(renderer)->width());
+        printContext.begin(toRenderBox(renderer)->width().toFloat());
 
     return externalRepresentation(toRenderBox(renderer), behavior);
 }

@@ -334,7 +334,8 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     // Prepare a transformation that brings the coordinates into the space
     // filter coordinates are defined in.
     AffineTransform absoluteTransform;
-    absoluteTransform.translate(filterBoxRect.x(), filterBoxRect.y());
+    // FIXME: Should these really be upconverted to doubles and not rounded? crbug.com/350474
+    absoluteTransform.translate(filterBoxRect.x().toDouble(), filterBoxRect.y().toDouble());
     absoluteTransform.scale(zoom, zoom);
 
     FilterEffectRenderer* filter = renderLayer->filterRenderer();

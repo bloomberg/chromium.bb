@@ -373,7 +373,7 @@ void RenderReplaced::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, 
     // If there's an embeddedContentBox() of a remote, referenced document available, this code-path should never be used.
     ASSERT(!embeddedContentBox());
     isPercentageIntrinsicSize = false;
-    intrinsicSize = FloatSize(intrinsicLogicalWidth(), intrinsicLogicalHeight());
+    intrinsicSize = FloatSize(intrinsicLogicalWidth().toFloat(), intrinsicLogicalHeight().toFloat());
 
     // Figure out if we need to compute an intrinsic ratio.
     if (intrinsicSize.isEmpty() || !rendererHasAspectRatio(this))

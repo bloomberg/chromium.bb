@@ -255,7 +255,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     if (annotationsAdjustment) {
         // FIXME: Need to handle pagination here. We might have to move to the next page/column as a result of the
         // ruby expansion.
-        adjustBlockDirectionPosition(annotationsAdjustment);
+        adjustBlockDirectionPosition(annotationsAdjustment.toFloat());
         heightOfBlock += annotationsAdjustment;
     }
 

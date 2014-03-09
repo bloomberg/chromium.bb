@@ -507,10 +507,10 @@ float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
         RenderBlock* containingBlock = block->containingBlock();
         ASSERT(block->containingBlock());
         if (block->style()->logicalWidth().isSpecified())
-            return floatValueForLength(block->style()->logicalWidth(), containingBlock->contentLogicalWidth());
-        return containingBlock->contentLogicalWidth();
+            return floatValueForLength(block->style()->logicalWidth(), containingBlock->contentLogicalWidth().toFloat());
+        return containingBlock->contentLogicalWidth().toFloat();
     }
-    return block->contentLogicalWidth();
+    return block->contentLogicalWidth().toFloat();
 }
 
 float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
@@ -636,8 +636,8 @@ bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)
     ASSERT(m_blocksThatHaveBegunLayout.contains(cluster->m_root));
     ASSERT(m_blocksThatHaveBegunLayout.contains(parentDeepestBlockContainingAllText));
 
-    float contentWidth = cluster->m_root->contentLogicalWidth();
-    float clusterTextWidth = parentDeepestBlockContainingAllText->contentLogicalWidth();
+    float contentWidth = cluster->m_root->contentLogicalWidth().toFloat();
+    float clusterTextWidth = parentDeepestBlockContainingAllText->contentLogicalWidth().toFloat();
 
     // Clusters with a root that is wider than the deepestBlockContainingAllText of their parent
     // autosize independently of their parent.

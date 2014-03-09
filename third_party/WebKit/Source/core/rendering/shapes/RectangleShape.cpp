@@ -79,8 +79,8 @@ void RectangleShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logi
     if (bounds.isEmpty())
         return;
 
-    float y1 = logicalTop;
-    float y2 = logicalTop + logicalHeight;
+    float y1 = logicalTop.toFloat();
+    float y2 = (logicalTop + logicalHeight).toFloat();
 
     if (y2 < bounds.y() || y1 >= bounds.maxY())
         return;
@@ -114,8 +114,8 @@ void RectangleShape::getIncludedIntervals(LayoutUnit logicalTop, LayoutUnit logi
     if (bounds.isEmpty())
         return;
 
-    float y1 = logicalTop;
-    float y2 = logicalTop + logicalHeight;
+    float y1 = logicalTop.toFloat();
+    float y2 = (logicalTop + logicalHeight).toFloat();
 
     if (y1 < bounds.y() || y2 > bounds.maxY())
         return;
@@ -165,7 +165,7 @@ static FloatPoint cornerInterceptForWidth(float width, float widthAtIntercept, f
 
 bool RectangleShape::firstIncludedIntervalLogicalTop(LayoutUnit minLogicalIntervalTop, const FloatSize& minLogicalIntervalSize, LayoutUnit& result) const
 {
-    float minIntervalTop = minLogicalIntervalTop;
+    float minIntervalTop = minLogicalIntervalTop.toFloat();
     float minIntervalHeight = minLogicalIntervalSize.height();
     float minIntervalWidth = minLogicalIntervalSize.width();
 
@@ -173,7 +173,8 @@ bool RectangleShape::firstIncludedIntervalLogicalTop(LayoutUnit minLogicalInterv
     if (bounds.isEmpty() || minIntervalWidth > bounds.width())
         return false;
 
-    float minY = LayoutUnit::fromFloatCeil(std::max(bounds.y(), minIntervalTop));
+    // FIXME: Shapes should be made to use LayoutUnits to avoid broken constructs like this.
+    float minY = LayoutUnit::fromFloatCeil(std::max(bounds.y(), minIntervalTop)).toFloat();
     float maxY = minY + minIntervalHeight;
 
     if (maxY > bounds.maxY())

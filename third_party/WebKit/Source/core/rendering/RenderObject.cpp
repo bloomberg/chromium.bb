@@ -2268,7 +2268,7 @@ bool RenderObject::shouldUseTransformFromContainer(const RenderObject* container
 void RenderObject::getTransformFromContainer(const RenderObject* containerObject, const LayoutSize& offsetInContainer, TransformationMatrix& transform) const
 {
     transform.makeIdentity();
-    transform.translate(offsetInContainer.width(), offsetInContainer.height());
+    transform.translate(offsetInContainer.width().toFloat(), offsetInContainer.height().toFloat());
     RenderLayer* layer;
     if (hasLayer() && (layer = toRenderLayerModelObject(this)->layer()) && layer->transform())
         transform.multiply(layer->currentTransform());
@@ -3025,7 +3025,7 @@ void RenderObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
         return;
 
     RenderBox* box = toRenderBox(this);
-    FloatRect localBounds(FloatPoint(), FloatSize(box->width(), box->height()));
+    FloatRect localBounds(FloatPoint(), FloatSize(box->width().toFloat(), box->height().toFloat()));
     FloatRect absBounds = localToAbsoluteQuad(localBounds).boundingBox();
 
     AnnotatedRegionValue region;

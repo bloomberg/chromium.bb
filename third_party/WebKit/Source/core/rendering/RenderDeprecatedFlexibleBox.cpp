@@ -942,7 +942,7 @@ void RenderDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         const Font& font = style(numVisibleLines == 1)->font();
 
         // Get ellipsis width, and if the last child is an anchor, it will go after the ellipsis, so add in a space and the anchor width too
-        LayoutUnit totalWidth;
+        float totalWidth;
         InlineBox* anchorBox = lastLine->lastChild();
         if (anchorBox && anchorBox->renderer().style()->isLink())
             totalWidth = anchorBox->logicalWidth() + font.width(RenderBlockFlow::constructTextRun(this, font, ellipsisAndSpace, 2, style(), style()->direction()));
@@ -970,7 +970,7 @@ void RenderDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         // Let the truncation code kick in.
         // FIXME: the text alignment should be recomputed after the width changes due to truncation.
         LayoutUnit blockLeftEdge = destBlock.logicalLeftOffsetForLine(lastVisibleLine->y(), false);
-        lastVisibleLine->placeEllipsis(anchorBox ? ellipsisAndSpaceStr : ellipsisStr, leftToRight, blockLeftEdge, blockRightEdge, totalWidth, anchorBox);
+        lastVisibleLine->placeEllipsis(anchorBox ? ellipsisAndSpaceStr : ellipsisStr, leftToRight, blockLeftEdge.toFloat(), blockRightEdge.toFloat(), totalWidth, anchorBox);
         destBlock.setHasMarkupTruncation(true);
     }
 }

@@ -127,7 +127,8 @@ void RenderVTTCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched
 
     // 9. Default: Remember the position of all the boxes in boxes as their
     // default position.
-    m_fallbackPosition = FloatPoint(x(), y());
+    // FIXME: Why the direct conversion between float and LayoutUnit? crbug.com/350474
+    m_fallbackPosition = FloatPoint(location());
 
     // 10. Let switched be false.
     switched = false;

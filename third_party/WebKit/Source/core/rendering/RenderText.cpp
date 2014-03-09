@@ -365,11 +365,11 @@ void RenderText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, u
             if (useSelectionHeight) {
                 LayoutRect selectionRect = box->localSelectionRect(start, end);
                 if (box->isHorizontal()) {
-                    r.setHeight(selectionRect.height());
-                    r.setY(selectionRect.y());
+                    r.setHeight(selectionRect.height().toFloat());
+                    r.setY(selectionRect.y().toFloat());
                 } else {
-                    r.setWidth(selectionRect.width());
-                    r.setX(selectionRect.x());
+                    r.setWidth(selectionRect.width().toFloat());
+                    r.setX(selectionRect.x().toFloat());
                 }
             }
             rects.append(localToAbsoluteQuad(r, 0, wasFixed).enclosingBoundingBox());
@@ -448,11 +448,11 @@ void RenderText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start,
             if (useSelectionHeight) {
                 LayoutRect selectionRect = box->localSelectionRect(start, end);
                 if (box->isHorizontal()) {
-                    r.setHeight(selectionRect.height());
-                    r.setY(selectionRect.y());
+                    r.setHeight(selectionRect.height().toFloat());
+                    r.setY(selectionRect.y().toFloat());
                 } else {
-                    r.setWidth(selectionRect.width());
-                    r.setX(selectionRect.x());
+                    r.setWidth(selectionRect.width().toFloat());
+                    r.setX(selectionRect.x().toFloat());
                 }
             }
             quads.append(localToAbsoluteQuad(r, 0, wasFixed));
@@ -637,7 +637,7 @@ PositionWithAffinity RenderText::positionForPoint(const LayoutPoint& point)
             if (pointBlockDirection < bottom || (blocksAreFlipped && pointBlockDirection == bottom)) {
                 ShouldAffinityBeDownstream shouldAffinityBeDownstream;
                 if (lineDirectionPointFitsInBox(pointLineDirection, box, shouldAffinityBeDownstream))
-                    return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(box, box->offsetForPosition(pointLineDirection), shouldAffinityBeDownstream);
+                    return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(box, box->offsetForPosition(pointLineDirection.toFloat()), shouldAffinityBeDownstream);
             }
         }
         lastBox = box;
@@ -646,7 +646,7 @@ PositionWithAffinity RenderText::positionForPoint(const LayoutPoint& point)
     if (lastBox) {
         ShouldAffinityBeDownstream shouldAffinityBeDownstream;
         lineDirectionPointFitsInBox(pointLineDirection, lastBox, shouldAffinityBeDownstream);
-        return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(lastBox, lastBox->offsetForPosition(pointLineDirection) + lastBox->start(), shouldAffinityBeDownstream);
+        return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(lastBox, lastBox->offsetForPosition(pointLineDirection.toFloat()) + lastBox->start(), shouldAffinityBeDownstream);
     }
     return createPositionWithAffinity(0, DOWNSTREAM);
 }
@@ -689,7 +689,7 @@ LayoutRect RenderText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
     float leftEdge;
     float rightEdge;
     leftEdge = min<float>(0, rootLeft);
-    rightEdge = max<float>(cb->logicalWidth(), rootRight);
+    rightEdge = max<float>(cb->logicalWidth().toFloat(), rootRight);
 
     bool rightAligned = false;
     switch (cbStyle->textAlign()) {

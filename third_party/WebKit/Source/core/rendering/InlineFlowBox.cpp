@@ -557,7 +557,7 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
         // The verticalPositionForBox function returns the distance between the child box's baseline
         // and the root box's baseline.  The value is negative if the child box's baseline is above the
         // root box's baseline, and it is positive if the child box's baseline is below the root box's baseline.
-        curr->setLogicalTop(rootBox->verticalPositionForBox(curr, verticalPositionCache));
+        curr->setLogicalTop(rootBox->verticalPositionForBox(curr, verticalPositionCache).toFloat());
 
         int ascent = 0;
         int descent = 0;
@@ -621,16 +621,16 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             continue; // Positioned placeholders don't affect calculations.
 
         if (descendantsHaveSameLineHeightAndBaseline()) {
-            curr->adjustBlockDirectionPosition(adjustmentForChildrenWithSameLineHeightAndBaseline);
+            curr->adjustBlockDirectionPosition(adjustmentForChildrenWithSameLineHeightAndBaseline.toFloat());
             continue;
         }
 
         InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : 0;
         bool childAffectsTopBottomPos = true;
         if (curr->verticalAlign() == TOP)
-            curr->setLogicalTop(top);
+            curr->setLogicalTop(top.toFloat());
         else if (curr->verticalAlign() == BOTTOM)
-            curr->setLogicalTop(top + maxHeight - curr->lineHeight());
+            curr->setLogicalTop((top + maxHeight - curr->lineHeight()).toFloat());
         else {
             if (!strictMode && inlineFlowBox && !inlineFlowBox->hasTextChildren() && !curr->boxModelObject()->hasInlineDirectionBordersOrPadding()
                 && !(inlineFlowBox->descendantsHaveSameLineHeightAndBaseline() && inlineFlowBox->hasTextDescendants()))
@@ -662,7 +662,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             boxHeightIncludingMargins += overSideMargin + underSideMargin;
         }
 
-        curr->setLogicalTop(newLogicalTop);
+        curr->setLogicalTop(newLogicalTop.toFloat());
 
         if (childAffectsTopBottomPos) {
             if (curr->renderer().isRubyRun()) {

@@ -1463,7 +1463,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float
         return;
     }
     LayoutSize destRectSize = sizeFor(image, ImageSizeAfterDevicePixelRatio);
-    drawImage(image, x, y, destRectSize.width(), destRectSize.height(), exceptionState);
+    drawImage(image, x, y, destRectSize.width().toFloat(), destRectSize.height().toFloat(), exceptionState);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
@@ -1474,7 +1474,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
         return;
     }
     LayoutSize sourceRectSize = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
-    drawImage(image, FloatRect(0, 0, sourceRectSize.width(), sourceRectSize.height()), FloatRect(x, y, width, height), exceptionState);
+    drawImage(image, FloatRect(0, 0, sourceRectSize.width().toFloat(), sourceRectSize.height().toFloat()), FloatRect(x, y, width, height), exceptionState);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,

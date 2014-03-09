@@ -4489,12 +4489,13 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     if (isAnonymousBlockContinuation()) {
         // FIXME: This is wrong for block-flows that are horizontal.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
-        FloatRect localRect(0, -collapsedMarginBefore(),
-                            width(), height() + collapsedMarginBefore() + collapsedMarginAfter());
+        FloatRect localRect(0, -collapsedMarginBefore().toFloat(),
+            width().toFloat(), (height() + collapsedMarginBefore() + collapsedMarginAfter()).toFloat());
         quads.append(localToAbsoluteQuad(localRect, 0 /* mode */, wasFixed));
         continuation()->absoluteQuads(quads, wasFixed);
-    } else
-        quads.append(RenderBox::localToAbsoluteQuad(FloatRect(0, 0, width(), height()), 0 /* mode */, wasFixed));
+    } else {
+        quads.append(RenderBox::localToAbsoluteQuad(FloatRect(0, 0, width().toFloat(), height().toFloat()), 0 /* mode */, wasFixed));
+    }
 }
 
 LayoutRect RenderBlock::rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const
@@ -4561,10 +4562,10 @@ LayoutRect RenderBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, La
 
             LayoutUnit myRight = caretRect.maxX();
             // FIXME: why call localToAbsoluteForContent() twice here, too?
-            FloatPoint absRightPoint = localToAbsolute(FloatPoint(myRight, 0));
+            FloatPoint absRightPoint = localToAbsolute(FloatPoint(myRight.toFloat(), 0));
 
             LayoutUnit containerRight = containingBlock()->x() + containingBlockLogicalWidthForContent();
-            FloatPoint absContainerPoint = localToAbsolute(FloatPoint(containerRight, 0));
+            FloatPoint absContainerPoint = localToAbsolute(FloatPoint(containerRight.toFloat(), 0));
 
             *extraWidthToEndOfLine = absContainerPoint.x() - absRightPoint.x();
         }
@@ -4585,8 +4586,8 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
         // FIXME: This is wrong for block-flows that are horizontal.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
         bool prevInlineHasLineBox = toRenderInline(inlineElementContinuation()->node()->renderer())->firstLineBox();
-        float topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
-        float bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
+        LayoutUnit topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
+        LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
         LayoutRect rect(additionalOffset.x(), additionalOffset.y() - topMargin, width(), height() + topMargin + bottomMargin);
         if (!rect.isEmpty())
             rects.append(pixelSnappedIntRect(rect));
@@ -4610,7 +4611,7 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
                 if (box->layer())
                     pos = curr->localToContainerPoint(FloatPoint(), paintContainer);
                 else
-                    pos = FloatPoint(additionalOffset.x() + box->x(), additionalOffset.y() + box->y());
+                    pos = FloatPoint((additionalOffset.x() + box->x()).toFloat(), (additionalOffset.y() + box->y()).toFloat()); // FIXME: Snap offsets? crbug.com/350474
                 box->addFocusRingRects(rects, flooredLayoutPoint(pos), paintContainer);
             }
         }

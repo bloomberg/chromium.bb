@@ -40,10 +40,9 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
 
     const Font& font = style->font();
     FloatPoint boxOrigin = locationIncludingFlipping();
-    LayoutPoint adjustedPaintOffset = paintOffset;
+    boxOrigin.moveBy(FloatPoint(paintOffset));
     if (!isHorizontal())
-        adjustedPaintOffset.move(0, -virtualLogicalHeight());
-    boxOrigin.move(adjustedPaintOffset.x(), adjustedPaintOffset.y());
+        boxOrigin.move(0, -virtualLogicalHeight());
     FloatRect boxRect(boxOrigin, LayoutSize(logicalWidth(), virtualLogicalHeight()));
     GraphicsContextStateSaver stateSaver(*context);
     if (!isHorizontal())
@@ -151,7 +150,7 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& box
     LayoutUnit h = root().selectionHeight();
     const int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - top);
     const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
-    FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h));
+    FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h.toFloat()));
     alignSelectionRectToDevicePixels(clipRect);
     context->clip(clipRect);
     context->drawHighlightForText(font, RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);

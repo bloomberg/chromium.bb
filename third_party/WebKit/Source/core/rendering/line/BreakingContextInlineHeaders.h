@@ -367,7 +367,7 @@ inline void BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& posit
     } else {
         positionedObjects.append(box);
     }
-    m_width.addUncommittedWidth(inlineLogicalWidth(box));
+    m_width.addUncommittedWidth(inlineLogicalWidth(box).toFloat());
     // Reset prior line break context characters.
     m_renderTextInfo.m_lineBreakIterator.resetPriorContext();
 }
@@ -380,7 +380,7 @@ inline void BreakingContext::handleFloat()
     // If it does, position it now, otherwise, position
     // it after moving to next line (in newLine() func)
     // FIXME: Bug 110372: Properly position multiple stacked floats with non-rectangular shape outside.
-    if (m_floatsFitOnLine && m_width.fitsOnLine(m_block->logicalWidthForFloat(floatingObject))) {
+    if (m_floatsFitOnLine && m_width.fitsOnLine(m_block->logicalWidthForFloat(floatingObject).toFloat())) {
         m_block->positionNewFloatOnLine(floatingObject, m_lastFloatFromPreviousLine, m_lineInfo, m_width);
         if (m_lineBreak.object() == m_current.object()) {
             ASSERT(!m_lineBreak.offset());
@@ -442,7 +442,7 @@ inline void BreakingContext::handleEmptyInline()
         }
     }
 
-    m_width.addUncommittedWidth(inlineLogicalWidth(m_current.object()) + borderPaddingMarginStart(flowBox) + borderPaddingMarginEnd(flowBox));
+    m_width.addUncommittedWidth((inlineLogicalWidth(m_current.object()) + borderPaddingMarginStart(flowBox) + borderPaddingMarginEnd(flowBox)).toFloat());
 }
 
 inline void BreakingContext::handleReplaced()
@@ -477,9 +477,9 @@ inline void BreakingContext::handleReplaced()
             m_ignoringSpaces = true;
         }
         if (toRenderListMarker(m_current.object())->isInside())
-            m_width.addUncommittedWidth(replacedLogicalWidth);
+            m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     } else {
-        m_width.addUncommittedWidth(replacedLogicalWidth);
+        m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     }
     if (m_current.object()->isRubyRun())
         m_width.applyOverhang(toRenderRubyRun(m_current.object()), m_lastObject, m_nextObject);
@@ -719,7 +719,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             additionalTmpW += lastSpaceWordSpacing;
             m_width.addUncommittedWidth(additionalTmpW);
             if (!m_appliedStartWidth) {
-                m_width.addUncommittedWidth(inlineLogicalWidth(m_current.object(), true, false));
+                m_width.addUncommittedWidth(inlineLogicalWidth(m_current.object(), true, false).toFloat());
                 m_appliedStartWidth = true;
             }
 

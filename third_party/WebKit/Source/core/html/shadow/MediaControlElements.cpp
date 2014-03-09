@@ -155,8 +155,9 @@ void MediaControlPanelElement::transitionTimerFired(Timer<MediaControlPanelEleme
 
 void MediaControlPanelElement::setPosition(const LayoutPoint& position)
 {
-    double left = position.x();
-    double top = position.y();
+    // FIXME: Do we really want to up-convert these to doubles and not round? crbug.com/350474
+    double left = position.x().toFloat();
+    double top = position.y().toFloat();
 
     // Set the left and top to control the panel's position; this depends on it being absolute positioned.
     // Set the margin to zero since the position passed in will already include the effect of the margin.

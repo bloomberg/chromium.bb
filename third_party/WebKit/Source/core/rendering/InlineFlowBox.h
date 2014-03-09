@@ -282,13 +282,13 @@ public:
     FloatRect frameRectIncludingLineHeight(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         if (isHorizontal())
-            return FloatRect(m_topLeft.x(), lineTop, width(), lineBottom - lineTop);
-        return FloatRect(lineTop, m_topLeft.y(), lineBottom - lineTop, height());
+            return FloatRect(m_topLeft.x(), lineTop.toFloat(), width(), (lineBottom - lineTop).toFloat());
+        return FloatRect(lineTop.toFloat(), m_topLeft.y(), (lineBottom - lineTop).toFloat(), height());
     }
 
     FloatRect logicalFrameRectIncludingLineHeight(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
-        return FloatRect(logicalLeft(), lineTop, logicalWidth(), lineBottom - lineTop);
+        return FloatRect(logicalLeft(), lineTop.toFloat(), logicalWidth(), (lineBottom - lineTop).toFloat());
     }
 
     bool descendantsHaveSameLineHeightAndBaseline() const { return m_descendantsHaveSameLineHeightAndBaseline; }

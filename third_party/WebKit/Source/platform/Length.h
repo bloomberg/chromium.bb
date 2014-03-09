@@ -184,7 +184,7 @@ public:
     void setValue(LengthType t, LayoutUnit value)
     {
         m_type = t;
-        m_floatValue = value;
+        m_floatValue = value.toFloat();
         m_isFloat = true;
     }
 

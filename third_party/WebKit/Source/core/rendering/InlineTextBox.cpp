@@ -211,12 +211,12 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     bool respectHyphen = ePos == m_len && hasHyphen();
     TextRun textRun = constructTextRun(styleToUse, font, respectHyphen ? &charactersWithHyphen : 0);
 
-    FloatPoint startingPoint = FloatPoint(logicalLeft(), selTop);
+    FloatPoint startingPoint = FloatPoint(logicalLeft(), selTop.toFloat());
     LayoutRect r;
     if (sPos || ePos != static_cast<int>(m_len))
         r = enclosingIntRect(font.selectionRectForText(textRun, startingPoint, selHeight, sPos, ePos));
     else // Avoid computing the font width when the entire line box is selected as an optimization.
-        r = enclosingIntRect(FloatRect(startingPoint, FloatSize(m_logicalWidth, selHeight)));
+        r = enclosingIntRect(FloatRect(startingPoint, FloatSize(m_logicalWidth, selHeight.toFloat())));
 
     LayoutUnit logicalWidth = r.width();
     if (r.x() > logicalRight())
@@ -519,7 +519,8 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? 0 : -logicalHeight());
 
     FloatPoint boxOrigin = locationIncludingFlipping();
-    boxOrigin.move(adjustedPaintOffset.x(), adjustedPaintOffset.y());
+    // FIXME: Shouldn't these offsets be rounded?
+    boxOrigin.move(adjustedPaintOffset.x().toFloat(), adjustedPaintOffset.y().toFloat());
     FloatRect boxRect(boxOrigin, LayoutSize(logicalWidth(), logicalHeight()));
 
     RenderCombineText* combinedText = styleToUse->hasTextCombine() && textRenderer().isCombineText() && toRenderCombineText(textRenderer()).isCombined() ? &toRenderCombineText(textRenderer()) : 0;

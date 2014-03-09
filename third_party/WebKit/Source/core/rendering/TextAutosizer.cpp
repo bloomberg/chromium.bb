@@ -335,7 +335,7 @@ void TextAutosizer::processCluster(TextAutosizingClusterInfo& clusterInfo, Rende
     // descendant text node of the cluster (i.e. the deepest wrapper block that contains all the
     // text), and use its width instead.
     clusterInfo.blockContainingAllText = findDeepestBlockContainingAllText(clusterInfo.root);
-    float textWidth = clusterInfo.blockContainingAllText->contentLogicalWidth();
+    float textWidth = clusterInfo.blockContainingAllText->contentLogicalWidth().toFloat();
 
     Vector<TextAutosizingClusterInfo> clusterInfos(1, clusterInfo);
     float multiplier = computeMultiplier(clusterInfos, windowInfo, textWidth);
@@ -352,7 +352,7 @@ void TextAutosizer::processCompositeCluster(Vector<TextAutosizingClusterInfo>& c
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
         TextAutosizingClusterInfo& clusterInfo = clusterInfos[i];
         clusterInfo.blockContainingAllText = findDeepestBlockContainingAllText(clusterInfo.root);
-        maxTextWidth = max<float>(maxTextWidth, clusterInfo.blockContainingAllText->contentLogicalWidth());
+        maxTextWidth = max<float>(maxTextWidth, clusterInfo.blockContainingAllText->contentLogicalWidth().toFloat());
     }
 
     float multiplier =  computeMultiplier(clusterInfos, windowInfo, maxTextWidth);
@@ -530,14 +530,14 @@ bool TextAutosizer::isNarrowDescendant(const RenderBlock* renderer, TextAutosizi
     // the enclosing cluster. This 150px limit is adjusted whenever a descendant container is
     // less than 50px narrower than the current limit.
     const float differenceFromMaxWidthDifference = 50;
-    float contentWidth = renderer->contentLogicalWidth();
-    float clusterTextWidth = parentClusterInfo.blockContainingAllText->contentLogicalWidth();
-    float widthDifference = clusterTextWidth - contentWidth;
+    LayoutUnit contentWidth = renderer->contentLogicalWidth();
+    LayoutUnit clusterTextWidth = parentClusterInfo.blockContainingAllText->contentLogicalWidth();
+    LayoutUnit widthDifference = clusterTextWidth - contentWidth;
 
     if (widthDifference - parentClusterInfo.maxAllowedDifferenceFromTextWidth > differenceFromMaxWidthDifference)
         return true;
 
-    parentClusterInfo.maxAllowedDifferenceFromTextWidth = std::max(widthDifference, parentClusterInfo.maxAllowedDifferenceFromTextWidth);
+    parentClusterInfo.maxAllowedDifferenceFromTextWidth = std::max(widthDifference.toFloat(), parentClusterInfo.maxAllowedDifferenceFromTextWidth);
     return false;
 }
 
@@ -547,8 +547,8 @@ bool TextAutosizer::isWiderDescendant(const RenderBlock* renderer, const TextAut
 
     // Autosizing containers that are wider than the |blockContainingAllText| of their enclosing
     // cluster are treated the same way as autosizing clusters to be autosized separately.
-    float contentWidth = renderer->contentLogicalWidth();
-    float clusterTextWidth = parentClusterInfo.blockContainingAllText->contentLogicalWidth();
+    LayoutUnit contentWidth = renderer->contentLogicalWidth();
+    LayoutUnit clusterTextWidth = parentClusterInfo.blockContainingAllText->contentLogicalWidth();
     return contentWidth > clusterTextWidth;
 }
 
@@ -839,8 +839,8 @@ void TextAutosizer::getNarrowDescendantsGroupedByWidth(const TextAutosizingClust
         groups.last().append(clusterInfos[i]);
 
         if (i + 1 < clusterInfos.size()) {
-            float currentWidth = clusterInfos[i].root->contentLogicalWidth();
-            float nextWidth = clusterInfos[i + 1].root->contentLogicalWidth();
+            LayoutUnit currentWidth = clusterInfos[i].root->contentLogicalWidth();
+            LayoutUnit nextWidth = clusterInfos[i + 1].root->contentLogicalWidth();
             if (currentWidth - nextWidth > maxWidthDifferenceWithinGroup)
                 groups.grow(groups.size() + 1);
         }

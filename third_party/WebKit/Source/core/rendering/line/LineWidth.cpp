@@ -55,8 +55,8 @@ void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 {
     LayoutUnit height = m_block.logicalHeight();
     LayoutUnit logicalHeight = m_block.minLineHeightForReplacedRenderer(m_isFirstLine, replacedHeight);
-    m_left = m_block.logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight);
-    m_right = m_block.logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight);
+    m_left = m_block.logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight).toFloat();
+    m_right = m_block.logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight).toFloat();
 
     if (m_segment) {
         m_left = std::max<float>(m_segment->logicalLeft, m_left);
@@ -79,7 +79,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
     }
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
-        float newLeft = m_block.logicalRightForFloat(newFloat);
+        float newLeft = m_block.logicalRightForFloat(newFloat).toFloat();
         if (shapeOutsideInfo) {
             if (shapeOutsideInfo->lineOverlapsShape())
                 newLeft += shapeOutsideInfo->rightMarginBoxDelta();
@@ -90,7 +90,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
             newLeft += floorToInt(m_block.textIndentOffset());
         m_left = std::max<float>(m_left, newLeft);
     } else {
-        float newRight = m_block.logicalLeftForFloat(newFloat);
+        float newRight = m_block.logicalLeftForFloat(newFloat).toFloat();
         if (shapeOutsideInfo) {
             if (shapeOutsideInfo->lineOverlapsShape())
                 newRight += shapeOutsideInfo->leftMarginBoxDelta();
@@ -127,15 +127,15 @@ void LineWidth::applyOverhang(RenderRubyRun* rubyRun, RenderObject* startRendere
 
 inline static float availableWidthAtOffset(const RenderBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText, float& newLineLeft, float& newLineRight)
 {
-    newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText);
-    newLineRight = block.logicalRightOffsetForLine(offset, shouldIndentText);
+    newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText).toFloat();
+    newLineRight = block.logicalRightOffsetForLine(offset, shouldIndentText).toFloat();
     return std::max(0.0f, newLineRight - newLineLeft);
 }
 
 inline static float availableWidthAtOffset(const RenderBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText)
 {
-    float newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText);
-    float newLineRight = block.logicalRightOffsetForLine(offset, shouldIndentText);
+    float newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText).toFloat();
+    float newLineRight = block.logicalRightOffsetForLine(offset, shouldIndentText).toFloat();
     return std::max(0.0f, newLineRight - newLineLeft);
 }
 

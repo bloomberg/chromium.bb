@@ -794,6 +794,15 @@ inline bool isIntegerValue(const LayoutUnit value)
     return value.toInt() == value;
 }
 
+inline LayoutUnit clampToLayoutUnit(LayoutUnit value, LayoutUnit min, LayoutUnit max)
+{
+    if (value >= max)
+        return max;
+    if (value <= min)
+        return min;
+    return value;
+}
+
 } // namespace WebCore
 
 #endif // LayoutUnit_h

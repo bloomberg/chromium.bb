@@ -539,8 +539,7 @@ void RenderListBox::panScroll(const IntPoint& panStartMousePosition)
         return;
 
     if (yDelta > 0)
-        //offsetY = view()->viewHeight();
-        absOffset.move(0, listHeight());
+        absOffset.move(0, listHeight().toFloat());
     else if (yDelta < 0)
         yDelta--;
 

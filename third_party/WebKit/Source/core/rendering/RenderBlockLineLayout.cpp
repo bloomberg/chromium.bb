@@ -586,10 +586,10 @@ void RenderBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign
 static void updateLogicalInlinePositions(RenderBlockFlow* block, float& lineLogicalLeft, float& lineLogicalRight, float& availableLogicalWidth, bool firstLine, IndentTextOrNot shouldIndentText, LayoutUnit boxLogicalHeight)
 {
     LayoutUnit lineLogicalHeight = block->minLineHeightForReplacedRenderer(firstLine, boxLogicalHeight);
-    lineLogicalLeft = block->logicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
+    lineLogicalLeft = block->logicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight).toFloat();
     // FIXME: This shouldn't be pixel snapped once multicolumn layout has been updated to correctly carry over subpixel values.
     // https://bugs.webkit.org/show_bug.cgi?id=105461
-    lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
+    lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight).toFloat();
     availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
 }
 
@@ -657,7 +657,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     WordMeasurements& wordMeasurements)
 {
     bool needsWordSpacing = false;
-    float totalLogicalWidth = lineBox->getFlowSpacingLogicalWidth();
+    float totalLogicalWidth = lineBox->getFlowSpacingLogicalWidth().toFloat();
     unsigned expansionOpportunityCount = 0;
     bool isAfterExpansion = true;
     Vector<unsigned, 16> expansionOpportunities;
@@ -701,7 +701,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                 RenderBox* renderBox = toRenderBox(r->m_object);
                 if (renderBox->isRubyRun())
                     setMarginsForRubyRun(r, toRenderRubyRun(renderBox), previousObject, lineInfo);
-                r->m_box->setLogicalWidth(logicalWidthForChild(renderBox));
+                r->m_box->setLogicalWidth(logicalWidthForChild(renderBox).toFloat());
                 totalLogicalWidth += marginStartForChild(renderBox) + marginEndForChild(renderBox);
             }
         }
@@ -736,7 +736,7 @@ void RenderBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
         // Align positioned boxes with the top of the line box.  This is
         // a reasonable approximation of an appropriate y position.
         if (r->m_object->isOutOfFlowPositioned())
-            r->m_box->setLogicalTop(logicalHeight());
+            r->m_box->setLogicalTop(logicalHeight().toFloat());
 
         // Position is used to properly position both replaced elements and
         // to update the static normal flow x/y of positioned elements.
@@ -1283,7 +1283,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
                     adjustLinePositionForPagination(lineBox, adjustment, layoutState.flowThread());
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
-                        lineBox->adjustBlockDirectionPosition(adjustment);
+                        lineBox->adjustBlockDirectionPosition(adjustment.toFloat());
                         if (layoutState.usesRepaintBounds())
                             layoutState.updateRepaintRangeFromBox(lineBox);
 
@@ -1412,7 +1412,7 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 }
                 if (delta) {
                     layoutState.updateRepaintRangeFromBox(line, delta);
-                    line->adjustBlockDirectionPosition(delta);
+                    line->adjustBlockDirectionPosition(delta.toFloat());
                 }
                 if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
                     Vector<RenderBox*>::iterator end = cleanLineFloats->end();
@@ -1687,7 +1687,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 if (child->isRenderInline()) {
                     // Add in padding/border/margin from the appropriate side of
                     // the element.
-                    float bpm = getBorderPaddingMargin(toRenderInline(child), childIterator.endOfInline);
+                    float bpm = getBorderPaddingMargin(toRenderInline(child), childIterator.endOfInline).toFloat();
                     childMin += bpm;
                     childMax += bpm;
 
@@ -2067,7 +2067,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
                     }
 
                     layoutState.updateRepaintRangeFromBox(curr, paginationDelta);
-                    curr->adjustBlockDirectionPosition(paginationDelta);
+                    curr->adjustBlockDirectionPosition(paginationDelta.toFloat());
                 }
             }
 
@@ -2320,7 +2320,7 @@ void RenderBlockFlow::deleteEllipsisLineBoxes()
             curr->clearTruncation();
 
             // Shift the line back where it belongs if we cannot accomodate an ellipsis.
-            float logicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine);
+            float logicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine).toFloat();
             float availableLogicalWidth = logicalRightOffsetForLine(curr->lineTop(), false) - logicalLeft;
             float totalLogicalWidth = curr->logicalWidth();
             updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
@@ -2369,10 +2369,10 @@ void RenderBlockFlow::checkLinesForTextOverflow()
             LayoutUnit width = firstLine ? firstLineEllipsisWidth : ellipsisWidth;
             LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
             if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge, width)) {
-                float totalLogicalWidth = curr->placeEllipsis(ellipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
+                float totalLogicalWidth = curr->placeEllipsis(ellipsisStr, ltr, blockLeftEdge, blockRightEdge, width.toFloat());
 
                 float logicalLeft = 0; // We are only intersted in the delta from the base position.
-                float snappedLogicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine);
+                float snappedLogicalLeft = pixelSnappedLogicalLeftOffsetForLine(curr->lineTop(), firstLine).toFloat();
                 float availableLogicalWidth = pixelSnappedLogicalRightOffsetForLine(curr->lineTop(), firstLine) - snappedLogicalLeft;
                 updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
                 if (ltr)
@@ -2447,7 +2447,7 @@ LayoutUnit RenderBlockFlow::startAlignedOffsetForLine(LayoutUnit position, bool 
 
     // updateLogicalWidthForAlignment() handles the direction of the block so no need to consider it here
     float totalLogicalWidth = 0;
-    float logicalLeft = logicalLeftOffsetForLine(logicalHeight(), false);
+    float logicalLeft = logicalLeftOffsetForLine(logicalHeight(), false).toFloat();
     float availableLogicalWidth = logicalRightOffsetForLine(logicalHeight(), false) - logicalLeft;
     updateLogicalWidthForAlignment(textAlign, 0, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
 

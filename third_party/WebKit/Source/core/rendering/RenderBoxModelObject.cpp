@@ -308,22 +308,22 @@ void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewpo
     constraints.setAbsoluteStickyBoxRect(absoluteStickyBoxRect);
 
     if (!style()->left().isAuto()) {
-        constraints.setLeftOffset(valueForLength(style()->left(), constrainingRect.width()));
+        constraints.setLeftOffset(floatValueForLength(style()->left(), constrainingRect.width()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
     }
 
     if (!style()->right().isAuto()) {
-        constraints.setRightOffset(valueForLength(style()->right(), constrainingRect.width()));
+        constraints.setRightOffset(floatValueForLength(style()->right(), constrainingRect.width()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeRight);
     }
 
     if (!style()->top().isAuto()) {
-        constraints.setTopOffset(valueForLength(style()->top(), constrainingRect.height()));
+        constraints.setTopOffset(floatValueForLength(style()->top(), constrainingRect.height()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeTop);
     }
 
     if (!style()->bottom().isAuto()) {
-        constraints.setBottomOffset(valueForLength(style()->bottom(), constrainingRect.height() ));
+        constraints.setBottomOffset(floatValueForLength(style()->bottom(), constrainingRect.height() ));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeBottom);
     }
 }
@@ -2765,7 +2765,7 @@ const RenderObject* RenderBoxModelObject::pushMappingToContainer(const RenderLay
     if (shouldUseTransformFromContainer(container)) {
         TransformationMatrix t;
         getTransformFromContainer(container, containerOffset, t);
-        t.translateRight(adjustmentForSkippedAncestor.width(), adjustmentForSkippedAncestor.height());
+        t.translateRight(adjustmentForSkippedAncestor.width().toFloat(), adjustmentForSkippedAncestor.height().toFloat());
         geometryMap.push(this, t, preserve3D, offsetDependsOnPoint, isFixedPos, hasTransform);
     } else {
         containerOffset += adjustmentForSkippedAncestor;

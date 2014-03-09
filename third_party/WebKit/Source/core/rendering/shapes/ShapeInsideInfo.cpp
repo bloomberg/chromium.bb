@@ -92,7 +92,7 @@ bool ShapeInsideInfo::adjustLogicalLineTop(float minSegmentWidth)
         return false;
 
     LayoutUnit newLineTop;
-    if (shape.firstIncludedIntervalLogicalTop(m_referenceBoxLineTop, FloatSize(minSegmentWidth, m_lineHeight), newLineTop)) {
+    if (shape.firstIncludedIntervalLogicalTop(m_referenceBoxLineTop, FloatSize(minSegmentWidth, m_lineHeight.toFloat()), newLineTop)) {
         if (newLineTop > m_referenceBoxLineTop) {
             m_referenceBoxLineTop = newLineTop;
             return true;

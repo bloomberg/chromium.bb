@@ -122,7 +122,7 @@ float InlineBox::logicalHeight() const
     if (renderer().isText())
         return m_bitfields.isText() ? renderer().style(isFirstLineStyle())->fontMetrics().height() : 0;
     if (renderer().isBox() && parent())
-        return isHorizontal() ? toRenderBox(renderer()).height() : toRenderBox(renderer()).width();
+        return isHorizontal() ? toRenderBox(renderer()).height().toFloat() : toRenderBox(renderer()).width().toFloat();
 
     ASSERT(isInlineFlowBox());
     RenderBoxModelObject* flowObject = boxModelObject();

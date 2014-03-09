@@ -53,9 +53,9 @@ TransformState& TransformState::operator=(const TransformState& other)
 void TransformState::translateTransform(const LayoutSize& offset)
 {
     if (m_direction == ApplyTransformDirection)
-        m_accumulatedTransform->translateRight(offset.width(), offset.height());
+        m_accumulatedTransform->translateRight(offset.width().toDouble(), offset.height().toDouble());
     else
-        m_accumulatedTransform->translate(offset.width(), offset.height());
+        m_accumulatedTransform->translate(offset.width().toDouble(), offset.height().toDouble());
 }
 
 void TransformState::translateMappedCoordinates(const LayoutSize& offset)

@@ -351,7 +351,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
                 // Only draw the alt text if it'll fit within the content box,
                 // and only if it fits above the error image.
                 TextRun textRun = RenderBlockFlow::constructTextRun(this, font, m_altText, style(), TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, DefaultTextRunFlags | RespectDirection);
-                LayoutUnit textWidth = font.width(textRun);
+                float textWidth = font.width(textRun);
                 TextRunPaintInfo textRunPaintInfo(textRun);
                 textRunPaintInfo.bounds = FloatRect(textRectOrigin, FloatSize(textWidth, fontMetrics.height()));
                 context->setFillColor(resolveColor(CSSPropertyColor));
@@ -601,8 +601,8 @@ void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
         RenderObject* containingBlock = isOutOfFlowPositioned() ? container() : this->containingBlock();
         if (containingBlock->isBox()) {
             RenderBox* box = toRenderBox(containingBlock);
-            intrinsicSize.setWidth(box->availableLogicalWidth());
-            intrinsicSize.setHeight(box->availableLogicalHeight(IncludeMarginBorderPadding));
+            intrinsicSize.setWidth(box->availableLogicalWidth().toFloat());
+            intrinsicSize.setHeight(box->availableLogicalHeight(IncludeMarginBorderPadding).toFloat());
         }
     }
     // Don't compute an intrinsic ratio to preserve historical WebKit behavior if we're painting alt text and/or a broken image.

@@ -131,10 +131,9 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
         else
             textY = baselinePosition(AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine);
         TextRunPaintInfo textRunPaintInfo(textRun);
-        textRunPaintInfo.bounds = FloatRect(textX,
-                                            textY - style()->fontMetrics().ascent(),
-                                            textWidth,
-                                            style()->fontMetrics().height());
+        // FIXME: Shouldn't these offsets be rounded? crbug.com/350474
+        textRunPaintInfo.bounds = FloatRect(textX.toFloat(), textY.toFloat() - style()->fontMetrics().ascent(),
+            textWidth, style()->fontMetrics().height());
 
         paintInfo.context->setFillColor(resolveColor(CSSPropertyColor));
 
