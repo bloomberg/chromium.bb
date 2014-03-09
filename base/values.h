@@ -133,6 +133,8 @@ class BASE_EXPORT FundamentalValue : public Value {
   // Overridden from Value:
   virtual bool GetAsBoolean(bool* out_value) const OVERRIDE;
   virtual bool GetAsInteger(int* out_value) const OVERRIDE;
+  // Values of both type TYPE_INTEGER and TYPE_DOUBLE can be obtained as
+  // doubles.
   virtual bool GetAsDouble(double* out_value) const OVERRIDE;
   virtual FundamentalValue* DeepCopy() const OVERRIDE;
   virtual bool Equals(const Value* other) const OVERRIDE;
@@ -267,14 +269,18 @@ class BASE_EXPORT DictionaryValue : public Value {
   // through the |out_value| parameter, and the function will return true.
   // Otherwise, it will return false and |out_value| will be untouched.
   // Note that the dictionary always owns the value that's returned.
+  // |out_value| is optional and will only be set if non-NULL.
   bool Get(const std::string& path, const Value** out_value) const;
   bool Get(const std::string& path, Value** out_value);
 
   // These are convenience forms of Get().  The value will be retrieved
   // and the return value will be true if the path is valid and the value at
   // the end of the path can be returned in the form specified.
+  // |out_value| is optional and will only be set if non-NULL.
   bool GetBoolean(const std::string& path, bool* out_value) const;
   bool GetInteger(const std::string& path, int* out_value) const;
+  // Values of both type TYPE_INTEGER and TYPE_DOUBLE can be obtained as
+  // doubles.
   bool GetDouble(const std::string& path, double* out_value) const;
   bool GetString(const std::string& path, std::string* out_value) const;
   bool GetString(const std::string& path, string16* out_value) const;
@@ -400,14 +406,18 @@ class BASE_EXPORT ListValue : public Value {
   // Gets the Value at the given index.  Modifies |out_value| (and returns true)
   // only if the index falls within the current list range.
   // Note that the list always owns the Value passed out via |out_value|.
+  // |out_value| is optional and will only be set if non-NULL.
   bool Get(size_t index, const Value** out_value) const;
   bool Get(size_t index, Value** out_value);
 
   // Convenience forms of Get().  Modifies |out_value| (and returns true)
   // only if the index is valid and the Value at that index can be returned
   // in the specified form.
+  // |out_value| is optional and will only be set if non-NULL.
   bool GetBoolean(size_t index, bool* out_value) const;
   bool GetInteger(size_t index, int* out_value) const;
+  // Values of both type TYPE_INTEGER and TYPE_DOUBLE can be obtained as
+  // doubles.
   bool GetDouble(size_t index, double* out_value) const;
   bool GetString(size_t index, std::string* out_value) const;
   bool GetString(size_t index, string16* out_value) const;
