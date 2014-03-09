@@ -63,16 +63,17 @@ class EventRewriter : public DeviceHierarchyObserver,
   friend class EventRewriterAshTest;
   friend class EventRewriterTest;
 
+  void DeviceKeyPressedOrReleased(int device_id);
+
   // base::MessagePumpObserver overrides:
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // DeviceHierarchyObserver overrides:
-  virtual void DeviceHierarchyChanged() OVERRIDE {}
+  virtual void DeviceHierarchyChanged() OVERRIDE;
   virtual void DeviceAdded(int device_id) OVERRIDE;
   virtual void DeviceRemoved(int device_id) OVERRIDE;
-  virtual void DeviceKeyPressedOrReleased(int device_id) OVERRIDE;
 
   // We don't want to include Xlib.h here since it has polluting macros, so
   // define these locally.

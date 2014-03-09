@@ -40,7 +40,6 @@ class PointerDeviceObserver : public DeviceHierarchyObserver {
   virtual void DeviceHierarchyChanged() OVERRIDE;
   virtual void DeviceAdded(int device_id) OVERRIDE {}
   virtual void DeviceRemoved(int device_id) OVERRIDE {}
-  virtual void DeviceKeyPressedOrReleased(int device_id) OVERRIDE {}
 
   // Check for pointer devices.
   void CheckTouchpadExists();

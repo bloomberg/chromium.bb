@@ -14,21 +14,6 @@
 namespace chromeos {
 namespace {
 
-// Gets the major opcode for XInput2. Returns -1 on error.
-int GetXInputOpCode() {
-  static const char kExtensionName[] = "XInputExtension";
-  int xi_opcode = -1;
-  int event;
-  int error;
-
-  if (!XQueryExtension(
-          gfx::GetXDisplay(), kExtensionName, &xi_opcode, &event, &error)) {
-    VLOG(1) << "X Input extension not available: error=" << error;
-    return -1;
-  }
-  return xi_opcode;
-}
-
 // Checks the |event| and asynchronously sets the XKB layout when necessary.
 void HandleHierarchyChangedEvent(
     XIHierarchyEvent* event,
@@ -71,8 +56,7 @@ XInputHierarchyChangedEventListener::GetInstance() {
 }
 
 XInputHierarchyChangedEventListener::XInputHierarchyChangedEventListener()
-    : stopped_(false),
-      xiopcode_(GetXInputOpCode()) {
+    : stopped_(false) {
   base::MessageLoopForUI::current()->AddObserver(this);
 }
 
@@ -86,7 +70,6 @@ void XInputHierarchyChangedEventListener::Stop() {
 
   base::MessageLoopForUI::current()->RemoveObserver(this);
   stopped_ = true;
-  xiopcode_ = -1;
 }
 
 void XInputHierarchyChangedEventListener::AddObserver(
@@ -112,32 +95,18 @@ void XInputHierarchyChangedEventListener::DidProcessEvent(
     const base::NativeEvent& event) {
 }
 
-bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
-  if ((xevent->xcookie.type != GenericEvent) ||
-      (xevent->xcookie.extension != xiopcode_)) {
-    return false;
-  }
+void XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
+  if (xevent->xcookie.type != GenericEvent)
+    return;
 
   XGenericEventCookie* cookie = &(xevent->xcookie);
-  bool handled = false;
 
   if (cookie->evtype == XI_HierarchyChanged) {
     XIHierarchyEvent* event = static_cast<XIHierarchyEvent*>(cookie->data);
     HandleHierarchyChangedEvent(event, &observer_list_);
     if (event->flags & XIDeviceEnabled || event->flags & XIDeviceDisabled)
       NotifyDeviceHierarchyChanged();
-    handled = true;
-  } else if (cookie->evtype == XI_KeyPress || cookie->evtype == XI_KeyRelease) {
-    XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(cookie->data);
-    if (xiev->deviceid == xiev->sourceid) {
-      FOR_EACH_OBSERVER(DeviceHierarchyObserver,
-                        observer_list_,
-                        DeviceKeyPressedOrReleased(xiev->deviceid));
-      handled = true;
-    }
   }
-
-  return handled;
 }
 
 void XInputHierarchyChangedEventListener::NotifyDeviceHierarchyChanged() {

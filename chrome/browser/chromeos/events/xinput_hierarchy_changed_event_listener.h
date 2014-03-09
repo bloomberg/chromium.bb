@@ -42,13 +42,12 @@ class XInputHierarchyChangedEventListener
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Returns true if the event was processed, false otherwise.
-  virtual bool ProcessedXEvent(XEvent* xevent);
+  void ProcessedXEvent(XEvent* xevent);
 
   // Notify observers that a device has been added/removed.
   void NotifyDeviceHierarchyChanged();
 
   bool stopped_;
-  int xiopcode_;
 
   ObserverList<DeviceHierarchyObserver> observer_list_;
 

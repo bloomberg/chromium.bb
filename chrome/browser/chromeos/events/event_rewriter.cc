@@ -185,13 +185,31 @@ void EventRewriter::RewriteForTesting(XEvent* event) {
   Rewrite(event);
 }
 
+void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
+  std::map<int, DeviceType>::const_iterator iter =
+      device_id_to_type_.find(device_id);
+  if (iter == device_id_to_type_.end()) {
+    // |device_id| is unknown. This means the device was connected before
+    // booting the OS. Query the name of the device and add it to the map.
+    DeviceAdded(device_id);
+  }
+
+  last_device_id_ = device_id;
+}
+
 base::EventStatus EventRewriter::WillProcessEvent(
     const base::NativeEvent& event) {
   XEvent* xevent = event;
   if (xevent->type == KeyPress || xevent->type == KeyRelease) {
     Rewrite(xevent);
   } else if (xevent->type == GenericEvent) {
-    RewriteLocatedEvent(xevent);
+    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xevent->xcookie.data);
+    if (xievent->evtype == XI_KeyPress || xievent->evtype == XI_KeyRelease) {
+      if (xievent->deviceid == xievent->sourceid)
+        DeviceKeyPressedOrReleased(xievent->deviceid);
+    } else {
+      RewriteLocatedEvent(xevent);
+    }
   } else if (xevent->type == MappingNotify) {
     if (xevent->xmapping.request == MappingModifier ||
         xevent->xmapping.request == MappingKeyboard) {
@@ -203,6 +221,8 @@ base::EventStatus EventRewriter::WillProcessEvent(
 
 void EventRewriter::DidProcessEvent(const base::NativeEvent& event) {
 }
+
+void EventRewriter::DeviceHierarchyChanged() {}
 
 void EventRewriter::DeviceAdded(int device_id) {
   DCHECK_NE(XIAllDevices, device_id);
@@ -236,18 +256,6 @@ void EventRewriter::DeviceAdded(int device_id) {
 
 void EventRewriter::DeviceRemoved(int device_id) {
   device_id_to_type_.erase(device_id);
-}
-
-void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
-  std::map<int, DeviceType>::const_iterator iter =
-      device_id_to_type_.find(device_id);
-  if (iter == device_id_to_type_.end()) {
-    // |device_id| is unknown. This means the device was connected before
-    // booting the OS. Query the name of the device and add it to the map.
-    DeviceAdded(device_id);
-  }
-
-  last_device_id_ = device_id;
 }
 
 void EventRewriter::RefreshKeycodes() {
