@@ -59,6 +59,13 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
     return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED :
         ERR_QUIC_HANDSHAKE_FAILED;
 
+  if (request_info->url.SchemeIsSecure()) {
+    SSLInfo ssl_info;
+    if (!session_->GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+      return ERR_REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC;
+    }
+  }
+
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
   priority_ = priority;

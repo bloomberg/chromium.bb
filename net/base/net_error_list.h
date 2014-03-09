@@ -572,6 +572,9 @@ NET_ERROR(RESPONSE_HEADERS_TRUNCATED, -357)
 // to read any requests sent, so they may be resent.
 NET_ERROR(QUIC_HANDSHAKE_FAILED, -358)
 
+// An https resource was requested over an insecure QUIC connection.
+NET_ERROR(REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC, -359)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 
