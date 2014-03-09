@@ -75,8 +75,9 @@ public class ChromeShellApplication extends ChromiumApplication {
     }
 
     public static void initCommandLine() {
-        if (!CommandLine.isInitialized())
+        if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile(COMMAND_LINE_FILE);
+        }
     }
 
     @Override
