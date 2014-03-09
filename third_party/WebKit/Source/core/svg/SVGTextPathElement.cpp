@@ -164,10 +164,10 @@ void SVGTextPathElement::buildPendingResource()
             document().accessSVGExtensions().addPendingResource(id, this);
             ASSERT(hasPendingResources());
         }
-    } else if (target->hasTagName(SVGNames::pathTag)) {
+    } else if (isSVGPathElement(*target)) {
         // Register us with the target in the dependencies map. Any change of hrefElement
         // that leads to relayout/repainting now informs us, so we can react to it.
-        document().accessSVGExtensions().addElementReferencingTarget(this, toSVGElement(target));
+        document().accessSVGExtensions().addElementReferencingTarget(this, toSVGElement((target)));
     }
 }
 

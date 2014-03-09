@@ -280,11 +280,7 @@ SVGTextContentElement* SVGTextContentElement::elementFromRenderer(RenderObject* 
 
     SVGElement* element = toSVGElement(renderer->node());
     ASSERT(element);
-
-    if (!element->isTextContent())
-        return 0;
-
-    return toSVGTextContentElement(element);
+    return isSVGTextContentElement(*element) ? toSVGTextContentElement(element) : 0;
 }
 
 }

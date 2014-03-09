@@ -143,13 +143,13 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
     // single-origin since these can leak cross-origin information.
     ComposedTreeWalker walker(rootElement);
     while (Node* node = walker.get()) {
-        if (node->hasTagName(SVGNames::foreignObjectTag))
+        if (isSVGForeignObjectElement(*node))
             return false;
-        if (node->hasTagName(SVGNames::imageTag)) {
-            if (!toSVGImageElement(node)->currentFrameHasSingleSecurityOrigin())
+        if (isSVGImageElement(*node)) {
+            if (!toSVGImageElement(*node).currentFrameHasSingleSecurityOrigin())
                 return false;
-        } else if (node->hasTagName(SVGNames::feImageTag)) {
-            if (!toSVGFEImageElement(node)->currentFrameHasSingleSecurityOrigin())
+        } else if (isSVGFEImageElement(*node)) {
+            if (!toSVGFEImageElement(*node).currentFrameHasSingleSecurityOrigin())
                 return false;
         }
         walker.next();

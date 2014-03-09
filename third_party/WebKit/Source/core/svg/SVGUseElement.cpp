@@ -243,10 +243,8 @@ static void dumpInstanceTree(unsigned int& depth, String& text, SVGElementInstan
     SVGElement* element = targetInstance->correspondingElement();
     ASSERT(element);
 
-    if (element->hasTagName(SVGNames::useTag)) {
-        if (toSVGUseElement(element)->resourceIsStillLoading())
-            return;
-    }
+    if (isSVGUseElement(*element) && toSVGUseElement(*element).resourceIsStillLoading())
+        return;
 
     SVGElement* shadowTreeElement = targetInstance->shadowTreeElement();
     ASSERT(shadowTreeElement);
@@ -557,9 +555,9 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
 
     // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
     // object, the instance tree will contain recursive expansion of the indirect references to form a complete tree.
-    bool targetHasUseTag = target->hasTagName(SVGNames::useTag);
+    bool targetIsUseElement = isSVGUseElement(*target);
     SVGElement* newTarget = 0;
-    if (targetHasUseTag) {
+    if (targetIsUseElement) {
         foundProblem = hasCycleUseReferencing(toSVGUseElement(target), targetInstance, newTarget);
         if (foundProblem)
             return;
@@ -602,7 +600,7 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
             return;
     }
 
-    if (!targetHasUseTag || !newTarget)
+    if (!targetIsUseElement || !newTarget)
         return;
 
     RefPtr<SVGElementInstance> newInstance = SVGElementInstance::create(this, toSVGUseElement(target), newTarget);
@@ -676,6 +674,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
 
 void SVGUseElement::expandUseElementsInShadowTree(Node* element)
 {
+    ASSERT(element);
     // Why expand the <use> elements in the shadow tree here, and not just
     // do this directly in buildShadowTree, if we encounter a <use> element?
     //
@@ -683,7 +682,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
     // contains <use> tags, we'd miss them. So once we're done with settin' up the
     // actual shadow tree (after the special case modification for svg/symbol) we have
     // to walk it completely and expand all <use> elements.
-    if (element->hasTagName(SVGNames::useTag)) {
+    if (isSVGUseElement(*element)) {
         SVGUseElement* use = toSVGUseElement(element);
         ASSERT(!use->resourceIsStillLoading());
 

@@ -243,7 +243,7 @@ void SVGPathElement::invalidateMPathDependencies()
     if (HashSet<SVGElement*>* dependencies = document().accessSVGExtensions().setOfElementsReferencingTarget(this)) {
         HashSet<SVGElement*>::iterator end = dependencies->end();
         for (HashSet<SVGElement*>::iterator it = dependencies->begin(); it != end; ++it) {
-            if ((*it)->hasTagName(SVGNames::mpathTag))
+            if (isSVGMPathElement(**it))
                 toSVGMPathElement(*it)->targetPathChanged();
         }
     }

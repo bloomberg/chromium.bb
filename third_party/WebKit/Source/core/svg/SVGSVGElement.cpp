@@ -776,13 +776,11 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
     // or MyDrawing.svg#xpointer(id('MyView'))) then the closest ancestor ‘svg’ element is displayed in the viewport.
     // Any view specification attributes included on the given ‘view’ element override the corresponding view specification
     // attributes on the closest ancestor ‘svg’ element.
-    if (anchorNode && anchorNode->hasTagName(SVGNames::viewTag)) {
-        SVGViewElement* viewElement = toSVGViewElement(anchorNode);
-        if (!viewElement)
-            return;
+    if (isSVGViewElement(anchorNode)) {
+        SVGViewElement& viewElement = toSVGViewElement(*anchorNode);
 
-        if (SVGSVGElement* svg = viewElement->ownerSVGElement()) {
-            svg->inheritViewAttributes(viewElement);
+        if (SVGSVGElement* svg = viewElement.ownerSVGElement()) {
+            svg->inheritViewAttributes(&viewElement);
 
             if (RenderObject* renderer = svg->renderer())
                 RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
