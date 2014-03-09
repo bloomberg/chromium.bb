@@ -544,7 +544,7 @@ inline bool isHTMLMediaElement(const Node& node)
     return node.isElementNode() && toElement(node).isMediaElement();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
 
 } //namespace
 

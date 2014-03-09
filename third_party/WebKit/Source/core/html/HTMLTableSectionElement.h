@@ -54,7 +54,7 @@ inline bool isHTMLTableSectionElement(const Node& node)
     return node.hasTagName(HTMLNames::tbodyTag) || node.hasTagName(HTMLNames::tfootTag) || node.hasTagName(HTMLNames::theadTag);
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
 
 } //namespace
 

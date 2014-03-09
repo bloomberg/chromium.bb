@@ -138,7 +138,7 @@ private:
     DisplayState m_displayState;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLPlugInElement, isPluginElement());
+DEFINE_ELEMENT_TYPE_CASTS(HTMLPlugInElement, isPluginElement());
 
 } // namespace WebCore
 

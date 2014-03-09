@@ -82,7 +82,7 @@ inline bool isHTMLFrameElementBase(const Node& node)
     return node.isElementNode() && toElement(node).isFrameElementBase();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);
 
 } // namespace WebCore
 

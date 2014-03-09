@@ -56,7 +56,7 @@ inline bool isHTMLUnknownElement(const Node& node)
     return node.isElementNode() && toHTMLElement(node).isHTMLUnknownElement();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
 
 } // namespace
 

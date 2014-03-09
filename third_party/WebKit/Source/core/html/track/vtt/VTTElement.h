@@ -79,7 +79,7 @@ private:
     AtomicString m_language;
 };
 
-DEFINE_NODE_TYPE_CASTS(VTTElement, isVTTElement());
+DEFINE_ELEMENT_TYPE_CASTS(VTTElement, isVTTElement());
 
 } // namespace WebCore
 

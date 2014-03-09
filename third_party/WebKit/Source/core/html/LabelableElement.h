@@ -55,7 +55,7 @@ inline bool isLabelableElement(const Node& node)
     return node.isHTMLElement() && toHTMLElement(node).isLabelable();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(LabelableElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(LabelableElement);
 
 } // namespace WebCore
 

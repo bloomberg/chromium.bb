@@ -87,7 +87,7 @@ private:
 
 typedef Vector<RefPtr<InsertionPoint> > DestinationInsertionPoints;
 
-DEFINE_NODE_TYPE_CASTS(InsertionPoint, isInsertionPoint());
+DEFINE_ELEMENT_TYPE_CASTS(InsertionPoint, isInsertionPoint());
 
 inline bool isActiveInsertionPoint(const Node& node)
 {

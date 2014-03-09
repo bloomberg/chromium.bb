@@ -79,7 +79,7 @@ inline PassRefPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndC
 }
 
 // FIXME: There are no ways to check if a node is a SliderThumbElement.
-DEFINE_NODE_TYPE_CASTS(SliderThumbElement, isHTMLElement());
+DEFINE_ELEMENT_TYPE_CASTS(SliderThumbElement, isHTMLElement());
 
 // --------------------------------
 

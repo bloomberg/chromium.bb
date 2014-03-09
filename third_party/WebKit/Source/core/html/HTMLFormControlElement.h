@@ -186,7 +186,7 @@ inline bool isHTMLFormControlElement(const Node& node)
     return node.isElementNode() && toElement(node).isFormControlElement();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
 DEFINE_TYPE_CASTS(HTMLFormControlElement, FormAssociatedElement, control, control->isFormControlElement(), control.isFormControlElement());
 
 } // namespace

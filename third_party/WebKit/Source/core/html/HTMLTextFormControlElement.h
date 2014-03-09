@@ -140,7 +140,7 @@ inline bool isHTMLTextFormControlElement(const Node& node)
     return node.isElementNode() && toElement(node).isTextFormControl();
 }
 
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
+DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position&);
 

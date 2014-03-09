@@ -126,7 +126,7 @@ private:
     bool m_isMouseOverControls;
 };
 
-DEFINE_NODE_TYPE_CASTS(MediaControls, isMediaControls());
+DEFINE_ELEMENT_TYPE_CASTS(MediaControls, isMediaControls());
 
 }
 

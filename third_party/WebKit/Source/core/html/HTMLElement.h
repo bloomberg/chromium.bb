@@ -126,7 +126,7 @@ private:
     bool supportsSpatialNavigationFocus() const;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLElement, isHTMLElement());
+DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, isHTMLElement());
 
 inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document, ConstructionType type = CreateHTMLElement)
     : Element(tagName, &document, type)

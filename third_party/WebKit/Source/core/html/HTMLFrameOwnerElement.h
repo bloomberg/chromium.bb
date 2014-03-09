@@ -77,7 +77,7 @@ private:
     SandboxFlags m_sandboxFlags;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLFrameOwnerElement, isFrameOwnerElement());
+DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, isFrameOwnerElement());
 
 class SubframeLoadingDisabler {
 public:
