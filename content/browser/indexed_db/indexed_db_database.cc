@@ -139,7 +139,6 @@ IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory) {
-  DCHECK(!metadata_.name.empty());
 }
 
 void IndexedDBDatabase::AddObjectStore(
