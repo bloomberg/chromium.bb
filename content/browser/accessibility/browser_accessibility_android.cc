@@ -164,6 +164,10 @@ bool BrowserAccessibilityAndroid::IsHierarchical() const {
           role() == ui::AX_ROLE_TREE);
 }
 
+bool BrowserAccessibilityAndroid::IsLink() const {
+  return role() == ui::AX_ROLE_LINK || role() == ui::AX_ROLE_IMAGE_MAP_LINK;
+}
+
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
   return role() == ui::AX_ROLE_TEXT_AREA;
 }
@@ -280,12 +284,6 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   }
 
   switch(role()) {
-    case ui::AX_ROLE_IMAGE_MAP_LINK:
-    case ui::AX_ROLE_LINK:
-      if (!text.empty())
-        text += base::ASCIIToUTF16(" ");
-      text += base::ASCIIToUTF16("Link");
-      break;
     case ui::AX_ROLE_HEADING:
       // Only append "heading" if this node already has text.
       if (!text.empty())

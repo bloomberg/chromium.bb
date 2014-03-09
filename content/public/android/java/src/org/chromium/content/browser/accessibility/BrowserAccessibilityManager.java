@@ -8,6 +8,8 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.URLSpan;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
@@ -447,10 +449,21 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
-    private void setAccessibilityNodeInfoStringAttributes(AccessibilityNodeInfo node,
-            String className, String contentDescription) {
+    private void setAccessibilityNodeInfoClassName(AccessibilityNodeInfo node,
+            String className) {
         node.setClassName(className);
-        node.setContentDescription(contentDescription);
+    }
+
+    @CalledByNative
+    private void setAccessibilityNodeInfoContentDescription(
+            AccessibilityNodeInfo node, String contentDescription, boolean annotateAsLink) {
+        if (annotateAsLink) {
+            SpannableString spannable = new SpannableString(contentDescription);
+            spannable.setSpan(new URLSpan(""), 0, spannable.length(), 0);
+            node.setContentDescription(spannable);
+        } else {
+            node.setContentDescription(contentDescription);
+        }
     }
 
     @CalledByNative

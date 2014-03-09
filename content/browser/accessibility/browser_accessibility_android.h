@@ -30,6 +30,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsFocused() const;
   bool IsHeading() const;
   bool IsHierarchical() const;
+  bool IsLink() const;
   bool IsMultiLine() const;
   bool IsPassword() const;
   bool IsRangeType() const;

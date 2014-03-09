@@ -222,10 +222,13 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       node->IsScrollable(),
       node->IsSelected(),
       node->IsVisibleToUser());
-  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoStringAttributes(
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoClassName(
       env, obj, info,
-      base::android::ConvertUTF8ToJavaString(env, node->GetClassName()).obj(),
-      base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj());
+      base::android::ConvertUTF8ToJavaString(env, node->GetClassName()).obj());
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoContentDescription(
+      env, obj, info,
+      base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj(),
+      node->IsLink());
 
   gfx::Rect absolute_rect = node->GetLocalBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;

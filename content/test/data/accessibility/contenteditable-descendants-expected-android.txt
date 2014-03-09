@@ -2,7 +2,7 @@ android.view.View focusable focused scrollable
     android.view.View editable_text focusable
         android.view.View editable_text
             android.view.View clickable editable_text name='Contentditable with'
-            android.view.View clickable editable_text name='link Link'
+            android.view.View clickable editable_text name='link'
             android.view.View clickable editable_text name='and'
             android.widget.Image clickable editable_text name='image'
             android.view.View clickable editable_text name='and'

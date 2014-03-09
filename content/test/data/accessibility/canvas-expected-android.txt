@@ -2,4 +2,4 @@ android.view.View focusable focused scrollable
     android.view.View
         android.widget.Image clickable name='Image'
         android.view.View
-            android.view.View clickable focusable name='Interactive fallback Link'
+            android.view.View clickable focusable name='Interactive fallback'

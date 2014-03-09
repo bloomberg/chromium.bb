@@ -1,3 +1,3 @@
 android.view.View focusable focused scrollable
     android.view.View clickable name='named anchor'
-    android.view.View clickable focusable name='both a named anchor and a link Link'
+    android.view.View clickable focusable name='both a named anchor and a link'
