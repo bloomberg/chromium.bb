@@ -46,7 +46,11 @@ cr.define('print_preview', function() {
     PRIVET_DUPLICATE_SELECTED: 5,
     // Used when a user selects the cloud printer in a pair of duplicate
     // privet and cloud printers.
-    CLOUD_DUPLICATE_SELECTED: 6
+    CLOUD_DUPLICATE_SELECTED: 6,
+    // Used when a user sees a register promo for a cloud print printer.
+    REGISTER_PROMO_SHOWN: 7,
+    // Used when a user selects a register promo for a cloud print printer.
+    REGISTER_PROMO_SELECTED: 8
   };
 
   /**

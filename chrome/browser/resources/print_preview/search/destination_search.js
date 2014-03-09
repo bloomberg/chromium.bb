@@ -43,6 +43,14 @@ cr.define('print_preview', function() {
     this.metrics_ = metrics;
 
     /**
+     * Whether or not a UMA histogram for the register promo being shown was
+     * already recorded.
+     * @type {bool}
+     * @private
+     */
+    this.registerPromoShownMetricRecorded_ = false;
+
+    /**
      * Search box used to search through the destination lists.
      * @type {!print_preview.SearchBox}
      * @private
@@ -321,6 +329,13 @@ cr.define('print_preview', function() {
           }
         }
       });
+
+      if (unregisteredCloudDestinations.length != 0 &&
+          !this.registerPromoShownMetricRecorded_) {
+        this.metrics_.incrementDestinationSearchBucket(
+          print_preview.Metrics.DestinationSearchBucket.REGISTER_PROMO_SHOWN);
+        this.registerPromoShownMetricRecorded_ = true;
+      }
 
       var finalCloudDestinations = unregisteredCloudDestinations.slice(
         0, DestinationSearch.MAX_PROMOTED_UNREGISTERED_PRINTERS_).concat(
