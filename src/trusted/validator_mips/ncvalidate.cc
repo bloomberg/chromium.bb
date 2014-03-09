@@ -121,10 +121,13 @@ static NaClValidationStatus ApplyValidatorMips(
   UNREFERENCED_PARAMETER(metadata);
   UNREFERENCED_PARAMETER(cache);
   if (stubout_mode) {
-    NCValidateSegment(data, guest_addr, size, true);
-    status = NaClValidationSucceeded;
-  } else if (readonly_text) {
-    status = NaClValidationFailedNotImplemented;
+    if (!readonly_text) {
+      NCValidateSegment(data, guest_addr, size, true);
+      status = NaClValidationSucceeded;
+    } else {
+      /* stubout_mode and readonly_text are in conflict. */
+      status = NaClValidationFailed;
+    }
   } else {
     status = ((0 == NCValidateSegment(data, guest_addr, size, false))
                   ? NaClValidationSucceeded : NaClValidationFailed);
