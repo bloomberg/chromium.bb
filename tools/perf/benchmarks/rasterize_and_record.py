@@ -8,10 +8,11 @@ from benchmarks import silk_flags
 from measurements import rasterize_and_record
 
 
-# RasterizeAndRecord disabled on linux because no raster times are reported.
-# TODO: re-enable when unittests are happy on linux.
+# RasterizeAndRecord disabled on linux because no raster times are reported and
+# on mac because Chrome DCHECKS.
+# TODO: Re-enable when unittests are happy on linux and mac: crbug.com/350684.
 
-@test.Disabled('linux')
+@test.Disabled('linux', 'mac')
 class RasterizeAndRecordTop25(test.Test):
   """Measures rasterize and record performance on the top 25 web pages.
 
@@ -20,7 +21,7 @@ class RasterizeAndRecordTop25(test.Test):
   page_set = 'page_sets/top_25.json'
 
 
-@test.Disabled('linux')
+@test.Disabled('linux', 'mac')
 class RasterizeAndRecordKeyMobileSites(test.Test):
   """Measures rasterize and record performance on the key mobile sites.
 
@@ -29,7 +30,7 @@ class RasterizeAndRecordKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.json'
 
 
-@test.Disabled('linux')
+@test.Disabled('linux', 'mac')
 class RasterizeAndRecordSilk(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
@@ -38,6 +39,7 @@ class RasterizeAndRecordSilk(test.Test):
   page_set = 'page_sets/key_silk_cases.json'
 
 
+@test.Disabled('linux', 'mac')
 class RasterizeAndRecordFastPathSilk(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
