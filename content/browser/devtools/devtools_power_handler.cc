@@ -23,6 +23,9 @@ DevToolsPowerHandler::DevToolsPowerHandler() {
   RegisterCommandHandler(devtools::Power::end::kName,
                          base::Bind(&DevToolsPowerHandler::OnEnd,
                                     base::Unretained(this)));
+  RegisterCommandHandler(devtools::Power::canProfilePower::kName,
+                         base::Bind(&DevToolsPowerHandler::OnCanProfilePower,
+                                    base::Unretained(this)));
 }
 
 DevToolsPowerHandler::~DevToolsPowerHandler() {
@@ -67,6 +70,16 @@ DevToolsPowerHandler::OnEnd(scoped_refptr<DevToolsProtocol::Command> command) {
   }
 
   return command->InternalErrorResponse("Power profiler service unavailable");
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+DevToolsPowerHandler::OnCanProfilePower(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->SetBoolean(devtools::kResult,
+                     PowerProfilerService::GetInstance()->IsAvailable());
+
+  return command->SuccessResponse(result);
 }
 
 }  // namespace content

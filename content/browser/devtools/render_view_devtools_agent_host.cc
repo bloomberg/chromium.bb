@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_power_handler.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
@@ -139,7 +140,8 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     RenderViewHost* rvh)
     : render_view_host_(NULL),
       overrides_handler_(new RendererOverridesHandler(this)),
-      tracing_handler_(new DevToolsTracingHandler())
+      tracing_handler_(new DevToolsTracingHandler()),
+      power_handler_(new DevToolsPowerHandler())
  {
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
@@ -147,6 +149,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
       base::Unretained(this)));
   overrides_handler_->SetNotifier(notifier);
   tracing_handler_->SetNotifier(notifier);
+  power_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
 }
@@ -166,6 +169,8 @@ void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
         overrides_handler_->HandleCommand(command);
     if (!overridden_response)
       overridden_response = tracing_handler_->HandleCommand(command);
+    if (!overridden_response)
+      overridden_response = power_handler_->HandleCommand(command);
     if (overridden_response) {
       if (!overridden_response->is_async_promise())
         OnDispatchOnInspectorFrontend(overridden_response->Serialize());

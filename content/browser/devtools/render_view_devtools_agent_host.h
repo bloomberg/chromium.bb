@@ -22,6 +22,7 @@ class CompositorFrameMetadata;
 
 namespace content {
 
+class DevToolsPowerHandler;
 class DevToolsTracingHandler;
 class RendererOverridesHandler;
 class RenderViewHost;
@@ -95,6 +96,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   RenderViewHost* render_view_host_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
+  scoped_ptr<DevToolsPowerHandler> power_handler_;
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif
