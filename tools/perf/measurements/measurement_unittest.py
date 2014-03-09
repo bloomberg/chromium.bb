@@ -56,4 +56,5 @@ class MeasurementUnitTest(unittest.TestCase):
       logging.info('running: %s', benchmark)
       options = options_for_unittests.GetCopy()
       options.output_format = 'none'
-      self.assertEqual(0, SinglePageBenchmark().Run(options))
+      self.assertEqual(0, SinglePageBenchmark().Run(options),
+                       msg='Failed: %s' % benchmark)
