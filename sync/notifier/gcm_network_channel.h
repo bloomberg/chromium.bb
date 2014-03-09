@@ -49,14 +49,22 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   void ResetRegisterBackoffEntryForTest(
       const net::BackoffEntry::Policy* policy);
 
+  virtual GURL BuildUrl(const std::string& registration_id);
+
  private:
+  friend class GCMNetworkChannelTest;
   void Register();
   void OnRegisterComplete(const std::string& registration_id,
                           gcm::GCMClient::Result result);
   void RequestAccessToken();
   void OnGetTokenComplete(const GoogleServiceAuthError& error,
                           const std::string& token);
-  GURL BuildUrl();
+  // Base64 encoding/decoding with URL safe alphabet.
+  // http://tools.ietf.org/html/rfc4648#page-7
+  static void Base64EncodeURLSafe(const std::string& input,
+                                  std::string* output);
+  static bool Base64DecodeURLSafe(const std::string& input,
+                                  std::string* output);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<GCMNetworkChannelDelegate> delegate_;

@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
+#include "base/strings/string_util.h"
+#if !defined(ANDROID)
+// channel_common.proto defines ANDROID constant that conflicts with Android
+// build. At the same time TiclInvalidationService is not used on Android so it
+// is safe to exclude these protos from Android build.
+#include "google/cacheinvalidation/android_channel.pb.h"
+#include "google/cacheinvalidation/channel_common.pb.h"
+#endif
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -12,6 +21,10 @@
 namespace syncer {
 
 namespace {
+
+const char kCacheInvalidationEndpointUrl[] =
+    "https://clients4.google.com/invalidation/android/request/";
+const char kCacheInvalidationPackageName[] = "com.google.chrome.invalidations";
 
 // Register backoff policy.
 const net::BackoffEntry::Policy kRegisterBackoffPolicy = {
@@ -143,9 +156,8 @@ void GCMNetworkChannel::OnGetTokenComplete(
   access_token_ = token;
 
   DVLOG(2) << "Got access token, sending message";
-
-  fetcher_.reset(net::URLFetcher::Create(BuildUrl(), net::URLFetcher::POST,
-                                         this));
+  fetcher_.reset(net::URLFetcher::Create(
+      BuildUrl(registration_id_), net::URLFetcher::POST, this));
   fetcher_->SetRequestContext(request_context_getter_);
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);
@@ -175,13 +187,62 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
   DVLOG(2) << "URLFetcher success";
 }
 
-GURL GCMNetworkChannel::BuildUrl() {
-  DCHECK(!registration_id_.empty());
-  // Prepare NetworkEndpointId using registration_id
-  // Serialize NetworkEndpointId into byte array and base64 encode.
-  // Format url using encoded NetworkEndpointId.
-  // TODO(pavely): implement all of the above.
-  return GURL("http://invalid.url.com");
+GURL GCMNetworkChannel::BuildUrl(const std::string& registration_id) {
+  DCHECK(!registration_id.empty());
+
+#if !defined(ANDROID)
+  ipc::invalidation::EndpointId endpoint_id;
+  endpoint_id.set_c2dm_registration_id(registration_id);
+  endpoint_id.set_client_key(std::string());
+  endpoint_id.set_package_name(kCacheInvalidationPackageName);
+  endpoint_id.mutable_channel_version()->set_major_version(
+      ipc::invalidation::INITIAL);
+  std::string endpoint_id_buffer;
+  endpoint_id.SerializeToString(&endpoint_id_buffer);
+
+  ipc::invalidation::NetworkEndpointId network_endpoint_id;
+  network_endpoint_id.set_network_address(
+      ipc::invalidation::NetworkEndpointId_NetworkAddress_ANDROID);
+  network_endpoint_id.set_client_address(endpoint_id_buffer);
+  std::string network_endpoint_id_buffer;
+  network_endpoint_id.SerializeToString(&network_endpoint_id_buffer);
+
+  std::string base64URLPiece;
+  Base64EncodeURLSafe(network_endpoint_id_buffer, &base64URLPiece);
+
+  std::string url(kCacheInvalidationEndpointUrl);
+  url += base64URLPiece;
+  return GURL(url);
+#else
+  // This code shouldn't be invoked on Android.
+  NOTREACHED();
+  return GURL();
+#endif
+}
+
+void GCMNetworkChannel::Base64EncodeURLSafe(const std::string& input,
+                                            std::string* output) {
+  base::Base64Encode(input, output);
+  // Covert to url safe alphabet.
+  base::ReplaceChars(*output, "+", "-", output);
+  base::ReplaceChars(*output, "/", "_", output);
+  // Trim padding.
+  size_t padding_size = 0;
+  for (size_t i = output->size(); i > 0 && (*output)[i - 1] == '='; --i)
+    ++padding_size;
+  output->resize(output->size() - padding_size);
+}
+
+bool GCMNetworkChannel::Base64DecodeURLSafe(const std::string& input,
+                                            std::string* output) {
+  // Add padding.
+  size_t padded_size = (input.size() + 3) - (input.size() + 3) % 4;
+  std::string padded_input(input);
+  padded_input.resize(padded_size, '=');
+  // Convert to standard base64 alphabet.
+  base::ReplaceChars(padded_input, "-", "+", &padded_input);
+  base::ReplaceChars(padded_input, "_", "/", &padded_input);
+  return base::Base64Decode(padded_input, output);
 }
 
 }  // namespace syncer
