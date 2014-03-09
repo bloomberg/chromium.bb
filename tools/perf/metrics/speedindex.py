@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import collections
-import os
 
 from metrics import Metric
 from telemetry.core import bitmap
@@ -23,10 +22,6 @@ class SpeedIndexMetric(Metric):
   def __init__(self):
     super(SpeedIndexMetric, self).__init__()
     self._impl = None
-    self._script_is_loaded = False
-    self._is_finished = False
-    with open(os.path.join(os.path.dirname(__file__), 'speedindex.js')) as f:
-      self._js = f.read()
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
@@ -42,8 +37,6 @@ class SpeedIndexMetric(Metric):
     self._impl = (VideoSpeedIndexImpl() if tab.video_capture_supported else
                   PaintRectSpeedIndexImpl())
     self._impl.Start(tab)
-    self._script_is_loaded = False
-    self._is_finished = False
 
   def Stop(self, _, tab):
     """Stop timeline recording."""
@@ -78,23 +71,7 @@ class SpeedIndexMetric(Metric):
       True if 2 seconds have passed since last resource received, false
       otherwise.
     """
-    if self._is_finished:
-      return True
-
-    # The script that provides the function window.timeSinceLastResponseMs()
-    # needs to be loaded for this function, but it must be loaded AFTER
-    # the Start method is called, because if the Start method is called in
-    # the PageMeasurement's WillNavigateToPage function, then it will
-    # not be available here. The script should only be re-loaded once per page
-    # so that variables in the script get reset only for a new page.
-    if not self._script_is_loaded:
-      tab.ExecuteJavaScript(self._js)
-      self._script_is_loaded = True
-
-    time_since_last_response_ms = tab.EvaluateJavaScript(
-        "window.timeSinceLastResponseAfterLoadMs()")
-    self._is_finished = time_since_last_response_ms > 2000
-    return self._is_finished
+    return tab.HasReachedQuiescence()
 
 
 class SpeedIndexImpl(object):
