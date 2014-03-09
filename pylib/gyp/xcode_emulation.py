@@ -1321,6 +1321,11 @@ def _GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
   install_name_base = xcode_settings.GetInstallNameBase()
   if install_name_base:
     env['DYLIB_INSTALL_NAME_BASE'] = install_name_base
+  if XcodeVersion() >= '0500' and not env.get('SDKROOT'):
+    sdk_root = xcode_settings._SdkRoot(configuration)
+    if not sdk_root:
+      sdk_root = xcode_settings._XcodeSdkPath('')
+    env['SDKROOT'] = sdk_root
 
   if not additional_settings:
     additional_settings = {}
