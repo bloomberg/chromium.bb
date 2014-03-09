@@ -197,21 +197,27 @@ int32_t PepperInternalFileRefBackend::ReadDirectoryEntries(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
+  fileapi::FileSystemOperation::FileEntryList* accumulated_file_list
+      = new fileapi::FileSystemOperation::FileEntryList;
   GetFileSystemContext()->operation_runner()->ReadDirectory(
       GetFileSystemURL(),
       base::Bind(&PepperInternalFileRefBackend::ReadDirectoryComplete,
                  weak_factory_.GetWeakPtr(),
-                 reply_context));
+                 reply_context,
+                 base::Owned(accumulated_file_list)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperInternalFileRefBackend::ReadDirectoryComplete(
     ppapi::host::ReplyMessageContext context,
+    fileapi::FileSystemOperation::FileEntryList* accumulated_file_list,
     base::File::Error error,
     const fileapi::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
-  // The current filesystem backend always returns false.
-  DCHECK(!has_more);
+  accumulated_file_list->insert(accumulated_file_list->end(),
+                                file_list.begin(), file_list.end());
+  if (has_more)
+    return;
 
   context.params.set_result(ppapi::FileErrorToPepperError(error));
 
@@ -223,7 +229,8 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
       dir_path += '/';
 
     for (fileapi::FileSystemOperation::FileEntryList::const_iterator it =
-         file_list.begin(); it != file_list.end(); ++it) {
+             accumulated_file_list->begin();
+         it != accumulated_file_list->end(); ++it) {
       if (it->is_directory)
         file_types.push_back(PP_FILETYPE_DIRECTORY);
       else

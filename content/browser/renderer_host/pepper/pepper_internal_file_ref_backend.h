@@ -65,6 +65,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
     const base::File::Info& file_info);
   void ReadDirectoryComplete(
       ppapi::host::ReplyMessageContext context,
+      fileapi::FileSystemOperation::FileEntryList* accumulated_file_list,
       base::File::Error error,
       const fileapi::FileSystemOperation::FileEntryList& file_list,
       bool has_more);
