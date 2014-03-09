@@ -243,17 +243,19 @@ void VolumeManager::Initialize() {
                                       new_path);
   }
 
-  // Register 'Downloads' folder for the profile to the file system.
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    const base::FilePath downloads =
-        file_manager::util::GetDownloadsFolderForProfile(profile_);
-    const bool success = RegisterDownloadsMountPoint(profile_, downloads);
-    DCHECK(success);
+  // If in Sign in profile, then skip mounting and listening for mount events.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+    return;
 
-    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-                 CreateDownloadsVolumeInfo(downloads),
-                 kNotRemounting);
-  }
+  // Register 'Downloads' folder for the profile to the file system.
+  const base::FilePath downloads =
+      file_manager::util::GetDownloadsFolderForProfile(profile_);
+  const bool success = RegisterDownloadsMountPoint(profile_, downloads);
+  DCHECK(success);
+
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               CreateDownloadsVolumeInfo(downloads),
+               kNotRemounting);
 
   // Subscribe to DriveIntegrationService.
   if (drive_integration_service_) {
