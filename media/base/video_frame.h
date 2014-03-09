@@ -155,6 +155,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static scoped_refptr<VideoFrame> WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
       const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
       const base::Closure& no_longer_needed_cb);
 
   // Creates a frame which indicates end-of-stream.

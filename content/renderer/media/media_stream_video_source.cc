@@ -387,7 +387,7 @@ void MediaStreamVideoSource::DeliverVideoFrame(
 
     gfx::Rect rect(horiz_crop, vert_crop, visible_width, visible_height);
     video_frame = media::VideoFrame::WrapVideoFrame(
-        frame, rect, base::Bind(&ReleaseOriginalFrame, frame));
+        frame, rect, rect.size(), base::Bind(&ReleaseOriginalFrame, frame));
   }
 
   if ((frame->format() == media::VideoFrame::I420 ||

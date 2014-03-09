@@ -217,8 +217,9 @@ TEST(VideoFrame, WrapVideoFrame) {
     ASSERT_TRUE(wrapped_frame.get());
 
     gfx::Rect visible_rect(1, 1, 1, 1);
+    gfx::Size natural_size = visible_rect.size();
     frame = media::VideoFrame::WrapVideoFrame(
-        wrapped_frame, visible_rect,
+        wrapped_frame, visible_rect, natural_size,
         base::Bind(&FrameNoLongerNeededCallback, wrapped_frame,
                    &no_longer_needed_triggered));
     EXPECT_EQ(wrapped_frame->coded_size(), frame->coded_size());
@@ -226,6 +227,8 @@ TEST(VideoFrame, WrapVideoFrame) {
               frame->data(media::VideoFrame::kYPlane));
     EXPECT_NE(wrapped_frame->visible_rect(), frame->visible_rect());
     EXPECT_EQ(visible_rect, frame->visible_rect());
+    EXPECT_NE(wrapped_frame->natural_size(), frame->natural_size());
+    EXPECT_EQ(natural_size, frame->natural_size());
   }
 
   EXPECT_FALSE(no_longer_needed_triggered);

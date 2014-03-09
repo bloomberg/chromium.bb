@@ -86,7 +86,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   }
 
   return VideoFrame::WrapVideoFrame(
-      frame, frame->visible_rect(),
+      frame, frame->visible_rect(), frame->natural_size(),
       base::Bind(&VideoFramePool::PoolImpl::FrameReleased, this, frame));
 }
 
