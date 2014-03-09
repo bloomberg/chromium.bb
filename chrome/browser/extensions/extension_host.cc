@@ -195,7 +195,7 @@ void ExtensionHost::CreateRenderViewSoon() {
 
 void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
-  if (!IsBackgroundPage()) {
+  if (IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
     ExtensionsBrowserClient::Get()->OnRenderViewCreatedForBackgroundPage(this);
   }
