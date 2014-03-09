@@ -9,7 +9,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
-#include "content/public/common/content_client.h"
+#include "chrome/common/chrome_content_client.h"
 #include "content/public/common/process_type.h"
 #include "url/gurl.h"
 
@@ -140,7 +140,7 @@ bool TaskProfilerDataSerializer::WriteToFile(const base::FilePath& path) {
   base::ListValue* per_process_data = new base::ListValue();
 
   root->SetInteger("version", 1);
-  root->SetString("userAgent", content::GetUserAgent(GURL()));
+  root->SetString("userAgent", GetUserAgent());
 
   // TODO(ramant): Collect data from other processes, then add that data to the
   // 'per_process_data' array here. Should leverage the TrackingSynchronizer

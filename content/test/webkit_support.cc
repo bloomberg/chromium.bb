@@ -18,8 +18,6 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_util.h"
-#include "webkit/common/user_agent/user_agent.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -110,8 +108,6 @@ void SetUpTestEnvironmentForUnitTests() {
   // at same time.
   url_util::Initialize();
   test_environment = new TestEnvironment;
-  webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
-      "DumpRenderTree/0.0.0.0"));
 }
 
 void TearDownTestEnvironment() {

@@ -12,13 +12,13 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
-#include "webkit/common/user_agent/user_agent.h"
 
 namespace content {
 
@@ -73,8 +73,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
 
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.scriptURL = script_url;
-  start_data.userAgent =
-      base::UTF8ToUTF16(webkit_glue::GetUserAgent(script_url));
+  start_data.userAgent = base::UTF8ToUTF16(GetContentClient()->GetUserAgent());
   start_data.startMode = blink::WebEmbeddedWorkerStartModeDontPauseOnStart;
 
   wrapper->worker()->startWorkerContext(start_data);

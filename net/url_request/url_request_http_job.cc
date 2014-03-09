@@ -270,8 +270,7 @@ void URLRequestHttpJob::Start() {
   request_info_.extra_headers.SetHeaderIfMissing(
       HttpRequestHeaders::kUserAgent,
       http_user_agent_settings_ ?
-          http_user_agent_settings_->GetUserAgent(request_->url()) :
-          std::string());
+          http_user_agent_settings_->GetUserAgent() : std::string());
 
   AddExtraHeaders();
   AddCookieHeaderAndStart();

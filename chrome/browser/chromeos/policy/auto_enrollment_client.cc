@@ -17,13 +17,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_client.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -103,9 +103,7 @@ AutoEnrollmentClient::AutoEnrollmentClient(
       device_management_service_(service),
       local_state_(local_state) {
   request_context_ = new SystemPolicyRequestContext(
-      system_request_context,
-      content::GetUserAgent(
-          GURL(device_management_service_->GetServerUrl())));
+      system_request_context, GetUserAgent());
 
   DCHECK_LE(power_initial_, power_limit_);
   DCHECK(!completion_callback_.is_null());

@@ -126,6 +126,15 @@ blink::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
       BlinkPlatformImpl::createURLLoader());
 }
 
+blink::WebString TestWebKitPlatformSupport::userAgent() {
+  return blink::WebString::fromUTF8("DumpRenderTree/0.0.0.0");
+}
+
+blink::WebString TestWebKitPlatformSupport::userAgent(
+    const blink::WebURL& url) {
+  return userAgent();
+}
+
 blink::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
   if (!strcmp(name, "deleteButton")) {
     // Create a red 30x30 square.

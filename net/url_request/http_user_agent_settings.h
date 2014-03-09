@@ -24,9 +24,8 @@ class NET_EXPORT HttpUserAgentSettings {
   // Gets the value of 'Accept-Language' header field.
   virtual std::string GetAcceptLanguage() const = 0;
 
-  // Gets the UA string to use for the given URL.  Pass an empty URL to get
-  // the default UA string.
-  virtual std::string GetUserAgent(const GURL& url) const = 0;
+  // Gets the UA string.
+  virtual std::string GetUserAgent() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpUserAgentSettings);

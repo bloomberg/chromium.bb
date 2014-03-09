@@ -15,8 +15,7 @@
 class PrefService;
 
 // An implementation of |HttpUserAgentSettings| that provides HTTP header
-// Accept-Language value that tracks Pref settings and uses
-// |content::GetUserAgent| to provide the HTTP User-Agent header value.
+// Accept-Language value that tracks Pref settings.
 class ChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:
   // Must be called on the UI thread.
@@ -28,7 +27,7 @@ class ChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
 
   // net::HttpUserAgentSettings implementation
   virtual std::string GetAcceptLanguage() const OVERRIDE;
-  virtual std::string GetUserAgent(const GURL& url) const OVERRIDE;
+  virtual std::string GetUserAgent() const OVERRIDE;
 
  private:
   StringPrefMember pref_accept_language_;
