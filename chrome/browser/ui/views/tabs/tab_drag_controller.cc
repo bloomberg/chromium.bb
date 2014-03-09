@@ -162,6 +162,7 @@ TabDragController::TabDragController()
       attached_tabstrip_(NULL),
       screen_(NULL),
       host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
+      use_aura_capture_policy_(false),
       offset_to_width_ratio_(0),
       old_focused_view_id_(
           views::ViewStorage::GetInstance()->CreateStorageID()),
@@ -236,6 +237,12 @@ void TabDragController::Init(
       source_tabstrip->GetWidget()->GetNativeView());
   host_desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       source_tabstrip->GetWidget()->GetNativeView());
+#if defined(OS_LINUX)
+  use_aura_capture_policy_ = true;
+#else
+  use_aura_capture_policy_ =
+      (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH);
+#endif
   start_point_in_screen_ = gfx::Point(source_tab_offset, mouse_offset.y());
   views::View::ConvertPointToScreen(source_tab, &start_point_in_screen_);
   event_source_ = event_source;
@@ -659,7 +666,7 @@ TabDragController::DragBrowserToNewTabStrip(
     // ReleaseCapture() is going to result in calling back to us (because it
     // results in a move). That'll cause all sorts of problems.  Reset the
     // observer so we don't get notified and process the event.
-    if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+    if (use_aura_capture_policy_) {
       move_loop_widget_->RemoveObserver(this);
       move_loop_widget_ = NULL;
     }
@@ -672,7 +679,7 @@ TabDragController::DragBrowserToNewTabStrip(
     browser_widget->SetVisibilityChangedAnimationsEnabled(false);
     // For aura we can't release capture, otherwise it'll cancel a gesture.
     // Instead we have to directly change capture.
-    if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH)
+    if (use_aura_capture_policy_)
       target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
     else
       browser_widget->ReleaseCapture();
@@ -692,9 +699,12 @@ TabDragController::DragBrowserToNewTabStrip(
     // that to effect the position of any windows.
     SetWindowPositionManaged(browser_widget->GetNativeView(), false);
 
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
     // EndMoveLoop is going to snap the window back to its original location.
-    // Hide it so users don't see this.
+    // Hide it so users don't see this. Hiding a window in Linux aura causes
+    // it to lose capture so skip it.
     browser_widget->Hide();
+#endif
     browser_widget->EndMoveLoop();
 
     // Ideally we would always swap the tabs now, but on non-ash it seems that
@@ -702,7 +712,7 @@ TabDragController::DragBrowserToNewTabStrip(
     // to all sorts of flicker. So, on non-ash, instead we process the move
     // after the loop completes. But on chromeos, we can do tab swapping now to
     // avoid the tab flashing issue(crbug.com/116329).
-    if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+    if (use_aura_capture_policy_) {
       is_dragging_window_ = false;
       Detach(DONT_RELEASE_CAPTURE);
       Attach(target_tabstrip, point_in_screen);
@@ -1127,8 +1137,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   gfx::NativeView attached_native_view =
     attached_tabstrip_->GetWidget()->GetNativeView();
 #endif
-  Detach(host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH ?
-         DONT_RELEASE_CAPTURE : RELEASE_CAPTURE);
+  Detach(use_aura_capture_policy_ ? DONT_RELEASE_CAPTURE : RELEASE_CAPTURE);
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
   views::Widget* dragged_widget = dragged_browser_view->GetWidget();

@@ -325,7 +325,6 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, GestureEndShouldEndDragTest) {
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
-  TabStripModel* model = browser()->tab_strip_model();
 
   Tab* tab1 = tab_strip->tab_at(1);
   gfx::Point tab_1_center(tab1->width() / 2, tab1->height() / 2);
