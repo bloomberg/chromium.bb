@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +18,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -32,6 +34,8 @@ namespace {
 const int kMinBubbleWidth = 300;
 // Minimum width of the the textfield.
 const int kMinTextfieldWidth = 200;
+// Size of the icon.
+const int kIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
 
 }  // namespace
 
@@ -69,7 +73,10 @@ BookmarkAppBubbleView::BookmarkAppBubbleView(
       cancel_button_(NULL),
       open_as_tab_checkbox_(NULL),
       title_tf_(NULL),
-      remove_app_(true) {
+      remove_app_(true),
+      app_icon_loader_(new extensions::AppIconLoaderImpl(profile,
+                                                         kIconSize,
+                                                         this)) {
   const SkColor background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   set_arrow(views::BubbleBorder::TOP_CENTER);
@@ -111,11 +118,18 @@ void BookmarkAppBubbleView::Init() {
       GridLayout::LEADING, GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 
-  // The column layout used for the text box.
+  // The column layout used for the icon and text box.
   cs = layout->AddColumnSet(TITLE_TEXT_COLUMN_SET_ID);
   cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  cs->AddColumn(GridLayout::LEADING,
+                GridLayout::CENTER,
+                0,
+                GridLayout::USE_PREF,
+                0,
+                0);
+  cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
   cs->AddColumn(GridLayout::FILL,
-                GridLayout::FILL,
+                GridLayout::CENTER,
                 1,
                 GridLayout::USE_PREF,
                 0,
@@ -124,29 +138,37 @@ void BookmarkAppBubbleView::Init() {
 
   // The column layout used for the row with buttons.
   cs = layout->AddColumnSet(CONTENT_COLUMN_SET_ID);
-  cs->AddPaddingColumn(1, views::kButtonHEdgeMarginNew);
-
+  cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
   cs->AddColumn(
-      GridLayout::LEADING, GridLayout::TRAILING, 0, GridLayout::USE_PREF, 0, 0);
+      GridLayout::LEADING, GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
+  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddColumn(
+      GridLayout::LEADING, GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
   cs->AddColumn(
-      GridLayout::LEADING, GridLayout::TRAILING, 0, GridLayout::USE_PREF, 0, 0);
+      GridLayout::LEADING, GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 
   layout->StartRow(0, TITLE_COLUMN_SET_ID);
   layout->AddView(title_label);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  layout->StartRow(0, TITLE_TEXT_COLUMN_SET_ID);
-  title_tf_ = new views::Textfield();
   const extensions::Extension* extension =
       profile_->GetExtensionService()->GetInstalledExtension(extension_id_);
+
+  layout->StartRow(0, TITLE_TEXT_COLUMN_SET_ID);
+  icon_image_view_ = new views::ImageView();
+  icon_image_view_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+  layout->AddView(icon_image_view_);
+  app_icon_loader_->FetchImage(extension_id_);
+
+  title_tf_ = new views::Textfield();
   title_tf_->SetText(extension ? base::UTF8ToUTF16(extension->name())
                                : web_app_info_.title);
   layout->AddView(title_tf_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  layout->StartRow(0, TITLE_COLUMN_SET_ID);
+  layout->StartRow(0, CONTENT_COLUMN_SET_ID);
   open_as_tab_checkbox_ = new views::Checkbox(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB));
   open_as_tab_checkbox_->SetChecked(
@@ -154,9 +176,6 @@ void BookmarkAppBubbleView::Init() {
           extensions::pref_names::kBookmarkAppCreationLaunchType) ==
               extensions::LAUNCH_TYPE_REGULAR);
   layout->AddView(open_as_tab_checkbox_);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  layout->StartRow(0, CONTENT_COLUMN_SET_ID);
   layout->AddView(add_button_);
   layout->AddView(cancel_button_);
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
@@ -201,6 +220,12 @@ gfx::Size BookmarkAppBubbleView::GetMinimumSize() {
 void BookmarkAppBubbleView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   HandleButtonPressed(sender);
+}
+
+void BookmarkAppBubbleView::SetAppImage(const std::string& id,
+                                        const gfx::ImageSkia& image) {
+  DCHECK_EQ(extension_id_, id);
+  icon_image_view_->SetImage(image);
 }
 
 void BookmarkAppBubbleView::HandleButtonPressed(views::Button* sender) {
