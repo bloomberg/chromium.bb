@@ -183,46 +183,8 @@ void OmniboxViewViews::Init() {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::Textfield implementation:
 
-void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (chrome::GetOriginChipV2HideTrigger() ==
-      chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
-    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
-    controller()->OnChanged();
-  }
-}
-
 const char* OmniboxViewViews::GetClassName() const {
   return kViewClassName;
-}
-
-void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
-  if (!HasFocus() && event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    select_all_on_gesture_tap_ = true;
-
-    // If we're trying to select all on tap, invalidate any saved selection lest
-    // restoring it fights with the "select all" action.
-    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
-  }
-
-  if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
-    SelectAll(false);
-
-  if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-      event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
-      event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
-      event->type() == ui::ET_GESTURE_LONG_PRESS ||
-      event->type() == ui::ET_GESTURE_LONG_TAP) {
-    select_all_on_gesture_tap_ = false;
-  }
-
-  views::Textfield::OnGestureEvent(event);
-}
-
-void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
-  location_bar_view_->GetAccessibleState(state);
-  state->role = ui::AX_ROLE_TEXT_FIELD;
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
@@ -349,6 +311,39 @@ bool OmniboxViewViews::OnKeyReleased(const ui::KeyEvent& event) {
   return views::Textfield::OnKeyReleased(event);
 }
 
+void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
+  if (!HasFocus() && event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    select_all_on_gesture_tap_ = true;
+
+    // If we're trying to select all on tap, invalidate any saved selection lest
+    // restoring it fights with the "select all" action.
+    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  }
+
+  if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
+    SelectAll(false);
+
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+      event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
+      event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
+      event->type() == ui::ET_GESTURE_LONG_PRESS ||
+      event->type() == ui::ET_GESTURE_LONG_TAP) {
+    select_all_on_gesture_tap_ = false;
+  }
+
+  views::Textfield::OnGestureEvent(event);
+}
+
+void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  if (chrome::GetOriginChipV2HideTrigger() ==
+      chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
+    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
+    controller()->OnChanged();
+  }
+}
+
 bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     const ui::KeyEvent& event) {
   if (views::FocusManager::IsTabTraversalKeyEvent(event) &&
@@ -357,6 +352,11 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     return true;
   }
   return Textfield::SkipDefaultKeyEventProcessing(event);
+}
+
+void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
+  location_bar_view_->GetAccessibleState(state);
+  state->role = ui::AX_ROLE_TEXT_FIELD;
 }
 
 bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
