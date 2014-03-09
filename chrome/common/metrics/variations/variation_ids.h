@@ -182,7 +182,7 @@ enum ReservedVariationID {
   // For more details, see
   // chrome/browser/omnibox/omnibox_field_trial.{h,cc}.
   AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_ID_MIN = 3310086,
-  AUTOCOMPLETE_DYANMIC_FIELD_TRIAL_ID_MAX = 3310185,
+  AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_ID_MAX = 3310185,
 
   // BookmarkPrompt field trial.
   BOOKMARK_PROMPT_TRIAL_DEFAULT = 3310186,
@@ -265,7 +265,7 @@ enum ReservedVariationID {
   // For more details, see
   // chrome/browser/omnibox/omnibox_field_trial.{h,cc}.
   AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_RANGE2_ID_MIN = 3311947,
-  AUTOCOMPLETE_DYANMIC_FIELD_TRIAL_RANGE2_ID_MAX = 3312046,
+  AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_RANGE2_ID_MAX = 3312046,
 
   // DEPRECATED - DO NOT USE
   // Name: IOSPhoneNewNTP
@@ -310,10 +310,18 @@ enum ReservedVariationID {
   LINK_REL_PREFETCH_DISABLED_1 = 3312120,
   LINK_REL_PREFETCH_DISABLED_2 = 3312121,
 
+  // Reserve 200 more IDs to be used by autocomplete dynamic field trials.
+  // The dynamic field trials are activated by a call to
+  // OmniboxFieldTrial::ActivateDynamicFieldTrials.
+  // For more details, see
+  // chrome/browser/omnibox/omnibox_field_trial.{h,cc}.
+  AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_RANGE3_ID_MIN = 3312122,
+  AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_RANGE3_ID_MAX = 3312321,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312122,
+  NEXT_ID = 3312322,
 
   // USABLE IDs END HERE.
   //
