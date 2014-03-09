@@ -7,13 +7,14 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -41,7 +42,6 @@ class InvertBubbleView : public views::BubbleDelegateView,
  private:
   // Overridden from views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -58,7 +58,7 @@ class InvertBubbleView : public views::BubbleDelegateView,
 };
 
 InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
-    : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
+    : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
       high_contrast_(NULL),
       dark_theme_(NULL),
@@ -126,14 +126,6 @@ void InvertBubbleView::Init() {
   set_move_with_anchor(true);
 }
 
-gfx::Rect InvertBubbleView::GetAnchorRect() {
-  // Set the height to 0 so we display the bubble at the top of the
-  // anchor rect.
-  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.set_height(0);
-  return rect;
-}
-
 void InvertBubbleView::LinkClicked(views::Link* source, int event_flags) {
   if (source == high_contrast_)
     OpenLink(kHighContrastExtensionUrl, event_flags);
@@ -161,12 +153,14 @@ void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
 
 namespace chrome {
 
-void MaybeShowInvertBubbleView(Browser* browser, views::View* anchor_view) {
+void MaybeShowInvertBubbleView(BrowserView* browser_view) {
+  Browser* browser = browser_view->browser();
   PrefService* pref_service = browser->profile()->GetPrefs();
-  if (gfx::IsInvertedColorScheme() &&
+  views::View* anchor = browser_view->toolbar()->app_menu();
+  if (gfx::IsInvertedColorScheme() && anchor && anchor->GetWidget() &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
-    InvertBubbleView* delegate = new InvertBubbleView(browser, anchor_view);
+    InvertBubbleView* delegate = new InvertBubbleView(browser, anchor);
     views::BubbleDelegateView::CreateBubble(delegate);
     delegate->StartFade(true);
   }

@@ -695,13 +695,12 @@ void BrowserView::Show() {
 
   browser()->OnWindowDidShow();
 
-  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_container_);
+  chrome::MaybeShowInvertBubbleView(this);
 }
 
 void BrowserView::ShowInactive() {
-  if (frame_->IsVisible())
-    return;
-  frame_->ShowInactive();
+  if (!frame_->IsVisible())
+    frame_->ShowInactive();
 }
 
 void BrowserView::Hide() {
@@ -1925,7 +1924,7 @@ bool BrowserView::DrawInfoBarArrows(int* x) const {
 }
 
 void BrowserView::OnSysColorChange() {
-  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_container_);
+  chrome::MaybeShowInvertBubbleView(this);
 }
 
 void BrowserView::InitViews() {
