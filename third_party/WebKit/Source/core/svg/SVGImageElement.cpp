@@ -208,6 +208,11 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
     if (m_needsLoaderURIUpdate) {
         m_imageLoader.updateFromElementIgnoringPreviousError();
         m_needsLoaderURIUpdate = false;
+    } else {
+        // A previous loader update may have failed to actually fetch the image if the document
+        // was inactive. In that case, force a re-update (but don't clear previous errors).
+        if (!m_imageLoader.image())
+            m_imageLoader.updateFromElement();
     }
 
     return InsertionDone;
