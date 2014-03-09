@@ -146,8 +146,13 @@ class CONTENT_EXPORT MediaStreamImpl
     blink::WebMediaStream web_stream;
     blink::WebUserMediaRequest request;
 
-    void StartTrack(const blink::WebMediaStreamTrack& track,
-                    const blink::WebMediaConstraints& constraints);
+    void StartAudioTrack(const blink::WebMediaStreamTrack& track,
+                         const blink::WebMediaConstraints& constraints);
+
+    blink::WebMediaStreamTrack CreateAndStartVideoTrack(
+        const blink::WebMediaStreamSource& source,
+        const blink::WebMediaConstraints& constraints,
+        MediaStreamDependencyFactory* factory);
 
     // Triggers |callback| when all sources used in this request have either
     // successfully started, or a source has failed to start.

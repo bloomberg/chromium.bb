@@ -32,6 +32,7 @@ class CONTENT_EXPORT MediaStreamTrack
   static MediaStreamTrack* GetTrack(
       const blink::WebMediaStreamTrack& track);
 
+  // If a subclass overrides this method it has to call the base class.
   virtual void SetEnabled(bool enabled);
 
   virtual webrtc::AudioTrackInterface* GetAudioAdapter();

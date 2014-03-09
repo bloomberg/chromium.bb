@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
@@ -79,18 +80,14 @@ class MediaStreamVideoSourceTest
   blink::WebMediaStreamTrack CreateTrack(
       const std::string& id,
       const blink::WebMediaConstraints& constraints) {
-    blink::WebMediaStreamTrack track;
-    track.initialize(base::UTF8ToUTF16(id), webkit_source_);
-
-    MediaStreamVideoSource* source =
-        static_cast<MediaStreamVideoSource*>(track.source().extraData());
-
-    source->AddTrack(track,
-                     constraints,
-                     base::Bind(
-                         &MediaStreamVideoSourceTest::OnConstraintsApplied,
-                         base::Unretained(this)));
-    return track;
+    bool enabled = true;
+    MediaStreamDependencyFactory* factory = NULL;
+    return MediaStreamVideoTrack::CreateVideoTrack(
+        mock_source_, constraints,
+        base::Bind(
+            &MediaStreamVideoSourceTest::OnConstraintsApplied,
+            base::Unretained(this)),
+        enabled, factory);
   }
 
   blink::WebMediaStreamTrack CreateTrackAndStartSource(
@@ -177,7 +174,7 @@ class MediaStreamVideoSourceTest
 TEST_F(MediaStreamVideoSourceTest, AddTrackAndStartSource) {
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
+  CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->StartMockedSource();
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
@@ -197,18 +194,18 @@ TEST_F(MediaStreamVideoSourceTest, AddTwoTracksBeforeSourceStarts) {
 TEST_F(MediaStreamVideoSourceTest, AddTrackAfterSourceStarts) {
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
+  CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->StartMockedSource();
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
-  blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
+  CreateTrack("123", constraints);
   EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
 }
 
 TEST_F(MediaStreamVideoSourceTest, AddTrackAndFailToStartSource) {
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
+  CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->FailToStartMockedSource();
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
@@ -217,8 +214,8 @@ TEST_F(MediaStreamVideoSourceTest, AddTrackAndFailToStartSource) {
 TEST_F(MediaStreamVideoSourceTest, AddTwoTracksBeforeGetSupportedFormats) {
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
-  blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
+  CreateTrack("123", constraints);
+  CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->StartMockedSource();
   EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
@@ -262,7 +259,7 @@ TEST_F(MediaStreamVideoSourceTest, MandatoryAspectRatio4To3) {
   CreateTrackAndStartSource(factory.CreateConstraints(), 640, 480, 30);
 }
 
-// Test that ApplyConstraints fail if the mandatory aspect ratio
+// Test that AddTrack fail if the mandatory aspect ratio
 // is set higher than supported.
 TEST_F(MediaStreamVideoSourceTest, MandatoryAspectRatioTooHigh) {
   ConstraintsFactory factory;
@@ -309,7 +306,6 @@ TEST_F(MediaStreamVideoSourceTest, DefaultCapability) {
 TEST_F(MediaStreamVideoSourceTest, InvalidMandatoryConstraint) {
   ConstraintsFactory factory;
   factory.AddMandatory("weird key", 640);
-
   CreateTrack("123", factory.CreateConstraints());
   mock_source()->CompleteGetSupportedFormats();
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
