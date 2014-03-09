@@ -239,12 +239,12 @@ String SVGElement::title() const
         // At this time, SVG nodes are not allowed in non-<use> shadow trees, so any shadow root we do
         // have should be a use. The assert and following test is here to catch future shadow DOM changes
         // that do enable SVG in a shadow tree.
-        ASSERT(!shadowHostElement || shadowHostElement->hasTagName(SVGNames::useTag));
-        if (shadowHostElement && shadowHostElement->hasTagName(SVGNames::useTag)) {
-            SVGUseElement* useElement = toSVGUseElement(shadowHostElement);
+        ASSERT(!shadowHostElement || isSVGUseElement(*shadowHostElement));
+        if (isSVGUseElement(shadowHostElement)) {
+            SVGUseElement& useElement = toSVGUseElement(*shadowHostElement);
 
             // If the <use> title is not empty we found the title to use.
-            String useTitle(useElement->title());
+            String useTitle(useElement.title());
             if (!useTitle.isEmpty())
                 return useTitle;
         }
@@ -515,7 +515,7 @@ SVGSVGElement* SVGElement::ownerSVGElement() const
 {
     ContainerNode* n = parentOrShadowHostNode();
     while (n) {
-        if (n->hasTagName(SVGNames::svgTag))
+        if (isSVGSVGElement(*n))
             return toSVGSVGElement(n);
 
         n = n->parentOrShadowHostNode();
@@ -530,7 +530,7 @@ SVGElement* SVGElement::viewportElement() const
     // to determine the "overflow" property. <use> on <symbol> wouldn't work otherwhise.
     ContainerNode* n = parentOrShadowHostNode();
     while (n) {
-        if (n->hasTagName(SVGNames::svgTag) || n->hasTagName(SVGNames::imageTag) || n->hasTagName(SVGNames::symbolTag))
+        if (isSVGSVGElement(*n) || isSVGImageElement(*n) || isSVGSymbolElement(*n))
             return toSVGElement(n);
 
         n = n->parentOrShadowHostNode();

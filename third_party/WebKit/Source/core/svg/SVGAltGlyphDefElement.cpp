@@ -23,6 +23,7 @@
 #include "core/svg/SVGAltGlyphDefElement.h"
 
 #include "SVGNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/svg/SVGAltGlyphItemElement.h"
 #include "core/svg/SVGGlyphRefElement.h"
 
@@ -88,8 +89,8 @@ bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<AtomicString>& glyphNam
     bool fountFirstGlyphRef = false;
     bool foundFirstAltGlyphItem = false;
 
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        if (!foundFirstAltGlyphItem && child->hasTagName(SVGNames::glyphRefTag)) {
+    for (SVGElement* child = Traversal<SVGElement>::firstChild(*this); child; child = Traversal<SVGElement>::nextSibling(*child)) {
+        if (!foundFirstAltGlyphItem && isSVGGlyphRefElement(*child)) {
             fountFirstGlyphRef = true;
             AtomicString referredGlyphName;
 
@@ -103,7 +104,7 @@ bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<AtomicString>& glyphNam
                 glyphNames.clear();
                 return false;
             }
-        } else if (!fountFirstGlyphRef && child->hasTagName(SVGNames::altGlyphItemTag)) {
+        } else if (!fountFirstGlyphRef && isSVGAltGlyphItemElement(*child)) {
             foundFirstAltGlyphItem = true;
             Vector<AtomicString> referredGlyphNames;
 

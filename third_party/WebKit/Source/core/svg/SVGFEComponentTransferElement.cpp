@@ -23,12 +23,13 @@
 #include "core/svg/SVGFEComponentTransferElement.h"
 
 #include "SVGNames.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/svg/SVGFEFuncAElement.h"
 #include "core/svg/SVGFEFuncBElement.h"
 #include "core/svg/SVGFEFuncGElement.h"
 #include "core/svg/SVGFEFuncRElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 
@@ -82,15 +83,15 @@ PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* 
     ComponentTransferFunction blue;
     ComponentTransferFunction alpha;
 
-    for (Node* node = firstChild(); node; node = node->nextSibling()) {
-        if (node->hasTagName(SVGNames::feFuncRTag))
-            red = toSVGFEFuncRElement(node)->transferFunction();
-        else if (node->hasTagName(SVGNames::feFuncGTag))
-            green = toSVGFEFuncGElement(node)->transferFunction();
-        else if (node->hasTagName(SVGNames::feFuncBTag))
-            blue = toSVGFEFuncBElement(node)->transferFunction();
-        else if (node->hasTagName(SVGNames::feFuncATag))
-            alpha = toSVGFEFuncAElement(node)->transferFunction();
+    for (SVGElement* element = Traversal<SVGElement>::firstChild(*this); element; element = Traversal<SVGElement>::nextSibling(*element)) {
+        if (isSVGFEFuncRElement(*element))
+            red = toSVGFEFuncRElement(*element).transferFunction();
+        else if (isSVGFEFuncGElement(*element))
+            green = toSVGFEFuncGElement(*element).transferFunction();
+        else if (isSVGFEFuncBElement(*element))
+            blue = toSVGFEFuncBElement(*element).transferFunction();
+        else if (isSVGFEFuncAElement(*element))
+            alpha = toSVGFEFuncAElement(*element).transferFunction();
     }
 
     RefPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);

@@ -109,7 +109,7 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
         return specularLighting->setSpecularExponent(m_specularExponent->currentValue()->value());
 
     LightSource* lightSource = const_cast<LightSource*>(specularLighting->lightSource());
-    SVGFELightElement* lightElement = SVGFELightElement::findLightElement(this);
+    SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
     ASSERT(lightSource);
     ASSERT(lightElement);
 
@@ -165,7 +165,7 @@ void SVGFESpecularLightingElement::svgAttributeChanged(const QualifiedName& attr
 
 void SVGFESpecularLightingElement::lightElementAttributeChanged(const SVGFELightElement* lightElement, const QualifiedName& attrName)
 {
-    if (SVGFELightElement::findLightElement(this) != lightElement)
+    if (SVGFELightElement::findLightElement(*this) != lightElement)
         return;
 
     // The light element has different attribute names so attrName can identify the requested attribute.
@@ -179,7 +179,7 @@ PassRefPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* f
     if (!input1)
         return nullptr;
 
-    RefPtr<LightSource> lightSource = SVGFELightElement::findLightSource(this);
+    RefPtr<LightSource> lightSource = SVGFELightElement::findLightSource(*this);
     if (!lightSource)
         return nullptr;
 

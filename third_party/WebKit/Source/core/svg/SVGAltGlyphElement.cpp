@@ -79,13 +79,12 @@ bool SVGAltGlyphElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames)
     if (!element)
         return false;
 
-    if (element->hasTagName(SVGNames::glyphTag)) {
+    if (isSVGGlyphElement(*element)) {
         glyphNames.append(target);
         return true;
     }
 
-    if (element->hasTagName(SVGNames::altGlyphDefTag)
-        && toSVGAltGlyphDefElement(element)->hasValidGlyphElements(glyphNames))
+    if (isSVGAltGlyphDefElement(*element) && toSVGAltGlyphDefElement(*element).hasValidGlyphElements(glyphNames))
         return true;
 
     return false;

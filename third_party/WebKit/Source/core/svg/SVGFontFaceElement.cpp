@@ -275,7 +275,7 @@ void SVGFontFaceElement::rebuildFontFace()
         return;
     }
 
-    bool describesParentFont = parentNode()->hasTagName(SVGNames::fontTag);
+    bool describesParentFont = isSVGFontElement(*parentNode());
     RefPtrWillBeRawPtr<CSSValueList> list;
 
     if (describesParentFont) {
@@ -286,12 +286,8 @@ void SVGFontFaceElement::rebuildFontFace()
     } else {
         m_fontElement = 0;
         // we currently ignore all but the last src element, alternatively we could concat them
-        for (Node* child = lastChild(); child && !list; child = child->previousSibling()) {
-            if (child->hasTagName(font_face_srcTag)) {
-                list = toSVGFontFaceSrcElement(child)->srcValue();
-                break;
-            }
-        }
+        if (SVGFontFaceSrcElement* element = Traversal<SVGFontFaceSrcElement>::lastChild(*this))
+            list = element->srcValue();
     }
 
     if (!list || !list->length())

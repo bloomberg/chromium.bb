@@ -32,8 +32,8 @@ namespace WebCore {
 class SVGFELightElement : public SVGElement {
 public:
     virtual PassRefPtr<LightSource> lightSource() const = 0;
-    static SVGFELightElement* findLightElement(const SVGElement*);
-    static PassRefPtr<LightSource> findLightSource(const SVGElement*);
+    static SVGFELightElement* findLightElement(const SVGElement&);
+    static PassRefPtr<LightSource> findLightSource(const SVGElement&);
 
     SVGAnimatedNumber* azimuth() { return m_azimuth.get(); }
     const SVGAnimatedNumber* azimuth() const { return m_azimuth.get(); }

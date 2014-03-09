@@ -44,15 +44,15 @@ void SVGFontFaceFormatElement::childrenChanged(bool changedByParser, Node* befor
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 
-    if (!parentNode() || !parentNode()->hasTagName(font_face_uriTag))
+    if (!isSVGFontFaceUriElement(parentNode()))
         return;
 
     ContainerNode* ancestor = parentNode()->parentNode();
-    if (!ancestor || !ancestor->hasTagName(font_face_srcTag))
+    if (!isSVGFontFaceSrcElement(ancestor))
         return;
 
     ancestor = ancestor->parentNode();
-    if (ancestor && ancestor->hasTagName(font_faceTag))
+    if (isSVGFontFaceElement(ancestor))
         toSVGFontFaceElement(ancestor)->rebuildFontFace();
 }
 

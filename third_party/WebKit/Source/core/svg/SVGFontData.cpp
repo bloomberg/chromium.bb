@@ -176,8 +176,8 @@ bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& gly
         if (Element* parentRenderObjectElement = toElement(parentRenderObject->node())) {
             language = parentRenderObjectElement->getAttribute(XMLNames::langAttr);
 
-            if (parentRenderObjectElement->hasTagName(SVGNames::altGlyphTag)) {
-                if (!toSVGAltGlyphElement(parentRenderObjectElement)->hasValidGlyphElements(altGlyphNames))
+            if (isSVGAltGlyphElement(*parentRenderObjectElement)) {
+                if (!toSVGAltGlyphElement(*parentRenderObjectElement).hasValidGlyphElements(altGlyphNames))
                     altGlyphNames.clear();
             }
         }

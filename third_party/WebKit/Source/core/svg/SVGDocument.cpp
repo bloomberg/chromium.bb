@@ -42,10 +42,7 @@ SVGDocument::SVGDocument(const DocumentInit& initializer)
 SVGSVGElement* SVGDocument::rootElement(const Document& document)
 {
     Element* elem = document.documentElement();
-    if (elem && elem->hasTagName(SVGNames::svgTag))
-        return toSVGSVGElement(elem);
-
-    return 0;
+    return isSVGSVGElement(elem) ? toSVGSVGElement(elem) : 0;
 }
 
 SVGSVGElement* SVGDocument::rootElement() const

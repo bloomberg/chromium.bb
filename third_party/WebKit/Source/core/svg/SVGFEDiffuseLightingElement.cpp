@@ -102,7 +102,7 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
         return diffuseLighting->setDiffuseConstant(m_diffuseConstant->currentValue()->value());
 
     LightSource* lightSource = const_cast<LightSource*>(diffuseLighting->lightSource());
-    const SVGFELightElement* lightElement = SVGFELightElement::findLightElement(this);
+    const SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
     ASSERT(lightSource);
     ASSERT(lightElement);
 
@@ -158,7 +158,7 @@ void SVGFEDiffuseLightingElement::svgAttributeChanged(const QualifiedName& attrN
 
 void SVGFEDiffuseLightingElement::lightElementAttributeChanged(const SVGFELightElement* lightElement, const QualifiedName& attrName)
 {
-    if (SVGFELightElement::findLightElement(this) != lightElement)
+    if (SVGFELightElement::findLightElement(*this) != lightElement)
         return;
 
     // The light element has different attribute names.
@@ -172,7 +172,7 @@ PassRefPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* fi
     if (!input1)
         return nullptr;
 
-    RefPtr<LightSource> lightSource = SVGFELightElement::findLightSource(this);
+    RefPtr<LightSource> lightSource = SVGFELightElement::findLightSource(*this);
     if (!lightSource)
         return nullptr;
 

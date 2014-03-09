@@ -57,16 +57,12 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tagName, Document& doc
     addToPropertyMap(m_limitingConeAngle);
 }
 
-SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement* svgElement)
+SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement& svgElement)
 {
-    for (Node* node = svgElement->firstChild(); node; node = node->nextSibling()) {
-        if (isSVGFELightElement(*node))
-            return toSVGFELightElement(node);
-    }
-    return 0;
+    return Traversal<SVGFELightElement>::firstChild(svgElement);
 }
 
-PassRefPtr<LightSource> SVGFELightElement::findLightSource(const SVGElement* svgElement)
+PassRefPtr<LightSource> SVGFELightElement::findLightSource(const SVGElement& svgElement)
 {
     SVGFELightElement* lightNode = findLightElement(svgElement);
     if (!lightNode)
@@ -154,11 +150,12 @@ void SVGFELightElement::svgAttributeChanged(const QualifiedName& attrName)
         if (!renderer || !renderer->isSVGResourceFilterPrimitive())
             return;
 
-        if (parent->hasTagName(SVGNames::feDiffuseLightingTag)) {
-            toSVGFEDiffuseLightingElement(parent)->lightElementAttributeChanged(this, attrName);
+        if (isSVGFEDiffuseLightingElement(*parent)) {
+            toSVGFEDiffuseLightingElement(*parent).lightElementAttributeChanged(this, attrName);
             return;
-        } else if (parent->hasTagName(SVGNames::feSpecularLightingTag)) {
-            toSVGFESpecularLightingElement(parent)->lightElementAttributeChanged(this, attrName);
+        }
+        if (isSVGFESpecularLightingElement(*parent)) {
+            toSVGFESpecularLightingElement(*parent).lightElementAttributeChanged(this, attrName);
             return;
         }
     }

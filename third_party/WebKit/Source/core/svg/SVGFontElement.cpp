@@ -24,6 +24,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGFontElement.h"
 
+#include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGGlyphElement.h"
 #include "core/svg/SVGHKernElement.h"
@@ -60,12 +61,7 @@ void SVGFontElement::invalidateGlyphCache()
 
 SVGMissingGlyphElement* SVGFontElement::firstMissingGlyphElement() const
 {
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->hasTagName(SVGNames::missing_glyphTag))
-            return toSVGMissingGlyphElement(child);
-    }
-
-    return 0;
+    return Traversal<SVGMissingGlyphElement>::firstChild(*this);
 }
 
 void SVGFontElement::registerLigaturesInGlyphCache(Vector<String>& ligatures)
@@ -169,25 +165,25 @@ void SVGFontElement::ensureGlyphCache()
 
     SVGMissingGlyphElement* firstMissingGlyphElement = 0;
     Vector<String> ligatures;
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->hasTagName(SVGNames::glyphTag)) {
-            SVGGlyphElement* glyph = toSVGGlyphElement(child);
-            AtomicString unicode = glyph->fastGetAttribute(SVGNames::unicodeAttr);
-            AtomicString glyphId = glyph->getIdAttribute();
+    for (SVGElement* element = Traversal<SVGElement>::firstChild(*this); element; element = Traversal<SVGElement>::nextSibling(*element)) {
+        if (isSVGGlyphElement(*element)) {
+            SVGGlyphElement& glyph = toSVGGlyphElement(*element);
+            AtomicString unicode = glyph.fastGetAttribute(SVGNames::unicodeAttr);
+            AtomicString glyphId = glyph.getIdAttribute();
             if (glyphId.isEmpty() && unicode.isEmpty())
                 continue;
 
-            m_glyphMap.addGlyph(glyphId, unicode, glyph->buildGlyphIdentifier());
+            m_glyphMap.addGlyph(glyphId, unicode, glyph.buildGlyphIdentifier());
 
             // Register ligatures, if needed, don't mix up with surrogate pairs though!
             if (unicode.length() > 1 && !U16_IS_SURROGATE(unicode[0]))
                 ligatures.append(unicode.string());
-        } else if (child->hasTagName(SVGNames::hkernTag)) {
-            toSVGHKernElement(child)->buildHorizontalKerningPair(horizontalKerningPairs);
-        } else if (child->hasTagName(SVGNames::vkernTag)) {
-            toSVGVKernElement(child)->buildVerticalKerningPair(verticalKerningPairs);
-        } else if (child->hasTagName(SVGNames::missing_glyphTag) && !firstMissingGlyphElement) {
-            firstMissingGlyphElement = toSVGMissingGlyphElement(child);
+        } else if (isSVGHKernElement(*element)) {
+            toSVGHKernElement(*element).buildHorizontalKerningPair(horizontalKerningPairs);
+        } else if (isSVGVKernElement(*element)) {
+            toSVGVKernElement(*element).buildVerticalKerningPair(verticalKerningPairs);
+        } else if (isSVGMissingGlyphElement(*element) && !firstMissingGlyphElement) {
+            firstMissingGlyphElement = toSVGMissingGlyphElement(element);
         }
     }
 
