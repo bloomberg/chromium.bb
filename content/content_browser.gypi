@@ -1235,6 +1235,8 @@
     'browser/theme_helper_mac.h',
     'browser/tracing/trace_message_filter.cc',
     'browser/tracing/trace_message_filter.h',
+    'browser/tracing/etw_system_event_consumer_win.cc',
+    'browser/tracing/etw_system_event_consumer_win.h',
     'browser/tracing/tracing_controller_impl.cc',
     'browser/tracing/tracing_controller_impl.h',
     'browser/tracing/tracing_ui.cc',

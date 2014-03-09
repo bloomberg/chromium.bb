@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ class TracingControllerImpl : public TracingController {
   void OnDisableRecordingComplete();
   void OnResultFileClosed();
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   void OnEndSystemTracingAcked(
       const scoped_refptr<base::RefCountedString>& events_str_ptr);
 #endif
@@ -161,7 +161,7 @@ class TracingControllerImpl : public TracingController {
   TraceMessageFilterSet pending_trace_buffer_percent_full_filters_;
   float maximum_trace_buffer_percent_full_;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   bool is_system_tracing_;
 #endif
   bool is_recording_;
