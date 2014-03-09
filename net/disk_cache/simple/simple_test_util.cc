@@ -5,6 +5,7 @@
 #include "net/disk_cache/simple/simple_test_util.h"
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "net/disk_cache/simple/simple_util.h"
 
 namespace disk_cache {

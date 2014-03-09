@@ -10,11 +10,8 @@
 #include <windows.h>
 #endif
 
-#include <string>
-
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/move.h"
 #include "base/time/time.h"
 
@@ -23,6 +20,8 @@
 #endif
 
 namespace base {
+
+class FilePath;
 
 #if defined(OS_WIN)
 typedef HANDLE PlatformFile;
