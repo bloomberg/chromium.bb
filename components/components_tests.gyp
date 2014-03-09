@@ -115,7 +115,6 @@
             'url_matcher/substring_set_matcher_unittest.cc',
             'url_matcher/url_matcher_factory_unittest.cc',
             'url_matcher/url_matcher_unittest.cc',
-            # TODO(asvitkine): These should be tested on iOS too.
             'variations/entropy_provider_unittest.cc',
             'variations/metrics_util_unittest.cc',
             'variations/variations_associated_data_unittest.cc',
@@ -247,7 +246,6 @@
                 ['exclude', '\\.cc$'],
                 ['exclude', '\\.mm$'],
                 ['include', '^test/run_all_unittests\\.cc$'],
-                # TODO(asvitkine): Bring up variations/ unittests on iOS.
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
@@ -258,6 +256,7 @@
                 ['include', '^signin/'],
                 ['include', '^sync_driver/'],
                 ['include', '^translate/'],
+                ['include', '^variations/'],
               ],
               'actions': [
                 {
