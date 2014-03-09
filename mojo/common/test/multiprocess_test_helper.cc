@@ -48,8 +48,8 @@ void MultiprocessTestHelper::StartChild(const std::string& test_child_name) {
 #error "Not supported yet."
 #endif
 
-  test_child_handle_ = base::SpawnMultiProcessTestChild(
-      test_child_main, command_line, options, false);
+  test_child_handle_ =
+      base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   platform_channel_pair_->ChildProcessLaunched();
 
   CHECK_NE(test_child_handle_, base::kNullProcessHandle);

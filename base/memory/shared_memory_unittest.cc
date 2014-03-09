@@ -648,7 +648,7 @@ TEST_F(SharedMemoryProcessTest, Tasks) {
 
   ProcessHandle handles[kNumTasks];
   for (int index = 0; index < kNumTasks; ++index) {
-    handles[index] = SpawnChild("SharedMemoryTestMain", false);
+    handles[index] = SpawnChild("SharedMemoryTestMain");
     ASSERT_TRUE(handles[index]);
   }
 

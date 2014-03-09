@@ -285,8 +285,7 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   ASSERT_TRUE(channel.AcceptsConnections());
   ASSERT_FALSE(channel.HasAcceptedConnection());
 
-  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc",
-                                          false);
+  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc");
   ASSERT_TRUE(handle);
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
@@ -315,8 +314,7 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   ASSERT_TRUE(channel.AcceptsConnections());
   ASSERT_FALSE(channel.HasAcceptedConnection());
 
-  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc",
-                                          false);
+  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc");
   ASSERT_TRUE(handle);
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
@@ -324,8 +322,7 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   channel.ResetToAcceptingConnectionState();
   ASSERT_FALSE(channel.HasAcceptedConnection());
 
-  base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixTestConnectionProc",
-                                          false);
+  base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixTestConnectionProc");
   ASSERT_TRUE(handle2);
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
@@ -374,14 +371,12 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   ASSERT_TRUE(channel.AcceptsConnections());
   ASSERT_FALSE(channel.HasAcceptedConnection());
 
-  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc",
-                                          false);
+  base::ProcessHandle handle = SpawnChild("IPCChannelPosixTestConnectionProc");
   ASSERT_TRUE(handle);
   SpinRunLoop(TestTimeouts::action_max_timeout());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixFailConnectionProc",
-                                           false);
+  base::ProcessHandle handle2 = SpawnChild("IPCChannelPosixFailConnectionProc");
   ASSERT_TRUE(handle2);
   SpinRunLoop(TestTimeouts::action_max_timeout());
   int exit_code = 0;

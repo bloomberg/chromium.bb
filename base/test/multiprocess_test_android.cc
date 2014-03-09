@@ -17,11 +17,9 @@ namespace base {
 // minimum to execute the method specified by procname (in the child process).
 //  - |base_command_line| is ignored.
 //  - All options except |fds_to_remap| are ignored.
-//  - |debug_on_start| is ignored.
 ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
                                          const CommandLine& base_command_line,
-                                         const LaunchOptions& options,
-                                         bool debug_on_start) {
+                                         const LaunchOptions& options) {
   // TODO(viettrungluu): The FD-remapping done below is wrong in the presence of
   // cycles (e.g., fd1 -> fd2, fd2 -> fd1). crbug.com/326576
   FileHandleMappingVector empty;

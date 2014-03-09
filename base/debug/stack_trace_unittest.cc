@@ -144,7 +144,7 @@ MULTIPROCESS_TEST_MAIN(MismatchedMallocChildProcess) {
 // and e.g. mismatched new[]/delete would cause a hang because
 // of re-entering malloc.
 TEST_F(StackTraceTest, AsyncSignalUnsafeSignalHandlerHang) {
-  ProcessHandle child = this->SpawnChild("MismatchedMallocChildProcess", false);
+  ProcessHandle child = SpawnChild("MismatchedMallocChildProcess");
   ASSERT_NE(kNullProcessHandle, child);
   ASSERT_TRUE(WaitForSingleProcess(child, TestTimeouts::action_timeout()));
 }

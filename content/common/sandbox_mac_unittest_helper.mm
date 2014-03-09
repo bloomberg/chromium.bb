@@ -78,8 +78,7 @@ bool MacSandboxTest::RunTestInSandbox(SandboxType sandbox_type,
   if (test_data)
     setenv(kTestDataKey, test_data, 1);
 
-  base::ProcessHandle child_process = SpawnChild("mac_sandbox_test_runner",
-                                                 false);
+  base::ProcessHandle child_process = SpawnChild("mac_sandbox_test_runner");
   if (child_process == base::kNullProcessHandle) {
     LOG(WARNING) << "SpawnChild failed";
     return false;

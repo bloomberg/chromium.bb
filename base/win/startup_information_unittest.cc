@@ -62,7 +62,7 @@ TEST_F(StartupInformationTest, InheritStdOut) {
       sizeof(events[0])));
 
   std::wstring cmd_line =
-      this->MakeCmdLine("FireInheritedEvents", false).GetCommandLineString();
+      MakeCmdLine("FireInheritedEvents").GetCommandLineString();
 
   PROCESS_INFORMATION temp_process_info = {};
   ASSERT_TRUE(::CreateProcess(NULL, const_cast<wchar_t*>(cmd_line.c_str()),

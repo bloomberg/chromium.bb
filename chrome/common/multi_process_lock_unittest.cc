@@ -51,7 +51,7 @@ std::string MultiProcessLockTest::GenerateLockName() {
 
 void MultiProcessLockTest::ExpectLockIsLocked(const std::string &name) {
   ScopedEnvironmentVariable var(kLockEnviromentVarName, name);
-  base::ProcessHandle handle = SpawnChild("MultiProcessLockTryFailMain", false);
+  base::ProcessHandle handle = SpawnChild("MultiProcessLockTryFailMain");
   ASSERT_TRUE(handle);
   int exit_code = 0;
   EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));
@@ -61,8 +61,7 @@ void MultiProcessLockTest::ExpectLockIsLocked(const std::string &name) {
 void MultiProcessLockTest::ExpectLockIsUnlocked(
     const std::string &name) {
   ScopedEnvironmentVariable var(kLockEnviromentVarName, name);
-  base::ProcessHandle handle = SpawnChild("MultiProcessLockTrySucceedMain",
-                                          false);
+  base::ProcessHandle handle = SpawnChild("MultiProcessLockTrySucceedMain");
   ASSERT_TRUE(handle);
   int exit_code = 0;
   EXPECT_TRUE(base::WaitForExitCode(handle, &exit_code));

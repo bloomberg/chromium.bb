@@ -211,7 +211,7 @@ TEST_F(StatsTableTest, DISABLED_MultipleProcesses) {
 
   // Spawn the processes.
   for (int16 index = 0; index < kMaxProcs; index++) {
-    procs[index] = this->SpawnChild("StatsTableMultipleProcessMain", false);
+    procs[index] = SpawnChild("StatsTableMultipleProcessMain");
     EXPECT_NE(kNullProcessHandle, procs[index]);
   }
 

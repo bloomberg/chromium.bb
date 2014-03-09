@@ -144,8 +144,9 @@ MULTIPROCESS_TEST_MAIN(SimpleChildProcess) {
   return 0;
 }
 
+// TODO(viettrungluu): This should be in a "MultiProcessTestTest".
 TEST_F(ProcessUtilTest, SpawnChild) {
-  base::ProcessHandle handle = this->SpawnChild("SimpleChildProcess", false);
+  base::ProcessHandle handle = SpawnChild("SimpleChildProcess");
   ASSERT_NE(base::kNullProcessHandle, handle);
   EXPECT_TRUE(base::WaitForSingleProcess(
                   handle, TestTimeouts::action_max_timeout()));
@@ -161,7 +162,7 @@ TEST_F(ProcessUtilTest, KillSlowChild) {
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileSlow);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = this->SpawnChild("SlowChildProcess", false);
+  base::ProcessHandle handle = SpawnChild("SlowChildProcess");
   ASSERT_NE(base::kNullProcessHandle, handle);
   SignalChildren(signal_file.c_str());
   EXPECT_TRUE(base::WaitForSingleProcess(
@@ -175,7 +176,7 @@ TEST_F(ProcessUtilTest, DISABLED_GetTerminationStatusExit) {
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileSlow);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = this->SpawnChild("SlowChildProcess", false);
+  base::ProcessHandle handle = SpawnChild("SlowChildProcess");
   ASSERT_NE(base::kNullProcessHandle, handle);
 
   int exit_code = 42;
@@ -198,7 +199,7 @@ TEST_F(ProcessUtilTest, DISABLED_GetTerminationStatusExit) {
 TEST_F(ProcessUtilTest, GetProcId) {
   base::ProcessId id1 = base::GetProcId(GetCurrentProcess());
   EXPECT_NE(0ul, id1);
-  base::ProcessHandle handle = this->SpawnChild("SimpleChildProcess", false);
+  base::ProcessHandle handle = SpawnChild("SimpleChildProcess");
   ASSERT_NE(base::kNullProcessHandle, handle);
   base::ProcessId id2 = base::GetProcId(handle);
   EXPECT_NE(0ul, id2);
@@ -243,8 +244,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileCrash);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = this->SpawnChild("CrashingChildProcess",
-                                                false);
+  base::ProcessHandle handle = SpawnChild("CrashingChildProcess");
   ASSERT_NE(base::kNullProcessHandle, handle);
 
   int exit_code = 42;
@@ -291,8 +291,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusKill) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileKill);
   remove(signal_file.c_str());
-  base::ProcessHandle handle = this->SpawnChild("KilledChildProcess",
-                                                false);
+  base::ProcessHandle handle = SpawnChild("KilledChildProcess");
   ASSERT_NE(base::kNullProcessHandle, handle);
 
   int exit_code = 42;
@@ -322,7 +321,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusKill) {
 // Note: a platform may not be willing or able to lower the priority of
 // a process. The calls to SetProcessBackground should be noops then.
 TEST_F(ProcessUtilTest, SetProcessBackgrounded) {
-  base::ProcessHandle handle = this->SpawnChild("SimpleChildProcess", false);
+  base::ProcessHandle handle = SpawnChild("SimpleChildProcess");
   base::Process process(handle);
   int old_priority = process.GetPriority();
 #if defined(OS_WIN)
@@ -393,8 +392,8 @@ TEST_F(ProcessUtilTest, LaunchAsUser) {
   ASSERT_TRUE(OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &token));
   base::LaunchOptions options;
   options.as_user = token;
-  EXPECT_TRUE(base::LaunchProcess(
-      this->MakeCmdLine("SimpleChildProcess", false), options, NULL));
+  EXPECT_TRUE(base::LaunchProcess(MakeCmdLine("SimpleChildProcess"), options,
+                                  NULL));
 }
 
 static const char kEventToTriggerHandleSwitch[] = "event-to-trigger-handle";
@@ -430,7 +429,7 @@ TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
   base::LaunchOptions options;
   options.handles_to_inherit = &handles_to_inherit;
 
-  CommandLine cmd_line = MakeCmdLine("TriggerEventChildProcess", false);
+  CommandLine cmd_line = MakeCmdLine("TriggerEventChildProcess");
   cmd_line.AppendSwitchASCII(kEventToTriggerHandleSwitch,
       base::Uint64ToString(reinterpret_cast<uint64>(event.handle())));
 
@@ -507,8 +506,8 @@ int ProcessUtilTest::CountOpenFDsInChild() {
   fd_mapping_vec.push_back(std::pair<int, int>(fds[1], kChildPipe));
   base::LaunchOptions options;
   options.fds_to_remap = &fd_mapping_vec;
-  base::ProcessHandle handle = this->SpawnChildWithOptions(
-      "ProcessUtilsLeakFDChildProcess", options, false);
+  base::ProcessHandle handle =
+      SpawnChildWithOptions("ProcessUtilsLeakFDChildProcess", options);
   CHECK(handle);
   int ret = IGNORE_EINTR(close(fds[1]));
   DPCHECK(ret == 0);
@@ -814,8 +813,7 @@ bool IsProcessDead(base::ProcessHandle child) {
 }
 
 TEST_F(ProcessUtilTest, DelayedTermination) {
-  base::ProcessHandle child_process =
-      SpawnChild("process_util_test_never_die", false);
+  base::ProcessHandle child_process = SpawnChild("process_util_test_never_die");
   ASSERT_TRUE(child_process);
   base::EnsureProcessTerminated(child_process);
   base::WaitForSingleProcess(child_process, base::TimeDelta::FromSeconds(5));
@@ -834,7 +832,7 @@ MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
 
 TEST_F(ProcessUtilTest, ImmediateTermination) {
   base::ProcessHandle child_process =
-      SpawnChild("process_util_test_die_immediately", false);
+      SpawnChild("process_util_test_die_immediately");
   ASSERT_TRUE(child_process);
   // Give it time to die.
   sleep(2);

@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "ipc/ipc_descriptors.h"
-#include "ipc/ipc_switches.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
@@ -96,11 +95,9 @@ bool IPCTestBase::StartClient() {
   DCHECK(client_process_ == base::kNullProcessHandle);
 
   std::string test_main = test_client_name_ + "TestClientMain";
-  bool debug_on_start =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
 
 #if defined(OS_WIN)
-  client_process_ = SpawnChild(test_main, debug_on_start);
+  client_process_ = SpawnChild(test_main);
 #elif defined(OS_POSIX)
   base::FileHandleMappingVector fds_to_map;
   const int ipcfd = channel_.get() ? channel_->GetClientFileDescriptor() :
@@ -110,7 +107,7 @@ bool IPCTestBase::StartClient() {
         kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_map;
-  client_process_ = SpawnChildWithOptions(test_main, options, debug_on_start);
+  client_process_ = SpawnChildWithOptions(test_main, options);
 #endif
 
   return client_process_ != base::kNullProcessHandle;

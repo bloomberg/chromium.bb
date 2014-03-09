@@ -35,7 +35,7 @@ namespace base {
 //     // Start a child process and run |a_test_func|.
 //     base::ProcessHandle test_child_handle =
 //         base::SpawnMultiProcessTestChild("a_test_func", command_line,
-//                                          options, false);
+//                                          options);
 //
 //     // Do stuff involving |test_child_handle| and the child process....
 //
@@ -61,8 +61,7 @@ namespace base {
 ProcessHandle SpawnMultiProcessTestChild(
     const std::string& procname,
     const CommandLine& command_line,
-    const LaunchOptions& options,
-    bool debug_on_start);
+    const LaunchOptions& options);
 
 // Gets the base command line for |SpawnMultiProcessTestChild()|. To this, you
 // may add any flags needed for your child process.
@@ -107,14 +106,13 @@ class MultiProcessTest : public PlatformTest {
   //    }
   //
   // Returns the handle to the child, or NULL on failure
-  ProcessHandle SpawnChild(const std::string& procname, bool debug_on_start);
+  ProcessHandle SpawnChild(const std::string& procname);
 
   // Run a child process using the given launch options.
   //
   // Note: On Windows, you probably want to set |options.start_hidden|.
   ProcessHandle SpawnChildWithOptions(const std::string& procname,
-                                      const LaunchOptions& options,
-                                      bool debug_on_start);
+                                      const LaunchOptions& options);
 
   // Set up the command line used to spawn the child process.
   // Override this to add things to the command line (calling this first in the
@@ -123,8 +121,7 @@ class MultiProcessTest : public PlatformTest {
   // which they then use directly with |LaunchProcess()|.
   // TODO(viettrungluu): Remove this and add a virtual
   // |ModifyChildCommandLine()|; make the two divergent uses more sane.
-  virtual CommandLine MakeCmdLine(const std::string& procname,
-                                  bool debug_on_start);
+  virtual CommandLine MakeCmdLine(const std::string& procname);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultiProcessTest);

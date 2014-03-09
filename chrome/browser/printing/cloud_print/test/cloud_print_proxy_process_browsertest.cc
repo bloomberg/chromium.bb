@@ -317,8 +317,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // MultiProcessTest implementation.
-  virtual CommandLine MakeCmdLine(const std::string& procname,
-                                  bool debug_on_start) OVERRIDE;
+  virtual CommandLine MakeCmdLine(const std::string& procname) OVERRIDE;
 
   bool LaunchBrowser(const CommandLine& command_line, Profile* profile) {
     int return_code = 0;
@@ -434,9 +433,9 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
   base::LaunchOptions options;
   options.fds_to_remap = &ipc_file_list;
-  base::ProcessHandle handle = SpawnChildWithOptions(name, options, false);
+  base::ProcessHandle handle = SpawnChildWithOptions(name, options);
 #else
-  base::ProcessHandle handle = SpawnChild(name, false);
+  base::ProcessHandle handle = SpawnChild(name);
 #endif
   EXPECT_TRUE(handle);
   return handle;
@@ -475,9 +474,8 @@ void CloudPrintProxyPolicyStartupTest::OnChannelConnected(int32 peer_pid) {
 }
 
 CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
-    const std::string& procname,
-    bool debug_on_start) {
-  CommandLine cl = MultiProcessTest::MakeCmdLine(procname, debug_on_start);
+    const std::string& procname) {
+  CommandLine cl = MultiProcessTest::MakeCmdLine(procname);
   cl.AppendSwitchASCII(switches::kProcessChannelID, startup_channel_id_);
 #if defined(OS_MACOSX)
   cl.AppendSwitchASCII(kTestExecutablePath, executable_path_.value());

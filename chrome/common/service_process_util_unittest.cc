@@ -95,7 +95,7 @@ void ServiceProcessStateTest::SetUp() {
 }
 
 void ServiceProcessStateTest::LaunchAndWait(const std::string& name) {
-  base::ProcessHandle handle = SpawnChild(name, false);
+  base::ProcessHandle handle = SpawnChild(name);
   ASSERT_TRUE(handle);
   int exit_code = 0;
   ASSERT_TRUE(base::WaitForExitCode(handle, &exit_code));
@@ -185,8 +185,7 @@ TEST_F(ServiceProcessStateTest, SharedMem) {
 }
 
 TEST_F(ServiceProcessStateTest, MAYBE_ForceShutdown) {
-  base::ProcessHandle handle = SpawnChild("ServiceProcessStateTestShutdown",
-                                          true);
+  base::ProcessHandle handle = SpawnChild("ServiceProcessStateTestShutdown");
   ASSERT_TRUE(handle);
   for (int i = 0; !CheckServiceProcessReady() && i < 10; ++i) {
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());

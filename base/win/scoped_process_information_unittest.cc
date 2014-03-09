@@ -46,8 +46,7 @@ MULTIPROCESS_TEST_MAIN(ReturnNine) {
 
 void ScopedProcessInformationTest::DoCreateProcess(
     const std::string& main_id, PROCESS_INFORMATION* process_handle) {
-  std::wstring cmd_line =
-      this->MakeCmdLine(main_id, false).GetCommandLineString();
+  std::wstring cmd_line = MakeCmdLine(main_id).GetCommandLineString();
   STARTUPINFO startup_info = {};
   startup_info.cb = sizeof(startup_info);
 

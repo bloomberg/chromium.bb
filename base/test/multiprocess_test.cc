@@ -13,17 +13,13 @@ namespace base {
 ProcessHandle SpawnMultiProcessTestChild(
     const std::string& procname,
     const CommandLine& base_command_line,
-    const LaunchOptions& options,
-    bool debug_on_start) {
+    const LaunchOptions& options) {
   CommandLine command_line(base_command_line);
   // TODO(viettrungluu): See comment above |MakeCmdLine()| in the header file.
   // This is a temporary hack, since |MakeCmdLine()| has to provide a full
   // command line.
-  if (!command_line.HasSwitch(switches::kTestChildProcess)) {
+  if (!command_line.HasSwitch(switches::kTestChildProcess))
     command_line.AppendSwitchASCII(switches::kTestChildProcess, procname);
-    if (debug_on_start)
-      command_line.AppendSwitch(switches::kDebugOnStart);
-  }
 
   ProcessHandle handle = kNullProcessHandle;
   LaunchProcess(command_line, options, &handle);
@@ -40,31 +36,23 @@ CommandLine GetMultiProcessTestChildBaseCommandLine() {
 MultiProcessTest::MultiProcessTest() {
 }
 
-ProcessHandle MultiProcessTest::SpawnChild(const std::string& procname,
-                                           bool debug_on_start) {
+ProcessHandle MultiProcessTest::SpawnChild(const std::string& procname) {
   LaunchOptions options;
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  return SpawnChildWithOptions(procname, options, debug_on_start);
+  return SpawnChildWithOptions(procname, options);
 }
 
 ProcessHandle MultiProcessTest::SpawnChildWithOptions(
     const std::string& procname,
-    const LaunchOptions& options,
-    bool debug_on_start) {
-  return SpawnMultiProcessTestChild(procname,
-                                    MakeCmdLine(procname, debug_on_start),
-                                    options,
-                                    debug_on_start);
+    const LaunchOptions& options) {
+  return SpawnMultiProcessTestChild(procname, MakeCmdLine(procname), options);
 }
 
-CommandLine MultiProcessTest::MakeCmdLine(const std::string& procname,
-                                          bool debug_on_start) {
+CommandLine MultiProcessTest::MakeCmdLine(const std::string& procname) {
   CommandLine command_line = GetMultiProcessTestChildBaseCommandLine();
   command_line.AppendSwitchASCII(switches::kTestChildProcess, procname);
-  if (debug_on_start)
-    command_line.AppendSwitch(switches::kDebugOnStart);
   return command_line;
 }
 
