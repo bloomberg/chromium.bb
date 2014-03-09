@@ -29,6 +29,7 @@ class SmoothnessKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.json'
 
 
+@test.Disabled('android')  # crbug.com/350692
 class SmoothnessToughAnimationCases(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_animation_cases.json'
