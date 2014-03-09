@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -108,6 +109,31 @@ void ContentsView::CalculateIdealBounds() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;
+
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    int incoming_view_index = 0;
+    switch (show_state_) {
+      case SHOW_APPS:
+        incoming_view_index = kIndexAppsContainer;
+        break;
+      case SHOW_SEARCH_RESULTS:
+        incoming_view_index = kIndexSearchResults;
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    gfx::Rect incoming_target(rect);
+    gfx::Rect outgoing_target(rect);
+    outgoing_target.set_y(-outgoing_target.height());
+
+    for (int i = 0; i < view_model_->view_size(); ++i) {
+      view_model_->set_ideal_bounds(i,
+                                    i == incoming_view_index ? incoming_target
+                                                             : outgoing_target);
+    }
+    return;
+  }
 
   gfx::Rect container_frame(rect);
   gfx::Rect results_frame(rect);
