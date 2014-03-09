@@ -13,6 +13,7 @@
 #include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
@@ -36,6 +37,7 @@ class WMEvent;
 namespace internal {
 
 class ShelfLayoutManager;
+class WorkspaceLayoutManagerDelegate;
 
 // LayoutManager used on the window created for a workspace.
 class ASH_EXPORT WorkspaceLayoutManager
@@ -49,6 +51,12 @@ class ASH_EXPORT WorkspaceLayoutManager
   virtual ~WorkspaceLayoutManager();
 
   void SetShelf(internal::ShelfLayoutManager* shelf);
+
+  // A delegate which can be set to add a backdrop behind the top most visible
+  // window. With the call the ownership of the delegate will be transferred to
+  // the WorkspaceLayoutManager.
+  void SetMaximizeBackdropDelegate(
+      scoped_ptr<WorkspaceLayoutManagerDelegate> delegate);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE {}
@@ -103,6 +111,18 @@ class ASH_EXPORT WorkspaceLayoutManager
   // has changed.
   void UpdateFullscreenState();
 
+  // Updates the bounds of the window for a stte type change from
+  // |old_show_type|.
+  void UpdateBoundsFromStateType(wm::WindowState* window_state,
+                                 wm::WindowStateType old_state_type);
+
+  // If |window_state| is maximized or fullscreen the bounds of the
+  // window are set and true is returned. Does nothing otherwise.
+  bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
+
+  // Animates the window bounds to |bounds|.
+  void SetChildBoundsAnimated(aura::Window* child, const gfx::Rect& bounds);
+
   internal::ShelfLayoutManager* shelf_;
   aura::Window* window_;
   aura::Window* root_window_;
@@ -115,6 +135,10 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // True if this workspace is currently in fullscreen mode.
   bool is_fullscreen_;
+
+  // A window which covers the full container and which gets inserted behind the
+  // topmost visible window.
+  scoped_ptr<WorkspaceLayoutManagerDelegate> backdrop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

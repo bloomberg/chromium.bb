@@ -4,9 +4,12 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/switchable_windows.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 
@@ -14,13 +17,31 @@ namespace ash {
 namespace internal {
 
 MaximizeModeWindowManager::~MaximizeModeWindowManager() {
+  Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetScreen()->RemoveObserver(this);
+  EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   RestoreAllWindows();
 }
 
 int MaximizeModeWindowManager::GetNumberOfManagedWindows() {
   return initial_state_type_.size();
+}
+
+void MaximizeModeWindowManager::OnOverviewModeStarted() {
+  if (backdrops_hidden_)
+    return;
+
+  EnableBackdropBehindTopWindowOnEachDisplay(false);
+  backdrops_hidden_ = true;
+}
+
+void MaximizeModeWindowManager::OnOverviewModeEnded() {
+  if (!backdrops_hidden_)
+    return;
+
+  backdrops_hidden_ = false;
+  EnableBackdropBehindTopWindowOnEachDisplay(true);
 }
 
 void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
@@ -65,10 +86,15 @@ void MaximizeModeWindowManager::OnDisplayRemoved(const gfx::Display& display) {
   DisplayConfigurationChanged();
 }
 
-MaximizeModeWindowManager::MaximizeModeWindowManager() {
+MaximizeModeWindowManager::MaximizeModeWindowManager()
+      : backdrops_hidden_(false) {
+  // TODO(skuhne): Turn off the overview mode and full screen modes before
+  // entering the MaximzieMode.
   MaximizeAllWindows();
   AddWindowCreationObservers();
+  EnableBackdropBehindTopWindowOnEachDisplay(true);
   Shell::GetScreen()->AddObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 void MaximizeModeWindowManager::MaximizeAllWindows() {
@@ -110,7 +136,6 @@ void MaximizeModeWindowManager::MaximizeAndTrackWindow(
       else
         window_state->SetRestoreBoundsInScreen(initial_rect);
       CenterWindow(window);
-      // TODO(skuhne): Add a background cover layer.
     } else {
       // Minimized windows can remain as they are.
       if (state != wm::WINDOW_STATE_TYPE_MINIMIZED)
@@ -128,7 +153,6 @@ void MaximizeModeWindowManager::RestoreAndForgetWindow(
   // Restore window if it can be restored.
   if (state != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
     if (!CanMaximize(window)) {
-      // TODO(skuhne): Remove the background cover layer.
       if (window_state->HasRestoreBounds()) {
         // TODO(skuhne): If the system shuts down in maximized mode, the proper
         // restore coordinates should get saved.
@@ -187,19 +211,17 @@ void MaximizeModeWindowManager::CenterWindow(aura::Window* window) {
 
 void MaximizeModeWindowManager::AddWindowCreationObservers() {
   DCHECK(observed_container_windows_.empty());
-  // Observe window activations and switchable containers on all root windows
-  // for newly created windows during overview.
+  // Observe window activations/creations in the default containers on all root
+  // windows.
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-      aura::Window* container = Shell::GetContainer(*iter,
-          kSwitchableWindowContainerIds[i]);
-      DCHECK(observed_container_windows_.find(container) ==
-                observed_container_windows_.end());
-      container->AddObserver(this);
-      observed_container_windows_.insert(container);
-    }
+    aura::Window* container = Shell::GetContainer(*iter,
+        internal::kShellWindowId_DefaultContainer);
+    DCHECK(observed_container_windows_.find(container) ==
+              observed_container_windows_.end());
+    container->AddObserver(this);
+    observed_container_windows_.insert(container);
   }
 }
 
@@ -213,13 +235,35 @@ void MaximizeModeWindowManager::RemoveWindowCreationObservers() {
 }
 
 void MaximizeModeWindowManager::DisplayConfigurationChanged() {
+  EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   AddWindowCreationObservers();
+  EnableBackdropBehindTopWindowOnEachDisplay(true);
 }
 
 bool MaximizeModeWindowManager::IsContainerWindow(aura::Window* window) {
   return observed_container_windows_.find(window) !=
              observed_container_windows_.end();
+}
+
+void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
+    bool enable) {
+  if (backdrops_hidden_)
+    return;
+  // Inform the WorkspaceLayoutManager that we want to show a backdrop behind
+  // the topmost window of its container.
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  for (Shell::RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter) {
+    RootWindowController* controller = *iter;
+    aura::Window* container = Shell::GetContainer(
+        controller->root_window(),
+        internal::kShellWindowId_DefaultContainer);
+    controller->workspace_controller()->SetMaximizeBackdropDelegate(
+        scoped_ptr<WorkspaceLayoutManagerDelegate>(
+            enable ? new WorkspaceBackdropDelegate(container) : NULL));
+  }
 }
 
 }  // namespace internal

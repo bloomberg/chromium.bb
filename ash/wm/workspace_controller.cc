@@ -13,6 +13,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -133,6 +134,11 @@ void WorkspaceController::DoInitialAnimation() {
     viewport_->layer()->SetTransform(gfx::Transform());
     viewport_->layer()->SetOpacity(1.0f);
   }
+}
+
+void WorkspaceController::SetMaximizeBackdropDelegate(
+    scoped_ptr<WorkspaceLayoutManagerDelegate> delegate) {
+  layout_manager_->SetMaximizeBackdropDelegate(delegate.Pass());
 }
 
 }  // namespace internal

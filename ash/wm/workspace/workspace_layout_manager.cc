@@ -17,6 +17,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -50,18 +51,19 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   if (root_window_)
     root_window_->RemoveObserver(this);
-  for (WindowSet::const_iterator i = windows_.begin();
-       i != windows_.end();
-       ++i) {
+  for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
     (*i)->RemoveObserver(this);
-    wm::GetWindowState(*i)->RemoveObserver(this);
-  }
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
 void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
   shelf_ = shelf;
+}
+
+void WorkspaceLayoutManager::SetMaximizeBackdropDelegate(
+    scoped_ptr<WorkspaceLayoutManagerDelegate> delegate) {
+  backdrop_delegate_.reset(delegate.release());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,6 +78,8 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   window_state->AddObserver(this);
   UpdateShelfVisibility();
   UpdateFullscreenState();
+  if (backdrop_delegate_)
+    backdrop_delegate_->OnWindowAddedToLayout(child);
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
 }
 
@@ -91,6 +95,8 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
+  if (backdrop_delegate_)
+    backdrop_delegate_->OnWindowRemovedFromLayout(child);
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
@@ -106,6 +112,8 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
   UpdateFullscreenState();
   UpdateShelfVisibility();
+  if (backdrop_delegate_)
+    backdrop_delegate_->OnChildWindowVisibilityChanged(child, visible);
 }
 
 void WorkspaceLayoutManager::SetChildBounds(
@@ -166,6 +174,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
 void WorkspaceLayoutManager::OnWindowStackingChanged(aura::Window* window) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
+  if (backdrop_delegate_)
+    backdrop_delegate_->OnWindowStackingChanged(window);
 }
 
 void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
@@ -214,6 +224,8 @@ void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
   }
 
   UpdateShelfVisibility();
+  if (backdrop_delegate_)
+    backdrop_delegate_->OnPostWindowStateTypeChange(window_state, old_type);
 }
 
 //////////////////////////////////////////////////////////////////////////////

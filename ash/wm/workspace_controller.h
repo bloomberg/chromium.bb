@@ -21,6 +21,7 @@ class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
+class WorkspaceLayoutManagerDelegate;
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
@@ -36,6 +37,11 @@ class ASH_EXPORT WorkspaceController {
 
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();
+
+  // Add a delegate which adds a backdrop behind the top window of the default
+  // workspace.
+  void SetMaximizeBackdropDelegate(
+      scoped_ptr<WorkspaceLayoutManagerDelegate> delegate);
 
  private:
   friend class WorkspaceControllerTestHelper;

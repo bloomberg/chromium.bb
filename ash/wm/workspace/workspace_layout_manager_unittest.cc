@@ -14,6 +14,7 @@
 #include "ash/shell_observer.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -772,6 +773,177 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   Shell::GetInstance()->session_state_delegate()->UnlockScreen();
   shelf->UpdateVisibilityState();
   EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
+}
+
+// Following tests are written to test the backdrop functionality.
+
+namespace {
+
+class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
+ public:
+  WorkspaceLayoutManagerBackdropTest() {}
+  virtual ~WorkspaceLayoutManagerBackdropTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    test::AshTestBase::SetUp();
+    UpdateDisplay("800x600");
+    default_container_ = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
+        internal::kShellWindowId_DefaultContainer);
+    // We set the size to something smaller then the display to avoid resizing
+    // issues with the shelf.
+    default_container_->SetBounds(gfx::Rect(0, 0, 800, 500));
+  }
+
+  aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
+    aura::Window* window = CreateTestWindowInShellWithBounds(bounds);
+    return window;
+  }
+
+  // Turn the top window back drop on / off.
+  void ShowTopWindowBackdrop(bool show) {
+    scoped_ptr<ash::internal::WorkspaceLayoutManagerDelegate> backdrop;
+    if (show) {
+      backdrop.reset(new ash::internal::WorkspaceBackdropDelegate(
+          default_container_));
+    }
+    (static_cast<internal::WorkspaceLayoutManager*>
+        (default_container_->layout_manager()))->SetMaximizeBackdropDelegate(
+            backdrop.Pass());
+    // Closing and / or opening can be a delayed operation.
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  // Return the default container.
+  aura::Window* default_container() { return default_container_; }
+
+  // Return the order of windows (top most first) as they are in the default
+  // container. If the window is visible it will be a big letter, otherwise a
+  // small one. The backdrop will be an X and unknown windows will be shown as
+  // '!'.
+  std::string GetWindowOrderAsString(aura::Window* backdrop,
+                                     aura::Window* wa,
+                                     aura::Window* wb,
+                                     aura::Window* wc) {
+    std::string result;
+    for (int i = static_cast<int>(default_container()->children().size()) - 1;
+         i >= 0;
+         --i) {
+      if (!result.empty())
+        result += ",";
+      if (default_container()->children()[i] == wa)
+        result += default_container()->children()[i]->IsVisible() ? "A" : "a";
+      else if (default_container()->children()[i] == wb)
+        result += default_container()->children()[i]->IsVisible() ? "B" : "b";
+      else if (default_container()->children()[i] == wc)
+        result += default_container()->children()[i]->IsVisible() ? "C" : "c";
+      else if (default_container()->children()[i] == backdrop)
+        result += default_container()->children()[i]->IsVisible() ? "X" : "x";
+      else
+        result += "!";
+    }
+    return result;
+  }
+
+ private:
+  // The default container.
+  aura::Window* default_container_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerBackdropTest);
+};
+
+}  // namespace
+
+// Check that creating the BackDrop without destroying it does not lead into
+// a crash.
+TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropCrashTest) {
+  ShowTopWindowBackdrop(true);
+}
+
+// Verify basic assumptions about the backdrop.
+TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
+  // Create a backdrop and see that there is one window (the backdrop) and
+  // that the size is the same as the default container as well as that it is
+  // not visible.
+  ShowTopWindowBackdrop(true);
+  ASSERT_EQ(1U, default_container()->children().size());
+  EXPECT_FALSE(default_container()->children()[0]->IsVisible());
+
+  {
+    // Add a window and make sure that the backdrop is the second child.
+    scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+    window->Show();
+    ASSERT_EQ(2U, default_container()->children().size());
+    EXPECT_TRUE(default_container()->children()[0]->IsVisible());
+    EXPECT_TRUE(default_container()->children()[1]->IsVisible());
+    EXPECT_EQ(window.get(), default_container()->children()[1]);
+    EXPECT_EQ(default_container()->bounds().ToString(),
+              default_container()->children()[0]->bounds().ToString());
+  }
+
+  // With the window gone the backdrop should be invisible again.
+  ASSERT_EQ(1U, default_container()->children().size());
+  EXPECT_FALSE(default_container()->children()[0]->IsVisible());
+
+  // Destroying the Backdrop should empty the container.
+  ShowTopWindowBackdrop(false);
+  ASSERT_EQ(0U, default_container()->children().size());
+}
+
+// Verify that the backdrop gets properly created and placed.
+TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
+  scoped_ptr<aura::Window> window1(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  window1->Show();
+
+  // Get the default container and check that only a single window is in there.
+  ASSERT_EQ(1U, default_container()->children().size());
+  EXPECT_EQ(window1.get(), default_container()->children()[0]);
+  EXPECT_EQ("A", GetWindowOrderAsString(NULL, window1.get(), NULL, NULL));
+
+  // Create 2 more windows and check that they are also in the container.
+  scoped_ptr<aura::Window> window2(CreateTestWindow(gfx::Rect(10, 2, 3, 4)));
+  scoped_ptr<aura::Window> window3(CreateTestWindow(gfx::Rect(20, 2, 3, 4)));
+  window2->Show();
+  window3->Show();
+
+  aura::Window* backdrop = NULL;
+  EXPECT_EQ("C,B,A",
+            GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
+                                   window3.get()));
+
+  // Turn on the backdrop mode and check that the window shows up where it
+  // should be (second highest number).
+  ShowTopWindowBackdrop(true);
+  backdrop = default_container()->children()[2];
+  EXPECT_EQ("C,X,B,A",
+            GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
+                                   window3.get()));
+
+  // Switch the order of windows and check that it still remains in that
+  // location.
+  default_container()->StackChildAtTop(window2.get());
+  EXPECT_EQ("B,X,C,A",
+            GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
+                                   window3.get()));
+
+  // Make the top window invisible and check.
+  window2.get()->Hide();
+  EXPECT_EQ("b,C,X,A",
+            GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
+                                   window3.get()));
+  // Then delete window after window and see that everything is in order.
+  window1.reset();
+  EXPECT_EQ("b,C,X",
+            GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
+                                   window3.get()));
+  window3.reset();
+  EXPECT_EQ("b,x",
+            GetWindowOrderAsString(backdrop, window1.get(), window2.get(),
+                                   window3.get()));
+  ShowTopWindowBackdrop(false);
+  EXPECT_EQ("b",
+            GetWindowOrderAsString(NULL, window1.get(), window2.get(),
+                                   window3.get()));
 }
 
 }  // namespace ash

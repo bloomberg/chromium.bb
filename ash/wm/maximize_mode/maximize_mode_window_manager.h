@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -27,12 +28,13 @@ namespace internal{
 // With the destruction of the manager all windows will be restored to their
 // original state.
 class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
-                                             public gfx::DisplayObserver {
+                                             public gfx::DisplayObserver,
+                                             public ShellObserver {
  public:
   // This should only be deleted by the creator (ash::Shell).
   virtual ~MaximizeModeWindowManager();
 
- // Returns the number of maximized & tracked windows by this manager.
+  // Returns the number of maximized & tracked windows by this manager.
   int GetNumberOfManagedWindows();
 
   // Overridden from WindowObserver:
@@ -47,6 +49,10 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
       const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
+
+  // ShellObserver overrides:
+  void OnOverviewModeStarted();
+  void OnOverviewModeEnded();
 
  protected:
   friend class ash::Shell;
@@ -98,11 +104,17 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Returns true when the |window| is a container window.
   bool IsContainerWindow(aura::Window* window);
 
+  // Add a backdrop behind the currently active window on each desktop.
+  void EnableBackdropBehindTopWindowOnEachDisplay(bool enable);
+
   // Every window which got touched by our window manager gets added here.
   WindowToStateType initial_state_type_;
 
   // All container windows which have to be tracked.
   std::set<aura::Window*> observed_container_windows_;
+
+  // True if all backdrops are hidden.
+  bool backdrops_hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowManager);
 };
