@@ -41,7 +41,6 @@ class LinuxOutputWindow {
                     int width,
                     int height,
                     const std::string& name);
-  uint8* render_buffer_;
   Display* display_;
   Window window_;
   XShmSegmentInfo shminfo_;

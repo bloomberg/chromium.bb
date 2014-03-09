@@ -9,20 +9,19 @@
 namespace media {
 namespace cast {
 
-LoggingImpl::LoggingImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
-    const CastLoggingConfig& config)
-    : main_thread_proxy_(main_thread_proxy),
-      config_(config),
-      raw_(),
-      stats_() {}
+LoggingImpl::LoggingImpl(const CastLoggingConfig& config)
+    : config_(config), raw_(), stats_() {
+  // LoggingImpl can be constructed on any thread, but its methods should all be
+  // called on the same thread.
+  thread_checker_.DetachFromThread();
+}
 
 LoggingImpl::~LoggingImpl() {}
 
 void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
                                    CastLoggingEvent event, uint32 rtp_timestamp,
                                    uint32 frame_id) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (config_.enable_raw_data_collection) {
     raw_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
   }
@@ -40,7 +39,7 @@ void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
                                            CastLoggingEvent event,
                                            uint32 rtp_timestamp,
                                            uint32 frame_id, int frame_size) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (config_.enable_raw_data_collection) {
     raw_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp, frame_id,
                                   frame_size);
@@ -61,7 +60,7 @@ void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
 void LoggingImpl::InsertFrameEventWithDelay(
     const base::TimeTicks& time_of_event, CastLoggingEvent event,
     uint32 rtp_timestamp, uint32 frame_id, base::TimeDelta delay) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (config_.enable_raw_data_collection) {
     raw_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
                                    frame_id, delay);
@@ -82,7 +81,7 @@ void LoggingImpl::InsertFrameEventWithDelay(
 void LoggingImpl::InsertPacketListEvent(const base::TimeTicks& time_of_event,
                                         CastLoggingEvent event,
                                         const PacketList& packets) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (unsigned int i = 0; i < packets.size(); ++i) {
     const Packet& packet = packets[i];
     // Parse basic properties.
@@ -107,7 +106,7 @@ void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
                                     uint32 rtp_timestamp, uint32 frame_id,
                                     uint16 packet_id, uint16 max_packet_id,
                                     size_t size) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (config_.enable_raw_data_collection) {
     raw_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
                            packet_id, max_packet_id, size);
@@ -126,7 +125,7 @@ void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
 
 void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
                                      CastLoggingEvent event, int value) {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (config_.enable_raw_data_collection) {
     raw_.InsertGenericEvent(time_of_event, event, value);
   }
@@ -142,31 +141,33 @@ void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
 }
 
 void LoggingImpl::AddRawEventSubscriber(RawEventSubscriber* subscriber) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   raw_.AddSubscriber(subscriber);
 }
 
 void LoggingImpl::RemoveRawEventSubscriber(RawEventSubscriber* subscriber) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   raw_.RemoveSubscriber(subscriber);
 }
 
 FrameStatsMap LoggingImpl::GetFrameStatsData(EventMediaType media_type) const {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return stats_.GetFrameStatsData(media_type);
 }
 
 PacketStatsMap LoggingImpl::GetPacketStatsData(
     EventMediaType media_type) const {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return stats_.GetPacketStatsData(media_type);
 }
 
 GenericStatsMap LoggingImpl::GetGenericStatsData() const {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return stats_.GetGenericStatsData();
 }
 
 void LoggingImpl::ResetStats() {
-  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   stats_.Reset();
 }
 

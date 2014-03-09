@@ -106,7 +106,6 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
     VLOG(1) << "XShmCreateImage failed";
     NOTREACHED();
   }
-  render_buffer_ = reinterpret_cast<uint8_t*>(image_->data);
   shminfo_.readOnly = false;
 
   // Attach image to display.
@@ -119,14 +118,16 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
 
 void LinuxOutputWindow::RenderFrame(
     const scoped_refptr<media::VideoFrame>& video_frame) {
+  CHECK_LE(video_frame->coded_size().width(), image_->width);
+  CHECK_LE(video_frame->coded_size().height(), image_->height);
   libyuv::I420ToARGB(video_frame->data(VideoFrame::kYPlane),
                      video_frame->stride(VideoFrame::kYPlane),
                      video_frame->data(VideoFrame::kUPlane),
                      video_frame->stride(VideoFrame::kUPlane),
                      video_frame->data(VideoFrame::kVPlane),
                      video_frame->stride(VideoFrame::kVPlane),
-                     render_buffer_,
-                     video_frame->stride(VideoFrame::kYPlane) * 4,
+                     reinterpret_cast<uint8_t*>(image_->data),
+                     image_->bytes_per_line,
                      video_frame->coded_size().width(),
                      video_frame->coded_size().height());
 

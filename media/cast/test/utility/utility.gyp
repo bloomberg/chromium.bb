@@ -11,6 +11,8 @@
          '<(DEPTH)/',
       ],
       'dependencies': [
+        '../../cast_receiver.gyp:cast_receiver',
+        '../../transport/cast_transport.gyp:cast_transport',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/testing/gtest.gyp:gtest',
@@ -20,10 +22,16 @@
       'sources': [
         '<(DEPTH)/media/cast/test/fake_single_thread_task_runner.cc',
         '<(DEPTH)/media/cast/test/fake_single_thread_task_runner.h',
-        'input_builder.cc',
-        'input_builder.h',
         'audio_utility.cc',
         'audio_utility.h',
+        'default_config.cc',
+        'default_config.h',
+        'in_process_receiver.cc',
+        'in_process_receiver.h',
+        'input_builder.cc',
+        'input_builder.h',
+        'standalone_cast_environment.cc',
+        'standalone_cast_environment.h',
         'video_utility.cc',
         'video_utility.h',
       ], # source

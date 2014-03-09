@@ -11,7 +11,6 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_impl.h"
 #include "media/cast/logging/simple_event_subscriber.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -34,8 +33,7 @@ class LoggingImplTest : public ::testing::Test {
 
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
-    logging_.reset(new LoggingImpl(task_runner_, config_));
+    logging_.reset(new LoggingImpl(config_));
     logging_->AddRawEventSubscriber(&event_subscriber_);
   }
 
@@ -44,7 +42,6 @@ class LoggingImplTest : public ::testing::Test {
   }
 
   CastLoggingConfig config_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<LoggingImpl> logging_;
   base::SimpleTestTickClock testing_clock_;
   SimpleEventSubscriber event_subscriber_;

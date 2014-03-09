@@ -59,7 +59,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
              external_transport ? external_transport : transport_.get(),
              transport_task_runner),
       rtcp_builder_(&pacer_),
-      logging_(transport_task_runner, logging_config),
+      logging_(logging_config),
       raw_events_callback_(raw_events_callback) {
   if (!raw_events_callback_.is_null()) {
     DCHECK(logging_config.enable_raw_data_collection);

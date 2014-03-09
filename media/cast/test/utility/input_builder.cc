@@ -7,12 +7,15 @@
 #include <stdlib.h>
 #include <cstdio>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace media {
 namespace cast {
 namespace test {
+
+static const char kEnablePromptsSwitch[] = "enable-prompts";
 
 InputBuilder::InputBuilder(const std::string& title,
                            const std::string& default_value,
@@ -26,6 +29,9 @@ InputBuilder::InputBuilder(const std::string& title,
 InputBuilder::~InputBuilder() {}
 
 std::string InputBuilder::GetStringInput() const {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnablePromptsSwitch))
+    return default_value_;
+
   printf("\n%s\n", title_.c_str());
   if (!default_value_.empty())
     printf("Hit enter for default (%s):\n", default_value_.c_str());

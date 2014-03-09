@@ -21,7 +21,10 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/test/utility/default_config.h"
+#include "media/cast/test/utility/in_process_receiver.h"
 #include "media/cast/test/utility/input_builder.h"
+#include "media/cast/test/utility/standalone_cast_environment.h"
 #include "media/cast/transport/transport/udp_transport.h"
 #include "net/base/net_util.h"
 
@@ -31,6 +34,7 @@
 
 namespace media {
 namespace cast {
+
 // Settings chosen to match default sender settings.
 #define DEFAULT_SEND_PORT "0"
 #define DEFAULT_RECEIVE_PORT "2344"
@@ -46,12 +50,10 @@ namespace cast {
 #define DEFAULT_VIDEO_CODEC_HEIGHT "480"
 #define DEFAULT_VIDEO_CODEC_BITRATE "2000"
 
-static const int kAudioSamplingFrequency = 48000;
 #if defined(OS_LINUX)
 const int kVideoWindowWidth = 1280;
 const int kVideoWindowHeight = 720;
 #endif  // OS_LINUX
-static const int kFrameTimerMs = 33;
 
 void GetPorts(int* tx_port, int* rx_port) {
   test::InputBuilder tx_input(
@@ -103,18 +105,9 @@ void GetPayloadtype(AudioReceiverConfig* audio_config) {
 }
 
 AudioReceiverConfig GetAudioReceiverConfig() {
-  AudioReceiverConfig audio_config;
-
+  AudioReceiverConfig audio_config = GetDefaultAudioReceiverConfig();
   GetSsrcs(&audio_config);
   GetPayloadtype(&audio_config);
-
-  audio_config.rtcp_c_name = "audio_receiver@a.b.c.d";
-
-  VLOG(1) << "Using OPUS 48Khz stereo";
-  audio_config.use_external_decoder = false;
-  audio_config.frequency = 48000;
-  audio_config.channels = 2;
-  audio_config.codec = transport::kOpus;
   return audio_config;
 }
 
@@ -127,28 +120,26 @@ void GetPayloadtype(VideoReceiverConfig* video_config) {
 }
 
 VideoReceiverConfig GetVideoReceiverConfig() {
-  VideoReceiverConfig video_config;
-
+  VideoReceiverConfig video_config = GetDefaultVideoReceiverConfig();
   GetSsrcs(&video_config);
   GetPayloadtype(&video_config);
-
-  video_config.rtcp_c_name = "video_receiver@a.b.c.d";
-
-  video_config.use_external_decoder = false;
-
-  VLOG(1) << "Using VP8";
-  video_config.codec = transport::kVp8;
   return video_config;
 }
 
-static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-  VLOG(1) << "CastTransportStatus = " << status;
-}
-
-class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
+// An InProcessReceiver that renders video frames to a LinuxOutputWindow.  While
+// it does receive audio frames, it does not play them.
+class ReceiverDisplay : public InProcessReceiver {
  public:
-  explicit ReceiveProcess(scoped_refptr<FrameReceiver> frame_receiver)
-      : frame_receiver_(frame_receiver),
+  ReceiverDisplay(const scoped_refptr<CastEnvironment>& cast_environment,
+                  const net::IPEndPoint& local_end_point,
+                  const net::IPEndPoint& remote_end_point,
+                  const AudioReceiverConfig& audio_config,
+                  const VideoReceiverConfig& video_config)
+      : InProcessReceiver(cast_environment,
+                          local_end_point,
+                          remote_end_point,
+                          audio_config,
+                          video_config),
 #if defined(OS_LINUX)
         render_(0, 0, kVideoWindowWidth, kVideoWindowHeight, "Cast_receiver"),
 #endif  // OS_LINUX
@@ -156,62 +147,34 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
         last_render_time_() {
   }
 
-  void Start() {
-    GetAudioFrame(base::TimeDelta::FromMilliseconds(kFrameTimerMs));
-    GetVideoFrame();
-  }
+  virtual ~ReceiverDisplay() {}
 
  protected:
-  virtual ~ReceiveProcess() {}
-
- private:
-  friend class base::RefCountedThreadSafe<ReceiveProcess>;
-
-  void DisplayFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                    const base::TimeTicks& render_time) {
+  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                            const base::TimeTicks& render_time) OVERRIDE {
 #ifdef OS_LINUX
     render_.RenderFrame(video_frame);
 #endif  // OS_LINUX
     // Print out the delta between frames.
     if (!last_render_time_.is_null()) {
       base::TimeDelta time_diff = render_time - last_render_time_;
-      VLOG(1) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
+      VLOG(1) << "Size = " << video_frame->coded_size().ToString()
+              << "; RenderDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_render_time_ = render_time;
-    GetVideoFrame();
   }
 
-  void ReceiveAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
-                         const base::TimeTicks& playout_time) {
+  virtual void OnAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
+                            const base::TimeTicks& playout_time) OVERRIDE {
     // For audio just print the playout delta between audio frames.
-    // Default diff time is kFrameTimerMs.
-    base::TimeDelta time_diff =
-        base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     if (!last_playout_time_.is_null()) {
-      time_diff = playout_time - last_playout_time_;
-      VLOG(1) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
+      base::TimeDelta time_diff = playout_time - last_playout_time_;
+      VLOG(1) << "SampleRate = " << audio_frame->frequency
+              << "; PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;
   }
 
-  void GetAudioFrame(base::TimeDelta playout_diff) {
-    int num_10ms_blocks = playout_diff.InMilliseconds() / 10;
-    frame_receiver_->GetRawAudioFrame(
-        num_10ms_blocks,
-        kAudioSamplingFrequency,
-        base::Bind(&ReceiveProcess::ReceiveAudioFrame, this));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ReceiveProcess::GetAudioFrame, this, playout_diff),
-        playout_diff);
-  }
-
-  void GetVideoFrame() {
-    frame_receiver_->GetRawVideoFrame(
-        base::Bind(&ReceiveProcess::DisplayFrame, this));
-  }
-
-  scoped_refptr<FrameReceiver> frame_receiver_;
 #ifdef OS_LINUX
   test::LinuxOutputWindow render_;
 #endif  // OS_LINUX
@@ -224,32 +187,15 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  base::MessageLoopForIO main_message_loop;
   CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
-  VLOG(1) << "Cast Receiver";
-  base::Thread audio_thread("Cast audio decoder thread");
-  base::Thread video_thread("Cast video decoder thread");
-  audio_thread.Start();
-  video_thread.Start();
-
-  scoped_ptr<base::TickClock> clock(new base::DefaultTickClock());
-
-  // Enable main and receiver side threads only. Enable raw event logging.
-  // Running transport on the main thread.
+  // Enable raw event logging only.
   media::cast::CastLoggingConfig logging_config;
   logging_config.enable_raw_data_collection = true;
 
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
-      new media::cast::CastEnvironment(clock.Pass(),
-                                       main_message_loop.message_loop_proxy(),
-                                       NULL,
-                                       audio_thread.message_loop_proxy(),
-                                       NULL,
-                                       video_thread.message_loop_proxy(),
-                                       main_message_loop.message_loop_proxy(),
-                                       logging_config));
+      new media::cast::StandaloneCastEnvironment(logging_config));
 
   media::cast::AudioReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();
@@ -281,23 +227,15 @@ int main(int argc, char** argv) {
   net::IPEndPoint remote_end_point(remote_ip_number, remote_port);
   net::IPEndPoint local_end_point(local_ip_number, local_port);
 
-  scoped_ptr<media::cast::transport::UdpTransport> transport(
-      new media::cast::transport::UdpTransport(
-          NULL,
-          main_message_loop.message_loop_proxy(),
-          local_end_point,
-          remote_end_point,
-          base::Bind(&media::cast::UpdateCastTransportStatus)));
-  scoped_ptr<media::cast::CastReceiver> cast_receiver(
-      media::cast::CastReceiver::CreateCastReceiver(
-          cast_environment, audio_config, video_config, transport.get()));
+  media::cast::ReceiverDisplay* const receiver_display =
+      new media::cast::ReceiverDisplay(cast_environment,
+                                       local_end_point,
+                                       remote_end_point,
+                                       audio_config,
+                                       video_config);
+  receiver_display->Start();
 
-  // TODO(hubbe): Make the cast receiver do this automatically.
-  transport->StartReceiving(cast_receiver->packet_receiver());
-
-  scoped_refptr<media::cast::ReceiveProcess> receive_process(
-      new media::cast::ReceiveProcess(cast_receiver->frame_receiver()));
-  receive_process->Start();
-  main_message_loop.Run();
+  base::MessageLoop().Run();  // Run forever (i.e., until SIGTERM).
+  NOTREACHED();
   return 0;
 }

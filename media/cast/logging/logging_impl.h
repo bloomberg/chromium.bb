@@ -10,7 +10,7 @@
 // 2. Tracing of raw events.
 
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_raw.h"
@@ -19,13 +19,13 @@
 namespace media {
 namespace cast {
 
-// Should only be called from the main thread.
-class LoggingImpl : public base::NonThreadSafe {
+class LoggingImpl {
  public:
-  LoggingImpl(scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
-              const CastLoggingConfig& config);
+  explicit LoggingImpl(const CastLoggingConfig& config);
 
   ~LoggingImpl();
+
+  // Note: All methods below should be called from the same thread.
 
   void InsertFrameEvent(const base::TimeTicks& time_of_event,
                         CastLoggingEvent event, uint32 rtp_timestamp,
@@ -66,7 +66,7 @@ class LoggingImpl : public base::NonThreadSafe {
   void ResetStats();
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
+  base::ThreadChecker thread_checker_;
   const CastLoggingConfig config_;
   LoggingRaw raw_;
   LoggingStats stats_;

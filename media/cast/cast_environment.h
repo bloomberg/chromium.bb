@@ -46,7 +46,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> video_decode_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> transport_thread_proxy,
-      const CastLoggingConfig& config);
+      const CastLoggingConfig& logging_config);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
@@ -64,13 +64,15 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
 
   bool CurrentlyOn(ThreadId identifier);
 
-  base::TickClock* Clock() const;
+  // All of the media::cast implementation must use this TickClock.
+  base::TickClock* Clock() const { return clock_.get(); }
 
-  // Logging is not thread safe. Should always be called from the main thread.
-  LoggingImpl* Logging();
+  // Logging is not thread safe. Its methods should always be called from the
+  // main thread.
+  LoggingImpl* Logging() const { return logging_.get(); }
 
-  scoped_refptr<base::SingleThreadTaskRunner>
-      GetMessageSingleThreadTaskRunnerForThread(ThreadId identifier);
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      ThreadId identifier) const;
 
   bool HasAudioEncoderThread() {
     return audio_encode_thread_proxy_ ? true : false;
@@ -83,10 +85,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
  protected:
   virtual ~CastEnvironment();
 
- private:
-  friend class base::RefCountedThreadSafe<CastEnvironment>;
-
-  scoped_ptr<base::TickClock> clock_;
+  // Subclasses may override these.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_decode_thread_proxy_;
@@ -94,6 +93,10 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> video_decode_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_thread_proxy_;
 
+ private:
+  friend class base::RefCountedThreadSafe<CastEnvironment>;
+
+  scoped_ptr<base::TickClock> clock_;
   scoped_ptr<LoggingImpl> logging_;
 
   DISALLOW_COPY_AND_ASSIGN(CastEnvironment);
