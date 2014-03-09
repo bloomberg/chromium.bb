@@ -9,12 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_handler.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_client.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -92,7 +92,7 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
                                        IDS_ABOUT_VERSION_UNOFFICIAL);
   html_source->AddLocalizedString("user_agent_name",
                                   IDS_ABOUT_VERSION_USER_AGENT);
-  html_source->AddString("useragent", GetUserAgent());
+  html_source->AddString("useragent", content::GetUserAgent(GURL()));
   html_source->AddLocalizedString("command_line_name",
                                   IDS_ABOUT_VERSION_COMMAND_LINE);
 

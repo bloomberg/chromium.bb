@@ -417,26 +417,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #endif  // FLAPPER_AVAILABLE
 }
 
-std::string GetProduct() {
-  chrome::VersionInfo version_info;
-  return version_info.is_valid() ?
-      version_info.ProductNameAndVersionForUserAgent() : std::string();
-}
-
 }  // namespace
-
-std::string GetUserAgent() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserAgent))
-    return command_line->GetSwitchValueASCII(switches::kUserAgent);
-
-  std::string product = GetProduct();
-#if defined(OS_ANDROID)
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-#endif
-  return webkit_glue::BuildUserAgentFromProduct(product);
-}
 
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   base::debug::SetCrashKeyValue(crash_keys::kActiveURL,
@@ -499,11 +480,19 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
 }
 
 std::string ChromeContentClient::GetProduct() const {
-  return ::GetProduct();
+  chrome::VersionInfo version_info;
+  return version_info.is_valid() ?
+      version_info.ProductNameAndVersionForUserAgent() : std::string();
 }
 
 std::string ChromeContentClient::GetUserAgent() const {
-  return ::GetUserAgent();
+  std::string product = GetProduct();
+#if defined(OS_ANDROID)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+#endif
+  return webkit_glue::BuildUserAgentFromProduct(product);
 }
 
 base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {

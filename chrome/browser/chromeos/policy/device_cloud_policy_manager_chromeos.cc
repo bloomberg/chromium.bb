@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/system/statistics_provider.h"
@@ -23,6 +22,7 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_client.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "url/gurl.h"
 
@@ -250,7 +250,9 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new SystemPolicyRequestContext(
-          g_browser_process->system_request_context(), GetUserAgent());
+          g_browser_process->system_request_context(),
+          content::GetUserAgent(GURL(
+              device_management_service_->GetServerUrl())));
 
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),

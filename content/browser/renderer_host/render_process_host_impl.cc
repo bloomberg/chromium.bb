@@ -1087,6 +1087,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // --in-process-webgl.
     switches::kUseGL,
     switches::kUseMobileUserAgent,
+    switches::kUserAgent,
     switches::kV,
     switches::kVideoThreads,
     switches::kVModule,

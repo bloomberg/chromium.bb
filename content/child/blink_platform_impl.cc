@@ -28,7 +28,6 @@
 #include "base/time/time.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
-#include "content/public/common/content_client.h"
 #include "grit/blink_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -39,6 +38,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/base/layout.h"
 #include "webkit/child/webkit_child_helpers.h"
+#include "webkit/common/user_agent/user_agent.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
@@ -362,12 +362,8 @@ WebSocketStreamHandle* BlinkPlatformImpl::createSocketStreamHandle() {
   return new WebSocketStreamHandleImpl(this);
 }
 
-WebString BlinkPlatformImpl::userAgent() {
-  return WebString::fromUTF8(GetContentClient()->GetUserAgent());
-}
-
 WebString BlinkPlatformImpl::userAgent(const WebURL& url) {
-  return userAgent();
+  return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
 }
 
 WebData BlinkPlatformImpl::parseDataURL(

@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/port.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -39,7 +38,6 @@ void GetFingerprintInternal(
     const std::string& accept_languages,
     const base::Time& install_time,
     const std::string& app_locale,
-    const std::string& user_agent,
     const base::TimeDelta& timeout,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
@@ -200,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   internal::GetFingerprintInternal(
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,
       "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(),
-      g_browser_process->GetApplicationLocale(), GetUserAgent(),
+      g_browser_process->GetApplicationLocale(),
       base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));

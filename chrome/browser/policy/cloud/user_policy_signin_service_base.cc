@@ -11,7 +11,6 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -19,6 +18,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/user_policy_request_context.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/content_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
@@ -252,14 +252,17 @@ void UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager() {
 scoped_refptr<net::URLRequestContextGetter>
 UserPolicySigninServiceBase::CreateSystemRequestContext() {
   return new SystemPolicyRequestContext(
-      system_request_context(), GetUserAgent());
+      system_request_context(),
+      content::GetUserAgent(GURL(device_management_service_->GetServerUrl())));
 }
 
 scoped_refptr<net::URLRequestContextGetter>
 UserPolicySigninServiceBase::CreateUserRequestContext(
     scoped_refptr<net::URLRequestContextGetter> profile_request_context) {
   return new UserPolicyRequestContext(
-      profile_request_context, system_request_context(), GetUserAgent());
+      profile_request_context,
+      system_request_context(),
+      content::GetUserAgent(GURL(device_management_service_->GetServerUrl())));
 }
 
 }  // namespace policy

@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
@@ -166,7 +165,7 @@ void SendReport(scoped_refptr<FeedbackData> data) {
 
   userfeedback::WebData* web_data = feedback_data.mutable_web_data();
   web_data->set_url(data->page_url());
-  web_data->mutable_navigator()->set_user_agent(GetUserAgent());
+  web_data->mutable_navigator()->set_user_agent(content::GetUserAgent(GURL()));
 
   gfx::Rect screen_size;
   if (data->sys_info()) {

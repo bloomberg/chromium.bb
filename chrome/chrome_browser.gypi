@@ -1298,6 +1298,8 @@
         'browser/net/about_protocol_handler.h',
         'browser/net/async_dns_field_trial.cc',
         'browser/net/async_dns_field_trial.h',
+        'browser/net/basic_http_user_agent_settings.cc',
+        'browser/net/basic_http_user_agent_settings.h',
         'browser/net/chrome_cookie_notification_details.h',
         'browser/net/chrome_fraudulent_certificate_reporter.cc',
         'browser/net/chrome_fraudulent_certificate_reporter.h',

@@ -35,9 +35,6 @@ class TestWebKitPlatformSupport
   virtual blink::WebIDBFactory* idbFactory();
 
   virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebString userAgent() OVERRIDE;
-  // TODO(jam): remove this after Blink is updated
-  virtual blink::WebString userAgent(const blink::WebURL& url);
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name);

@@ -5923,7 +5923,7 @@ TEST_F(URLRequestTestHTTP, DefaultUserAgent) {
                  &default_context_);
   req.Start();
   base::RunLoop().Run();
-  EXPECT_EQ(req.context()->http_user_agent_settings()->GetUserAgent(),
+  EXPECT_EQ(req.context()->http_user_agent_settings()->GetUserAgent(req.url()),
             d.data_received());
 }
 

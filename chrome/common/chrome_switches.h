@@ -392,7 +392,6 @@ extern const char kUnlimitedStorage[];
 extern const char kUseSimpleCacheBackend[];
 extern const char kUseSpdy[];
 extern const char kUseSpellingSuggestions[];
-extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kValidateCrx[];
 extern const char kVariationsServerURL[];

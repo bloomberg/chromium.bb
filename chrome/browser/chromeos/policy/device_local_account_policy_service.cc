@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -31,6 +30,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
+#include "content/public/common/content_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -59,7 +59,9 @@ scoped_ptr<CloudPolicyClient> CreateClient(
 
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new SystemPolicyRequestContext(
-          system_request_context, GetUserAgent());
+          system_request_context,
+          content::GetUserAgent(GURL(
+              device_management_service->GetServerUrl())));
 
   scoped_ptr<CloudPolicyClient> client(
       new CloudPolicyClient(std::string(), std::string(),

@@ -37,6 +37,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
+#include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_ANDROID)
@@ -453,8 +454,9 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     base::DictionaryValue version;
     version.SetString("Protocol-Version", kProtocolVersion);
     version.SetString("WebKit-Version", webkit_glue::GetWebKitVersion());
-    version.SetString("Browser", GetContentClient()->GetProduct());
-    version.SetString("User-Agent", GetContentClient()->GetUserAgent());
+    version.SetString("Browser", content::GetContentClient()->GetProduct());
+    version.SetString("User-Agent",
+                      webkit_glue::GetUserAgent(GURL(kAboutBlankURL)));
 #if defined(OS_ANDROID)
     version.SetString("Android-Package",
         base::android::BuildInfo::GetInstance()->package_name());

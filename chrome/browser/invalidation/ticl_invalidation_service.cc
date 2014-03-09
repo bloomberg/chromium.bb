@@ -14,7 +14,6 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/common/chrome_content_client.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
 #include "sync/notifier/invalidation_util.h"
@@ -376,7 +375,7 @@ void TiclInvalidationService::StartInvalidator(
           invalidator_storage_->GetBootstrapData(),
           syncer::WeakHandle<syncer::InvalidationStateTracker>(
               invalidator_storage_->AsWeakPtr()),
-          GetUserAgent(),
+          content::GetUserAgent(GURL()),
           profile_->GetRequestContext()));
 
   UpdateInvalidatorCredentials();

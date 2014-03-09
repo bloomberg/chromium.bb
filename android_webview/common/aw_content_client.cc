@@ -12,20 +12,16 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
-namespace {
+namespace android_webview {
 
-std::string GetProduct() {
+std::string AwContentClient::GetProduct() const {
   // "Chrome/XX.0.0.0" identifies that this WebView is derived from the
   // corresponding Chromium version XX.
   // TODO(torne): Use chrome/VERSION file. See http://crbug.com/297522
   return "Chrome/33.0.0.0";
 }
 
-}
-
-namespace android_webview {
-
-std::string GetUserAgent() {
+std::string AwContentClient::GetUserAgent() const {
   // "Version/4.0" had been hardcoded in the legacy WebView.
   std::string product = "Version/4.0 " + GetProduct();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -33,14 +29,6 @@ std::string GetUserAgent() {
     product += " Mobile";
   }
   return webkit_glue::BuildUserAgentFromProduct(product);
-}
-
-std::string AwContentClient::GetProduct() const {
-  return ::GetProduct();
-}
-
-std::string AwContentClient::GetUserAgent() const {
-  return android_webview::GetUserAgent();
 }
 
 base::string16 AwContentClient::GetLocalizedString(int message_id) const {

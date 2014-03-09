@@ -206,6 +206,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kTestSandbox,
     switches::kTraceStartup,
     switches::kUseGL,
+    switches::kUserAgent,
   };
 
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

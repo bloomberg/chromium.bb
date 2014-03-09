@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -249,7 +248,7 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
           g_browser_process->GetApplicationLocale());
   AddPair(list.get(),
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_USER_AGENT),
-          GetUserAgent());
+          content::GetUserAgent(GURL()));
   chrome::VersionInfo version_info;
   std::string version = version_info.Version();
   version += chrome::VersionInfo::GetVersionStringModifier();

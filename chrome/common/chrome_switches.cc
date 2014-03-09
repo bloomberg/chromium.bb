@@ -1448,9 +1448,6 @@ const char kUseSpdy[]                       = "use-spdy";
 // This will only work if asynchronous spell checking is not disabled.
 const char kUseSpellingSuggestions[]        = "use-spelling-suggestions";
 
-// A string used to override the default user agent with a custom one.
-const char kUserAgent[]                     = "user-agent";
-
 // Specifies the user data directory, which is where the browser will look for
 // all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
