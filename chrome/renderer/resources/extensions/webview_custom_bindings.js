@@ -99,7 +99,8 @@ binding.registerCustomHook(function(bindingsAPI) {
     var instanceId = request.args[0];
     var id = request.args[1];
     if (request.args[2].onclick) {
-      contextMenus.handlersForId(instanceId, id)[id] = request.args[2].onclick;
+      webviewContextMenus.handlersForId(instanceId, id)[id] =
+          request.args[2].onclick;
     }
   });
 
