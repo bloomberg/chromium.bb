@@ -36,8 +36,6 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/multi_profile_uma.h"
-#include "ash/session_state_delegate.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -149,12 +147,6 @@ void AttemptUserExit() {
   // Write /tmp/uptime-logout-started as well.
   const char kLogoutStarted[] = "logout-started";
   chromeos::BootTimesLoader::Get()->RecordCurrentStats(kLogoutStarted);
-
-  // Since we are shutting down now we should record how many users have joined
-  // the session since session start.
-  ash::MultiProfileUMA::RecordUserCount(
-      ash::Shell::GetInstance()->session_state_delegate()->
-          NumberOfLoggedInUsers());
 
   // Login screen should show up in owner's locale.
   PrefService* state = g_browser_process->local_state();

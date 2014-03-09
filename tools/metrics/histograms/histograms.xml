@@ -8072,8 +8072,8 @@ other types of suffix sets.
     The relation of discarded tabs vs. the amount of simultaneous users. The
     counts are the number of discards and the buckets are the number of users.
     Since the count values are absolute numbers, they need to be normalized
-    before use - so divide the counts by the percentage of users found under
-    'MultiProfile.UsersPerSession'.
+    before use - so divide the counts by the percentage of users per session
+    found under 'MultiProfile.UsersPerSessionIncremental'.
   </summary>
 </histogram>
 
@@ -8118,9 +8118,22 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="MultiProfile.UsersPerSession">
+  <obsolete>
+    Deprecated 3/2014, renamed to MultiProfile.UsersPerSessionIncremental.
+  </obsolete>
   <summary>
     The number of users simultaneously signed into a multiprofile session on
-    Chrome OS. This is recorded whenever a new user logs in.
+    Chrome OS. This is recorded upon session end.
+  </summary>
+</histogram>
+
+<histogram name="MultiProfile.UsersPerSessionIncremental">
+  <summary>
+    The number of users simultaneously signed into a multiprofile session on
+    Chrome OS. This is recorded whenever a user gets added to the session. To
+    get the correct count, all following counts must be subtracted. Example: If
+    100 single user, 20 two user and 5 three user sessions, there were
+    100-20-5=75 single user sessions, 100-80=20 dual user sessions and so on.
   </summary>
 </histogram>
 

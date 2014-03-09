@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <set>
 
+#include "ash/multi_profile_uma.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -2039,6 +2040,13 @@ void UserManagerImpl::DoUpdateAccountLocale(
 }
 
 void UserManagerImpl::UpdateNumberOfUsers() {
+  size_t users = GetLoggedInUsers().size();
+  if (users) {
+    // Write the user number as UMA stat when a multi user session is possible.
+    if ((users + GetUsersAdmittedForMultiProfile().size()) > 1)
+      ash::MultiProfileUMA::RecordUserCount(users);
+  }
+
   base::debug::SetCrashKeyValue(crash_keys::kNumberOfUsers,
       base::StringPrintf("%" PRIuS, GetLoggedInUsers().size()));
 }
