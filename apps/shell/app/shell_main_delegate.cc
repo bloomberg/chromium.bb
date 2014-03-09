@@ -87,12 +87,10 @@ bool ShellMainDelegate::ProcessNeedsResourceBundle(
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
-
   base::FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_dir.AppendASCII("app_shell.pak"), ui::SCALE_FACTOR_NONE);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(
+      pak_dir.AppendASCII("app_shell.pak"));
 }
 
 }  // namespace apps

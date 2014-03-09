@@ -103,11 +103,17 @@
           'target_name': 'app_shell_pak',
           'type': 'none',
           'dependencies': [
-            # Need dev-tools related resources in shell_resources.pak and devtools_resources.pak.
+            # Need extension related resources in common_resources.pak and
+            # renderer_resources_100_percent.pak
+            'chrome_resources.gyp:chrome_resources',
+            # Need app related resources in theme_resources_100_percent.pak
+            'chrome_resources.gyp:theme_resources',
+            # Need dev-tools related resources in shell_resources.pak and
+            # devtools_resources.pak.
             '../content/content_shell_and_tests.gyp:generate_content_shell_resources',
             '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
-            # Need features JSON files in common_resources.pak.
-            'chrome_resources.gyp:chrome_resources',
+            '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/resources/ui_resources.gyp:ui_resources',
           ],
           'variables': {
             'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
@@ -117,10 +123,19 @@
               'action_name': 'repack_app_shell_pack',
               'variables': {
                 'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
                   '<(grit_out_dir)/common_resources.pak',
                   '<(grit_out_dir)/extensions_api_resources.pak',
+                  # TODO(jamescook): extra the extension/app related resources
+                  # from generated_resources_en-US.pak and
+                  # theme_resources_100_percent.pak.
+                  '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
                 ],
               },
               'inputs': [
