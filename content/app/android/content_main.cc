@@ -16,8 +16,8 @@
 #include "jni/ContentMain_jni.h"
 
 using base::LazyInstance;
-using content::ContentMainRunner;
-using content::ContentMainDelegate;
+
+namespace content {
 
 namespace {
 LazyInstance<scoped_ptr<ContentMainRunner> > g_content_runner =
@@ -27,8 +27,6 @@ LazyInstance<scoped_ptr<ContentMainDelegate> > g_content_main_delegate =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace content {
 
 static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
@@ -43,9 +41,9 @@ static jint Start(JNIEnv* env, jclass clazz) {
   // request then we have to call this a second time to finish starting the
   // browser synchronously.
   if (!g_content_runner.Get().get()) {
+    ContentMainParams params(g_content_main_delegate.Get().get());
     g_content_runner.Get().reset(ContentMainRunner::Create());
-    g_content_runner.Get()->Initialize(
-        0, NULL, g_content_main_delegate.Get().get());
+    g_content_runner.Get()->Initialize(params);
   }
   return g_content_runner.Get()->Run();
 }

@@ -11,19 +11,22 @@
 #endif
 
 #if defined(OS_WIN)
-
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
+#else
+int main(int argc, const char** argv) {
+#endif
+  apps::ShellMainDelegate delegate;
+  content::ContentMainParams params(&delegate);
+
+#if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
   content::InitializeSandboxInfo(&sandbox_info);
-  apps::ShellMainDelegate delegate;
-  return content::ContentMain(instance, &sandbox_info, &delegate);
-}
-
+  params.instance = instance;
+  params.sandbox_info = &sandbox_info;
 #else
+  params.argc = argc;
+  params.argv = argv;
+#endif
 
-int main(int argc, const char** argv) {
-  apps::ShellMainDelegate delegate;
-  return content::ContentMain(argc, argv, &delegate);
+  return content::ContentMain(params);
 }
-
-#endif  // OS_WIN

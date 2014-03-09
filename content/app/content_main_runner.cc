@@ -30,6 +30,7 @@
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
+#include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/browser/content_browser_client.h"
@@ -524,22 +525,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   }
 #endif
 
-#if defined(OS_WIN)
-  virtual int Initialize(HINSTANCE instance,
-                         sandbox::SandboxInterfaceInfo* sandbox_info,
-                         ContentMainDelegate* delegate) OVERRIDE {
-    // argc/argv are ignored on Windows; see command_line.h for details.
-    int argc = 0;
-    char** argv = NULL;
-
+  virtual int Initialize(const ContentMainParams& params) OVERRIDE {
+#if defined(OS_WIN)   
     RegisterInvalidParamHandler();
-    _Module.Init(NULL, static_cast<HINSTANCE>(instance));
+    _Module.Init(NULL, static_cast<HINSTANCE>(params.instance));
 
-    sandbox_info_ = *sandbox_info;
+    sandbox_info_ = *params.sandbox_info;
 #else  // !OS_WIN
-  virtual int Initialize(int argc,
-                         const char** argv,
-                         ContentMainDelegate* delegate) OVERRIDE {
 
 #if defined(OS_ANDROID)
     // See note at the initialization of ExitManager, below; basically,
@@ -609,7 +601,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // !OS_WIN
 
     is_initialized_ = true;
-    delegate_ = delegate;
+    delegate_ = params.delegate;
 
     base::EnableTerminationOnHeapCorruption();
     base::EnableTerminationOnOutOfMemory();
@@ -634,11 +626,25 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // On Android, the command line is initialized when library is loaded and
     // we have already started our TRACE_EVENT0.
 #if !defined(OS_ANDROID)
+    // argc/argv are ignored on Windows and Android; see command_line.h for
+    // details.
+    int argc = 0;
+    const char** argv = NULL;
+
+#if !defined(OS_WIN)
+    argc = params.argc;
+    argv = params.argv;
+#endif
+
     CommandLine::Init(argc, argv);
+
+#if !defined(OS_IOS)
+    SetProcessTitleFromCommandLine(argv);
+#endif
 #endif // !OS_ANDROID
 
     int exit_code;
-    if (delegate && delegate->BasicStartupComplete(&exit_code))
+    if (delegate_ && delegate_->BasicStartupComplete(&exit_code))
       return exit_code;
 
     completed_basic_startup_ = true;
@@ -680,13 +686,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // It's important not to allocate the ports for processes which don't
     // register with the power monitor - see crbug.com/88867.
     if (process_type.empty() ||
-        (delegate &&
-         delegate->ProcessRegistersWithSystemProcess(process_type))) {
+        (delegate_ &&
+         delegate_->ProcessRegistersWithSystemProcess(process_type))) {
       base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
     }
 
     if (!process_type.empty() &&
-        (!delegate || delegate->ShouldSendMachPort(process_type))) {
+        (!delegate_ || delegate_->ShouldSendMachPort(process_type))) {
       MachBroker::ChildSendTaskPortToParent();
     }
 #elif defined(OS_WIN)
@@ -729,18 +735,18 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     InitializeStatsTable(command_line);
 
-    if (delegate)
-      delegate->PreSandboxStartup();
+    if (delegate_)
+      delegate_->PreSandboxStartup();
 
     if (!process_type.empty())
       CommonSubprocessInit(process_type);
 
 #if defined(OS_WIN)
-    CHECK(InitializeSandbox(sandbox_info));
+    CHECK(InitializeSandbox(params.sandbox_info));
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kPpapiPluginProcess ||
-        (delegate && delegate->DelaySandboxInitialization(process_type))) {
+        (delegate_ && delegate_->DelaySandboxInitialization(process_type))) {
       // On OS X the renderer sandbox needs to be initialized later in the
       // startup sequence in RendererMainPlatformDelegate::EnableSandbox().
     } else {
@@ -748,12 +754,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #endif
 
-    if (delegate)
-      delegate->SandboxInitialized(process_type);
-
-#if defined(OS_POSIX) && !defined(OS_IOS)
-    SetProcessTitleFromCommandLine(argv);
-#endif
+    if (delegate_)
+      delegate_->SandboxInitialized(process_type);
 
     // Return -1 to indicate no early termination.
     return -1;

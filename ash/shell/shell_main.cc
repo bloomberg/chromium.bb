@@ -12,14 +12,21 @@
 
 #if defined(OS_WIN)
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
-  ash::shell::ShellMainDelegate delegate;
-  return content::ContentMain(instance, &sandbox_info, &delegate);
-}
 #else
 int main(int argc, const char** argv) {
-  ash::shell::ShellMainDelegate delegate;
-  return content::ContentMain(argc, argv, &delegate);
-}
 #endif
+  ash::shell::ShellMainDelegate delegate;
+  content::ContentMainParams params(&delegate);
+
+#if defined(OS_WIN)
+  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  content::InitializeSandboxInfo(&sandbox_info);
+  params.instance = instance;
+  params.sandbox_info = &sandbox_info;
+#else
+  params.argc = argc;
+  params.argv = argv;
+#endif
+
+  return content::ContentMain(params);
+}

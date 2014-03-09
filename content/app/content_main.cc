@@ -9,26 +9,10 @@
 
 namespace content {
 
-#if defined(OS_WIN)
-int ContentMain(HINSTANCE instance,
-                sandbox::SandboxInterfaceInfo* sandbox_info,
-                ContentMainDelegate* delegate) {
-#else
-int ContentMain(int argc,
-                const char** argv,
-                ContentMainDelegate* delegate) {
-#endif  // OS_WIN
-
+int ContentMain(const ContentMainParams& params) {
   scoped_ptr<ContentMainRunner> main_runner(ContentMainRunner::Create());
 
-  int exit_code;
-
-#if defined(OS_WIN)
-  exit_code = main_runner->Initialize(instance, sandbox_info, delegate);
-#else
-  exit_code = main_runner->Initialize(argc, argv, delegate);
-#endif  // OS_WIN
-
+  int exit_code = main_runner->Initialize(params);
   if (exit_code >= 0)
     return exit_code;
 

@@ -5,21 +5,8 @@
 #ifndef CONTENT_PUBLIC_APP_CONTENT_MAIN_RUNNER_H_
 #define CONTENT_PUBLIC_APP_CONTENT_MAIN_RUNNER_H_
 
-#include <string>
-
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
-namespace sandbox {
-struct SandboxInterfaceInfo;
-}
-
 namespace content {
-
-class ContentMainDelegate;
+struct ContentMainParams;
 
 // This class is responsible for content initialization, running and shutdown.
 class ContentMainRunner {
@@ -30,19 +17,7 @@ class ContentMainRunner {
   static ContentMainRunner* Create();
 
   // Initialize all necessary content state.
-#if defined(OS_WIN)
-  // The |sandbox_info| and |delegate| objects must outlive this class.
-  // |sandbox_info| should be initialized using InitializeSandboxInfo from
-  // content_main_win.h.
-  virtual int Initialize(HINSTANCE instance,
-                         sandbox::SandboxInterfaceInfo* sandbox_info,
-                         ContentMainDelegate* delegate) = 0;
-#else
-  // The |delegate| object must outlive this class.
-  virtual int Initialize(int argc,
-                         const char** argv,
-                         ContentMainDelegate* delegate) = 0;
-#endif
+  virtual int Initialize(const ContentMainParams& params) = 0;
 
   // Perform the default run logic.
   virtual int Run() = 0;

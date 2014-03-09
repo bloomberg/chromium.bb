@@ -26,16 +26,28 @@ int ChromeMain(int argc, const char** argv);
 #if defined(OS_WIN)
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info) {
+#elif defined(OS_POSIX)
+int ChromeMain(int argc, const char** argv) {
+#endif
+  ChromeMainDelegate chrome_main_delegate;
+  content::ContentMainParams params(&chrome_main_delegate);
+
+#if defined(OS_WIN)
   // The process should crash when going through abnormal termination.
   base::win::SetShouldCrashOnProcessDetach(true);
   base::win::SetAbortBehaviorForCrashReporting();
-  ChromeMainDelegate chrome_main_delegate;
-  int rv = content::ContentMain(instance, sandbox_info, &chrome_main_delegate);
-  base::win::SetShouldCrashOnProcessDetach(false);
-  return rv;
-#elif defined(OS_POSIX)
-int ChromeMain(int argc, const char** argv) {
-  ChromeMainDelegate chrome_main_delegate;
-  return content::ContentMain(argc, argv, &chrome_main_delegate);
+  params.instance = instance;
+  params.sandbox_info = sandbox_info;
+#else
+  params.argc = argc;
+  params.argv = argv;
 #endif
+
+  int rv = content::ContentMain(params);
+
+#if defined(OS_WIN)
+  base::win::SetShouldCrashOnProcessDetach(false);
+#endif
+
+  return rv;
 }

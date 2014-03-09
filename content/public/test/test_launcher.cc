@@ -427,35 +427,34 @@ const char kSingleProcessTestsFlag[]   = "single_process";
 TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
-bool ShouldRunContentMain() {
 #if defined(OS_WIN) || defined(OS_LINUX)
+bool ShouldRunContentMain() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kProcessType) ||
          command_line->HasSwitch(kLaunchAsBrowser);
-#else
   return false;
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
 }
 
 int RunContentMain(int argc, char** argv,
                    TestLauncherDelegate* launcher_delegate) {
+  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
+      launcher_delegate->CreateContentMainDelegate());
+  ContentMainParams params(chrome_main_delegate.get());
+
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
   InitializeSandboxInfo(&sandbox_info);
-  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
-      launcher_delegate->CreateContentMainDelegate());
-  return ContentMain(GetModuleHandle(NULL),
-                     &sandbox_info,
-                     chrome_main_delegate.get());
+
+  params.instance = GetModuleHandle(NULL);
+  params.sandbox_info = &sandbox_info;
 #elif defined(OS_LINUX)
-  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
-      launcher_delegate->CreateContentMainDelegate());
-  return ContentMain(argc, const_cast<const char**>(argv),
-                     chrome_main_delegate.get());
+  params.argc = argc;
+  params.argv = const_cast<const char**>(argv);
 #endif  // defined(OS_WIN)
-  NOTREACHED();
-  return 0;
+
+  return ContentMain(params);
 }
+#endif
 
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 int default_jobs,
@@ -487,8 +486,10 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return launcher_delegate->RunTestSuite(argc, argv);
   }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
   if (ShouldRunContentMain())
     return RunContentMain(argc, argv, launcher_delegate);
+#endif
 
   base::AtExitManager at_exit;
   testing::InitGoogleTest(&argc, argv);

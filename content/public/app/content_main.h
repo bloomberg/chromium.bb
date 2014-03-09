@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_APP_CONTENT_MAIN_H_
 #define CONTENT_PUBLIC_APP_CONTENT_MAIN_H_
 
+#include <stddef.h>
+
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -17,21 +19,36 @@ struct SandboxInterfaceInfo;
 }
 
 namespace content {
-
 class ContentMainDelegate;
 
-// ContentMain should be called from the embedder's main() function to do the
-// initial setup for every process. The embedder has a chance to customize
-// startup using the ContentMainDelegate interface. The embedder can also pass
-// in NULL for |delegate| if they don't want to override default startup.
+struct ContentMainParams {
+  explicit ContentMainParams(ContentMainDelegate* delegate)
+      : delegate(delegate)
 #if defined(OS_WIN)
+        , instance(NULL),
+        sandbox_info(NULL)
+#elif !defined(OS_ANDROID)
+        , argc(0),
+        argv(NULL)
+#endif
+        {
+  }
 
-// |sandbox_info| should be initialized using InitializeSandboxInfo from
-// content_main_win.h
-CONTENT_EXPORT int ContentMain(HINSTANCE instance,
-                               sandbox::SandboxInterfaceInfo* sandbox_info,
-                               ContentMainDelegate* delegate);
-#elif defined(OS_ANDROID)
+  ContentMainDelegate* delegate;
+
+#if defined(OS_WIN)
+  HINSTANCE instance;
+
+  // |sandbox_info| should be initialized using InitializeSandboxInfo from
+  // content_main_win.h
+  sandbox::SandboxInterfaceInfo* sandbox_info;
+#elif !defined(OS_ANDROID)
+  int argc;
+  const char** argv;
+#endif
+};
+
+#if defined(OS_ANDROID)
 // In the Android, the content main starts from ContentMain.java, This function
 // provides a way to set the |delegate| as ContentMainDelegate for
 // ContentMainRunner.
@@ -39,10 +56,12 @@ CONTENT_EXPORT int ContentMain(HINSTANCE instance,
 // The ownership of |delegate| is transferred.
 CONTENT_EXPORT void SetContentMainDelegate(ContentMainDelegate* delegate);
 #else
-CONTENT_EXPORT int ContentMain(int argc,
-                               const char** argv,
-                               ContentMainDelegate* delegate);
-#endif  // defined(OS_WIN)
+// ContentMain should be called from the embedder's main() function to do the
+// initial setup for every process. The embedder has a chance to customize
+// startup using the ContentMainDelegate interface. The embedder can also pass
+// in NULL for |delegate| if they don't want to override default startup.
+CONTENT_EXPORT int ContentMain(const ContentMainParams& params);
+#endif
 
 }  // namespace content
 
