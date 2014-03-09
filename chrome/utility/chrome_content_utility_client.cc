@@ -416,7 +416,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 // static
 void ChromeContentUtilityClient::PreSandboxStartup() {
 #if defined(ENABLE_MDNS)
-  local_discovery::ServiceDiscoveryMessageHandler::PreSandboxStartup();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUtilityProcessEnableMDns)) {
+    local_discovery::ServiceDiscoveryMessageHandler::PreSandboxStartup();
+  }
 #endif  // ENABLE_MDNS
 
   g_pdf_lib.Get().Init();
