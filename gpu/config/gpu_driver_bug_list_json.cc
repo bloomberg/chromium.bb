@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.4",
+  "version": "4.5",
   "entries": [
     {
       "id": 1,
@@ -51,7 +51,16 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 3,
-      "description": "glGenerateMipmap leaks vram without setting texture filters on some drivers",
+      "description": "glGenerateMipmap leaks vram without setting texture filters on some Mac drivers",
+      "webkit_bugs": [48489],
+      "cr_bugs": [349137],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.9"
+        }
+      },
       "features": [
         "set_texture_filter_before_generating_mipmap"
       ]
@@ -59,6 +68,15 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 4,
       "description": "glReadPixels incorrectly sets alpha to 0 on some drivers from a drawing buffer without alpha channel",
+      "webkit_bugs": [33416],
+      "cr_bugs": [349137],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.9"
+        }
+      },
       "features": [
         "clear_alpha_in_readpixels"
       ]
@@ -66,7 +84,19 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 5,
       "description": "Always call glUseProgram after a successful link to avoid a driver bug",
+      "cr_bugs": [349137],
       "vendor_id": "0x10de",
+      "exceptions": [
+        {
+          "os": {
+            "type": "macosx",
+            "version": {
+              "op": ">=",
+              "value": "10.9"
+            }
+          }
+        }
+      ],
       "features": [
         "use_current_program_after_successful_link"
       ]
@@ -105,8 +135,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 8,
       "description": "A few built-in glsl functions on Mac behave incorrectly",
+      "cr_bugs": [349137],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.9"
+        }
       },
       "vendor_id": "0x1002",
       "features": [
@@ -699,8 +734,19 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 54,
-      "cr_bugs": [124764],
+      "cr_bugs": [124764, 349137],
       "description": "Clear uniforms before first program use on all platforms",
+      "exceptions": [
+        {
+          "os": {
+            "type": "macosx",
+            "version": {
+              "op": ">=",
+              "value": "10.9"
+            }
+          }
+        }
+      ],
       "features": [
         "clear_uniforms_before_first_program_use"
       ]
@@ -777,8 +823,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 60,
-      "description": "Multisampling is buggy on Mac with NVIDIA gpu prior to 10.8.3",
-      "cr_bugs": [137303],
+      "description": "Multisampling is buggy on Mac OS X prior to 10.8.3",
+      "cr_bugs": [137303, 162466],
       "os": {
         "type": "macosx",
         "version": {
@@ -786,39 +832,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "10.8.3"
         }
       },
-      "vendor_id": "0x10de",
-      "features": [
-        "disable_multisampling"
-      ]
-    },
-    {
-      "id": 61,
-      "description": "Multisampling is buggy on Mac with Intel gpu prior to 10.8.3",
-      "cr_bugs": [137303],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8.3"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "disable_multisampling"
-      ]
-    },
-    {
-      "id": 62,
-      "description": "Multisampling is buggy on Mac with AMD gpu prior to 10.8.3",
-      "cr_bugs": [162466],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8.3"
-        }
-      },
-      "vendor_id": "0x1002",
       "features": [
         "disable_multisampling"
       ]
@@ -826,9 +839,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 63,
       "description": "Shaders with sampler arrays indexing for-loop indices cause the GLSL compiler to crash on OS X",
-      "cr_bugs": [348198],
+      "cr_bugs": [348198, 349137],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.9"
+        }
       },
       "features": [
         "unroll_for_loop_with_sampler_array_index"
