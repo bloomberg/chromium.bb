@@ -25,7 +25,7 @@ BluetoothDiscoverySession::~BluetoothDiscoverySession() {
     return;
   }
   Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
-  adapter_->DiscoverySessionDestroyed(this);
+  MarkAsInactive();
 }
 
 bool BluetoothDiscoverySession::IsActive() const {
@@ -50,12 +50,16 @@ void BluetoothDiscoverySession::Stop(
 }
 
 void BluetoothDiscoverySession::OnStop(const base::Closure& callback) {
-  active_ = false;
+  MarkAsInactive();
   callback.Run();
 }
 
 void BluetoothDiscoverySession::MarkAsInactive() {
+  if (!active_)
+    return;
   active_ = false;
+  DCHECK(adapter_.get());
+  adapter_->DiscoverySessionBecameInactive(this);
 }
 
 }  // namespace device

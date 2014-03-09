@@ -145,33 +145,21 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // The returned BluetoothDiscoverySession is owned by the caller and it's the
   // owner's responsibility to properly clean it up and stop the session when
   // device discovery is no longer needed.
+  //
+  // If clients desire device discovery to run, they should always call this
+  // method and never make it conditional on the value of IsDiscovering(), as
+  // another client might cause discovery to stop unexpectedly. Hence, clients
+  // should always obtain a BluetoothDiscoverySession and call
+  // BluetoothDiscoverySession::Stop when done. When this method gets called,
+  // device discovery may actually be in progress. Clients can call GetDevices()
+  // and check for those with IsPaired() as false to obtain the list of devices
+  // that have been discovered so far. Otherwise, clients can be notified of all
+  // new and lost devices can by implementing the Observer methods "DeviceAdded"
+  // and "DeviceRemoved".
   typedef base::Callback<void(scoped_ptr<BluetoothDiscoverySession>)>
       DiscoverySessionCallback;
   virtual void StartDiscoverySession(const DiscoverySessionCallback& callback,
                                      const ErrorCallback& error_callback);
-
-  // DEPRECATED: Use StartDiscoverySession instead.
-  // Requests that the adapter begin discovering new devices, code must
-  // always call this method if they require the adapter be in discovery
-  // and should not make it conditional on the value of IsDiscovering()
-  // as other adapter users may be making the same request. Code must also
-  // call StopDiscovering() when done. On success |callback| will be called,
-  // on failure |error_callback| will be called instead.
-  //
-  // Since discovery may already be in progress when this method is called,
-  // callers should retrieve the current set of discovered devices by calling
-  // GetDevices() and checking for those with IsPaired() as false.
-  virtual void StartDiscovering(const base::Closure& callback,
-                                const ErrorCallback& error_callback);
-
-  // DEPRECATED: Use BluetoothDiscoverySession::Stop instead.
-  // Requests that an earlier call to StartDiscovering() be cancelled; the
-  // adapter may not actually cease discovering devices if other callers
-  // have called StartDiscovering() and not yet called this method. On
-  // success |callback| will be called, on failure |error_callback| will be
-  // called instead.
-  virtual void StopDiscovering(const base::Closure& callback,
-                               const ErrorCallback& error_callback);
 
   // Requests the list of devices from the adapter, all are returned
   // including those currently connected and those paired. Use the
@@ -275,13 +263,10 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   void MarkDiscoverySessionsAsInactive();
 
   // Removes |discovery_session| from |discovery_sessions_|, if its in there.
-  // Called by DiscoverySession when an instance is destroyed.
-  void DiscoverySessionDestroyed(BluetoothDiscoverySession* discovery_session);
-
-  // List of all DiscoverySession objects. We keep raw pointers, with the
-  // assumption that a DiscoverySession will remove itself from this list when
-  // it gets destroyed.
-  std::set<BluetoothDiscoverySession*> discovery_sessions_;
+  // Called by DiscoverySession when an instance is destroyed or becomes
+  // inactive.
+  void DiscoverySessionBecameInactive(
+      BluetoothDiscoverySession* discovery_session);
 
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value
@@ -296,6 +281,14 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   std::list<PairingDelegatePair> pairing_delegates_;
 
  private:
+  // List of active DiscoverySession objects. This is used to notify sessions to
+  // become inactive in case of an unexpected change to the adapter discovery
+  // state. We keep raw pointers, with the invariant that a DiscoverySession
+  // will remove itself from this list when it gets destroyed or becomes
+  // inactive by calling DiscoverySessionBecameInactive(), hence no pointers to
+  // deallocated sessions are kept.
+  std::set<BluetoothDiscoverySession*> discovery_sessions_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;

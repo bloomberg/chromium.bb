@@ -69,23 +69,8 @@ class TestBluetoothAdapter : public BluetoothAdapter {
     return false;
   }
 
-  virtual void StartDiscovering(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
-  }
-
-  virtual void StopDiscovering(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
-  }
-
-  virtual void AddDiscoverySession(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
-  }
-
-  virtual void RemoveDiscoverySession(
-      const base::Closure& callback,
+  virtual void StartDiscoverySession(
+      const DiscoverySessionCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
   }
 
@@ -96,6 +81,16 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
  protected:
   virtual ~TestBluetoothAdapter() {}
+
+  virtual void AddDiscoverySession(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+  }
+
+  virtual void RemoveDiscoverySession(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+  }
 
   virtual void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) OVERRIDE {

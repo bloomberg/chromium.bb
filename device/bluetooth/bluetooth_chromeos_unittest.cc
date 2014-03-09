@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
@@ -43,6 +44,7 @@ class TestObserver : public BluetoothAdapter::Observer {
         last_device_(NULL),
         adapter_(adapter) {
   }
+
   virtual ~TestObserver() {}
 
   virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
@@ -246,9 +248,15 @@ class BluetoothChromeOSTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (last_discovery_session_.get() && last_discovery_session_->IsActive()) {
+    for (ScopedVector<BluetoothDiscoverySession>::iterator iter =
+            discovery_sessions_.begin();
+         iter != discovery_sessions_.end();
+         ++iter) {
+      BluetoothDiscoverySession* session = *iter;
+      if (!session->IsActive())
+        continue;
       callback_count_ = 0;
-      last_discovery_session_->Stop(
+      session->Stop(
           base::Bind(&BluetoothChromeOSTest::Callback,
                      base::Unretained(this)),
           base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -256,7 +264,7 @@ class BluetoothChromeOSTest : public testing::Test {
       message_loop_.Run();
       ASSERT_EQ(1, callback_count_);
     }
-    last_discovery_session_.reset();
+    discovery_sessions_.clear();
     adapter_ = NULL;
     DBusThreadManager::Shutdown();
   }
@@ -270,7 +278,7 @@ class BluetoothChromeOSTest : public testing::Test {
   void DiscoverySessionCallback(
       scoped_ptr<BluetoothDiscoverySession> discovery_session) {
     ++callback_count_;
-    last_discovery_session_ = discovery_session.Pass();
+    discovery_sessions_.push_back(discovery_session.release());
     QuitMessageLoop();
   }
 
@@ -317,14 +325,16 @@ class BluetoothChromeOSTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                    base::Unretained(this)));
-    adapter_->StartDiscovering(
-        base::Bind(&BluetoothChromeOSTest::Callback,
+    adapter_->StartDiscoverySession(
+        base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                    base::Unretained(this)),
         base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                    base::Unretained(this)));
     base::MessageLoop::current()->Run();
     ASSERT_EQ(2, callback_count_);
     ASSERT_EQ(0, error_callback_count_);
+    ASSERT_EQ((size_t)1, discovery_sessions_.size());
+    ASSERT_TRUE(discovery_sessions_[0]->IsActive());
     callback_count_ = 0;
 
     ASSERT_TRUE(adapter_->IsPowered());
@@ -334,7 +344,7 @@ class BluetoothChromeOSTest : public testing::Test {
            observer.last_device_address_ != address)
       base::MessageLoop::current()->Run();
 
-    adapter_->StopDiscovering(
+    discovery_sessions_[0]->Stop(
         base::Bind(&BluetoothChromeOSTest::Callback,
                    base::Unretained(this)),
         base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -366,7 +376,7 @@ class BluetoothChromeOSTest : public testing::Test {
   int error_callback_count_;
   enum BluetoothDevice::ConnectErrorCode last_connect_error_;
   std::string last_client_error_;
-  scoped_ptr<BluetoothDiscoverySession> last_discovery_session_;
+  ScopedVector<BluetoothDiscoverySession> discovery_sessions_;
 
  private:
   // Some tests use a message loop since background processing is simulated;
@@ -640,8 +650,8 @@ TEST_F(BluetoothChromeOSTest, StopDiscovery) {
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -652,6 +662,8 @@ TEST_F(BluetoothChromeOSTest, StopDiscovery) {
 
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  ASSERT_TRUE(discovery_sessions_[0]->IsActive());
 
   // Install an observer; aside from the callback, expect the
   // AdapterDiscoveringChanged method to be called and no longer to be
@@ -659,80 +671,7 @@ TEST_F(BluetoothChromeOSTest, StopDiscovery) {
   TestObserver observer(adapter_);
   adapter_->AddObserver(&observer);
 
-  adapter_->StopDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-  message_loop_.Run();
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
-
-  EXPECT_EQ(1, observer.discovering_changed_count_);
-  EXPECT_FALSE(observer.last_discovering_);
-
-  EXPECT_FALSE(adapter_->IsDiscovering());
-}
-
-TEST_F(BluetoothChromeOSTest, StopDiscoveryAfterTwoStarts) {
-  GetAdapter();
-
-  adapter_->SetPowered(
-      true,
-      base::Bind(&BluetoothChromeOSTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-  adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-  message_loop_.Run();
-  EXPECT_EQ(2, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
-  callback_count_ = 0;
-
-  ASSERT_TRUE(adapter_->IsPowered());
-  ASSERT_TRUE(adapter_->IsDiscovering());
-
-  // Install an observer and start discovering again; only the callback
-  // should be called since we were already discovering to begin with.
-  TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
-
-  adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-  message_loop_.Run();
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
-  callback_count_ = 0;
-
-  EXPECT_EQ(0, observer.discovering_changed_count_);
-
-  // Stop discovering; only the callback should be called since we're still
-  // discovering. The adapter should be still discovering.
-  adapter_->StopDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-                 base::Unretained(this)));
-  message_loop_.Run();
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_EQ(0, error_callback_count_);
-  callback_count_ = 0;
-
-  EXPECT_EQ(0, observer.discovering_changed_count_);
-
-  EXPECT_TRUE(adapter_->IsDiscovering());
-
-  // Stop discovering one more time; aside from the callback, expect the
-  // AdapterDiscoveringChanged method to be called and no longer to be
-  // discovering,
-  adapter_->StopDiscovering(
+  discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -761,8 +700,8 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -773,6 +712,8 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
 
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  ASSERT_TRUE(discovery_sessions_[0]->IsActive());
 
   // First device to appear.
   message_loop_.Run();
@@ -802,8 +743,8 @@ TEST_F(BluetoothChromeOSTest, PoweredAndDiscovering) {
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
-  adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -811,6 +752,8 @@ TEST_F(BluetoothChromeOSTest, PoweredAndDiscovering) {
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   callback_count_ = 0;
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  ASSERT_TRUE(discovery_sessions_[0]->IsActive());
 
   // Stop the timers that the simulation uses
   fake_bluetooth_device_client_->EndDiscoverySimulation(
@@ -821,6 +764,7 @@ TEST_F(BluetoothChromeOSTest, PoweredAndDiscovering) {
 
   fake_bluetooth_adapter_client_->SetVisible(false);
   ASSERT_FALSE(adapter_->IsPresent());
+  ASSERT_FALSE(discovery_sessions_[0]->IsActive());
 
   // Install an observer; expect the AdapterPresentChanged,
   // AdapterPoweredChanged and AdapterDiscoveringChanged methods to be called
@@ -888,8 +832,8 @@ TEST_F(BluetoothChromeOSTest, MultipleDiscoverySessions) {
 
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
-    adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+    adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -905,10 +849,11 @@ TEST_F(BluetoothChromeOSTest, MultipleDiscoverySessions) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
 
   // Request to stop discovery twice.
   for (int i = 0; i < 2; i++) {
-    adapter_->StopDiscovering(
+    discovery_sessions_[i]->Stop(
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -923,11 +868,15 @@ TEST_F(BluetoothChromeOSTest, MultipleDiscoverySessions) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+  EXPECT_FALSE(discovery_sessions_[1]->IsActive());
+  EXPECT_TRUE(discovery_sessions_[2]->IsActive());
 
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
-    adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+    adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -941,10 +890,11 @@ TEST_F(BluetoothChromeOSTest, MultipleDiscoverySessions) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)6, discovery_sessions_.size());
 
   // Request to stop discovery 4 times.
-  for (int i = 0; i < 4; i++) {
-    adapter_->StopDiscovering(
+  for (int i = 2; i < 6; i++) {
+    discovery_sessions_[i]->Stop(
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -962,8 +912,12 @@ TEST_F(BluetoothChromeOSTest, MultipleDiscoverySessions) {
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
 
-  // Request to stop discovery once.
-  adapter_->StopDiscovering(
+  // All discovery sessions should be inactive.
+  for (int i = 0; i < 6; i++)
+    EXPECT_FALSE(discovery_sessions_[i]->IsActive());
+
+  // Request to stop discovery on of the inactive sessions.
+  discovery_sessions_[0]->Stop(
     base::Bind(&BluetoothChromeOSTest::Callback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -1003,8 +957,8 @@ TEST_F(BluetoothChromeOSTest,
 
   // Request device discovery 3 times.
   for (int i = 0; i < 3; i++) {
-    adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+    adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -1020,6 +974,10 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
+
+  for (int i = 0; i < 3; i++)
+    EXPECT_TRUE(discovery_sessions_[i]->IsActive());
 
   // Stop the timers that the simulation uses
   fake_bluetooth_device_client_->EndDiscoverySimulation(
@@ -1031,7 +989,7 @@ TEST_F(BluetoothChromeOSTest,
   // Stop device discovery behind the adapter. The adapter and the observer
   // should be notified of the change and the reference count should be reset.
   // Even though FakeBluetoothAdapterClient does its own reference counting and
-  // we called 3 BluetoothAdapter::StartDiscovering 3 times, the
+  // we called 3 BluetoothAdapter::StartDiscoverySession 3 times, the
   // FakeBluetoothAdapterClient's count should be only 1 and a single call to
   // FakeBluetoothAdapterClient::StopDiscovery should work.
   fake_bluetooth_adapter_client_->StopDiscovery(
@@ -1047,10 +1005,15 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
 
+  // All discovery session instances should have been updated.
+  for (int i = 0; i < 3; i++)
+    EXPECT_FALSE(discovery_sessions_[i]->IsActive());
+  discovery_sessions_.clear();
+
   // It should be possible to successfully start discovery.
   for (int i = 0; i < 2; i++) {
-    adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+    adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
@@ -1062,6 +1025,10 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)2, discovery_sessions_.size());
+
+  for (int i = 0; i < 2; i++)
+    EXPECT_TRUE(discovery_sessions_[i]->IsActive());
 
   fake_bluetooth_device_client_->EndDiscoverySimulation(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
@@ -1077,6 +1044,10 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
 
+  for (int i = 0; i < 2; i++)
+    EXPECT_FALSE(discovery_sessions_[i]->IsActive());
+  discovery_sessions_.clear();
+
   fake_bluetooth_adapter_client_->SetVisible(true);
   ASSERT_TRUE(adapter_->IsPresent());
   EXPECT_EQ(5, observer.discovering_changed_count_);
@@ -1089,8 +1060,8 @@ TEST_F(BluetoothChromeOSTest,
   // a reference count that is equal to 1. Pretend that this was done by an
   // application other than us. Starting and stopping discovery will succeed
   // but it won't cause the discovery state to change.
-  adapter_->StartDiscovering(
-    base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+    base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                base::Unretained(this)));
@@ -1100,8 +1071,10 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 
-  adapter_->StopDiscovering(
+  discovery_sessions_[0]->Stop(
     base::Bind(&BluetoothChromeOSTest::Callback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -1112,10 +1085,12 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+  discovery_sessions_.clear();
 
   // Start discovery again.
-  adapter_->StartDiscovering(
-    base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+    base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                base::Unretained(this)));
@@ -1125,6 +1100,8 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 
   // Stop discovery via D-Bus. The fake client's reference count will drop but
   // the discovery state won't change since our BluetoothAdapter also just
@@ -1144,7 +1121,7 @@ TEST_F(BluetoothChromeOSTest,
 
   // Now end the discovery session. This should change the adapter's discovery
   // state.
-  adapter_->StopDiscovering(
+  discovery_sessions_[0]->Stop(
     base::Bind(&BluetoothChromeOSTest::Callback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -1155,6 +1132,86 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+
+  adapter_->RemoveObserver(&observer);
+}
+
+TEST_F(BluetoothChromeOSTest, InvalidatedDiscoverySessions) {
+  GetAdapter();
+  adapter_->SetPowered(
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(adapter_->IsPowered());
+  callback_count_ = 0;
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  EXPECT_EQ(0, observer.discovering_changed_count_);
+  EXPECT_FALSE(observer.last_discovering_);
+  EXPECT_FALSE(adapter_->IsDiscovering());
+
+  // Request device discovery 3 times.
+  for (int i = 0; i < 3; i++) {
+    adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  }
+  // Run only once, as there should have been one D-Bus call.
+  message_loop_.Run();
+
+  // The observer should have received the discovering changed event exactly
+  // once, the success callback should have been called 3 times and the adapter
+  // should be discovering.
+  EXPECT_EQ(1, observer.discovering_changed_count_);
+  EXPECT_EQ(3, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(observer.last_discovering_);
+  EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
+
+  for (int i = 0; i < 3; i++)
+    EXPECT_TRUE(discovery_sessions_[i]->IsActive());
+
+  // Stop the timers that the simulation uses
+  fake_bluetooth_device_client_->EndDiscoverySimulation(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+
+  ASSERT_TRUE(adapter_->IsPowered());
+  ASSERT_TRUE(adapter_->IsDiscovering());
+
+  // Delete all but one discovery session.
+  discovery_sessions_.pop_back();
+  discovery_sessions_.pop_back();
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
+  EXPECT_TRUE(adapter_->IsDiscovering());
+
+  // Stop device discovery behind the adapter. The one active discovery session
+  // should become inactive, but more importantly, we shouldn't run into any
+  // memory errors as the sessions that we explicitly deleted should get
+  // cleaned up.
+  fake_bluetooth_adapter_client_->StopDiscovery(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+  message_loop_.Run();
+  EXPECT_EQ(2, observer.discovering_changed_count_);
+  EXPECT_EQ(4, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_FALSE(observer.last_discovering_);
+  EXPECT_FALSE(adapter_->IsDiscovering());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
 }
 
 TEST_F(BluetoothChromeOSTest, QueuedDiscoveryRequests) {
@@ -1179,8 +1236,8 @@ TEST_F(BluetoothChromeOSTest, QueuedDiscoveryRequests) {
   EXPECT_FALSE(adapter_->IsDiscovering());
 
   // Request to start discovery. The call should be pending.
-  adapter_->StartDiscovering(
-    base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+    base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                base::Unretained(this)));
@@ -1194,98 +1251,100 @@ TEST_F(BluetoothChromeOSTest, QueuedDiscoveryRequests) {
   EXPECT_EQ(1, observer.discovering_changed_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
-
-  // Try to stop discovery. This should fail while there is a call pending.
-  adapter_->StopDiscovering(
-    base::Bind(&BluetoothChromeOSTest::Callback,
-               base::Unretained(this)),
-    base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-               base::Unretained(this)));
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(1, error_callback_count_);
-  EXPECT_EQ(1, observer.discovering_changed_count_);
-  EXPECT_TRUE(observer.last_discovering_);
-  EXPECT_TRUE(adapter_->IsDiscovering());
+  EXPECT_TRUE(discovery_sessions_.empty());
 
   // Request to start discovery twice. These should get queued and there should
   // be no change in state.
   for (int i = 0; i < 2; i++) {
-    adapter_->StartDiscovering(
-      base::Bind(&BluetoothChromeOSTest::Callback,
+    adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
   }
   EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1, observer.discovering_changed_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  EXPECT_TRUE(discovery_sessions_.empty());
 
   // Process the pending call. The queued calls should execute and the discovery
   // session reference count should increase.
   message_loop_.Run();
   EXPECT_EQ(3, callback_count_);
-  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1, observer.discovering_changed_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
 
   // Verify the reference count by removing sessions 3 times. The last request
   // should remain pending.
   for (int i = 0; i < 3; i++) {
-    adapter_->StopDiscovering(
+    discovery_sessions_[i]->Stop(
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                  base::Unretained(this)));
   }
   EXPECT_EQ(5, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(2, observer.discovering_changed_count_);
+  EXPECT_FALSE(observer.last_discovering_);
+  EXPECT_FALSE(adapter_->IsDiscovering());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+  EXPECT_FALSE(discovery_sessions_[1]->IsActive());
+  EXPECT_TRUE(discovery_sessions_[2]->IsActive());
+
+  // Request to stop the session whose call is pending should fail.
+  discovery_sessions_[2]->Stop(
+    base::Bind(&BluetoothChromeOSTest::Callback,
+               base::Unretained(this)),
+    base::Bind(&BluetoothChromeOSTest::ErrorCallback,
+               base::Unretained(this)));
+  EXPECT_EQ(5, callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(2, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
-
-  // Request to stop should fail.
-  adapter_->StopDiscovering(
-    base::Bind(&BluetoothChromeOSTest::Callback,
-               base::Unretained(this)),
-    base::Bind(&BluetoothChromeOSTest::ErrorCallback,
-               base::Unretained(this)));
-  EXPECT_EQ(5, callback_count_);
-  EXPECT_EQ(2, error_callback_count_);
-  EXPECT_EQ(2, observer.discovering_changed_count_);
-  EXPECT_FALSE(observer.last_discovering_);
-  EXPECT_FALSE(adapter_->IsDiscovering());
+  EXPECT_TRUE(discovery_sessions_[2]->IsActive());
 
   // Request to start should get queued.
-  adapter_->StartDiscovering(
-    base::Bind(&BluetoothChromeOSTest::Callback,
+  adapter_->StartDiscoverySession(
+    base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
                base::Unretained(this)),
     base::Bind(&BluetoothChromeOSTest::ErrorCallback,
                base::Unretained(this)));
   EXPECT_EQ(5, callback_count_);
-  EXPECT_EQ(2, error_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(2, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
 
   // Run the pending request.
   message_loop_.Run();
   EXPECT_EQ(6, callback_count_);
-  EXPECT_EQ(2, error_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(3, observer.discovering_changed_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
+  EXPECT_FALSE(discovery_sessions_[2]->IsActive());
 
   // The queued request to start discovery should have been issued but is still
   // pending. Run the loop and verify.
   message_loop_.Run();
   EXPECT_EQ(7, callback_count_);
-  EXPECT_EQ(2, error_callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(3, observer.discovering_changed_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)4, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[3]->IsActive());
+
+  adapter_->RemoveObserver(&observer);
 }
 
 TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
@@ -1308,7 +1367,7 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_EQ(0, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
-  EXPECT_FALSE(last_discovery_session_.get());
+  EXPECT_TRUE(discovery_sessions_.empty());
 
   // Request a new discovery session.
   adapter_->StartDiscoverySession(
@@ -1322,8 +1381,8 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
-  EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->IsActive());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 
   // Start another session. A new one should be returned in the callback, which
   // in turn will destroy the previous session. Adapter should still be
@@ -1339,13 +1398,8 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
-  EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->IsActive());
-
-  // Hold on to the current discovery session to prevent it from getting
-  // destroyed during the next call to StartDiscoverySession.
-  scoped_ptr<BluetoothDiscoverySession> discovery_session =
-      last_discovery_session_.Pass();
+  ASSERT_EQ((size_t)2, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 
   // Request a new session.
   adapter_->StartDiscoverySession(
@@ -1359,13 +1413,13 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
-  EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->IsActive());
-  EXPECT_NE(last_discovery_session_.get(), discovery_session);
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[1]->IsActive());
+  EXPECT_NE(discovery_sessions_[0], discovery_sessions_[1]);
 
   // Stop the previous discovery session. The session should end but discovery
   // should continue.
-  discovery_session->Stop(
+  discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -1376,21 +1430,20 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(observer.last_discovering_);
   EXPECT_TRUE(adapter_->IsDiscovering());
-  EXPECT_TRUE(last_discovery_session_.get());
-  EXPECT_TRUE(last_discovery_session_->IsActive());
-  EXPECT_FALSE(discovery_session->IsActive());
+  ASSERT_EQ((size_t)3, discovery_sessions_.size());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+  EXPECT_TRUE(discovery_sessions_[1]->IsActive());
 
   // Delete the current active session. Discovery should eventually stop.
-  last_discovery_session_.reset();
-  while (observer.last_discovering_) {
+  discovery_sessions_.clear();
+  while (observer.last_discovering_)
     message_loop_.RunUntilIdle();
-  }
+
   EXPECT_EQ(2, observer.discovering_changed_count_);
   EXPECT_EQ(4, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
-  EXPECT_FALSE(last_discovery_session_.get());
 
   adapter_->RemoveObserver(&observer);
 }

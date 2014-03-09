@@ -29,16 +29,6 @@ void BluetoothAdapter::StartDiscoverySession(
       error_callback);
 }
 
-void BluetoothAdapter::StartDiscovering(const base::Closure& callback,
-                                        const ErrorCallback& error_callback) {
-  AddDiscoverySession(callback, error_callback);
-}
-
-void BluetoothAdapter::StopDiscovering(const base::Closure& callback,
-                                       const ErrorCallback& error_callback) {
-  RemoveDiscoverySession(callback, error_callback);
-}
-
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
   ConstDeviceList const_devices =
     const_cast<const BluetoothAdapter *>(this)->GetDevices();
@@ -119,15 +109,21 @@ void BluetoothAdapter::OnStartDiscoverySession(
 }
 
 void BluetoothAdapter::MarkDiscoverySessionsAsInactive() {
+  // As sessions are marked as inactive they will notify the adapter that they
+  // have become inactive, upon which the adapter will remove them from
+  // |discovery_sessions_|. To avoid invalidating the iterator, make a copy
+  // here.
+  std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
   for (std::set<BluetoothDiscoverySession*>::iterator
-          iter = discovery_sessions_.begin();
-       iter != discovery_sessions_.end(); ++iter) {
+          iter = temp.begin();
+       iter != temp.end(); ++iter) {
     (*iter)->MarkAsInactive();
   }
 }
 
-void BluetoothAdapter::DiscoverySessionDestroyed(
+void BluetoothAdapter::DiscoverySessionBecameInactive(
     BluetoothDiscoverySession* discovery_session) {
+  DCHECK(!discovery_session->IsActive());
   discovery_sessions_.erase(discovery_session);
 }
 
