@@ -1186,14 +1186,17 @@ void DeveloperPrivateLoadDirectoryFunction::ReadSyncFileSystemDirectoryCb(
 
   }
 
-  // Directory copy operation released here.
-  pending_copy_operations_count_--;
+  if (!has_more) {
+    // Directory copy operation released here.
+    pending_copy_operations_count_--;
 
-  if (!pending_copy_operations_count_) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DeveloperPrivateLoadDirectoryFunction::SendResponse,
-                   this,
-                   success_));
+    if (!pending_copy_operations_count_) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&DeveloperPrivateLoadDirectoryFunction::SendResponse,
+                     this,
+                     success_));
+    }
   }
 }
 
