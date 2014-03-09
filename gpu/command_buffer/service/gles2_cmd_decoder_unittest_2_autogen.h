@@ -235,7 +235,7 @@ TEST_F(GLES2DecoderTest2, StencilOpSeparateValidArgs) {
 
 TEST_F(GLES2DecoderTest2, TexParameterfValidArgs) {
   EXPECT_CALL(*gl_,
-              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+              TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
   SpecializedSetup<cmds::TexParameterf, 0>(true);
   cmds::TexParameterf cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -244,7 +244,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterf, 0>(false);
   cmds::TexParameterf cmd;
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -253,7 +253,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfInvalidArgs0_0) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfInvalidArgs0_1) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterf, 0>(false);
   cmds::TexParameterf cmd;
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -262,7 +262,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfInvalidArgs0_1) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfInvalidArgs1_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterf, 0>(false);
   cmds::TexParameterf cmd;
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_NEAREST);
@@ -280,7 +280,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvValidArgs) {
   GetSharedMemoryAs<GLfloat*>()[0] = GL_NEAREST;
   EXPECT_CALL(
       *gl_,
-      TexParameteri(GL_TEXTURE_2D,
+      TexParameterf(GL_TEXTURE_2D,
                     GL_TEXTURE_MAG_FILTER,
                     *reinterpret_cast<const GLfloat*>(shared_memory_address_)));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -288,7 +288,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
   cmd.Init(GL_TEXTURE_1D,
@@ -301,7 +301,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs0_0) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs0_1) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
   cmd.Init(GL_TEXTURE_3D,
@@ -314,7 +314,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs0_1) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs1_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
   cmd.Init(GL_TEXTURE_2D,
@@ -327,7 +327,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs1_0) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
@@ -336,7 +336,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs2_0) {
 }
 
 TEST_F(GLES2DecoderTest2, TexParameterfvInvalidArgs2_1) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfv, 0>(false);
   cmds::TexParameterfv cmd;
   cmd.Init(GL_TEXTURE_2D,
@@ -355,7 +355,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateValidArgs) {
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(
       *gl_,
-      TexParameteri(GL_TEXTURE_2D,
+      TexParameterf(GL_TEXTURE_2D,
                     GL_TEXTURE_MAG_FILTER,
                     *reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
@@ -365,7 +365,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateValidArgs) {
 TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs0_0) {
   cmds::TexParameterfvImmediate& cmd =
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(false);
   GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, &temp[0]);
@@ -376,7 +376,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs0_0) {
 TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs0_1) {
   cmds::TexParameterfvImmediate& cmd =
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(false);
   GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, &temp[0]);
@@ -387,7 +387,7 @@ TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs0_1) {
 TEST_F(GLES2DecoderTest2, TexParameterfvImmediateInvalidArgs1_0) {
   cmds::TexParameterfvImmediate& cmd =
       *GetImmediateAs<cmds::TexParameterfvImmediate>();
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
+  EXPECT_CALL(*gl_, TexParameterf(_, _, _)).Times(0);
   SpecializedSetup<cmds::TexParameterfvImmediate, 0>(false);
   GLfloat temp[1] = {GL_NEAREST, };
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &temp[0]);

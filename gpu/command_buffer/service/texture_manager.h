@@ -252,10 +252,12 @@ class GPU_EXPORT Texture {
   bool ClearLevel(GLES2Decoder* decoder, GLenum target, GLint level);
 
   // Sets a texture parameter.
-  // TODO(gman): Expand to SetParameteri,f,iv,fv
+  // TODO(gman): Expand to SetParameteriv,fv
   // Returns GL_NO_ERROR on success. Otherwise the error to generate.
-  GLenum SetParameter(
+  GLenum SetParameteri(
       const FeatureInfo* feature_info, GLenum pname, GLint param);
+  GLenum SetParameterf(
+      const FeatureInfo* feature_info, GLenum pname, GLfloat param);
 
   // Makes each of the mip levels as though they were generated.
   bool MarkMipmapsGenerated(const FeatureInfo* feature_info);
@@ -576,10 +578,13 @@ class GPU_EXPORT TextureManager {
 
   // Sets a texture parameter of a Texture
   // Returns GL_NO_ERROR on success. Otherwise the error to generate.
-  // TODO(gman): Expand to SetParameteri,f,iv,fv
-  void SetParameter(
+  // TODO(gman): Expand to SetParameteriv,fv
+  void SetParameteri(
       const char* function_name, ErrorState* error_state,
       TextureRef* ref, GLenum pname, GLint param);
+  void SetParameterf(
+      const char* function_name, ErrorState* error_state,
+      TextureRef* ref, GLenum pname, GLfloat param);
 
   // Makes each of the mip levels as though they were generated.
   // Returns false if that's not allowed for the given texture.

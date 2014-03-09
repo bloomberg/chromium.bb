@@ -33,13 +33,20 @@ class ErrorStateImpl : public ErrorState {
       const char* function_name,
       unsigned int value,
       const char* label) OVERRIDE;
-  virtual void SetGLErrorInvalidParam(
+  virtual void SetGLErrorInvalidParami(
       const char* filename,
       int line,
       unsigned int error,
       const char* function_name,
       unsigned int pname,
       int param) OVERRIDE;
+  virtual void SetGLErrorInvalidParamf(
+      const char* filename,
+      int line,
+      unsigned int error,
+      const char* function_name,
+      unsigned int pname,
+      float param) OVERRIDE;
 
   virtual unsigned int PeekGLError(
       const char* filename, int line, const char* function_name) OVERRIDE;
@@ -131,7 +138,7 @@ void ErrorStateImpl::SetGLErrorInvalidEnum(
              GLES2Util::GetStringEnum(value)).c_str());
 }
 
-void ErrorStateImpl::SetGLErrorInvalidParam(
+void ErrorStateImpl::SetGLErrorInvalidParami(
     const char* filename,
     int line,
     unsigned int error,
@@ -150,6 +157,19 @@ void ErrorStateImpl::SetGLErrorInvalidParam(
          GLES2Util::GetStringEnum(pname) + " to " +
          base::StringPrintf("%d", param)).c_str());
   }
+}
+
+void ErrorStateImpl::SetGLErrorInvalidParamf(
+    const char* filename,
+    int line,
+    unsigned int error,
+    const char* function_name,
+    unsigned int pname, float param) {
+  SetGLError(
+      filename, line, error, function_name,
+      (std::string("trying to set ") +
+       GLES2Util::GetStringEnum(pname) + " to " +
+       base::StringPrintf("%G", param)).c_str());
 }
 
 void ErrorStateImpl::CopyRealGLErrorsToWrapper(

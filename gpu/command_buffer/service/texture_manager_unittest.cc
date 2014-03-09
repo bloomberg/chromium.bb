@@ -77,7 +77,7 @@ class TextureManagerTest : public testing::Test {
 
   void SetParameter(
       TextureRef* texture_ref, GLenum pname, GLint value, GLenum error) {
-    TestHelper::SetTexParameterWithExpectations(
+    TestHelper::SetTexParameteriWithExpectations(
         gl_.get(), error_state_.get(), manager_.get(),
         texture_ref, pname, value, error);
   }
@@ -175,7 +175,7 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
   // Check texture got created.
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(texture_ref != NULL);
-  TestHelper::SetTexParameterWithExpectations(
+  TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE,GL_NO_ERROR);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_ATTACHMENT_ANGLE),
@@ -390,7 +390,7 @@ class TextureTestBase : public testing::Test {
 
   void SetParameter(
       TextureRef* texture_ref, GLenum pname, GLint value, GLenum error) {
-    TestHelper::SetTexParameterWithExpectations(
+    TestHelper::SetTexParameteriWithExpectations(
         gl_.get(), error_state_.get(), manager_.get(),
         texture_ref, pname, value, error);
   }
@@ -1094,11 +1094,11 @@ TEST_F(TextureTest, FloatNotLinear) {
   manager.SetLevelInfo(texture_ref,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT, true);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
-  TestHelper::SetTexParameterWithExpectations(
+  TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager,
       texture_ref, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
-  TestHelper::SetTexParameterWithExpectations(
+  TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
@@ -1140,11 +1140,11 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
   manager.SetLevelInfo(texture_ref,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES, true);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
-  TestHelper::SetTexParameterWithExpectations(
+  TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager,
       texture_ref, GL_TEXTURE_MAG_FILTER, GL_NEAREST, GL_NO_ERROR);
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
-  TestHelper::SetTexParameterWithExpectations(
+  TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));

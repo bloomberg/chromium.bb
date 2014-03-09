@@ -3098,25 +3098,25 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
       GL_RGBA,
       GL_UNSIGNED_BYTE,
       true);
-  texture_manager()->SetParameter(
+  texture_manager()->SetParameteri(
       "UpdateParentTextureInfo",
       GetErrorState(),
       offscreen_saved_color_texture_info_.get(),
       GL_TEXTURE_MAG_FILTER,
       GL_NEAREST);
-  texture_manager()->SetParameter(
+  texture_manager()->SetParameteri(
       "UpdateParentTextureInfo",
       GetErrorState(),
       offscreen_saved_color_texture_info_.get(),
       GL_TEXTURE_MIN_FILTER,
       GL_NEAREST);
-  texture_manager()->SetParameter(
+  texture_manager()->SetParameteri(
       "UpdateParentTextureInfo",
       GetErrorState(),
       offscreen_saved_color_texture_info_.get(),
       GL_TEXTURE_WRAP_S,
       GL_CLAMP_TO_EDGE);
-  texture_manager()->SetParameter(
+  texture_manager()->SetParameteri(
       "UpdateParentTextureInfo",
       GetErrorState(),
       offscreen_saved_color_texture_info_.get(),
@@ -5467,9 +5467,8 @@ void GLES2DecoderImpl::DoTexParameterf(
     return;
   }
 
-  texture_manager()->SetParameter(
-      "glTexParameterf", GetErrorState(), texture, pname,
-      static_cast<GLint>(param));
+  texture_manager()->SetParameterf(
+      "glTexParameterf", GetErrorState(), texture, pname, param);
 }
 
 void GLES2DecoderImpl::DoTexParameteri(
@@ -5481,7 +5480,7 @@ void GLES2DecoderImpl::DoTexParameteri(
     return;
   }
 
-  texture_manager()->SetParameter(
+  texture_manager()->SetParameteri(
       "glTexParameteri", GetErrorState(), texture, pname, param);
 }
 
@@ -5494,9 +5493,8 @@ void GLES2DecoderImpl::DoTexParameterfv(
     return;
   }
 
-  texture_manager()->SetParameter(
-      "glTexParameterfv", GetErrorState(), texture, pname,
-      static_cast<GLint>(params[0]));
+  texture_manager()->SetParameterf(
+      "glTexParameterfv", GetErrorState(), texture, pname, *params);
 }
 
 void GLES2DecoderImpl::DoTexParameteriv(
@@ -5509,7 +5507,7 @@ void GLES2DecoderImpl::DoTexParameteriv(
     return;
   }
 
-  texture_manager()->SetParameter(
+  texture_manager()->SetParameteri(
       "glTexParameteriv", GetErrorState(), texture, pname, *params);
 }
 

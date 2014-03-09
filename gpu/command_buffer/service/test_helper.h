@@ -98,7 +98,7 @@ class TestHelper {
       BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
       const GLvoid* data, GLenum error);
 
-  static void SetTexParameterWithExpectations(
+  static void SetTexParameteriWithExpectations(
       ::gfx::MockGLInterface* gl, MockErrorState* error_state,
       TextureManager* manager, TextureRef* texture_ref,
       GLenum pname, GLint value, GLenum error);

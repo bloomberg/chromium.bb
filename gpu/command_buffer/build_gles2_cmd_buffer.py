@@ -2030,7 +2030,6 @@ _FUNCTION_INFO = {
   },
   'TexParameterf': {
     'decoder_func': 'DoTexParameterf',
-    'gl_test_func': 'glTexParameteri',
     'valid_args': {
       '2': 'GL_NEAREST'
     },
@@ -2047,7 +2046,7 @@ _FUNCTION_INFO = {
     'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameterfv',
-    'gl_test_func': 'glTexParameteri',
+    'gl_test_func': 'glTexParameterf',
     'first_element_only': True,
   },
   'TexParameteriv': {

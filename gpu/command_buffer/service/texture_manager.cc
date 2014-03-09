@@ -570,7 +570,7 @@ bool Texture::GetLevelType(
   return false;
 }
 
-GLenum Texture::SetParameter(
+GLenum Texture::SetParameteri(
     const FeatureInfo* feature_info, GLenum pname, GLint param) {
   DCHECK(feature_info);
 
@@ -635,6 +635,31 @@ GLenum Texture::SetParameter(
   Update(feature_info);
   UpdateCleared();
   UpdateCanRenderCondition();
+  return GL_NO_ERROR;
+}
+
+GLenum Texture::SetParameterf(
+    const FeatureInfo* feature_info, GLenum pname, GLfloat param) {
+  switch (pname) {
+    case GL_TEXTURE_MIN_FILTER:
+    case GL_TEXTURE_MAG_FILTER:
+    case GL_TEXTURE_POOL_CHROMIUM:
+    case GL_TEXTURE_WRAP_S:
+    case GL_TEXTURE_WRAP_T:
+    case GL_TEXTURE_USAGE_ANGLE:
+      {
+        GLint iparam = static_cast<GLint>(param);
+        return SetParameteri(feature_info, pname, iparam);
+      }
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
+      if (param < 1.f) {
+        return GL_INVALID_VALUE;
+      }
+      break;
+    default:
+      NOTREACHED();
+      return GL_INVALID_ENUM;
+  }
   return GL_NO_ERROR;
 }
 
@@ -1081,26 +1106,50 @@ TextureRef* TextureManager::Consume(
   return ref.get();
 }
 
-void TextureManager::SetParameter(
+void TextureManager::SetParameteri(
     const char* function_name, ErrorState* error_state,
     TextureRef* ref, GLenum pname, GLint param) {
   DCHECK(error_state);
   DCHECK(ref);
   Texture* texture = ref->texture();
-  GLenum result = texture->SetParameter(feature_info_.get(), pname, param);
+  GLenum result = texture->SetParameteri(feature_info_.get(), pname, param);
   if (result != GL_NO_ERROR) {
     if (result == GL_INVALID_ENUM) {
       ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
           error_state, function_name, param, "param");
     } else {
-      ERRORSTATE_SET_GL_ERROR_INVALID_PARAM(
-          error_state, result, function_name, pname, static_cast<GLint>(param));
+      ERRORSTATE_SET_GL_ERROR_INVALID_PARAMI(
+          error_state, result, function_name, pname, param);
     }
   } else {
     // Texture tracking pools exist only for the command decoder, so
     // do not pass them on to the native GL implementation.
     if (pname != GL_TEXTURE_POOL_CHROMIUM) {
       glTexParameteri(texture->target(), pname, param);
+    }
+  }
+}
+
+void TextureManager::SetParameterf(
+    const char* function_name, ErrorState* error_state,
+    TextureRef* ref, GLenum pname, GLfloat param) {
+  DCHECK(error_state);
+  DCHECK(ref);
+  Texture* texture = ref->texture();
+  GLenum result = texture->SetParameterf(feature_info_.get(), pname, param);
+  if (result != GL_NO_ERROR) {
+    if (result == GL_INVALID_ENUM) {
+      ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+          error_state, function_name, param, "param");
+    } else {
+      ERRORSTATE_SET_GL_ERROR_INVALID_PARAMF(
+          error_state, result, function_name, pname, param);
+    }
+  } else {
+    // Texture tracking pools exist only for the command decoder, so
+    // do not pass them on to the native GL implementation.
+    if (pname != GL_TEXTURE_POOL_CHROMIUM) {
+      glTexParameterf(texture->target(), pname, param);
     }
   }
 }

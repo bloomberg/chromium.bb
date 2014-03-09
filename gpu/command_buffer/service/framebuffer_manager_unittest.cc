@@ -838,13 +838,13 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(texture_manager_.get(), GL_READ_FRAMEBUFFER);
 
   // Check changing the format calls CheckFramebuffferStatus.
-  TestHelper::SetTexParameterWithExpectations(gl_.get(),
-                                              error_state_.get(),
-                                              texture_manager_.get(),
-                                              texture2.get(),
-                                              GL_TEXTURE_WRAP_S,
-                                              GL_CLAMP_TO_EDGE,
-                                              GL_NO_ERROR);
+  TestHelper::SetTexParameteriWithExpectations(gl_.get(),
+                                               error_state_.get(),
+                                               texture_manager_.get(),
+                                               texture2.get(),
+                                               GL_TEXTURE_WRAP_S,
+                                               GL_CLAMP_TO_EDGE,
+                                               GL_NO_ERROR);
 
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
@@ -862,13 +862,13 @@ TEST_F(FramebufferInfoTest, GetStatus) {
         .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
         .RetiresOnSaturation();
   }
-  TestHelper::SetTexParameterWithExpectations(gl_.get(),
-                                              error_state_.get(),
-                                              texture_manager_.get(),
-                                              texture2.get(),
-                                              GL_TEXTURE_WRAP_S,
-                                              GL_REPEAT,
-                                              GL_NO_ERROR);
+  TestHelper::SetTexParameteriWithExpectations(gl_.get(),
+                                               error_state_.get(),
+                                               texture_manager_.get(),
+                                               texture2.get(),
+                                               GL_TEXTURE_WRAP_S,
+                                               GL_REPEAT,
+                                               GL_NO_ERROR);
   framebuffer_->GetStatus(texture_manager_.get(), GL_READ_FRAMEBUFFER);
 
   // Check Unbinding does not call CheckFramebufferStatus
