@@ -77,7 +77,7 @@ namespace WebCore {
         WorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 
         // Factory method for creating a new worker context for the thread.
-        virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
+        virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
 
         // Executes the event loop for the worker thread. Derived classes can override to perform actions before/after entering the event loop.
         virtual void runEventLoop();
@@ -95,7 +95,7 @@ namespace WebCore {
         WorkerLoaderProxy& m_workerLoaderProxy;
         WorkerReportingProxy& m_workerReportingProxy;
 
-        RefPtr<WorkerGlobalScope> m_workerGlobalScope;
+        RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         Mutex m_threadCreationMutex;
 
         OwnPtr<WorkerThreadStartupData> m_startupData;

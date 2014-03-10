@@ -53,12 +53,12 @@ const char* HTMLMediaElementEncryptedMedia::supplementName()
 
 HTMLMediaElementEncryptedMedia& HTMLMediaElementEncryptedMedia::from(HTMLMediaElement& element)
 {
-    Supplement<HTMLMediaElement>* supplement = Supplement<HTMLMediaElement>::from(element, supplementName());
+    HTMLMediaElementEncryptedMedia* supplement = static_cast<HTMLMediaElementEncryptedMedia*>(Supplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementEncryptedMedia();
         provideTo(element, supplementName(), adoptPtr(supplement));
     }
-    return *static_cast<HTMLMediaElementEncryptedMedia*>(supplement);
+    return *supplement;
 }
 
 bool HTMLMediaElementEncryptedMedia::setEmeMode(EmeMode emeMode, ExceptionState& exceptionState)

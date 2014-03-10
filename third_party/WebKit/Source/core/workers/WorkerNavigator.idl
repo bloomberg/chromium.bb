@@ -27,7 +27,8 @@
  */
 
 [
-    GlobalContext=WorkerGlobalScope
+    GlobalContext=WorkerGlobalScope,
+    WillBeGarbageCollected
 ] interface WorkerNavigator {
 };
 

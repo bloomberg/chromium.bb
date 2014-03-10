@@ -29,8 +29,8 @@
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "core/workers/WorkerSupplementable.h"
 #include "heap/Handle.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 
@@ -38,21 +38,24 @@ class NotificationCenter;
 class ExecutionContext;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeNotifications FINAL : public WorkerSupplement {
+class WorkerGlobalScopeNotifications FINAL : public NoBaseWillBeGarbageCollected<WorkerGlobalScopeNotifications>, public WillBeHeapSupplement<WorkerGlobalScope> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeNotifications);
 public:
     virtual ~WorkerGlobalScopeNotifications();
 
     static NotificationCenter* webkitNotifications(WorkerGlobalScope&);
     static WorkerGlobalScopeNotifications& from(WorkerGlobalScope&);
 
+    virtual void trace(Visitor*);
+
 private:
-    explicit WorkerGlobalScopeNotifications(WorkerGlobalScope&);
+    explicit WorkerGlobalScopeNotifications(WorkerGlobalScope*);
 
     NotificationCenter* webkitNotifications();
     static const char* supplementName();
 
-    WorkerGlobalScope& m_context;
-    RefPtrWillBePersistent<NotificationCenter> m_notificationCenter;
+    RawPtrWillBeMember<WorkerGlobalScope> m_context;
+    RefPtrWillBeMember<NotificationCenter> m_notificationCenter;
 };
 
 } // namespace WebCore

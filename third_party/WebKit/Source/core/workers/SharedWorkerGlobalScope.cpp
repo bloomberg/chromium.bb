@@ -51,9 +51,9 @@ PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> prpPort)
 }
 
 // static
-PassRefPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String& name, SharedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String& name, SharedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    RefPtr<SharedWorkerGlobalScope> context = adoptRef(new SharedWorkerGlobalScope(name, startupData->m_scriptURL, startupData->m_userAgent, thread, startupData->m_workerClients.release()));
+    RefPtrWillBeRawPtr<SharedWorkerGlobalScope> context = adoptRefWillBeRefCountedGarbageCollected(new SharedWorkerGlobalScope(name, startupData->m_scriptURL, startupData->m_userAgent, thread, startupData->m_workerClients.release()));
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
     return context.release();
 }
@@ -83,6 +83,11 @@ void SharedWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, 
 {
     WorkerGlobalScope::logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
     addMessageToWorkerConsole(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
+}
+
+void SharedWorkerGlobalScope::trace(Visitor* visitor)
+{
+    WorkerGlobalScope::trace(visitor);
 }
 
 } // namespace WebCore

@@ -50,10 +50,10 @@ const char* WorkerNavigatorStorageQuota::supplementName()
 
 WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(WorkerNavigator& navigator)
 {
-    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(Supplement<WorkerNavigator>::from(navigator, supplementName()));
+    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(WillBeHeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new WorkerNavigatorStorageQuota();
-        provideTo(navigator, supplementName(), adoptPtr(supplement));
+        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -80,6 +80,12 @@ DeprecatedStorageQuota* WorkerNavigatorStorageQuota::webkitPersistentStorage() c
     if (!m_persistentStorage)
         m_persistentStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
     return m_persistentStorage.get();
+}
+
+void WorkerNavigatorStorageQuota::trace(Visitor* visitor)
+{
+    visitor->trace(m_temporaryStorage);
+    visitor->trace(m_persistentStorage);
 }
 
 } // namespace WebCore

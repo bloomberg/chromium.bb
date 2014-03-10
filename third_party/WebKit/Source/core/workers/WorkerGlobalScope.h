@@ -36,7 +36,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"
 #include "core/workers/WorkerEventQueue.h"
-#include "core/workers/WorkerSupplementable.h"
+#include "heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
@@ -58,8 +58,8 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WorkerSupplementable, public EventTargetWithInlineData {
-        REFCOUNTED_EVENT_TARGET(WorkerGlobalScope);
+    class WorkerGlobalScope : public RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData {
+        DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>);
     public:
         virtual ~WorkerGlobalScope();
 
@@ -80,6 +80,8 @@ namespace WebCore {
         WorkerScriptController* script() { return m_script.get(); }
         void clearScript() { m_script.clear(); }
         void clearInspector();
+
+        void dispose();
 
         WorkerThread* thread() const { return m_thread; }
 
@@ -124,6 +126,8 @@ namespace WebCore {
         using SecurityContext::securityOrigin;
         using SecurityContext::contentSecurityPolicy;
 
+        virtual void trace(Visitor*);
+
     protected:
         WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType);
@@ -147,9 +151,9 @@ namespace WebCore {
         KURL m_url;
         String m_userAgent;
 
-        mutable RefPtr<WorkerConsole> m_console;
-        mutable RefPtr<WorkerLocation> m_location;
-        mutable RefPtr<WorkerNavigator> m_navigator;
+        mutable RefPtrWillBeMember<WorkerConsole> m_console;
+        mutable RefPtrWillBeMember<WorkerLocation> m_location;
+        mutable RefPtrWillBeMember<WorkerNavigator> m_navigator;
 
         OwnPtr<WorkerScriptController> m_script;
         WorkerThread* m_thread;

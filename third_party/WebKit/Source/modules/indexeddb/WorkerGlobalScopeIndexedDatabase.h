@@ -27,20 +27,24 @@
 #ifndef WorkerGlobalScopeIndexedDatabase_h
 #define WorkerGlobalScopeIndexedDatabase_h
 
-#include "core/workers/WorkerSupplementable.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 
 class IDBFactory;
 class IDBFactoryBackendInterface;
 class ExecutionContext;
+class WorkerGlobalScope;
 
-class WorkerGlobalScopeIndexedDatabase FINAL : public WorkerSupplement {
+class WorkerGlobalScopeIndexedDatabase FINAL : public NoBaseWillBeGarbageCollected<WorkerGlobalScopeIndexedDatabase>, public WillBeHeapSupplement<WorkerGlobalScope> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeIndexedDatabase);
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
-    static WorkerGlobalScopeIndexedDatabase& from(WorkerSupplementable&);
+    static WorkerGlobalScopeIndexedDatabase& from(WillBeHeapSupplementable<WorkerGlobalScope>&);
 
-    static IDBFactory* indexedDB(WorkerSupplementable&);
+    static IDBFactory* indexedDB(WillBeHeapSupplementable<WorkerGlobalScope>&);
+
+    virtual void trace(Visitor*);
 
 private:
     WorkerGlobalScopeIndexedDatabase();

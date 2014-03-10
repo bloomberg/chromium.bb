@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
+#include "heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,11 +38,11 @@
 
 namespace WebCore {
 
-class WorkerLocation FINAL : public RefCounted<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
+class WorkerLocation FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
 public:
-    static PassRefPtr<WorkerLocation> create(const KURL& url)
+    static PassRefPtrWillBeRawPtr<WorkerLocation> create(const KURL& url)
     {
-        return adoptRef(new WorkerLocation(url));
+        return adoptRefWillBeNoop(new WorkerLocation(url));
     }
 
     virtual KURL url() const OVERRIDE { return m_url; }
@@ -50,6 +51,8 @@ public:
         ASSERT_NOT_REACHED();
         return String();
     }
+
+    void trace(Visitor*) { }
 
 private:
     explicit WorkerLocation(const KURL& url) : m_url(url)

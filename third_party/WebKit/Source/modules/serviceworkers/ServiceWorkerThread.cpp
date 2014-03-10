@@ -51,7 +51,7 @@ ServiceWorkerThread::~ServiceWorkerThread()
 {
 }
 
-PassRefPtr<WorkerGlobalScope> ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<WorkerGlobalScope> ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return ServiceWorkerGlobalScope::create(this, startupData);
 }

@@ -33,6 +33,7 @@
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/Promise.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "heap/Handle.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
@@ -42,7 +43,7 @@ struct WorkerThreadStartupData;
 
 class ServiceWorkerGlobalScope FINAL : public WorkerGlobalScope {
 public:
-    static PassRefPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
+    static PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
 
     virtual ~ServiceWorkerGlobalScope();
     virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return true; }
@@ -53,6 +54,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);

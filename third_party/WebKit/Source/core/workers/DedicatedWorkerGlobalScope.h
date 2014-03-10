@@ -34,6 +34,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -43,7 +44,7 @@ struct WorkerThreadStartupData;
 class DedicatedWorkerGlobalScope FINAL : public WorkerGlobalScope {
 public:
     typedef WorkerGlobalScope Base;
-    static PassRefPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
+    static PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
     virtual ~DedicatedWorkerGlobalScope();
 
     virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return true; }
@@ -59,6 +60,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
     DedicatedWorkerThread* thread();
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);

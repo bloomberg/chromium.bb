@@ -54,7 +54,7 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 {
 }
 
-PassRefPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return DedicatedWorkerGlobalScope::create(this, startupData, m_timeOrigin);
 }

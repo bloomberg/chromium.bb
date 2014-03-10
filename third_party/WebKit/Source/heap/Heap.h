@@ -1361,6 +1361,13 @@ struct ThreadingTrait<HashMap<Key, Value, HeapAllocator, T, U, V> > {
         && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
 };
 
+template<typename First, typename Second>
+struct ThreadingTrait<WTF::KeyValuePair<First, Second> > {
+    static const ThreadAffinity Affinity =
+        (ThreadingTrait<First>::Affinity == MainThreadOnly)
+        && (ThreadingTrait<Second>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
+};
+
 template<typename T, typename U, typename V>
 struct ThreadingTrait<HashSet<T, HeapAllocator, U, V> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;

@@ -60,7 +60,7 @@ public:
 
     static ThisType* from(Supplementable<T>& host, const char* key)
     {
-        Supplement<T>* found = host.requireSupplement(key);
+        Supplement<T>* found = static_cast<Supplement<T>*>(host.requireSupplement(key));
         if (!found)
             return 0;
         ASSERT_WITH_SECURITY_IMPLICATION(found->isRefCountedWrapper());

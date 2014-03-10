@@ -48,17 +48,17 @@ const char* WorkerGlobalScopeIndexedDatabase::supplementName()
     return "WorkerGlobalScopeIndexedDatabase";
 }
 
-WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(WorkerSupplementable& context)
+WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(WillBeHeapSupplementable<WorkerGlobalScope>& context)
 {
-    WorkerGlobalScopeIndexedDatabase* supplement = static_cast<WorkerGlobalScopeIndexedDatabase*>(WorkerSupplement::from(context, supplementName()));
+    WorkerGlobalScopeIndexedDatabase* supplement = static_cast<WorkerGlobalScopeIndexedDatabase*>(WillBeHeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopeIndexedDatabase();
-        provideTo(context, supplementName(), adoptPtr(supplement));
+        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
 
-IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(WorkerSupplementable& context)
+IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(WillBeHeapSupplementable<WorkerGlobalScope>& context)
 {
     return from(context).indexedDB();
 }
@@ -70,6 +70,10 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
     if (!m_idbFactory)
         m_idbFactory = IDBFactory::create(m_factoryBackend.get());
     return m_idbFactory.get();
+}
+
+void WorkerGlobalScopeIndexedDatabase::trace(Visitor*)
+{
 }
 
 } // namespace WebCore

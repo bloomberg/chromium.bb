@@ -34,6 +34,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoaderClientWrapper.h"
+#include "heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -133,7 +134,7 @@ namespace WebCore {
 
         WorkerThreadableLoader(WorkerGlobalScope*, PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, const ResourceRequest&, const ThreadableLoaderOptions&);
 
-        RefPtr<WorkerGlobalScope> m_workerGlobalScope;
+        RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
         MainThreadBridge& m_bridge;
     };

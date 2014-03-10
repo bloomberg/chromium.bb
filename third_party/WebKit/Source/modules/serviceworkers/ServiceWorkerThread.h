@@ -43,7 +43,7 @@ public:
     virtual ~ServiceWorkerThread();
 
 protected:
-    virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) OVERRIDE;
 
 private:
     ServiceWorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);

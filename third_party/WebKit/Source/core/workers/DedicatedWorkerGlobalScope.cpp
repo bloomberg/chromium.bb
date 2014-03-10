@@ -41,9 +41,9 @@
 
 namespace WebCore {
 
-PassRefPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(DedicatedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData, double timeOrigin)
+PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(DedicatedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData, double timeOrigin)
 {
-    RefPtr<DedicatedWorkerGlobalScope> context = adoptRef(new DedicatedWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin, startupData->m_workerClients.release()));
+    RefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> context = adoptRefWillBeRefCountedGarbageCollected(new DedicatedWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin, startupData->m_workerClients.release()));
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
     return context.release();
 }
@@ -81,6 +81,11 @@ void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, Excep
 DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread()
 {
     return static_cast<DedicatedWorkerThread*>(Base::thread());
+}
+
+void DedicatedWorkerGlobalScope::trace(Visitor* visitor)
+{
+    WorkerGlobalScope::trace(visitor);
 }
 
 } // namespace WebCore

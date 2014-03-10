@@ -45,4 +45,9 @@ String WorkerNavigator::userAgent() const
     return m_userAgent;
 }
 
+void WorkerNavigator::trace(Visitor* visitor)
+{
+    WillBeHeapSupplementable<WorkerNavigator>::trace(visitor);
+}
+
 } // namespace WebCore

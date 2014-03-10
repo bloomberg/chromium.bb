@@ -31,18 +31,23 @@
 #ifndef WorkerGlobalScopePerformance_h
 #define WorkerGlobalScopePerformance_h
 
-#include "core/workers/WorkerSupplementable.h"
 #include "heap/Handle.h"
 #include "modules/performance/WorkerPerformance.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 
-class WorkerGlobalScopePerformance FINAL : public WorkerSupplement {
+class WorkerGlobalScope;
+
+class WorkerGlobalScopePerformance FINAL : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 public:
     virtual ~WorkerGlobalScopePerformance();
     static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 
     static WorkerPerformance* performance(WorkerGlobalScope&);
+
+    virtual void trace(Visitor*);
 
 private:
     WorkerGlobalScopePerformance();
@@ -50,7 +55,7 @@ private:
     WorkerPerformance* performance();
     static const char* supplementName();
 
-    RefPtrWillBePersistent<WorkerPerformance> m_performance;
+    RefPtrWillBeMember<WorkerPerformance> m_performance;
 };
 
 } // namespace WebCore

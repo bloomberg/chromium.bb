@@ -26,6 +26,7 @@
 #ifndef Supplementable_h
 #define Supplementable_h
 
+#include "heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -87,37 +88,70 @@ namespace WebCore {
 // Note that reattachThread() does nothing if assertion is not enabled.
 //
 
-template<typename T>
-class Supplementable;
+template<typename T, bool isGarbageCollected>
+class SupplementBase;
+
+template<typename T, bool isGarbageCollected>
+class SupplementableBase;
+
+template<typename T, bool isGarbageCollected>
+struct SupplementableTraits;
 
 template<typename T>
-class Supplement {
+struct SupplementableTraits<T, true> {
+    typedef PassOwnPtrWillBeRawPtr<SupplementBase<T, true> > SupplementArgumentType;
+    typedef WillBeHeapHashMap<const char*, OwnPtrWillBeMember<SupplementBase<T, true> >, PtrHash<const char*> > SupplementMap;
+};
+
+template<typename T>
+struct SupplementableTraits<T, false> {
+    typedef PassOwnPtr<SupplementBase<T, false> > SupplementArgumentType;
+    typedef HashMap<const char*, OwnPtr<SupplementBase<T, false> >, PtrHash<const char*> > SupplementMap;
+};
+
+template<bool>
+class SupplementTracing;
+
+template<>
+class SupplementTracing<true> : public GarbageCollectedMixin {
 public:
-    virtual ~Supplement() { }
+    virtual void trace(Visitor*) = 0;
+};
+
+template<>
+class SupplementTracing<false> {
+public:
+    virtual void trace(Visitor*) { }
+};
+
+template<typename T, bool isGarbageCollected = false>
+class SupplementBase : public SupplementTracing<isGarbageCollected> {
+public:
+    virtual ~SupplementBase() { }
 #if SECURITY_ASSERT_ENABLED
     virtual bool isRefCountedWrapper() const { return false; }
 #endif
 
-    static void provideTo(Supplementable<T>& host, const char* key, PassOwnPtr<Supplement<T> > supplement)
+    static void provideTo(SupplementableBase<T, isGarbageCollected>& host, const char* key, typename SupplementableTraits<T, isGarbageCollected>::SupplementArgumentType supplement)
     {
         host.provideSupplement(key, supplement);
     }
 
-    static Supplement<T>* from(Supplementable<T>& host, const char* key)
+    static SupplementBase<T, isGarbageCollected>* from(SupplementableBase<T, isGarbageCollected>& host, const char* key)
     {
         return host.requireSupplement(key);
     }
 
-    static Supplement<T>* from(Supplementable<T>* host, const char* key)
+    static SupplementBase<T, isGarbageCollected>* from(SupplementableBase<T, isGarbageCollected>* host, const char* key)
     {
         return host ? host->requireSupplement(key) : 0;
     }
 };
 
-template<typename T>
-class Supplementable {
+template<typename T, bool isGarbageCollected = false>
+class SupplementableBase {
 public:
-    void provideSupplement(const char* key, PassOwnPtr<Supplement<T> > supplement)
+    void provideSupplement(const char* key, typename SupplementableTraits<T, isGarbageCollected>::SupplementArgumentType supplement)
     {
         ASSERT(m_threadId == currentThread());
         ASSERT(!m_supplements.get(key));
@@ -130,7 +164,7 @@ public:
         m_supplements.remove(key);
     }
 
-    Supplement<T>* requireSupplement(const char* key)
+    SupplementBase<T, isGarbageCollected>* requireSupplement(const char* key)
     {
         ASSERT(m_threadId == currentThread());
         return m_supplements.get(key);
@@ -143,17 +177,43 @@ public:
 #endif
     }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_supplements);
+    }
+
 #if !ASSERT_DISABLED
 protected:
-    Supplementable() : m_threadId(currentThread()) { }
+    SupplementableBase() : m_threadId(currentThread()) { }
 #endif
 
 private:
-    typedef HashMap<const char*, OwnPtr<Supplement<T> >, PtrHash<const char*> > SupplementMap;
-    SupplementMap m_supplements;
+    typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
 #if !ASSERT_DISABLED
     ThreadIdentifier m_threadId;
 #endif
+};
+
+template<typename T>
+class HeapSupplement : public SupplementBase<T, true> { };
+
+template<typename T>
+class HeapSupplementable : public SupplementableBase<T, true> { };
+
+template<typename T>
+class Supplement : public SupplementBase<T, false> { };
+
+template<typename T>
+class Supplementable : public SupplementableBase<T, false> { };
+
+template<typename T>
+struct ThreadingTrait<WebCore::SupplementBase<T, true> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+};
+
+template<typename T>
+struct ThreadingTrait<WebCore::SupplementableBase<T, true> > {
+    static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 } // namespace WebCore

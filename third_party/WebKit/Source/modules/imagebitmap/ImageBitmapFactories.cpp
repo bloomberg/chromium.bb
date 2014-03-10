@@ -270,16 +270,15 @@ ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
         return fromInternal(*window);
 
     ASSERT(eventTarget.executionContext()->isWorkerGlobalScope());
-    return fromInternal(*toWorkerGlobalScope(eventTarget.executionContext()));
+    return WorkerGlobalScopeImageBitmapFactories::fromInternal(*toWorkerGlobalScope(eventTarget.executionContext()));
 }
 
-template <class T>
-ImageBitmapFactories& ImageBitmapFactories::fromInternal(T& object)
+ImageBitmapFactories& ImageBitmapFactories::fromInternal(DOMWindow& object)
 {
-    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(Supplement<T>::from(object, supplementName()));
+    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(Supplement<DOMWindow>::from(object, supplementName()));
     if (!supplement) {
         supplement = new ImageBitmapFactories();
-        Supplement<T>::provideTo(object, supplementName(), adoptPtr(supplement));
+        Supplement<DOMWindow>::provideTo(object, supplementName(), adoptPtr(supplement));
     }
     return *supplement;
 }
@@ -352,6 +351,20 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
 void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
 {
     rejectPromise();
+}
+
+ImageBitmapFactories& WorkerGlobalScopeImageBitmapFactories::fromInternal(WorkerGlobalScope& object)
+{
+    WorkerGlobalScopeImageBitmapFactories* supplement = static_cast<WorkerGlobalScopeImageBitmapFactories*>(WillBeHeapSupplement<WorkerGlobalScope>::from(object, ImageBitmapFactories::supplementName()));
+    if (!supplement) {
+        supplement = new WorkerGlobalScopeImageBitmapFactories();
+        WillBeHeapSupplement<WorkerGlobalScope>::provideTo(object, ImageBitmapFactories::supplementName(), adoptPtrWillBeNoop(supplement));
+    }
+    return *supplement;
+}
+
+void WorkerGlobalScopeImageBitmapFactories::trace(Visitor*)
+{
 }
 
 } // namespace WebCore

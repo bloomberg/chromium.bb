@@ -62,6 +62,11 @@ ExecutionContext* WorkerConsole::context()
     return m_scope->executionContext();
 }
 
+void WorkerConsole::trace(Visitor* visitor)
+{
+    visitor->trace(m_scope);
+}
+
 // FIXME: add memory getter
 
 } // namespace WebCore

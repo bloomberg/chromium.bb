@@ -52,7 +52,7 @@ SharedWorkerThread::~SharedWorkerThread()
 {
 }
 
-PassRefPtr<WorkerGlobalScope> SharedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<WorkerGlobalScope> SharedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return SharedWorkerGlobalScope::create(m_name, this, startupData);
 }

@@ -39,9 +39,9 @@
 
 namespace WebCore {
 
-PassRefPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    RefPtr<ServiceWorkerGlobalScope> context = adoptRef(new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_workerClients.release()));
+    RefPtrWillBeRawPtr<ServiceWorkerGlobalScope> context = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_workerClients.release()));
 
     context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
     return context.release();
@@ -60,6 +60,11 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerGlobalScope;
+}
+
+void ServiceWorkerGlobalScope::trace(Visitor* visitor)
+{
+    WorkerGlobalScope::trace(visitor);
 }
 
 } // namespace WebCore

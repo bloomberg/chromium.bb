@@ -633,6 +633,8 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeHeapVector WebCore::HeapVector
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
 #define WillBeGarbageCollectedMixin WebCore::GarbageCollectedMixin
+#define WillBeHeapSupplement WebCore::HeapSupplement
+#define WillBeHeapSupplementable WebCore::HeapSupplementable
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -692,6 +694,8 @@ public:
 #define WillBeHeapVector WTF::Vector
 #define WillBePersistentHeapVector WTF::Vector
 #define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
+#define WillBeHeapSupplement WebCore::Supplement
+#define WillBeHeapSupplementable WebCore::Supplementable
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }

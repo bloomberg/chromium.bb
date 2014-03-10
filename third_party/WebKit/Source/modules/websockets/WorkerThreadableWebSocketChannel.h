@@ -33,6 +33,7 @@
 
 #include "core/frame/ConsoleTypes.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "heap/Handle.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 
@@ -138,7 +139,7 @@ private:
     // Bridge for Peer. Running on the worker thread.
     class Bridge : public RefCounted<Bridge> {
     public:
-        static PassRefPtr<Bridge> create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, PassRefPtr<WorkerGlobalScope> workerGlobalScope)
+        static PassRefPtr<Bridge> create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper, PassRefPtrWillBeRawPtr<WorkerGlobalScope> workerGlobalScope)
         {
             return adoptRef(new Bridge(workerClientWrapper, workerGlobalScope));
         }
@@ -161,7 +162,7 @@ private:
         using RefCounted<Bridge>::deref;
 
     private:
-        Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassRefPtr<WorkerGlobalScope>);
+        Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassRefPtrWillBeRawPtr<WorkerGlobalScope>);
 
         static void setWebSocketChannel(ExecutionContext*, Bridge* thisPtr, Peer*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
 
@@ -174,7 +175,7 @@ private:
         void terminatePeer();
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
-        RefPtr<WorkerGlobalScope> m_workerGlobalScope;
+        RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         WorkerLoaderProxy& m_loaderProxy;
         ThreadableWebSocketChannelSyncHelper* m_syncHelper;
         WeakPtr<Peer> m_peer;
@@ -182,7 +183,7 @@ private:
 
     WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
 
-    RefPtr<WorkerGlobalScope> m_workerGlobalScope;
+    RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
     RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
     RefPtr<Bridge> m_bridge;
     String m_sourceURLAtConnection;

@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/frame/NavigatorBase.h"
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -35,12 +36,17 @@
 
 namespace WebCore {
 
-class WorkerNavigator FINAL : public RefCounted<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public Supplementable<WorkerNavigator> {
+class WorkerNavigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public WillBeHeapSupplementable<WorkerNavigator> {
 public:
-    static PassRefPtr<WorkerNavigator> create(const String& userAgent) { return adoptRef(new WorkerNavigator(userAgent)); }
+    static PassRefPtrWillBeRawPtr<WorkerNavigator> create(const String& userAgent)
+    {
+        return adoptRefWillBeNoop(new WorkerNavigator(userAgent));
+    }
     virtual ~WorkerNavigator();
 
     virtual String userAgent() const OVERRIDE;
+
+    void trace(Visitor*);
 
 private:
     explicit WorkerNavigator(const String&);

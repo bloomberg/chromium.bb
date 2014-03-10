@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-WorkerGlobalScopeNotifications::WorkerGlobalScopeNotifications(WorkerGlobalScope& context)
+WorkerGlobalScopeNotifications::WorkerGlobalScopeNotifications(WorkerGlobalScope* context)
     : m_context(context)
 {
 }
@@ -52,10 +52,10 @@ const char* WorkerGlobalScopeNotifications::supplementName()
 
 WorkerGlobalScopeNotifications& WorkerGlobalScopeNotifications::from(WorkerGlobalScope& context)
 {
-    WorkerGlobalScopeNotifications* supplement = static_cast<WorkerGlobalScopeNotifications*>(WorkerSupplement::from(context, supplementName()));
+    WorkerGlobalScopeNotifications* supplement = static_cast<WorkerGlobalScopeNotifications*>(WillBeHeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
-        supplement = new WorkerGlobalScopeNotifications(context);
-        WorkerSupplement::provideTo(context, supplementName(), adoptPtr(supplement));
+        supplement = new WorkerGlobalScopeNotifications(&context);
+        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -68,8 +68,14 @@ NotificationCenter* WorkerGlobalScopeNotifications::webkitNotifications(WorkerGl
 NotificationCenter* WorkerGlobalScopeNotifications::webkitNotifications()
 {
     if (!m_notificationCenter)
-        m_notificationCenter = NotificationCenter::create(&m_context, m_context.thread()->getNotificationClient());
+        m_notificationCenter = NotificationCenter::create(m_context, m_context->thread()->getNotificationClient());
     return m_notificationCenter.get();
+}
+
+void WorkerGlobalScopeNotifications::trace(Visitor* visitor)
+{
+    visitor->trace(m_context);
+    visitor->trace(m_notificationCenter);
 }
 
 } // namespace WebCore

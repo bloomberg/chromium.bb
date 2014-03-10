@@ -34,6 +34,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -43,7 +44,7 @@ namespace WebCore {
     class SharedWorkerGlobalScope FINAL : public WorkerGlobalScope {
     public:
         typedef WorkerGlobalScope Base;
-        static PassRefPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
+        static PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
         virtual ~SharedWorkerGlobalScope();
 
         virtual bool isSharedWorkerGlobalScope() const OVERRIDE { return true; }
@@ -56,6 +57,8 @@ namespace WebCore {
         String name() const { return m_name; }
 
         SharedWorkerThread* thread();
+
+        virtual void trace(Visitor*) OVERRIDE;
 
     private:
         SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtr<WorkerClients>);

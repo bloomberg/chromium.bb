@@ -36,7 +36,6 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/workers/WorkerSupplementable.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
@@ -55,7 +54,7 @@ class ImageBitmap;
 class ImageData;
 class ExecutionContext;
 
-class ImageBitmapFactories FINAL : public Supplement<DOMWindow>, public WorkerSupplement {
+class ImageBitmapFactories : public Supplement<DOMWindow> {
 
 class ImageBitmapLoader;
 
@@ -78,6 +77,9 @@ public:
     void didFinishLoading(ImageBitmapLoader*);
 
     virtual ~ImageBitmapFactories() { }
+
+protected:
+    static const char* supplementName();
 
 private:
     class ImageBitmapLoader FINAL : public RefCounted<ImageBitmapLoader>, public FileReaderLoaderClient {
@@ -109,15 +111,26 @@ private:
         IntRect m_cropRect;
     };
 
-    static const char* supplementName();
     static ImageBitmapFactories& from(EventTarget&);
 
-    template <class T>
-    static ImageBitmapFactories& fromInternal(T&);
+    static ImageBitmapFactories& fromInternal(DOMWindow&);
 
     void addLoader(PassRefPtr<ImageBitmapLoader>);
 
     HashSet<RefPtr<ImageBitmapLoader> > m_pendingLoaders;
+};
+
+// FIXME: oilpan: remove once DOMWindow and its Supplementable becomes heap allocated.
+class WorkerGlobalScopeImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeImageBitmapFactories>, public ImageBitmapFactories, public WillBeHeapSupplement<WorkerGlobalScope> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeImageBitmapFactories);
+public:
+    virtual ~WorkerGlobalScopeImageBitmapFactories() { }
+
+    virtual void trace(Visitor*);
+
+private:
+    friend class ImageBitmapFactories;
+    static ImageBitmapFactories& fromInternal(WorkerGlobalScope&);
 };
 
 } // namespace WebCore

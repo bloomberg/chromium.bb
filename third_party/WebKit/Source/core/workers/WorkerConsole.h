@@ -34,6 +34,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleBase.h"
 #include "core/frame/ConsoleTypes.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -43,13 +44,18 @@ namespace WebCore {
 
 class ScriptArguments;
 
-class WorkerConsole FINAL : public RefCounted<WorkerConsole>, public ConsoleBase, public ScriptWrappable {
+class WorkerConsole FINAL : public RefCountedWillBeRefCountedGarbageCollected<WorkerConsole>, public ConsoleBase, public ScriptWrappable {
 public:
-    using RefCounted<WorkerConsole>::ref;
-    using RefCounted<WorkerConsole>::deref;
+    using RefCountedWillBeRefCountedGarbageCollected<WorkerConsole>::ref;
+    using RefCountedWillBeRefCountedGarbageCollected<WorkerConsole>::deref;
 
-    static PassRefPtr<WorkerConsole> create(WorkerGlobalScope* scope) { return adoptRef(new WorkerConsole(scope)); }
+    static PassRefPtrWillBeRawPtr<WorkerConsole> create(WorkerGlobalScope* scope)
+    {
+        return adoptRefWillBeRefCountedGarbageCollected(new WorkerConsole(scope));
+    }
     virtual ~WorkerConsole();
+
+    void trace(Visitor*);
 
 protected:
     virtual ExecutionContext* context() OVERRIDE;
@@ -61,7 +67,7 @@ private:
     virtual void refConsole() OVERRIDE { ref(); }
     virtual void derefConsole() OVERRIDE { deref(); }
 
-    WorkerGlobalScope* m_scope;
+    RawPtrWillBeMember<WorkerGlobalScope> m_scope;
 };
 
 } // namespace WebCore
