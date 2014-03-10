@@ -908,4 +908,5 @@ crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [
 crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
 
 crbug.com/350543 [ Linux ] svg/animations/reset-animation-crash.html [ Crash Pass ]
+crbug.com/350827 svg/animations/svglengthlist-animation-3.html [ Failure Pass ]
 crbug.com/350543 [ Linux ] svg/as-image/image-change-with-equal-sizes.html [ Crash Pass ]
