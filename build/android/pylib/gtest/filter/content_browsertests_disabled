@@ -71,9 +71,6 @@ DownloadContentTest.ResumeInterruptedDownloadNoVerifiers
 DownloadContentTest.ResumeInterruptedDownloadBadPrecondition
 DownloadContentTest.ResumeWithDeletedFile
 
-# http://crbug.com/181069
-WebRtcGetUserMediaBrowserTest.TraceVideoCaptureDeviceAndroidPerformanceDuringGetUserMedia
-
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
 

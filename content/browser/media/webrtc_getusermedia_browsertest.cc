@@ -356,20 +356,6 @@ IN_PROC_BROWSER_TEST_F(
       "VideoCaptureController");
 }
 
-// This test will make a simple getUserMedia page, verify that video is playing
-// in a simple local <video>, and for a couple of seconds, collect some
-// performance traces. Only for Android.
-#if defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(
-    WebRtcGetUserMediaBrowserTest,
-    TraceVideoCaptureDeviceAndroidPerformanceDuringGetUserMedia) {
-  RunGetUserMediaAndCollectMeasures(
-      10,
-      "VideoCaptureDeviceAndroid::OnFrameAvailable",
-      "VideoCaptureDeviceAndroid");
-}
-#endif
-
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        TestGetUserMediaAspectRatio4To3) {
