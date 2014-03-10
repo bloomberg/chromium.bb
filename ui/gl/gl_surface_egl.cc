@@ -142,8 +142,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
     LOG(ERROR) << "OZONE failed to initialize hardware";
     return false;
   }
-  g_native_display = reinterpret_cast<EGLNativeDisplayType>(
-      surface_factory->GetNativeDisplay());
+  g_native_display = surface_factory->GetNativeDisplay();
 #else
   g_native_display = EGL_DEFAULT_DISPLAY;
 #endif
