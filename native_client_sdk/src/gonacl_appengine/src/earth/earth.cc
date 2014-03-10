@@ -31,11 +31,14 @@
 #include "sdk_util/macros.h"
 #include "sdk_util/thread_pool.h"
 
+// Chromium presubmit prevents checking in changes with calls to printf to
+// prevent spammy output. We'll work around that for this example.
+#define logf printf
+
 using namespace sdk_util;  // For sdk_util::ThreadPool
 
 // Global properties used to setup Earth demo.
 namespace {
-const float kHugeZ = 1.0e38f;
 const float kPI = M_PI;
 const float kTwoPI = kPI * 2.0f;
 const float kOneOverPI = 1.0f / kPI;
@@ -48,7 +51,6 @@ const float kZoomMax = 50.0f;
 const float kWheelSpeed = 2.0f;
 const float kLightMin = 0.0f;
 const float kLightMax = 2.0f;
-const int kFrameTimeBufferSize = 512;
 
 // RGBA helper functions.
 inline float ExtractR(uint32_t c) {
@@ -136,8 +138,6 @@ inline const float AsFloat(const int i) {
 }
 
 const long int kOneAsInteger = AsInteger(1.0f);
-const float kScaleUp = float(0x00800000);
-const float kScaleDown = 1.0f / kScaleUp;
 
 inline float inline_quick_sqrt(float x) {
   int i;
@@ -687,7 +687,7 @@ void Planet::DidChangeView(const pp::View& view) {
 void Planet::StartBenchmark() {
   // For more consistent benchmark numbers, reset to default state.
   Reset();
-  printf("Benchmark started...\n");
+  logf("Benchmark started...\n");
   benchmark_frame_counter_ = kFramesToBenchmark;
   benchmarking_ = true;
   benchmark_start_time_ = getseconds();
@@ -695,7 +695,7 @@ void Planet::StartBenchmark() {
 
 void Planet::EndBenchmark() {
   benchmark_end_time_ = getseconds();
-  printf("Benchmark ended... time: %2.5f\n",
+  logf("Benchmark ended... time: %2.5f\n",
       benchmark_end_time_ - benchmark_start_time_);
   benchmarking_ = false;
   benchmark_frame_counter_ = 0;
@@ -809,7 +809,7 @@ void Planet::HandleMessage(const pp::Var& var) {
       }
     }
   } else {
-    printf("Handle message unknown type: %s\n", var.DebugString().c_str());
+    logf("Handle message unknown type: %s\n", var.DebugString().c_str());
   }
 }
 
@@ -852,9 +852,9 @@ void Planet::Update() {
 void Planet::CreateContext(const pp::Size& size) {
   graphics_2d_context_ = new pp::Graphics2D(this, size, false);
   if (graphics_2d_context_->is_null())
-    printf("Failed to create a 2D resource!\n");
+    logf("Failed to create a 2D resource!\n");
   if (!BindGraphics(*graphics_2d_context_))
-    printf("Couldn't bind the device context\n");
+    logf("Couldn't bind the device context\n");
   image_data_ = new pp::ImageData(this,
                                   PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                                   size,
