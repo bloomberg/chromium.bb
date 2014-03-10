@@ -79,10 +79,10 @@ struct GraphicsLayerPaintInfo {
 class CompositedLayerMapping FINAL : public GraphicsLayerClient {
     WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit CompositedLayerMapping(RenderLayer*);
+    explicit CompositedLayerMapping(RenderLayer&);
     virtual ~CompositedLayerMapping();
 
-    RenderLayer* owningLayer() const { return m_owningLayer; }
+    RenderLayer& owningLayer() const { return m_owningLayer; }
 
     enum UpdateAfterLayoutFlag {
         CompositingChildrenOnly = 1 << 0,
@@ -208,8 +208,8 @@ private:
     PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons);
     bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer, CompositingReasons);
 
-    RenderLayerModelObject* renderer() const { return m_owningLayer->renderer(); }
-    RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }
+    RenderLayerModelObject* renderer() const { return m_owningLayer.renderer(); }
+    RenderLayerCompositor* compositor() const { return m_owningLayer.compositor(); }
 
     void updateInternalHierarchy();
     bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
@@ -219,9 +219,9 @@ private:
     bool updateBackgroundLayer(bool needsBackgroundLayer);
     bool updateMaskLayer(bool needsMaskLayer);
     bool updateClippingMaskLayers(bool needsChildClippingMaskLayer);
-    bool requiresHorizontalScrollbarLayer() const { return m_owningLayer->scrollableArea() && m_owningLayer->scrollableArea()->horizontalScrollbar(); }
-    bool requiresVerticalScrollbarLayer() const { return m_owningLayer->scrollableArea() && m_owningLayer->scrollableArea()->verticalScrollbar(); }
-    bool requiresScrollCornerLayer() const { return m_owningLayer->scrollableArea() && !m_owningLayer->scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
+    bool requiresHorizontalScrollbarLayer() const { return m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->horizontalScrollbar(); }
+    bool requiresVerticalScrollbarLayer() const { return m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->verticalScrollbar(); }
+    bool requiresScrollCornerLayer() const { return m_owningLayer.scrollableArea() && !m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
     void updateScrollParent(RenderLayer*);
     void updateClipParent(RenderLayer*);
@@ -275,7 +275,7 @@ private:
 
     void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
 
-    RenderLayer* m_owningLayer;
+    RenderLayer& m_owningLayer;
 
     // The hierarchy of layers that is maintained by the CompositedLayerMapping looks like this:
     //

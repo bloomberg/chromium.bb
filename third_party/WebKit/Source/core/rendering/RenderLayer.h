@@ -99,6 +99,7 @@ private:
 };
 
 class RenderLayer {
+    WTF_MAKE_NONCOPYABLE(RenderLayer);
 public:
     friend class RenderReplica;
     // FIXME: Needed until we move all the necessary bits to the new class.

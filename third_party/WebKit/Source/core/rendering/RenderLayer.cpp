@@ -3528,7 +3528,7 @@ CompositedLayerMappingPtr RenderLayer::compositedLayerMapping() const
 CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {
-        m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(this));
+        m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));
         m_compositedLayerMapping->setNeedsGeometryUpdate();
 
         updateOrRemoveFilterEffectRenderer();
