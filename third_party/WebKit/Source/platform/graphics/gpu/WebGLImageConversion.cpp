@@ -1565,8 +1565,7 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
         m_nativeImage = frame->asNewNativeImage();
         if (!m_nativeImage.get() || !m_nativeImage->isDataComplete() || !m_nativeImage->bitmap().width() || !m_nativeImage->bitmap().height())
             return false;
-        SkBitmap::Config skiaConfig = m_nativeImage->bitmap().config();
-        if (skiaConfig != SkBitmap::kARGB_8888_Config)
+        if (m_nativeImage->bitmap().colorType() != kPMColor_SkColorType)
             return false;
         m_skiaImage = m_nativeImage.get();
         if (hasAlpha && premultiplyAlpha)

@@ -235,7 +235,7 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
     if (bitmap.isNull())
         return;
 
-    ASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
+    ASSERT(bitmap.colorType() == kPMColor_SkColorType);
     IntSize size = m_surface->size();
     SkAutoLockPixels bitmapLock(bitmap);
     for (int y = 0; y < size.height(); ++y) {
@@ -280,8 +280,7 @@ PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext*
 
     unsigned destBytesPerRow = 4 * rect.width();
     SkBitmap destBitmap;
-    destBitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height(), destBytesPerRow);
-    destBitmap.setPixels(data);
+    destBitmap.installPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()), data, destBytesPerRow);
 
     SkCanvas::Config8888 config8888;
     if (multiplied == Premultiplied)
@@ -340,8 +339,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
 
     unsigned srcBytesPerRow = 4 * sourceSize.width();
     SkBitmap srcBitmap;
-    srcBitmap.setConfig(SkBitmap::kARGB_8888_Config, numColumns, numRows, srcBytesPerRow);
-    srcBitmap.setPixels(source->data() + originY * srcBytesPerRow + originX * 4);
+    srcBitmap.installPixels(SkImageInfo::MakeN32Premul(numColumns, numRows), source->data() + originY * srcBytesPerRow + originX * 4, srcBytesPerRow);
 
     SkCanvas::Config8888 config8888;
     if (multiplied == Premultiplied)

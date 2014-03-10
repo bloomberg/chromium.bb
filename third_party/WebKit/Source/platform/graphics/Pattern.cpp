@@ -76,9 +76,14 @@ SkShader* Pattern::shader()
         // Create a transparent bitmap 1 pixel wider and/or taller than the
         // original, then copy the orignal into it.
         // FIXME: Is there a better way to pad (not scale) an image in skia?
+        SkImageInfo info = m_tileImage->bitmap().info();
+        info.fWidth += expandW;
+        info.fHeight += expandH;
+        // we explicitly require non-opaquness, since we are going to add a transparent strip.
+        info.fAlphaType = kPremul_SkAlphaType;
+
         SkBitmap bm2;
-        bm2.setConfig(m_tileImage->bitmap().config(), m_tileImage->bitmap().width() + expandW, m_tileImage->bitmap().height() + expandH);
-        bm2.allocPixels();
+        bm2.allocPixels(info);
         bm2.eraseARGB(0x00, 0x00, 0x00, 0x00);
         SkCanvas canvas(bm2);
         canvas.drawBitmap(m_tileImage->bitmap(), 0, 0);
