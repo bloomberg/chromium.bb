@@ -922,7 +922,8 @@ class ManifestVersionedSyncStage(SyncStage):
     assert self.manifest_manager, \
         'Must run GetStageManager before checkout out build.'
 
-    to_return = self.manifest_manager.GetNextBuildSpec()
+    to_return = self.manifest_manager.GetNextBuildSpec(
+        dashboard_url=self.ConstructDashboardURL())
     previous_version = self.manifest_manager.GetLatestPassingSpec()
     target_version = self.manifest_manager.current_version
 
@@ -1049,10 +1050,12 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     if self._run.config.master:
       manifest = self.manifest_manager.CreateNewCandidate()
       if MasterSlaveSyncStage.sub_manager:
-        MasterSlaveSyncStage.sub_manager.CreateFromManifest(manifest)
+        MasterSlaveSyncStage.sub_manager.CreateFromManifest(
+            manifest, dashboard_url=self.ConstructDashboardURL())
       return manifest
     else:
-      return self.manifest_manager.GetLatestCandidate()
+      return self.manifest_manager.GetLatestCandidate(
+          dashboard_url=self.ConstructDashboardURL())
 
 
 class CommitQueueSyncStage(MasterSlaveSyncStage):
@@ -1152,11 +1155,13 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
       manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool)
       if MasterSlaveSyncStage.sub_manager:
-        MasterSlaveSyncStage.sub_manager.CreateFromManifest(manifest)
+        MasterSlaveSyncStage.sub_manager.CreateFromManifest(
+            manifest, dashboard_url=self.ConstructDashboardURL())
 
       return manifest
     else:
-      manifest = self.manifest_manager.GetLatestCandidate()
+      manifest = self.manifest_manager.GetLatestCandidate(
+          dashboard_url=self.ConstructDashboardURL())
       if manifest:
         if self._run.config.build_before_patching:
           pre_build_passed = self._RunPrePatchBuild()
@@ -1229,7 +1234,8 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
 
   def PerformStage(self):
     self._run.attrs.manifest_manager.UpdateStatus(
-        success=self.success, message=self.message)
+        success=self.success, message=self.message,
+        dashboard_url=self.ConstructDashboardURL())
 
 
 class ImportantBuilderFailedException(results_lib.StepFailure):
@@ -1532,7 +1538,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     super(CommitQueueCompletionStage, self).PerformStage()
 
     self._run.attrs.manifest_manager.UpdateStatus(
-        success=self.success, message=self.message)
+        success=self.success, message=self.message,
+        dashboard_url=self.ConstructDashboardURL())
 
 
 class PreCQSyncStage(SyncStage):

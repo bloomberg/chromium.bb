@@ -298,7 +298,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
+    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString(),
+                                         dashboard_url=None)
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 
@@ -329,7 +330,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
+    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString(),
+                                         dashboard_url=None)
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 

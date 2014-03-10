@@ -632,11 +632,12 @@ class BuildSpecsManager(object):
     """Syncs the cros source to the latest git hashes for the branch."""
     self.cros_source.Sync(self.manifest)
 
-  def GetNextBuildSpec(self, retries=NUM_RETRIES):
+  def GetNextBuildSpec(self, retries=NUM_RETRIES, dashboard_url=None):
     """Returns a path to the next manifest to build.
 
     Args:
       retries: Number of retries for updating the status.
+      dashboard_url: Optional url linking to builder dashboard for this build.
 
     Raises:
       GenerateBuildSpecException in case of failure to generate a buildspec
@@ -664,7 +665,7 @@ class BuildSpecsManager(object):
         else:
           version = self.latest_unprocessed
 
-        self.SetInFlight(version)
+        self.SetInFlight(version, dashboard_url=dashboard_url)
         self.current_version = version
         return self.GetLocalManifest(version)
       except cros_build_lib.RunCommandError as e:
@@ -724,11 +725,12 @@ class BuildSpecsManager(object):
     self._UploadStatus(self.current_version, status, message=message,
                        dashboard_url=dashboard_url)
 
-  def SetInFlight(self, version):
+  def SetInFlight(self, version, dashboard_url=None):
     """Marks the buildspec as inflight in Google Storage."""
     try:
       self._UploadStatus(version, BuilderStatus.STATUS_INFLIGHT,
-                         fail_if_exists=True)
+                         fail_if_exists=True,
+                         dashboard_url=dashboard_url)
     except cros_build_lib.RunCommandError as e:
       if 'code=PreconditionFailed' in e.result.error:
         raise GenerateBuildSpecException('Builder already inflight')
@@ -753,13 +755,15 @@ class BuildSpecsManager(object):
     """Pushes any changes you have in the manifest directory."""
     _PushGitChanges(self.manifest_dir, commit_message, dry_run=self.dry_run)
 
-  def UpdateStatus(self, success, message=None, retries=NUM_RETRIES):
+  def UpdateStatus(self, success, message=None, retries=NUM_RETRIES,
+                   dashboard_url=None):
     """Updates the status of the build for the current build spec.
 
     Args:
       success: True for success, False for failure
       message: Message accompanied with change in status.
       retries: Number of retries for updating the status
+      dashboard_url: Optional url linking to builder dashboard for this build.
     """
     last_error = None
     if message:
@@ -787,7 +791,7 @@ class BuildSpecsManager(object):
                       retries)
       else:
         # Upload status to Google Storage as well.
-        self.UploadStatus(success, message=message)
+        self.UploadStatus(success, message=message, dashboard_url=dashboard_url)
         return
     else:
       # Cleanse any failed local changes and throw an exception.

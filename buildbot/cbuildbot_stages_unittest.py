@@ -482,7 +482,9 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.SyncStage, 'ManifestCheckout')
 
     stages.ManifestVersionedSyncStage.Initialize()
-    self.manager.GetNextBuildSpec().AndReturn(self.next_version)
+    self.manager.GetNextBuildSpec(
+        dashboard_url=self.sync_stage.ConstructDashboardURL()
+        ).AndReturn(self.next_version)
     self.manager.GetLatestPassingSpec().AndReturn(None)
 
     stages.SyncStage.ManifestCheckout(self.next_version)
@@ -495,7 +497,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.manager.UpdateStatus(message=None, success=True)
+    self.manager.UpdateStatus(message=None, success=True,
+                              dashboard_url=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.run,
@@ -508,7 +511,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     """Tests basic ManifestVersionedSyncStageCompleted on failure"""
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.manager.UpdateStatus(message=None, success=False)
+    self.manager.UpdateStatus(message=None, success=False,
+                              dashboard_url=mox.IgnoreArg())
 
 
     self.mox.ReplayAll()
