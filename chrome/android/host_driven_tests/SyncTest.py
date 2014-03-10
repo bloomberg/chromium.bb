@@ -27,7 +27,8 @@ class SyncTest(test_case.HostDrivenTestCase):
     # These ought not to change in the middle of a test for obvious reasons.
     self.additional_flags = [
         '--sync-url=http://%s:%d/chromiumsync' %
-        (self.test_server.host, self.test_server.port)]
+        (self.test_server.host, self.test_server.port),
+        '--sync-deferred-startup-timeout-seconds=0']
     super(SyncTest, self).SetUp(device, shard_index, push_deps,
                                 cleanup_test_files,
                                 [self.test_server.port])

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/managed_mode/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -46,9 +47,22 @@ StartupController::StartupController(
       token_service_(token_service),
       signin_(signin),
       start_backend_(start_backend),
-      fallback_timeout_(
-          base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
-      weak_factory_(this) {}
+      fallback_timeout_(base::TimeDelta::FromSeconds(
+          kDeferredInitFallbackSeconds)),
+      weak_factory_(this) {
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDeferredStartupTimeoutSeconds)) {
+    int timeout = kDeferredInitFallbackSeconds;
+    if (base::StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kSyncDeferredStartupTimeoutSeconds), &timeout)) {
+      DCHECK_GE(0, timeout);
+      DVLOG(2) << "Sync StartupController overriding startup timeout to "
+               << timeout << " seconds.";
+      fallback_timeout_ = base::TimeDelta::FromSeconds(timeout);
+    }
+  }
+}
 
 StartupController::~StartupController() {}
 
@@ -72,8 +86,8 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_up_time_ = base::Time::Now();
 
   if (deferred_option == STARTUP_BACKEND_DEFERRED &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncEnableDeferredStartup) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableDeferredStartup) &&
       sync_prefs_->GetPreferredDataTypes(registered_types_)
           .Has(syncer::SESSIONS)) {
     if (first_start) {
@@ -152,8 +166,8 @@ bool StartupController::TryStart() {
 }
 
 void StartupController::OnFallbackStartupTimerExpired() {
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncEnableDeferredStartup));
+  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncDisableDeferredStartup));
 
   if (!start_backend_time_.is_null())
     return;
@@ -179,8 +193,8 @@ std::string StartupController::GetBackendInitializationStateString() const {
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncEnableDeferredStartup)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableDeferredStartup)) {
     DVLOG(2) << "Ignoring data type request for sync startup: "
              << syncer::ModelTypeToString(type);
     return;

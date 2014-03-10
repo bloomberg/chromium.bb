@@ -86,15 +86,6 @@ class StartupControllerTest : public testing::Test {
     started_ = true;
   }
 
-  void ForceDeferredStartup() {
-    if (!CommandLine::ForCurrentProcess()->
-        HasSwitch(switches::kSyncEnableDeferredStartup)) {
-      CommandLine::ForCurrentProcess()->
-          AppendSwitch(switches::kSyncEnableDeferredStartup);
-      controller_->Reset(syncer::UserTypes());
-    }
-  }
-
   bool started() const { return started_; }
   void clear_started() { started_ = false; }
   StartupController* controller() { return controller_.get(); }
@@ -127,8 +118,8 @@ TEST_F(StartupControllerTest, Basic) {
   controller()->TryStart();
   EXPECT_FALSE(started());
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
-  const bool deferred_start = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSyncEnableDeferredStartup);
+  const bool deferred_start = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kSyncDisableDeferredStartup);
   controller()->TryStart();
   EXPECT_EQ(!deferred_start, started());
   std::string state(controller()->GetBackendInitializationStateString());
@@ -163,7 +154,6 @@ TEST_F(StartupControllerTest, Managed) {
 // Test that sync doesn't start until all conditions are met and a
 // data type triggers sync startup.
 TEST_F(StartupControllerTest, DataTypeTriggered) {
-  ForceDeferredStartup();
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
@@ -186,7 +176,6 @@ TEST_F(StartupControllerTest, DataTypeTriggered) {
 // Test that the fallback timer starts sync in the event all
 // conditions are met and no data type requests sync.
 TEST_F(StartupControllerTest, FallbackTimer) {
-  ForceDeferredStartup();
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
@@ -206,8 +195,6 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   types.Remove(syncer::MANAGED_USER_SETTINGS);
   sync_prefs()->SetKeepEverythingSynced(false);
   sync_prefs()->SetPreferredDataTypes(syncer::UserTypes(), types);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSyncEnableDeferredStartup);
   controller()->Reset(syncer::UserTypes());
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
@@ -219,7 +206,6 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
 // Sanity check that the fallback timer doesn't fire before startup
 // conditions are met.
 TEST_F(StartupControllerTest, FallbackTimerWaits) {
-  ForceDeferredStartup();
   controller()->TryStart();
   EXPECT_FALSE(started());
   base::RunLoop().RunUntilIdle();
@@ -254,8 +240,8 @@ TEST_F(StartupControllerTest, Reset) {
   controller()->Reset(syncer::UserTypes());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(started());
-  const bool deferred_start = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSyncEnableDeferredStartup);
+  const bool deferred_start = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kSyncDisableDeferredStartup);
   controller()->TryStart();
   EXPECT_EQ(!deferred_start, started());
   controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
