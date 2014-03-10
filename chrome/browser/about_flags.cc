@@ -1473,6 +1473,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisablePrivetLocalPrinting)
   },
+  {
+    "enable-print-preview-register-promos",
+    IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME,
+    IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnablePrintPreviewRegisterPromos)
+  },
 #endif  // ENABLE_MDNS
 #if defined(OS_WIN)
   {

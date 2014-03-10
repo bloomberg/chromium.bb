@@ -1361,9 +1361,13 @@ void PrintPreviewHandler::LocalPrinterChanged(
     const std::string& name,
     bool has_local_printing,
     const local_discovery::DeviceDescription& description) {
-  base::DictionaryValue info;
-  FillPrinterDescription(name, description, has_local_printing, &info);
-  web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (has_local_printing ||
+      command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
+    base::DictionaryValue info;
+    FillPrinterDescription(name, description, has_local_printing, &info);
+    web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
+  }
 }
 
 void PrintPreviewHandler::LocalPrinterRemoved(const std::string& name) {
@@ -1533,12 +1537,15 @@ void PrintPreviewHandler::FillPrinterDescription(
     const local_discovery::DeviceDescription& description,
     bool has_local_printing,
     base::DictionaryValue* printer_value) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   printer_value->SetString("serviceName", name);
   printer_value->SetString("name", description.name);
   printer_value->SetBoolean("hasLocalPrinting", has_local_printing);
   printer_value->SetBoolean(
       "isUnregistered",
-      description.id.empty());
+      description.id.empty() &&
+      command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos));
   printer_value->SetString("cloudID", description.id);
 }
 
