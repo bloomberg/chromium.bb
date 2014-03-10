@@ -19,4 +19,4 @@ test $EXECUTABLE_PATH = nonbundle_executable
 [[ ! $DYLIB_INSTALL_NAME_BASE && ${DYLIB_INSTALL_NAME_BASE-_} ]]
 [[ ! $LD_DYLIB_INSTALL_NAME && ${LD_DYLIB_INSTALL_NAME-_} ]]
 
-sh "$(dirname "$0")/test_check_sdkroot.sh"
+"$(dirname "$0")/test_check_sdkroot.sh"

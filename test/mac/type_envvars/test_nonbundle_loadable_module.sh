@@ -17,4 +17,4 @@ test $EXECUTABLE_PATH = nonbundle_loadable_module.so
 test $DYLIB_INSTALL_NAME_BASE = "/usr/local/lib"
 test $LD_DYLIB_INSTALL_NAME = "/usr/local/lib/nonbundle_loadable_module.so"
 
-sh "$(dirname "$0")/test_check_sdkroot.sh"
+"$(dirname "$0")/test_check_sdkroot.sh"
