@@ -73,10 +73,10 @@
                 waitForEventAndRunStep("needkey", video, onNeedKey, test);
                 waitForEventAndRunStep("playing", video, onPlaying, test);
 
-                video.src = "../content/test-encrypted.webm";
                 video.setMediaKeys(mediaKeys);
+                video.src = "../content/test-encrypted.webm";
                 video.play();
-            }, "Playback using Clear Key key system.");
+            }, "Playback using Clear Key key system, calling setMediaKeys() before setting src attribute.");
         </script>
     </body>
 </html>
