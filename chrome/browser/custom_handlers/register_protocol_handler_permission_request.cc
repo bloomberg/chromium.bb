@@ -8,6 +8,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -26,12 +27,20 @@ base::string16 GetProtocolName(
 RegisterProtocolHandlerPermissionRequest
 ::RegisterProtocolHandlerPermissionRequest(
       ProtocolHandlerRegistry* registry,
-      const ProtocolHandler& handler)
+      const ProtocolHandler& handler,
+      GURL url,
+      bool user_gesture)
     : registry_(registry),
-      handler_(handler) {}
+      handler_(handler),
+      url_(url),
+      user_gesture_(user_gesture) {}
 
 RegisterProtocolHandlerPermissionRequest::
 ~RegisterProtocolHandlerPermissionRequest() {}
+
+int RegisterProtocolHandlerPermissionRequest::GetIconID() const {
+  return IDR_REGISTER_PROTOCOL_HANDLER;
+}
 
 base::string16
 RegisterProtocolHandlerPermissionRequest::GetMessageText() const {
@@ -56,16 +65,12 @@ RegisterProtocolHandlerPermissionRequest::GetMessageTextFragment() const {
           GetProtocolName(handler_), old_handler.title());
 }
 
-base::string16 RegisterProtocolHandlerPermissionRequest::
-GetAlternateAcceptButtonText() const {
-  return l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT,
-                                    handler_.title());
+bool RegisterProtocolHandlerPermissionRequest::HasUserGesture() const {
+  return user_gesture_;
 }
 
-base::string16 RegisterProtocolHandlerPermissionRequest::
-GetAlternateDenyButtonText() const {
-  return l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_DENY,
-                                    handler_.title());
+GURL RegisterProtocolHandlerPermissionRequest::GetRequestingHostname() const {
+  return url_;
 }
 
 void RegisterProtocolHandlerPermissionRequest::PermissionGranted() {

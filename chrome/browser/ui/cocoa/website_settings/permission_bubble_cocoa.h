@@ -28,6 +28,7 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
                     bool customization_mode) OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void SetDelegate(Delegate* delegate) OVERRIDE;
+  virtual bool CanAcceptRequestUpdate() OVERRIDE;
 
   // Called when |bubbleController_| is closing.
   void OnBubbleClosing();

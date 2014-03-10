@@ -45,6 +45,8 @@ class FakePermissionBubbleView : public PermissionBubbleView {
       const std::vector<bool>& accept_state,
       bool customization_mode) OVERRIDE;
 
+  virtual bool CanAcceptRequestUpdate() OVERRIDE { return false; }
+
   virtual void Hide() OVERRIDE {}
 
  private:

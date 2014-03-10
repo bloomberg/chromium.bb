@@ -20,6 +20,8 @@ class PermissionBubbleView {
   // be persisted in the per-tab UI state.
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     virtual void ToggleAccept(int index, bool new_value) = 0;
     virtual void SetCustomizationMode() = 0;
     virtual void Accept() = 0;
@@ -28,14 +30,24 @@ class PermissionBubbleView {
     virtual void SetView(PermissionBubbleView* view) = 0;
   };
 
+  virtual ~PermissionBubbleView() {}
+
   // Sets the delegate which will receive UI events forwarded from the bubble.
   virtual void SetDelegate(Delegate* delegate) = 0;
 
-  // Causes the bubble to show up with the given contents.
+  // Causes the bubble to show up with the given contents. This method may be
+  // called with mostly-identical contents to the existing contents. This can
+  // happen, for instance, if a new permission is requested and
+  // CanAcceptRequestUpdate() is true.
   virtual void Show(
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
-      bool custommization_mode) = 0;
+      bool customization_mode) = 0;
+
+  // Returns true if the view can accept a new Show() command to coalesce
+  // requests. Currently the policy is that this should return true if the view
+  // is being shown and the mouse is not over the view area (!IsMouseHovered).
+  virtual bool CanAcceptRequestUpdate() = 0;
 
   // Hides the permission bubble.
   virtual void Hide() = 0;

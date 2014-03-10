@@ -54,6 +54,12 @@ void PermissionBubbleCocoa::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+bool PermissionBubbleCocoa::CanAcceptRequestUpdate() {
+  // TODO(gbillock): implement. Should return true if the mouse is not over the
+  // dialog.
+  return false;
+}
+
 void PermissionBubbleCocoa::OnBubbleClosing() {
   bubbleController_ = nil;
 }

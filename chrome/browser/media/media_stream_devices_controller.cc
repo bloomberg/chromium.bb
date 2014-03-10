@@ -349,6 +349,13 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
   cb.Run(content::MediaStreamDevices(), scoped_ptr<content::MediaStreamUI>());
 }
 
+int MediaStreamDevicesController::GetIconID() const {
+  if (HasVideo())
+    return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
+
+  return IDR_INFOBAR_MEDIA_STREAM_MIC;
+}
+
 base::string16 MediaStreamDevicesController::GetMessageText() const {
   int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
   if (!HasAudio())
@@ -368,14 +375,13 @@ base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::string16
-MediaStreamDevicesController::GetAlternateAcceptButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_MEDIA_CAPTURE_ALLOW);
+bool MediaStreamDevicesController::HasUserGesture() const {
+  // TODO(gbillock): plumb this through
+  return false;
 }
 
-base::string16
-MediaStreamDevicesController::GetAlternateDenyButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_MEDIA_CAPTURE_DENY);
+GURL MediaStreamDevicesController::GetRequestingHostname() const {
+  return request_.security_origin;
 }
 
 void MediaStreamDevicesController::PermissionGranted() {

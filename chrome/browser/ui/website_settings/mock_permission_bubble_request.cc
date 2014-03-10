@@ -17,3 +17,15 @@ void MockPermissionBubbleRequest::SetText(const base::string16& text) {
   ON_CALL(*this, GetMessageText()).WillByDefault(testing::Return(text));
   ON_CALL(*this, GetMessageTextFragment()).WillByDefault(testing::Return(text));
 }
+
+int MockPermissionBubbleRequest::GetIconID() const {
+  return 0;
+}
+
+bool MockPermissionBubbleRequest::HasUserGesture() const {
+  return false;
+}
+
+GURL MockPermissionBubbleRequest::GetRequestingHostname() const {
+  return GURL("http://www.google.com");
+}

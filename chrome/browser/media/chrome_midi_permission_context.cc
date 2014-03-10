@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,10 +32,11 @@ class MidiPermissionRequest : public PermissionBubbleRequest {
   virtual ~MidiPermissionRequest();
 
   // PermissionBubbleDelegate:
+  virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetMessageTextFragment() const OVERRIDE;
-  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;
-  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual GURL GetRequestingHostname() const OVERRIDE;
   virtual void PermissionGranted() OVERRIDE;
   virtual void PermissionDenied() OVERRIDE;
   virtual void Cancelled() OVERRIDE;
@@ -64,6 +66,10 @@ MidiPermissionRequest::MidiPermissionRequest(
 
 MidiPermissionRequest::~MidiPermissionRequest() {}
 
+int MidiPermissionRequest::GetIconID() const {
+  return IDR_ALLOWED_MIDI_SYSEX;
+}
+
 base::string16 MidiPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_MIDI_SYSEX_INFOBAR_QUESTION,
@@ -74,12 +80,13 @@ base::string16 MidiPermissionRequest::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_PERMISSION_FRAGMENT);
 }
 
-base::string16 MidiPermissionRequest::GetAlternateAcceptButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_ALLOW_BUTTON);
+bool MidiPermissionRequest::HasUserGesture() const {
+  // TODO(gbillock): plumb through.
+  return false;
 }
 
-base::string16 MidiPermissionRequest::GetAlternateDenyButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_DENY_BUTTON);
+GURL MidiPermissionRequest::GetRequestingHostname() const {
+  return requesting_frame_;
 }
 
 void MidiPermissionRequest::PermissionGranted() {

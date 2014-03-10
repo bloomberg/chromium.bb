@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -47,10 +48,11 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   virtual ~QuotaPermissionRequest();
 
   // PermissionBubbleRequest:
+  virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetMessageTextFragment() const OVERRIDE;
-  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;
-  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual GURL GetRequestingHostname() const OVERRIDE;
   virtual void PermissionGranted() OVERRIDE;
   virtual void PermissionDenied() OVERRIDE;
   virtual void Cancelled() OVERRIDE;
@@ -80,6 +82,11 @@ QuotaPermissionRequest::QuotaPermissionRequest(
 
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
 
+int QuotaPermissionRequest::GetIconID() const {
+  // TODO(gbillock): get the proper image here
+  return IDR_INFOBAR_WARNING;
+}
+
 base::string16 QuotaPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       (requested_quota_ > kRequestLargeQuotaThreshold ?
@@ -92,12 +99,13 @@ base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(IDS_REQUEST_QUOTA_PERMISSION_FRAGMENT);
 }
 
-base::string16 QuotaPermissionRequest::GetAlternateAcceptButtonText() const {
-  return base::string16();
+bool QuotaPermissionRequest::HasUserGesture() const {
+  // TODO(gbillock): plumb this through
+  return false;
 }
 
-base::string16 QuotaPermissionRequest::GetAlternateDenyButtonText() const {
-  return base::string16();
+GURL QuotaPermissionRequest::GetRequestingHostname() const {
+  return origin_url_;
 }
 
 void QuotaPermissionRequest::PermissionGranted() {

@@ -16,24 +16,33 @@ namespace {
 
 class MockRequest : public PermissionBubbleRequest {
  public:
-  MockRequest() : granted_(false), cancelled_(false), finished_(false) {}
+  explicit MockRequest(const base::string16& message)
+      : message_(message),
+        granted_(false),
+        cancelled_(false),
+        finished_(false) {}
+
   virtual ~MockRequest() {}
 
   // PermissionBubbleRequest:
+  virtual int GetIconID() const OVERRIDE {
+    return 5;
+  }
+
   virtual base::string16 GetMessageText() const OVERRIDE {
-    return base::ASCIIToUTF16("test");
+    return message_;
   }
 
   virtual base::string16 GetMessageTextFragment() const OVERRIDE {
-    return base::ASCIIToUTF16("test");
+    return message_;
   }
 
-  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE {
-    return base::ASCIIToUTF16("button");
+  virtual bool HasUserGesture() const OVERRIDE {
+    return false;
   }
 
-  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE {
-    return base::ASCIIToUTF16("button");
+  virtual GURL GetRequestingHostname() const OVERRIDE {
+    return GURL("http://www.google.com/");
   }
 
   virtual void PermissionGranted() OVERRIDE {
@@ -53,6 +62,7 @@ class MockRequest : public PermissionBubbleRequest {
     finished_ = true;
   }
 
+  base::string16 message_;
   bool granted_;
   bool cancelled_;
   bool finished_;
@@ -61,7 +71,7 @@ class MockRequest : public PermissionBubbleRequest {
 class MockView : public PermissionBubbleView {
  public:
   MockView() : shown_(false), delegate_(NULL) {}
-  ~MockView() {}
+  virtual ~MockView() {}
 
   void Clear() {
     shown_ = false;
@@ -88,6 +98,10 @@ class MockView : public PermissionBubbleView {
     shown_ = false;
   }
 
+  virtual bool CanAcceptRequestUpdate() OVERRIDE {
+    return true;
+  }
+
   bool shown_;
   Delegate* delegate_;
   std::vector<PermissionBubbleRequest*> permission_requests_;
@@ -99,6 +113,11 @@ class MockView : public PermissionBubbleView {
 class PermissionBubbleManagerTest : public testing::Test {
  public:
   PermissionBubbleManagerTest();
+  virtual ~PermissionBubbleManagerTest() {}
+
+  virtual void TearDown() {
+    manager_.reset();
+  }
 
   void ToggleAccept(int index, bool value) {
     manager_->ToggleAccept(index, value);
@@ -123,7 +142,9 @@ class PermissionBubbleManagerTest : public testing::Test {
 };
 
 PermissionBubbleManagerTest::PermissionBubbleManagerTest()
-    : manager_(new PermissionBubbleManager(NULL)),
+    : request1_(base::ASCIIToUTF16("test1")),
+      request2_(base::ASCIIToUTF16("test2")),
+      manager_(new PermissionBubbleManager(NULL)),
       ui_thread_(content::BrowserThread::UI, &message_loop_) {
   manager_->SetCoalesceIntervalForTesting(0);
 }
@@ -301,4 +322,42 @@ TEST_F(PermissionBubbleManagerTest, SequentialRequests) {
   Accept();
   EXPECT_FALSE(view_.shown_);
   EXPECT_TRUE(request2_.granted_);
+}
+
+TEST_F(PermissionBubbleManagerTest, SameRequestRejected) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  manager_->AddRequest(&request1_);
+  EXPECT_FALSE(request1_.finished_);
+
+  WaitForCoalescing();
+  EXPECT_TRUE(view_.shown_);
+  ASSERT_EQ(1u, view_.permission_requests_.size());
+  EXPECT_EQ(&request1_, view_.permission_requests_[0]);
+}
+
+TEST_F(PermissionBubbleManagerTest, DuplicateRequestRejected) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  MockRequest dupe_request(base::ASCIIToUTF16("test1"));
+  manager_->AddRequest(&dupe_request);
+  EXPECT_TRUE(dupe_request.finished_);
+  EXPECT_FALSE(request1_.finished_);
+}
+
+TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
+  manager_->SetView(&view_);
+  manager_->AddRequest(&request1_);
+  WaitForCoalescing();
+  manager_->AddRequest(&request2_);
+
+  MockRequest dupe_request(base::ASCIIToUTF16("test1"));
+  manager_->AddRequest(&dupe_request);
+  EXPECT_TRUE(dupe_request.finished_);
+  EXPECT_FALSE(request1_.finished_);
+
+  MockRequest dupe_request2(base::ASCIIToUTF16("test2"));
+  manager_->AddRequest(&dupe_request2);
+  EXPECT_TRUE(dupe_request2.finished_);
+  EXPECT_FALSE(request2_.finished_);
 }

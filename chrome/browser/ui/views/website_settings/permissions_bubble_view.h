@@ -25,6 +25,7 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   virtual void Show(const std::vector<PermissionBubbleRequest*>& requests,
                     const std::vector<bool>& accept_state,
                     bool customization_mode) OVERRIDE;
+  virtual bool CanAcceptRequestUpdate() OVERRIDE;
   virtual void Hide() OVERRIDE;
 
   void Closing();

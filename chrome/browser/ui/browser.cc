@@ -1653,7 +1653,8 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
       PermissionBubbleManager::FromWebContents(web_contents);
   if (PermissionBubbleManager::Enabled() && bubble_manager) {
     bubble_manager->AddRequest(
-        new RegisterProtocolHandlerPermissionRequest(registry, handler));
+        new RegisterProtocolHandlerPermissionRequest(registry, handler,
+                                                     url, user_gesture));
   } else {
     RegisterProtocolHandlerInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents), registry, handler);

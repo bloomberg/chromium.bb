@@ -77,10 +77,11 @@ class NotificationPermissionRequest : public PermissionBubbleRequest {
   virtual ~NotificationPermissionRequest();
 
   // PermissionBubbleDelegate:
+  virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetMessageTextFragment() const OVERRIDE;
-  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;
-  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual GURL GetRequestingHostname() const OVERRIDE;
   virtual void PermissionGranted() OVERRIDE;
   virtual void PermissionDenied() OVERRIDE;
   virtual void Cancelled() OVERRIDE;
@@ -126,6 +127,10 @@ NotificationPermissionRequest::NotificationPermissionRequest(
 
 NotificationPermissionRequest::~NotificationPermissionRequest() {}
 
+int NotificationPermissionRequest::GetIconID() const {
+  return IDR_INFOBAR_DESKTOP_NOTIFICATIONS;
+}
+
 base::string16 NotificationPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_NOTIFICATION_PERMISSIONS,
                                     display_name_);
@@ -136,14 +141,14 @@ NotificationPermissionRequest::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSIONS_FRAGMENT);
 }
 
-base::string16
-NotificationPermissionRequest::GetAlternateAcceptButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_YES);
+bool NotificationPermissionRequest::HasUserGesture() const {
+  // Currently notification permission requests are only issued on
+  // user gesture.
+  return true;
 }
 
-base::string16
-NotificationPermissionRequest::GetAlternateDenyButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_NO);
+GURL NotificationPermissionRequest::GetRequestingHostname() const {
+  return origin_;
 }
 
 void NotificationPermissionRequest::PermissionGranted() {

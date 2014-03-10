@@ -8,16 +8,18 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/gurl.h"
 
 class MockPermissionBubbleRequest : public PermissionBubbleRequest {
  public:
   explicit MockPermissionBubbleRequest(const std::string& text);
   virtual ~MockPermissionBubbleRequest();
 
+  virtual int GetIconID() const OVERRIDE;
   MOCK_CONST_METHOD0(GetMessageText, base::string16());
   MOCK_CONST_METHOD0(GetMessageTextFragment, base::string16());
-  MOCK_CONST_METHOD0(GetAlternateAcceptButtonText, base::string16());
-  MOCK_CONST_METHOD0(GetAlternateDenyButtonText, base::string16());
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual GURL GetRequestingHostname() const OVERRIDE;
   MOCK_METHOD0(PermissionGranted, void());
   MOCK_METHOD0(PermissionDenied, void());
   MOCK_METHOD0(Cancelled, void());

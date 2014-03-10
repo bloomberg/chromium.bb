@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_permission_request.h"
 
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -14,6 +15,10 @@ DownloadPermissionRequest::DownloadPermissionRequest(
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
 
+int DownloadPermissionRequest::GetIconID() const {
+  return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
+}
+
 base::string16 DownloadPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
 }
@@ -22,12 +27,18 @@ base::string16 DownloadPermissionRequest::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_PERMISSION_FRAGMENT);
 }
 
-base::string16 DownloadPermissionRequest::GetAlternateAcceptButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_ALLOW);
+bool DownloadPermissionRequest::HasUserGesture() const {
+  // TODO(gbillock): user gesture for multiple downloads is difficult to
+  // propagate, and the normal thing is that it is background.
+  return false;
 }
 
-base::string16 DownloadPermissionRequest::GetAlternateDenyButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_DENY);
+GURL DownloadPermissionRequest::GetRequestingHostname() const {
+  const content::WebContents* web_contents = host_->web_contents();
+  if (web_contents) {
+    return web_contents->GetURL();
+  }
+  return GURL();
 }
 
 void DownloadPermissionRequest::PermissionGranted() {

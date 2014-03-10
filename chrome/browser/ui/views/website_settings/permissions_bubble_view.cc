@@ -158,26 +158,15 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     button_layout->AddView(new views::View());
   }
 
-  // Lay out the Deny/Allow buttons. Use custom text if there is only
-  // one permission request.
-  base::string16 deny_text;
-  base::string16 allow_text;
-  if (requests.size() == 1) {
-    deny_text = requests[0]->GetAlternateDenyButtonText();
-    allow_text = requests[0]->GetAlternateAcceptButtonText();
-  }
-
-  if (deny_text.empty())
-    deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
-  if (allow_text.empty())
-    allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-
+  // Lay out the Deny/Allow buttons.
+  base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
   views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
   deny_button->SetStyle(views::Button::STYLE_BUTTON);
   deny_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   button_layout->AddView(deny_button);
   deny_ = deny_button;
 
+  base::string16 allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
   views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
   allow_button->SetStyle(views::Button::STYLE_BUTTON);
   allow_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
@@ -267,6 +256,12 @@ void PermissionBubbleViewViews::Show(
 
   bubble_delegate_->StartFade(true);
   bubble_delegate->SizeToContents();
+}
+
+bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {
+  // TODO(gbillock): support this.
+  // return bubble_delegate_ && bubble_delegate_->IsMouseHovered();
+  return false;
 }
 
 void PermissionBubbleViewViews::Hide() {

@@ -28,6 +28,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -45,10 +46,11 @@ class GeolocationPermissionRequest : public PermissionBubbleRequest {
   virtual ~GeolocationPermissionRequest();
 
   // PermissionBubbleDelegate:
+  virtual int GetIconID() const OVERRIDE;
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetMessageTextFragment() const OVERRIDE;
-  virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE;
-  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual GURL GetRequestingHostname() const OVERRIDE;
   virtual void PermissionGranted() OVERRIDE;
   virtual void PermissionDenied() OVERRIDE;
   virtual void Cancelled() OVERRIDE;
@@ -76,6 +78,10 @@ GeolocationPermissionRequest::GeolocationPermissionRequest(
 
 GeolocationPermissionRequest::~GeolocationPermissionRequest() {}
 
+int GeolocationPermissionRequest::GetIconID() const {
+  return IDR_GEOLOCATION_INFOBAR_ICON;
+}
+
 base::string16 GeolocationPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_, display_languages_));
@@ -85,14 +91,13 @@ base::string16 GeolocationPermissionRequest::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT);
 }
 
-base::string16
-GeolocationPermissionRequest::GetAlternateAcceptButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOW_BUTTON);
+bool GeolocationPermissionRequest::HasUserGesture() const {
+  // TODO(gbillock): plumb this through from GeolocationDispatcher.
+  return false;
 }
 
-base::string16
-GeolocationPermissionRequest::GetAlternateDenyButtonText() const {
-  return l10n_util::GetStringUTF16(IDS_GEOLOCATION_DENY_BUTTON);
+GURL GeolocationPermissionRequest::GetRequestingHostname() const {
+  return requesting_frame_;
 }
 
 void GeolocationPermissionRequest::PermissionGranted() {
@@ -197,6 +202,7 @@ void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame) {
+  // TODO(gbillock): cancel permission bubble request.
   CancelPendingInfobarRequest(PermissionRequestID(
       render_process_id, render_view_id, bridge_id, 0));
 }
