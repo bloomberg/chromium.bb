@@ -13268,7 +13268,7 @@ other types of suffix sets.
 
 <histogram name="Omnibox.QueryBookmarksTime">
   <obsolete>
-    Deprecated 2012-11-14. Replaced by Autocomplete.BookmarkProviderMatchTime.
+    Deprecated 2012-11-14. Replaced by Omnibox.ProviderTime.
   </obsolete>
   <summary>
     Time the HistoryContentProvider takes to perform a bookmark search.

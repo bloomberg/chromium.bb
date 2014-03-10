@@ -8,9 +8,7 @@
 #include <functional>
 #include <vector>
 
-#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -51,11 +49,8 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
        input.prevent_inline_autocomplete()))
     return;
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
   DoAutocomplete(input,
                  input.matches_requested() == AutocompleteInput::BEST_MATCH);
-  UMA_HISTOGRAM_TIMES("Autocomplete.BookmarkProviderMatchTime",
-                      base::TimeTicks::Now() - start_time);
 }
 
 BookmarkProvider::~BookmarkProvider() {}

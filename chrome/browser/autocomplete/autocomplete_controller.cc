@@ -7,7 +7,6 @@
 #include <set>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -165,12 +163,9 @@ AutocompleteController::AutocompleteController(
       in_start_(false),
       in_zero_suggest_(false),
       profile_(profile) {
-  // AND with the disabled providers, if any.
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
-  bool use_hqp = !!(provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK);
-  // TODO(mrossetti): Permanently modify the HistoryURLProvider to not search
-  // titles once HQP is turned on permanently.
-
+  if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
+    providers_.push_back(new BookmarkProvider(this, profile));
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
     providers_.push_back(new BuiltinProvider(this, profile));
 #if defined(OS_CHROMEOS)
@@ -180,14 +175,13 @@ AutocompleteController::AutocompleteController(
 #endif
   if (provider_types & AutocompleteProvider::TYPE_EXTENSION_APP)
     providers_.push_back(new ExtensionAppProvider(this, profile));
-  if (use_hqp)
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
     providers_.push_back(new HistoryQuickProvider(this, profile));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
     history_url_provider_ = new HistoryURLProvider(this, profile);
     providers_.push_back(history_url_provider_);
   }
-  // Search provider/"tab to search" can be used on all platforms other than
-  // Android.
+  // "Tab to search" can be used on all platforms other than Android.
 #if !defined(OS_ANDROID)
   if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
     keyword_provider_ = new KeywordProvider(this, profile);
@@ -200,18 +194,11 @@ AutocompleteController::AutocompleteController(
   }
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
     providers_.push_back(new ShortcutsProvider(this, profile));
-
-  // Create ZeroSuggest if it is enabled.
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
     zero_suggest_provider_ = ZeroSuggestProvider::Create(this, profile);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }
-
-  if ((provider_types & AutocompleteProvider::TYPE_BOOKMARK) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBookmarkAutocompleteProvider))
-    providers_.push_back(new BookmarkProvider(this, profile));
 
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->AddRef();
