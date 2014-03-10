@@ -113,7 +113,7 @@ void WebMediaPlayerClientImpl::setOpaque(bool opaque)
 
 double WebMediaPlayerClientImpl::volume() const
 {
-    return m_volume;
+    return mediaElement().playerVolume();
 }
 
 void WebMediaPlayerClientImpl::playbackStateChanged()
@@ -217,6 +217,8 @@ void WebMediaPlayerClientImpl::loadInternal()
         // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
         m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
+
+        m_webMediaPlayer->setVolume(mediaElement().playerVolume());
 
         // Tell WebMediaPlayer about the poster image URL.
         m_webMediaPlayer->setPoster(poster);
@@ -336,20 +338,6 @@ bool WebMediaPlayerClientImpl::supportsSave() const
     if (m_webMediaPlayer)
         return m_webMediaPlayer->supportsSave();
     return false;
-}
-
-void WebMediaPlayerClientImpl::setVolume(double volume)
-{
-    m_volume = volume;
-    if (m_webMediaPlayer && !m_muted)
-        m_webMediaPlayer->setVolume(volume);
-}
-
-void WebMediaPlayerClientImpl::setMuted(bool muted)
-{
-    m_muted = muted;
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->setVolume(muted ? 0 : m_volume);
 }
 
 void WebMediaPlayerClientImpl::setPoster(const KURL& poster)
@@ -558,8 +546,6 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     , m_delayingLoad(false)
     , m_preload(MediaPlayer::Auto)
     , m_needsWebLayerForVideo(false)
-    , m_volume(1.0)
-    , m_muted(false)
     , m_rate(1.0)
     , m_loadType(WebMediaPlayer::LoadTypeURL)
 {

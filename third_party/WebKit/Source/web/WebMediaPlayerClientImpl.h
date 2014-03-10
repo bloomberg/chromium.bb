@@ -110,8 +110,6 @@ public:
     virtual double rate() const OVERRIDE;
     virtual void setRate(double) OVERRIDE;
     virtual bool paused() const OVERRIDE;
-    virtual void setVolume(double) OVERRIDE;
-    virtual void setMuted(bool) OVERRIDE;
     virtual void setPoster(const WebCore::KURL&) OVERRIDE;
     virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
     virtual WebCore::MediaPlayer::ReadyState readyState() const OVERRIDE;
@@ -159,8 +157,6 @@ private:
     bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
     bool m_needsWebLayerForVideo;
-    double m_volume;
-    bool m_muted;
     double m_rate;
 
 #if ENABLE(WEB_AUDIO)

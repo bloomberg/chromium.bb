@@ -266,6 +266,10 @@ public:
 
     void scheduleEvent(PassRefPtr<Event>);
 
+    // Current volume that should be used by the webMediaPlayer(). This method takes muted state
+    // and m_mediaController multipliers into account.
+    double playerVolume() const;
+
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     virtual ~HTMLMediaElement();

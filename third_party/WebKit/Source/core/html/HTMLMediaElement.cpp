@@ -2086,15 +2086,17 @@ void HTMLMediaElement::setMuted(bool muted)
 {
     WTF_LOG(Media, "HTMLMediaElement::setMuted(%s)", boolString(muted));
 
-    if (m_muted != muted) {
-        m_muted = muted;
-        if (m_player) {
-            m_player->setMuted(m_muted);
-            if (hasMediaControls())
-                mediaControls()->changedMute();
-        }
-        scheduleEvent(EventTypeNames::volumechange);
-    }
+    if (m_muted == muted)
+        return;
+
+    m_muted = muted;
+
+    updateVolume();
+
+    if (hasMediaControls())
+        mediaControls()->changedMute();
+
+    scheduleEvent(EventTypeNames::volumechange);
 }
 
 void HTMLMediaElement::beginScrubbing()
@@ -2964,9 +2966,15 @@ bool HTMLMediaElement::pausedForUserInteraction() const
 
 void HTMLMediaElement::updateVolume()
 {
-    if (!m_player)
-        return;
+    if (webMediaPlayer())
+        webMediaPlayer()->setVolume(playerVolume());
 
+    if (hasMediaControls())
+        mediaControls()->changedVolume();
+}
+
+double HTMLMediaElement::playerVolume() const
+{
     double volumeMultiplier = 1;
     bool shouldMute = m_muted;
 
@@ -2975,11 +2983,7 @@ void HTMLMediaElement::updateVolume()
         shouldMute = m_mediaController->muted();
     }
 
-    m_player->setMuted(shouldMute);
-    m_player->setVolume(m_volume * volumeMultiplier);
-
-    if (hasMediaControls())
-        mediaControls()->changedVolume();
+    return shouldMute ? 0 : m_volume * volumeMultiplier;
 }
 
 void HTMLMediaElement::updatePlayState()
@@ -3011,7 +3015,7 @@ void HTMLMediaElement::updatePlayState()
             // Set rate, muted before calling play in case they were set before the media engine was setup.
             // The media engine should just stash the rate and muted values since it isn't already playing.
             m_player->setRate(m_playbackRate);
-            m_player->setMuted(m_muted);
+            updateVolume();
 
             m_player->play();
         }

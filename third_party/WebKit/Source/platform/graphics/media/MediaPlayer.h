@@ -142,9 +142,6 @@ public:
 
     virtual bool paused() const = 0;
 
-    virtual void setVolume(double) = 0;
-    virtual void setMuted(bool) = 0;
-
     virtual void setPoster(const KURL&) = 0;
 
     enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
