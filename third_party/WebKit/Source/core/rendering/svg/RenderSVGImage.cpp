@@ -142,7 +142,9 @@ void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
             childPaintInfo.applyTransform(m_localTransform, false);
         }
         if (childPaintInfo.phase == PaintPhaseForeground && !m_objectBoundingBox.isEmpty()) {
-            SVGRenderingContext renderingContext(this, childPaintInfo);
+            // SVGRenderingContext may taint the state - make sure we're always saving.
+            SVGRenderingContext renderingContext(this, childPaintInfo, stateSaver.saved() ?
+                SVGRenderingContext::DontSaveGraphicsContext : SVGRenderingContext::SaveGraphicsContext);
 
             if (renderingContext.isRenderingPrepared()) {
                 if (style()->svgStyle()->bufferedRendering() == BR_STATIC && renderingContext.bufferForeground(m_bufferedForeground))
