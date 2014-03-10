@@ -9,7 +9,8 @@ function test()
 {
     removeVendorPrefixes();
 
-    testData = [{ description: 'null',               name: '\u0000' },
+    testData = [{ description: 'empty string',       name: '' },
+                { description: 'null',               name: '\u0000' },
                 { description: 'faihu',              name: '\ud800\udf46' },
                 { description: 'unpaired surrogate', name: '\ud800' },
                 { description: 'fffe',               name: '\ufffe' },
@@ -43,9 +44,10 @@ function openNextDatabase()
 function addAKey()
 {
     db = event.target.result;
-    objectStore = evalAndLog("objectStore = db.createObjectStore(testData[nextToOpen].name);");
-    key = evalAndLog("key = testData[nextToOpen].name");
-    request = evalAndLog("request = objectStore.add(key, key);");
+    evalAndLog("objectStore = db.createObjectStore(testData[nextToOpen].name);");
+    evalAndLog("index = objectStore.createIndex(testData[nextToOpen].name, 'keyPath');");
+    evalAndLog("key = testData[nextToOpen].name");
+    evalAndLog("request = objectStore.add(key, key);");
     request.onsuccess = closeDatabase;
     request.onerror = unexpectedErrorCallback;
 }
@@ -73,17 +75,17 @@ function verifyNextDatabase()
 
 function getAKey()
 {
-    trans = evalAndLog("trans = event.target.transaction");
-    objectStore = evalAndLog("objectStore = trans.objectStore(testData[nextToOpen].name);");
-    key = evalAndLog("key = testData[nextToOpen].name");
-    request = evalAndLog("request = objectStore.openCursor();");
+    evalAndLog("trans = event.target.transaction");
+    evalAndLog("objectStore = trans.objectStore(testData[nextToOpen].name);");
+    evalAndLog("key = testData[nextToOpen].name");
+    evalAndLog("request = objectStore.openCursor();");
     request.onerror = unexpectedErrorCallback;
     request.onsuccess = openCursorSuccess;
 }
 
 function openCursorSuccess()
 {
-    cursor = evalAndLog("cursor = event.target.result;");
+    evalAndLog("cursor = event.target.result;");
     shouldBe("cursor.key", "testData[nextToOpen].name");
     shouldBe("cursor.value", "testData[nextToOpen].name");
     if (++nextToOpen < testData.length) {

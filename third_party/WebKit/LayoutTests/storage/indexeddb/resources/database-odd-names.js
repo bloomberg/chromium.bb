@@ -9,7 +9,8 @@ function test()
 {
     removeVendorPrefixes();
 
-    testData = [{ description: 'null',               name: '\u0000' },
+    testData = [{ description: 'empty string',       name: '' },
+                { description: 'null',               name: '\u0000' },
                 { description: 'faihu',              name: '\ud800\udf46' },
                 { description: 'unpaired surrogate', name: '\ud800' },
                 { description: 'fffe',               name: '\ufffe' },
