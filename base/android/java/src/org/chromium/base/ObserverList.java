@@ -80,7 +80,7 @@ public class ObserverList<E> implements Iterable<E> {
 
         if (mIterationDepth == 0) {
             // No one is iterating over the list.
-            mObservers.remove(obs);
+            mObservers.remove(index);
         } else {
             mObservers.set(index, null);
         }
