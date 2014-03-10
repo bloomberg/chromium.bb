@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_DELEGATE_H_
-#define COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_CLIENT_H_
+#define COMPONENTS_SIGNIN_CORE_SIGNIN_CLIENT_H_
 
-// A delegate interface that needs to be supplied to the Signin component by
-// its embedder.
-class SigninManagerDelegate {
+// An interface that needs to be supplied to the Signin component by its
+// embedder.
+class SigninClient {
  public:
-  virtual ~SigninManagerDelegate() {}
+  virtual ~SigninClient() {}
 
   // Returns true if the cookie policy for the execution context of
   // the SigninManager allows cookies for the Google signin domain.
   virtual bool AreSigninCookiesAllowed() = 0;
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_CLIENT_H_

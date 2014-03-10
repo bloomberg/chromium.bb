@@ -47,7 +47,7 @@ class ProfileIOData;
 class PrefService;
 class SigninAccountIdHelper;
 class SigninGlobalError;
-class SigninManagerDelegate;
+class SigninClient;
 
 class SigninManager : public SigninManagerBase,
                       public GaiaAuthConsumer,
@@ -70,7 +70,7 @@ class SigninManager : public SigninManagerBase,
   // OneClickSigninHelper.
   static const char* kChromeSigninEffectiveSite;
 
-  explicit SigninManager(scoped_ptr<SigninManagerDelegate> delegate);
+  explicit SigninManager(scoped_ptr<SigninClient> client);
   virtual ~SigninManager();
 
   // Returns true if the username is allowed based on the policy string.
@@ -286,7 +286,7 @@ class SigninManager : public SigninManagerBase,
   // but before signin is complete.
   OAuthTokenFetchedCallback oauth_token_fetched_callback_;
 
-  scoped_ptr<SigninManagerDelegate> delegate_;
+  scoped_ptr<SigninClient> client_;
 
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).

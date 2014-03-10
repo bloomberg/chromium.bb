@@ -28,8 +28,8 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
+#include "components/signin/core/signin_client.h"
 #include "components/signin/core/signin_manager_cookie_helper.h"
-#include "components/signin/core/signin_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -82,14 +82,13 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
           .find(kChromiumSyncService) != std::string::npos;
 }
 
-SigninManager::SigninManager(scoped_ptr<SigninManagerDelegate> delegate)
+SigninManager::SigninManager(scoped_ptr<SigninClient> client)
     : prohibit_signout_(false),
       had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
       signin_host_id_(ChildProcessHost::kInvalidUniqueID),
-      delegate_(delegate.Pass()) {
-}
+      client_(client.Pass()) {}
 
 void SigninManager::SetSigninProcess(int process_id) {
   if (process_id == signin_host_id_)

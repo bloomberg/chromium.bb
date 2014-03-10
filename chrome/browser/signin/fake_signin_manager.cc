@@ -8,7 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_manager_delegate.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -41,8 +41,7 @@ BrowserContextKeyedService* FakeSigninManagerBase::Build(
 #if !defined (OS_CHROMEOS)
 
 FakeSigninManager::FakeSigninManager(Profile* profile)
-    : SigninManager(scoped_ptr<SigninManagerDelegate>(
-        new ChromeSigninManagerDelegate(profile))) {
+    : SigninManager(scoped_ptr<SigninClient>(new ChromeSigninClient(profile))) {
 }
 
 FakeSigninManager::~FakeSigninManager() {

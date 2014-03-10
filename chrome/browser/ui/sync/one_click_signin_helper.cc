@@ -35,7 +35,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/signin/chrome_signin_manager_delegate.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -60,7 +60,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/signin/core/signin_manager_delegate.h"
+#include "components/signin/core/signin_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -697,7 +697,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       !profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
     return false;
 
-  if (!ChromeSigninManagerDelegate::ProfileAllowsSigninCookies(profile))
+  if (!ChromeSigninClient::ProfileAllowsSigninCookies(profile))
     return false;
 
   if (!email.empty()) {
@@ -801,7 +801,7 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   if (!io_data->google_services_username()->GetValue().empty())
     return DONT_OFFER;
 
-  if (!ChromeSigninManagerDelegate::SettingsAllowSigninCookies(
+  if (!ChromeSigninClient::SettingsAllowSigninCookies(
           io_data->GetCookieSettings()))
     return DONT_OFFER;
 
