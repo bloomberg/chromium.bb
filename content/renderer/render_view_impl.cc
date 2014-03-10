@@ -379,8 +379,13 @@ Referrer RenderViewImpl::GetReferrerFromRequest(
 }
 
 // static
-void RenderViewImpl::NotifyTimezoneChange() {
+void RenderViewImpl::NotifyTimezoneChange(blink::WebFrame* frame) {
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Context::Scope context_scope(frame->mainWorldScriptContext());
   v8::Date::DateTimeConfigurationChangeNotification(v8::Isolate::GetCurrent());
+  blink::WebFrame* child = frame->firstChild();
+  for (; child; child = child->nextSibling())
+    NotifyTimezoneChange(child);
 }
 
 // static
@@ -3773,7 +3778,8 @@ void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
 }
 
 void RenderViewImpl::OnUpdateTimezone() {
-  NotifyTimezoneChange();
+  if (webview())
+    NotifyTimezoneChange(webview()->mainFrame());
 }
 
 void RenderViewImpl::OnEnumerateDirectoryResponse(
