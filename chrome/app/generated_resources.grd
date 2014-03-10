@@ -2208,19 +2208,31 @@ Even if you have downloaded files from this website before, the website might ha
 
       <!-- "Application Information" dialog -->
       <if expr="not use_titlecase">
-        <message name="IDS_APPLICATION_INFO_TITLE" desc="Title of the dialog that contains information about the current application.">
-          Application information
-        </message>
         <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="Button in the Application Information Dialog that closes the dialog">
           Close
         </message>
+        <message name="IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE" desc="Title of the first tab in the dialog, which displays general summary information about the app. ">
+          Summary
+        </message>
+        <message name="IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE" desc="Title of the second tab in the dialog, which lists the specific permissions that the app has.">
+          Permissions
+        </message>
+        <message name="IDS_APPLICATION_INFO_MANAGE_TAB_TITLE" desc="Title of the third tab in the dialog, which displays the app's usage information and some tools for managing the app's status.">
+          Manage
+      </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_APPLICATION_INFO_TITLE" desc="In Title Case: title of the dialog that contains information about the current application.">
-          Application Information
-        </message>
         <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="In Title Case: Button in the Application Information Dialog that closes the dialog">
           Close
+        </message>
+        <message name="IDS_APPLICATION_INFO_SUMMARY_TAB_TITLE" desc="In Title Case: Title of the first tab in the dialog, which displays general summary information about the app. ">
+          Summary
+        </message>
+        <message name="IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE" desc="In Title Case: Title of the second tab in the dialog, which lists the specific permissions that the app has.">
+          Permissions
+        </message>
+        <message name="IDS_APPLICATION_INFO_MANAGE_TAB_TITLE" desc="In Title Case: Title of the third tab in the dialog, which displays the app's usage information and some tools for managing the app's status.">
+          Manage
         </message>
       </if>
 
