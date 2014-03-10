@@ -23,14 +23,14 @@ scanned_src_files_server = 				\
 dist_man3_MANS= $(shell find man/man3/ -name "wl_*.3" -printf "man/man3/%P\n")
 
 xml/client/index.xml: $(scanned_src_files_client) wayland.doxygen
-	$(AM_V_GEN)$(MKDIR_P) xml/client
+	$(AM_V_GEN)$(MKDIR_P) xml/client && \
 	(cat wayland.doxygen; \
           echo "GENERATE_XML=YES"; \
           echo "XML_OUTPUT=xml/client"; \
           echo "INPUT= $(scanned_src_files_client)"; \
           ) | doxygen -
 xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen
-	$(AM_V_GEN)$(MKDIR_P) xml/server
+	$(AM_V_GEN)$(MKDIR_P) xml/server && \
 	(cat wayland.doxygen; \
           echo "GENERATE_XML=YES"; \
           echo "XML_OUTPUT=xml/server"; \
@@ -38,7 +38,7 @@ xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen
           ) | doxygen -
 
 man/man3/wl_display.3: $(scanned_src_files_client) $(scanned_src_files_server)
-	(cat wayland.doxygen; \
+	$(AM_V_GEN)(cat wayland.doxygen; \
           echo "GENERATE_MAN=YES"; \
           echo "MAN_OUTPUT=man"; \
           echo "JAVADOC_AUTOBRIEF=NO"; \
