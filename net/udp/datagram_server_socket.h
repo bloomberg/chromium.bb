@@ -103,6 +103,9 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
   // Set the Differentiated Services Code Point. May do nothing on
   // some platforms. Returns a network error code.
   virtual int SetDiffServCodePoint(DiffServCodePoint dscp) = 0;
+
+  // Resets the thread to be used for thread-safety checks.
+  virtual void DetachFromThread() = 0;
 };
 
 }  // namespace net

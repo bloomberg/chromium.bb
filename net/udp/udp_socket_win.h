@@ -161,6 +161,9 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // do anything on some platforms.
   int SetDiffServCodePoint(DiffServCodePoint dscp);
 
+  // Resets the thread to be used for thread-safety checks.
+  void DetachFromThread();
+
  private:
   enum SocketOptions {
     SOCKET_OPTION_REUSE_ADDRESS  = 1 << 0,

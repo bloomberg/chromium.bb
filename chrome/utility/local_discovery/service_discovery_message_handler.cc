@@ -66,38 +66,36 @@ class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
  public:
   PreCreatedMDnsSocketFactory() {}
   virtual ~PreCreatedMDnsSocketFactory() {
-    Reset();
+    // Not empty if process exits too fast, before starting mDns code. If
+    // happened, destructors may crash accessing destroyed global objects.
+    sockets_.weak_clear();
   }
 
   // net::MDnsSocketFactory implementation:
   virtual void CreateSockets(
       ScopedVector<net::DatagramServerSocket>* sockets) OVERRIDE {
-    for (size_t i = 0; i < sockets_.size(); ++i) {
-      // Takes ownership of sockets_[i].socket;
-      ScopedSocketFactory platform_factory(sockets_[i].socket);
-      scoped_ptr<net::DatagramServerSocket> socket(
-          net::CreateAndBindMDnsSocket(sockets_[i].address_family,
-                                       sockets_[i].interface_index));
-      if (socket)
-        sockets->push_back(socket.release());
-    }
-    sockets_.clear();
+    sockets->swap(sockets_);
+    Reset();
   }
 
-  void AddSocket(const SocketInfo& socket) {
-    sockets_.push_back(socket);
+  void AddSocket(const SocketInfo& socket_info) {
+    // Takes ownership of socket_info.socket;
+    ScopedSocketFactory platform_factory(socket_info.socket);
+    scoped_ptr<net::DatagramServerSocket> socket(
+        net::CreateAndBindMDnsSocket(socket_info.address_family,
+                                     socket_info.interface_index));
+    if (socket) {
+      socket->DetachFromThread();
+      sockets_.push_back(socket.release());
+    }
   }
 
   void Reset() {
-    for (size_t i = 0; i < sockets_.size(); ++i) {
-      if (sockets_[i].socket != net::kInvalidSocket)
-        ClosePlatformSocket(sockets_[i].socket);
-    }
     sockets_.clear();
   }
 
  private:
-  std::vector<SocketInfo> sockets_;
+  ScopedVector<net::DatagramServerSocket> sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(PreCreatedMDnsSocketFactory);
 };
