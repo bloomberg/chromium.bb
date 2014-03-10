@@ -38,9 +38,18 @@ base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, add the current resource module as a data packs.
   data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
-  AddDataPackFromPath(
-      GetResourcesPakFilePath("chrome_100_percent.pak"),
-      SCALE_FACTOR_100P);
+
+  if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
+    AddDataPackFromPath(
+        GetResourcesPakFilePath("chrome_100_percent.pak"),
+        SCALE_FACTOR_100P);
+  }
+  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
+    DCHECK(gfx::IsHighDPIEnabled());
+    AddDataPackFromPath(
+        GetResourcesPakFilePath("chrome_200_percent.pak"),
+        SCALE_FACTOR_200P);
+  }
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
