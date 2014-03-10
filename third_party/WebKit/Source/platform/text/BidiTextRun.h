@@ -37,6 +37,7 @@
 
 namespace WebCore {
 
+PLATFORM_EXPORT TextDirection directionForRun(TextRun&, bool& hasStrongDirectionality);
 PLATFORM_EXPORT TextDirection determineDirectionality(const String& value, bool& hasStrongDirectionality);
 PLATFORM_EXPORT TextRun textRunWithDirectionality(const String& value, bool& hasStrongDirectionality);
 

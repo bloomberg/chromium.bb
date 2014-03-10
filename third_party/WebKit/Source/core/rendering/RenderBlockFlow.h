@@ -174,6 +174,8 @@ public:
     // Direction resolved from string value.
     static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     // Explicit direction.
     static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextDirection,

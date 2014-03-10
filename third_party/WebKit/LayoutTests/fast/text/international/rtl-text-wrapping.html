@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <style>
+            div  {
+                font-size: 24pt;
+                border: 1px solid silver;
+                margin: 5px;
+            }
+            section {
+                position: relative;
+                padding: 0;
+            }
+        </style>
+        <script src="../../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <section id="test">
+            <div style="position: absolute; left: 200px;">[به کبند</div>
+            <div style="display: inline-block;">[به کبند</div><br>
+            <div id="reference" style="display: inline-block; white-space: nowrap;">[به کبند</div>
+        </section>
+        <p>
+            The four blocks above should all be the same size and none
+            of them should wrap.
+        </p>
+        <script>
+            var testElements = document.getElementById('test').
+                getElementsByTagName('div');
+            var referenceHeight = document.getElementById('reference').
+                getBoundingClientRect().height;
+            
+            for (var el, i = 0; el = testElements[i]; i++) {
+                var height = el.getBoundingClientRect().height;
+                if (referenceHeight == height) {
+                    testPassed('Height of element ' + i +
+                        ' matched height of reference element.');
+                }
+                else {
+                    testFailed('Height of element ' + i + ' was ' +
+                        height + 'px, expected ' +
+                        referenceHeight + 'px.');
+                }
+            }
+        </script>
+    </body>
+</html>
+
