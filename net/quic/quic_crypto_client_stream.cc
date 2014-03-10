@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
+#include "base/metrics/histogram.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -422,13 +423,16 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
     return OK;
   }
 
+  read_start_time_ = base::TimeTicks::Now();
   generation_counter_ = cached->generation_counter();
   next_state_ = STATE_LOAD_QUIC_SERVER_INFO_COMPLETE;
 
-  // TODO(rtenneti): If multiple tabs load the same URL, all requests except for
-  // the first request send InchoateClientHello. Fix the code to handle multiple
-  // requests. A possible solution is to wait for the first request to finish
-  // and use the data from the disk cache for all requests.
+  // TODO(rtenneti): Use host:port to access QUIC server information from disk
+  // cache. If multiple tabs load URLs with same hostname but different
+  // ports, all requests except for the first request send InchoateClientHello.
+  // Fix the code to handle multiple requests. A possible solution is to wait
+  // for the first request to finish and use the data from the disk cache for
+  // all requests.
   // We may need to call quic_server_info->Persist later.
   // quic_server_info->Persist requires quic_server_info to be ready, so we
   // always call WaitForDataReady, even though we might have initialized
@@ -460,6 +464,9 @@ void QuicCryptoClientStream::LoadQuicServerInfo(
   if (!cached->IsEmpty()) {
     return;
   }
+
+  UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheReadTime",
+                      base::TimeTicks::Now() - read_start_time_);
 
   if (disk_cache_load_result_ != OK || !cached->LoadQuicServerInfo(
           session()->connection()->clock()->WallNow())) {
