@@ -347,6 +347,15 @@ cr.define('options', function() {
   };
 
   /**
+   * Closes all overlays and updates the history after each closed overlay.
+   */
+  OptionsPage.closeAllOverlays = function() {
+    while (this.isOverlayVisible_()) {
+      this.closeOverlay();
+    }
+  };
+
+  /**
    * Cancels (closes) the overlay, due to the user pressing <Esc>.
    */
   OptionsPage.cancelOverlay = function() {

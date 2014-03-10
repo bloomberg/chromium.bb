@@ -226,7 +226,7 @@ cr.define('options', function() {
     onSuccess_: function() {
       this.updateImportInProgress_(false);
       options.ManagedUserListData.resetPromise();
-      OptionsPage.closeOverlay();
+      OptionsPage.closeAllOverlays();
     },
   };
 
