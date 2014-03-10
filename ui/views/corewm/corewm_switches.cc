@@ -10,8 +10,6 @@ namespace views {
 namespace corewm {
 namespace switches {
 
-const char kNoDropShadows[] = "aura-no-shadows";
-
 // If present animations are disabled.
 const char kWindowAnimationsDisabled[] =
     "views-corewm-window-animations-disabled";

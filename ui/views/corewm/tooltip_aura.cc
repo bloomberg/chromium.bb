@@ -14,14 +14,11 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
 const SkColor kTooltipBackground = 0xFFFFFFCC;
-const SkColor kTooltipBorder = 0xFF646450;
-const int kTooltipBorderWidth = 1;
 const int kTooltipHorizontalPadding = 3;
 
 // Max visual tooltip width. If a tooltip is greater than this width, it will
@@ -65,10 +62,6 @@ TooltipAura::TooltipAura(gfx::ScreenType screen_type)
       tooltip_window_(NULL) {
   label_.set_background(
       views::Background::CreateSolidBackground(kTooltipBackground));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoDropShadows)) {
-    label_.SetBorder(
-        views::Border::CreateSolidBorder(kTooltipBorderWidth, kTooltipBorder));
-  }
   label_.set_owned_by_client();
   label_.SetMultiLine(true);
   label_.SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -240,10 +233,6 @@ void TooltipAura::SetText(aura::Window* window,
   int width = max_width + 2 * kTooltipHorizontalPadding;
   int height = label_.GetHeightForWidth(max_width) +
       2 * kTooltipVerticalPadding;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoDropShadows)) {
-    width += 2 * kTooltipBorderWidth;
-    height += 2 * kTooltipBorderWidth;
-  }
   CreateWidget();
   SetTooltipBounds(location, width, height);
 }

@@ -82,7 +82,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -771,8 +770,6 @@ Shell::~Shell() {
 }
 
 void Shell::Init() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
   delegate_->PreInit();
   if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
     display_manager_->SetSecondDisplayMode(
@@ -952,11 +949,9 @@ void Shell::Init() {
   new_window_delegate_.reset(delegate_->CreateNewWindowDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
 
-  if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
-    resize_shadow_controller_.reset(new internal::ResizeShadowController());
-    shadow_controller_.reset(
-        new views::corewm::ShadowController(activation_client_));
-  }
+  resize_shadow_controller_.reset(new internal::ResizeShadowController());
+  shadow_controller_.reset(
+      new views::corewm::ShadowController(activation_client_));
 
   // Create system_tray_notifier_ before the delegate.
   system_tray_notifier_.reset(new ash::SystemTrayNotifier());

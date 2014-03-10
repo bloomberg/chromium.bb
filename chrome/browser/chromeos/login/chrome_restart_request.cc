@@ -194,7 +194,6 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kEnableBrowserTextSubpixelPositioning,
       ::switches::kEnableWebkitTextSubpixelPositioning,
       policy::switches::kDeviceManagementUrl,
-      views::corewm::switches::kNoDropShadows,
       views::corewm::switches::kWindowAnimationsDisabled,
   };
   command_line->CopySwitchesFrom(base_command_line,
