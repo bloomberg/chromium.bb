@@ -718,7 +718,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     applyAnimatedProperties(state, element);
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
-    if (element->hasTagName(bodyTag))
+    if (isHTMLBodyElement(*element))
         document().textLinkColors().setTextColor(state.style()->color());
 
     setAnimationUpdateIfNeeded(state, *element);

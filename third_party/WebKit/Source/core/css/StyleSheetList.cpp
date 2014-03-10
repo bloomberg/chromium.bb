@@ -76,9 +76,7 @@ HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
     // But unicity of stylesheet ids is good practice anyway ;)
     // FIXME: We should figure out if we should change this or fix the spec.
     Element* element = m_treeScope->getElementById(name);
-    if (element && element->hasTagName(styleTag))
-        return toHTMLStyleElement(element);
-    return 0;
+    return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : 0;
 }
 
 CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)

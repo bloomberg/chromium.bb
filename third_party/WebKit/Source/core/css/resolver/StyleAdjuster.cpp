@@ -36,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -43,6 +44,7 @@
 #include "core/rendering/style/GridPosition.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "core/svg/SVGSVGElement.h"
 #include "platform/Length.h"
 #include "platform/transforms/TransformOperations.h"
 #include "wtf/Assertions.h"
@@ -203,12 +205,12 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
             if (e->hasTagName(tdTag)) {
                 style->setDisplay(TABLE_CELL);
                 style->setFloating(NoFloat);
-            } else if (e->hasTagName(tableTag)) {
+            } else if (isHTMLTableElement(*e)) {
                 style->setDisplay(style->isDisplayInlineType() ? INLINE_TABLE : TABLE);
             }
         }
 
-        if (e && (e->hasTagName(tdTag) || e->hasTagName(thTag))) {
+        if (e && isHTMLTableCellElement(*e)) {
             if (style->whiteSpace() == KHTML_NOWRAP) {
                 // Figure out if we are really nowrapping or if we should just
                 // use normal instead. If the width of the cell is fixed, then
@@ -221,18 +223,18 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         }
 
         // Tables never support the -webkit-* values for text-align and will reset back to the default.
-        if (e && e->hasTagName(tableTag) && (style->textAlign() == WEBKIT_LEFT || style->textAlign() == WEBKIT_CENTER || style->textAlign() == WEBKIT_RIGHT))
+        if (isHTMLTableElement(e) && (style->textAlign() == WEBKIT_LEFT || style->textAlign() == WEBKIT_CENTER || style->textAlign() == WEBKIT_RIGHT))
             style->setTextAlign(TASTART);
 
         // Frames and framesets never honor position:relative or position:absolute. This is necessary to
         // fix a crash where a site tries to position these objects. They also never honor display.
-        if (e && (e->hasTagName(frameTag) || e->hasTagName(framesetTag))) {
+        if (e && (isHTMLFrameElement(*e) || isHTMLFrameSetElement(*e))) {
             style->setPosition(StaticPosition);
             style->setDisplay(BLOCK);
         }
 
         // Ruby text does not support float or position. This might change with evolution of the specification.
-        if (e && e->hasTagName(rtTag)) {
+        if (isHTMLRTElement(e)) {
             style->setPosition(StaticPosition);
             style->setFloating(NoFloat);
         }
@@ -242,7 +244,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         if (e && e->hasTagName(thTag) && style->textAlign() == TASTART)
             style->setTextAlign(CENTER);
 
-        if (e && e->hasTagName(legendTag))
+        if (isHTMLLegendElement(e))
             style->setDisplay(BLOCK);
 
         // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
@@ -316,13 +318,13 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     }
 
     // Textarea considers overflow visible as auto.
-    if (e && e->hasTagName(textareaTag)) {
+    if (isHTMLTextAreaElement(e)) {
         style->setOverflowX(style->overflowX() == OVISIBLE ? OAUTO : style->overflowX());
         style->setOverflowY(style->overflowY() == OVISIBLE ? OAUTO : style->overflowY());
     }
 
     // For now, <marquee> requires an overflow clip to work properly.
-    if (e && e->hasTagName(marqueeTag)) {
+    if (isHTMLMarqueeElement(e)) {
         style->setOverflowX(OHIDDEN);
         style->setOverflowY(OHIDDEN);
     }
@@ -367,7 +369,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     if (e && e->isFormControlElement() && style->fontSize() >= 11) {
         // Don't apply intrinsic margins to image buttons. The designer knows how big the images are,
         // so we have to treat all image buttons as though they were explicitly sized.
-        if (!e->hasTagName(inputTag) || !toHTMLInputElement(e)->isImageButton())
+        if (!isHTMLInputElement(*e) || !toHTMLInputElement(e)->isImageButton())
             addIntrinsicMargins(style);
     }
 
@@ -400,16 +402,16 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
             style->setOverflowX(OVISIBLE);
 
         // Only the root <svg> element in an SVG document fragment tree honors css position
-        if (!(e->hasTagName(SVGNames::svgTag) && e->parentNode() && !e->parentNode()->isSVGElement()))
+        if (!(isSVGSVGElement(*e) && e->parentNode() && !e->parentNode()->isSVGElement()))
             style->setPosition(RenderStyle::initialPosition());
 
         // RenderSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should
         // not be scaled again.
-        if (e->hasTagName(SVGNames::foreignObjectTag))
+        if (isSVGForeignObjectElement(*e))
             style->setEffectiveZoom(RenderStyle::initialZoom());
 
         // SVG text layout code expects us to be a block-level style element.
-        if ((e->hasTagName(SVGNames::foreignObjectTag) || e->hasTagName(SVGNames::textTag)) && style->isDisplayInlineType())
+        if ((isSVGForeignObjectElement(*e) || isSVGTextElement(*e)) && style->isDisplayInlineType())
             style->setDisplay(BLOCK);
     }
 }

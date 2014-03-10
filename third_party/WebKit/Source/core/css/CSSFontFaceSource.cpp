@@ -29,6 +29,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSCustomFontData.h"
 #include "core/css/CSSFontFace.h"
+#include "core/dom/ElementTraversal.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -175,17 +176,8 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 if (!m_externalSVGFontElement)
                     return nullptr;
 
-                SVGFontFaceElement* fontFaceElement = 0;
-
                 // Select first <font-face> child
-                for (Node* fontChild = m_externalSVGFontElement->firstChild(); fontChild; fontChild = fontChild->nextSibling()) {
-                    if (fontChild->hasTagName(SVGNames::font_faceTag)) {
-                        fontFaceElement = toSVGFontFaceElement(fontChild);
-                        break;
-                    }
-                }
-
-                if (fontFaceElement) {
+                if (SVGFontFaceElement* fontFaceElement = Traversal<SVGFontFaceElement>::firstChild(*m_externalSVGFontElement)) {
                     if (!m_svgFontFaceElement) {
                         // We're created using a CSS @font-face rule, that means we're not associated with a SVGFontFaceElement.
                         // Use the imported <font-face> tag as referencing font-face element for these cases.

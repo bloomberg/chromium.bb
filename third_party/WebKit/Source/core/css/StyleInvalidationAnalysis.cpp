@@ -157,7 +157,7 @@ void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheet
     }
     if (styleSheetContents->hasSingleOwnerNode()) {
         Node* ownerNode = styleSheetContents->singleOwnerNode();
-        if (ownerNode && ownerNode->hasTagName(HTMLNames::styleTag) && toHTMLStyleElement(ownerNode)->isRegisteredAsScoped()) {
+        if (isHTMLStyleElement(ownerNode) && toHTMLStyleElement(*ownerNode).isRegisteredAsScoped()) {
             m_scopingNodes.append(determineScopingNodeForStyleScoped(toHTMLStyleElement(ownerNode), styleSheetContents));
             return;
         }

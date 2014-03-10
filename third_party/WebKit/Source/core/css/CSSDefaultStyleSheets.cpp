@@ -148,7 +148,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
     }
 
     // FIXME: We should assert that this sheet only contains rules for <video> and <audio>.
-    if (!m_mediaControlsStyleSheet && (element->hasTagName(videoTag) || element->hasTagName(audioTag))) {
+    if (!m_mediaControlsStyleSheet && (isHTMLVideoElement(*element) || isHTMLAudioElement(*element))) {
         String mediaRules = String(mediaControlsUserAgentStyleSheet, sizeof(mediaControlsUserAgentStyleSheet)) + RenderTheme::theme().extraMediaControlsStyleSheet();
         m_mediaControlsStyleSheet = parseUASheet(mediaRules);
         m_defaultStyle->addRulesFromSheet(mediaControlsStyleSheet(), screenEval());

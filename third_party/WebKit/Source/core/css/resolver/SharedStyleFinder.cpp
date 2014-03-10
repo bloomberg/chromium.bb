@@ -58,7 +58,7 @@ using namespace HTMLNames;
 
 bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const
 {
-    if (!candidate.hasTagName(inputTag) || !element().hasTagName(inputTag))
+    if (!isHTMLInputElement(candidate) || !isHTMLInputElement(element()))
         return false;
 
     HTMLInputElement& candidateInput = toHTMLInputElement(candidate);
@@ -151,7 +151,7 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Ele
     // FIXME: Consider removing this, it's unlikely we'll have so many progress elements
     // that sharing the style makes sense. Instead we should just not support style sharing
     // for them.
-    if (element().hasTagName(progressTag)) {
+    if (isHTMLProgressElement(element())) {
         if (element().shouldAppearIndeterminate() != candidate.shouldAppearIndeterminate())
             return false;
     }

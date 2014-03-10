@@ -730,7 +730,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoHover:
             // If we're in quirks mode, then hover should never match anchors with no
             // href and *:hover should not match anything. This is important for sites like wsj.com.
-            if (m_strictParsing || context.isSubSelector || (selector.m_match == CSSSelector::Tag && selector.tagQName() != anyQName() && !element.hasTagName(aTag)) || element.isLink()) {
+            if (m_strictParsing || context.isSubSelector || (selector.m_match == CSSSelector::Tag && selector.tagQName() != anyQName() && !isHTMLAnchorElement(element)) || element.isLink()) {
                 if (m_mode == ResolvingStyle) {
                     if (context.elementStyle)
                         context.elementStyle->setAffectedByHover();
@@ -744,7 +744,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoActive:
             // If we're in quirks mode, then :active should never match anchors with no
             // href and *:active should not match anything.
-            if (m_strictParsing || context.isSubSelector || (selector.m_match == CSSSelector::Tag && selector.tagQName() != anyQName() && !element.hasTagName(aTag)) || element.isLink()) {
+            if (m_strictParsing || context.isSubSelector || (selector.m_match == CSSSelector::Tag && selector.tagQName() != anyQName() && !isHTMLAnchorElement(element)) || element.isLink()) {
                 if (m_mode == ResolvingStyle) {
                     if (context.elementStyle)
                         context.elementStyle->setAffectedByActive();
@@ -756,7 +756,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             }
             break;
         case CSSSelector::PseudoEnabled:
-            if (element.isFormControlElement() || element.hasTagName(optionTag) || element.hasTagName(optgroupTag))
+            if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
                 return !element.isDisabledFormControl();
             break;
         case CSSSelector::PseudoFullPageMedia:
@@ -765,7 +765,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoDefault:
             return element.isDefaultButtonForForm();
         case CSSSelector::PseudoDisabled:
-            if (element.isFormControlElement() || element.hasTagName(optionTag) || element.hasTagName(optgroupTag))
+            if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
                 return element.isDisabledFormControl();
             break;
         case CSSSelector::PseudoReadOnly:
@@ -784,7 +784,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             return element.willValidate() && !element.isValidFormControlElement();
         case CSSSelector::PseudoChecked:
             {
-                if (element.hasTagName(inputTag)) {
+                if (isHTMLInputElement(element)) {
                     HTMLInputElement& inputElement = toHTMLInputElement(element);
                     // Even though WinIE allows checked and indeterminate to
                     // co-exist, the CSS selector spec says that you can't be
@@ -793,7 +793,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     // test for matching the pseudo.
                     if (inputElement.shouldAppearChecked() && !inputElement.shouldAppearIndeterminate())
                         return true;
-                } else if (element.hasTagName(optionTag) && toHTMLOptionElement(element).selected())
+                } else if (isHTMLOptionElement(element) && toHTMLOptionElement(element).selected())
                     return true;
                 break;
             }

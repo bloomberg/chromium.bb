@@ -36,7 +36,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/svg/SVGStyleElement.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -64,9 +66,9 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
     // Only these nodes can be parents of StyleSheets, and they need to call clearOwnerNode() when moved out of document.
     return !parentNode
         || parentNode->isDocumentNode()
-        || parentNode->hasTagName(HTMLNames::linkTag)
-        || parentNode->hasTagName(HTMLNames::styleTag)
-        || parentNode->hasTagName(SVGNames::styleTag)
+        || isHTMLLinkElement(*parentNode)
+        || isHTMLStyleElement(*parentNode)
+        || isSVGStyleElement(*parentNode)
         || parentNode->nodeType() == Node::PROCESSING_INSTRUCTION_NODE;
 }
 #endif

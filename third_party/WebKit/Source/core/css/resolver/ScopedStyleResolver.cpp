@@ -50,17 +50,17 @@ ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSS
     if (!sheetDocument)
         return 0;
     Node* ownerNode = sheet->ownerNode();
-    if (!ownerNode || !ownerNode->hasTagName(HTMLNames::styleTag))
+    if (!isHTMLStyleElement(ownerNode))
         return &document;
 
-    HTMLStyleElement* styleElement = toHTMLStyleElement(ownerNode);
-    if (!styleElement->scoped()) {
-        if (styleElement->isInShadowTree())
-            return styleElement->containingShadowRoot();
+    HTMLStyleElement& styleElement = toHTMLStyleElement(*ownerNode);
+    if (!styleElement.scoped()) {
+        if (styleElement.isInShadowTree())
+            return styleElement.containingShadowRoot();
         return &document;
     }
 
-    ContainerNode* parent = styleElement->parentNode();
+    ContainerNode* parent = styleElement.parentNode();
     if (!parent)
         return 0;
 
