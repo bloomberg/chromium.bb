@@ -23,14 +23,16 @@
 #ifndef SVGPaint_h
 #define SVGPaint_h
 
-#include "core/svg/SVGColor.h"
+#include "core/css/CSSValue.h"
+#include "core/css/StyleColor.h"
+#include "platform/graphics/Color.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class ExceptionState;
 
-class SVGPaint : public SVGColor {
+class SVGPaint : public CSSValue {
 public:
     enum SVGPaintType {
         SVG_PAINTTYPE_UNKNOWN = 0,
@@ -63,7 +65,7 @@ public:
     static PassRefPtrWillBeRawPtr<SVGPaint> createColor(const Color& color)
     {
         RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_RGBCOLOR));
-        paint->setColor(color);
+        paint->m_color = color;
         return paint.release();
     }
 
@@ -76,7 +78,7 @@ public:
     static PassRefPtrWillBeRawPtr<SVGPaint> createURIAndColor(const String& uri, const Color& color)
     {
         RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(SVG_PAINTTYPE_URI_RGBCOLOR, uri));
-        paint->setColor(color);
+        paint->m_color = color;
         return paint.release();
     }
 
@@ -101,7 +103,12 @@ public:
 
     bool equals(const SVGPaint&) const;
 
-    void traceAfterDispatch(Visitor* visitor) { SVGColor::traceAfterDispatch(visitor); }
+    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
+
+    Color color() const { return m_color; }
+    void setColor(const Color& color) { m_color = color; m_paintType = SVG_PAINTTYPE_RGBCOLOR; }
+
+    static StyleColor colorFromRGBColorString(const String&);
 
 private:
     friend class CSSComputedStyleDeclaration;
@@ -109,7 +116,7 @@ private:
     static PassRefPtrWillBeRawPtr<SVGPaint> create(const SVGPaintType& type, const String& uri, const Color& color)
     {
         RefPtrWillBeRawPtr<SVGPaint> paint = adoptRefWillBeRefCountedGarbageCollected(new SVGPaint(type, uri));
-        paint->setColor(color);
+        paint->m_color = color;
         return paint.release();
     }
 
@@ -118,6 +125,7 @@ private:
     SVGPaint(const SVGPaint& cloneFrom);
 
     SVGPaintType m_paintType;
+    Color m_color;
     String m_uri;
 };
 

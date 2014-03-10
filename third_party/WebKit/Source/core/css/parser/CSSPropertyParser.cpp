@@ -8257,15 +8257,18 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyStopColor: // TODO : icccolor
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
-        if (isSystemColor(id))
-            parsedValue = SVGColor::createFromColor(RenderTheme::theme().systemColor(id));
-        else if ((id >= CSSValueAqua && id <= CSSValueTransparent)
-            || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) || id == CSSValueGrey)
-            parsedValue = SVGColor::createFromString(value->string);
-        else if (id == CSSValueCurrentcolor)
-            parsedValue = SVGColor::createCurrentColor();
-        else // TODO : svgcolor (iccColor)
-            parsedValue = parseSVGColor();
+        if (isSystemColor(id)) {
+            parsedValue = cssValuePool().createColorValue(RenderTheme::theme().systemColor(id).rgb());
+        } else if ((id >= CSSValueAqua && id <= CSSValueTransparent)
+            || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) || id == CSSValueGrey) {
+            StyleColor styleColor = SVGPaint::colorFromRGBColorString(value->string);
+            ASSERT(!styleColor.isCurrentColor());
+            parsedValue = cssValuePool().createColorValue(styleColor.color().rgb());
+        } else if (id == CSSValueCurrentcolor) {
+            parsedValue = cssValuePool().createIdentifierValue(id);
+        } else { // TODO : svgcolor (iccColor)
+            parsedValue = parseColor();
+        }
 
         if (parsedValue)
             m_valueList->next();
@@ -8401,14 +8404,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGPaint()
     if (!parseColorFromValue(m_valueList->current(), c))
         return SVGPaint::createUnknown();
     return SVGPaint::createColor(Color(c));
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGColor()
-{
-    RGBA32 c = Color::transparent;
-    if (!parseColorFromValue(m_valueList->current(), c))
-        return nullptr;
-    return SVGColor::createFromColor(Color(c));
 }
 
 // normal | [ fill || stroke || markers ]

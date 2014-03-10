@@ -77,7 +77,6 @@
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
-#include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
 #include "platform/fonts/FontDescription.h"
 #include "wtf/MathExtras.h"
@@ -1074,13 +1073,14 @@ static bool degreeToGlyphOrientation(CSSPrimitiveValue* primitiveValue, EGlyphOr
     return true;
 }
 
-static Color colorFromSVGColorCSSValue(SVGColor* svgColor, const Color& fgColor)
+static Color colorFromSVGPaintCSSValue(SVGPaint* svgPaint, const Color& fgColor)
 {
     Color color;
-    if (svgColor->colorType() == SVGColor::SVG_COLORTYPE_CURRENTCOLOR)
+    if (svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR
+        || svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR)
         color = fgColor;
     else
-        color = svgColor->color();
+        color = svgPaint->color();
     return color;
 }
 
@@ -2077,7 +2077,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         }
         if (value->isSVGPaint()) {
             SVGPaint* svgPaint = toSVGPaint(value);
-            svgStyle->setFillPaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
+            svgStyle->setFillPaint(svgPaint->paintType(), colorFromSVGPaintCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
         }
         break;
     }
@@ -2095,7 +2095,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         }
         if (value->isSVGPaint()) {
             SVGPaint* svgPaint = toSVGPaint(value);
-            svgStyle->setStrokePaint(svgPaint->paintType(), colorFromSVGColorCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
+            svgStyle->setStrokePaint(svgPaint->paintType(), colorFromSVGPaintCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
         }
         break;
     }
@@ -2126,22 +2126,28 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyStopColor:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(stopColor, StopColor);
-        if (value->isSVGColor())
-            state.style()->accessSVGStyle()->setStopColor(colorFromSVGColorCSSValue(toSVGColor(value), state.style()->color()));
+        if (primitiveValue->isRGBColor())
+            state.style()->accessSVGStyle()->setStopColor(primitiveValue->getRGBA32Value());
+        else if (primitiveValue->getValueID() == CSSValueCurrentcolor)
+            state.style()->accessSVGStyle()->setStopColor(state.style()->color());
         break;
     }
     case CSSPropertyLightingColor:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(lightingColor, LightingColor);
-        if (value->isSVGColor())
-            state.style()->accessSVGStyle()->setLightingColor(colorFromSVGColorCSSValue(toSVGColor(value), state.style()->color()));
+        if (primitiveValue->isRGBColor())
+            state.style()->accessSVGStyle()->setLightingColor(primitiveValue->getRGBA32Value());
+        else if (primitiveValue->getValueID() == CSSValueCurrentcolor)
+            state.style()->accessSVGStyle()->setLightingColor(state.style()->color());
         break;
     }
     case CSSPropertyFloodColor:
     {
         HANDLE_SVG_INHERIT_AND_INITIAL(floodColor, FloodColor);
-        if (value->isSVGColor())
-            state.style()->accessSVGStyle()->setFloodColor(colorFromSVGColorCSSValue(toSVGColor(value), state.style()->color()));
+        if (primitiveValue->isRGBColor())
+            state.style()->accessSVGStyle()->setFloodColor(primitiveValue->getRGBA32Value());
+        else if (primitiveValue->getValueID() == CSSValueCurrentcolor)
+            state.style()->accessSVGStyle()->setFloodColor(state.style()->color());
         break;
     }
     case CSSPropertyGlyphOrientationHorizontal:

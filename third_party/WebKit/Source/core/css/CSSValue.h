@@ -103,7 +103,6 @@ public:
     bool isFilterValue() const { return m_classType == CSSFilterClass; }
     bool isArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
-    bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
     bool isUnicodeRangeValue() const { return m_classType == UnicodeRangeClass; }
@@ -112,7 +111,7 @@ public:
     bool isCSSOMSafe() const { return m_isCSSOMSafe; }
     bool isSubtypeExposedToCSSOM() const
     {
-        return isPrimitiveValue() || isSVGColor() || isValueList();
+        return isPrimitiveValue() || isSVGPaint() || isValueList();
     }
 
     PassRefPtrWillBeRawPtr<CSSValue> cloneForCSSOM() const;
@@ -164,7 +163,6 @@ protected:
         GridTemplateAreasClass,
 
         // SVG classes.
-        SVGColorClass,
         SVGPaintClass,
         CSSSVGDocumentClass,
 

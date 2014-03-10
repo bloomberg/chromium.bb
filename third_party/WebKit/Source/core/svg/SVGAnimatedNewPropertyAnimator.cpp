@@ -34,11 +34,11 @@
 #include "core/svg/SVGAnimateTransformElement.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimationElement.h"
-#include "core/svg/SVGColor.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumber.h"
+#include "core/svg/SVGPaint.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGString.h"
 #include "core/svg/SVGTransformList.h"
@@ -87,7 +87,7 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
 
     switch (m_type) {
     case AnimatedColor:
-        return SVGColorProperty::create(value.isEmpty() ? StyleColor::currentColor() : SVGColor::colorFromRGBColorString(value));
+        return SVGColorProperty::create(value.isEmpty() ? StyleColor::currentColor() : SVGPaint::colorFromRGBColorString(value));
     case AnimatedNumber: {
         RefPtr<SVGNumber> property = SVGNumber::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);

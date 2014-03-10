@@ -2883,7 +2883,6 @@
             'svg/SVGCircleElement.h',
             'svg/SVGClipPathElement.cpp',
             'svg/SVGClipPathElement.h',
-            'svg/SVGColor.cpp',
             'svg/SVGComponentTransferFunctionElement.cpp',
             'svg/SVGComponentTransferFunctionElement.h',
             'svg/SVGCursorElement.cpp',

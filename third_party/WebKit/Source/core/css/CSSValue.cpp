@@ -55,7 +55,6 @@
 #include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
-#include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
 
 namespace WebCore {
@@ -200,8 +199,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSFilterValue>(*this, other);
         case CSSArrayFunctionValueClass:
             return compareCSSValues<CSSArrayFunctionValue>(*this, other);
-        case SVGColorClass:
-            return compareCSSValues<SVGColor>(*this, other);
         case SVGPaintClass:
             return compareCSSValues<SVGPaint>(*this, other);
         case CSSSVGDocumentClass:
@@ -284,8 +281,6 @@ String CSSValue::cssText() const
         return toCSSFilterValue(this)->customCSSText();
     case CSSArrayFunctionValueClass:
         return toCSSArrayFunctionValue(this)->customCSSText();
-    case SVGColorClass:
-        return toSVGColor(this)->customCSSText();
     case SVGPaintClass:
         return toSVGPaint(this)->customCSSText();
     case CSSSVGDocumentClass:
@@ -391,9 +386,6 @@ void CSSValue::destroy()
         return;
     case CSSArrayFunctionValueClass:
         delete toCSSArrayFunctionValue(this);
-        return;
-    case SVGColorClass:
-        delete toSVGColor(this);
         return;
     case SVGPaintClass:
         delete toSVGPaint(this);
@@ -502,9 +494,6 @@ void CSSValue::finalize()
     case CSSArrayFunctionValueClass:
         static_cast<CSSArrayFunctionValue*>(this)->~CSSArrayFunctionValue();
         return;
-    case SVGColorClass:
-        static_cast<SVGColor*>(this)->~SVGColor();
-        return;
     case SVGPaintClass:
         static_cast<SVGPaint*>(this)->~SVGPaint();
         return;
@@ -612,9 +601,6 @@ void CSSValue::trace(Visitor* visitor)
     case CSSArrayFunctionValueClass:
         static_cast<CSSArrayFunctionValue*>(this)->traceAfterDispatch(visitor);
         return;
-    case SVGColorClass:
-        static_cast<SVGColor*>(this)->traceAfterDispatch(visitor);
-        return;
     case SVGPaintClass:
         static_cast<SVGPaint*>(this)->traceAfterDispatch(visitor);
         return;
@@ -643,8 +629,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSValue::cloneForCSSOM() const
         return toCSSTransformValue(this)->cloneForCSSOM();
     case ImageSetClass:
         return toCSSImageSetValue(this)->cloneForCSSOM();
-    case SVGColorClass:
-        return toSVGColor(this)->cloneForCSSOM();
     case SVGPaintClass:
         return toSVGPaint(this)->cloneForCSSOM();
     default:

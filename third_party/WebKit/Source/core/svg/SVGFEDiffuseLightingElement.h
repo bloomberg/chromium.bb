@@ -30,7 +30,6 @@
 namespace WebCore {
 
 class FEDiffuseLighting;
-class SVGColor;
 
 class SVGFEDiffuseLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:

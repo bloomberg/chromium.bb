@@ -24,7 +24,6 @@
 #include "core/rendering/RenderObject.h"
 #include "core/svg/ColorDistance.h"
 #include "core/svg/SVGAnimateElement.h"
-#include "core/svg/SVGColor.h"
 
 namespace WebCore {
 

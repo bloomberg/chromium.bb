@@ -197,7 +197,6 @@ private:
 
     bool parseSVGValue(CSSPropertyID propId, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseSVGPaint();
-    PassRefPtrWillBeRawPtr<CSSValue> parseSVGColor();
     PassRefPtrWillBeRawPtr<CSSValue> parseSVGStrokeDasharray();
 
     PassRefPtrWillBeRawPtr<CSSValue> parsePaintOrder() const;
