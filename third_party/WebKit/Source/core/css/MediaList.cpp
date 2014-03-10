@@ -290,16 +290,18 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
         if (equalIgnoringCase(query->mediaType(), "print"))
             continue;
 
+        HashSet<String> overriden;
         const ExpressionHeapVector& expressions = query->expressions();
-        for (size_t j = 0; j < expressions.size(); ++j) {
-            const MediaQueryExp* expression = expressions.at(j).get();
+        for (size_t j = expressions.size(); j > 0; --j) {
+            const MediaQueryExp* expression = expressions.at(j - 1).get();
             if (isResolutionMediaFeature(expression->mediaFeature())) {
                 CSSValue* cssValue =  expression->value();
                 if (cssValue && cssValue->isPrimitiveValue()) {
                     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
-                    if (primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter())
+                    if ((primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter()) && !overriden.contains(expression->mediaFeature()))
                         addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), primitiveValue);
                 }
+                overriden.add(expression->mediaFeature());
             }
         }
     }
