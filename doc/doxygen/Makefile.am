@@ -37,7 +37,7 @@ xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen
           echo "INPUT= $(scanned_src_files_server)"; \
           ) | doxygen -
 
-doxygen.man: $(scanned_src_files_client) $(scanned_src_files_server)
+man/man3/wl_display.3: $(scanned_src_files_client) $(scanned_src_files_server)
 	(cat wayland.doxygen; \
           echo "GENERATE_MAN=YES"; \
           echo "MAN_OUTPUT=man"; \
@@ -46,7 +46,7 @@ doxygen.man: $(scanned_src_files_client) $(scanned_src_files_server)
           ) | doxygen -
 
 # there is no man-local
-all-local: doxygen.man
+all-local: man/man3/wl_display.3
 
 clean-local:
 	rm -rf xml/
