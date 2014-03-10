@@ -186,9 +186,8 @@ cr.define('options.search_engines', function() {
         // CoreOptionsHandler::CreateValueForPref() does.
         var event = new Event(this.contentType);
         if (engine.extension) {
-          event.value = { controlledBy: 'extension' };
-          // TODO(mad): add id, name, and icon once we solved the issue with the
-          // search engine manager in http://crbug.com/314507.
+          event.value = { controlledBy: 'extension',
+                          extension: engine.extension };
         } else {
           event.value = { controlledBy: 'policy' };
         }

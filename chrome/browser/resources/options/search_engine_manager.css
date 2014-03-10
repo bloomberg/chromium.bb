@@ -78,4 +78,12 @@
   display: none;
 }
 
+#default-search-engine-list {
+  z-index: 2;
+}
+
+#other-search-engine-list {
+  z-index: 1;
+}
+
 /* End temporary Make Default button styling */
