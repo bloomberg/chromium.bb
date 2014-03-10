@@ -93,10 +93,10 @@ class Page;
 
 class HistoryNode {
 public:
-    static PassOwnPtr<HistoryNode> create(HistoryEntry*, HistoryItem*);
+    static PassOwnPtr<HistoryNode> create(HistoryEntry*, HistoryItem*, int64_t frameID);
     ~HistoryNode() { }
 
-    HistoryNode* addChild(PassRefPtr<HistoryItem>);
+    HistoryNode* addChild(PassRefPtr<HistoryItem>, int64_t frameID);
     PassOwnPtr<HistoryNode> cloneAndReplace(HistoryEntry*, HistoryItem* newItem, bool clipAtTarget, LocalFrame* targetFrame, LocalFrame* currentFrame);
     HistoryItem* value() { return m_value.get(); }
     void updateValue(PassRefPtr<HistoryItem> item) { m_value = item; }
@@ -104,7 +104,7 @@ public:
     void removeChildren();
 
 private:
-    HistoryNode(HistoryEntry*, HistoryItem*);
+    HistoryNode(HistoryEntry*, HistoryItem*, int64_t frameID);
 
     HistoryEntry* m_entry;
     Vector<OwnPtr<HistoryNode> > m_children;
@@ -114,7 +114,7 @@ private:
 
 class HistoryEntry {
 public:
-    static PassOwnPtr<HistoryEntry> create(HistoryItem* root);
+    static PassOwnPtr<HistoryEntry> create(HistoryItem* root, int64_t frameID);
     PassOwnPtr<HistoryEntry> cloneAndReplace(HistoryItem* newItem, bool clipAtTarget, LocalFrame* targetFrame, Page*);
 
     HistoryNode* historyNodeForFrame(LocalFrame*);
@@ -126,7 +126,7 @@ private:
     friend class HistoryNode;
 
     HistoryEntry() { }
-    explicit HistoryEntry(HistoryItem* root);
+    explicit HistoryEntry(HistoryItem* root, int64_t frameID);
 
     OwnPtr<HistoryNode> m_root;
     HashMap<uint64_t, HistoryNode*> m_framesToItems;

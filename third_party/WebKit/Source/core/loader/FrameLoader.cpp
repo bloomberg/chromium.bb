@@ -321,7 +321,6 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
         m_currentItem->generateNewSequenceNumbers();
     m_currentItem->setURL(m_documentLoader->urlForHistory());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
-    m_currentItem->setTargetFrameID(m_frame->frameID());
     if (isPushOrReplaceState)
         m_currentItem->setStateObject(stateObject);
     m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_documentLoader->request().referrerPolicy()));

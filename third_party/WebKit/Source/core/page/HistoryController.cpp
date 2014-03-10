@@ -40,14 +40,14 @@
 
 namespace WebCore {
 
-PassOwnPtr<HistoryNode> HistoryNode::create(HistoryEntry* entry, HistoryItem* value)
+PassOwnPtr<HistoryNode> HistoryNode::create(HistoryEntry* entry, HistoryItem* value, int64_t frameID)
 {
-    return adoptPtr(new HistoryNode(entry, value));
+    return adoptPtr(new HistoryNode(entry, value, frameID));
 }
 
-HistoryNode* HistoryNode::addChild(PassRefPtr<HistoryItem> item)
+HistoryNode* HistoryNode::addChild(PassRefPtr<HistoryItem> item, int64_t frameID)
 {
-    m_children.append(HistoryNode::create(m_entry, item.get()));
+    m_children.append(HistoryNode::create(m_entry, item.get(), frameID));
     return m_children.last().get();
 }
 
@@ -55,7 +55,7 @@ PassOwnPtr<HistoryNode> HistoryNode::cloneAndReplace(HistoryEntry* newEntry, His
 {
     bool isNodeBeingNavigated = targetFrame == currentFrame;
     HistoryItem* itemForCreate = isNodeBeingNavigated ? newItem : m_value.get();
-    OwnPtr<HistoryNode> newHistoryNode = create(newEntry, itemForCreate);
+    OwnPtr<HistoryNode> newHistoryNode = create(newEntry, itemForCreate, currentFrame->frameID());
 
     if (!clipAtTarget || !isNodeBeingNavigated) {
         for (LocalFrame* child = currentFrame->tree().firstChild(); child; child = child->tree().nextSibling()) {
@@ -68,11 +68,12 @@ PassOwnPtr<HistoryNode> HistoryNode::cloneAndReplace(HistoryEntry* newEntry, His
     return newHistoryNode.release();
 }
 
-HistoryNode::HistoryNode(HistoryEntry* entry, HistoryItem* value)
+HistoryNode::HistoryNode(HistoryEntry* entry, HistoryItem* value, int64_t frameID)
     : m_entry(entry)
     , m_value(value)
 {
-    m_entry->m_framesToItems.add(value->targetFrameID(), this);
+    if (frameID != -1)
+        m_entry->m_framesToItems.add(frameID, this);
     String target = value->target();
     if (target.isNull())
         target = emptyString();
@@ -99,14 +100,14 @@ void HistoryNode::removeChildren()
     m_children.clear();
 }
 
-HistoryEntry::HistoryEntry(HistoryItem* root)
+HistoryEntry::HistoryEntry(HistoryItem* root, int64_t frameID)
 {
-    m_root = HistoryNode::create(this, root);
+    m_root = HistoryNode::create(this, root, frameID);
 }
 
-PassOwnPtr<HistoryEntry> HistoryEntry::create(HistoryItem* root)
+PassOwnPtr<HistoryEntry> HistoryEntry::create(HistoryItem* root, int64_t frameID)
 {
-    return adoptPtr(new HistoryEntry(root));
+    return adoptPtr(new HistoryEntry(root, frameID));
 }
 
 PassOwnPtr<HistoryEntry> HistoryEntry::cloneAndReplace(HistoryItem* newItem, bool clipAtTarget, LocalFrame* targetFrame, Page* page)
@@ -207,7 +208,11 @@ void HistoryController::goToItem(HistoryItem* targetItem, ResourceRequestCachePo
         return;
     }
 
-    OwnPtr<HistoryEntry> newEntry = HistoryEntry::create(targetItem);
+    // We don't have enough information to set a correct frame id here. This might be a restore from
+    // disk, and the frame ids might not match up if the state was saved from a different process.
+    // Ensure the HistoryEntry's main frame id matches the actual main frame id. Its subframe ids
+    // are invalid to ensure they don't accidentally match a potentially random frame.
+    OwnPtr<HistoryEntry> newEntry = HistoryEntry::create(targetItem, m_page->mainFrame()->frameID());
     Deque<HistoryNode*> historyNodes;
     historyNodes.append(newEntry->rootHistoryNode());
     while (!historyNodes.isEmpty()) {
@@ -217,7 +222,7 @@ void HistoryController::goToItem(HistoryItem* targetItem, ResourceRequestCachePo
         HistoryNode* historyNode = historyNodes.takeFirst();
         const HistoryItemVector& children = historyNode->value()->children();
         for (size_t i = 0; i < children.size(); i++) {
-            HistoryNode* childHistoryNode = historyNode->addChild(children[i].get());
+            HistoryNode* childHistoryNode = historyNode->addChild(children[i].get(), -1);
             historyNodes.append(childHistoryNode);
         }
         historyNode->value()->clearChildren();
@@ -243,7 +248,7 @@ void HistoryController::updateForInitialLoadInChildFrame(LocalFrame* frame, Hist
     if (HistoryNode* existingNode = m_currentEntry->historyNodeForFrame(frame))
         existingNode->updateValue(item);
     else if (HistoryNode* parentHistoryNode = m_currentEntry->historyNodeForFrame(frame->tree().parent()))
-        parentHistoryNode->addChild(item);
+        parentHistoryNode->addChild(item, frame->frameID());
 }
 
 void HistoryController::updateForCommit(LocalFrame* frame, HistoryItem* item, HistoryCommitType commitType)
@@ -306,7 +311,7 @@ void HistoryController::createNewBackForwardItem(LocalFrame* targetFrame, Histor
 {
     RefPtr<HistoryItem> newItem = item;
     if (!m_currentEntry) {
-        m_currentEntry = HistoryEntry::create(newItem.get());
+        m_currentEntry = HistoryEntry::create(newItem.get(), targetFrame->frameID());
     } else {
         HistoryItem* oldItem = m_currentEntry->itemForFrame(targetFrame);
         if (!clipAtTarget && oldItem)

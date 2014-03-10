@@ -45,7 +45,6 @@ HistoryItem::HistoryItem()
     : m_pageScaleFactor(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-    , m_targetFrameID(0)
 {
 }
 
@@ -63,7 +62,6 @@ inline HistoryItem::HistoryItem(const HistoryItem& item)
     , m_documentState(item.m_documentState)
     , m_itemSequenceNumber(item.m_itemSequenceNumber)
     , m_documentSequenceNumber(item.m_documentSequenceNumber)
-    , m_targetFrameID(item.m_targetFrameID)
     , m_stateObject(item.m_stateObject)
     , m_formContentType(item.m_formContentType)
 {
