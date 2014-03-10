@@ -477,7 +477,7 @@ bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorit
 //
 //    dictionary HmacKeyGenParams : Algorithm {
 //      AlgorithmIdentifier hash;
-//      // The length (in bytes) of the key to generate. If unspecified, the
+//      // The length (in bits) of the key to generate. If unspecified, the
 //      // recommended length will be used, which is the size of the associated hash function's block
 //      // size.
 //      unsigned long length;

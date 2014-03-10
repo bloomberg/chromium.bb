@@ -131,23 +131,23 @@ public:
 
 class WebCryptoHmacKeyGenParams : public WebCryptoAlgorithmParamsWithHash {
 public:
-    WebCryptoHmacKeyGenParams(const WebCryptoAlgorithm& hash, bool hasLengthBytes, unsigned lengthBytes)
+    WebCryptoHmacKeyGenParams(const WebCryptoAlgorithm& hash, bool hasLengthBits, unsigned lengthBits)
         : WebCryptoAlgorithmParamsWithHash(hash)
-        , m_hasLengthBytes(hasLengthBytes)
-        , m_optionalLengthBytes(lengthBytes)
+        , m_hasLengthBits(hasLengthBits)
+        , m_optionalLengthBits(lengthBits)
     {
-        BLINK_ASSERT(hasLengthBytes || !lengthBytes);
+        BLINK_ASSERT(hasLengthBits || !lengthBits);
     }
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeHmacKeyGenParams; }
 
-    bool hasLengthBytes() const { return m_hasLengthBytes; }
+    bool hasLengthBits() const { return m_hasLengthBits; }
 
-    unsigned optionalLengthBytes() const { return m_optionalLengthBytes; }
+    unsigned optionalLengthBits() const { return m_optionalLengthBits; }
 
 private:
-    const bool m_hasLengthBytes;
-    const unsigned m_optionalLengthBytes;
+    const bool m_hasLengthBits;
+    const unsigned m_optionalLengthBits;
 };
 
 class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
