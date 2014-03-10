@@ -76,11 +76,16 @@ def _NewBuilderRun(options=None, config=None):
   """
   # Make up a fake object with a Queue() method.
   class _FakeMultiprocessManager(object):
-    """This just needs to not crash when Queue/RLock called."""
+    """This just needs to not crash when various methods are called."""
     def Queue(self):
       return 'SomeQueue'
     def RLock(self):
       return 'SomeLock'
+    def dict(self):
+      return {}
+    def list(self):
+      return []
+
   manager = _FakeMultiprocessManager()
 
   options = options or DEFAULT_OPTIONS

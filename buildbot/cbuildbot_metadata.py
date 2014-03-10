@@ -19,14 +19,22 @@ from chromite.lib import toolchain
 class CBuildbotMetadata(object):
   """Class for recording metadata about a run."""
 
-  def __init__(self, metadata_dict=None):
+  def __init__(self, multiprocess_manager=None):
     """Constructor for CBuildbotMetadata.
 
     Args:
-      metadata_dict: Optional initial metadata dictionary.
+      multiprocess_manager: Optional multiprocess.Manager instance. If
+                            supplied, the metadata instance will use
+                            multiprocess containers so that its state
+                            is correctly synced across processes.
     """
     super(CBuildbotMetadata, self).__init__()
-    self._metadata_dict = metadata_dict or {}
+    if multiprocess_manager:
+      self._metadata_dict = multiprocess_manager.dict()
+      self._cl_action_list = multiprocess_manager.list()
+    else:
+      self._metadata_dict = {}
+      self._cl_action_list = []
 
   def UpdateWithDict(self, metadata_dict):
     """Update metadata dictionary with values supplied in |metadata_dict|"""
@@ -34,7 +42,9 @@ class CBuildbotMetadata(object):
 
   def GetJSON(self):
     """Return a JSON string representation of metadata."""
-    return json.dumps(self._metadata_dict)
+    temp = self._metadata_dict.copy()
+    temp['cl_action'] = list(self._cl_action_list)
+    return json.dumps(temp)
 
   def RecordCLAction(self, change, action, timestamp=None, reason=None):
     """Record an action that was taken on a CL, to the metadata.
@@ -51,11 +61,7 @@ class CBuildbotMetadata(object):
                  timestamp or int(time.time()),
                  reason or '')
 
-    if not self._metadata_dict.has_key('cl_actions'):
-      self._metadata_dict['cl_actions'] = []
-
-    self._metadata_dict['cl_actions'].append(cl_action)
-
+    self._cl_action_list.append(cl_action)
 
   @staticmethod
   def _ChangeAsSmallDictionary(change):

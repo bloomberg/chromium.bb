@@ -598,7 +598,8 @@ class _BuilderRunBase(object):
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
     attrs.chrome_version = None
-    attrs.metadata = cbuildbot_metadata.CBuildbotMetadata()
+    attrs.metadata = cbuildbot_metadata.CBuildbotMetadata(
+        multiprocess_manager=multiprocess_manager)
 
   @property
   def bot_id(self):
