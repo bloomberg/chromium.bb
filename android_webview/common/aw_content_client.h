@@ -11,6 +11,8 @@
 
 namespace android_webview {
 
+std::string GetUserAgent();
+
 class AwContentClient : public content::ContentClient {
  public:
   // ContentClient implementation.

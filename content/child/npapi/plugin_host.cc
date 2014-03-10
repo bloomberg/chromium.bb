@@ -17,6 +17,7 @@
 #include "content/child/npapi/plugin_lib.h"
 #include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/webplugin_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
 #include "net/base/net_util.h"
@@ -25,7 +26,6 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/common/user_agent/user_agent.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -598,7 +598,7 @@ const char* NPN_UserAgent(NPP id) {
         "Gecko/20061103 Firefox/2.0a1";
 #endif
 
-  return webkit_glue::GetUserAgent(GURL()).c_str();
+  return content::GetContentClient()->GetUserAgent().c_str();
 }
 
 void NPN_Status(NPP id, const char* message) {

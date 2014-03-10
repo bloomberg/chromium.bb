@@ -19,8 +19,6 @@
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
-        'user_agent.cc',
-        'user_agent.h',
         'user_agent_util.cc',
         'user_agent_util_ios.mm',
         'user_agent_util.h',

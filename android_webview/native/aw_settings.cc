@@ -5,6 +5,7 @@
 #include "android_webview/native/aw_settings.h"
 
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/common/aw_content_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -14,10 +15,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "jni/AwSettings_jni.h"
-#include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/webpreferences.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -341,8 +340,7 @@ static jlong Init(JNIEnv* env,
 }
 
 static jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
-  return base::android::ConvertUTF8ToJavaString(
-      env, content::GetUserAgent(GURL())).Release();
+  return base::android::ConvertUTF8ToJavaString(env, GetUserAgent()).Release();
 }
 
 bool RegisterAwSettings(JNIEnv* env) {

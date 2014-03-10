@@ -60,7 +60,7 @@ void PreconnectOnIOThread(
 
   std::string user_agent;
   if (context->http_user_agent_settings())
-    user_agent = context->http_user_agent_settings()->GetUserAgent(url);
+    user_agent = context->http_user_agent_settings()->GetUserAgent();
   net::HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = "GET";

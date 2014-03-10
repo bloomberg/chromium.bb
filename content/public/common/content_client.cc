@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/common/user_agent/user_agent.h"
 
 namespace content {
 
@@ -37,11 +36,10 @@ class InternalTestInitializer {
 void SetContentClient(ContentClient* client) {
   g_client = client;
 
-  // Set the default user agent as provided by the client. We need to make
-  // sure this is done before webkit_glue::GetUserAgent() is called (so that
-  // the UA doesn't change).
+  // TODO(jam): find out which static on Windows is causing this to have to be
+  // called on startup.
   if (client)
-    webkit_glue::SetUserAgent(client->GetUserAgent());
+    client->GetUserAgent();
 }
 
 ContentClient* GetContentClient() {
@@ -58,11 +56,6 @@ ContentRendererClient* SetRendererClientForTesting(ContentRendererClient* r) {
 
 ContentUtilityClient* SetUtilityClientForTesting(ContentUtilityClient* u) {
   return InternalTestInitializer::SetUtility(u);
-}
-
-const std::string& GetUserAgent(const GURL& url) {
-  DCHECK(g_client);
-  return webkit_glue::GetUserAgent(url);
 }
 
 ContentClient::ContentClient()

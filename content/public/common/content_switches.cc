@@ -914,9 +914,6 @@ const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
-// A string used to override the default user agent with a custom one.
-const char kUserAgent[]                     = "user-agent";
-
 // On POSIX only: the contents of this flag are prepended to the utility
 // process command line. Useful values might be "valgrind" or "xterm -e gdb
 // --args".

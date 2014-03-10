@@ -5,9 +5,9 @@
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_client.h"
 #include "net/http/http_util.h"
 
 ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
@@ -41,8 +41,8 @@ std::string ChromeHttpUserAgentSettings::GetAcceptLanguage() const {
   return last_http_accept_language_;
 }
 
-std::string ChromeHttpUserAgentSettings::GetUserAgent(const GURL& url) const {
+std::string ChromeHttpUserAgentSettings::GetUserAgent() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return content::GetUserAgent(url);
+  return ::GetUserAgent();
 }
 

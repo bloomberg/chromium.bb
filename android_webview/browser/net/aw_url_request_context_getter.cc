@@ -11,6 +11,7 @@
 #include "android_webview/browser/net/aw_network_delegate.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -177,7 +178,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(!url_request_context_);
 
   net::URLRequestContextBuilder builder;
-  builder.set_user_agent(content::GetUserAgent(GURL()));
+  builder.set_user_agent(GetUserAgent());
   builder.set_network_delegate(new AwNetworkDelegate());
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.

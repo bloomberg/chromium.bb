@@ -912,11 +912,6 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   }
 }
 
-blink::WebString RendererWebKitPlatformSupportImpl::userAgent(
-    const blink::WebURL& url) {
-  return WebKitPlatformSupportImpl::userAgent(url);
-}
-
 //------------------------------------------------------------------------------
 
 WebRTCPeerConnectionHandler*

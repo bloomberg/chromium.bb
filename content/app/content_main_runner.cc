@@ -51,7 +51,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/win/dpi.h"
-#include "webkit/common/user_agent/user_agent.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
@@ -379,14 +378,6 @@ int RunZygote(const MainFunctionParams& main_function_params,
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   ContentClientInitializer::Set(process_type, delegate);
-
-  // If a custom user agent was passed on the command line, we need
-  // to (re)set it now, rather than using the default one the zygote
-  // initialized.
-  if (command_line.HasSwitch(switches::kUserAgent)) {
-    webkit_glue::SetUserAgent(
-        command_line.GetSwitchValueASCII(switches::kUserAgent));
-  }
 
   // The StatsTable must be initialized in each process; we already
   // initialized for the browser process, now we need to initialize
@@ -746,14 +737,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     if (delegate_)
       delegate_->PreSandboxStartup();
-
-    // Set any custom user agent passed on the command line now so the string
-    // doesn't change between calls to webkit_glue::GetUserAgent(), otherwise it
-    // defaults to the user agent set during SetContentClient().
-    if (command_line.HasSwitch(switches::kUserAgent)) {
-      webkit_glue::SetUserAgent(
-          command_line.GetSwitchValueASCII(switches::kUserAgent));
-    }
 
     if (!process_type.empty())
       CommonSubprocessInit(process_type);

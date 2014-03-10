@@ -12,6 +12,9 @@
 #include "base/files/file_path.h"
 #include "content/public/common/content_client.h"
 
+// Returns the user agent of Chrome.
+std::string GetUserAgent();
+
 class ChromeContentClient : public content::ContentClient {
  public:
   static const char* const kPDFPluginName;

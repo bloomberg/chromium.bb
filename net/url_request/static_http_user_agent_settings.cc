@@ -20,7 +20,7 @@ std::string StaticHttpUserAgentSettings::GetAcceptLanguage() const {
   return accept_language_;
 }
 
-std::string StaticHttpUserAgentSettings::GetUserAgent(const GURL& url) const {
+std::string StaticHttpUserAgentSettings::GetUserAgent() const {
   return user_agent_;
 }
 

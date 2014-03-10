@@ -127,7 +127,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   virtual blink::WebBlobRegistry* blobRegistry();
   virtual void sampleGamepads(blink::WebGamepads&);
-  virtual blink::WebString userAgent(const blink::WebURL& url);
   virtual blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
   virtual blink::WebMediaStreamCenter* createMediaStreamCenter(

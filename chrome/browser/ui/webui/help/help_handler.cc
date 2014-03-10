@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -28,7 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_client.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
@@ -280,7 +280,7 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
   source->AddString("jsEngine", "V8");
   source->AddString("jsEngineVersion", v8::V8::GetVersion());
 
-  source->AddString("userAgentInfo", content::GetUserAgent(GURL()));
+  source->AddString("userAgentInfo", GetUserAgent());
 
   CommandLine::StringType command_line =
       CommandLine::ForCurrentProcess()->GetCommandLineString();

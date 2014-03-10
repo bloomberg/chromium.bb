@@ -59,6 +59,7 @@ void GetFingerprint(
     const std::string& accept_languages,
     const base::Time& install_time,
     const std::string& app_locale,
+    const std::string& user_agent,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 }  // namespace risk
