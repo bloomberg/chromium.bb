@@ -91,12 +91,14 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
     const AtomicString fallbackFontFamily = getFallbackFontFamily(description);
-    const FontPlatformData* fontPlatformData = 0;
-    if (!fallbackFontFamily.isEmpty())
-        fontPlatformData = getFontPlatformData(description, fallbackFontFamily);
+    const FontPlatformData* fontPlatformData = getFontPlatformData(description, fallbackFontFamily);
 
+    // We should at least have Sans or Arial which is the last resort fallback of SkFontHost ports.
     if (!fontPlatformData) {
-        // we should at least have Arial; this is the SkFontHost_fontconfig last resort fallback
+        DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
+        fontPlatformData = getFontPlatformData(description, sansStr);
+    }
+    if (!fontPlatformData) {
         DEFINE_STATIC_LOCAL(const AtomicString, arialStr, ("Arial", AtomicString::ConstructFromLiteral));
         fontPlatformData = getFontPlatformData(description, arialStr);
     }

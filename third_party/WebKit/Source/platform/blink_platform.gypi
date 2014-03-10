@@ -886,6 +886,7 @@
       'TestingPlatformSupport.h',
       'animation/UnitBezierTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
+      'fonts/FontCacheTest.cpp',
       'fonts/FontDescriptionTest.cpp',
       'fonts/FontTest.cpp',
       'fonts/android/FontCacheAndroidTest.cpp',
