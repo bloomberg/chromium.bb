@@ -10,3 +10,8 @@ from measurements import tab_switching
 class TabSwitchingTop10(test.Test):
   test = tab_switching.TabSwitching
   page_set = 'page_sets/top_10.json'
+
+class TabSwitchingFiveBlankTabs(test.Test):
+  test = tab_switching.TabSwitching
+  page_set = 'page_sets/five_blank_pages.json'
+  options = {'pageset_repeat_iters': 10}

@@ -7,12 +7,13 @@
 This measurement opens pages in different tabs. After all the tabs have opened,
 it cycles through each tab in sequence, and records a histogram of the time
 between when a tab was first requested to be shown, and when it was painted.
+Power usage is also measured.
 """
 
 import time
 
-from metrics import cpu
 from metrics import histogram_util
+from metrics import power
 from telemetry.core import util
 from telemetry.page import page_measurement
 
@@ -21,30 +22,44 @@ from telemetry.page import page_measurement
 class TabSwitching(page_measurement.PageMeasurement):
   def __init__(self):
     super(TabSwitching, self).__init__()
-    self._cpu_metric = None
+    self._first_page_in_pageset = True
+    self._power_metric = power.PowerMetric()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
         '--enable-stats-collection-bindings'
     ])
-
-  def TabForPage(self, page, browser):
-    return browser.tabs.New()
+    power.PowerMetric.CustomizeBrowserOptions(options)
 
   def DidStartBrowser(self, browser):
-    self._cpu_metric = cpu.CpuMetric(browser)
+    self._first_page_in_pageset = True
+
+  def TabForPage(self, page, browser):
+    if self._first_page_in_pageset:
+      # The initial browser window contains a single tab, navigate that tab
+      # rather than creating a new one.
+      self._first_page_in_pageset = False
+      return browser.tabs[0]
+
+    return browser.tabs.New()
+
+  def StopBrowserAfterPage(self, browser, page):
+    # Restart the browser after the last page in the pageset.
+    return len(browser.tabs) >= len(page.page_set.pages)
 
   def MeasurePage(self, page, tab, results):
     """On the last tab, cycle through each tab that was opened and then record
     a single histogram for the tab switching metric."""
     if len(tab.browser.tabs) != len(page.page_set.pages):
       return
-    self._cpu_metric.Start(page, tab)
-    time.sleep(.5)
-    self._cpu_metric.Stop(page, tab)
-    # Calculate the idle cpu load before any actions are done.
-    self._cpu_metric.AddResults(tab, results,
-                                'idle_cpu_utilization')
+
+    # Measure power usage of tabs after quiescence.
+    util.WaitFor(tab.HasReachedQuiescence, 60)
+
+    self._power_metric.Start(page, tab)
+    time.sleep(5)
+    self._power_metric.Stop(page, tab)
+    self._power_metric.AddResults(tab, results,)
 
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
     histogram_type = histogram_util.BROWSER_HISTOGRAM

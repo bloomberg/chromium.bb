@@ -1,0 +1,10 @@
+{
+  "description": "Five blank pages.",
+  "pages": [
+    { "url": "file://blank_page/blank_page.html" },
+    { "url": "file://blank_page/blank_page.html" },
+    { "url": "file://blank_page/blank_page.html" },
+    { "url": "file://blank_page/blank_page.html" },
+    { "url": "file://blank_page/blank_page.html" }
+  ]
+}
