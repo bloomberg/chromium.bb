@@ -14,7 +14,12 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+namespace ui {
+class EventProcessor;
+}
+
 namespace aura {
+class WindowTreeHost;
 namespace test {
 class AuraTestHelper;
 }
@@ -47,6 +52,9 @@ class ViewsTestBase : public testing::Test {
   }
 
   base::MessageLoopForUI* message_loop() { return &message_loop_; }
+
+  ui::EventProcessor* event_processor();
+  aura::WindowTreeHost* host();
 
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.

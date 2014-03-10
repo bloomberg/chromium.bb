@@ -47,7 +47,7 @@ class AuraTestHelper {
   void RunAllPendingInMessageLoop();
 
   Window* root_window() { return host_->window(); }
-  WindowEventDispatcher* dispatcher() { return host_->dispatcher(); }
+  ui::EventProcessor* event_processor() { return host_->event_processor(); }
   WindowTreeHost* host() { return host_.get(); }
 
   TestScreen* test_screen() { return test_screen_.get(); }

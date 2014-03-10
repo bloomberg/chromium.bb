@@ -100,7 +100,7 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
   ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5),
                                      gfx::Point(5, 5), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_pressed_event);
-  EXPECT_EQ(w1.get(), dispatcher()->mouse_pressed_handler());
+  EXPECT_EQ(w1.get(), host()->dispatcher()->mouse_pressed_handler());
 
   // Build a window in the second WindowEventDispatcher.
   scoped_ptr<aura::Window> w2(
@@ -109,7 +109,7 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
   // The act of having the second window take capture should clear out mouse
   // pressed handler in the first WindowEventDispatcher.
   w2->SetCapture();
-  EXPECT_EQ(NULL, dispatcher()->mouse_pressed_handler());
+  EXPECT_EQ(NULL, host()->dispatcher()->mouse_pressed_handler());
 }
 
 // Makes sure that when one window gets capture, it forces the release on the

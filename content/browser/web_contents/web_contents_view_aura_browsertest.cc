@@ -27,8 +27,9 @@
 #include "content/test/content_browser_test_utils.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/event_processor.h"
 
 namespace content {
 
@@ -322,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetView()->GetContentNativeView();
-  aura::WindowEventDispatcher* dispatcher = content->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher = content->GetHost()->event_processor();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
   base::TimeDelta timestamp;

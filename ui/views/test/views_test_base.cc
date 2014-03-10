@@ -71,6 +71,14 @@ Widget::InitParams ViewsTestBase::CreateParams(
   return params;
 }
 
+ui::EventProcessor* ViewsTestBase::event_processor() {
+  return aura_test_helper_->event_processor();
+}
+
+aura::WindowTreeHost* ViewsTestBase::host() {
+  return aura_test_helper_->host();
+}
+
 gfx::NativeView ViewsTestBase::GetContext() {
   return aura_test_helper_->root_window();
 }

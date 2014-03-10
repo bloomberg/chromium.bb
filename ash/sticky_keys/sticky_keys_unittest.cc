@@ -15,8 +15,9 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/device_data_manager.h"
 
@@ -263,7 +264,7 @@ class StickyKeysTest : public test::AshTestBase,
     handler->HandleKeyEvent(ev.get());
   }
 
-  void SendActivateStickyKeyPattern(aura::WindowEventDispatcher* dispatcher,
+  void SendActivateStickyKeyPattern(ui::EventProcessor* dispatcher,
                                     ui::KeyboardCode key_code) {
     scoped_ptr<ui::KeyEvent> ev;
     ev.reset(GenerateKey(true, key_code));
@@ -793,8 +794,8 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
   // Test the actual key event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowEventDispatcher* dispatcher =
-      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
@@ -833,8 +834,8 @@ TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
   // Test the actual sticky mouse event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowEventDispatcher* dispatcher =
-      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
@@ -870,8 +871,8 @@ TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
   // Test the actual mouse wheel event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowEventDispatcher* dispatcher =
-      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 

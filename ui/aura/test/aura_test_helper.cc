@@ -81,7 +81,7 @@ void AuraTestHelper::SetUp() {
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
-  dispatcher()->host()->SetBounds(gfx::Rect(800, 600));
+  host()->SetBounds(gfx::Rect(800, 600));
 }
 
 void AuraTestHelper::TearDown() {

@@ -140,7 +140,7 @@ TEST_F(WindowEventDispatcherTest, RepostEvent) {
   ui::MouseEvent event(
       ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON,
       ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher()->RepostEvent(event);
+  host()->dispatcher()->RepostEvent(event);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 }
@@ -592,7 +592,7 @@ TEST_F(WindowEventDispatcherTest, RepostTargetsCaptureWindow) {
   const ui::MouseEvent press_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher()->RepostEvent(press_event);
+  host()->dispatcher()->RepostEvent(press_event);
   RunAllPendingInMessageLoop();  // Necessitated by RepostEvent().
   // Mouse moves/enters may be generated. We only care about a pressed.
   EXPECT_TRUE(EventTypesToString(recorder->events()).find("MOUSE_PRESSED") !=
@@ -613,7 +613,7 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
   // Discard MOUSE_ENTER.
   filter->Reset();
 
-  dispatcher()->HoldPointerMoves();
+  host()->dispatcher()->HoldPointerMoves();
 
   // Check that we don't immediately dispatch the MOUSE_DRAGGED event.
   ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
@@ -644,7 +644,7 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
   // Check that on ReleasePointerMoves, held events are not dispatched
   // immediately, but posted instead.
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
-  dispatcher()->ReleasePointerMoves();
+  host()->dispatcher()->ReleasePointerMoves();
   EXPECT_TRUE(filter->events().empty());
   RunAllPendingInMessageLoop();
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
@@ -652,9 +652,9 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
 
   // However if another message comes in before the dispatch of the posted
   // event, check that the posted event is dispatched before this new event.
-  dispatcher()->HoldPointerMoves();
+  host()->dispatcher()->HoldPointerMoves();
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
-  dispatcher()->ReleasePointerMoves();
+  host()->dispatcher()->ReleasePointerMoves();
   DispatchEventUsingWindowDispatcher(&mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
@@ -664,9 +664,9 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
 
   // Check that if the other message is another MOUSE_DRAGGED, we still coalesce
   // them.
-  dispatcher()->HoldPointerMoves();
+  host()->dispatcher()->HoldPointerMoves();
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
-  dispatcher()->ReleasePointerMoves();
+  host()->dispatcher()->ReleasePointerMoves();
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event2);
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
   filter->Reset();
@@ -677,14 +677,14 @@ TEST_F(WindowEventDispatcherTest, MouseMovesHeld) {
   // while holding pointer moves.
   ui::MouseEvent mouse_dragged_event3(ui::ET_MOUSE_DRAGGED, gfx::Point(28, 28),
                                       gfx::Point(28, 28), 0, 0);
-  dispatcher()->HoldPointerMoves();
+  host()->dispatcher()->HoldPointerMoves();
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event);
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event2);
   window->SetBounds(gfx::Rect(15, 15, 80, 80));
   DispatchEventUsingWindowDispatcher(&mouse_dragged_event3);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
-  dispatcher()->ReleasePointerMoves();
+  host()->dispatcher()->ReleasePointerMoves();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("MOUSE_MOVED", EventTypesToString(filter->events()));
   EXPECT_EQ(gfx::Point(13, 13), filter->mouse_location(0));
@@ -709,7 +709,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   filter->WaitUntilReceivedEvent(ui::ET_GESTURE_SHOW_PRESS);
   filter->Reset();
 
-  dispatcher()->HoldPointerMoves();
+  host()->dispatcher()->HoldPointerMoves();
 
   // Check that we don't immediately dispatch the TOUCH_MOVED event.
   ui::TouchEvent touch_moved_event(ui::ET_TOUCH_MOVED, touch_location,
@@ -720,7 +720,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   // Check that on ReleasePointerMoves, held events are not dispatched
   // immediately, but posted instead.
   DispatchEventUsingWindowDispatcher(&touch_moved_event);
-  dispatcher()->ReleasePointerMoves();
+  host()->dispatcher()->ReleasePointerMoves();
   EXPECT_TRUE(filter->events().empty());
 
   RunAllPendingInMessageLoop();
@@ -732,13 +732,13 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   ui::TouchEvent touch_released_event(ui::ET_TOUCH_RELEASED, touch_location,
                                       0, base::TimeDelta());
   filter->Reset();
-  dispatcher()->HoldPointerMoves();
+  host()->dispatcher()->HoldPointerMoves();
   DispatchEventUsingWindowDispatcher(&touch_moved_event);
   DispatchEventUsingWindowDispatcher(&touch_released_event);
   EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_TAP_CANCEL GESTURE_END",
             EventTypesToString(filter->events()));
   filter->Reset();
-  dispatcher()->ReleasePointerMoves();
+  host()->dispatcher()->ReleasePointerMoves();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
 }
@@ -779,7 +779,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeldOnScroll) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);
   test::TestWindowDelegate delegate;
-  HoldPointerOnScrollHandler handler(dispatcher(), filter);
+  HoldPointerOnScrollHandler handler(host()->dispatcher(), filter);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
   window->AddPreTargetHandler(&handler);
@@ -861,7 +861,7 @@ TEST_F(WindowEventDispatcherTest, DispatchMouseExitWhenCursorHidden) {
   filter->Reset();
 
   // Hide the cursor and verify a mouse exit was dispatched.
-  dispatcher()->host()->OnCursorVisibilityChanged(false);
+  host()->OnCursorVisibilityChanged(false);
   EXPECT_FALSE(filter->events().empty());
   EXPECT_EQ("MOUSE_EXITED", EventTypesToString(filter->events()));
 
@@ -1096,7 +1096,7 @@ TEST_F(WindowEventDispatcherTest, RepostTapdownGestureTest) {
       ui::EventTimeForNow(),
       details,
       0);
-  dispatcher()->RepostEvent(event);
+  host()->dispatcher()->RepostEvent(event);
   RunAllPendingInMessageLoop();
   // TODO(rbyers): Currently disabled - crbug.com/170987
   EXPECT_FALSE(EventTypesToString(filter->events()).find("GESTURE_TAP_DOWN") !=
@@ -1250,14 +1250,14 @@ TEST_F(WindowEventDispatcherTest, DeleteWindowDuringMouseMovedDispatch) {
       new OnMouseExitDeletingEventFilter();
   w1->SetEventFilter(w1_filter);
   w1->SetBounds(gfx::Rect(20, 20, 60, 60));
-  EXPECT_EQ(NULL, dispatcher()->mouse_moved_handler());
+  EXPECT_EQ(NULL, host()->dispatcher()->mouse_moved_handler());
 
   test::EventGenerator generator(root_window(), w1.get());
 
   // Move mouse over window 1 to set it as the |mouse_moved_handler_| for the
   // root window.
   generator.MoveMouseTo(51, 51);
-  EXPECT_EQ(w1.get(), dispatcher()->mouse_moved_handler());
+  EXPECT_EQ(w1.get(), host()->dispatcher()->mouse_moved_handler());
 
   // Create window 2 under the mouse cursor and stack it above window 1.
   Window* w2 = CreateNormalWindow(2, root_window(), NULL);
@@ -1273,7 +1273,7 @@ TEST_F(WindowEventDispatcherTest, DeleteWindowDuringMouseMovedDispatch) {
   // that was targeted to window 2 should be dropped since window 2 is
   // destroyed. This test passes if no crash happens.
   generator.MoveMouseTo(52, 52);
-  EXPECT_EQ(NULL, dispatcher()->mouse_moved_handler());
+  EXPECT_EQ(NULL, host()->dispatcher()->mouse_moved_handler());
 
   // Check events received by window 1.
   EXPECT_EQ("MOUSE_ENTERED MOUSE_MOVED MOUSE_EXITED",
@@ -1626,7 +1626,7 @@ class WindowEventDispatcherTestWithMessageLoop
                          gfx::Point(10, 10), ui::EF_NONE, ui::EF_NONE);
     message_loop()->PostTask(FROM_HERE,
                              base::Bind(&WindowEventDispatcher::RepostEvent,
-                                        base::Unretained(dispatcher()),
+                                        base::Unretained(host()->dispatcher()),
                                         mouse));
     message_loop()->PostTask(FROM_HERE,
                              message_loop()->QuitClosure());
@@ -1726,7 +1726,7 @@ TEST_F(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);
   test::TestWindowDelegate delegate;
-  HoldPointerOnScrollHandler handler(dispatcher(), filter);
+  HoldPointerOnScrollHandler handler(host()->dispatcher(), filter);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
   window->AddPreTargetHandler(&handler);
@@ -1831,7 +1831,7 @@ TEST_F(WindowEventDispatcherTest, HostCancelModeWithFocusedWindowOutside) {
   EXPECT_FALSE(root_window()->Contains(focused.get()));
   EXPECT_EQ(focused.get(),
             client::GetFocusClient(root_window())->GetFocusedWindow());
-  dispatcher()->DispatchCancelModeEvent();
+  host()->dispatcher()->DispatchCancelModeEvent();
   EXPECT_EQ(focused.get(),
             client::GetFocusClient(root_window())->GetFocusedWindow());
 }
@@ -1931,7 +1931,8 @@ TEST_F(WindowEventDispatcherTest, MAYBE_NestedEventDispatchTargetMoved) {
   // Dispatch an event to |first|.
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, first->bounds().CenterPoint(),
                       first->bounds().CenterPoint(), ui::EF_NONE, ui::EF_NONE);
-  ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+  ui::EventDispatchDetails details =
+      host()->dispatcher()->OnEventFromSource(&move);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(details.target_destroyed);
   EXPECT_EQ(first.get(), move.target());

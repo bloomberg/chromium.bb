@@ -23,6 +23,7 @@ class Transform;
 
 namespace ui {
 class Compositor;
+class EventProcessor;
 class ViewProp;
 }
 
@@ -49,11 +50,13 @@ class AURA_EXPORT WindowTreeHost {
 
   void InitCompositor();
 
+  void AddObserver(WindowTreeHostObserver* observer);
+  void RemoveObserver(WindowTreeHostObserver* observer);
+
   Window* window() { return window_; }
   const Window* window() const { return window_; }
 
-  void AddObserver(WindowTreeHostObserver* observer);
-  void RemoveObserver(WindowTreeHostObserver* observer);
+  ui::EventProcessor* event_processor();
 
   WindowEventDispatcher* dispatcher() {
     return const_cast<WindowEventDispatcher*>(

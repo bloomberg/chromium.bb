@@ -8,6 +8,7 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_focus_client.h"
+#include "ui/aura/window.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 

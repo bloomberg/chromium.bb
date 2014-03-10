@@ -21,6 +21,7 @@ class TimeDelta;
 
 namespace ui {
 class Event;
+class EventProcessor;
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
@@ -29,7 +30,7 @@ class TouchEvent;
 
 namespace aura {
 class Window;
-class WindowEventDispatcher;
+class WindowTreeHost;
 
 namespace client {
 class ScreenPositionClient;
@@ -46,9 +47,8 @@ class EventGeneratorDelegate {
  public:
   virtual ~EventGeneratorDelegate() {}
 
-  // Returns a root window for given point.
-  virtual WindowEventDispatcher* GetDispatcherAt(
-      const gfx::Point& point) const = 0;
+  // Returns the host for given point.
+  virtual WindowTreeHost* GetHostAt(const gfx::Point& point) const = 0;
 
   // Returns the screen position client that determines the
   // coordinates used in EventGenerator. EventGenerator uses
@@ -310,8 +310,8 @@ class EventGenerator {
   // Dispatch the event to the WindowEventDispatcher.
   void Dispatch(ui::Event* event);
 
-  void set_current_dispatcher(WindowEventDispatcher* dispatcher) {
-    current_dispatcher_ = dispatcher;
+  void set_current_host(WindowTreeHost* host) {
+    current_host_ = host;
   }
 
  private:
@@ -337,7 +337,7 @@ class EventGenerator {
 
   scoped_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;
-  WindowEventDispatcher* current_dispatcher_;
+  WindowTreeHost* current_host_;
   int flags_;
   bool grab_;
   std::list<ui::Event*> pending_events_;

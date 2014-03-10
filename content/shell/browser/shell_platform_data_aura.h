@@ -35,7 +35,7 @@ class ShellPlatformDataAura {
   void ShowWindow();
   void ResizeWindow(const gfx::Size& size);
 
-  aura::WindowEventDispatcher* dispatcher() { return host_->dispatcher(); }
+  aura::WindowTreeHost* host() { return host_.get(); }
 
  private:
   scoped_ptr<aura::WindowTreeHost> host_;

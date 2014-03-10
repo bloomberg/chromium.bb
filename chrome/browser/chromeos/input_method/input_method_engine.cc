@@ -27,10 +27,11 @@
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/events/event.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -221,8 +222,8 @@ bool InputMethodEngine::SendKeyEvents(
     return false;
   }
 
-  aura::WindowEventDispatcher* dispatcher =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
 
   for (size_t i = 0; i < events.size(); ++i) {
     const KeyboardEvent& event = events[i];

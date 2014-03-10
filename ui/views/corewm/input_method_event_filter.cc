@@ -9,6 +9,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/events/event.h"
+#include "ui/events/event_processor.h"
 
 namespace views {
 namespace corewm {
@@ -47,7 +48,7 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     // If the focused window is changed, all requests to IME will be
     // discarded so it's safe to update the target_dispatcher_ here.
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    target_dispatcher_ = target->GetRootWindow()->GetHost()->dispatcher();
+    target_dispatcher_ = target->GetRootWindow()->GetHost()->event_processor();
     DCHECK(target_dispatcher_);
     if (input_method_->DispatchKeyEvent(*event))
       event->StopPropagation();

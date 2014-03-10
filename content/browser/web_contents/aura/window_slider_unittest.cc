@@ -10,12 +10,12 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event_processor.h"
 
 namespace content {
 
-void DispatchEventDuringScrollCallback(aura::WindowEventDispatcher* dispatcher,
+void DispatchEventDuringScrollCallback(ui::EventProcessor* dispatcher,
                                        ui::Event* event,
                                        ui::EventType type,
                                        const gfx::Vector2dF& delta) {
@@ -265,7 +265,7 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
         base::TimeDelta::FromMilliseconds(10),
         1,
         base::Bind(&DispatchEventDuringScrollCallback,
-                   root_window()->GetHost()->dispatcher(),
+                   root_window()->GetHost()->event_processor(),
                    base::Owned(events[i])));
     EXPECT_TRUE(slider_delegate.created_back_layer());
     EXPECT_TRUE(slider_delegate.slide_aborted());

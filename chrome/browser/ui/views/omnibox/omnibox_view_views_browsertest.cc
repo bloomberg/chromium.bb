@@ -21,7 +21,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/event_processor.h"
 #endif // defined(USE_AURA)
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {
@@ -76,8 +77,8 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
-    aura::WindowEventDispatcher* dispatcher =
-        browser()->window()->GetNativeWindow()->GetHost()->dispatcher();
+    ui::EventProcessor* dispatcher =
+        browser()->window()->GetNativeWindow()->GetHost()->event_processor();
 
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, press_location,
                          5, base::TimeDelta::FromMilliseconds(0));

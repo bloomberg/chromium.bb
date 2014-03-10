@@ -17,8 +17,9 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -1289,8 +1290,8 @@ void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   const gfx::Rect screen_bounds(widget->GetWindowBoundsInScreen());
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
                             screen_bounds.CenterPoint(), 0, 0);
-  aura::WindowEventDispatcher* dispatcher =
-      widget->GetNativeWindow()->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher =
+      widget->GetNativeWindow()->GetHost()->event_processor();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move_event);
   if (last_event_type == ui::ET_MOUSE_ENTERED || details.dispatcher_destroyed)
     return;
@@ -2058,7 +2059,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                            ui::EF_NONE,
                            ui::EF_NONE);
   ui::EventDispatchDetails details = top_level_widget.GetNativeView()->
-      GetHost()->dispatcher()->OnEventFromSource(&move_main);
+      GetHost()->event_processor()->OnEventFromSource(&move_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(1, widget_view->GetEventCount(ui::ET_MOUSE_ENTERED));
@@ -2085,7 +2086,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                    cursor_location_dialog,
                                    ui::EF_NONE,
                                    ui::EF_NONE);
-  details = top_level_widget.GetNativeView()->GetHost()->dispatcher()->
+  details = top_level_widget.GetNativeView()->GetHost()->event_processor()->
       OnEventFromSource(&mouse_down_dialog);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::ET_MOUSE_PRESSED));
@@ -2098,7 +2099,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                  cursor_location_main2,
                                  ui::EF_NONE,
                                  ui::EF_NONE);
-  details = top_level_widget.GetNativeView()->GetHost()->dispatcher()->
+  details = top_level_widget.GetNativeView()->GetHost()->event_processor()->
       OnEventFromSource(&mouse_down_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(0, widget_view->GetEventCount(ui::ET_MOUSE_MOVED));

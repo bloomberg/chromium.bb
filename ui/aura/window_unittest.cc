@@ -370,11 +370,11 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   transform.Translate(100.0, 100.0);
   transform.Rotate(90.0);
   transform.Scale(2.0, 5.0);
-  dispatcher()->host()->SetTransform(transform);
-  dispatcher()->host()->MoveCursorTo(gfx::Point(10, 10));
+  host()->SetTransform(transform);
+  host()->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   gfx::Point mouse_location;
-  EXPECT_TRUE(dispatcher()->host()->QueryMouseLocation(&mouse_location));
+  EXPECT_TRUE(host()->QueryMouseLocation(&mouse_location));
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
   EXPECT_EQ("50,120", mouse_location.ToString());
 #endif
@@ -451,7 +451,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   transform.Translate(10.0, 20.0);
   transform.Rotate(10.0);
   transform.Scale(0.3f, 0.5f);
-  dispatcher()->host()->SetTransform(root_transform);
+  host()->SetTransform(root_transform);
   w1->SetTransform(transform);
   w11->SetTransform(transform);
   w111->SetTransform(transform);
@@ -462,7 +462,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 #if !defined(OS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
   gfx::Point mouse_location;
-  EXPECT_TRUE(dispatcher()->host()->QueryMouseLocation(&mouse_location));
+  EXPECT_TRUE(host()->QueryMouseLocation(&mouse_location));
   EXPECT_EQ("169,80", mouse_location.ToString());
 #endif
   EXPECT_EQ("20,53",
@@ -1068,7 +1068,7 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   window.reset();
 
   // Make sure the root window doesn't reference the window anymore.
-  EXPECT_EQ(NULL, dispatcher()->mouse_pressed_handler());
+  EXPECT_EQ(NULL, host()->dispatcher()->mouse_pressed_handler());
   EXPECT_EQ(NULL, aura::client::GetCaptureWindow(root_window()));
 }
 
@@ -1485,7 +1485,7 @@ TEST_F(WindowTest, IgnoreEventsTest) {
 
 // Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
-  gfx::Size size = dispatcher()->host()->GetBounds().size();
+  gfx::Size size = host()->GetBounds().size();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetScreenFor(root_window())->GetDisplayNearestPoint(
                 gfx::Point()).bounds());
@@ -1494,7 +1494,7 @@ TEST_F(WindowTest, Transform) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0);
   transform.Rotate(90.0);
-  dispatcher()->host()->SetTransform(transform);
+  host()->SetTransform(transform);
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
@@ -1506,12 +1506,11 @@ TEST_F(WindowTest, Transform) {
           gfx::Point()).bounds().ToString());
 
   // Host size shouldn't change.
-  EXPECT_EQ(size.ToString(),
-            dispatcher()->host()->GetBounds().size().ToString());
+  EXPECT_EQ(size.ToString(), host()->GetBounds().size().ToString());
 }
 
 TEST_F(WindowTest, TransformGesture) {
-  gfx::Size size = dispatcher()->host()->GetBounds().size();
+  gfx::Size size = host()->GetBounds().size();
 
   scoped_ptr<GestureTrackPositionDelegate> delegate(
       new GestureTrackPositionDelegate);
@@ -1522,7 +1521,7 @@ TEST_F(WindowTest, TransformGesture) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0.0);
   transform.Rotate(90.0);
-  dispatcher()->host()->SetTransform(transform);
+  host()->SetTransform(transform);
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), 0, getTime());
@@ -2017,7 +2016,7 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 
 // Tests mouse events on window change.
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
-  gfx::Size size = dispatcher()->host()->GetBounds().size();
+  gfx::Size size = host()->GetBounds().size();
 
   EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);

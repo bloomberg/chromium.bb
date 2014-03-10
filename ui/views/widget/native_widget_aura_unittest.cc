@@ -40,14 +40,11 @@ class NativeWidgetAuraTest : public ViewsTestBase {
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     ViewsTestBase::SetUp();
-    dispatcher()->host()->SetBounds(gfx::Rect(640, 480));
+    host()->SetBounds(gfx::Rect(640, 480));
   }
 
  protected:
   aura::Window* root_window() { return GetContext(); }
-  aura::WindowEventDispatcher* dispatcher() {
-    return root_window()->GetHost()->dispatcher();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
@@ -253,7 +250,8 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1,
                        base::TimeDelta());
-  ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&press);
+  ui::EventDispatchDetails details =
+      event_processor()->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
   // Both views should get the press.
   EXPECT_TRUE(view->got_gesture_event());
@@ -267,7 +265,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   // the press.
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(250, 251), 1,
                              base::TimeDelta());
-  details = dispatcher()->OnEventFromSource(&release);
+  details = event_processor()->OnEventFromSource(&release);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(view->got_gesture_event());
   EXPECT_FALSE(child->got_gesture_event());

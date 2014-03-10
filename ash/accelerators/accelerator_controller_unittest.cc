@@ -26,8 +26,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
+#include "ui/events/event_processor.h"
 #include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
@@ -635,8 +635,8 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
   GetController()->Register(accelerator_a, &target);
 
   // The accelerator is processed only once.
-  aura::WindowEventDispatcher* dispatcher =
-      Shell::GetPrimaryRootWindow()->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher =
+      Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
   ui::TranslatedKeyEvent key_event1(msg1, false);

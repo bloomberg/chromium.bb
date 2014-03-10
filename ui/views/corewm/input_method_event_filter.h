@@ -8,16 +8,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
-namespace aura {
-class WindowEventDispatcher;
-}
-
 namespace ui {
+class EventProcessor;
 class InputMethod;
 }
 
@@ -47,7 +44,7 @@ class VIEWS_EXPORT InputMethodEventFilter
   scoped_ptr<ui::InputMethod> input_method_;
 
   // The target dispatcher that will receive translated key events from the IME.
-  aura::WindowEventDispatcher* target_dispatcher_;
+  ui::EventProcessor* target_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilter);
 };

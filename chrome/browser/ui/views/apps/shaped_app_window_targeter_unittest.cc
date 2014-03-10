@@ -62,7 +62,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(40, 40), gfx::Point(40, 40),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -77,7 +78,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(40, 40), gfx::Point(40, 40),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(root_window(), move.target());
 
@@ -85,7 +87,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestBasic) {
     ui::MouseEvent move2(ui::ET_MOUSE_MOVED,
                          gfx::Point(80, 80), gfx::Point(80, 80),
                          ui::EF_NONE, ui::EF_NONE);
-    details = dispatcher()->OnEventFromSource(&move2);
+    details = event_processor()->OnEventFromSource(&move2);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move2.target());
   }
@@ -106,7 +108,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(40, 40), gfx::Point(40, 40),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -117,7 +120,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(10, 10), gfx::Point(10, 10),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -132,7 +136,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(10, 10), gfx::Point(10, 10),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(root_window(), move.target());
   }
@@ -144,7 +149,8 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(10, 10), gfx::Point(10, 10),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -160,7 +166,8 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(80, 80), gfx::Point(80, 80),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -171,7 +178,8 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(32, 37), gfx::Point(32, 37),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -185,7 +193,8 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(80, 80), gfx::Point(80, 80),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(window, move.target());
   }
@@ -196,7 +205,8 @@ TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
     ui::MouseEvent move(ui::ET_MOUSE_MOVED,
                         gfx::Point(32, 37), gfx::Point(32, 37),
                         ui::EF_NONE, ui::EF_NONE);
-    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ui::EventDispatchDetails details =
+        event_processor()->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(root_window(), move.target());
   }

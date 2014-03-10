@@ -17,8 +17,9 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event_processor.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/window_util.h"
 
@@ -379,7 +380,7 @@ TEST_F(WorkspaceEventHandlerTest,
                        generator.current_location(),
                        ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
                        ui::EF_MIDDLE_MOUSE_BUTTON);
-  aura::WindowEventDispatcher* dispatcher = root->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher = root->GetHost()->event_processor();
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, generator.current_location(),

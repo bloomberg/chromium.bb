@@ -16,7 +16,8 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/views/widget/widget.h"
@@ -485,8 +486,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
       ui::GestureConfiguration::default_radius();
   ui::GestureConfiguration::set_default_radius(0);
 
-  aura::WindowEventDispatcher* dispatcher =
-      root_window->GetHost()->dispatcher();
+  ui::EventProcessor* dispatcher = root_window->GetHost()->event_processor();
   const int kTouchId = 2;
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                        button_pos,

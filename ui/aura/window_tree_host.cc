@@ -125,6 +125,10 @@ void WindowTreeHost::RemoveObserver(WindowTreeHostObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+ui::EventProcessor* WindowTreeHost::event_processor() {
+  return dispatcher();
+}
+
 void WindowTreeHost::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
   transformer_ = transformer.Pass();
