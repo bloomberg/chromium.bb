@@ -51,7 +51,7 @@ static void disposeMapWithUnsafePersistentValues(Map* map)
 class V8PerContextDataHolder {
     WTF_MAKE_NONCOPYABLE(V8PerContextDataHolder);
 public:
-    static void install(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
+    static void install(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
     {
         new V8PerContextDataHolder(context, world);
     }
@@ -67,10 +67,10 @@ public:
 
     V8PerContextData* perContextData() const { return m_perContextData; }
     void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
-    DOMWrapperWorld* world() const { return m_world; }
+    DOMWrapperWorld* world() const { return m_world.get(); }
 
 private:
-    V8PerContextDataHolder(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
+    V8PerContextDataHolder(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
         : m_context(v8::Isolate::GetCurrent(), context)
         , m_perContextData(0)
         , m_world(world)
@@ -89,13 +89,10 @@ private:
 
     ScopedPersistent<v8::Context> m_context;
     V8PerContextData* m_perContextData;
-    // This should not be a RefPtr. Otherwise, it creates a cycle:
-    // V8PerContextData => DOMWrapperWorld => DOMDataStore => global objects
-    // => Window or WorkerGlobalScope => V8PerContextData.
-    DOMWrapperWorld* m_world;
+    RefPtr<DOMWrapperWorld> m_world;
 };
 
-V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
+V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
     : m_activityLogger(0)
     , m_isolate(context->GetIsolate())
     , m_contextHolder(adoptPtr(new gin::ContextHolder(context->GetIsolate())))

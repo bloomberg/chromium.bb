@@ -53,7 +53,7 @@ public:
     {
         return adoptRef(new ErrorEvent);
     }
-    static PassRefPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, PassRefPtr<DOMWrapperWorld> world)
+    static PassRefPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
     {
         return adoptRef(new ErrorEvent(message, fileName, lineNumber, columnNumber, world));
     }
@@ -61,7 +61,7 @@ public:
     {
         return adoptRef(new ErrorEvent(type, initializer));
     }
-    static PassRefPtr<ErrorEvent> createSanitizedError(PassRefPtr<DOMWrapperWorld> world)
+    static PassRefPtr<ErrorEvent> createSanitizedError(DOMWrapperWorld* world)
     {
         return adoptRef(new ErrorEvent("Script error.", String(), 0, 0, world));
     }
@@ -78,7 +78,7 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    PassRefPtr<DOMWrapperWorld> world() const { return m_world; }
+    DOMWrapperWorld* world() const { return m_world.get(); }
 
     void setUnsanitizedMessage(const String&);
 
@@ -86,7 +86,7 @@ public:
 
 private:
     ErrorEvent();
-    ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, PassRefPtr<DOMWrapperWorld>);
+    ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld*);
     ErrorEvent(const AtomicString&, const ErrorEventInit&);
 
     String m_unsanitizedMessage;

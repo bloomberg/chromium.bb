@@ -63,6 +63,7 @@ public:
     static const int mainWorldExtensionGroup = 0;
     static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
     ~DOMWrapperWorld();
+    void dispose();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
     static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);

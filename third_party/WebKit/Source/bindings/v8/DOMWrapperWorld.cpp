@@ -96,6 +96,8 @@ DOMWrapperWorld::~DOMWrapperWorld()
 {
     ASSERT(!isMainWorld());
 
+    dispose();
+
     if (!isIsolatedWorld())
         return;
 
@@ -110,6 +112,11 @@ DOMWrapperWorld::~DOMWrapperWorld()
     map.remove(i);
     isolatedWorldCount--;
     ASSERT(map.size() == isolatedWorldCount);
+}
+
+void DOMWrapperWorld::dispose()
+{
+    m_domDataStore.clear();
 }
 
 #ifndef NDEBUG

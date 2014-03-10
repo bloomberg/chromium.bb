@@ -100,9 +100,7 @@ WorkerScriptController::~WorkerScriptController()
 {
     ThreadState::current()->removeInterruptor(m_interruptor.get());
 
-    RELEASE_ASSERT(m_world->hasOneRef());
-    // ~DOMWrapperWorld() must be called before disposing the isolate.
-    m_world = nullptr;
+    m_world->dispose();
 
     // The corresponding call to didStartWorkerRunLoop is in
     // WorkerThread::workerThread().
@@ -128,7 +126,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     if (context.IsEmpty())
         return false;
 
-    m_perContextData = V8PerContextData::create(context, m_world.get());
+    m_perContextData = V8PerContextData::create(context, m_world);
 
     v8::Context::Scope scope(context);
 
@@ -213,11 +211,11 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     if (state.hadException) {
         if (errorEvent) {
             *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
-                ErrorEvent::createSanitizedError(nullptr) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, nullptr);
+                ErrorEvent::createSanitizedError(0) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_isolate);
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
-            RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, nullptr);
+            RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
             m_workerGlobalScope.reportException(event, nullptr, NotSharableCrossOrigin);
         }
     }

@@ -703,7 +703,7 @@ V8BindingTestScope::V8BindingTestScope(v8::Isolate* isolate)
     , m_context(v8::Context::New(isolate))
     , m_contextScope(m_context)
     , m_world(DOMWrapperWorld::create())
-    , m_perContextData(V8PerContextData::create(m_context, m_world.get()))
+    , m_perContextData(V8PerContextData::create(m_context, m_world))
 {
 }
 

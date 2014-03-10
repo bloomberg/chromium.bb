@@ -286,7 +286,7 @@ void V8WindowShell::createContext()
     v8::Handle<v8::Context> context = v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate));
     if (context.IsEmpty())
         return;
-    m_perContextData = V8PerContextData::create(context, m_world.get());
+    m_perContextData = V8PerContextData::create(context, m_world);
 
     double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
     const char* histogramName = "WebCore.V8WindowShell.createContext.MainWorld";

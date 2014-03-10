@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
+V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, DOMWrapperWorld* world, v8::Isolate* isolate)
     : EventListener(JSEventListenerType)
     , m_isAttribute(isAttribute)
     , m_world(world)
