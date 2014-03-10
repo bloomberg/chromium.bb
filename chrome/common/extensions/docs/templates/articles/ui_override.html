@@ -1,13 +1,13 @@
-<h1>Settings Overrides</h1>
+<h1>User Interface Overrides</h1>
 
 <p>
-Settings overrides are a way for extensions to override selected Chrome settings
-and user interface properties.
+User interface overrides are a way for extensions to override selected Chrome
+user interface properties.
 </p>
 
 <h2 id="bookmarks">Bookmarks User Interface</h2>
 <p>
-Register the settings you want to override in the
+Register the user interface properties you want to override in the
 <a href="manifest.html">extension manifest</a> like this:
 </p>
 
@@ -15,7 +15,7 @@ Register the settings you want to override in the
   "name": "My extension",
   ...
 <b>
-  "chrome_settings_overrides" : {
+  "chrome_ui_overrides" : {
     "bookmarks_ui": {
       "remove_button": "true",
       "remove_bookmark_shortcut": "true"
@@ -33,10 +33,12 @@ Register the settings you want to override in the
   </li>
 
   <li>
-    <a href="#bookmarks_ui">Bookmark shortcut</a>: the shortcut key that is
-    used to bookmark a page (Ctrl-D on Windows). Extensions may remove this
-    shortcut via the settings overrides, and optionally bind their own command
-    to it using the <code>commands</code> section of the manifest.
+    <a href="#bookmarks_ui">Bookmark shortcut</a>: the shortcut key that is used
+    to bookmark a page (Ctrl-D on Windows). Extensions may remove this shortcut
+    via the settings overrides, and optionally bind their own command to it
+    using the <code>commands</code> section of the manifest. If the shortcut key
+    is removed or rebound, the corresponding menu item as also removed or
+    overridden respectively.
   </li>
 </ul>
 </p>
@@ -47,48 +49,6 @@ in the Chrome Dev release, and Chrome must be started with the
 <code>--enable-override-bookmarks-ui=1</code> command line flag to enable
 bookmarks user interface overrides.</p>
 
-<h2 id="others">Homepage, Search Provider, and Startup Pages</h2>
-<p>
-Here is an example how <a href="#homepage">homepage</a>, <a
-href="#search_provider">search provider</a> and <a href="#startup_pages">startup
-pages</a> can be modified in the <a href="manifest.html">extension
-manifest</a>.</p>
-
-<pre>{
-  "name": "My extension",
-  ...
-  "chrome_settings_overrides": {
-    "homepage": "http://www.homepage.com",
-    "search_provider": {
-        "name": "name.__MSG_url_domain__",
-        "keyword": "keyword.__MSG_url_domain__",
-        "search_url": "http://www.foo.__MSG_url_domain__/s?q={searchTerms}",
-        "favicon_url": "http://www.foo.__MSG_url_domain__/favicon.ico",
-        "suggest_url": "http://www.foo.__MSG_url_domain__/suggest?q={searchTerms}",
-        "instant_url": "http://www.foo.__MSG_url_domain__/instant?q={searchTerms}",
-        "image_url": "http://www.foo.__MSG_url_domain__/image?q={searchTerms}",
-        "search_url_post_params": "search_lang=__MSG_url_domain__",
-        "suggest_url_post_params": "suggest_lang=__MSG_url_domain__",
-        "instant_url_post_params": "instant_lang=__MSG_url_domain__",
-        "image_url_post_params": "image_lang=__MSG_url_domain__",
-        "alternate_urls": [
-          "http://www.moo.__MSG_url_domain__/s?q={searchTerms}",
-          "http://www.noo.__MSG_url_domain__/s?q={searchTerms}"
-        ],
-        "encoding": "UTF-8",
-        "is_default": true
-    },
-    "startup_pages": ["http://www.startup.com"]
-   },
-   "default_locale": "de",
-   ...
-}</pre>
-
-<p class="note">
-<b>Note:</b> Settings overrides for <code>homepage</code>,
-<code>search_provider</code>, and <code>startup_pages</code> are only enabled
-in the Chrome Dev release.</p>
-
 <h2 id="reference">Reference</h2>
 <p>
 An extension can override one or more of the following properties in the
@@ -96,7 +56,7 @@ manifest:
 </p>
 
 <ul>
-{{#f:apis.manifestTypes.byName.ChromeSettingsOverrides.properties}}
+{{#f:apis.manifestTypes.byName.ChromeUIOverrides.properties}}
   <li>
   <p id="{{f.name}}"><b><code>{{f.name}}</code> ({{+partials.variable_type type:f/}})</b></p>
   <p>{{f.description}}</p>
@@ -112,4 +72,3 @@ manifest:
   {{/}}
 {{/}}
 </ul>
-

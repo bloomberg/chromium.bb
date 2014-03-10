@@ -241,17 +241,9 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(result);
 }
 
-#if defined(OS_WIN)
-// TODO(wittman): Enable the test once the bookmarks aren't a part of Settings
-// Overrides API.
-#define MAYBE_OverwriteBookmarkShortcut OverwriteBookmarkShortcut
-#else
-#define MAYBE_OverwriteBookmarkShortcut DISABLED_OverwriteBookmarkShortcut
-#endif
-
 // This test validates that an extension can override the Chrome bookmark
 // shortcut if it has requested to do so.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_OverwriteBookmarkShortcut) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));

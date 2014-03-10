@@ -214,6 +214,8 @@
         'common/extensions/manifest_handlers/settings_overrides_handler.h',
         'common/extensions/manifest_handlers/theme_handler.cc',
         'common/extensions/manifest_handlers/theme_handler.h',
+        'common/extensions/manifest_handlers/ui_overrides_handler.cc',
+        'common/extensions/manifest_handlers/ui_overrides_handler.h',
         'common/extensions/manifest_url_handler.cc',
         'common/extensions/manifest_url_handler.h',
         'common/extensions/message_bundle.cc',

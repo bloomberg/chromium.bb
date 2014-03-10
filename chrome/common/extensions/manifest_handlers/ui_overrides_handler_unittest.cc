@@ -4,10 +4,12 @@
 
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 
+#include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,50 +19,37 @@ namespace {
 const char kManifest[] = "{"
     " \"version\" : \"1.0.0.0\","
     " \"name\" : \"Test\","
-    " \"chrome_settings_overrides\" : {"
-    "   \"homepage\" : \"http://www.homepage.com\","
-    "   \"search_provider\" : {"
-    "        \"name\" : \"first\","
-    "        \"keyword\" : \"firstkey\","
-    "        \"search_url\" : \"http://www.foo.com/s?q={searchTerms}\","
-    "        \"favicon_url\" : \"http://www.foo.com/favicon.ico\","
-    "        \"suggest_url\" : \"http://www.foo.com/s?q={searchTerms}\","
-    "        \"encoding\" : \"UTF-8\","
-    "        \"is_default\" : true"
-    "    },"
-    "   \"startup_pages\" : [\"http://www.startup.com\"]"
+    " \"chrome_ui_overrides\" : {"
+    "   \"bookmarks_ui\" : {"
+    "        \"remove_button\" : true,"
+    "        \"remove_bookmark_shortcut\" : true"
+    "    }"
     "  }"
     "}";
 
 const char kBrokenManifest[] = "{"
     " \"version\" : \"1.0.0.0\","
     " \"name\" : \"Test\","
-    " \"chrome_settings_overrides\" : {"
-    "   \"homepage\" : \"{invalid}\","
-    "   \"search_provider\" : {"
-    "        \"name\" : \"first\","
-    "        \"keyword\" : \"firstkey\","
-    "        \"search_url\" : \"{invalid}/s?q={searchTerms}\","
-    "        \"favicon_url\" : \"{invalid}/favicon.ico\","
-    "        \"encoding\" : \"UTF-8\","
-    "        \"is_default\" : true"
-    "    },"
-    "   \"startup_pages\" : [\"{invalid}\"]"
+    " \"chrome_ui_overrides\" : {"
     "  }"
     "}";
 
-using extensions::api::manifest_types::ChromeSettingsOverrides;
+using extensions::api::manifest_types::ChromeUIOverrides;
 using extensions::Extension;
 using extensions::Manifest;
-using extensions::SettingsOverrides;
+using extensions::UIOverrides;
 namespace manifest_keys = extensions::manifest_keys;
 
-class OverrideSettingsTest : public testing::Test {
+class UIOverrideTest : public testing::Test {
 };
 
 
-TEST_F(OverrideSettingsTest, ParseManifest) {
+TEST_F(UIOverrideTest, ParseManifest) {
   extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  // This functionality requires a feature flag.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui",
+      "1");
   std::string manifest(kManifest);
   JSONStringValueSerializer json(&manifest);
   std::string error;
@@ -73,38 +62,23 @@ TEST_F(OverrideSettingsTest, ParseManifest) {
       *static_cast<base::DictionaryValue*>(root.get()),
       Extension::NO_FLAGS,
       &error);
-  ASSERT_TRUE(extension);
-#if defined(OS_WIN)
-  ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
+  ASSERT_TRUE(extension) << error;
+  ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kUIOverride));
 
-  SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
-      extension->GetManifestData(manifest_keys::kSettingsOverride));
-  ASSERT_TRUE(settings_override);
-  ASSERT_TRUE(settings_override->search_engine);
-  EXPECT_TRUE(settings_override->search_engine->is_default);
-  const ChromeSettingsOverrides::Search_provider* search_engine =
-      settings_override->search_engine.get();
-  EXPECT_EQ("first", search_engine->name);
-  EXPECT_EQ("firstkey", search_engine->keyword);
-  EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", search_engine->search_url);
-  EXPECT_EQ("http://www.foo.com/favicon.ico", search_engine->favicon_url);
-  EXPECT_EQ("http://www.foo.com/s?q={searchTerms}",
-            *search_engine->suggest_url);
-  EXPECT_EQ("UTF-8", search_engine->encoding);
-
-  EXPECT_EQ(std::vector<GURL>(1, GURL("http://www.startup.com")),
-            settings_override->startup_pages);
-
-  ASSERT_TRUE(settings_override->homepage);
-  EXPECT_EQ(GURL("http://www.homepage.com"), *settings_override->homepage);
-#else
-  EXPECT_FALSE(
-      extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
-#endif
+  UIOverrides* ui_override = static_cast<UIOverrides*>(
+      extension->GetManifestData(manifest_keys::kUIOverride));
+  ASSERT_TRUE(ui_override);
+  ASSERT_TRUE(ui_override->bookmarks_ui);
+  EXPECT_TRUE(ui_override->bookmarks_ui->remove_button);
+  EXPECT_TRUE(ui_override->bookmarks_ui->remove_bookmark_shortcut);
 }
 
-TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
+TEST_F(UIOverrideTest, ParseBrokenManifest) {
   extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  // This functionality requires a feature flag.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui",
+      "1");
   std::string manifest(kBrokenManifest);
   JSONStringValueSerializer json(&manifest);
   std::string error;
@@ -117,16 +91,12 @@ TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
       *static_cast<base::DictionaryValue*>(root.get()),
       Extension::NO_FLAGS,
       &error);
-#if defined(OS_WIN)
   EXPECT_FALSE(extension);
   EXPECT_EQ(
-      std::string(extensions::manifest_errors::kInvalidEmptySettingsOverrides),
+      extensions::ErrorUtils::FormatErrorMessage(
+          extensions::manifest_errors::kInvalidEmptyDictionary,
+          extensions::manifest_keys::kUIOverride),
       error);
-#else
-  EXPECT_TRUE(extension);
-  EXPECT_FALSE(
-      extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
-#endif
 }
 
 }  // namespace

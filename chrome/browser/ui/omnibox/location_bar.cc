@@ -7,7 +7,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
-#include "extensions/browser/extension_system.h"
+#include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -20,21 +21,19 @@ LocationBar::~LocationBar() {
 }
 
 bool LocationBar::IsBookmarkStarHiddenByExtension() const {
-  const ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  // Extension service may be NULL during unit test execution.
-  if (!extension_service)
-    return false;
-
-  const extensions::ExtensionSet* extension_set =
-      extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator i = extension_set->begin();
-       i != extension_set->end(); ++i) {
+  const extensions::ExtensionSet& extension_set =
+      extensions::ExtensionRegistry::Get(profile_)->enabled_extensions();
+  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
+       i != extension_set.end(); ++i) {
+    using extensions::UIOverrides;
     using extensions::SettingsOverrides;
+    const UIOverrides* ui_overrides = UIOverrides::Get(i->get());
     const SettingsOverrides* settings_overrides =
         SettingsOverrides::Get(i->get());
-    if (settings_overrides &&
-        SettingsOverrides::RemovesBookmarkButton(*settings_overrides) &&
+    if (((settings_overrides &&
+          SettingsOverrides::RemovesBookmarkButton(*settings_overrides)) ||
+         (ui_overrides &&
+          UIOverrides::RemovesBookmarkButton(*ui_overrides))) &&
         (extensions::PermissionsData::HasAPIPermission(
             *i,
             extensions::APIPermission::kBookmarkManagerPrivate) ||

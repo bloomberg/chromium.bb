@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
+#include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
@@ -77,6 +78,7 @@ void RegisterChromeManifestHandlers() {
   (new SystemIndicatorHandler)->Register();
   (new ThemeHandler)->Register();
   (new TtsEngineManifestHandler)->Register();
+  (new UIOverridesHandler)->Register();
   (new UpdateURLHandler)->Register();
   (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();

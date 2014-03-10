@@ -25,6 +25,15 @@
     "documentation": "settings_override.html",
     "example": {}
   },
+  "chrome_ui_overrides": {
+    "documentation": "ui_override.html",
+    "example": {
+      "bookmarks_ui": {
+        "remove_button": true,
+        "remove_bookmark_shortcut": true
+       }
+    }
+  },
   "chrome_url_overrides": {
     "documentation": "override.html",
     "example": {}

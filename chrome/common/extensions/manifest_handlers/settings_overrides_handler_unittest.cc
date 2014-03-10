@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -120,7 +121,9 @@ TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
 #if defined(OS_WIN)
   EXPECT_FALSE(extension);
   EXPECT_EQ(
-      std::string(extensions::manifest_errors::kInvalidEmptySettingsOverrides),
+      extensions::ErrorUtils::FormatErrorMessage(
+          extensions::manifest_errors::kInvalidEmptyDictionary,
+          extensions::manifest_keys::kSettingsOverride),
       error);
 #else
   EXPECT_TRUE(extension);

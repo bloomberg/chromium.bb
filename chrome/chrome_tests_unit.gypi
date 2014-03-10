@@ -1809,6 +1809,7 @@
         'common/extensions/manifest_handlers/exclude_matches_manifest_unittest.cc',
         'common/extensions/manifest_handlers/externally_connectable_unittest.cc',
         'common/extensions/manifest_handlers/settings_overrides_handler_unittest.cc',
+        'common/extensions/manifest_handlers/ui_overrides_handler_unittest.cc',
         'common/extensions/manifest_tests/extension_manifest_test.cc',
         'common/extensions/manifest_tests/extension_manifests_background_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_chromepermission_unittest.cc',

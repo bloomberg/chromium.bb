@@ -13,37 +13,30 @@ namespace extensions {
 
 class ManifestPermission;
 
-// SettingsOverride is associated with "chrome_settings_overrides" manifest key.
-// An extension can add a search engine as default or non-default, overwrite the
-// homepage and append a startup page to the list.
-struct SettingsOverrides : public Extension::ManifestData {
-  SettingsOverrides();
-  virtual ~SettingsOverrides();
+// UIOverrides is associated with "chrome_ui_overrides" manifest key, and
+// represents manifest settings to override aspects of the Chrome user
+// interface.
+struct UIOverrides : public Extension::ManifestData {
+  UIOverrides();
+  virtual ~UIOverrides();
 
-  static const SettingsOverrides* Get(const Extension* extension);
+  static const UIOverrides* Get(const Extension* extension);
 
-  static bool RemovesBookmarkButton(
-      const SettingsOverrides& settings_overrides);
-  static bool RemovesBookmarkShortcut(
-      const SettingsOverrides& settings_overrides);
+  static bool RemovesBookmarkButton(const UIOverrides& ui_overrides);
+  static bool RemovesBookmarkShortcut(const UIOverrides& ui_overrides);
 
-  scoped_ptr<api::manifest_types::ChromeSettingsOverrides::Bookmarks_ui>
-      bookmarks_ui;
-  scoped_ptr<api::manifest_types::ChromeSettingsOverrides::Search_provider>
-      search_engine;
-  scoped_ptr<GURL> homepage;
-  std::vector<GURL> startup_pages;
+  scoped_ptr<api::manifest_types::ChromeUIOverrides::Bookmarks_ui> bookmarks_ui;
 
   scoped_ptr<ManifestPermission> manifest_permission;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverrides);
+  DISALLOW_COPY_AND_ASSIGN(UIOverrides);
 };
 
-class SettingsOverridesHandler : public ManifestHandler {
+class UIOverridesHandler : public ManifestHandler {
  public:
-  SettingsOverridesHandler();
-  virtual ~SettingsOverridesHandler();
+  UIOverridesHandler();
+  virtual ~UIOverridesHandler();
 
   virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual bool Validate(const Extension* extension,
@@ -59,7 +52,7 @@ class SettingsOverridesHandler : public ManifestHandler {
 
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverridesHandler);
+  DISALLOW_COPY_AND_ASSIGN(UIOverridesHandler);
 };
 
 }  // namespace extensions

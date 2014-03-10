@@ -261,8 +261,9 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
   info->startup_pages = ParseStartupPage(*settings, error);
   if (!info->bookmarks_ui && !info->homepage &&
       !info->search_engine && info->startup_pages.empty()) {
-    *error =
-        base::ASCIIToUTF16(manifest_errors::kInvalidEmptySettingsOverrides);
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        manifest_errors::kInvalidEmptyDictionary,
+        manifest_keys::kSettingsOverride);
     return false;
   }
   info->manifest_permission.reset(new ManifestPermissionImpl(

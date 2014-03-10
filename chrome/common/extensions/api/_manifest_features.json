@@ -83,6 +83,18 @@
     "channel": "dev",
     "extension_types": ["extension"],
     "platforms": ["win"]
+  }, {  // TODO(wittman): remove this section for M36.
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "CB2E4E7174A398FCB3AFA6840500C2E1D22DA7B2", // Bookmark Manager
+      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900
+      "D57DE394F36DC1C3220E7604C575D29C51A6C495"  // http://crbug.com/319444
+    ]
+  }],
+  "chrome_ui_overrides": [{
+    "channel": "dev",
+    "extension_types": ["extension"]
   }, {
     "channel": "stable",
     "extension_types": ["extension"],

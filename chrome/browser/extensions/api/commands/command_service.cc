@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
+#include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
@@ -172,12 +173,16 @@ CommandService* CommandService::Get(content::BrowserContext* context) {
 // static
 bool CommandService::RemovesBookmarkShortcut(
     const extensions::Extension* extension) {
+  using extensions::UIOverrides;
   using extensions::SettingsOverrides;
+  const UIOverrides* ui_overrides = UIOverrides::Get(extension);
   const SettingsOverrides* settings_overrides =
       SettingsOverrides::Get(extension);
 
-  return settings_overrides &&
-      SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides) &&
+  return ((settings_overrides &&
+           SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides)) ||
+          (ui_overrides &&
+           UIOverrides::RemovesBookmarkShortcut(*ui_overrides))) &&
       (extensions::PermissionsData::HasAPIPermission(
           extension,
           extensions::APIPermission::kBookmarkManagerPrivate) ||

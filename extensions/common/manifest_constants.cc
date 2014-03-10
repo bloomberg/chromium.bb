@@ -17,7 +17,7 @@ const char kBackgroundPageLegacy[] = "background_page";
 const char kBackgroundPersistent[] = "background.persistent";
 const char kBackgroundScripts[] = "background.scripts";
 const char kBluetooth[] = "bluetooth";
-const char kBookmarkUI[] = "chrome_settings_overrides.bookmarks_ui";
+const char kBookmarkUI[] = "chrome_ui_overrides.bookmarks_ui";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
 const char kCommands[] = "commands";
@@ -157,6 +157,7 @@ const char kTtsVoicesLang[] = "lang";
 const char kTtsVoicesRemote[] = "remote";
 const char kTtsVoicesVoiceName[] = "voice_name";
 const char kType[] = "type";
+const char kUIOverride[] = "chrome_ui_overrides";
 const char kUpdateURL[] = "update_url";
 const char kUrlHandlers[] = "url_handlers";
 const char kUrlHandlerTitle[] = "title";
@@ -313,6 +314,7 @@ const char kInvalidDisplayInLauncher[] =
     "Invalid value for 'display_in_launcher'.";
 const char kInvalidDisplayInNewTabPage[] =
     "Invalid value for 'display_in_new_tab_page'.";
+const char kInvalidEmptyDictionary[] = "Empty dictionary for '*'.";
 const char kInvalidExcludeMatch[] =
     "Invalid value for 'content_scripts[*].exclude_matches[*]': *";
 const char kInvalidExcludeMatches[] =
@@ -558,8 +560,6 @@ const char kInvalidSearchEngineURL[] =
     "Invalid URL [*] for 'chrome_settings_overrides.search_provider'.";
 const char kInvalidServiceWorkerScript[] =
     "Invalid value for 'service_worker.script'.";
-const char kInvalidEmptySettingsOverrides[] =
-    "Empty dictionary for 'chrome_settings_overrides'.";
 const char kInvalidShortName[] =
     "Invalid value for 'short_name'.";
 const char kInvalidSignature[] =

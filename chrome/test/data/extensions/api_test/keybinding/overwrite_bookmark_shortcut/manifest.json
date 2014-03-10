@@ -6,7 +6,7 @@
     "scripts": ["background.js"]
   },
   "permissions": ["activeTab"],
-  "chrome_settings_overrides": {
+  "chrome_ui_overrides": {
     "bookmarks_ui": {
       "remove_bookmark_shortcut": true
     }

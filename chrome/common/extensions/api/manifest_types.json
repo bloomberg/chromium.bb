@@ -43,10 +43,12 @@
         "type": "object",
         "description": "Chrome settings which can be overriden by an extension.",
         "properties": {
+          // TODO(wittman): Remove for M36.
           "bookmarks_ui": {
             "type": "object",
             "description": "Settings to permit bookmarks user interface customization by extensions.",
             "optional": true,
+            "nodoc": true,
             "properties": {
               "remove_button": {
                 "type": "boolean",
@@ -55,10 +57,9 @@
               },
               "remove_bookmark_shortcut": {
                 "type": "boolean",
-                "description": "If <code>true</code>, the built-in \"Bookmark this page...\" shortcut key is removed and the extension is permitted to override the shortcut by binding it in the commands section of the manifest.",
+                "description": "If <code>true</code>, the built-in \"Bookmark this page...\" shortcut key is removed and the extension is permitted to override the shortcut by binding it in the commands section of the manifest. The corresponding menu item is also removed or overridden as well.",
                 "optional": true
               },
-              // TODO(wittman): Remove for M36.
               "hide_bookmark_button": {
                 "type": "boolean",
                 "description": "Deprecated. Use remove_button instead.",
@@ -148,6 +149,30 @@
             "optional": true,
             "type": "array",
             "items": {"type": "string"}
+          }
+        }
+      },
+      {
+        "id": "ChromeUIOverrides",
+        "type": "object",
+        "description": "Chrome user interface features which can be overriden by an extension.",
+        "properties": {
+          "bookmarks_ui": {
+            "type": "object",
+            "description": "Settings to permit bookmarks user interface customization by extensions.",
+            "optional": true,
+            "properties": {
+              "remove_button": {
+                "type": "boolean",
+                "description": "If <code>true</code>, the built-in bookmark button will be removed from the user interface.",
+                "optional": true
+              },
+              "remove_bookmark_shortcut": {
+                "type": "boolean",
+                "description": "If <code>true</code>, the built-in \"Bookmark this page...\" shortcut key is removed and the extension is permitted to override the shortcut by binding it in the commands section of the manifest.",
+                "optional": true
+              }
+            }
           }
         }
       },
