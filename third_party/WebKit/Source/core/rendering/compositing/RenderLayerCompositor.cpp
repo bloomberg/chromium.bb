@@ -197,9 +197,9 @@ struct CompositingRecursionData {
 #endif
 };
 
-RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
+RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     : m_renderView(renderView)
-    , m_compositingReasonFinder(*renderView)
+    , m_compositingReasonFinder(renderView)
     , m_hasAcceleratedCompositing(true)
     , m_showRepaintCounter(false)
     , m_needsToRecomputeCompositingRequirements(false)
@@ -212,7 +212,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
 {
-    ASSERT(renderView);
 }
 
 RenderLayerCompositor::~RenderLayerCompositor()
@@ -239,7 +238,7 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
     bool showRepaintCounter = false;
     bool forceCompositingMode = false;
 
-    if (Settings* settings = m_renderView->document().settings()) {
+    if (Settings* settings = m_renderView.document().settings()) {
         hasAcceleratedCompositing = settings->acceleratedCompositingEnabled();
 
         // We allow the chrome to override the settings, in case the page is rendered
@@ -270,7 +269,7 @@ bool RenderLayerCompositor::layerSquashingEnabled() const
 {
     if (RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled())
         return true;
-    if (Settings* settings = m_renderView->document().settings())
+    if (Settings* settings = m_renderView.document().settings())
         return settings->layerSquashingEnabled();
 
     return false;
@@ -287,7 +286,7 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild()
     if (inCompositingMode())
         m_compositingLayersNeedRebuild = true;
 
-    m_renderView->frameView()->scheduleAnimation();
+    m_renderView.frameView()->scheduleAnimation();
 }
 
 void RenderLayerCompositor::updateCompositingRequirementsState()
@@ -299,13 +298,13 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
 
     m_needsUpdateCompositingRequirementsState = false;
 
-    if (!rootRenderLayer() || !m_renderView->acceleratedCompositingForOverflowScrollEnabled())
+    if (!rootRenderLayer() || !m_renderView.acceleratedCompositingForOverflowScrollEnabled())
         return;
 
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
         (*it)->updateHasUnclippedDescendant();
 
-    const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
+    const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas();
     if (!scrollableAreas)
         return;
 
@@ -352,7 +351,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     // necessary updates.
 
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
-    if (m_renderView->needsLayout())
+    if (m_renderView.needsLayout())
         return;
 
     if (m_forceCompositingMode && !m_compositing)
@@ -383,7 +382,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         break;
     }
 
-    m_renderView->frameView()->scheduleAnimation();
+    m_renderView.frameView()->scheduleAnimation();
 }
 
 void RenderLayerCompositor::updateCompositingLayers()
@@ -396,7 +395,7 @@ void RenderLayerCompositor::updateCompositingLayers()
 
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     // FIXME: Can we assert that we never return here?
-    if (m_renderView->needsLayout())
+    if (m_renderView.needsLayout())
         return;
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
@@ -405,14 +404,14 @@ void RenderLayerCompositor::updateCompositingLayers()
 
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
-    DocumentAnimations::startPendingAnimations(m_renderView->document());
-    ASSERT(m_renderView->document().lifecycle().state() == DocumentLifecycle::CompositingClean);
+    DocumentAnimations::startPendingAnimations(m_renderView.document());
+    ASSERT(m_renderView.document().lifecycle().state() == DocumentLifecycle::CompositingClean);
 }
 
 void RenderLayerCompositor::updateCompositingLayersInternal()
 {
-    if (isMainFrame() && m_renderView->frameView())
-        finishCompositingUpdateForFrameTree(&m_renderView->frameView()->frame());
+    if (isMainFrame() && m_renderView.frameView())
+        finishCompositingUpdateForFrameTree(&m_renderView.frameView()->frame());
 
     if (m_forceCompositingMode && !m_compositing)
         enableCompositingMode(true);
@@ -468,7 +467,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
 
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateHasVisibleNonLayerContentLoop");
-            const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
+            const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas();
             if (scrollableAreas) {
                 for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
                     (*it)->updateHasVisibleNonLayerContent();
@@ -484,12 +483,12 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         GraphicsLayerVector childList;
         {
             TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::rebuildTree");
-            GraphicsLayerUpdater(*m_renderView).rebuildTree(*updateRoot, updateType, childList, 0);
+            GraphicsLayerUpdater(m_renderView).rebuildTree(*updateRoot, updateType, childList, 0);
         }
 
         // Host the document layer in the RenderView's root layer.
         if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
-            RenderVideo* video = findFullscreenVideoRenderer(m_renderView->document());
+            RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
             if (video && video->hasCompositedLayerMapping()) {
                 childList.clear();
                 childList.append(video->compositedLayerMapping()->mainGraphicsLayer());
@@ -504,7 +503,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
-        GraphicsLayerUpdater(*m_renderView).updateRecursive(*updateRoot, updateType);
+        GraphicsLayerUpdater(m_renderView).updateRecursive(*updateRoot, updateType);
     }
 
     ASSERT(updateRoot || !m_compositingLayersNeedRebuild);
@@ -576,7 +575,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         // At this time, the ScrollingCooridnator only supports the top-level frame.
         if (layer->isRootLayer() && isMainFrame()) {
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-                scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
+                scrollingCoordinator->frameViewRootLayerDidChange(m_renderView.frameView());
         }
 
         // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
@@ -645,7 +644,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     // the scrolling coordinator needs to recalculate whether it can do fast scrolling.
     if (compositedLayerMappingChanged || nonCompositedReasonChanged) {
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->frameViewFixedObjectsDidChange(m_renderView->frameView());
+            scrollingCoordinator->frameViewFixedObjectsDidChange(m_renderView.frameView());
     }
 
     return compositedLayerMappingChanged || nonCompositedReasonChanged;
@@ -786,12 +785,12 @@ void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, Upda
 void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
 {
     // If the renderer is not attached yet, no need to repaint.
-    if (layer->renderer() != m_renderView && !layer->renderer()->parent())
+    if (layer->renderer() != &m_renderView && !layer->renderer()->parent())
         return;
 
     RenderLayerModelObject* repaintContainer = layer->renderer()->containerForRepaint();
     if (!repaintContainer)
-        repaintContainer = m_renderView;
+        repaintContainer = &m_renderView;
 
     layer->repainter().repaintIncludingNonCompositingDescendants(repaintContainer);
 }
@@ -921,7 +920,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = currentRecursionData.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
-    if (m_renderView->compositorDrivenAcceleratedScrollingEnabled()) {
+    if (m_renderView.compositorDrivenAcceleratedScrollingEnabled()) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
             RenderLayer* unclippedDescendant = unclippedDescendants.at(i);
@@ -1259,7 +1258,7 @@ void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsO
 void RenderLayerCompositor::frameViewDidChangeSize()
 {
     if (m_containerLayer) {
-        FrameView* frameView = m_renderView->frameView();
+        FrameView* frameView = m_renderView.frameView();
         m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
 
         frameViewDidScroll();
@@ -1276,7 +1275,7 @@ enum AcceleratedFixedRootBackgroundHistogramBuckets {
 
 void RenderLayerCompositor::frameViewDidScroll()
 {
-    FrameView* frameView = m_renderView->frameView();
+    FrameView* frameView = m_renderView.frameView();
     IntPoint scrollPosition = frameView->scrollPosition();
 
     if (!m_scrollLayer)
@@ -1284,7 +1283,7 @@ void RenderLayerCompositor::frameViewDidScroll()
 
     bool scrollingCoordinatorHandlesOffset = false;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
-        if (Settings* settings = m_renderView->document().settings()) {
+        if (Settings* settings = m_renderView.document().settings()) {
             if (isMainFrame() || settings->compositedScrollingForFramesEnabled())
                 scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
         }
@@ -1362,7 +1361,7 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
     // The true root layer is not included in the dump, so if we want to report
     // its repaint rects, they must be included here.
     if (flags & LayerTreeIncludesRepaintRects)
-        return m_renderView->frameView()->trackedRepaintRectsAsText() + layerTreeText;
+        return m_renderView.frameView()->trackedRepaintRectsAsText() + layerTreeText;
 
     return layerTreeText;
 }
@@ -1462,7 +1461,7 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
 
 RenderLayer* RenderLayerCompositor::rootRenderLayer() const
 {
-    return m_renderView->layer();
+    return m_renderView.layer();
 }
 
 GraphicsLayer* RenderLayerCompositor::rootGraphicsLayer() const
@@ -1531,13 +1530,13 @@ void RenderLayerCompositor::clearMappingForRenderLayerIncludingDescendants(Rende
 
 void RenderLayerCompositor::clearMappingForAllRenderLayers()
 {
-    clearMappingForRenderLayerIncludingDescendants(m_renderView->layer());
+    clearMappingForRenderLayerIncludingDescendants(m_renderView.layer());
 }
 
 void RenderLayerCompositor::updateRootLayerPosition()
 {
     if (m_rootContentLayer) {
-        const IntRect& documentRect = m_renderView->documentRect();
+        const IntRect& documentRect = m_renderView.documentRect();
         m_rootContentLayer->setSize(documentRect.size());
         m_rootContentLayer->setPosition(documentRect.location());
 #if USE(RUBBER_BANDING)
@@ -1546,7 +1545,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
 #endif
     }
     if (m_containerLayer) {
-        FrameView* frameView = m_renderView->frameView();
+        FrameView* frameView = m_renderView.frameView();
         m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
     }
 }
@@ -1697,23 +1696,23 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
 void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip)
 {
     if (graphicsLayer == layerForHorizontalScrollbar())
-        paintScrollbar(m_renderView->frameView()->horizontalScrollbar(), context, clip);
+        paintScrollbar(m_renderView.frameView()->horizontalScrollbar(), context, clip);
     else if (graphicsLayer == layerForVerticalScrollbar())
-        paintScrollbar(m_renderView->frameView()->verticalScrollbar(), context, clip);
+        paintScrollbar(m_renderView.frameView()->verticalScrollbar(), context, clip);
     else if (graphicsLayer == layerForScrollCorner()) {
-        const IntRect& scrollCorner = m_renderView->frameView()->scrollCornerRect();
+        const IntRect& scrollCorner = m_renderView.frameView()->scrollCornerRect();
         context.save();
         context.translate(-scrollCorner.x(), -scrollCorner.y());
         IntRect transformedClip = clip;
         transformedClip.moveBy(scrollCorner.location());
-        m_renderView->frameView()->paintScrollCorner(&context, transformedClip);
+        m_renderView.frameView()->paintScrollCorner(&context, transformedClip);
         context.restore();
     }
 }
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
 {
-    if (Settings* settings = m_renderView->document().settings()) {
+    if (Settings* settings = m_renderView.document().settings()) {
         if (settings->acceleratedCompositingForFixedRootBackgroundEnabled())
             return true;
     }
@@ -1722,16 +1721,16 @@ bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
 
 bool RenderLayerCompositor::needsFixedRootBackgroundLayer(const RenderLayer* layer) const
 {
-    if (layer != m_renderView->layer())
+    if (layer != m_renderView.layer())
         return false;
 
-    return supportsFixedRootBackgroundCompositing() && m_renderView->rootBackgroundIsEntirelyFixed();
+    return supportsFixedRootBackgroundCompositing() && m_renderView.rootBackgroundIsEntirelyFixed();
 }
 
 GraphicsLayer* RenderLayerCompositor::fixedRootBackgroundLayer() const
 {
     // Get the fixed root background from the RenderView layer's compositedLayerMapping.
-    RenderLayer* viewLayer = m_renderView->layer();
+    RenderLayer* viewLayer = m_renderView.layer();
     if (!viewLayer)
         return 0;
 
@@ -1791,19 +1790,19 @@ static bool shouldCompositeOverflowControls(FrameView* view)
 
 bool RenderLayerCompositor::requiresHorizontalScrollbarLayer() const
 {
-    FrameView* view = m_renderView->frameView();
+    FrameView* view = m_renderView.frameView();
     return shouldCompositeOverflowControls(view) && view->horizontalScrollbar();
 }
 
 bool RenderLayerCompositor::requiresVerticalScrollbarLayer() const
 {
-    FrameView* view = m_renderView->frameView();
+    FrameView* view = m_renderView.frameView();
     return shouldCompositeOverflowControls(view) && view->verticalScrollbar();
 }
 
 bool RenderLayerCompositor::requiresScrollCornerLayer() const
 {
-    FrameView* view = m_renderView->frameView();
+    FrameView* view = m_renderView.frameView();
     return shouldCompositeOverflowControls(view) && view->isScrollCornerVisible();
 }
 
@@ -1815,7 +1814,7 @@ bool RenderLayerCompositor::requiresOverhangLayers() const
         return false;
 
     // We do want a layer if we have a scrolling coordinator and can scroll.
-    if (scrollingCoordinator() && m_renderView->frameView()->hasOpaqueBackground())
+    if (scrollingCoordinator() && m_renderView.frameView()->hasOpaqueBackground())
         return true;
 
     // Chromium always wants a layer.
@@ -1848,14 +1847,14 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
             controlsParent->addChild(m_layerForHorizontalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-                scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), HorizontalScrollbar);
+                scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView.frameView(), HorizontalScrollbar);
         }
     } else if (m_layerForHorizontalScrollbar) {
         m_layerForHorizontalScrollbar->removeFromParent();
         m_layerForHorizontalScrollbar = nullptr;
 
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), HorizontalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView.frameView(), HorizontalScrollbar);
     }
 
     if (requiresVerticalScrollbarLayer()) {
@@ -1864,14 +1863,14 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
             controlsParent->addChild(m_layerForVerticalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-                scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), VerticalScrollbar);
+                scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView.frameView(), VerticalScrollbar);
         }
     } else if (m_layerForVerticalScrollbar) {
         m_layerForVerticalScrollbar->removeFromParent();
         m_layerForVerticalScrollbar = nullptr;
 
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), VerticalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView.frameView(), VerticalScrollbar);
     }
 
     if (requiresScrollCornerLayer()) {
@@ -1884,7 +1883,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
         m_layerForScrollCorner = nullptr;
     }
 
-    m_renderView->frameView()->positionScrollbarLayers();
+    m_renderView.frameView()->positionScrollbarLayers();
 }
 
 void RenderLayerCompositor::ensureRootLayer()
@@ -1895,7 +1894,7 @@ void RenderLayerCompositor::ensureRootLayer()
 
     if (!m_rootContentLayer) {
         m_rootContentLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-        IntRect overflowRect = m_renderView->pixelSnappedLayoutOverflowRect();
+        IntRect overflowRect = m_renderView.pixelSnappedLayoutOverflowRect();
         m_rootContentLayer->setSize(FloatSize(overflowRect.maxX(), overflowRect.maxY()));
         m_rootContentLayer->setPosition(FloatPoint());
 
@@ -1913,7 +1912,7 @@ void RenderLayerCompositor::ensureRootLayer()
         // Create a clipping layer if this is an iframe or settings require to clip.
         m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
         bool containerMasksToBounds = !isMainFrame();
-        if (Settings* settings = m_renderView->document().settings()) {
+        if (Settings* settings = m_renderView.document().settings()) {
             if (settings->mainFrameClipsContent())
                 containerMasksToBounds = true;
         }
@@ -1957,23 +1956,23 @@ void RenderLayerCompositor::destroyRootLayer()
         m_layerForHorizontalScrollbar->removeFromParent();
         m_layerForHorizontalScrollbar = nullptr;
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), HorizontalScrollbar);
-        if (Scrollbar* horizontalScrollbar = m_renderView->frameView()->verticalScrollbar())
-            m_renderView->frameView()->invalidateScrollbar(horizontalScrollbar, IntRect(IntPoint(0, 0), horizontalScrollbar->frameRect().size()));
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView.frameView(), HorizontalScrollbar);
+        if (Scrollbar* horizontalScrollbar = m_renderView.frameView()->verticalScrollbar())
+            m_renderView.frameView()->invalidateScrollbar(horizontalScrollbar, IntRect(IntPoint(0, 0), horizontalScrollbar->frameRect().size()));
     }
 
     if (m_layerForVerticalScrollbar) {
         m_layerForVerticalScrollbar->removeFromParent();
         m_layerForVerticalScrollbar = nullptr;
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView->frameView(), VerticalScrollbar);
-        if (Scrollbar* verticalScrollbar = m_renderView->frameView()->verticalScrollbar())
-            m_renderView->frameView()->invalidateScrollbar(verticalScrollbar, IntRect(IntPoint(0, 0), verticalScrollbar->frameRect().size()));
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_renderView.frameView(), VerticalScrollbar);
+        if (Scrollbar* verticalScrollbar = m_renderView.frameView()->verticalScrollbar())
+            m_renderView.frameView()->invalidateScrollbar(verticalScrollbar, IntRect(IntPoint(0, 0), verticalScrollbar->frameRect().size()));
     }
 
     if (m_layerForScrollCorner) {
         m_layerForScrollCorner = nullptr;
-        m_renderView->frameView()->invalidateScrollCorner(m_renderView->frameView()->scrollCornerRect());
+        m_renderView.frameView()->invalidateScrollCorner(m_renderView.frameView()->scrollCornerRect());
     }
 
     if (m_overflowControlsHostLayer) {
@@ -1996,7 +1995,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             ASSERT_NOT_REACHED();
             break;
         case RootLayerAttachedViaChromeClient: {
-            LocalFrame& frame = m_renderView->frameView()->frame();
+            LocalFrame& frame = m_renderView.frameView()->frame();
             Page* page = frame.page();
             if (!page)
                 return;
@@ -2004,7 +2003,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             break;
         }
         case RootLayerAttachedViaEnclosingFrame: {
-            HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement();
+            HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement();
             ASSERT(ownerElement);
             DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
             // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
@@ -2031,14 +2030,14 @@ void RenderLayerCompositor::detachRootLayer()
         else
             m_rootContentLayer->removeFromParent();
 
-        if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement()) {
+        if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
             DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
             ownerElement->scheduleLayerUpdate();
         }
         break;
     }
     case RootLayerAttachedViaChromeClient: {
-        LocalFrame& frame = m_renderView->frameView()->frame();
+        LocalFrame& frame = m_renderView.frameView()->frame();
         Page* page = frame.page();
         if (!page)
             return;
@@ -2060,7 +2059,7 @@ void RenderLayerCompositor::updateRootLayerAttachment()
 bool RenderLayerCompositor::isMainFrame() const
 {
     // FIXME: LocalFrame::isMainFrame() is probably better.
-    return !m_renderView->document().ownerElement();
+    return !m_renderView.document().ownerElement();
 }
 
 // IFrames are special, because we hook compositing layers together across iframe boundaries
@@ -2068,9 +2067,9 @@ bool RenderLayerCompositor::isMainFrame() const
 // to use a synthetic style change to get the iframes into RenderLayers in order to allow them to composite.
 void RenderLayerCompositor::notifyIFramesOfCompositingChange()
 {
-    if (!m_renderView->frameView())
+    if (!m_renderView.frameView())
         return;
-    LocalFrame& frame = m_renderView->frameView()->frame();
+    LocalFrame& frame = m_renderView.frameView()->frame();
 
     for (LocalFrame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
         if (!child->document())
@@ -2083,7 +2082,7 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
 
     // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
     // we need to schedule a style recalc in our parent document.
-    if (HTMLFrameOwnerElement* ownerElement = m_renderView->document().ownerElement()) {
+    if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
         ownerElement->document().renderView()->compositor()->setNeedsToRecomputeCompositingRequirements();
         DeprecatedScheduleStyleRecalcDuringCompositingUpdate marker(ownerElement->document().lifecycle());
         ownerElement->scheduleLayerUpdate();
@@ -2141,7 +2140,7 @@ FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportCons
 {
     ASSERT(layer->hasCompositedLayerMapping());
 
-    FrameView* frameView = m_renderView->frameView();
+    FrameView* frameView = m_renderView.frameView();
     LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
 
     FixedPositionViewportConstraints constraints;
@@ -2181,7 +2180,7 @@ StickyPositionViewportConstraints RenderLayerCompositor::computeStickyViewportCo
     // We should never get here for stickies constrained by an enclosing clipping layer.
     ASSERT(!layer->enclosingOverflowClipLayer(ExcludeSelf));
 
-    FrameView* frameView = m_renderView->frameView();
+    FrameView* frameView = m_renderView.frameView();
     LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
 
     StickyPositionViewportConstraints constraints;
@@ -2215,12 +2214,12 @@ GraphicsLayerFactory* RenderLayerCompositor::graphicsLayerFactory() const
 
 Page* RenderLayerCompositor::page() const
 {
-    return m_renderView->frameView()->frame().page();
+    return m_renderView.frameView()->frame().page();
 }
 
 DocumentLifecycle& RenderLayerCompositor::lifecycle() const
 {
-    return m_renderView->document().lifecycle();
+    return m_renderView.document().lifecycle();
 }
 
 String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)

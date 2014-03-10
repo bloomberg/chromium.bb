@@ -62,7 +62,7 @@ class RenderLayerCompositor FINAL : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // FIXME: This constructor should take a reference.
-    explicit RenderLayerCompositor(RenderView*);
+    explicit RenderLayerCompositor(RenderView&);
     virtual ~RenderLayerCompositor();
 
     // Return true if this RenderView is in "compositing mode" (i.e. has one or more
@@ -326,7 +326,7 @@ private:
 private:
     DocumentLifecycle& lifecycle() const;
 
-    RenderView* m_renderView;
+    RenderView& m_renderView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
 
