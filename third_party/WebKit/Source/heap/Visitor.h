@@ -61,11 +61,6 @@ class Visitor;
 
 template<bool needsTracing, bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
-typedef void (*FinalizationCallback)(void*);
-typedef void (*VisitorCallback)(Visitor*, void* self);
-typedef VisitorCallback TraceCallback;
-typedef VisitorCallback WeakPointerCallback;
-
 // The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
 // This allows us to pass a type's trace method as a parameter to the PersistentNode
 // constructor. The PersistentNode constructor needs the specific trace method due an issue
@@ -203,6 +198,8 @@ struct ObjectAliveTrait<Member<T> > {
 // contained pointers and push them on the marking stack.
 class HEAP_EXPORT Visitor {
 public:
+    virtual ~Visitor() { }
+
     // One-argument templated mark method. This uses the static type of
     // the argument to get the TraceTrait. By default, the mark method
     // of the TraceTrait just calls the virtual two-argument mark method on this
@@ -334,6 +331,14 @@ public:
     // the GC heap. Note that even removing things from HeapHashSet or
     // HeapHashMap can cause an allocation if the backing store resizes, but
     // these collections know to remove WeakMember elements safely.
+    //
+    // The weak pointer callbacks are run on the thread that owns the
+    // object and other threads are not stopped during the
+    // callbacks. Since isAlive is used in the callback to determine
+    // if objects pointed to are alive it is crucial that the object
+    // pointed to belong to the same thread as the object receiving
+    // the weak callback. Since other threads have been resumed the
+    // mark bits are not valid for objects from other threads.
     virtual void registerWeakMembers(const void*, WeakPointerCallback) = 0;
 
     template<typename T, void (T::*method)(Visitor*)>
@@ -347,10 +352,14 @@ public:
     // callback for each cell that needs to be zeroed, so if you have a lot of
     // weak cells in your object you should still consider using
     // registerWeakMembers above.
+    //
+    // In contrast to registerWeakMembers, the weak cell callbacks are
+    // run on the thread performing garbage collection. Therefore, all
+    // threads are stopped during weak cell callbacks.
     template<typename T>
     void registerWeakCell(T** cell)
     {
-        registerWeakMembers(reinterpret_cast<const void*>(cell), &handleWeakCell<T>);
+        registerWeakCell(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
     }
 
     virtual bool isMarked(const void*) = 0;
@@ -373,6 +382,9 @@ public:
 
     FOR_EACH_TYPED_HEAP(DECLARE_VISITOR_METHODS)
 #undef DECLARE_VISITOR_METHODS
+
+protected:
+    virtual void registerWeakCell(void**, WeakPointerCallback) = 0;
 
 private:
     template<typename T>

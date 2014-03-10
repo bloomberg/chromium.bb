@@ -122,9 +122,11 @@ HEAP_EXPORT inline Address pageHeaderAddress(Address address)
 // Common header for heap pages.
 class BaseHeapPage {
 public:
-    BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo)
+    BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state)
         : m_storage(storage)
         , m_gcInfo(gcInfo)
+        , m_threadState(state)
+        , m_padding(0)
     {
         ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
     }
@@ -143,11 +145,19 @@ public:
 
     Address address() { return reinterpret_cast<Address>(this); }
     PageMemory* storage() const { return m_storage; }
+    ThreadState* threadState() const { return m_threadState; }
     const GCInfo* gcInfo() { return m_gcInfo; }
 
 private:
+    // Accessor to silence unused warnings.
+    void* padding() const { return m_padding; }
+
     PageMemory* m_storage;
     const GCInfo* m_gcInfo;
+    ThreadState* m_threadState;
+    // Free word only needed to ensure proper alignment of the
+    // HeapPage header.
+    void* m_padding;
 };
 
 // Large allocations are allocated as separate objects and linked in a
@@ -163,7 +173,7 @@ private:
 template<typename Header>
 class LargeHeapObject : public BaseHeapPage {
 public:
-    LargeHeapObject(PageMemory* storage, const GCInfo* gcInfo) : BaseHeapPage(storage, gcInfo)
+    LargeHeapObject(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state) : BaseHeapPage(storage, gcInfo, state)
     {
         COMPILE_ASSERT(!(sizeof(LargeHeapObject<Header>) & allocationMask), large_heap_object_header_misaligned);
     }
@@ -755,15 +765,22 @@ public:
     static void init();
     static void shutdown();
 
-    static bool contains(Address);
-    static bool contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
-    static bool contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
+    static BaseHeapPage* contains(Address);
+    static BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
+    static BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
 
     // Push a trace callback on the marking stack.
     static void pushTraceCallback(void* containerObject, TraceCallback);
 
-    // Push a weak pointer callback on the weak callback stack.
-    static void pushWeakPointerCallback(void* containerObject, WeakPointerCallback);
+    // Push a weak pointer callback on the weak callback
+    // stack. General object pointer callbacks are pushed on a thread
+    // local weak callback stack and the callback is called on the
+    // thread that owns the object. Cell pointer callbacks are pushed
+    // on a static callback stack and the weak callback is performed
+    // on the thread performing garbage collection. This is OK because
+    // cells are just cleared and no deallocation can happen.
+    static void pushWeakObjectPointerCallback(void* containerObject, WeakPointerCallback);
+    static void pushWeakCellPointerCallback(void** cell, WeakPointerCallback);
 
     // Pop the top of the marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
@@ -792,6 +809,8 @@ public:
 
     static bool isConsistentForGC();
     static void makeConsistentForGC();
+
+    static Visitor* s_markingVisitor;
 
     static CallbackStack* s_markingStack;
     static CallbackStack* s_weakCallbackStack;

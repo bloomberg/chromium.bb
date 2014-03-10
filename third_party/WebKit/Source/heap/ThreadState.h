@@ -52,8 +52,14 @@ class PersistentNode;
 class Visitor;
 class SafePointBarrier;
 template<typename Header> class ThreadHeap;
+class CallbackStack;
 
 typedef uint8_t* Address;
+
+typedef void (*FinalizationCallback)(void*);
+typedef void (*VisitorCallback)(Visitor*, void* self);
+typedef VisitorCallback TraceCallback;
+typedef VisitorCallback WeakPointerCallback;
 
 // ThreadAffinity indicates which threads objects can be used on. We
 // distinguish between objects that can be used on the main thread
@@ -445,16 +451,12 @@ public:
     BaseHeap* heap(int index) const { return m_heaps[index]; }
 
     // Infrastructure to determine if an address is within one of the
-    // address ranges for the Blink heap.
+    // address ranges for the Blink heap. If the address is in the Blink
+    // heap the containing heap page is returned.
     HeapContainsCache* heapContainsCache() { return m_heapContainsCache.get(); }
-    bool contains(Address);
-    bool contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
-    bool contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
-
-    // Finds the Blink HeapPage in this thread-specific heap
-    // corresponding to a given address. Return 0 if the address is
-    // not contained in any of the pages.
-    BaseHeapPage* heapPageFromAddress(Address);
+    BaseHeapPage* contains(Address);
+    BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
+    BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
 
     // List of persistent roots allocated on the given thread.
     PersistentNode* roots() const { return m_persistents.get(); }
@@ -474,6 +476,9 @@ public:
     // the object to which it points.
     bool checkAndMarkPointer(Visitor*, Address);
 
+    void pushWeakObjectPointerCallback(void*, WeakPointerCallback);
+    bool popAndInvokeWeakPointerCallback(Visitor*);
+
     void getStats(HeapStats&);
     HeapStats& stats() { return m_stats; }
     HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
@@ -491,6 +496,12 @@ private:
         m_safePointStackCopy.clear();
         m_safePointScopeMarker = 0;
     }
+
+    // Finds the Blink HeapPage in this thread-specific heap
+    // corresponding to a given address. Return 0 if the address is
+    // not contained in any of the pages. This does not consider
+    // large objects.
+    BaseHeapPage* heapPageFromAddress(Address);
 
     // When ThreadState is detaching from non-main thread its
     // heap is expected to be empty (because it is going away).
@@ -540,6 +551,8 @@ private:
 
     Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
     bool m_isCleaningUp;
+
+    CallbackStack* m_weakCallbackStack;
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;

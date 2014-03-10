@@ -253,11 +253,14 @@ ThreadState::ThreadState()
     m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this);
     for (int i = GeneralHeap + 1; i < NumberOfHeaps; i++)
         m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this);
+
+    CallbackStack::init(&m_weakCallbackStack);
 }
 
 ThreadState::~ThreadState()
 {
     checkThread();
+    CallbackStack::shutdown(&m_weakCallbackStack);
     for (int i = GeneralHeap; i < NumberOfHeaps; i++)
         delete m_heaps[i];
     deleteAllValues(m_interruptors);
@@ -391,6 +394,17 @@ bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
             return true;
     }
     return false;
+}
+
+void ThreadState::pushWeakObjectPointerCallback(void* object, WeakPointerCallback callback)
+{
+    CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry(&m_weakCallbackStack);
+    *slot = CallbackStack::Item(object, callback);
+}
+
+bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
+{
+    return m_weakCallbackStack->popAndInvokeCallback(&m_weakCallbackStack, visitor);
 }
 
 PersistentNode* ThreadState::globalRoots()
@@ -528,18 +542,19 @@ BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
     return page; // 0 if not found.
 }
 
-bool ThreadState::contains(Address address)
+BaseHeapPage* ThreadState::contains(Address address)
 {
     // Check heap contains cache first.
     BaseHeapPage* page = heapPageFromAddress(address);
     if (page)
-        return true;
+        return page;
     // If no heap page was found check large objects.
     for (int i = 0; i < NumberOfHeaps; i++) {
-        if (m_heaps[i]->largeHeapObjectFromAddress(address))
-            return true;
+        page = m_heaps[i]->largeHeapObjectFromAddress(address);
+        if (page)
+            return page;
     }
-    return false;
+    return 0;
 }
 
 void ThreadState::getStats(HeapStats& stats)
@@ -652,8 +667,11 @@ void ThreadState::performPendingSweep()
     if (sweepRequested()) {
         m_sweepInProgress = true;
         {
-            // Diallow allocation during sweeping and finalization.
+            // Disallow allocation during weak processing, sweeping and finalization.
             enterNoAllocationScope();
+            // Perform thread-specific weak processing.
+            while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+            // Perform sweeping and finalization.
             m_stats.clear(); // Sweeping will recalculate the stats
             for (int i = 0; i < NumberOfHeaps; i++)
                 m_heaps[i]->sweep();

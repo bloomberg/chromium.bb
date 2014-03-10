@@ -35,7 +35,60 @@
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
+#include "wtf/HashTraits.h"
+
 #include <gtest/gtest.h>
+
+namespace WebCore {
+
+class ThreadMarker {
+public:
+    ThreadMarker() : m_creatingThread(reinterpret_cast<ThreadState*>(0)), m_num(0) { }
+    ThreadMarker(unsigned i) : m_creatingThread(ThreadState::current()), m_num(i) { }
+    ThreadMarker(WTF::HashTableDeletedValueType deleted) : m_creatingThread(reinterpret_cast<ThreadState*>(-1)), m_num(0) { }
+    ~ThreadMarker()
+    {
+        EXPECT_TRUE((m_creatingThread == ThreadState::current())
+            || (m_creatingThread == reinterpret_cast<ThreadState*>(0))
+            || (m_creatingThread == reinterpret_cast<ThreadState*>(-1)));
+    }
+    bool isHashTableDeletedValue() const { return m_creatingThread == reinterpret_cast<ThreadState*>(-1); }
+    bool operator==(const ThreadMarker& other) const { return other.m_creatingThread == m_creatingThread && other.m_num == m_num; }
+    ThreadState* m_creatingThread;
+    unsigned m_num;
+};
+
+struct ThreadMarkerHash {
+    static unsigned hash(const ThreadMarker& key)
+    {
+        return static_cast<unsigned>(reinterpret_cast<uintptr_t>(key.m_creatingThread) + key.m_num);
+    }
+
+    static bool equal(const ThreadMarker& a, const ThreadMarker& b)
+    {
+        return a == b;
+    }
+
+    static const bool safeToCompareToEmptyOrDeleted = false;
+};
+
+}
+
+namespace WTF {
+
+template<typename T> struct DefaultHash;
+template<> struct DefaultHash<WebCore::ThreadMarker> {
+    typedef WebCore::ThreadMarkerHash Hash;
+};
+
+// ThreadMarkerHash is the default hash for ThreadMarker
+template<> struct HashTraits<WebCore::ThreadMarker> : GenericHashTraits<WebCore::ThreadMarker> {
+    static const bool emptyValueIsZero = true;
+    static void constructDeletedValue(WebCore::ThreadMarker& slot) { new (NotNull, &slot) WebCore::ThreadMarker(HashTableDeletedValue); }
+    static bool isDeletedValue(const WebCore::ThreadMarker& slot) { return slot.isHashTableDeletedValue(); }
+};
+
+}
 
 namespace WebCore {
 
@@ -103,6 +156,7 @@ public:
     }
 
     virtual void registerWeakMembers(const void*, WeakPointerCallback) OVERRIDE { }
+    virtual void registerWeakCell(void**, WeakPointerCallback) OVERRIDE { }
     virtual bool isMarked(const void*) OVERRIDE { return false; }
 
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
@@ -241,36 +295,55 @@ USED_FROM_MULTIPLE_THREADS(IntWrapper);
 
 int IntWrapper::s_destructorCalls = 0;
 
-class ThreadedHeapTester {
-public:
-    static void test()
+class ThreadedTesterBase {
+protected:
+    static void test(ThreadedTesterBase* tester)
     {
-        ThreadedHeapTester* tester = new ThreadedHeapTester();
         for (int i = 0; i < numberOfThreads; i++)
             createThread(&threadFunc, tester, "testing thread");
         while (tester->m_threadsToFinish) {
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             yield();
         }
+        delete tester;
     }
 
-private:
+    virtual void runThread() = 0;
+
+protected:
     static const int numberOfThreads = 10;
     static const int gcPerThread = 5;
     static const int numberOfAllocations = 50;
 
+    ThreadedTesterBase() : m_gcCount(0), m_threadsToFinish(numberOfThreads)
+    {
+    }
+
+    virtual ~ThreadedTesterBase()
+    {
+    }
+
     inline bool done() const { return m_gcCount >= numberOfThreads * gcPerThread; }
 
-    ThreadedHeapTester() : m_gcCount(0), m_threadsToFinish(numberOfThreads)
-    {
-    }
+    volatile int m_gcCount;
+    volatile int m_threadsToFinish;
 
+private:
     static void threadFunc(void* data)
     {
-        reinterpret_cast<ThreadedHeapTester*>(data)->runThread();
+        reinterpret_cast<ThreadedTesterBase*>(data)->runThread();
+    }
+};
+
+class ThreadedHeapTester : public ThreadedTesterBase {
+public:
+    static void test()
+    {
+        ThreadedTesterBase::test(new ThreadedHeapTester);
     }
 
-    void runThread()
+protected:
+    virtual void runThread() OVERRIDE
     {
         ThreadState::attach();
 
@@ -278,7 +351,7 @@ private:
         while (!done()) {
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             {
-                IntWrapper* wrapper;
+                Persistent<IntWrapper> wrapper;
 
                 typedef Persistent<IntWrapper, GlobalPersistents> GlobalIntWrapperPersistent;
                 OwnPtr<GlobalIntWrapperPersistent> globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
@@ -287,17 +360,18 @@ private:
                     wrapper = IntWrapper::create(0x0bbac0de);
                     if (!(i % 10)) {
                         globalPersistent = adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(0x0ed0cabb)));
-                        ThreadState::current()->safePoint(ThreadState::HeapPointersOnStack);
+                        ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
                     }
                     yield();
                 }
 
                 if (gcCount < gcPerThread) {
-                    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+                    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
                     gcCount++;
                     atomicIncrement(&m_gcCount);
                 }
 
+                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
             }
@@ -306,9 +380,48 @@ private:
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
     }
+};
 
-    volatile int m_gcCount;
-    volatile int m_threadsToFinish;
+class ThreadedWeaknessTester : public ThreadedTesterBase {
+public:
+    static void test()
+    {
+        ThreadedTesterBase::test(new ThreadedWeaknessTester);
+    }
+
+private:
+    virtual void runThread() OVERRIDE
+    {
+        ThreadState::attach();
+
+        int gcCount = 0;
+        while (!done()) {
+            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+            {
+                Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper> > > weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper> >;
+
+                for (int i = 0; i < numberOfAllocations; i++) {
+                    weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
+                    if (!(i % 10)) {
+                        ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+                    }
+                    yield();
+                }
+
+                if (gcCount < gcPerThread) {
+                    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+                    gcCount++;
+                    atomicIncrement(&m_gcCount);
+                }
+
+                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+                EXPECT_TRUE(weakMap->isEmpty());
+            }
+            yield();
+        }
+        ThreadState::detach();
+        atomicDecrement(&m_threadsToFinish);
+    }
 };
 
 // The accounting for memory includes the memory used by rounding up object
@@ -1040,6 +1153,11 @@ TEST(HeapTest, Transition)
 TEST(HeapTest, Threading)
 {
     ThreadedHeapTester::test();
+}
+
+TEST(HeapTest, ThreadedWeakness)
+{
+    ThreadedWeaknessTester::test();
 }
 
 TEST(HeapTest, BasicFunctionality)
