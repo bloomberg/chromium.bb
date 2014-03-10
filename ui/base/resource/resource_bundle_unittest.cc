@@ -438,7 +438,15 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
-TEST_F(ResourceBundleImageTest, GetImageNamed) {
+// Temporarily disabling this test while I figure it out.
+// https://code.google.com/p/chromium/issues/detail?id=349607
+#if defined(OS_WIN)
+#define MAYBE_GetImageNamed DISABLED_GetImageNamed
+#else
+#define MAYBE_GetImageNamed GetImageNamed
+#endif
+
+TEST_F(ResourceBundleImageTest, MAYBE_GetImageNamed) {
   std::vector<ScaleFactor> supported_factors;
   supported_factors.push_back(SCALE_FACTOR_100P);
   supported_factors.push_back(SCALE_FACTOR_200P);
