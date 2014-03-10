@@ -1627,6 +1627,8 @@ internal_arm_paladin.add_config('daisy_spring-paladin',
   full_paladin,
   boards=['daisy_spring'],
   paladin_builder_name='daisy_spring paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
+  upload_hw_test_artifacts=True,
 )
 
 internal_arm_paladin.add_config('peach_pit-paladin',
