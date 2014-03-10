@@ -1,0 +1,31 @@
+#!/usr/bin/python
+# Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Test the cbuildbot_archive module."""
+
+import logging
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
+from chromite.buildbot import cbuildbot_metadata
+from chromite.lib import cros_test_lib
+
+
+@cros_test_lib.NetworkTest()
+class MetadataFetchTest(cros_test_lib.TestCase):
+  """Test functions for fetching metadata from GS."""
+
+  def testPaladinBuilder(self):
+    bot, version = ('x86-mario-paladin', '5611.0.0')
+    full_version = cbuildbot_metadata.FindLatestFullVersion(bot, version)
+    self.assertEqual(full_version, 'R35-5611.0.0-rc2')
+    metadata = cbuildbot_metadata.GetBuildMetadata(bot, full_version)
+    metadata_dict = metadata._metadata_dict # pylint: disable=W0212
+    self.assertEqual(metadata_dict['status']['status'], 'passed')
+
+
+if __name__ == '__main__':
+  cros_test_lib.main(level=logging.DEBUG)

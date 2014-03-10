@@ -11,9 +11,12 @@ import math
 import os
 import time
 
+from chromite.buildbot import cbuildbot_archive
+from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import toolchain
 
 class CBuildbotMetadata(object):
@@ -234,3 +237,50 @@ class CBuildbotMetadata(object):
         metadata['slave_targets'][builder] = status.AsFlatDict()
 
     return metadata
+
+
+def FindLatestFullVersion(builder, version):
+  """Find the latest full version number built by |builder| on |version|.
+
+  Args:
+    builder: Builder to load information from. E.g. daisy-release
+    version: Version that we are interested in. E.g. 5602.0.0
+
+  Returns:
+    The latest corresponding full version number, including milestone prefix.
+    E.g. R35-5602.0.0. For some builders, this may also include a -rcN or
+    -bNNNN suffix.
+  """
+  gs_ctx = gs.GSContext()
+  config = cbuildbot_config.config[builder]
+  base_url = cbuildbot_archive.GetBaseUploadURI(config)
+  latest_file_url = os.path.join(base_url, 'LATEST-%s' % version)
+  try:
+    return gs_ctx.Cat(latest_file_url).output.strip()
+  except gs.GSNoSuchKey:
+    return None
+
+
+def GetBuildMetadata(builder, full_version):
+  """Fetch the metadata.json object for |builder| and |full_version|.
+
+  Args:
+    builder: Builder to load information from. E.g. daisy-release
+    full_version: Version that we are interested in, including milestone
+        prefix. E.g. R35-5602.0.0. For some builders, this may also include a
+        -rcN or -bNNNN suffix.
+
+  Returns:
+    A newly created CBuildbotMetadata object with the metadata from the given
+    |builder| and |full_version|.
+  """
+  gs_ctx = gs.GSContext()
+  config = cbuildbot_config.config[builder]
+  base_url = cbuildbot_archive.GetBaseUploadURI(config)
+  try:
+    archive_url = os.path.join(base_url, full_version)
+    metadata_url = os.path.join(archive_url, constants.METADATA_JSON)
+    output = gs_ctx.Cat(metadata_url).output
+    return CBuildbotMetadata(json.loads(output))
+  except gs.GSNoSuchKey:
+    return None
