@@ -206,8 +206,15 @@ void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
 
 void OmniboxViewMac::Update() {
   if (chrome::ShouldDisplayOriginChipV2()) {
-    [[field_ cell] setPlaceholderString:
-        base::SysUTF16ToNSString(GetHintText())];
+    NSDictionary* placeholder_attributes = @{
+      NSFontAttributeName : GetFieldFont(),
+      NSForegroundColorAttributeName : [NSColor disabledControlTextColor]
+    };
+    base::scoped_nsobject<NSMutableAttributedString> placeholder_text(
+        [[NSMutableAttributedString alloc]
+            initWithString:base::SysUTF16ToNSString(GetHintText())
+                attributes:placeholder_attributes]);
+    [[field_ cell] setPlaceholderAttributedString:placeholder_text];
   }
   if (model()->UpdatePermanentText()) {
     // Something visibly changed.  Re-enable URL replacement.
