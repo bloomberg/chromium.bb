@@ -13,7 +13,6 @@ WebToCCAnimationDelegateAdapter::WebToCCAnimationDelegateAdapter(
     : delegate_(delegate) {}
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
-    double wall_clock_time,
     base::TimeTicks monotonic_time,
     cc::Animation::TargetProperty target_property) {
   delegate_->notifyAnimationStarted(
@@ -22,7 +21,6 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
 }
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
-    double wall_clock_time,
     base::TimeTicks monotonic_time,
     cc::Animation::TargetProperty target_property) {
   delegate_->notifyAnimationFinished(

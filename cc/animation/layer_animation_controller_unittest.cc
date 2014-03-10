@@ -84,7 +84,7 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
 
   // Synchronize the start times.
   EXPECT_EQ(1u, events.size());
-  controller->NotifyAnimationStarted(events[0], 0.0);
+  controller->NotifyAnimationStarted(events[0]);
   EXPECT_EQ(controller->GetAnimation(group_id,
                                      Animation::Opacity)->start_time(),
             controller_impl->GetAnimation(group_id,
@@ -136,7 +136,7 @@ TEST(LayerAnimationControllerTest, Activation) {
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->size());
-  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->NotifyAnimationStarted((*events)[0]);
 
   EXPECT_EQ(1u, registrar->active_animation_controllers().size());
   EXPECT_EQ(1u, registrar_impl->active_animation_controllers().size());
@@ -161,7 +161,7 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(0u, registrar_impl->active_animation_controllers().size());
 
   EXPECT_EQ(1u, events->size());
-  controller->NotifyAnimationFinished((*events)[0], 0.0);
+  controller->NotifyAnimationFinished((*events)[0]);
   controller->Animate(kInitialTickTime + 1.5);
   controller->UpdateState(true, NULL);
 
@@ -258,7 +258,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
                                          group_id,
                                          Animation::Opacity,
                                          kInitialTickTime);
-  controller->NotifyAnimationStarted(animation_started_event, 0.0);
+  controller->NotifyAnimationStarted(animation_started_event);
 
   // Force animation to complete on impl thread.
   controller_impl->RemoveAnimation(animation_id);
@@ -297,7 +297,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   // There should be a Started event for the animation.
   EXPECT_EQ(1u, events->size());
   EXPECT_EQ(AnimationEvent::Started, (*events)[0].type);
-  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->NotifyAnimationStarted((*events)[0]);
 
   controller->Animate(kInitialTickTime + 1.0);
   controller->UpdateState(true, NULL);
@@ -319,7 +319,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   EXPECT_TRUE(controller->GetAnimation(Animation::Opacity));
   EXPECT_TRUE(controller_impl->GetAnimation(Animation::Opacity));
 
-  controller->NotifyAnimationFinished((*events)[0], 0.0);
+  controller->NotifyAnimationFinished((*events)[0]);
 
   controller->Animate(kInitialTickTime + 3.0);
   controller->UpdateState(true, NULL);
@@ -611,7 +611,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
-  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->NotifyAnimationStarted((*events)[0]);
   controller->Animate(kInitialTickTime + duration/2.0);
   controller->UpdateState(true, NULL);
   EXPECT_TRUE(controller->HasActiveAnimation());
@@ -689,7 +689,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
-  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->NotifyAnimationStarted((*events)[0]);
   controller->Animate(kInitialTickTime + duration/2.0);
   controller->UpdateState(true, NULL);
   EXPECT_TRUE(controller->HasActiveAnimation());
@@ -767,14 +767,12 @@ class FakeAnimationDelegate : public AnimationDelegate {
         finished_(false) {}
 
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     started_ = true;
   }
 
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     finished_ = true;
@@ -826,7 +824,7 @@ TEST(LayerAnimationControllerTest,
   // Passing on the start event to the main thread controller should cause the
   // delegate to get notified.
   EXPECT_FALSE(delegate.started());
-  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->NotifyAnimationStarted((*events)[0]);
   EXPECT_TRUE(delegate.started());
 
   events.reset(new AnimationEventsVector);
@@ -843,7 +841,7 @@ TEST(LayerAnimationControllerTest,
   // Passing on the finished event to the main thread controller should cause
   // the delegate to get notified.
   EXPECT_FALSE(delegate.finished());
-  controller->NotifyAnimationFinished((*events)[0], 0.0);
+  controller->NotifyAnimationFinished((*events)[0]);
   EXPECT_TRUE(delegate.finished());
 }
 
@@ -881,12 +879,8 @@ TEST(LayerAnimationControllerTest,
   EXPECT_EQ(0.f, dummy.opacity());
 
   // Send the synchronized start time.
-  controller->NotifyAnimationStarted(AnimationEvent(AnimationEvent::Started,
-                                                    0,
-                                                    1,
-                                                    Animation::Opacity,
-                                                    kInitialTickTime + 2),
-                                     0.0);
+  controller->NotifyAnimationStarted(AnimationEvent(
+      AnimationEvent::Started, 0, 1, Animation::Opacity, kInitialTickTime + 2));
   controller->Animate(kInitialTickTime + 5.0);
   controller->UpdateState(true, events.get());
   EXPECT_EQ(1.f, dummy.opacity());

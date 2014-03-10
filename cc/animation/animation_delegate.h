@@ -12,14 +12,10 @@ namespace cc {
 
 class AnimationDelegate {
  public:
-  // TODO(ajuma): Remove wall_clock_time once the legacy implementation of
-  // CSS animations and transitions in Blink is removed.
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) = 0;
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) = 0;
 

@@ -81,12 +81,10 @@ class TestHooks : public AnimationDelegate {
   virtual base::TimeDelta LowFrequencyAnimationInterval() const;
 
   // Implementation of AnimationDelegate:
-  virtual void NotifyAnimationStarted(double wall_clock_time,
-                                      base::TimeTicks monotonic_time,
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                                       Animation::TargetProperty target_property)
       OVERRIDE {}
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {}
 

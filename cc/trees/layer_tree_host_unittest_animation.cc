@@ -149,7 +149,6 @@ class LayerTreeHostAnimationTestAddAnimation
   }
 
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     received_animation_started_notification_ = true;
@@ -243,7 +242,6 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   }
 
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     // Animations on the impl-side controller only get deleted during a commit,
@@ -371,7 +369,6 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
   }
 
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     // Replace animated commits with an empty tree.
@@ -564,7 +561,6 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
   }
 
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     LayerAnimationController* controller =
@@ -622,7 +618,6 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
   }
 
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     LayerAnimationController* controller =
@@ -958,14 +953,12 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
   }
 
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     started_times_++;
   }
 
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     EndTest();
@@ -1010,7 +1003,6 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotVisible
   }
 
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     EXPECT_FALSE(visible_);
@@ -1018,7 +1010,6 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotVisible
   }
 
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     EXPECT_FALSE(visible_);
@@ -1095,7 +1086,6 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       Animation::TargetProperty target_property) OVERRIDE {
     if (TestEnded())

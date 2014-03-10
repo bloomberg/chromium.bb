@@ -577,13 +577,11 @@ void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
     if (iter != animation_controllers.end()) {
       switch ((*events)[event_index].type) {
         case AnimationEvent::Started:
-          (*iter).second->NotifyAnimationStarted((*events)[event_index],
-                                                 wall_clock_time.ToDoubleT());
+          (*iter).second->NotifyAnimationStarted((*events)[event_index]);
           break;
 
         case AnimationEvent::Finished:
-          (*iter).second->NotifyAnimationFinished((*events)[event_index],
-                                                  wall_clock_time.ToDoubleT());
+          (*iter).second->NotifyAnimationFinished((*events)[event_index]);
           break;
 
         case AnimationEvent::Aborted:

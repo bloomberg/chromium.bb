@@ -20,11 +20,9 @@ class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
 
  private:
   virtual void NotifyAnimationStarted(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       cc::Animation::TargetProperty target_property) OVERRIDE;
   virtual void NotifyAnimationFinished(
-      double wall_clock_time,
       base::TimeTicks monotonic_time,
       cc::Animation::TargetProperty target_property) OVERRIDE;
 

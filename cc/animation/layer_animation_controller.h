@@ -83,10 +83,8 @@ class CC_EXPORT LayerAnimationController
   void SetAnimationRegistrar(AnimationRegistrar* registrar);
   AnimationRegistrar* animation_registrar() { return registrar_; }
 
-  void NotifyAnimationStarted(const AnimationEvent& event,
-                              double wall_clock_time);
-  void NotifyAnimationFinished(const AnimationEvent& event,
-                               double wall_clock_time);
+  void NotifyAnimationStarted(const AnimationEvent& event);
+  void NotifyAnimationFinished(const AnimationEvent& event);
   void NotifyAnimationAborted(const AnimationEvent& event);
   void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
 
