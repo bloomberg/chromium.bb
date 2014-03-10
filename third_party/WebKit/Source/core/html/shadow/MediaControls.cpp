@@ -58,9 +58,6 @@ MediaControls::MediaControls(Document& document)
 
 PassRefPtr<MediaControls> MediaControls::create(Document& document)
 {
-    if (!document.page())
-        return nullptr;
-
     RefPtr<MediaControls> controls;
 #if OS(ANDROID)
     controls = adoptRef(new MediaControlsAndroid(document));
@@ -167,10 +164,6 @@ void MediaControls::setMediaController(MediaControllerInterface* controller)
 
 void MediaControls::reset()
 {
-    Page* page = document().page();
-    if (!page)
-        return;
-
     double duration = m_mediaController->duration();
     m_durationDisplay->setInnerText(RenderTheme::theme().formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
     m_durationDisplay->setCurrentValue(duration);
@@ -263,10 +256,6 @@ void MediaControls::updateCurrentTimeDisplay()
 {
     double now = m_mediaController->currentTime();
     double duration = m_mediaController->duration();
-
-    Page* page = document().page();
-    if (!page)
-        return;
 
     // After seek, hide duration display and show current time.
     if (now > 0) {
@@ -381,10 +370,6 @@ void MediaControls::hideFullscreenControlsTimerFired(Timer<MediaControls>*)
 void MediaControls::startHideFullscreenControlsTimer()
 {
     if (!m_isFullscreen)
-        return;
-
-    Page* page = document().page();
-    if (!page)
         return;
 
     m_hideFullscreenControlsTimer.startOneShot(timeWithoutMouseMovementBeforeHidingFullscreenControls);
