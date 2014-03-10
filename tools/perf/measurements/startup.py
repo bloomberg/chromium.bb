@@ -16,7 +16,7 @@ class Startup(page_measurement.PageMeasurement):
   """
 
   def __init__(self, action_name_to_run = ''):
-    super(Startup, self).__init__(needs_browser_restart_after_each_run=True,
+    super(Startup, self).__init__(needs_browser_restart_after_each_page=True,
                                   action_name_to_run=action_name_to_run)
 
   def AddCommandLineOptions(self, parser):

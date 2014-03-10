@@ -45,7 +45,7 @@ class _ContextLostValidator(page_test.PageTest):
     # after each run, but if more tests are added which crash the GPU
     # process, then it will.
     super(_ContextLostValidator, self).__init__(
-      'ValidatePage', needs_browser_restart_after_each_run=True)
+      'ValidatePage', needs_browser_restart_after_each_page=True)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
