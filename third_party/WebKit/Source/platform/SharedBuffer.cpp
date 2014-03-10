@@ -401,4 +401,20 @@ PassRefPtr<SkData> SharedBuffer::getAsSkData() const
     return adoptRef(SkData::NewFromMalloc(buffer, bufferLength));
 }
 
+bool SharedBuffer::lock()
+{
+    return m_buffer.lock();
+}
+
+void SharedBuffer::unlock()
+{
+    mergeSegmentsIntoBuffer();
+    m_buffer.unlock();
+}
+
+bool SharedBuffer::isLocked() const
+{
+    return m_buffer.isLocked();
+}
+
 } // namespace WebCore

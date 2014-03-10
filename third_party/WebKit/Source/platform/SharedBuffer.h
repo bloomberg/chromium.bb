@@ -91,14 +91,14 @@ public:
     PassRefPtr<SkData> getAsSkData() const;
 
     // See PurgeableVector::lock().
-    bool lock() { return m_buffer.lock(); }
+    bool lock();
 
     // WARNING: Calling unlock() on a SharedBuffer that wasn't created with the
     // purgeability option does an extra memcpy(). Please use
     // SharedBuffer::createPurgeable() if you intend to call unlock().
-    void unlock() { m_buffer.unlock(); }
+    void unlock();
 
-    bool isLocked() const { return m_buffer.isLocked(); }
+    bool isLocked() const;
 
 private:
     SharedBuffer();
