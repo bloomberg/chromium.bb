@@ -154,7 +154,7 @@ void HTMLImportsController::scheduleRecalcState()
 {
     if (m_recalcTimer.isActive())
         return;
-    m_recalcTimer.startOneShot(0);
+    m_recalcTimer.startOneShot(0, FROM_HERE);
 }
 
 void HTMLImportsController::recalcTimerFired(Timer<HTMLImportsController>*)

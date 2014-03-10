@@ -177,7 +177,7 @@ void MainThreadWebSocketChannel::close(int code, const String& reason)
         return;
     startClosingHandshake(code, reason);
     if (!m_closingTimer.isActive())
-        m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime);
+        m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime, FROM_HERE);
 }
 
 void MainThreadWebSocketChannel::clearDocument()
@@ -243,7 +243,7 @@ void MainThreadWebSocketChannel::resume()
 {
     m_suspended = false;
     if ((!m_buffer.isEmpty() || (m_state == ChannelClosed)) && m_client && !m_resumeTimer.isActive())
-        m_resumeTimer.startOneShot(0);
+        m_resumeTimer.startOneShot(0, FROM_HERE);
 }
 
 void MainThreadWebSocketChannel::willOpenSocketStream(SocketStreamHandle* handle)

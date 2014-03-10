@@ -91,7 +91,7 @@ void runPendingTasks()
 {
     // Pending tasks include Timers that have been scheduled.
     WebCore::Timer<QuitTask> quitOnTimeout(new QuitTask, &QuitTask::PostThis);
-    quitOnTimeout.startOneShot(0);
+    quitOnTimeout.startOneShot(0, FROM_HERE);
     Platform::current()->currentThread()->enterRunLoop();
 }
 

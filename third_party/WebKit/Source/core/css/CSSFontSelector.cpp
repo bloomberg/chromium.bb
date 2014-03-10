@@ -63,7 +63,7 @@ void FontLoader::addFontToBeginLoading(FontResource* fontResource)
     // after this font has been requested but before it began loading. Balanced by
     // decrementRequestCount() in beginLoadTimerFired() and in clearDocument().
     m_resourceFetcher->incrementRequestCount(fontResource);
-    m_beginLoadingTimer.startOneShot(0);
+    m_beginLoadingTimer.startOneShot(0, FROM_HERE);
 }
 
 void FontLoader::beginLoadTimerFired(Timer<WebCore::FontLoader>*)

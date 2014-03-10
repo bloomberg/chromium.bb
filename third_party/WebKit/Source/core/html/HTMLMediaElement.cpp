@@ -501,14 +501,14 @@ void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
         m_pendingActionFlags |= LoadTextTrackResource;
 
     if (!m_loadTimer.isActive())
-        m_loadTimer.startOneShot(0);
+        m_loadTimer.startOneShot(0, FROM_HERE);
 }
 
 void HTMLMediaElement::scheduleNextSourceChild()
 {
     // Schedule the timer to try the next <source> element WITHOUT resetting state ala prepareForLoad.
     m_pendingActionFlags |= LoadMediaResource;
-    m_loadTimer.startOneShot(0);
+    m_loadTimer.startOneShot(0, FROM_HERE);
 }
 
 void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
@@ -1313,7 +1313,7 @@ void HTMLMediaElement::startProgressEventTimer()
 
     m_previousProgressTime = WTF::currentTime();
     // 350ms is not magic, it is in the spec!
-    m_progressEventTimer.startRepeating(0.350);
+    m_progressEventTimer.startRepeating(0.350, FROM_HERE);
 }
 
 void HTMLMediaElement::waitForSourceChange()
@@ -2136,7 +2136,7 @@ void HTMLMediaElement::startPlaybackProgressTimer()
         return;
 
     m_previousProgressTime = WTF::currentTime();
-    m_playbackProgressTimer.startRepeating(maxTimeupdateEventFrequency);
+    m_playbackProgressTimer.startRepeating(maxTimeupdateEventFrequency, FROM_HERE);
 }
 
 void HTMLMediaElement::playbackProgressTimerFired(Timer<HTMLMediaElement>*)

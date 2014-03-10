@@ -249,7 +249,7 @@ void Scrollbar::startTimerIfNeeded(double delay)
             return;
     }
 
-    m_scrollTimer.startOneShot(delay);
+    m_scrollTimer.startOneShot(delay, FROM_HERE);
 }
 
 void Scrollbar::stopTimerIfNeeded()

@@ -389,7 +389,7 @@ void NavigationScheduler::startTimer()
     if (!m_redirect->shouldStartTimer(m_frame))
         return;
 
-    m_timer.startOneShot(m_redirect->delay());
+    m_timer.startOneShot(m_redirect->delay(), FROM_HERE);
     InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
 }
 

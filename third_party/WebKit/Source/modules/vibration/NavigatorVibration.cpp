@@ -83,7 +83,7 @@ bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
         return true;
     }
 
-    m_timerStart.startOneShot(0);
+    m_timerStart.startOneShot(0, FROM_HERE);
     m_isVibrating = true;
     return true;
 }
@@ -105,7 +105,7 @@ void NavigatorVibration::timerStartFired(Timer<NavigatorVibration>* timer)
     if (m_pattern.size()) {
         m_isVibrating = true;
         blink::Platform::current()->vibrate(m_pattern[0]);
-        m_timerStop.startOneShot(m_pattern[0] / 1000.0);
+        m_timerStop.startOneShot(m_pattern[0] / 1000.0, FROM_HERE);
         m_pattern.remove(0);
     }
 }
@@ -118,7 +118,7 @@ void NavigatorVibration::timerStopFired(Timer<NavigatorVibration>* timer)
         m_isVibrating = false;
 
     if (m_pattern.size()) {
-        m_timerStart.startOneShot(m_pattern[0] / 1000.0);
+        m_timerStart.startOneShot(m_pattern[0] / 1000.0, FROM_HERE);
         m_pattern.remove(0);
     }
 }

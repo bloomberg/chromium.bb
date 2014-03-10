@@ -136,7 +136,7 @@ void MediaControlPanelElement::startTimer()
     // such that captions are correctly displayed at the bottom of the video
     // at the end of the fadeout transition.
     // FIXME: Racing a transition with a setTimeout like this is wrong.
-    m_transitionTimer.startOneShot(fadeOutDuration);
+    m_transitionTimer.startOneShot(fadeOutDuration, FROM_HERE);
 }
 
 void MediaControlPanelElement::stopTimer()

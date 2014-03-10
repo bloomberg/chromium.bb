@@ -100,7 +100,7 @@ static NSSize abs(NSSize size)
         finalSize.width = -finalSize.width;
     if (finalSize.height < 0)
         finalSize.height = -finalSize.height;
-    return finalSize;    
+    return finalSize;
 }
 
 @implementation WebScrollAnimationHelperDelegate
@@ -196,7 +196,7 @@ static NSSize abs(NSSize size)
     self = [super init];
     if (!self)
         return nil;
-    
+
     _scrollableArea = scrollableArea;
     return self;
 }
@@ -240,7 +240,7 @@ static NSSize abs(NSSize size)
     WebCore::Scrollbar* scrollbar = 0;
     if ([scrollerImp isHorizontal])
         scrollbar = _scrollableArea->horizontalScrollbar();
-    else 
+    else
         scrollbar = _scrollableArea->verticalScrollbar();
 
     // It is possible to have a null scrollbar here since it is possible for this delegate
@@ -401,7 +401,7 @@ enum FeatureToAnimate {
     self = [super init];
     if (!self)
         return nil;
-    
+
     _scrollbar = scrollbar;
     return self;
 }
@@ -443,7 +443,7 @@ enum FeatureToAnimate {
 
 - (void)setUpAlphaAnimation:(RetainPtr<WebScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(WebCore::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
 {
-    // If the user has scrolled the page, then the scrollbars must be animated here. 
+    // If the user has scrolled the page, then the scrollbars must be animated here.
     // This overrides the early returns.
     bool mustAnimate = [self scrollAnimator]->haveScrolledSincePageLoad();
 
@@ -472,10 +472,10 @@ enum FeatureToAnimate {
             [self scrollAnimator]->setVisibleScrollerThumbRect(IntRect());
     }
 
-    scrollbarPartAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar 
+    scrollbarPartAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
                                                                        featureToAnimate:part == ThumbPart ? ThumbAlpha : TrackAlpha
                                                                             animateFrom:part == ThumbPart ? [scrollerPainter knobAlpha] : [scrollerPainter trackAlpha]
-                                                                              animateTo:newAlpha 
+                                                                              animateTo:newAlpha
                                                                                duration:duration]);
     [scrollbarPartAnimation.get() startAnimation];
 }
@@ -497,7 +497,7 @@ enum FeatureToAnimate {
         return;
 
     ASSERT(scrollerImp == scrollbarPainterForScrollbar(_scrollbar));
-    
+
     ScrollbarPainter scrollerPainter = (ScrollbarPainter)scrollerImp;
     [self setUpAlphaAnimation:_trackAlphaAnimation scrollerPainter:scrollerPainter part:WebCore::BackTrackPart animateAlphaTo:newTrackAlpha duration:duration];
 }
@@ -518,7 +518,7 @@ enum FeatureToAnimate {
     [scrollbarPainter setUiStateTransitionProgress:1 - [scrollerImp uiStateTransitionProgress]];
 
     if (!_uiStateTransitionAnimation)
-        _uiStateTransitionAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar 
+        _uiStateTransitionAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
                                                                                 featureToAnimate:UIStateTransition
                                                                                      animateFrom:[scrollbarPainter uiStateTransitionProgress]
                                                                                        animateTo:1.0
@@ -623,7 +623,7 @@ ScrollAnimatorMac::~ScrollAnimatorMac()
 
 static bool scrollAnimationEnabledForSystem()
 {
-    NSString* scrollAnimationDefaultsKey = 
+    NSString* scrollAnimationDefaultsKey =
         @"AppleScrollAnimationEnabled";
     static bool enabled = [[NSUserDefaults standardUserDefaults] boolForKey:scrollAnimationDefaultsKey];
     return enabled;
@@ -696,7 +696,7 @@ FloatPoint ScrollAnimatorMac::adjustScrollPositionIfNecessary(const FloatPoint& 
 void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
 {
     FloatPoint adjustedPosition = adjustScrollPositionIfNecessary(newPosition);
- 
+
     bool positionChanged = adjustedPosition.x() != m_currentPosX || adjustedPosition.y() != m_currentPosY;
     if (!positionChanged && !scrollableArea()->scrollOriginChanged())
         return;
@@ -963,7 +963,7 @@ void ScrollAnimatorMac::notifyContentAreaScrolled(const FloatSize& delta)
     if (!ScrollbarThemeMacCommon::isOverlayAPIAvailable())
         return;
 
-    // This function is called when a page is going into the page cache, but the page 
+    // This function is called when a page is going into the page cache, but the page
     // isn't really scrolling in that case. We should only pass the message on to the
     // ScrollbarPainterController when we're really scrolling on an active page.
     if (scrollableArea()->scrollbarsCanBeActive())
@@ -1046,7 +1046,7 @@ bool ScrollAnimatorMac::pinnedInDirection(float deltaX, float deltaY)
             limitDelta.setWidth(m_scrollableArea->contentsSize().width() - (m_scrollableArea->visibleContentRect().maxX() + m_scrollableArea->scrollOrigin().x()));
         }
     }
-    
+
     if ((deltaX != 0 || deltaY != 0) && (limitDelta.width() < 1 && limitDelta.height() < 1))
         return true;
     return false;
@@ -1146,7 +1146,7 @@ void ScrollAnimatorMac::immediateScrollBy(const FloatSize& delta)
 
 void ScrollAnimatorMac::startSnapRubberbandTimer()
 {
-    m_snapRubberBandTimer.startRepeating(1.0 / 60.0);
+    m_snapRubberBandTimer.startRepeating(1.0 / 60.0, FROM_HERE);
 }
 
 void ScrollAnimatorMac::stopSnapRubberbandTimer()
@@ -1193,14 +1193,14 @@ void ScrollAnimatorMac::updateScrollerStyle()
         verticalScrollbar->invalidate();
 
         ScrollbarPainter oldVerticalPainter = [m_scrollbarPainterController.get() verticalScrollerImp];
-        ScrollbarPainter newVerticalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle 
-                                                                                    controlSize:(NSControlSize)verticalScrollbar->controlSize() 
-                                                                                    horizontal:NO 
+        ScrollbarPainter newVerticalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle
+                                                                                    controlSize:(NSControlSize)verticalScrollbar->controlSize()
+                                                                                    horizontal:NO
                                                                                     replacingScrollerImp:oldVerticalPainter];
         [m_scrollbarPainterController.get() setVerticalScrollerImp:newVerticalPainter];
         macTheme->setNewPainterForScrollbar(verticalScrollbar, newVerticalPainter);
 
-        // The different scrollbar styles have different thicknesses, so we must re-set the 
+        // The different scrollbar styles have different thicknesses, so we must re-set the
         // frameRect to the new thickness, and the re-layout below will ensure the position
         // and length are properly updated.
         int thickness = macTheme->scrollbarThickness(verticalScrollbar->controlSize());
@@ -1211,21 +1211,21 @@ void ScrollAnimatorMac::updateScrollerStyle()
         horizontalScrollbar->invalidate();
 
         ScrollbarPainter oldHorizontalPainter = [m_scrollbarPainterController.get() horizontalScrollerImp];
-        ScrollbarPainter newHorizontalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle 
-                                                                                    controlSize:(NSControlSize)horizontalScrollbar->controlSize() 
-                                                                                    horizontal:YES 
+        ScrollbarPainter newHorizontalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle
+                                                                                    controlSize:(NSControlSize)horizontalScrollbar->controlSize()
+                                                                                    horizontal:YES
                                                                                     replacingScrollerImp:oldHorizontalPainter];
         [m_scrollbarPainterController.get() setHorizontalScrollerImp:newHorizontalPainter];
         macTheme->setNewPainterForScrollbar(horizontalScrollbar, newHorizontalPainter);
 
-        // The different scrollbar styles have different thicknesses, so we must re-set the 
+        // The different scrollbar styles have different thicknesses, so we must re-set the
         // frameRect to the new thickness, and the re-layout below will ensure the position
         // and length are properly updated.
         int thickness = macTheme->scrollbarThickness(horizontalScrollbar->controlSize());
         horizontalScrollbar->setFrameRect(IntRect(0, 0, thickness, thickness));
     }
 
-    // If m_needsScrollerStyleUpdate is true, then the page is restoring from the page cache, and 
+    // If m_needsScrollerStyleUpdate is true, then the page is restoring from the page cache, and
     // a relayout will happen on its own. Otherwise, we must initiate a re-layout ourselves.
     scrollableArea()->scrollbarStyleChanged(newStyle, !m_needsScrollerStyleUpdate);
 
@@ -1234,7 +1234,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
 
 void ScrollAnimatorMac::startScrollbarPaintTimer()
 {
-    m_initialScrollbarPaintTimer.startOneShot(0.1);
+    m_initialScrollbarPaintTimer.startOneShot(0.1, FROM_HERE);
 }
 
 bool ScrollAnimatorMac::scrollbarPaintTimerIsActive() const
@@ -1262,7 +1262,7 @@ void ScrollAnimatorMac::sendContentAreaScrolledSoon(const FloatSize& delta)
     m_contentAreaScrolledTimerScrollDelta = delta;
 
     if (!m_sendContentAreaScrolledTimer.isActive())
-        m_sendContentAreaScrolledTimer.startOneShot(0);
+        m_sendContentAreaScrolledTimer.startOneShot(0, FROM_HERE);
 }
 
 void ScrollAnimatorMac::sendContentAreaScrolledTimerFired(Timer<ScrollAnimatorMac>*)

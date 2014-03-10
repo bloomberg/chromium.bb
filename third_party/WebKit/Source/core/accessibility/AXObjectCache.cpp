@@ -767,7 +767,7 @@ void AXObjectCache::postNotification(AXObject* object, Document* document, AXNot
     if (postType == PostAsynchronously) {
         m_notificationsToPost.append(std::make_pair(object, notification));
         if (!m_notificationPostTimer.isActive())
-            m_notificationPostTimer.startOneShot(0);
+            m_notificationPostTimer.startOneShot(0, FROM_HERE);
     } else {
         postPlatformNotification(object, notification);
     }

@@ -75,7 +75,7 @@ void SVGImageChromeClient::scheduleAnimation()
     // animations. Checking for pending/active animations could be more
     // stringent.
     double fireTime = m_image->hasAnimations() ? animationFrameDelay : 0;
-    m_animationTimer.startOneShot(fireTime);
+    m_animationTimer.startOneShot(fireTime, FROM_HERE);
 }
 
 void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)

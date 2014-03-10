@@ -466,7 +466,7 @@ public:
         , m_options(options)
         , m_reset(reset)
     {
-        m_timer.startOneShot(0.0);
+        m_timer.startOneShot(0.0, FROM_HERE);
     }
 
 private:

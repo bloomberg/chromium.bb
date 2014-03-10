@@ -141,7 +141,7 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
 
     // If the server never responds, FrameLoader won't be able to cancel this load and
     // we'll sit here waiting forever. Set a very generous timeout, just in case.
-    m_timeout.startOneShot(60000);
+    m_timeout.startOneShot(60000, FROM_HERE);
 }
 
 PingLoader::~PingLoader()

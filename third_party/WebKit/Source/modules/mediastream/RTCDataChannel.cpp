@@ -296,7 +296,7 @@ void RTCDataChannel::scheduleDispatchEvent(PassRefPtr<Event> event)
     m_scheduledEvents.append(event);
 
     if (!m_scheduledEventTimer.isActive())
-        m_scheduledEventTimer.startOneShot(0);
+        m_scheduledEventTimer.startOneShot(0, FROM_HERE);
 }
 
 void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)

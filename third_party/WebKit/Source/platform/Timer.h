@@ -27,6 +27,7 @@
 #define Timer_h
 
 #include "platform/PlatformExport.h"
+#include "platform/TraceLocation.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -43,13 +44,20 @@ public:
     TimerBase();
     virtual ~TimerBase();
 
-    void start(double nextFireInterval, double repeatInterval);
+    void start(double nextFireInterval, double repeatInterval, const TraceLocation&);
 
-    void startRepeating(double repeatInterval) { start(repeatInterval, repeatInterval); }
-    void startOneShot(double interval) { start(interval, 0); }
+    void startRepeating(double repeatInterval, const TraceLocation& caller)
+    {
+        start(repeatInterval, repeatInterval, caller);
+    }
+    void startOneShot(double interval, const TraceLocation& caller)
+    {
+        start(interval, 0, caller);
+    }
 
     void stop();
     bool isActive() const;
+    const TraceLocation& location() const { return m_location; }
 
     double nextFireInterval() const;
     double nextUnalignedFireInterval() const;
@@ -95,6 +103,7 @@ private:
     int m_heapIndex; // -1 if not in heap
     unsigned m_heapInsertionOrder; // Used to keep order among equal-fire-time timers
     Vector<TimerBase*>* m_cachedThreadGlobalTimerHeap;
+    TraceLocation m_location;
 
 #ifndef NDEBUG
     ThreadIdentifier m_thread;
@@ -139,7 +148,7 @@ public:
     {
     }
 
-    void restart()
+    void restart(const TraceLocation& caller)
     {
         // Setting this boolean is much more efficient than calling startOneShot
         // again, which might result in rescheduling the system timer which
@@ -149,7 +158,7 @@ public:
             m_shouldRestartWhenTimerFires = true;
             return;
         }
-        startOneShot(m_delay);
+        startOneShot(m_delay, caller);
     }
 
     using TimerBase::stop;
@@ -160,7 +169,8 @@ private:
     {
         if (m_shouldRestartWhenTimerFires) {
             m_shouldRestartWhenTimerFires = false;
-            startOneShot(m_delay);
+            // FIXME: This should not be FROM_HERE.
+            startOneShot(m_delay, FROM_HERE);
             return;
         }
 

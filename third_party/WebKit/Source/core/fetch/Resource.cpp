@@ -519,7 +519,7 @@ void Resource::allClientsRemoved()
     if (m_type == MainResource || m_type == Raw)
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
-        m_cancelTimer.startOneShot(0);
+        m_cancelTimer.startOneShot(0, FROM_HERE);
 }
 
 void Resource::cancelTimerFired(Timer<Resource>* timer)
@@ -876,7 +876,7 @@ Resource::ResourceCallback::ResourceCallback()
 void Resource::ResourceCallback::schedule(Resource* resource)
 {
     if (!m_callbackTimer.isActive())
-        m_callbackTimer.startOneShot(0);
+        m_callbackTimer.startOneShot(0, FROM_HERE);
     m_resourcesWithPendingClients.add(resource);
 }
 

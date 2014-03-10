@@ -58,7 +58,7 @@ void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const blink::WebVector
         m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
 
     m_protect = this;
-    m_scheduledEventTimer.startOneShot(0);
+    m_scheduledEventTimer.startOneShot(0, FROM_HERE);
 }
 
 void MediaStreamTrackSourcesRequestImpl::scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequestImpl>*)

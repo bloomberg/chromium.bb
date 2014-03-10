@@ -135,7 +135,7 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
     m_pendingInitializeNewSessionData.append(InitializeNewSessionData(session, contentType, initData));
 
     if (!m_initializeNewSessionTimer.isActive())
-        m_initializeNewSessionTimer.startOneShot(0);
+        m_initializeNewSessionTimer.startOneShot(0, FROM_HERE);
 
     // 5. Return the new object to the caller.
     return session;

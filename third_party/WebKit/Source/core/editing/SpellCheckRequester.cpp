@@ -240,7 +240,7 @@ void SpellCheckRequester::didCheck(int sequence, const Vector<TextCheckingResult
 
     m_processingRequest.clear();
     if (!m_requestQueue.isEmpty())
-        m_timerToProcessQueuedRequest.startOneShot(0);
+        m_timerToProcessQueuedRequest.startOneShot(0, FROM_HERE);
 }
 
 void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckingResult>& results)

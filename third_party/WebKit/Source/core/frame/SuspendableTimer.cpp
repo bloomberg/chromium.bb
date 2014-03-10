@@ -74,8 +74,9 @@ void SuspendableTimer::resume()
     ASSERT(m_suspended);
     m_suspended = false;
 #endif
+    // FIXME: FROM_HERE is wrong here.
     if (m_active)
-        start(m_nextFireInterval, m_repeatInterval);
+        start(m_nextFireInterval, m_repeatInterval, FROM_HERE);
 }
 
 } // namespace WebCore

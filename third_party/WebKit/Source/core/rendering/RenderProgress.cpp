@@ -73,7 +73,7 @@ void RenderProgress::animationTimerFired(Timer<RenderProgress>*)
 {
     repaint();
     if (!m_animationTimer.isActive() && m_animating)
-        m_animationTimer.startOneShot(m_animationRepeatInterval);
+        m_animationTimer.startOneShot(m_animationRepeatInterval, FROM_HERE);
 }
 
 void RenderProgress::updateAnimationState()
@@ -88,7 +88,7 @@ void RenderProgress::updateAnimationState()
     m_animating = animating;
     if (m_animating) {
         m_animationStartTime = currentTime();
-        m_animationTimer.startOneShot(m_animationRepeatInterval);
+        m_animationTimer.startOneShot(m_animationRepeatInterval, FROM_HERE);
     } else
         m_animationTimer.stop();
 }

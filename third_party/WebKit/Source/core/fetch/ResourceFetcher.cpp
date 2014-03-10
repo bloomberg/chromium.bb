@@ -696,7 +696,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
             populateResourceTiming(info.get(), resource.get(), true);
             m_scheduledResourceTimingReports.add(info, resource->type() == Resource::MainResource);
             if (!m_resourceTimingReportTimer.isActive())
-                m_resourceTimingReportTimer.startOneShot(0);
+                m_resourceTimingReportTimer.startOneShot(0, FROM_HERE);
         }
 
         m_validatedURLs.add(request.resourceRequest().url());
@@ -1050,7 +1050,7 @@ void ResourceFetcher::didLoadResource(Resource* resource)
 void ResourceFetcher::scheduleDocumentResourcesGC()
 {
     if (!m_garbageCollectDocumentResourcesTimer.isActive())
-        m_garbageCollectDocumentResourcesTimer.startOneShot(0);
+        m_garbageCollectDocumentResourcesTimer.startOneShot(0, FROM_HERE);
 }
 
 // Garbage collecting m_documentResources is a workaround for the

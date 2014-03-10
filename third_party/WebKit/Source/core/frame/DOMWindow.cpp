@@ -833,7 +833,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
 
     // Schedule the message.
     PostMessageTimer* timer = new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release());
-    timer->startOneShot(0);
+    timer->startOneShot(0, FROM_HERE);
     timer->suspendIfNeeded();
 }
 

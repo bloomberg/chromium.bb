@@ -83,9 +83,9 @@ void LinkLoader::notifyFinished(Resource* resource)
     ASSERT(this->resource() == resource);
 
     if (resource->errorOccurred())
-        m_linkLoadingErrorTimer.startOneShot(0);
+        m_linkLoadingErrorTimer.startOneShot(0, FROM_HERE);
     else
-        m_linkLoadTimer.startOneShot(0);
+        m_linkLoadTimer.startOneShot(0, FROM_HERE);
 
     clearResource();
 }

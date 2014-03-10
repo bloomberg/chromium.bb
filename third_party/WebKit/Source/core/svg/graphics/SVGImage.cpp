@@ -73,7 +73,7 @@ public:
         entry.page = page.leakPtr();
 
         m_entries.append(entry);
-        m_detachTimer.startOneShot(0.0);
+        m_detachTimer.startOneShot(0.0, FROM_HERE);
     }
 
     static DelayedSVGImageDestructor* get()

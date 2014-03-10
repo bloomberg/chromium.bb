@@ -73,7 +73,7 @@ bool DOMWindowEventQueue::enqueueEvent(PassRefPtr<Event> event)
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
 
     if (!m_pendingEventTimer->isActive())
-        m_pendingEventTimer->startOneShot(0);
+        m_pendingEventTimer->startOneShot(0, FROM_HERE);
 
     return true;
 }

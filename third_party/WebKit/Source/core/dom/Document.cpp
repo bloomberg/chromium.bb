@@ -1876,7 +1876,7 @@ void Document::setNeedsFocusedElementCheck()
 void Document::clearFocusedElementSoon()
 {
     if (!m_clearFocusedElementTimer.isActive())
-        m_clearFocusedElementTimer.startOneShot(0);
+        m_clearFocusedElementTimer.startOneShot(0, FROM_HERE);
 }
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
@@ -4450,7 +4450,7 @@ void Document::finishedParsing()
     // so that dynamically inserted content can also benefit from sharing optimizations.
     // Note that we don't refresh the timer on cache access since that could lead to huge caches being kept
     // alive indefinitely by something innocuous like JS setting .innerHTML repeatedly on a timer.
-    m_elementDataCacheClearTimer.startOneShot(10);
+    m_elementDataCacheClearTimer.startOneShot(10, FROM_HERE);
 
     // Parser should have picked up all preloads by now
     m_fetcher->clearPreloads();
@@ -4682,7 +4682,7 @@ void Document::updateFocusAppearanceSoon(bool restorePreviousSelection)
 {
     m_updateFocusAppearanceRestoresSelection = restorePreviousSelection;
     if (!m_updateFocusAppearanceTimer.isActive())
-        m_updateFocusAppearanceTimer.startOneShot(0);
+        m_updateFocusAppearanceTimer.startOneShot(0, FROM_HERE);
 }
 
 void Document::cancelFocusAppearanceUpdate()
@@ -4917,7 +4917,7 @@ void Document::decrementLoadEventDelayCount()
     --m_loadEventDelayCount;
 
     if (frame() && !m_loadEventDelayCount && !m_loadEventDelayTimer.isActive())
-        m_loadEventDelayTimer.startOneShot(0);
+        m_loadEventDelayTimer.startOneShot(0, FROM_HERE);
 }
 
 void Document::loadEventDelayTimerFired(Timer<Document>*)
@@ -4930,7 +4930,7 @@ void Document::loadPluginsSoon()
 {
     // FIXME: Remove this timer once we don't need to compute layout to load plugins.
     if (!m_pluginLoadingTimer.isActive())
-        m_pluginLoadingTimer.startOneShot(0);
+        m_pluginLoadingTimer.startOneShot(0, FROM_HERE);
 }
 
 void Document::pluginLoadingTimerFired(Timer<Document>*)
@@ -5345,7 +5345,7 @@ void Document::didAssociateFormControl(Element* element)
         return;
     m_associatedFormControls.add(element);
     if (!m_didAssociateFormControlsTimer.isActive())
-        m_didAssociateFormControlsTimer.startOneShot(0);
+        m_didAssociateFormControlsTimer.startOneShot(0, FROM_HERE);
 }
 
 void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)

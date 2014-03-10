@@ -92,7 +92,7 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
     m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, (message.length() + title.length()) * secondPerCharacter);
     // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
     // or page scale change happen.
-    m_timer.startRepeating(statusCheckInterval);
+    m_timer.startRepeating(statusCheckInterval, FROM_HERE);
 }
 
 void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor)

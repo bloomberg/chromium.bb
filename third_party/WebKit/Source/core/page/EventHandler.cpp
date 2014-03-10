@@ -2321,7 +2321,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 
         if (shouldKeepActiveForMinInterval) {
             m_lastDeferredTapElement = result.innerElement();
-            m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval);
+            m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval, FROM_HERE);
         }
 
         eventTarget = result.targetNode();
@@ -2893,13 +2893,13 @@ bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& ev
 void EventHandler::scheduleHoverStateUpdate()
 {
     if (!m_hoverTimer.isActive())
-        m_hoverTimer.startOneShot(0);
+        m_hoverTimer.startOneShot(0, FROM_HERE);
 }
 
 void EventHandler::scheduleCursorUpdate()
 {
     if (!m_cursorUpdateTimer.isActive())
-        m_cursorUpdateTimer.startOneShot(cursorUpdateInterval);
+        m_cursorUpdateTimer.startOneShot(cursorUpdateInterval, FROM_HERE);
 }
 
 void EventHandler::dispatchFakeMouseMoveEventSoon()
@@ -2921,10 +2921,10 @@ void EventHandler::dispatchFakeMouseMoveEventSoon()
     if (m_maxMouseMovedDuration > fakeMouseMoveShortInterval) {
         if (m_fakeMouseMoveEventTimer.isActive())
             m_fakeMouseMoveEventTimer.stop();
-        m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveLongInterval);
+        m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveLongInterval, FROM_HERE);
     } else {
         if (!m_fakeMouseMoveEventTimer.isActive())
-            m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveShortInterval);
+            m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveShortInterval, FROM_HERE);
     }
 }
 

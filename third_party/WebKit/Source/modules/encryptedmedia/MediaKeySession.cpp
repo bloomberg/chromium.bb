@@ -125,7 +125,7 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
     m_pendingActions.append(PendingAction::CreatePendingUpdate(response));
 
     if (!m_actionTimer.isActive())
-        m_actionTimer.startOneShot(0);
+        m_actionTimer.startOneShot(0, FROM_HERE);
 }
 
 void MediaKeySession::release(ExceptionState& exceptionState)
@@ -144,7 +144,7 @@ void MediaKeySession::release(ExceptionState& exceptionState)
     m_pendingActions.append(PendingAction::CreatePendingRelease());
 
     if (!m_actionTimer.isActive())
-        m_actionTimer.startOneShot(0);
+        m_actionTimer.startOneShot(0, FROM_HERE);
 }
 
 void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)

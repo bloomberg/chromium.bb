@@ -122,16 +122,20 @@ void ThreadTimers::sharedTimerFiredInternal()
     double timeToQuit = fireTime + maxDurationOfFiringTimers;
 
     while (!m_timerHeap.isEmpty() && m_timerHeap.first()->m_nextFireTime <= fireTime) {
-        TimerBase* timer = m_timerHeap.first();
-        timer->m_nextFireTime = 0;
-        timer->m_unalignedNextFireTime = 0;
-        timer->heapDeleteMin();
+        TimerBase& timer = *m_timerHeap.first();
+        timer.m_nextFireTime = 0;
+        timer.m_unalignedNextFireTime = 0;
+        timer.heapDeleteMin();
 
-        double interval = timer->repeatInterval();
-        timer->setNextFireTime(interval ? fireTime + interval : 0);
+        double interval = timer.repeatInterval();
+        timer.setNextFireTime(interval ? fireTime + interval : 0);
+
+        TRACE_EVENT2("blink", "ThreadTimers::sharedTimerFiredInternal",
+            "src_file", timer.location().fileName(),
+            "src_func", timer.location().functionName());
 
         // Once the timer has been fired, it may be deleted, so do nothing else with it after this point.
-        timer->fired();
+        timer.fired();
 
         // Catch the case where the timer asked timers to fire in a nested event loop, or we are over time limit.
         if (!m_firingTimers || timeToQuit < monotonicallyIncreasingTime())

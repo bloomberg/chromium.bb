@@ -69,7 +69,7 @@ void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*
 
     if (m_timerExpirations < 1) {
         m_timerExpirations++;
-        m_callbackSelectorChangeTimer.startOneShot(0);
+        m_callbackSelectorChangeTimer.startOneShot(0, FROM_HERE);
         return;
     }
     if (m_document.frame()) {
@@ -125,7 +125,7 @@ void CSSSelectorWatch::updateSelectorMatches(const Vector<String>& removedSelect
     } else {
         m_timerExpirations = 0;
         if (!m_callbackSelectorChangeTimer.isActive())
-            m_callbackSelectorChangeTimer.startOneShot(0);
+            m_callbackSelectorChangeTimer.startOneShot(0, FROM_HERE);
     }
 }
 

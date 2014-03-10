@@ -107,7 +107,7 @@ void WebSocket::EventQueue::resume()
     if (m_state != Suspended || m_resumeTimer.isActive())
         return;
 
-    m_resumeTimer.startOneShot(0);
+    m_resumeTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebSocket::EventQueue::stop()

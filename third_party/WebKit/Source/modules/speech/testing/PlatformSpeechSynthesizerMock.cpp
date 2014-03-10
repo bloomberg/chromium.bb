@@ -85,7 +85,7 @@ void PlatformSpeechSynthesizerMock::speak(PassRefPtr<PlatformSpeechSynthesisUtte
     client()->boundaryEventOccurred(m_utterance, SpeechSentenceBoundary, m_utterance->text().length());
 
     // Give the fake speech job some time so that pause and other functions have time to be called.
-    m_speakingFinishedTimer.startOneShot(.1);
+    m_speakingFinishedTimer.startOneShot(.1, FROM_HERE);
 }
 
 void PlatformSpeechSynthesizerMock::cancel()
@@ -94,7 +94,7 @@ void PlatformSpeechSynthesizerMock::cancel()
         return;
 
     m_speakingFinishedTimer.stop();
-    m_speakingErrorOccurredTimer.startOneShot(.1);
+    m_speakingErrorOccurredTimer.startOneShot(.1, FROM_HERE);
 }
 
 void PlatformSpeechSynthesizerMock::pause()

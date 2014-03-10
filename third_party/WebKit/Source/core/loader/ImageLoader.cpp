@@ -338,7 +338,7 @@ void ImageLoader::updatedHasPendingEvent()
             m_element->ref();
     } else {
         ASSERT(!m_derefElementTimer.isActive());
-        m_derefElementTimer.startOneShot(0);
+        m_derefElementTimer.startOneShot(0, FROM_HERE);
     }
 }
 

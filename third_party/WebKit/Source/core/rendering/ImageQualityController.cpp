@@ -124,7 +124,7 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
 
 void ImageQualityController::restartTimer()
 {
-    m_timer.startOneShot(cLowQualityTimeThreshold);
+    m_timer.startOneShot(cLowQualityTimeThreshold, FROM_HERE);
 }
 
 bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, RenderObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)

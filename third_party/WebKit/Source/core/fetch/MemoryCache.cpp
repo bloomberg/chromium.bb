@@ -81,7 +81,7 @@ MemoryCache::MemoryCache()
 {
 #ifdef MEMORY_CACHE_STATS
     const double statsIntervalInSeconds = 15;
-    m_statsTimer.startRepeating(statsIntervalInSeconds);
+    m_statsTimer.startRepeating(statsIntervalInSeconds, FROM_HERE);
 #endif
     m_pruneTimeStamp = m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
 }

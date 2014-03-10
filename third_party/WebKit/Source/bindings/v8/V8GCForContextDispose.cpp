@@ -46,7 +46,7 @@ void V8GCForContextDispose::notifyContextDisposed(bool isMainFrame)
     m_didDisposeContextForMainFrame = m_didDisposeContextForMainFrame || isMainFrame;
     v8::V8::ContextDisposedNotification();
     if (!m_pseudoIdleTimer.isActive())
-        m_pseudoIdleTimer.startOneShot(0.8);
+        m_pseudoIdleTimer.startOneShot(0.8, FROM_HERE);
 }
 
 void V8GCForContextDispose::notifyIdleSooner(double maximumFireInterval)
@@ -55,7 +55,7 @@ void V8GCForContextDispose::notifyIdleSooner(double maximumFireInterval)
         double nextFireInterval = m_pseudoIdleTimer.nextFireInterval();
         if (nextFireInterval > maximumFireInterval) {
             m_pseudoIdleTimer.stop();
-            m_pseudoIdleTimer.startOneShot(maximumFireInterval);
+            m_pseudoIdleTimer.startOneShot(maximumFireInterval, FROM_HERE);
         }
     }
 }

@@ -1526,7 +1526,7 @@ void FrameSelection::updateAppearance()
     // already blinking in the right location.
     if (shouldBlink && !m_caretBlinkTimer.isActive()) {
         if (double blinkInterval = RenderTheme::theme().caretBlinkInterval())
-            m_caretBlinkTimer.startRepeating(blinkInterval);
+            m_caretBlinkTimer.startRepeating(blinkInterval, FROM_HERE);
 
         if (!m_caretPaint) {
             m_caretPaint = true;

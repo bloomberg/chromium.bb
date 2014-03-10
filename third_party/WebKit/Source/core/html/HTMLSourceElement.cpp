@@ -101,7 +101,7 @@ void HTMLSourceElement::scheduleErrorEvent()
     if (m_errorEventTimer.isActive())
         return;
 
-    m_errorEventTimer.startOneShot(0);
+    m_errorEventTimer.startOneShot(0, FROM_HERE);
 }
 
 void HTMLSourceElement::cancelPendingErrorEvent()

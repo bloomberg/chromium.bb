@@ -110,13 +110,13 @@ void Geolocation::GeoNotifier::setFatalError(PassRefPtrWillBeRawPtr<PositionErro
     m_fatalError = error;
     // An existing timer may not have a zero timeout.
     m_timer.stop();
-    m_timer.startOneShot(0);
+    m_timer.startOneShot(0, FROM_HERE);
 }
 
 void Geolocation::GeoNotifier::setUseCachedPosition()
 {
     m_useCachedPosition = true;
-    m_timer.startOneShot(0);
+    m_timer.startOneShot(0, FROM_HERE);
 }
 
 bool Geolocation::GeoNotifier::hasZeroTimeout() const
@@ -143,7 +143,7 @@ void Geolocation::GeoNotifier::runErrorCallback(PositionError* error)
 void Geolocation::GeoNotifier::startTimerIfNeeded()
 {
     if (m_options->hasTimeout())
-        m_timer.startOneShot(m_options->timeout() / 1000.0);
+        m_timer.startOneShot(m_options->timeout() / 1000.0, FROM_HERE);
 }
 
 void Geolocation::GeoNotifier::stopTimer()

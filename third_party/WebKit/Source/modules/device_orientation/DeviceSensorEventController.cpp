@@ -79,7 +79,7 @@ void DeviceSensorEventController::startUpdating()
 
     if (hasLastData() && !m_timer.isActive()) {
         // Make sure to fire the device motion data as soon as possible.
-        m_timer.startOneShot(0);
+        m_timer.startOneShot(0, FROM_HERE);
     }
 
     registerWithDispatcher();

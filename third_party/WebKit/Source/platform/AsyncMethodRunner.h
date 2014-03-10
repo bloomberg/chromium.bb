@@ -64,8 +64,9 @@ public:
             return;
         }
 
+        // FIXME: runAsync should take a TraceLocation and pass it to timer here.
         if (!m_timer.isActive())
-            m_timer.startOneShot(0);
+            m_timer.startOneShot(0, FROM_HERE);
     }
 
     // If it's scheduled to run the method, cancel it and remember to schedule
@@ -93,7 +94,8 @@ public:
             return;
 
         m_runWhenResumed = false;
-        m_timer.startOneShot(0);
+        // FIXME: resume should take a TraceLocation and pass it to timer here.
+        m_timer.startOneShot(0, FROM_HERE);
     }
 
     void stop()

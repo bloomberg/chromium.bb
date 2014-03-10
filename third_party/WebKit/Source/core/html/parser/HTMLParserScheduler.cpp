@@ -93,7 +93,7 @@ void HTMLParserScheduler::continueNextChunkTimerFired(Timer<HTMLParserScheduler>
     // FIXME: We should fix this by reducing the max-parse-time instead of
     // artificially forcing the parser to yield agressively before first layout.
     if (m_parser->document()->shouldParserYieldAgressivelyBeforeScriptExecution()) {
-        m_continueNextChunkTimer.startOneShot(0);
+        m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
         return;
     }
     m_parser->resumeParsingAfterYield();
@@ -112,7 +112,7 @@ void HTMLParserScheduler::checkForYieldBeforeScript(PumpSession& session)
 
 void HTMLParserScheduler::scheduleForResume()
 {
-    m_continueNextChunkTimer.startOneShot(0);
+    m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
 }
 
 
@@ -131,7 +131,7 @@ void HTMLParserScheduler::resume()
     if (!m_isSuspendedWithActiveTimer)
         return;
     m_isSuspendedWithActiveTimer = false;
-    m_continueNextChunkTimer.startOneShot(0);
+    m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
 }
 
 }

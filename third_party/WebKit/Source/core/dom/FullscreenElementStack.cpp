@@ -252,7 +252,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
     } while (0);
 
     m_fullScreenErrorEventTargetQueue.append(element ? element : document()->documentElement());
-    m_fullScreenChangeDelayTimer.startOneShot(0);
+    m_fullScreenChangeDelayTimer.startOneShot(0, FROM_HERE);
 }
 
 void FullscreenElementStack::webkitCancelFullScreen()
@@ -407,7 +407,7 @@ void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)
 
     m_fullScreenElement->didBecomeFullscreenElement();
 
-    m_fullScreenChangeDelayTimer.startOneShot(0);
+    m_fullScreenChangeDelayTimer.startOneShot(0, FROM_HERE);
 }
 
 void FullscreenElementStack::webkitWillExitFullScreenForElement(Element*)
@@ -446,7 +446,7 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     if (m_fullScreenChangeEventTargetQueue.isEmpty() && m_fullScreenErrorEventTargetQueue.isEmpty())
         exitingDocument = &document()->topDocument();
     ASSERT(exitingDocument);
-    from(*exitingDocument).m_fullScreenChangeDelayTimer.startOneShot(0);
+    from(*exitingDocument).m_fullScreenChangeDelayTimer.startOneShot(0, FROM_HERE);
 }
 
 void FullscreenElementStack::setFullScreenRenderer(RenderFullScreen* renderer)

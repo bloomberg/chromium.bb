@@ -529,7 +529,7 @@ void FrameLoader::startCheckCompleteTimer()
         return;
     if (m_checkTimer.isActive())
         return;
-    m_checkTimer.startOneShot(0);
+    m_checkTimer.startOneShot(0, FROM_HERE);
 }
 
 void FrameLoader::scheduleCheckCompleted()
@@ -862,7 +862,7 @@ void FrameLoader::didAccessInitialDocument()
     if (isLoadingMainFrame() && !m_didAccessInitialDocument) {
         m_didAccessInitialDocument = true;
         // Notify asynchronously, since this is called within a JavaScript security check.
-        m_didAccessInitialDocumentTimer.startOneShot(0);
+        m_didAccessInitialDocumentTimer.startOneShot(0, FROM_HERE);
     }
 }
 

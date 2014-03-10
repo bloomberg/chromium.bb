@@ -78,7 +78,7 @@ void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
     if (!m_loadInitiated) {
         m_loadInitiated = true;
         Resource::load(dl, m_options);
-        m_fontLoadWaitLimitTimer.startOneShot(fontLoadWaitLimitSec);
+        m_fontLoadWaitLimitTimer.startOneShot(fontLoadWaitLimitSec, FROM_HERE);
 
         ResourceClientWalker<FontResourceClient> walker(m_clients);
         while (FontResourceClient* client = walker.next())

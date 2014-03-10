@@ -89,7 +89,7 @@ void MatchedPropertiesCache::add(const RenderStyle* style, const RenderStyle* pa
     if (++m_additionsSinceLastSweep >= maxAdditionsBetweenSweeps
         && !m_sweepTimer.isActive()) {
         static const unsigned sweepTimeInSeconds = 60;
-        m_sweepTimer.startOneShot(sweepTimeInSeconds);
+        m_sweepTimer.startOneShot(sweepTimeInSeconds, FROM_HERE);
     }
 
     ASSERT(hash);

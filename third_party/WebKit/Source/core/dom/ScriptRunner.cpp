@@ -81,7 +81,7 @@ void ScriptRunner::suspend()
 void ScriptRunner::resume()
 {
     if (hasPendingScripts())
-        m_timer.startOneShot(0);
+        m_timer.startOneShot(0, FROM_HERE);
 }
 
 void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType executionType)
@@ -96,7 +96,7 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
         ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
         break;
     }
-    m_timer.startOneShot(0);
+    m_timer.startOneShot(0, FROM_HERE);
 }
 
 void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionType executionType)

@@ -86,7 +86,7 @@ void MockPagePopup::closeLater()
     m_popupClient = 0;
     // This can be called in detach(), and we should not change DOM structure
     // during detach().
-    m_closeTimer.startOneShot(0);
+    m_closeTimer.startOneShot(0, FROM_HERE);
 }
 
 void MockPagePopup::close(Timer<MockPagePopup>*)

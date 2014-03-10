@@ -129,7 +129,7 @@ void DocumentTimeline::setZeroTime(double zeroTime)
 
 void DocumentTimeline::DocumentTimelineTiming::wakeAfter(double duration)
 {
-    m_timer.startOneShot(duration);
+    m_timer.startOneShot(duration, FROM_HERE);
 }
 
 void DocumentTimeline::DocumentTimelineTiming::cancelWake()

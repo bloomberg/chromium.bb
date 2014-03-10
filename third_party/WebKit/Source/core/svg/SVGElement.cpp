@@ -889,7 +889,7 @@ void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
 
 void SVGElement::sendSVGLoadEventIfPossibleAsynchronously()
 {
-    svgLoadEventTimer()->startOneShot(0);
+    svgLoadEventTimer()->startOneShot(0, FROM_HERE);
 }
 
 void SVGElement::svgLoadEventTimerFired(Timer<SVGElement>*)

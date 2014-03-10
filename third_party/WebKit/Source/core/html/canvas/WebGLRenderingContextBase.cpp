@@ -4147,7 +4147,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
 
     // Always defer the dispatch of the context lost event, to implement
     // the spec behavior of queueing a task.
-    m_dispatchContextLostEventTimer.startOneShot(0);
+    m_dispatchContextLostEventTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebGLRenderingContextBase::forceRestoreContext()
@@ -4164,7 +4164,7 @@ void WebGLRenderingContextBase::forceRestoreContext()
     }
 
     if (!m_restoreTimer.isActive())
-        m_restoreTimer.startOneShot(0);
+        m_restoreTimer.startOneShot(0, FROM_HERE);
 }
 
 blink::WebLayer* WebGLRenderingContextBase::platformLayer() const
@@ -5312,7 +5312,7 @@ void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingCon
     m_restoreAllowed = event->defaultPrevented();
     deactivateContext(this, m_contextLostMode != RealLostContext && m_restoreAllowed);
     if ((m_contextLostMode == RealLostContext || m_contextLostMode == AutoRecoverSyntheticLostContext) && m_restoreAllowed)
-        m_restoreTimer.startOneShot(0);
+        m_restoreTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextBase>*)
@@ -5341,7 +5341,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes));
     if (!context) {
         if (m_contextLostMode == RealLostContext) {
-            m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts);
+            m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts, FROM_HERE);
         } else {
             // This likely shouldn't happen but is the best way to report it to the WebGL app.
             synthesizeGLError(GL_INVALID_OPERATION, "", "error restoring context");

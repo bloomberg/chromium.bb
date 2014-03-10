@@ -83,7 +83,7 @@ void ScreenOrientation::lockOrientationAsync(blink::WebScreenOrientations orient
         return;
     m_lockedOrientations = orientations;
     if (!m_orientationLockTimer.isActive())
-        m_orientationLockTimer.startOneShot(0);
+        m_orientationLockTimer.startOneShot(0, FROM_HERE);
 }
 
 void ScreenOrientation::orientationLockTimerFired(Timer<ScreenOrientation>*)

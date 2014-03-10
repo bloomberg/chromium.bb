@@ -115,7 +115,7 @@ void WebDevToolsFrontendImpl::resume()
     // We should call maybeDispatch asynchronously here because we are not allowed to update activeDOMObjects list in
     // resume (See ExecutionContext::resumeActiveDOMObjects).
     if (!m_inspectorFrontendDispatchTimer.isActive())
-        m_inspectorFrontendDispatchTimer.startOneShot(0);
+        m_inspectorFrontendDispatchTimer.startOneShot(0, FROM_HERE);
 }
 
 void WebDevToolsFrontendImpl::maybeDispatch(WebCore::Timer<WebDevToolsFrontendImpl>*)

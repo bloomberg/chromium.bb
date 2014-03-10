@@ -60,7 +60,7 @@ bool GenericEventQueue::enqueueEvent(PassRefPtr<Event> event)
     m_pendingEvents.append(event);
 
     if (!m_timer.isActive())
-        m_timer.startOneShot(0);
+        m_timer.startOneShot(0, FROM_HERE);
 
     return true;
 }

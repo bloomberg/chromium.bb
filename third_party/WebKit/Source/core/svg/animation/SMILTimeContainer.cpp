@@ -248,7 +248,7 @@ void SMILTimeContainer::cancelAnimationFrame()
 void SMILTimeContainer::scheduleWakeUp(double delayTime, FrameSchedulingState frameSchedulingState)
 {
     ASSERT(frameSchedulingState != Idle);
-    m_wakeupTimer.startOneShot(delayTime);
+    m_wakeupTimer.startOneShot(delayTime, FROM_HERE);
     m_frameSchedulingState = frameSchedulingState;
 }
 

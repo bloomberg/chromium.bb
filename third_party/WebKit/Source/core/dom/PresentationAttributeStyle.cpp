@@ -87,7 +87,7 @@ public:
         m_hitCount++;
 
         if (!m_cleanTimer.isActive())
-            m_cleanTimer.startOneShot(presentationAttributeCacheCleanTimeInSeconds);
+            m_cleanTimer.startOneShot(presentationAttributeCacheCleanTimeInSeconds, FROM_HERE);
     }
 
 private:

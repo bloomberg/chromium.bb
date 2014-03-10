@@ -392,7 +392,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request)
         }
 
         if (m_options.timeoutMilliseconds > 0)
-            m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0);
+            m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0, FROM_HERE);
 
         FetchRequest newRequest(request, m_options.initiator, options);
         ASSERT(!resource());

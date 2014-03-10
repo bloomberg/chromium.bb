@@ -203,10 +203,11 @@ TimerBase::~TimerBase()
     ASSERT(!inHeap());
 }
 
-void TimerBase::start(double nextFireInterval, double repeatInterval)
+void TimerBase::start(double nextFireInterval, double repeatInterval, const TraceLocation& caller)
 {
     ASSERT(m_thread == currentThread());
 
+    m_location = caller;
     m_repeatInterval = repeatInterval;
     setNextFireTime(monotonicallyIncreasingTime() + nextFireInterval);
 }

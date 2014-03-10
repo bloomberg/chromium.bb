@@ -372,7 +372,7 @@ void MediaControls::startHideFullscreenControlsTimer()
     if (!m_isFullscreen)
         return;
 
-    m_hideFullscreenControlsTimer.startOneShot(timeWithoutMouseMovementBeforeHidingFullscreenControls);
+    m_hideFullscreenControlsTimer.startOneShot(timeWithoutMouseMovementBeforeHidingFullscreenControls, FROM_HERE);
 }
 
 void MediaControls::stopHideFullscreenControlsTimer()
