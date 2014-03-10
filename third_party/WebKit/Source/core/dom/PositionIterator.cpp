@@ -40,7 +40,7 @@ PositionIterator::operator Position() const
         ASSERT(m_nodeAfterPositionInAnchor->parentNode() == m_anchorNode);
         // FIXME: This check is inadaquete because any ancestor could be ignored by editing
         if (editingIgnoresContent(m_nodeAfterPositionInAnchor->parentNode()))
-            return positionBeforeNode(*m_anchorNode);
+            return positionBeforeNode(m_anchorNode);
         return positionInParentBeforeNode(*m_nodeAfterPositionInAnchor);
     }
     if (m_anchorNode->hasChildren())
@@ -61,7 +61,7 @@ void PositionIterator::increment()
     }
 
     if (!m_anchorNode->hasChildren() && m_offsetInAnchor < lastOffsetForEditing(m_anchorNode))
-        m_offsetInAnchor = Position::uncheckedNextOffset(*m_anchorNode, m_offsetInAnchor);
+        m_offsetInAnchor = Position::uncheckedNextOffset(m_anchorNode, m_offsetInAnchor);
     else {
         m_nodeAfterPositionInAnchor = m_anchorNode;
         m_anchorNode = m_nodeAfterPositionInAnchor->parentNode();
@@ -93,7 +93,7 @@ void PositionIterator::decrement()
         m_offsetInAnchor = m_anchorNode->hasChildren()? 0: lastOffsetForEditing(m_anchorNode);
     } else {
         if (m_offsetInAnchor)
-            m_offsetInAnchor = Position::uncheckedPreviousOffset(*m_anchorNode, m_offsetInAnchor);
+            m_offsetInAnchor = Position::uncheckedPreviousOffset(m_anchorNode, m_offsetInAnchor);
         else {
             m_nodeAfterPositionInAnchor = m_anchorNode;
             m_anchorNode = m_anchorNode->parentNode();

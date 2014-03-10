@@ -134,14 +134,14 @@ inline Position firstPositionInOrBeforeNode(Node* node)
 {
     if (!node)
         return Position();
-    return editingIgnoresContent(node) ? positionBeforeNode(*node) : firstPositionInNode(node);
+    return editingIgnoresContent(node) ? positionBeforeNode(node) : firstPositionInNode(node);
 }
 
 inline Position lastPositionInOrAfterNode(Node* node)
 {
     if (!node)
         return Position();
-    return editingIgnoresContent(node) ? positionAfterNode(*node) : lastPositionInNode(node);
+    return editingIgnoresContent(node) ? positionAfterNode(node) : lastPositionInNode(node);
 }
 
 // comparision functions on Position

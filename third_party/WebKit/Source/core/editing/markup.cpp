@@ -713,8 +713,8 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& docum
         return nullptr;
 
     RefPtr<Range> range = Range::create(*taggedDocument.get(),
-        positionAfterNode(*nodeBeforeContext).parentAnchoredEquivalent(),
-        positionBeforeNode(*nodeAfterContext).parentAnchoredEquivalent());
+        positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
+        positionBeforeNode(nodeAfterContext.get()).parentAnchoredEquivalent());
 
     Node* commonAncestor = range->commonAncestorContainer(ASSERT_NO_EXCEPTION);
     Node* specialCommonAncestor = ancestorToRetainStructureAndAppearanceWithNoRenderer(commonAncestor);

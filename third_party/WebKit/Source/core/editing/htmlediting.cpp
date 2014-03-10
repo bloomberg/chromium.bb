@@ -268,7 +268,7 @@ VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& positio
         if (!shadowAncestor)
             return VisiblePosition();
 
-        p = positionAfterNode(*shadowAncestor);
+        p = positionAfterNode(shadowAncestor);
     }
 
     while (p.deprecatedNode() && !isEditablePosition(p) && p.deprecatedNode()->isDescendantOf(highestRoot))

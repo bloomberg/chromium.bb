@@ -821,7 +821,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     if (endOfParagraph(startOfParagraphToMove) == destination) {
         RefPtr<Node> placeholder = createBreakElement(document());
         insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().deprecatedNode());
-        destination = VisiblePosition(positionBeforeNode(*placeholder));
+        destination = VisiblePosition(positionBeforeNode(placeholder.get()));
     }
 
     moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination);
@@ -990,7 +990,7 @@ void ReplaceSelectionCommand::doApply()
     Node* endBR = insertionPos.downstream().deprecatedNode()->hasTagName(brTag) ? insertionPos.downstream().deprecatedNode() : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
-        originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(*endBR), DOWNSTREAM).previous();
+        originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR), DOWNSTREAM).previous();
 
     RefPtr<Node> insertionBlock = enclosingBlock(insertionPos.deprecatedNode());
 
@@ -1233,7 +1233,7 @@ bool ReplaceSelectionCommand::shouldRemoveEndBR(Node* endBR, const VisiblePositi
     if (!endBR || !endBR->inDocument())
         return false;
 
-    VisiblePosition visiblePos(positionBeforeNode(*endBR));
+    VisiblePosition visiblePos(positionBeforeNode(endBR));
 
     // Don't remove the br if nothing was inserted.
     if (visiblePos.previous() == originalVisPosBeforeEndBR)
@@ -1490,7 +1490,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
         return false;
 
     if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() && nodeAfterInsertionPos->hasTagName(brTag)
-        && shouldRemoveEndBR(nodeAfterInsertionPos.get(), VisiblePosition(positionBeforeNode(*nodeAfterInsertionPos))))
+        && shouldRemoveEndBR(nodeAfterInsertionPos.get(), VisiblePosition(positionBeforeNode(nodeAfterInsertionPos.get()))))
         removeNodeAndPruneAncestors(nodeAfterInsertionPos.get());
 
     VisibleSelection selectionAfterReplace(m_selectReplacement ? start : end, end);

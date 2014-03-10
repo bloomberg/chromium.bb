@@ -89,7 +89,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
         if (highestEditableRoot(firstPositionInOrBeforeNode(previousNode), editableType) != highestRoot)
             break;
 
-        Position pos = previousNode->hasTagName(brTag) ? positionBeforeNode(*previousNode) :
+        Position pos = previousNode->hasTagName(brTag) ? positionBeforeNode(previousNode) :
             createLegacyEditingPosition(previousNode, caretMaxOffset(previousNode));
 
         if (pos.isCandidate())
@@ -745,7 +745,7 @@ static VisiblePosition startPositionForLine(const VisiblePosition& c, LineEndpoi
         }
     }
 
-    return VisiblePosition(startNode->isTextNode() ? Position(toText(startNode), toInlineTextBox(startBox)->start()) : positionBeforeNode(*startNode));
+    return VisiblePosition(startNode->isTextNode() ? Position(toText(startNode), toInlineTextBox(startBox)->start()) : positionBeforeNode(startNode));
 }
 
 static VisiblePosition startOfLine(const VisiblePosition& c, LineEndpointComputationMode mode)
@@ -814,7 +814,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
 
     Position pos;
     if (endNode->hasTagName(brTag))
-        pos = positionBeforeNode(*endNode);
+        pos = positionBeforeNode(endNode);
     else if (endBox->isInlineTextBox() && endNode->isTextNode()) {
         InlineTextBox* endTextBox = toInlineTextBox(endBox);
         int endOffset = endTextBox->start();
@@ -822,7 +822,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
             endOffset += endTextBox->len();
         pos = Position(toText(endNode), endOffset);
     } else
-        pos = positionAfterNode(*endNode);
+        pos = positionAfterNode(endNode);
 
     return VisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }
@@ -1086,7 +1086,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
         return VisiblePosition();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return VisiblePosition(positionBeforeNode(*startNode));
+        return VisiblePosition(positionBeforeNode(startNode));
 
     Node* startBlock = enclosingBlock(startNode);
 
@@ -1163,7 +1163,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
     Node* startNode = p.deprecatedNode();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return VisiblePosition(positionAfterNode(*startNode));
+        return VisiblePosition(positionAfterNode(startNode));
 
     Node* startBlock = enclosingBlock(startNode);
     Node* stayInsideBlock = startBlock;

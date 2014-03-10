@@ -388,7 +388,7 @@ void InsertParagraphSeparatorCommand::doApply()
         appendNode(createBreakElement(document()).get(), blockToInsert.get());
 
     // Move the start node and the siblings of the start node.
-    if (VisiblePosition(insertionPosition) != VisiblePosition(positionBeforeNode(*blockToInsert))) {
+    if (VisiblePosition(insertionPosition) != VisiblePosition(positionBeforeNode(blockToInsert.get()))) {
         Node* n;
         if (insertionPosition.containerNode() == startBlock)
             n = insertionPosition.computeNodeAfterPosition();
@@ -400,7 +400,7 @@ void InsertParagraphSeparatorCommand::doApply()
             splitTreeToNode(splitTo, startBlock.get());
 
             for (n = startBlock->firstChild(); n; n = n->nextSibling()) {
-                VisiblePosition beforeNodePosition(positionBeforeNode(*n));
+                VisiblePosition beforeNodePosition(positionBeforeNode(n));
                 if (!beforeNodePosition.isNull() && comparePositions(VisiblePosition(insertionPosition), beforeNodePosition) <= 0)
                     break;
             }

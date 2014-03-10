@@ -112,9 +112,9 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
     // For HRs, we'll get a position at (HR,1) when hitting delete from the beginning of the previous line, or (HR,0) when forward deleting,
     // but in these cases, we want to delete it, so manually expand the selection
     if (start.deprecatedNode()->hasTagName(hrTag))
-        start = positionBeforeNode(*start.deprecatedNode());
+        start = positionBeforeNode(start.deprecatedNode());
     else if (end.deprecatedNode()->hasTagName(hrTag))
-        end = positionAfterNode(*end.deprecatedNode());
+        end = positionAfterNode(end.deprecatedNode());
 
     // FIXME: This is only used so that moveParagraphs can avoid the bugs in special element expansion.
     if (!m_expandForSpecialElements)
@@ -315,7 +315,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
 
     // FIXME: This code doesn't belong in here.
     // We detect the case where the start is an empty line consisting of BR not wrapped in a block element.
-    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(VisiblePosition(positionBeforeNode(*nodeAfterUpstreamStart))) && isEndOfBlock(VisiblePosition(positionAfterNode(*nodeAfterUpstreamStart))))) {
+    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(VisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(VisiblePosition(positionAfterNode(nodeAfterUpstreamStart))))) {
         m_startsAtEmptyLine = true;
         m_endingPosition = m_downstreamEnd;
     }

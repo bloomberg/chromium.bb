@@ -152,9 +152,9 @@ public:
     // using composed characters, the result may be inside a single user-visible character if a ligature is formed.
     Position previous(PositionMoveType = CodePoint) const;
     Position next(PositionMoveType = CodePoint) const;
-    static int uncheckedPreviousOffset(const Node&, int current);
-    static int uncheckedPreviousOffsetForBackwardDeletion(const Node&, int current);
-    static int uncheckedNextOffset(const Node&, int current);
+    static int uncheckedPreviousOffset(const Node*, int current);
+    static int uncheckedPreviousOffsetForBackwardDeletion(const Node*, int current);
+    static int uncheckedNextOffset(const Node*, int current);
 
     // These can be either inside or just before/after the node, depending on
     // if the node is ignored by editing or not.
@@ -192,6 +192,8 @@ public:
     static bool nodeIsUserSelectNone(Node*);
     static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);
+
+    static ContainerNode* findParent(const Node*);
 
     void debugPosition(const char* msg = "") const;
 
@@ -258,19 +260,21 @@ inline Position positionInParentAfterNode(const Node& node)
 }
 
 // positionBeforeNode and positionAfterNode return neighbor-anchored positions, construction is O(1)
-inline Position positionBeforeNode(Node& anchorNode)
+inline Position positionBeforeNode(Node* anchorNode)
 {
-    return Position(PassRefPtr<Node>(anchorNode), Position::PositionIsBeforeAnchor);
+    ASSERT(anchorNode);
+    return Position(anchorNode, Position::PositionIsBeforeAnchor);
 }
 
-inline Position positionAfterNode(Node& anchorNode)
+inline Position positionAfterNode(Node* anchorNode)
 {
-    return Position(PassRefPtr<Node>(anchorNode), Position::PositionIsAfterAnchor);
+    ASSERT(anchorNode);
+    return Position(anchorNode, Position::PositionIsAfterAnchor);
 }
 
-inline int lastOffsetInNode(Node& node)
+inline int lastOffsetInNode(Node* node)
 {
-    return node.offsetInCharacters() ? node.maxCharacterOffset() : static_cast<int>(node.countChildren());
+    return node->offsetInCharacters() ? node->maxCharacterOffset() : static_cast<int>(node->countChildren());
 }
 
 // firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to countChildren()
@@ -284,7 +288,7 @@ inline Position firstPositionInNode(Node* anchorNode)
 inline Position lastPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())
-        return Position(anchorNode, lastOffsetInNode(*anchorNode), Position::PositionIsOffsetInAnchor);
+        return Position(anchorNode, lastOffsetInNode(anchorNode), Position::PositionIsOffsetInAnchor);
     return Position(anchorNode, Position::PositionIsAfterChildren);
 }
 

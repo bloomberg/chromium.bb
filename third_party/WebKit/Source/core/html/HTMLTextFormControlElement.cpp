@@ -443,7 +443,7 @@ PassRefPtr<Range> HTMLTextFormControlElement::selection() const
     for (Node* node = innerText->firstChild(); node; node = NodeTraversal::next(*node, innerText)) {
         ASSERT(!node->firstChild());
         ASSERT(node->isTextNode() || node->hasTagName(brTag));
-        int length = node->isTextNode() ? lastOffsetInNode(*node) : 1;
+        int length = node->isTextNode() ? lastOffsetInNode(node) : 1;
 
         if (offset <= start && start <= offset + length)
             setContainerAndOffsetForRange(node, start - offset, startNode, start);
