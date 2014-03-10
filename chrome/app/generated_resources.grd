@@ -4403,7 +4403,7 @@ Make sure you do not expose any sensitive information.
       </if>
 
       <if expr="lang == 'ar'">
-      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is 11 through 99 in Arabic. For all other languages, do NOT translate.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY" meaning="many" desc="Permission string for access to data on four or more websites. NUMBER_OF_WEBSITES is 11 through 99 in Arabic. For all other languages, do NOT translate.">
         Access your data on <ph name="NUMBER_OF_WEBSITES">#<ex>23</ex></ph> websites
       </message>
       </if>
