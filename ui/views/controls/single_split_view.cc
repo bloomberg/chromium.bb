@@ -6,13 +6,10 @@
 
 #include "skia/ext/skia_utils_win.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/single_split_view_listener.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
 
 namespace views {
 
@@ -91,14 +88,8 @@ gfx::Size SingleSplitView::GetPreferredSize() {
 gfx::NativeCursor SingleSplitView::GetCursor(const ui::MouseEvent& event) {
   if (!IsPointInDivider(event.location()))
     return gfx::kNullCursor;
-#if defined(USE_AURA)
   return is_horizontal_ ?
       ui::kCursorEastWestResize : ui::kCursorNorthSouthResize;
-#elif defined(OS_WIN)
-  static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
-  static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
-  return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
-#endif
 }
 
 int SingleSplitView::GetDividerSize() const {

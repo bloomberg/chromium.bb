@@ -72,9 +72,7 @@ views::Widget* CreateTouchSelectionPopupWidget(
   params.context = context;
   params.delegate = widget_delegate;
   widget->Init(params);
-#if defined(USE_AURA)
   SetShadowType(widget->GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
-#endif
   return widget;
 }
 

@@ -43,15 +43,6 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
   // For testing FocusManager::RotatePaneFocus().
   void SetAccessiblePanes(const std::vector<View*>& panes);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Mocks activating/deactivating the window.
-  void SimulateActivateWindow();
-  void SimulateDeactivateWindow();
-
-  void PostKeyDown(ui::KeyboardCode key_code);
-  void PostKeyUp(ui::KeyboardCode key_code);
-#endif
-
  private:
   View* contents_view_;
   FocusChangeListener* focus_change_listener_;

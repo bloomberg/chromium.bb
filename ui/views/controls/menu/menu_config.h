@@ -136,9 +136,7 @@ struct VIEWS_EXPORT MenuConfig {
   void Init(const ui::NativeTheme* theme);
 
   // TODO: temporary until we standardize.
-#if defined(USE_AURA)
   void InitAura(const ui::NativeTheme* theme);
-#endif
 };
 
 }  // namespace views

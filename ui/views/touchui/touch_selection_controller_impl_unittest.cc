@@ -5,6 +5,8 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/test/event_generator.h"
+#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/base/ui_base_switches.h"
@@ -16,11 +18,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/test/event_generator.h"
-#include "ui/aura/window.h"
-#endif
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -465,7 +462,6 @@ TEST_F(TouchSelectionControllerImplTest,
   }
 }
 
-#if defined(USE_AURA)
 TEST_F(TouchSelectionControllerImplTest,
        DoubleTapInTextfieldWithCursorHandleShouldSelectWord) {
   CreateTextfield();
@@ -490,6 +486,5 @@ TEST_F(TouchSelectionControllerImplTest,
   EXPECT_TRUE(textfield_->HasSelection());
   VERIFY_HANDLE_POSITIONS(false);
 }
-#endif
 
 }  // namespace views

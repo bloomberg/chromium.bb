@@ -9,16 +9,13 @@
 #include "base/event_types.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/events/event_constants.h"
-#include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
-
-#if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
-#endif
+#include "ui/events/event_utils.h"
+#include "ui/gfx/screen.h"
 
 namespace views {
 

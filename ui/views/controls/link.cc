@@ -9,16 +9,13 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/link_listener.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
 
 namespace views {
 

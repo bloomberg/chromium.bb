@@ -7,14 +7,11 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/test/web_contents_tester.h"
+#include "ui/views/corewm/wm_state.h"
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/views/corewm/wm_state.h"
 #endif
 
 namespace views {
@@ -23,9 +20,7 @@ TestViewsDelegate::TestViewsDelegate()
     : use_transparent_windows_(false) {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
-#if defined(USE_AURA)
   wm_state_.reset(new views::corewm::WMState);
-#endif
 }
 
 TestViewsDelegate::~TestViewsDelegate() {

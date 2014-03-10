@@ -170,6 +170,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void HandleVisibilityChanged(Widget* widget, bool visible);
 
   // Fade animation for bubble.
+  // TODO(sky): remove this, not needed anymore.
   scoped_ptr<gfx::SlideAnimation> fade_animation_;
 
   // Flags controlling bubble closure on the escape key and deactivation.

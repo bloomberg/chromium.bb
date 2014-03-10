@@ -19,16 +19,13 @@
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
-
-#if defined(USE_AURA)
-#include "ui/views/widget/native_widget_aura.h"
-#endif
 
 namespace views {
 
@@ -66,12 +63,7 @@ const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 
 const gfx::FontList& GetTitleFontList() {
   static const gfx::FontList title_font_list =
-#if defined(USE_AURA)
       NativeWidgetAura::GetWindowTitleFontList();
-#elif defined(OS_LINUX)
-    // TODO(ben): need to resolve what font this is.
-      gfx::FontList();
-#endif
   return title_font_list;
 }
 

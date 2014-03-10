@@ -4,18 +4,11 @@
 
 #include "ui/views/controls/native/native_view_host.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include <windows.h>
-#endif
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#endif
 
 namespace views {
 
@@ -93,15 +86,9 @@ class NativeViewHierarchyChangedTestView : public View {
   DISALLOW_COPY_AND_ASSIGN(NativeViewHierarchyChangedTestView);
 };
 
-#if defined(USE_AURA)
 aura::Window* GetNativeParent(aura::Window* window) {
   return window->parent();
 }
-#elif defined(OS_WIN)
-HWND GetNativeParent(HWND window) {
-  return GetParent(window);
-}
-#endif
 
 class ViewHierarchyChangedTestHost : public NativeViewHost {
  public:

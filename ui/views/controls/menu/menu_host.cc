@@ -14,13 +14,10 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/round_rect_painter.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/views/corewm/shadow_types.h"
-#endif
 
 namespace views {
 
@@ -57,10 +54,8 @@ void MenuHost::InitMenuHost(Widget* parent,
   params.bounds = bounds;
   Init(params);
 
-#if defined(USE_AURA)
   if (bubble_border)
     SetShadowType(GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
-#endif
 
   SetContentsView(contents_view);
   if (bubble_border || rounded_border)
@@ -78,11 +73,9 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   base::AutoReset<bool> reseter(&ignore_capture_lost_, true);
   ShowInactive();
   if (do_capture) {
-#if defined(USE_AURA)
     // Cancel existing touches, so we don't miss some touch release/cancel
     // events due to the menu taking capture.
     ui::GestureRecognizer::Get()->TransferEventsTo(GetNativeWindow(), NULL);
-#endif  // USE_AURA
     native_widget_private()->SetCapture();
   }
 }

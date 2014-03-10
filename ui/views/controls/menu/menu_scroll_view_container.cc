@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -15,10 +16,6 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/round_rect_painter.h"
-
-#if defined(USE_AURA)
-#include "ui/native_theme/native_theme_aura.h"
-#endif
 
 using ui::NativeTheme;
 
@@ -284,14 +281,12 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   int padding = menu_config.corner_radius > 0 ?
         kBorderPaddingDueToRoundedCorners : 0;
 
-#if defined(USE_AURA)
   if (menu_config.native_theme == ui::NativeThemeAura::instance()) {
     // In case of NativeThemeAura the border gets drawn with the shadow.
     // Furthermore no additional padding is wanted.
     use_border = false;
     padding = 0;
   }
-#endif
 
   int top = menu_config.menu_vertical_border_size + padding;
   int left = menu_config.menu_horizontal_border_size + padding;

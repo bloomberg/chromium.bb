@@ -204,28 +204,10 @@ void BubbleDelegateView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
 }
 
 void BubbleDelegateView::StartFade(bool fade_in) {
-#if defined(USE_AURA)
-  // Use AURA's window layer animation instead of fading. This ensures that
-  // hosts which rely on the layer animation callbacks to close the window
-  // work correctly.
   if (fade_in)
     GetWidget()->Show();
   else
     GetWidget()->Close();
-#else
-  fade_animation_.reset(new gfx::SlideAnimation(this));
-  fade_animation_->SetSlideDuration(GetFadeDuration());
-  fade_animation_->Reset(fade_in ? 0.0 : 1.0);
-  if (fade_in) {
-    original_opacity_ = 0;
-    GetWidget()->SetOpacity(original_opacity_);
-    GetWidget()->Show();
-    fade_animation_->Show();
-  } else {
-    original_opacity_ = 255;
-    fade_animation_->Hide();
-  }
-#endif
 }
 
 void BubbleDelegateView::ResetFade() {

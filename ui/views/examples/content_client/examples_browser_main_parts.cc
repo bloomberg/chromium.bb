@@ -13,18 +13,15 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "ui/base/ime/input_method_initializer.h"
-#include "ui/views/examples/examples_window_with_content.h"
-#include "ui/views/test/desktop_test_views_delegate.h"
-#include "url/gurl.h"
-
-#if defined(USE_AURA)
 #include "ui/aura/env.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/wm_state.h"
+#include "ui/views/examples/examples_window_with_content.h"
+#include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/native_widget_aura.h"
-#endif
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/aura/test/test_screen.h"
@@ -44,9 +41,7 @@ ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 }
 
 void ExamplesBrowserMainParts::ToolkitInitialized() {
-#if defined(USE_AURA)
   wm_state_.reset(new views::corewm::WMState);
-#endif
 }
 
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
@@ -63,7 +58,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   wm_test_helper_->host()->Show();
   // Ensure Aura knows where to open new windows.
   window_context = wm_test_helper_->host()->window();
-#elif defined(USE_AURA)
+#else
   aura::Env::CreateInstance();
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, CreateDesktopScreen());
@@ -80,9 +75,7 @@ void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
   wm_test_helper_.reset();
 #endif
   views_delegate_.reset();
-#if defined(USE_AURA)
   aura::Env::DeleteInstance();
-#endif
 }
 
 bool ExamplesBrowserMainParts::MainMessageLoopRun(int* result_code) {

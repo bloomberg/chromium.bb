@@ -91,7 +91,6 @@ TEST_F(NativeViewAcccessibilityWinTest, UnattachedWebView) {
   NativeViewAccessibility::UnregisterWebView(web_view);
 }
 
-#if defined(USE_AURA)
 TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   Widget widget;
   Widget::InitParams init_params =
@@ -118,7 +117,6 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(2L, child_count);
 }
-#endif
 
 }  // namespace test
 }  // namespace views

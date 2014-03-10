@@ -100,24 +100,6 @@ void FocusManagerTest::SetAccessiblePanes(const std::vector<View*>& panes) {
   accessible_panes_ = panes;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-void FocusManagerTest::SimulateActivateWindow() {
-  SendMessage(GetWidget()->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
-}
-
-void FocusManagerTest::SimulateDeactivateWindow() {
-  SendMessage(GetWidget()->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
-}
-
-void FocusManagerTest::PostKeyDown(ui::KeyboardCode key_code) {
-  PostMessage(GetWidget()->GetNativeView(), WM_KEYDOWN, key_code, 0);
-}
-
-void FocusManagerTest::PostKeyUp(ui::KeyboardCode key_code) {
-  PostMessage(GetWidget()->GetNativeView(), WM_KEYUP, key_code, 0);
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // TestFocusChangeListener
 

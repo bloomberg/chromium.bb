@@ -13,11 +13,8 @@
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/native_theme/native_theme_win.h"
-
-#if defined(USE_AURA)
 #include "ui/native_theme/native_theme_aura.h"
-#endif
+#include "ui/native_theme/native_theme_win.h"
 
 using ui::NativeTheme;
 using ui::NativeThemeWin;
@@ -25,12 +22,10 @@ using ui::NativeThemeWin;
 namespace views {
 
 void MenuConfig::Init(const NativeTheme* theme) {
-#if defined(USE_AURA)
   if (theme == ui::NativeThemeAura::instance()) {
     InitAura(theme);
     return;
   }
-#endif
   text_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
       NativeThemeWin::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
       COLOR_MENUTEXT);

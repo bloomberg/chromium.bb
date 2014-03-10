@@ -13,13 +13,8 @@
 
 namespace views {
 
-#if defined(USE_AURA)
 bool RepostLocatedEventWin(HWND window,
                            const ui::LocatedEvent& event) {
-#else
-bool RepostLocatedEvent(gfx::NativeWindow window,
-                        const ui::LocatedEvent& event) {
-#endif
   if (!window)
     return false;
 

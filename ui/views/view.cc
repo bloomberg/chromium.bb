@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/accessibility/ax_enums.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
@@ -47,10 +48,6 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
 #endif
@@ -59,11 +56,8 @@ namespace {
 
 // Whether to use accelerated compositing when necessary (e.g. when a view has a
 // transformation).
-#if defined(USE_AURA)
+// TODO(sky): nuke this as its always true now.
 bool use_acceleration_when_possible = true;
-#else
-bool use_acceleration_when_possible = false;
-#endif
 
 #if defined(OS_WIN)
 const bool kContextMenuOnMousePress = false;
@@ -930,15 +924,10 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
 gfx::NativeCursor View::GetCursor(const ui::MouseEvent& event) {
 #if defined(OS_WIN)
-#if defined(USE_AURA)
   static ui::Cursor arrow;
   if (!arrow.platform())
     arrow.SetPlatformCursor(LoadCursor(NULL, IDC_ARROW));
   return arrow;
-#else
-  static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
-  return arrow;
-#endif
 #else
   return gfx::kNullCursor;
 #endif
@@ -956,18 +945,11 @@ bool View::HitTestRect(const gfx::Rect& rect) const {
       if (!views::UsePointBasedTargeting(rect))
         source = HIT_TEST_SOURCE_TOUCH;
       GetHitTestMask(source, &mask);
-#if defined(USE_AURA)
-      // TODO: should we use this every where?
       SkRegion clip_region;
       clip_region.setRect(0, 0, width(), height());
       SkRegion mask_region;
       return mask_region.setPath(mask, clip_region) &&
              mask_region.intersects(RectToSkIRect(rect));
-#elif defined(OS_WIN)
-      base::win::ScopedRegion rgn(mask.CreateNativeRegion());
-      const RECT r(rect.ToRECT());
-      return RectInRegion(rgn, &r) != 0;
-#endif
     }
     // No mask, but inside our bounds.
     return true;

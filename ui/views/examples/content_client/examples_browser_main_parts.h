@@ -53,9 +53,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 #endif
 
-#if defined(USE_AURA)
   scoped_ptr<views::corewm::WMState> wm_state_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);
 };

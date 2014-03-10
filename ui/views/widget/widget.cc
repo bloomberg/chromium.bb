@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_font_util.h"
@@ -31,10 +32,6 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
 
 namespace views {
 
@@ -264,9 +261,7 @@ Widget* Widget::CreateWindowAsFramelessChild(WidgetDelegate* widget_delegate,
   params.child = true;
   params.parent = parent;
   params.remove_standard_frame = true;
-#if defined(USE_AURA)
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-#endif
 
   widget->Init(params);
   return widget;

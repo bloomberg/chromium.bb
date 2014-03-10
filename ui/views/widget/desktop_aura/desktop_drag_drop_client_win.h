@@ -15,7 +15,6 @@ class DragSourceWin;
 }
 
 namespace views {
-class DesktopDragDragSourceWin;
 class DesktopDropTargetWin;
 
 class VIEWS_EXPORT DesktopDragDropClientWin

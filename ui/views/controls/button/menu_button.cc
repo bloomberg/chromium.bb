@@ -220,16 +220,12 @@ bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
       // WARNING: we may have been deleted by the time Activate returns.
-      bool ret = Activate();
-#if defined(USE_AURA)
-      // This is to prevent the keyboard event from being dispatched twice.
-      // The Activate function returns false in most cases. In AURA if the
-      // keyboard event is not handled, we pass it to the default handler
-      // which dispatches the event back to us causing the menu to get
-      // displayed again.
-      ret = true;
-#endif
-      return ret;
+      Activate();
+      // This is to prevent the keyboard event from being dispatched twice.  If
+      // the keyboard event is not handled, we pass it to the default handler
+      // which dispatches the event back to us causing the menu to get displayed
+      // again. Return true to prevent this.
+      return true;
     }
     default:
       break;

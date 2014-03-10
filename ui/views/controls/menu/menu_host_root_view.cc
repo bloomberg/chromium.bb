@@ -51,17 +51,8 @@ void MenuHostRootView::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 bool MenuHostRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-#if defined(USE_AURA)
-  // Aura uses MenuController to forward events like other mouse events.
   return GetMenuController() &&
       GetMenuController()->OnMouseWheel(submenu_, event);
-#else
-  // Windows uses focus_util_win::RerouteMouseWheel to forward events to
-  // the right menu.
-  // RootView::OnMouseWheel forwards to the focused view. We don't have a
-  // focused view, so we need to override this then forward to the menu.
-  return submenu_->OnMouseWheel(event);
-#endif
 }
 
 void MenuHostRootView::DispatchGestureEvent(ui::GestureEvent* event) {

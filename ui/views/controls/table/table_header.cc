@@ -5,16 +5,13 @@
 #include "ui/views/controls/table/table_header.h"
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
 
 namespace views {
 
@@ -38,15 +35,6 @@ const SkColor kSeparatorColor = SkColorSetRGB(0xAA, 0xAA, 0xAA);
 
 // Size of the sort indicator (doesn't include padding).
 const int kSortIndicatorSize = 8;
-
-gfx::NativeCursor GetResizeCursor() {
-#if defined(USE_AURA)
-  return ui::kCursorColumnResize;
-#elif defined(OS_WIN)
-  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_SIZEWE);
-  return g_hand_cursor;
-#endif
-}
 
 }  // namespace
 
@@ -176,7 +164,7 @@ gfx::Size TableHeader::GetPreferredSize() {
 
 gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {
   return GetResizeColumn(GetMirroredXInView(event.x())) != -1 ?
-      GetResizeCursor() : View::GetCursor(event);
+      ui::kCursorColumnResize : View::GetCursor(event);
 }
 
 bool TableHeader::OnMousePressed(const ui::MouseEvent& event) {

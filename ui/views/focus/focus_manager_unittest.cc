@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/client/focus_client.h"
+#include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessible_pane_view.h"
@@ -16,22 +18,7 @@
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/window.h"
-#endif
-
 namespace views {
-
-void FocusNativeView(gfx::NativeView view) {
-#if defined(USE_AURA)
-  aura::client::GetFocusClient(view)->FocusWindow(view);
-#elif defined(OS_WIN)
-  SetFocus(view);
-#else
-#error
-#endif
-}
 
 enum FocusTestEventType {
   ON_FOCUS = 0,
@@ -148,14 +135,14 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view1 = widget1->GetNativeView();
-  FocusNativeView(native_view1);
+  aura::client::GetFocusClient(native_view1)->FocusWindow(native_view1);
   ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
   EXPECT_EQ(native_view1, widget_listener.focus_changes()[0].second);
   EXPECT_EQ(native_view1, widget_listener.focus_changes()[1].second);
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view2 = widget2->GetNativeView();
-  FocusNativeView(native_view2);
+  aura::client::GetFocusClient(native_view2)->FocusWindow(native_view2);
   ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
   EXPECT_EQ(NativeViewPair(native_view1, native_view2),
             widget_listener.focus_changes()[0]);
@@ -565,25 +552,6 @@ class FocusManagerDtorTest : public FocusManagerTest {
   FocusManager* tracked_focus_manager_;
   DtorTrackVector dtor_tracker_;
 };
-
-#if !defined(USE_AURA)
-TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
-  // Setup views hierarchy.
-  GetContentsView()->AddChildView(new Textfield());
-  GetContentsView()->AddChildView(new LabelButtonDtorTracked(
-      base::ASCIIToUTF16("button"), &dtor_tracker_));
-
-  // Close the window.
-  GetWidget()->Close();
-  RunPendingMessages();
-
-  // Test window, button and focus manager should all be destructed.
-  ASSERT_EQ(3, static_cast<int>(dtor_tracker_.size()));
-
-  // Focus manager should be the last one to destruct.
-  ASSERT_STREQ("FocusManagerDtorTracked", dtor_tracker_[2].c_str());
-}
-#endif
 
 namespace {
 

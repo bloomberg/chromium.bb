@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_strings.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,6 +18,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -36,10 +38,6 @@
 
 #if defined(OS_WIN)
 #include "ui/views/test/test_views_delegate.h"
-#endif
-#if defined(USE_AURA)
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/events/gestures/gesture_recognizer.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -1585,7 +1583,9 @@ bool TestView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+// TODO: these tests were initially commented out when getting aura to
+// run. Figure out if still valuable and either nuke or fix.
+#if defined(false)
 TEST_F(ViewTest, ActivateAccelerator) {
   // Register a keyboard accelerator before the view is added to a window.
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
@@ -1650,9 +1650,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
 
   widget->CloseNow();
 }
-#endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, HiddenViewWithAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestView* view = new TestView();
@@ -1680,9 +1678,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 
   widget->CloseNow();
 }
-#endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestView* view = new TestView();
@@ -1714,9 +1710,7 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
 
   widget->CloseNow();
 }
-#endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting
 ////////////////////////////////////////////////////////////////////////////////
@@ -1796,7 +1790,7 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
   window1->CloseNow();
   window2->CloseNow();
 }
-#endif
+#endif  // false
 
 ////////////////////////////////////////////////////////////////////////////////
 // Native view hierachy
@@ -2960,8 +2954,6 @@ TEST_F(ViewTest, AddExistingChild) {
 // Layers
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(USE_AURA)
-
 namespace {
 
 // Test implementation of LayerAnimator.
@@ -3545,8 +3537,6 @@ TEST_F(ViewLayerTest, RecreateLayerZOrderWidgetParent) {
   EXPECT_EQ(v2->layer(), child_layers_post[1]);
   EXPECT_EQ(v1_old_layer, child_layers_post[2]);
 }
-
-#endif  // USE_AURA
 
 TEST_F(ViewTest, FocusableAssertions) {
   // View subclasses may change insets based on whether they are focusable,

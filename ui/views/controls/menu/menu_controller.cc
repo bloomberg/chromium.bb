@@ -13,6 +13,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,11 +42,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
 
 #if defined(OS_WIN)
 #include "ui/views/win/hwnd_message_handler.h"
@@ -935,7 +932,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     }
     Cancel(exit_type);
 
-#if defined(USE_AURA) && !defined(OS_WIN)
+#if !defined(OS_WIN)
     // We're going to exit the menu and want to repost the event so that is
     // is handled normally after the context menu has exited. We call
     // RepostEvent after Cancel so that mouse capture has been released so

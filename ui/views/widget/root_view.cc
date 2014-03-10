@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -19,10 +20,6 @@
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
 
 namespace views {
 namespace internal {

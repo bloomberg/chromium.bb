@@ -11,24 +11,19 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-
-#if defined(USE_AURA)
-#include "ui/native_theme/native_theme_aura.h"
-#endif
 
 namespace views {
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   const MenuConfig& config = parent_menu_item_->GetMenuConfig();
 
-#if defined(USE_AURA)
   if (config.native_theme == ui::NativeThemeAura::instance()) {
     OnPaintAura(canvas);
     return;
   }
-#endif
 
   int start_x = 0;
   if (config.render_gutter) {
@@ -55,10 +50,8 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
 gfx::Size MenuSeparator::GetPreferredSize() {
   const MenuConfig& config = parent_menu_item_->GetMenuConfig();
 
-#if defined(USE_AURA)
   if (config.native_theme == ui::NativeThemeAura::instance())
     return GetPreferredSizeAura();
-#endif
 
   return gfx::Size(10,  // Just in case we're the only item in a menu.
                    config.separator_height);

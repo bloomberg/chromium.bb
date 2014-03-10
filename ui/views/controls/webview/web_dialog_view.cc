@@ -14,19 +14,15 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
-
-#if defined(USE_AURA)
-#include "ui/events/event.h"
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/native_widget_aura.h"
-#endif
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
@@ -282,7 +278,6 @@ void WebDialogView::MoveContents(WebContents* source, const gfx::Rect& pos) {
 // they're all browser-specific. (This may change in the future.)
 void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
                                         const NativeWebKeyboardEvent& event) {
-#if defined(USE_AURA)
   if (!event.os_event)
     return;
   ui::KeyEvent aura_event(event.os_event->native_event(), false);
@@ -293,12 +288,6 @@ void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
   if (event_handler)
     event_handler->OnKeyEvent(&aura_event);
 
-#elif defined(OS_WIN)
-  // Any unhandled keyboard/character messages should be defproced.
-  // This allows stuff like F10, etc to work correctly.
-  DefWindowProc(event.os_event.hwnd, event.os_event.message,
-                event.os_event.wParam, event.os_event.lParam);
-#endif
 }
 
 void WebDialogView::CloseContents(WebContents* source) {

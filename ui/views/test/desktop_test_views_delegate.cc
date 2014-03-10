@@ -19,7 +19,7 @@ DesktopTestViewsDelegate::~DesktopTestViewsDelegate() {}
 void DesktopTestViewsDelegate::OnBeforeWidgetInit(
     Widget::InitParams* params,
     internal::NativeWidgetDelegate* delegate) {
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   // If we already have a native_widget, we don't have to try to come
   // up with one.
   if (params->native_widget)

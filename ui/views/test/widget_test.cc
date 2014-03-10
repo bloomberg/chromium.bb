@@ -10,12 +10,11 @@
 namespace views {
 namespace test {
 
-// A widget that assumes mouse capture always works. It won't on Aura in
-// testing, so we mock it.
-#if defined(USE_AURA)
+// A widget that assumes mouse capture always works. It won't in testing, so we
+// mock it.
 NativeWidgetCapture::NativeWidgetCapture(
     internal::NativeWidgetDelegate* delegate)
-    : NativeWidgetPlatform(delegate),
+    : NativeWidgetAura(delegate),
       mouse_capture_(false) {}
 NativeWidgetCapture::~NativeWidgetCapture() {}
 
@@ -32,14 +31,13 @@ void NativeWidgetCapture::ReleaseCapture() {
 bool NativeWidgetCapture::HasCapture() const {
   return mouse_capture_;
 }
-#endif
 
 WidgetTest::WidgetTest() {}
 WidgetTest::~WidgetTest() {}
 
 NativeWidget* WidgetTest::CreatePlatformNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  return new NativeWidgetPlatformForTest(delegate);
+  return new NativeWidgetCapture(delegate);
 }
 
 Widget* WidgetTest::CreateTopLevelPlatformWidget() {

@@ -278,16 +278,6 @@ bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
   return show_mnemonics;
 }
 
-// In theory we could implement this every where, but for now we're only
-// implementing it on aura.
-#if !defined(USE_AURA)
-// static
-DisplayChangeListener* DisplayChangeListener::Create(Widget* widget,
-                                                     MenuRunner* runner) {
-  return NULL;
-}
-#endif
-
 }  // namespace internal
 
 MenuRunner::MenuRunner(ui::MenuModel* menu_model)

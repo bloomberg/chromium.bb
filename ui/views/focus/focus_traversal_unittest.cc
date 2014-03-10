@@ -158,11 +158,7 @@ class BorderView : public NativeViewHost {
       if (!widget_) {
         widget_ = new Widget;
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-#if defined(OS_WIN) || defined(USE_AURA)
         params.parent = details.parent->GetWidget()->GetNativeView();
-#else
-        NOTREACHED();
-#endif
         widget_->Init(params);
         widget_->SetFocusTraversableParentView(this);
         widget_->SetContentsView(child_);
