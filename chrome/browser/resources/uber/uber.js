@@ -126,24 +126,27 @@ cr.define('uber', function() {
    * @param {Event} e The posted object.
    */
   function handleWindowMessage(e) {
-    if (e.data.method === 'beginInterceptingEvents')
+    if (e.data.method === 'beginInterceptingEvents') {
       backgroundNavigation();
-    else if (e.data.method === 'stopInterceptingEvents')
+    } else if (e.data.method === 'stopInterceptingEvents') {
       foregroundNavigation();
-    else if (e.data.method === 'setPath')
+    } else if (e.data.method === 'setPath') {
       setPath(e.origin, e.data.params.path);
-    else if (e.data.method === 'setTitle')
+    } else if (e.data.method === 'setTitle') {
       setTitle(e.origin, e.data.params.title);
-    else if (e.data.method === 'showPage')
-      showPage(e.data.params.pageId, HISTORY_STATE_OPTION.PUSH);
-    else if (e.data.method === 'navigationControlsLoaded')
+    } else if (e.data.method === 'showPage') {
+      showPage(e.data.params.pageId,
+               HISTORY_STATE_OPTION.PUSH,
+               e.data.params.path);
+    } else if (e.data.method === 'navigationControlsLoaded') {
       onNavigationControlsLoaded();
-    else if (e.data.method === 'adjustToScroll')
+    } else if (e.data.method === 'adjustToScroll') {
       adjustToScroll(e.data.params);
-    else if (e.data.method === 'mouseWheel')
+    } else if (e.data.method === 'mouseWheel') {
       forwardMouseWheel(e.data.params);
-    else
+    } else {
       console.error('Received unexpected message', e.data);
+    }
   }
 
   /**

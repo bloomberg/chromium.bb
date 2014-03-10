@@ -142,6 +142,7 @@ cr.define('options', function() {
 
         // Create the DOM tree.
         var content = document.createElement('div');
+        content.classList.add('controlled-setting-bubble-header');
         content.textContent = text;
 
         if (this.controlledBy == 'hasRecommendation' && this.resetHandler_ &&
@@ -173,13 +174,14 @@ cr.define('options', function() {
 
           var manageLink = extensionContainer.querySelector(
               '.controlled-setting-bubble-extension-manage-link');
+          var extensionId = this.extensionId;
           manageLink.onclick = function() {
             uber.invokeMethodOnWindow(
-                window.top, 'showPage', {pageId: 'extensions'});
+                window.top, 'showPage', {pageId: 'extensions',
+                                         path: '?id=' + extensionId});
           };
 
           var disableButton = extensionContainer.querySelector('button');
-          var extensionId = this.extensionId;
           disableButton.onclick = function() {
             chrome.send('disableExtension', [extensionId]);
           };

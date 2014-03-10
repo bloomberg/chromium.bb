@@ -56,6 +56,10 @@
   padding: 0 !important;
 }
 
+.controlled-setting-bubble-header {
+  margin-top: 3px;
+}
+
 .controlled-setting-bubble-content-row {
   height: 35px;
   position: relative;
@@ -66,7 +70,7 @@
   background-repeat: no-repeat;
   font-weight: bold;
   height: 24px;
-  margin-top: -12px;
+  margin-top: -9px;
   overflow: hidden;
   padding-top: 3px;
   position: absolute;
@@ -81,7 +85,8 @@ html[dir='rtl'] .controlled-setting-bubble-extension-name {
 }
 
 .controlled-setting-bubble-extension-manage-link {
-  margin-top: -0.5em;
+  margin-left: -0.35em;
+  margin-top: -0.30em;
   position: absolute;
   top: 50%;
 }
