@@ -5835,7 +5835,7 @@ other types of suffix sets.
 
 <histogram name="Geolocation.NetworkLocationRequest.AccessPoints">
   <summary>
-    The number of wifi access points used to determine geolocation.
+    The number of WiFi access points used to determine geolocation.
   </summary>
 </histogram>
 
@@ -10428,6 +10428,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.PacketReceived_Ack" units="SequenceNumber">
+  <summary>
+    Each bucket contains the number of packets with a corresponding sequence
+    number that were received by the client, and hence the client ACKed the
+    packet.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.PacketReceived_Nack" units="SequenceNumber">
+  <summary>
+    Each bucket contains the number of packets with a corresponding sequence
+    number were not received by the client, but for which there were later
+    packet sequence numbers received, and hence the client NACKed the packet.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.PublicResetAddressMismatch"
     enum="QuicAddressMismatch">
   <summary>
@@ -12257,7 +12273,7 @@ other types of suffix sets.
 <histogram name="Network.Shill.WiFi.ApDisconnectReason" enum="WiFiReasonCode">
   <summary>
     Chrome OS network usage metric.  Reason code reported when the AP
-    disconnects a wifi connection.
+    disconnects a WiFi connection.
   </summary>
 </histogram>
 
@@ -12286,7 +12302,7 @@ other types of suffix sets.
     enum="WiFiReasonCode">
   <summary>
     Chrome OS network usage metric.  Reason code reported when the client
-    disconnects a wifi connection.
+    disconnects a WiFi connection.
   </summary>
 </histogram>
 
@@ -12421,14 +12437,14 @@ other types of suffix sets.
 
 <histogram name="Network.Shill.WiFi.ScanResult" enum="WiFiScanResult">
   <summary>
-    Chrome OS network usage metric describing, for a wifi scan attempt, what
+    Chrome OS network usage metric describing, for a WiFi scan attempt, what
     scan method is used and whether it ends in a connection.
   </summary>
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ScanTimeInEbusy" units="milliseconds">
   <summary>
-    Chrome OS network usage metric describing, for a wifi scan attempt, how many
+    Chrome OS network usage metric describing, for a WiFi scan attempt, how many
     milliseconds were spent waiting to talk to the kernel/drivers.
   </summary>
 </histogram>
@@ -12664,7 +12680,7 @@ other types of suffix sets.
 
 <histogram name="Network.Wifi.RoundTripTime" units="ms">
   <summary>
-    Network metric reporting the average round trip time to the wifi gateway.
+    Network metric reporting the average round trip time to the WiFi gateway.
     Recorded at least once per day.
   </summary>
 </histogram>
@@ -36203,6 +36219,23 @@ other types of suffix sets.
   <group name="OnStartTime" label="Measures the time taken for OnStart()."/>
   <group name="OnStopTime" label="Measures the time taken for OnStop()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
+</fieldtrial>
+
+<fieldtrial name="Net.QuicSession.PacketReceived" separator="_">
+  <group name="CONNECTION_UNKNOWN" label="Connections via WiFi are tallied."/>
+  <group name="CONNECTION_ETHERNET"
+      label="Connections via ethernet are tallied, but this may include
+             connections to a WiFi bridge."/>
+  <group name="CONNECTION_WIFI"
+      label="Connections via WiFi are tallied, but this may include
+             connections to a mobile hotspot."/>
+  <group name="CONNECTION_2G" label="Connections via mobile 2G are tallied."/>
+  <group name="CONNECTION_3G" label="Connections via mobile 3G are tallied."/>
+  <group name="CONNECTION_4G" label="Connections via mobile 4G are tallied."/>
+  <group name="CONNECTION_NONE"
+      label="Connections via NO(?) network are tallied (should be empty)."/>
+  <affected-histogram name="Net.QuicSession.PacketReceived_Ack"/>
+  <affected-histogram name="Net.QuicSession.PacketReceived_Nack"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity" separator=".">

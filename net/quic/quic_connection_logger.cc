@@ -4,6 +4,9 @@
 
 #include "net/quic/quic_connection_logger.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
@@ -55,12 +58,12 @@ base::Value* NetLogQuicPacketRetransmittedCallback(
     QuicPacketSequenceNumber old_sequence_number,
     QuicPacketSequenceNumber new_sequence_number,
     NetLog::LogLevel /* log_level */) {
- base::DictionaryValue* dict = new base::DictionaryValue();
- dict->SetString("old_packet_sequence_number",
-                 base::Uint64ToString(old_sequence_number));
- dict->SetString("new_packet_sequence_number",
-                 base::Uint64ToString(new_sequence_number));
- return dict;
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("old_packet_sequence_number",
+                  base::Uint64ToString(old_sequence_number));
+  dict->SetString("new_packet_sequence_number",
+                  base::Uint64ToString(new_sequence_number));
+  return dict;
 }
 
 base::Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
@@ -124,7 +127,7 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
       for (TimeMap::const_iterator it =
                frame->inter_arrival.received_packet_times.begin();
            it != frame->inter_arrival.received_packet_times.end(); ++it) {
-        std::string value = base::Uint64ToString(it->first) + "@" +
+        string value = base::Uint64ToString(it->first) + "@" +
             base::Uint64ToString(it->second.ToDebuggingValue());
         received->AppendString(value);
       }
@@ -249,7 +252,8 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
       largest_received_missing_packet_sequence_number_(0),
       out_of_order_recieved_packet_count_(0),
       num_truncated_acks_sent_(0),
-      num_truncated_acks_received_(0) {
+      num_truncated_acks_received_(0),
+      connection_type_(NetworkChangeNotifier::GetConnectionType()) {
 }
 
 QuicConnectionLogger::~QuicConnectionLogger() {
@@ -259,6 +263,8 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_truncated_acks_sent_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
                        num_truncated_acks_received_);
+
+  RecordAckNackHistograms();
 }
 
 void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
@@ -372,6 +378,8 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
     }
     largest_received_packet_sequence_number_ = header.packet_sequence_number;
   }
+  if (header.packet_sequence_number < packets_received_.size())
+    packets_received_[header.packet_sequence_number] = true;
   if (header.packet_sequence_number < last_received_packet_sequence_number_) {
     ++out_of_order_recieved_packet_count_;
     UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderGapReceived",
@@ -517,6 +525,35 @@ void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
   string quic_version = QuicVersionToString(version);
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_VERSION_NEGOTIATED,
                     NetLog::StringCallback("version", &quic_version));
+}
+
+base::HistogramBase* QuicConnectionLogger::GetAckHistogram(
+    const char* ack_or_nack) {
+  string prefix("Net.QuicSession.PacketReceived_");
+  const char* suffix = NetworkChangeNotifier::ConnectionTypeToString(
+      connection_type_);
+  return base::LinearHistogram::FactoryGet(prefix + ack_or_nack + suffix, 1,
+      packets_received_.size(), packets_received_.size() + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
+void QuicConnectionLogger::RecordAckNackHistograms() {
+  if (largest_received_packet_sequence_number_ == 0)
+    return;  // Connection was never used.
+  base::HistogramBase* packet_ack_histogram = GetAckHistogram("Ack_");
+  base::HistogramBase* packet_nack_histogram = GetAckHistogram("Nack_");
+  const QuicPacketSequenceNumber last_index =
+      std::min<QuicPacketSequenceNumber>(
+          packets_received_.size() - 1,
+          largest_received_packet_sequence_number_);
+  // Zero is an invalid packet sequence number.
+  DCHECK(!packets_received_[0]);
+  for (size_t i = 1; i <= last_index; ++i) {
+    if (packets_received_[i])
+      packet_ack_histogram->Add(i);
+    else
+      packet_nack_histogram->Add(i);
+  }
 }
 
 }  // namespace net
