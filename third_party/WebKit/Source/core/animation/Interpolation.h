@@ -18,13 +18,14 @@ public:
         return adoptRef(new Interpolation(start, end));
     }
 
-    void interpolate(double fraction) const;
+    void interpolate(int iteration, double fraction) const;
 
 protected:
     const OwnPtr<InterpolableValue> m_start;
     const OwnPtr<InterpolableValue> m_end;
 
     mutable double m_cachedFraction;
+    mutable int m_cachedIteration;
     mutable OwnPtr<InterpolableValue> m_cachedValue;
 
     Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end);
@@ -33,6 +34,7 @@ private:
     InterpolableValue* getCachedValueForTesting() const { return m_cachedValue.get(); }
 
     friend class AnimationInterpolableValueTest;
+    friend class AnimationInterpolationEffectTest;
 };
 
 class StyleInterpolation : public Interpolation {

@@ -21,21 +21,21 @@ protected:
     double interpolateNumbers(double a, double b, double progress)
     {
         RefPtr<Interpolation> i = Interpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
-        i->interpolate(progress);
+        i->interpolate(0, progress);
         return toInterpolableNumber(interpolationValue(*i.get()))->value();
     }
 
     bool interpolateBools(bool a, bool b, double progress)
     {
         RefPtr<Interpolation> i = Interpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
-        i->interpolate(progress);
+        i->interpolate(0, progress);
         return toInterpolableBool(interpolationValue(*i.get()))->value();
     }
 
     PassRefPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
     {
         RefPtr<Interpolation> i = Interpolation::create(listA, listB);
-        i->interpolate(progress);
+        i->interpolate(0, progress);
         return i;
     }
 };
