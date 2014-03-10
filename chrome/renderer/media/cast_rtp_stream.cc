@@ -12,8 +12,11 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_fifo.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/multi_channel_resampler.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_sender.h"
@@ -24,8 +27,16 @@ using media::cast::AudioSenderConfig;
 using media::cast::VideoSenderConfig;
 
 namespace {
+
 const char kCodecNameOpus[] = "OPUS";
 const char kCodecNameVp8[] = "VP8";
+
+// This constant defines the number of sets of audio data to buffer
+// in the FIFO. If input audio and output data have different resampling
+// rates then buffer is necessary to avoid audio glitches.
+// See CastAudioSink::ResampleData() and CastAudioSink::OnSetFormat()
+// for more defaults.
+const int kBufferAudioData = 2;
 
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
@@ -174,14 +185,19 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   // |track| provides data for this sink.
   // |error_callback| is called if audio formats don't match.
   CastAudioSink(const blink::WebMediaStreamTrack& track,
-                const CastRtpStream::ErrorCallback& error_callback)
+                const CastRtpStream::ErrorCallback& error_callback,
+                int output_channels,
+                int output_sample_rate)
       : track_(track),
         sink_added_(false),
         error_callback_(error_callback),
         weak_factory_(this),
         render_thread_task_runner_(content::RenderThread::Get()
-                                       ->GetMessageLoop()
-                                       ->message_loop_proxy()) {}
+                                   ->GetMessageLoop()
+                                   ->message_loop_proxy()),
+        input_preroll_(0),
+        output_channels_(output_channels),
+        output_sample_rate_(output_sample_rate) {}
 
   virtual ~CastAudioSink() {
     if (sink_added_)
@@ -194,9 +210,18 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
                       int sample_rate,
                       int number_of_channels,
                       int number_of_frames) OVERRIDE {
-    scoped_ptr<media::AudioBus> audio_bus(
-        media::AudioBus::Create(number_of_channels, number_of_frames));
-    audio_bus->FromInterleaved(audio_data, number_of_frames, 2);
+    scoped_ptr<media::AudioBus> input_bus;
+    if (resampler_) {
+      input_bus = ResampleData(
+          audio_data, sample_rate, number_of_channels, number_of_frames);
+      if (!input_bus)
+        return;
+    } else {
+      input_bus = media::AudioBus::Create(
+          number_of_channels, number_of_frames);
+      input_bus->FromInterleaved(
+          audio_data, number_of_frames, number_of_channels);
+    }
 
     // TODO(hclam): Pass in the accurate capture time to have good
     // audio / video sync.
@@ -204,27 +229,75 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     // TODO(hclam): We shouldn't hop through the render thread.
     // Bounce the call from the real-time audio thread to the render thread.
     // Needed since frame_input_ can be changed runtime by the render thread.
-    media::AudioBus* const audio_bus_ptr = audio_bus.get();
+    media::AudioBus* const input_bus_ptr = input_bus.get();
     render_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&CastAudioSink::SendAudio,
                    weak_factory_.GetWeakPtr(),
-                   audio_bus_ptr,
+                   input_bus_ptr,
                    base::TimeTicks::Now(),
-                   base::Bind(&DeleteAudioBus, base::Passed(&audio_bus))));
+                   base::Bind(&DeleteAudioBus, base::Passed(&input_bus))));
   }
 
-  void SendAudio(const media::AudioBus* audio_bus_ptr,
+  // Return a resampled audio data from input. This is called when the
+  // input sample rate doesn't match the output.
+  // The flow of data is as follows:
+  // |audio_data| ->
+  //     AudioFifo |fifo_| ->
+  //         MultiChannelResampler |resampler|.
+  //
+  // The resampler pulls data out of the FIFO and resample the data in
+  // frequency domain. It might call |fifo_| for more than once. But no more
+  // than |kBufferAudioData| times. We preroll audio data into the FIFO to
+  // make sure there's enough data for resampling.
+  scoped_ptr<media::AudioBus> ResampleData(
+      const int16* audio_data,
+      int sample_rate,
+      int number_of_channels,
+      int number_of_frames) {
+    DCHECK_EQ(number_of_channels, output_channels_);
+    fifo_input_bus_->FromInterleaved(
+        audio_data, number_of_frames, number_of_channels);
+    fifo_->Push(fifo_input_bus_.get());
+
+    if (input_preroll_ < kBufferAudioData - 1) {
+      ++input_preroll_;
+      return scoped_ptr<media::AudioBus>();
+    }
+
+    scoped_ptr<media::AudioBus> output_bus(
+        media::AudioBus::Create(
+            output_channels_,
+            output_sample_rate_ * fifo_input_bus_->frames() / sample_rate));
+
+    // Resampler will then call ProvideData() below to fetch data from
+    // |input_data_|.
+    resampler_->Resample(output_bus->frames(), output_bus.get());
+    return output_bus.Pass();
+  }
+
+  void SendAudio(const media::AudioBus* audio_bus,
                  const base::TimeTicks& recorded_time,
                  const base::Closure& done_callback) {
     DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
     DCHECK(frame_input_);
-    frame_input_->InsertAudio(audio_bus_ptr, recorded_time, done_callback);
+    frame_input_->InsertAudio(audio_bus, recorded_time, done_callback);
   }
 
   // Called on real-time audio thread.
   virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE {
-    NOTIMPLEMENTED();
+    if (params.sample_rate() == output_sample_rate_)
+      return;
+    fifo_.reset(new media::AudioFifo(
+        output_channels_,
+        kBufferAudioData * params.frames_per_buffer()));
+    fifo_input_bus_ = media::AudioBus::Create(
+        params.channels(), params.frames_per_buffer());
+    resampler_.reset(new media::MultiChannelResampler(
+        output_channels_,
+        static_cast<double>(params.sample_rate()) / output_sample_rate_,
+        params.frames_per_buffer(),
+        base::Bind(&CastAudioSink::ProvideData, base::Unretained(this))));
   }
 
   // See CastVideoSink for details.
@@ -237,6 +310,10 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     }
   }
 
+  void ProvideData(int frame_delay, media::AudioBus* output_bus) {
+    fifo_->Consume(output_bus, 0, output_bus->frames());
+  }
+
  private:
   blink::WebMediaStreamTrack track_;
   scoped_refptr<media::cast::FrameInput> frame_input_;
@@ -244,6 +321,13 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   CastRtpStream::ErrorCallback error_callback_;
   base::WeakPtrFactory<CastAudioSink> weak_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
+
+  scoped_ptr<media::MultiChannelResampler> resampler_;
+  scoped_ptr<media::AudioFifo> fifo_;
+  scoped_ptr<media::AudioBus> fifo_input_bus_;
+  int input_preroll_;
+  const int output_channels_;
+  const int output_sample_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };
@@ -309,12 +393,15 @@ void CastRtpStream::Start(const CastRtpParams& params,
       DidEncounterError("Invalid parameters for audio.");
       return;
     }
+
     // In case of error we have to go through DidEncounterError() to stop
     // the streaming after reporting the error.
     audio_sink_.reset(new CastAudioSink(
         track_,
         media::BindToCurrentLoop(base::Bind(&CastRtpStream::DidEncounterError,
-                                            weak_factory_.GetWeakPtr()))));
+                                            weak_factory_.GetWeakPtr())),
+        params.payload.channels,
+        params.payload.clock_rate));
     cast_session_->StartAudio(
         config,
         base::Bind(&CastAudioSink::AddToTrack,
