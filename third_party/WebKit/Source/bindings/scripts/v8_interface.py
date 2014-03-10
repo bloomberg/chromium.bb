@@ -35,6 +35,8 @@ Until then, please work on the Perl IDL compiler.
 For details, see bug http://crbug.com/239771
 """
 
+from collections import defaultdict
+
 import v8_attributes
 from v8_globals import includes
 import v8_methods
@@ -296,12 +298,11 @@ def generate_overloads_by_type(methods, is_static):
     # Generates |overloads| template values and modifies |methods| in place;
     # |is_static| flag used (instead of partitioning list in 2) because need to
     # iterate over original list of methods to modify in place
-    method_counts = {}
+    method_counts = defaultdict(lambda: 0)
     for method in methods:
         if method['is_static'] != is_static:
             continue
         name = method['name']
-        method_counts.setdefault(name, 0)
         method_counts[name] += 1
 
     # Filter to only methods that are actually overloaded
@@ -311,14 +312,14 @@ def generate_overloads_by_type(methods, is_static):
 
     # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
-    method_overloads = {}
+    method_overloads = defaultdict(list)
     for method in methods:
         name = method['name']
         if (method['is_static'] != is_static or
             name not in overloaded_method_counts):
             continue
         # Overload index includes self, so first append, then compute index
-        method_overloads.setdefault(name, []).append(method)
+        method_overloads[name].append(method)
         method.update({
             'overload_index': len(method_overloads[name]),
             'overload_resolution_expression': overload_resolution_expression(method),

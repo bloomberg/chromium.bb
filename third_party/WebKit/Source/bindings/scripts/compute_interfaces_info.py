@@ -76,6 +76,7 @@ code changes (for inherited extended attributes).
 Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
+from collections import defaultdict
 import optparse
 import os
 import posixpath
@@ -96,7 +97,10 @@ INHERITED_EXTENDED_ATTRIBUTES = set([
 interfaces_info = {}
 
 # Auxiliary variables (not visible to future build steps)
-partial_interface_files = {}
+partial_interface_files = defaultdict(lambda: {
+    'full_paths': [],
+    'include_paths': [],
+})
 parent_interfaces = {}
 inherited_extended_attributes_by_interface = {}  # interface name -> extended attributes
 
@@ -145,9 +149,7 @@ def include_path(idl_filename, implemented_as=None):
 
 
 def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_path=None):
-    paths_dict = partial_interface_files.setdefault(partial_interface_name,
-                                                    {'full_paths': [],
-                                                     'include_paths': []})
+    paths_dict = partial_interface_files[partial_interface_name]
     paths_dict['full_paths'].append(full_path)
     if this_include_path:
         paths_dict['include_paths'].append(this_include_path)
@@ -229,28 +231,34 @@ def compute_interfaces_info(idl_files):
         compute_individual_info(idl_filename)
 
     # Once all individual files handled, can compute inheritance information
+    # and dependencies
+
+    # Compute inheritance info
     for interface_name in interfaces_info:
         compute_inheritance_info(interface_name)
 
+    # Compute dependencies
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces implements.
     for interface_name, interface_info in interfaces_info.iteritems():
-        partial_interfaces_full_paths, partial_interfaces_include_paths = (
-                (partial_interface_files[interface_name]['full_paths'],
-                 partial_interface_files[interface_name]['include_paths'])
-                if interface_name in partial_interface_files else ([], []))
+        partial_interface_paths = partial_interface_files[interface_name]
+        partial_interfaces_full_paths = partial_interface_paths['full_paths']
+        partial_interfaces_include_paths = partial_interface_paths['include_paths']
 
         implemented_interfaces = interface_info['implements_interfaces']
         try:
-            implemented_interfaces_full_paths = [
-                interfaces_info[interface]['full_path']
+            implemented_interfaces_info = [
+                interfaces_info[interface]
                 for interface in implemented_interfaces]
-            implemented_interfaces_include_paths = [
-                interfaces_info[interface]['include_path']
-                for interface in implemented_interfaces
-                if interfaces_info[interface]['include_path']]
         except KeyError as key_name:
             raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following implemented interface is defined: %s' % key_name)
+        implemented_interfaces_full_paths = [
+            implemented_interface_info['full_path']
+            for implemented_interface_info in implemented_interfaces_info]
+        implemented_interfaces_include_paths = [
+            implemented_interface_info['include_path']
+            for implemented_interface_info in implemented_interfaces_info
+            if implemented_interface_info['include_path']]
 
         interface_info.update({
             'dependencies_full_paths': (partial_interfaces_full_paths +

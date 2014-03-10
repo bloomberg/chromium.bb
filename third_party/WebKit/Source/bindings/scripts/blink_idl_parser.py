@@ -86,6 +86,12 @@ REMOVED_RULES = ['Top',  # [0]
                  'CommentsRest',  # [0.2]
                 ]
 
+# Remove rules from base class
+# FIXME: add a class method upstream: @classmethod IDLParser._RemoveRules
+for rule in REMOVED_RULES:
+    production_name = 'p_' + rule
+    delattr(IDLParser, production_name)
+
 
 class BlinkIDLParser(IDLParser):
     # [1]
@@ -391,16 +397,6 @@ class BlinkIDLParser(IDLParser):
             p[0] = unwrap_string(p[1]) + p[2] + p[3]
         else:
             p[0] = unwrap_string(p[1])
-
-    def __dir__(self):
-        # Remove REMOVED_RULES from listing so yacc doesn't parse them
-        # FIXME: Upstream
-        keys = set(self.__dict__.keys() + dir(self.__class__))
-        for rule in REMOVED_RULES:
-            production_name = 'p_' + rule
-            if production_name in keys:
-                keys.remove(production_name)
-        return list(keys)
 
     def __init__(self,
                  # common parameters
