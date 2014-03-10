@@ -20,6 +20,8 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using ppapi::ResourceVar;
 
@@ -51,6 +53,30 @@ PP_FileSystemType WebFileSystemTypeToPPAPI(blink::WebFileSystem::Type type) {
     default:
       NOTREACHED();
       return PP_FILESYSTEMTYPE_LOCALTEMPORARY;
+  }
+}
+
+// Converts a fileapi::FileSystemType to a blink::WebFileSystemType.
+// Returns true on success, false if |type| does not correspond to a
+// WebFileSystemType.
+bool FileApiFileSystemTypeToWebFileSystemType(
+    fileapi::FileSystemType type,
+    blink::WebFileSystemType* result_type) {
+  switch (type) {
+    case fileapi::kFileSystemTypeTemporary:
+      *result_type = blink::WebFileSystemTypeTemporary;
+      return true;
+    case fileapi::kFileSystemTypePersistent:
+      *result_type = blink::WebFileSystemTypePersistent;
+      return true;
+    case fileapi::kFileSystemTypeIsolated:
+      *result_type = blink::WebFileSystemTypeIsolated;
+      return true;
+    case fileapi::kFileSystemTypeExternal:
+      *result_type = blink::WebFileSystemTypeExternal;
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -89,6 +115,31 @@ bool DOMFileSystemToResource(
   browser_host_create_message->reset(
       new PpapiHostMsg_FileSystem_CreateFromRenderer(root_url.spec(),
                                                      file_system_type));
+  return true;
+}
+
+bool ResourceHostToDOMFileSystem(
+    content::PepperFileSystemHost* file_system_host,
+    v8::Handle<v8::Context> context,
+    v8::Handle<v8::Value>* dom_file_system) {
+  GURL root_url = file_system_host->GetRootUrl();
+  GURL origin;
+  fileapi::FileSystemType type;
+  base::FilePath virtual_path;
+  fileapi::ParseFileSystemSchemeURL(root_url, &origin, &type, &virtual_path);
+
+  std::string name = fileapi::GetFileSystemName(origin, type);
+  blink::WebFileSystemType blink_type;
+  if (!FileApiFileSystemTypeToWebFileSystemType(type, &blink_type))
+    return false;
+  blink::WebFrame* frame = blink::WebFrame::frameForContext(context);
+  blink::WebDOMFileSystem web_dom_file_system = blink::WebDOMFileSystem::create(
+      frame,
+      blink_type,
+      blink::WebString::fromUTF8(name),
+      root_url,
+      blink::WebDOMFileSystem::SerializableTypeSerializable);
+  *dom_file_system = web_dom_file_system.toV8Value();
   return true;
 }
 
@@ -239,11 +290,16 @@ bool ResourceConverterImpl::ToV8Value(const PP_Var& var,
   }
 
   // Convert to the appropriate type of resource host.
-  // TODO(mgiuca): Convert FileSystemHost resources into DOMFileSystem V8
-  // objects. (http://crbug.com/345158)
-  LOG(ERROR) << "The type of resource #" << resource_id
-             << " cannot be converted to a JavaScript object.";
-  return false;
+  if (resource_host->IsFileSystemHost()) {
+    return ResourceHostToDOMFileSystem(
+        static_cast<content::PepperFileSystemHost*>(resource_host),
+        context,
+        result);
+  } else {
+    LOG(ERROR) << "The type of resource #" << resource_id
+               << " cannot be converted to a JavaScript object.";
+    return false;
+  }
 }
 
 scoped_refptr<HostResourceVar> ResourceConverterImpl::CreateResourceVar(

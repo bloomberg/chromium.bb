@@ -78,8 +78,7 @@ class TestPostMessage : public TestCase {
   // Test sending Dictionary vars in both directions.
   std::string TestSendingDictionary();
 
-  // Test sending Resource vars from JavaScript to the plugin.
-  // TODO(mgiuca): Test sending Resource vars in both directions.
+  // Test sending Resource vars in both directions.
   std::string TestSendingResource();
 
   // Test sending a complex var with references and cycles in both directions.

@@ -282,31 +282,6 @@ int TestPostMessage::WaitForMessages() {
   return message_data_.size() - message_size_before;
 }
 
-int TestPostMessage::PostAsyncMessageFromJavaScriptAndWait(
-    const std::string& func) {
-  // After the |func| calls callback, post both the given |message|, as well as
-  // the special message FINISHED_WAITING_MESSAGE. This ensures that
-  // RunMessageLoop correctly waits until the callback is called.
-  std::string js_code;
-  js_code += "var plugin = document.getElementById('plugin');"
-             "var callback = function(message) {"
-             "  plugin.postMessage(message);"
-             "  plugin.postMessage('" FINISHED_WAITING_MESSAGE "');"
-             "};";
-  js_code += "(" + func + ")(callback);";
-  instance_->EvalScript(js_code);
-
-  size_t message_size_before = message_data_.size();
-  // Unlike WaitForMessages, we do not post FINISHED_WAITING_MESSAGE. This is
-  // because the above JavaScript code will post it for us, when the
-  // asynchronous operation completes.
-  testing_interface_->RunMessageLoop(instance_->pp_instance());
-  // Now that the FINISHED_WAITING_MESSAGE has been echoed back to us, we know
-  // that all pending messages have been slurped up. Return the number we
-  // received (which may be zero).
-  return message_data_.size() - message_size_before;
-}
-
 std::string TestPostMessage::CheckMessageProperties(
     const pp::Var& test_data,
     const std::vector<std::string>& properties_to_check) {
@@ -572,39 +547,66 @@ std::string TestPostMessage::TestSendingResource() {
   message_data_.clear();
   ASSERT_TRUE(ClearListeners());
 
-  // Test sending a DOMFileSystem from JavaScript to the plugin.
-  // This opens a real (temporary) file using the HTML5 FileSystem API and
-  // writes to it.
+  std::string file_path("/");
+  file_path += kTestFilename;
+  int content_length = strlen(kTestString);
+
+  // Create a file in the HTML5 temporary file system, in the Pepper plugin.
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+  pp::FileRef write_file_ref(file_system, file_path.c_str());
+  // Write to the file.
+  pp::FileIO write_file_io(instance_);
+  ASSERT_NE(0, write_file_io.pp_resource());
+  callback.WaitForResult(
+      write_file_io.Open(write_file_ref,
+                         PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE,
+                         callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+  callback.WaitForResult(write_file_io.Write(
+      0, kTestString, content_length, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(callback.result(), content_length);
+  write_file_io.Close();
+
+  // Pass the file system to JavaScript and have the listener test some
+  // properties of the file system.
+  pp::Var file_system_var(file_system);
+  std::vector<std::string> properties_to_check;
+  properties_to_check.push_back(
+      "message_event.data.constructor.name === 'DOMFileSystem'");
+  properties_to_check.push_back(
+      "message_event.data.root.constructor.name === 'DirectoryEntry'");
+  properties_to_check.push_back(
+      "message_event.data.name.indexOf("
+      "    ':Temporary',"
+      "    message_event.data.name.length - ':Temporary'.length) !== -1");
+  ASSERT_SUBTEST_SUCCESS(CheckMessageProperties(file_system_var,
+                                                properties_to_check));
+
+  // Set up the JavaScript message event listener to echo the data part of the
+  // message event back to us.
   ASSERT_TRUE(AddEchoingListener("message_event.data"));
+  // Send the file system in a message from the Pepper plugin to JavaScript.
+  message_data_.clear();
+  instance_->PostMessage(file_system_var);
+  // PostMessage is asynchronous, so we should not receive a response yet.
   ASSERT_EQ(0, message_data_.size());
-  std::string js_code =
-      "function(callback) {"
-      "  window.webkitRequestFileSystem(window.TEMPORARY, 1024,"
-      "                                 function(fileSystem) {"
-      "    fileSystem.root.getFile('";
-  js_code += kTestFilename;
-  js_code += "', {create: true}, function(tempFile) {"
-      "      tempFile.createWriter(function(writer) {"
-      "        writer.onerror = function() { callback(null); };"
-      "        writer.onwriteend = function() { callback(fileSystem); };"
-      "        var blob = new Blob(['";
-  js_code += kTestString;
-  js_code += "'], {'type': 'text/plain'});"
-      "        writer.write(blob);"
-      "      });"
-      "    }, function() { callback(null); });"
-      "  }, function() { callback(null); });"
-      "}";
-  ASSERT_EQ(PostAsyncMessageFromJavaScriptAndWait(js_code), 1);
+  ASSERT_EQ(1, WaitForMessages());
+
+  // The JavaScript should have posted the file system back to us. Verify that
+  // it is a file system and read the file contents that we wrote earlier.
   pp::Var var = message_data_.back();
   ASSERT_TRUE(var.is_resource());
   pp::Resource result = var.AsResource();
   ASSERT_TRUE(pp::FileSystem::IsFileSystem(result));
   {
-    pp::FileSystem file_system(result);
-    std::string file_path("/");
-    file_path += kTestFilename;
-    pp::FileRef file_ref(file_system, file_path.c_str());
+    pp::FileSystem received_file_system(result);
+    pp::FileRef file_ref(received_file_system, file_path.c_str());
     ASSERT_NE(0, file_ref.pp_resource());
 
     // Ensure that the file can be queried.
@@ -613,33 +615,28 @@ std::string TestPostMessage::TestSendingResource() {
     cc.WaitForResult(file_ref.Query(cc.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(cc);
     ASSERT_EQ(PP_OK, cc.result());
+    ASSERT_EQ(cc.output().size, content_length);
 
     // Read the file and test that its contents match.
     pp::FileIO file_io(instance_);
     ASSERT_NE(0, file_io.pp_resource());
-    TestCompletionCallback callback(instance_->pp_instance(),
-                                    callback_type());
     callback.WaitForResult(
         file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(callback);
     ASSERT_EQ(PP_OK, callback.result());
 
-    int length = strlen(kTestString);
-    std::vector<char> buffer_vector(length);
+    std::vector<char> buffer_vector(content_length);
     char* buffer = &buffer_vector[0];  // Note: Not null-terminated!
     callback.WaitForResult(
-        file_io.Read(0, buffer, length, callback.GetCallback()));
+        file_io.Read(0, buffer, content_length, callback.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(callback);
-    ASSERT_EQ(length, callback.result());
-    ASSERT_EQ(0, memcmp(buffer, kTestString, length));
+    ASSERT_EQ(callback.result(), content_length);
+    ASSERT_EQ(0, memcmp(buffer, kTestString, content_length));
   }
 
   WaitForMessages();
   message_data_.clear();
   ASSERT_TRUE(ClearListeners());
-
-  // TODO(mgiuca): Test roundtrip from plugin to JS and back, when the plugin to
-  // JS support is available.
 
   PASS();
 }
