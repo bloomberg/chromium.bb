@@ -199,12 +199,11 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
 
   std::vector<ui::ScaleFactor> scale_factors_to_generate = scale_factors;
   for (size_t i = 0; i < png_reps.size(); ++i) {
-    std::vector<ui::ScaleFactor>::iterator it = std::find(
-        scale_factors_to_generate.begin(),
-        scale_factors_to_generate.end(),
-        ui::GetSupportedScaleFactor(png_reps[i].scale));
-    CHECK(it != scale_factors_to_generate.end());
-    scale_factors_to_generate.erase(it);
+    for (int j = static_cast<int>(scale_factors_to_generate.size()) - 1;
+         j >= 0; --j) {
+      if (png_reps[i].scale == ui::GetImageScale(scale_factors_to_generate[j]))
+        scale_factors_to_generate.erase(scale_factors_to_generate.begin() + j);
+    }
   }
 
   if (scale_factors_to_generate.empty())
