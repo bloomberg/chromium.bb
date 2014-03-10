@@ -319,6 +319,8 @@ class KioskTest : public OobeBaseTest {
   }
 
   void ReloadKioskApps() {
+    // Remove then add to ensure NOTIFICATION_KIOSK_APPS_LOADED fires.
+    KioskAppManager::Get()->RemoveApp(test_app_id_);
     KioskAppManager::Get()->AddApp(test_app_id_);
   }
 
@@ -330,18 +332,23 @@ class KioskTest : public OobeBaseTest {
   void PrepareAppLaunch() {
     EnableConsumerKioskMode();
 
-    // Start UI, find menu entry for this app and launch it.
+    // Start UI
     content::WindowedNotificationObserver login_signal(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources());
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+        content::NotificationService::AllSources());
     chromeos::WizardController::SkipPostLoginScreensForTesting();
     chromeos::WizardController* wizard_controller =
         chromeos::WizardController::default_controller();
-    CHECK(wizard_controller);
-    wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-    login_signal.Wait();
+    if (wizard_controller) {
+      wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+      login_signal.Wait();
+    } else {
+      // No wizard and running with an existing profile and it should land
+      // on account picker.
+      OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+    }
 
-    // Wait for the Kiosk App configuration to reload, then launch the app.
+    // Wait for the Kiosk App configuration to reload.
     content::WindowedNotificationObserver apps_loaded_signal(
         chrome::NOTIFICATION_KIOSK_APPS_LOADED,
         content::NotificationService::AllSources());
@@ -482,6 +489,43 @@ class KioskTest : public OobeBaseTest {
                             true));
   }
 
+  void RunAppLaunchNetworkDownTest() {
+    // Mock network could be configured with owner's password.
+    ScopedCanConfigureNetwork can_configure_network(true, true);
+
+    // Start app launch and wait for network connectivity timeout.
+    StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
+    OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
+    splash_waiter.Wait();
+    WaitForAppLaunchNetworkTimeout();
+
+    // Configure network link should be visible.
+    JsExpect("$('splash-config-network').hidden == false");
+
+    // Set up fake user manager with an owner for the test.
+    mock_user_manager()->SetActiveUser(kTestOwnerEmail);
+    AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
+    static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host())
+        ->GetOobeUI()->ShowOobeUI(false);
+
+    // Configure network should bring up lock screen for owner.
+    OobeScreenWaiter lock_screen_waiter(OobeDisplay::SCREEN_ACCOUNT_PICKER);
+    static_cast<AppLaunchSplashScreenActor::Delegate*>(GetAppLaunchController())
+        ->OnConfigureNetwork();
+    lock_screen_waiter.Wait();
+
+    // A network error screen should be shown after authenticating.
+    OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
+    static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
+        ->OnOwnerSigninSuccess();
+    error_screen_waiter.Wait();
+
+    ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
+
+    SimulateNetworkOnline();
+    WaitForAppLaunchSuccess();
+  }
+
   AppLaunchController* GetAppLaunchController() {
     return chromeos::LoginDisplayHostImpl::default_host()
         ->GetAppLaunchController();
@@ -506,41 +550,15 @@ IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   WaitForAppLaunchSuccess();
 }
 
+IN_PROC_BROWSER_TEST_F(KioskTest, PRE_LaunchAppNetworkDown) {
+  // Tests the network down case for the initial app download and launch.
+  RunAppLaunchNetworkDownTest();
+}
+
 IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
-  // Mock network could be configured with owner's password.
-  ScopedCanConfigureNetwork can_configure_network(true, true);
-
-  // Start app launch and wait for network connectivity timeout.
-  StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
-  OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
-  splash_waiter.Wait();
-  WaitForAppLaunchNetworkTimeout();
-
-  // Configure network link should be visible.
-  JsExpect("$('splash-config-network').hidden == false");
-
-  // Set up fake user manager with an owner for the test.
-  mock_user_manager()->SetActiveUser(kTestOwnerEmail);
-  AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
-  static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host())
-      ->GetOobeUI()->ShowOobeUI(false);
-
-  // Configure network should bring up lock screen for owner.
-  OobeScreenWaiter lock_screen_waiter(OobeDisplay::SCREEN_ACCOUNT_PICKER);
-  static_cast<AppLaunchSplashScreenActor::Delegate*>(GetAppLaunchController())
-    ->OnConfigureNetwork();
-  lock_screen_waiter.Wait();
-
-  // A network error screen should be shown after authenticating.
-  OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
-  static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
-      ->OnOwnerSigninSuccess();
-  error_screen_waiter.Wait();
-
-  ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
-
-  SimulateNetworkOnline();
-  WaitForAppLaunchSuccess();
+  // Tests the network down case for launching an existing app that is
+  // installed in PRE_LaunchAppNetworkDown.
+  RunAppLaunchNetworkDownTest();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {

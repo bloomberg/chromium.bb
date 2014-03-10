@@ -10,6 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -37,11 +39,17 @@ OfflineEnabledHandler::~OfflineEnabledHandler() {
 
 bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kOfflineEnabled)) {
-    // Only platform apps default to being enabled offline, and we should only
-    // attempt parsing without a key present if it is a platform app.
+    // Only platform apps are provided with a default offline enabled value.
+    // A platform app is offline enabled unless it requests the webview
+    // permission. That is, offline_enabled is true when there is NO webview
+    // permission requested and false when webview permission is present.
     DCHECK(extension->is_platform_app());
+
+    const bool has_webview_permission =
+        !!PermissionsData::GetInitialAPIPermissions(extension)
+              ->count(APIPermission::kWebView);
     extension->SetManifestData(keys::kOfflineEnabled,
-                               new OfflineEnabledInfo(true));
+                               new OfflineEnabledInfo(!has_webview_permission));
     return true;
   }
 

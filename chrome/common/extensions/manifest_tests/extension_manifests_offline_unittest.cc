@@ -36,6 +36,9 @@ TEST_F(ExtensionManifestOfflineEnabledTest, OfflineEnabled) {
   scoped_refptr<Extension> extension_5(
       LoadAndExpectSuccess("offline_default_platform_app.json"));
   EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_5.get()));
+  scoped_refptr<Extension> extension_6(
+      LoadAndExpectSuccess("offline_default_platform_app_with_webview.json"));
+  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_6.get()));
 }
 
 }  // namespace extensions
