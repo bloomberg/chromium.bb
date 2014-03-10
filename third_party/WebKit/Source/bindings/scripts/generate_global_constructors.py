@@ -13,8 +13,7 @@ hence "global constructors" for short.
 For reference on global objects, see:
 http://www.chromium.org/blink/webidl/blink-idl-extended-attributes#TOC-GlobalContext-i-
 
-Design document:
-http://www.chromium.org/developers/design-documents/idl-build
+Design document: http://www.chromium.org/developers/design-documents/idl-build
 """
 
 import optparse

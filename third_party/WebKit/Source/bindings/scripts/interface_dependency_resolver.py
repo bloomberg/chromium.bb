@@ -33,8 +33,7 @@ implements), reads the dependency files, and merges them to the IdlDefinitions
 for the main IDL file, producing an IdlDefinitions object representing the
 entire interface.
 
-It also checks whether a file should have bindings generated, or whether
-instead it is just a dependency.
+Design doc: http://www.chromium.org/developers/design-documents/idl-compiler#TOC-Dependency-resolution
 """
 
 import os.path

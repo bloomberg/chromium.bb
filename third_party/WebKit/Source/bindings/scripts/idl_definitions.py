@@ -58,6 +58,8 @@ IdlUnionType :: FIXME: remove
 Auxiliary classes for typedef resolution:
 IdlType
 TypedObject
+
+Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 

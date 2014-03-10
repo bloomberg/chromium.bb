@@ -46,6 +46,9 @@ Web IDL Grammar:
     http://www.w3.org/TR/WebIDL/#idl-grammar
 PLY:
     http://www.dabeaz.com/ply/
+
+Design doc:
+http://www.chromium.org/developers/design-documents/idl-compiler#TOC-Front-end
 """
 
 # Disable attribute validation, as lint can't import parent class to check

@@ -37,14 +37,10 @@ partially-written cache). However, if you pre-cache the templates (by running
 the module itself), then you can parallelize compiling individual files, since
 cache *reading* is safe.
 
-FIXME: Not currently used in build.
-This is a rewrite of the Perl IDL compiler in Python, but is not complete.
-Once it is complete, we will switch all IDL files over to Python at once.
-Until then, please work on the Perl IDL compiler.
-For details, see bug http://crbug.com/239771
-
 Input: An object of class IdlDefinitions, containing an IDL interface X
 Output: V8X.h and V8X.cpp
+
+Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 import os

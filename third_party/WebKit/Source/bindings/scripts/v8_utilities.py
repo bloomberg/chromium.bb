@@ -28,11 +28,7 @@
 
 """Functions shared by various parts of the code generator.
 
-FIXME: Not currently used in build.
-This is a rewrite of the Perl IDL compiler in Python, but is not complete.
-Once it is complete, we will switch all IDL files over to Python at once.
-Until then, please work on the Perl IDL compiler.
-For details, see bug http://crbug.com/239771
+Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 # FIXME: eliminate this file if possible
