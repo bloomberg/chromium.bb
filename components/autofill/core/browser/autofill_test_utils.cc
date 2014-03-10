@@ -18,7 +18,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/encryptor/os_crypt.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "components/user_prefs/user_prefs.h"
 
 using base::ASCIIToUTF16;
 

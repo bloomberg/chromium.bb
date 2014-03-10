@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -30,7 +32,6 @@
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +39,6 @@ using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
-using content::BrowserThread;
 using testing::_;
 using testing::DoDefault;
 using testing::ElementsAreArray;
@@ -55,8 +55,6 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
 
   virtual void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
                                            const WDTypedResult* result) {
-    using content::BrowserThread;
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     handle_ = handle;
     const WDResult<T>* wrapped_result =
         static_cast<const WDResult<T>*>(result);
@@ -95,9 +93,7 @@ class MockAutofillWebDataServiceObserver
 
 class WebDataServiceTest : public testing::Test {
  public:
-  WebDataServiceTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {}
+  WebDataServiceTest() : db_thread_("DBThread") {}
 
  protected:
   virtual void SetUp() {
@@ -106,18 +102,17 @@ class WebDataServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
-    wdbs_ = new WebDatabaseService(
-        path,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+    wdbs_ = new WebDatabaseService(path,
+                                   base::MessageLoopProxy::current(),
+                                   db_thread_.message_loop_proxy());
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
     wdbs_->LoadDatabase();
 
-    wds_ = new AutofillWebDataService(
-        wdbs_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        WebDataServiceBase::ProfileErrorCallback());
+    wds_ =
+        new AutofillWebDataService(wdbs_,
+                                   base::MessageLoopProxy::current(),
+                                   db_thread_.message_loop_proxy(),
+                                   WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
@@ -136,16 +131,14 @@ class WebDataServiceTest : public testing::Test {
 
   void WaitForDatabaseThread() {
     base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(
-        BrowserThread::DB,
+    db_thread_.message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
   }
 
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
+  base::Thread db_thread_;
   base::FilePath profile_dir_;
   scoped_refptr<AutofillWebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
@@ -172,10 +165,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     void(AutofillWebDataService::*add_observer_func)(
         AutofillWebDataServiceObserverOnDBThread*) =
         &AutofillWebDataService::AddObserver;
-    BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(add_observer_func, wds_, &observer_));
+    db_thread_.message_loop()->PostTask(
+        FROM_HERE, base::Bind(add_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
   }
 
@@ -183,10 +174,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     void(AutofillWebDataService::*remove_observer_func)(
         AutofillWebDataServiceObserverOnDBThread*) =
         &AutofillWebDataService::RemoveObserver;
-    BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(remove_observer_func, wds_, &observer_));
+    db_thread_.message_loop()->PostTask(
+        FROM_HERE, base::Bind(remove_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
 
     WebDataServiceTest::TearDown();

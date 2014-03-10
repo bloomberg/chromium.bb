@@ -35,7 +35,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
-#include "components/user_prefs/user_prefs.h"
 #include "grit/component_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

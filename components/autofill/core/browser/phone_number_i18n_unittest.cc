@@ -6,13 +6,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libphonenumber/src/phonenumber_api.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
-using content::BrowserThread;
 
 namespace autofill {
 
