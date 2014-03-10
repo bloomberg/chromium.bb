@@ -406,12 +406,14 @@ class ThreadWatcherList {
  private:
   // Allow tests to access our innards for testing purposes.
   friend class CustomThreadWatcher;
+  friend class ThreadWatcherListTest;
   friend class ThreadWatcherTest;
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherAndroidTest,
+                           ApplicationStatusNotification);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherListTest, Restart);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNamesOnlyArgs);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, CrashOnHangThreadsAllArgs);
-  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherAndroidTest,
-                           ApplicationStatusNotification);
 
   // This singleton holds the global list of registered ThreadWatchers.
   ThreadWatcherList();
@@ -464,9 +466,18 @@ class ThreadWatcherList {
   // already registered, or to retrieve a pointer to it from the global map.
   static ThreadWatcher* Find(const content::BrowserThread::ID& thread_id);
 
+  // Sets |g_stopped_| on the WatchDogThread. This is necessary to reflect the
+  // state between the delayed |StartWatchingAll| and the immediate
+  // |StopWatchingAll|.
+  static void SetStopped(bool stopped);
+
   // The singleton of this class and is used to keep track of information about
   // threads that are being watched.
   static ThreadWatcherList* g_thread_watcher_list_;
+
+  // StartWatchingAll() is delayed in relation to StopWatchingAll(), so if
+  // a Stop comes first, prevent further initialization.
+  static bool g_stopped_;
 
   // This is the wait time between ping messages.
   static const int kSleepSeconds;

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -628,4 +629,110 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
 
   // Wait for the io_watcher_'s VeryLongMethod to finish.
   io_watcher_->WaitForWaitStateChange(kUnresponsiveTime * 10, ALL_DONE);
+}
+
+class ThreadWatcherListTest : public ::testing::Test {
+ protected:
+  ThreadWatcherListTest()
+      : done_(&lock_),
+        state_available_(false),
+        has_thread_watcher_list_(false),
+        stopped_(false) {
+  }
+
+  void ReadStateOnWatchDogThread() {
+    CHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+    {
+      base::AutoLock auto_lock(lock_);
+      has_thread_watcher_list_ =
+          ThreadWatcherList::g_thread_watcher_list_ != NULL;
+      stopped_ = ThreadWatcherList::g_stopped_;
+      state_available_ = true;
+    }
+    done_.Signal();
+  }
+
+  void CheckState(bool has_thread_watcher_list,
+                  bool stopped,
+                  const char* const msg) {
+    CHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
+    {
+      base::AutoLock auto_lock(lock_);
+      state_available_ = false;
+    }
+
+    WatchDogThread::PostTask(
+        FROM_HERE,
+        base::Bind(&ThreadWatcherListTest::ReadStateOnWatchDogThread,
+                   base::Unretained(this)));
+    {
+      base::AutoLock auto_lock(lock_);
+      while (!state_available_)
+        done_.Wait();
+
+      EXPECT_EQ(has_thread_watcher_list, has_thread_watcher_list_) << msg;
+      EXPECT_EQ(stopped, stopped_) << msg;
+    }
+  }
+
+  base::Lock lock_;
+  base::ConditionVariable done_;
+
+  bool state_available_;
+  bool has_thread_watcher_list_;
+  bool stopped_;
+};
+
+TEST_F(ThreadWatcherListTest, Restart) {
+  ThreadWatcherList::g_initialize_delay_seconds = 1;
+
+  base::MessageLoopForUI message_loop_for_ui;
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop_for_ui);
+
+  scoped_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
+  watchdog_thread_->Start();
+
+  // See http://crbug.com/347887.
+  // StartWatchingAll() will PostDelayedTask to create g_thread_watcher_list_,
+  // whilst StopWatchingAll() will just PostTask to destroy it.
+  // Ensure that when Stop is called, Start will NOT create
+  // g_thread_watcher_list_ later on.
+  ThreadWatcherList::StartWatchingAll(*CommandLine::ForCurrentProcess());
+  ThreadWatcherList::StopWatchingAll();
+  message_loop_for_ui.PostDelayedTask(
+      FROM_HERE,
+      message_loop_for_ui.QuitClosure(),
+      base::TimeDelta::FromSeconds(
+          ThreadWatcherList::g_initialize_delay_seconds));
+  message_loop_for_ui.Run();
+
+  CheckState(false /* has_thread_watcher_list */,
+             true /* stopped */,
+             "Start / Stopped");
+
+  // Proceed with just |StartWatchingAll| and ensure it'll be started.
+  ThreadWatcherList::StartWatchingAll(*CommandLine::ForCurrentProcess());
+  message_loop_for_ui.PostDelayedTask(
+      FROM_HERE,
+      message_loop_for_ui.QuitClosure(),
+      base::TimeDelta::FromSeconds(
+          ThreadWatcherList::g_initialize_delay_seconds + 1));
+  message_loop_for_ui.Run();
+
+  CheckState(true /* has_thread_watcher_list */,
+             false /* stopped */,
+             "Started");
+
+  // Finally, StopWatchingAll() must stop.
+  ThreadWatcherList::StopWatchingAll();
+  message_loop_for_ui.PostDelayedTask(
+      FROM_HERE,
+      message_loop_for_ui.QuitClosure(),
+      base::TimeDelta::FromSeconds(
+          ThreadWatcherList::g_initialize_delay_seconds));
+  message_loop_for_ui.Run();
+
+  CheckState(false /* has_thread_watcher_list */,
+             true /* stopped */,
+             "Stopped");
 }
