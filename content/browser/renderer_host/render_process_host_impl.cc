@@ -1017,7 +1017,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableCompositedScrollingForFrames,
     switches::kEnableCompositingForFixedPosition,
     switches::kEnableCompositingForTransition,
-    switches::kEnableDCHECK,
     switches::kEnableDeferredImageDecoding,
     switches::kEnableDelegatedRenderer,
     switches::kEnableEncryptedMedia,

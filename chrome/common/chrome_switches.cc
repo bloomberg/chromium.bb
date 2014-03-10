@@ -1305,8 +1305,7 @@ const char kSigninProcess[]                 = "signin-process";
 const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
 
 // Changes the DCHECKS to dump memory and continue instead of displaying error
-// dialog. This is valid only in Release mode when --enable-dcheck is
-// specified.
+// dialog. This is valid only in Release mode when gyp dcheck_always_on=1.
 const char kSilentDumpOnDCHECK[]            = "silent-dump-on-dcheck";
 
 // Causes Chrome to launch without opening any windows by default. Useful if

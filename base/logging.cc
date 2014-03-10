@@ -65,12 +65,6 @@ typedef pthread_mutex_t* MutexHandle;
 
 namespace logging {
 
-DcheckState g_dcheck_state = DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
-
-void set_dcheck_state(DcheckState state) {
-  g_dcheck_state = state;
-}
-
 namespace {
 
 VlogInfo* g_vlog_info = NULL;
@@ -358,15 +352,13 @@ LoggingSettings::LoggingSettings()
     : logging_dest(LOG_DEFAULT),
       log_file(NULL),
       lock_log(LOCK_LOG_FILE),
-      delete_old(APPEND_TO_OLD_LOG_FILE),
-      dcheck_state(DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS) {}
+      delete_old(APPEND_TO_OLD_LOG_FILE) {}
 
 bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if defined(OS_NACL)
   // Can log only to the system debug log.
   CHECK_EQ(settings.logging_dest & ~LOG_TO_SYSTEM_DEBUG_LOG, 0);
 #endif
-  g_dcheck_state = settings.dcheck_state;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Don't bother initializing g_vlog_info unless we use one of the
   // vlog switches.

@@ -33,8 +33,6 @@ int wmain(int argc, wchar_t* argv[]) {
   base::AtExitManager exit_manager;
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  settings.dcheck_state =
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
   logging::InitLogging(settings);
   logging::SetMinLogLevel(logging::LOG_VERBOSE);
 

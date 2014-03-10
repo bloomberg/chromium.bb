@@ -17,11 +17,11 @@ using ::testing::Return;
 // Needs to be global since log assert handlers can't maintain state.
 int log_sink_call_count = 0;
 
-#if !LOGGING_IS_OFFICIAL_BUILD
+#if !defined(OFFICIAL_BUILD) || defined(DCHECK_ALWAYS_ON) || !defined(NDEBUG)
 void LogSink(const std::string& str) {
   ++log_sink_call_count;
 }
-#endif  // !LOGGING_IS_OFFICIAL_BUILD
+#endif
 
 // Class to make sure any manipulations we do to the min log level are
 // contained (i.e., do not affect other unit tests).
@@ -169,7 +169,7 @@ TEST_F(LoggingTest, LoggingIsLazy) {
 }
 
 // Official builds have CHECKs directly call BreakDebugger.
-#if !LOGGING_IS_OFFICIAL_BUILD
+#if !defined(OFFICIAL_BUILD)
 
 TEST_F(LoggingTest, CheckStreamsAreLazy) {
   MockLogSource mock_log_source, uncalled_mock_log_source;
@@ -204,40 +204,34 @@ TEST_F(LoggingTest, DebugLoggingReleaseBehavior) {
 TEST_F(LoggingTest, DcheckStreamsAreLazy) {
   MockLogSource mock_log_source;
   EXPECT_CALL(mock_log_source, Log()).Times(0);
-#if !LOGGING_IS_OFFICIAL_BUILD && defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-  // Unofficial release build without dcheck enabled.
-  set_dcheck_state(DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
-  DCHECK(mock_log_source.Log()) << mock_log_source.Log();
-  DPCHECK(mock_log_source.Log()) << mock_log_source.Log();
-  DCHECK_EQ(0, 0) << mock_log_source.Log();
-  DCHECK_EQ(mock_log_source.Log(), static_cast<const char*>(NULL))
-      << mock_log_source.Log();
-#endif
+  if (DCHECK_IS_ON()) {
+    DCHECK(true) << mock_log_source.Log();
+    DCHECK_EQ(0, 0) << mock_log_source.Log();
+  } else {
+    DCHECK(mock_log_source.Log()) << mock_log_source.Log();
+    DPCHECK(mock_log_source.Log()) << mock_log_source.Log();
+    DCHECK_EQ(0, 0) << mock_log_source.Log();
+    DCHECK_EQ(mock_log_source.Log(), static_cast<const char*>(NULL))
+        << mock_log_source.Log();
+  }
 }
 
 TEST_F(LoggingTest, Dcheck) {
-#if LOGGING_IS_OFFICIAL_BUILD
-  // Official build.
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+  // Release build.
   EXPECT_FALSE(DCHECK_IS_ON());
   EXPECT_FALSE(DLOG_IS_ON(DCHECK));
-#elif defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-  // Unofficial release build.
-  set_dcheck_state(ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
-  SetLogReportHandler(&LogSink);
-  EXPECT_TRUE(DCHECK_IS_ON());
-  EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #elif defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
-  // Unofficial release build with real DCHECKS.
-  set_dcheck_state(ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  // Release build with real DCHECKS.
   SetLogAssertHandler(&LogSink);
   EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #else
-  // Unofficial debug build.
+  // Debug build.
   SetLogAssertHandler(&LogSink);
   EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
-#endif  // defined(LOGGING_IS_OFFICIAL_BUILD)
+#endif
 
   EXPECT_EQ(0, log_sink_call_count);
   DCHECK(false);

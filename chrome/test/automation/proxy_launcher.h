@@ -186,9 +186,6 @@ class ProxyLauncher {
   // If true, a user is paying attention to the test, so show error dialogs.
   bool show_error_dialogs_;
 
-  // Enable dchecks in release mode.
-  bool enable_dcheck_;
-
   // Dump process memory on dcheck without crashing.
   bool silent_dump_on_dcheck_;
 

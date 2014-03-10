@@ -746,8 +746,6 @@ int main(int argc, char** argv) {
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  settings.dcheck_state =
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
   CHECK(logging::InitLogging(settings));
 
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();

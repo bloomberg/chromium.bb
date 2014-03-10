@@ -46,8 +46,6 @@ void InitLoggingForDaemon(const std::string& log_file) {
       logging::LOG_TO_SYSTEM_DEBUG_LOG : logging::LOG_TO_FILE;
   settings.log_file = log_file.c_str();
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
-  settings.dcheck_state =
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
   CHECK(logging::InitLogging(settings));
 }
 

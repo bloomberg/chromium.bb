@@ -122,8 +122,6 @@ ProxyLauncher::ProxyLauncher()
                             switches::kFullMemoryCrashReport)),
       show_error_dialogs_(CommandLine::ForCurrentProcess()->HasSwitch(
                               switches::kEnableErrorDialogs)),
-      enable_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableDCHECK)),
       silent_dump_on_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
                                  switches::kSilentDumpOnDCHECK)),
       disable_breakpad_(CommandLine::ForCurrentProcess()->HasSwitch(
@@ -428,8 +426,6 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
     command_line->AppendSwitch(switches::kNoSandbox);
   if (full_memory_dump_)
     command_line->AppendSwitch(switches::kFullMemoryCrashReport);
-  if (enable_dcheck_)
-    command_line->AppendSwitch(switches::kEnableDCHECK);
   if (silent_dump_on_dcheck_)
     command_line->AppendSwitch(switches::kSilentDumpOnDCHECK);
   if (disable_breakpad_)

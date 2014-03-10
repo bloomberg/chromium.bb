@@ -23,7 +23,6 @@ void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
     switches::kEnableLogging,
     switches::kDisableLogging,
     switches::kLoggingLevel,
-    switches::kEnableDCHECK,
     switches::kNoErrorDialogs,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,

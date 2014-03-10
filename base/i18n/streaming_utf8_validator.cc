@@ -15,10 +15,7 @@ namespace base {
 namespace {
 
 uint8 StateTableLookup(uint8 offset) {
-  // Skip the bounds check on non-debug builds so that it isn't necessary to set
-  // LOGGING_IS_OFFICIAL_BUILD just to do a performance test.
-  if (logging::DEBUG_MODE)
-    DCHECK_LT(offset, internal::kUtf8ValidatorTablesSize);
+  DCHECK_LT(offset, internal::kUtf8ValidatorTablesSize);
   return internal::kUtf8ValidatorTables[offset];
 }
 

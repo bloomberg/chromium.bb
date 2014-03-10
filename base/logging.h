@@ -181,11 +181,6 @@ enum LogLockingState { LOCK_LOG_FILE, DONT_LOCK_LOG_FILE };
 // Defaults to APPEND_TO_OLD_LOG_FILE.
 enum OldFileDeletionState { DELETE_OLD_LOG_FILE, APPEND_TO_OLD_LOG_FILE };
 
-enum DcheckState {
-  DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS,
-  ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS
-};
-
 struct BASE_EXPORT LoggingSettings {
   // The defaults values are:
   //
@@ -193,7 +188,6 @@ struct BASE_EXPORT LoggingSettings {
   //  log_file:     NULL
   //  lock_log:     LOCK_LOG_FILE
   //  delete_old:   APPEND_TO_OLD_LOG_FILE
-  //  dcheck_state: DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS
   LoggingSettings();
 
   LoggingDestination logging_dest;
@@ -203,8 +197,6 @@ struct BASE_EXPORT LoggingSettings {
   const PathChar* log_file;
   LogLockingState lock_log;
   OldFileDeletionState delete_old;
-
-  DcheckState dcheck_state;
 };
 
 // Define different names for the BaseInitLoggingImpl() function depending on
@@ -465,20 +457,6 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define PLOG_IF(severity, condition) \
   LAZY_STREAM(PLOG_STREAM(severity), LOG_IS_ON(severity) && (condition))
 
-#if !defined(NDEBUG)
-// Debug builds always include DCHECK and DLOG.
-#undef LOGGING_IS_OFFICIAL_BUILD
-#define LOGGING_IS_OFFICIAL_BUILD 0
-#elif defined(OFFICIAL_BUILD)
-// Official release builds always disable and remove DCHECK and DLOG.
-#undef LOGGING_IS_OFFICIAL_BUILD
-#define LOGGING_IS_OFFICIAL_BUILD 1
-#elif !defined(LOGGING_IS_OFFICIAL_BUILD)
-// Unless otherwise specified, unofficial release builds include
-// DCHECK and DLOG.
-#define LOGGING_IS_OFFICIAL_BUILD 0
-#endif
-
 // The actual stream used isn't important.
 #define EAT_STREAM_PARAMETERS                                           \
   true ? (void) 0 : ::logging::LogMessageVoidify() & LOG_STREAM(FATAL)
@@ -490,10 +468,10 @@ const LogSeverity LOG_0 = LOG_ERROR;
 // We make sure CHECK et al. always evaluates their arguments, as
 // doing CHECK(FunctionWithSideEffect()) is a common idiom.
 
-#if LOGGING_IS_OFFICIAL_BUILD
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
 
 // Make all CHECK functions discard their log strings to reduce code
-// bloat for official builds.
+// bloat for official release builds.
 
 // TODO(akalin): This would be more valuable if there were some way to
 // remove BreakDebugger() from the backtrace, perhaps by turning it
@@ -590,21 +568,15 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define CHECK_GE(val1, val2) CHECK_OP(GE, >=, val1, val2)
 #define CHECK_GT(val1, val2) CHECK_OP(GT, > , val1, val2)
 
-#if LOGGING_IS_OFFICIAL_BUILD
-// In order to have optimized code for official builds, remove DLOGs and
-// DCHECKs.
+#if defined(NDEBUG)
 #define ENABLE_DLOG 0
-#define ENABLE_DCHECK 0
-
-#elif defined(NDEBUG)
-// Otherwise, if we're a release build, remove DLOGs but not DCHECKs
-// (since those can still be turned on via a command-line flag).
-#define ENABLE_DLOG 0
-#define ENABLE_DCHECK 1
-
 #else
-// Otherwise, we're a debug build so enable DLOGs and DCHECKs.
 #define ENABLE_DLOG 1
+#endif
+
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#define ENABLE_DCHECK 0
+#else
 #define ENABLE_DCHECK 1
 #endif
 
@@ -672,43 +644,11 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 
 #if ENABLE_DCHECK
 
-#if defined(NDEBUG)
-
-BASE_EXPORT extern DcheckState g_dcheck_state;
-BASE_EXPORT void set_dcheck_state(DcheckState state);
-
-#if defined(DCHECK_ALWAYS_ON)
-
-#define DCHECK_IS_ON() true
-#define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
-  COMPACT_GOOGLE_LOG_EX_FATAL(ClassName , ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_FATAL
-const LogSeverity LOG_DCHECK = LOG_FATAL;
-
-#else
-
-#define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
-  COMPACT_GOOGLE_LOG_EX_ERROR_REPORT(ClassName , ##__VA_ARGS__)
-#define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_ERROR_REPORT
-const LogSeverity LOG_DCHECK = LOG_ERROR_REPORT;
-
-#define DCHECK_IS_ON() \
-    UNLIKELY(::logging::g_dcheck_state == \
-             ::logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS) && \
-    LOG_IS_ON(DCHECK)
-
-#endif  // defined(DCHECK_ALWAYS_ON)
-
-#else  // defined(NDEBUG)
-
-// On a regular debug build, we want to have DCHECKs enabled.
 #define COMPACT_GOOGLE_LOG_EX_DCHECK(ClassName, ...) \
   COMPACT_GOOGLE_LOG_EX_FATAL(ClassName , ##__VA_ARGS__)
 #define COMPACT_GOOGLE_LOG_DCHECK COMPACT_GOOGLE_LOG_FATAL
 const LogSeverity LOG_DCHECK = LOG_FATAL;
 #define DCHECK_IS_ON() true
-
-#endif  // defined(NDEBUG)
 
 #else  // ENABLE_DCHECK
 

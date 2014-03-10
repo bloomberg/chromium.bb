@@ -12,8 +12,6 @@ namespace shell {
 void InitializeLogging() {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  settings.dcheck_state =
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
   logging::InitLogging(settings);
   // To view log output with IDs and timestamps use "adb logcat -v threadtime".
   logging::SetLogItems(false,    // Process ID

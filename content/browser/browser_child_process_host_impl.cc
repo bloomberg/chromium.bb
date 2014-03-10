@@ -145,7 +145,6 @@ void BrowserChildProcessHostImpl::Launch(
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   static const char* kForwardSwitches[] = {
     switches::kDisableLogging,
-    switches::kEnableDCHECK,
     switches::kEnableLogging,
     switches::kLoggingLevel,
     switches::kTraceToConsole,

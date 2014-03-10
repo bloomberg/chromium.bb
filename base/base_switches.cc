@@ -20,9 +20,6 @@ const char kDisableBreakpad[]               = "disable-breakpad";
 // generated internally.
 const char kEnableCrashReporter[]           = "enable-crash-reporter";
 
-// Enable DCHECKs in release mode.
-const char kEnableDCHECK[]                  = "enable-dcheck";
-
 // Generates full memory crash dump.
 const char kFullMemoryCrashReport[]         = "full-memory-crash-report";
 

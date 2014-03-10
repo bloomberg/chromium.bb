@@ -264,14 +264,8 @@
       # on compile-only bots).
       'fastbuild%': 0,
 
-      # Set to 1 to enable dcheck in release without having to use the flag.
+      # Set to 1 to enable dcheck in release.
       'dcheck_always_on%': 0,
-
-      # Set to 1 to make a build that logs like an official build, but is not
-      # necessarily an official build, ie DCHECK and DLOG are disabled and
-      # removed completely in release builds, to minimize binary footprint.
-      # Note: this setting is ignored if buildtype=="Official".
-      'logging_like_official_build%': 0,
 
       # Set to 1 to make a build that disables unshipped tracing events.
       # Note: this setting is ignored if buildtype=="Official".
@@ -923,7 +917,6 @@
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
     'dcheck_always_on%': '<(dcheck_always_on)',
-    'logging_like_official_build%': '<(logging_like_official_build)',
     'tracing_like_official_build%': '<(tracing_like_official_build)',
     'python_ver%': '<(python_ver)',
     'arm_version%': '<(arm_version)',
@@ -2364,9 +2357,6 @@
       ['dcheck_always_on!=0', {
         'defines': ['DCHECK_ALWAYS_ON=1'],
       }],  # dcheck_always_on!=0
-      ['logging_like_official_build!=0', {
-        'defines': ['LOGGING_IS_OFFICIAL_BUILD=1'],
-      }],  # logging_like_official_build!=0
       ['tracing_like_official_build!=0', {
         'defines': ['TRACING_IS_OFFICIAL_BUILD=1'],
       }],  # tracing_like_official_build!=0
