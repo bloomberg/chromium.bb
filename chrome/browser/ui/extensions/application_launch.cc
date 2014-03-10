@@ -345,7 +345,8 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 #if !defined(OS_CHROMEOS)
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(profile);
-    if (signin_manager && signin_manager->GetAuthenticatedUsername().empty()) {
+    if (extension->id() != extension_misc::kSettingsAppId &&
+        signin_manager && signin_manager->GetAuthenticatedUsername().empty()) {
       const char kEnforceSigninToUseAppsFieldTrial[] = "EnforceSigninToUseApps";
 
       std::string field_trial_value =
