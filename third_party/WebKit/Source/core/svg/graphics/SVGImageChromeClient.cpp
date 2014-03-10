@@ -63,6 +63,12 @@ void SVGImageChromeClient::invalidateContentsAndRootView(const IntRect& r)
 
 void SVGImageChromeClient::scheduleAnimation()
 {
+    // FIXME: This should not be called after chromeDestroyed, but
+    // crbug.com/350907 seems to indicate it can be. Adding this
+    // ASSERT until we have a LayoutTest to reproduce this!
+    ASSERT(m_image);
+    if (!m_image)
+        return;
     // Because a single SVGImage can be shared by multiple pages, we can't key
     // our svg image layout on the page's real animation frame. Therefore, we
     // run this fake animation timer to trigger layout in SVGImages. The name,
