@@ -207,6 +207,8 @@ class EVENTS_EXPORT GestureSequence {
 
   void StopTimersIfRequired(const TouchEvent& event);
 
+  void StartRailFreeScroll(const GesturePoint& point, Gestures* gestures);
+
   // Current state of gesture recognizer.
   GestureState state_;
 

@@ -2662,7 +2662,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
-  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_TRUE(delegate->two_finger_tap());
@@ -3234,10 +3234,11 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   // Touch release is not consumed, so we still see two finger tap.
   EXPECT_TRUE(delegate->two_finger_tap());
 
-  // Should not see PinchEnd & ScrollEnd.
-  EXPECT_FALSE(delegate->scroll_begin());
+  // Should not see PinchEnd.
+  EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->fling());
 
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_FALSE(delegate->pinch_update());
