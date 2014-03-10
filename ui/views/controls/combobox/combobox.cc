@@ -91,6 +91,11 @@ class TransparentButton : public CustomButton {
   }
   virtual ~TransparentButton() {}
 
+  virtual bool OnMousePressed(const ui::MouseEvent& mouse_event) OVERRIDE {
+    parent()->RequestFocus();
+    return true;
+  }
+
   double GetAnimationValue() const {
     return hover_animation_->GetCurrentValue();
   }
