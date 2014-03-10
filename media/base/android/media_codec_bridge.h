@@ -51,8 +51,6 @@ enum MediaCodecDirection {
 class MEDIA_EXPORT MediaCodecBridge {
  public:
   // Returns true if MediaCodec is available on the device.
-  // All other static methods check IsAvailable() internally. There's no need
-  // to check IsAvailable() explicitly before calling them.
   static bool IsAvailable();
 
   // Returns true if MediaCodec.setParameters() is available on the device.
@@ -63,8 +61,8 @@ class MEDIA_EXPORT MediaCodecBridge {
   static bool CanDecode(const std::string& codec, bool is_secure);
 
   // Represents supported codecs on android.
-  // TODO(qinmin): Currently the codecs string only contains one codec. Do we
-  // need to support codecs separated by comma. (e.g. "vp8" -> "vp8, vp8.0")?
+  // TODO(qinmin): Curretly the codecs string only contains one codec, do we
+  // need more specific codecs separated by comma. (e.g. "vp8" -> "vp8, vp8.0")
   struct CodecsInfo {
     std::string codecs;  // E.g. "vp8" or "avc1".
     std::string name;    // E.g. "OMX.google.vp8.decoder".

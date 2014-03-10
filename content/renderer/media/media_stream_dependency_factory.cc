@@ -452,8 +452,10 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   }
 
 #if defined(OS_ANDROID)
-  if (!media::MediaCodecBridge::SupportsSetParameters())
+  if (!media::MediaCodecBridge::IsAvailable() ||
+      !media::MediaCodecBridge::SupportsSetParameters()) {
     encoder_factory.reset();
+  }
 #endif
 
   EnsureWebRtcAudioDeviceImpl();

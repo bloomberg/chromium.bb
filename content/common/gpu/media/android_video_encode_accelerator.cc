@@ -127,7 +127,8 @@ void AndroidVideoEncodeAccelerator::Initialize(
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
-  RETURN_ON_FAILURE(media::MediaCodecBridge::SupportsSetParameters() &&
+  RETURN_ON_FAILURE(media::MediaCodecBridge::IsAvailable() &&
+                        media::MediaCodecBridge::SupportsSetParameters() &&
                         format == VideoFrame::I420 &&
                         output_profile == media::VP8PROFILE_MAIN,
                     "Unexpected combo: " << format << ", " << output_profile,

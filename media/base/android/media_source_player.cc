@@ -31,6 +31,35 @@ const int kBytesPerAudioOutputSample = 2;
 
 namespace media {
 
+// static
+bool MediaSourcePlayer::IsTypeSupported(
+    const std::string& key_system,
+    MediaDrmBridge::SecurityLevel security_level,
+    const std::string& container,
+    const std::vector<std::string>& codecs) {
+  if (!MediaDrmBridge::IsKeySystemSupportedWithType(key_system, container)) {
+    DVLOG(1) << "Key system and container '" << container << "' not supported.";
+    return false;
+  }
+
+  if (!MediaDrmBridge::IsSecurityLevelSupported(key_system, security_level)) {
+    DVLOG(1) << "Key system and security level '" << security_level
+             << "' not supported.";
+    return false;
+  }
+
+  bool is_secure = MediaDrmBridge::IsSecureDecoderRequired(security_level);
+  for (size_t i = 0; i < codecs.size(); ++i) {
+    if (!MediaCodecBridge::CanDecode(codecs[i], is_secure)) {
+      DVLOG(1) << "Codec '" << codecs[i] << "' "
+               << (is_secure ? "in secure mode " : "") << "not supported.";
+      return false;
+    }
+  }
+
+  return true;
+}
+
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager,

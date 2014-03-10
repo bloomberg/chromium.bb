@@ -84,6 +84,9 @@ void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
     return;
   }
 
+  if (!MediaDrmBridge::IsAvailable() || !MediaCodecBridge::IsAvailable())
+    return;
+
   // TODO(qinmin): Convert codecs to container types and check whether they
   // are supported with the key system.
   if (!MediaDrmBridge::IsKeySystemSupportedWithType(request.key_system, ""))

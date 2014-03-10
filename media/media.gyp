@@ -949,7 +949,6 @@
         'audio/win/audio_output_win_unittest.cc',
         'audio/win/core_audio_util_win_unittest.cc',
         'base/android/media_codec_bridge_unittest.cc',
-        'base/android/media_drm_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
         'base/audio_buffer_unittest.cc',
         'base/audio_buffer_queue_unittest.cc',
