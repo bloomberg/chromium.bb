@@ -592,7 +592,7 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     // We refresh timezone when a view is swapped in since timezone
     // can get out of sync when the system timezone is updated while
     // the view is swapped out.
-    RenderViewImpl::NotifyTimezoneChange(render_view_->webview()->mainFrame());
+    RenderViewImpl::NotifyTimezoneChange();
 
     render_view_->SetSwappedOut(false);
     is_swapped_out_ = false;

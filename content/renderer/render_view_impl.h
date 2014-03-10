@@ -798,7 +798,7 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURLRequest& request);
 
-  static void NotifyTimezoneChange(blink::WebFrame* frame);
+  static void NotifyTimezoneChange();
 
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
