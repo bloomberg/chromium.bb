@@ -280,6 +280,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_AUTHENTICATION_FAILED),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_AUTHENTICATION_FAILED,
@@ -288,6 +289,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_ACCESS_FORBIDDEN),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_ACCESS_FORBIDDEN,
@@ -296,6 +298,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE,
@@ -304,6 +307,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_NETWORK_ERROR),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_NETWORK_ERROR,
@@ -312,6 +316,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_ABORT),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_ABORT,
@@ -320,6 +325,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_FAILED),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_FAILED,
@@ -328,6 +334,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_CORRUPTION),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_CORRUPTION,
@@ -336,6 +343,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_IO_ERROR),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_IO_ERROR,
@@ -344,6 +352,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleTask(
       FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_FAILED),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_FAILED,
@@ -352,6 +361,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(new MockSyncTask(false)),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_OK,
@@ -360,6 +370,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   GetSyncEngineTaskManager()->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(new MockSyncTask(true)),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_OK,

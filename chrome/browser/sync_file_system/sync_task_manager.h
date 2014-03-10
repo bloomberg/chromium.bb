@@ -56,23 +56,15 @@ class SyncTaskManager
   // service status. This should not be called more than once.
   void Initialize(SyncStatusCode status);
 
-  // Schedules a task at PRIORITY_MED.
+  // Schedules a task at the given priority.
   void ScheduleTask(const tracked_objects::Location& from_here,
                     const Task& task,
+                    Priority priority,
                     const SyncStatusCallback& callback);
   void ScheduleSyncTask(const tracked_objects::Location& from_here,
                         scoped_ptr<SyncTask> task,
+                        Priority priority,
                         const SyncStatusCallback& callback);
-
-  // Schedules a task at the given priority.
-  void ScheduleTaskAtPriority(const tracked_objects::Location& from_here,
-                              const Task& task,
-                              Priority priority,
-                              const SyncStatusCallback& callback);
-  void ScheduleSyncTaskAtPriority(const tracked_objects::Location& from_here,
-                                  scoped_ptr<SyncTask> task,
-                                  Priority priority,
-                                  const SyncStatusCallback& callback);
 
   // Runs the posted task only when we're idle.  Returns true if tha task is
   // scheduled.

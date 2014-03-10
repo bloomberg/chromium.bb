@@ -68,6 +68,7 @@ class TaskManagerClient
         FROM_HERE,
         base::Bind(&TaskManagerClient::DoTask, AsWeakPtr(),
                    status_to_return, false /* idle */),
+        SyncTaskManager::PRIORITY_MED,
         callback);
   }
 
@@ -250,6 +251,7 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
         FROM_HERE,
         scoped_ptr<SyncTask>(new MultihopSyncTask(
             &task_started, &task_completed)),
+        SyncTaskManager::PRIORITY_MED,
         base::Bind(&IncrementAndAssign, 0, &callback_count, &status));
   }
 
@@ -277,6 +279,7 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelTask) {
     task_manager.ScheduleTask(
         FROM_HERE,
         base::Bind(&MultihopSyncTask::Run, base::Unretained(task)),
+        SyncTaskManager::PRIORITY_MED,
         base::Bind(&IncrementAndAssignWithOwnedPointer<MultihopSyncTask>,
                    base::Owned(task), &callback_count, &status));
   }
@@ -302,35 +305,35 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
 
   // This will run first even if its priority is low, since there're no
   // pending tasks.
-  task_manager.ScheduleTaskAtPriority(
+  task_manager.ScheduleTask(
       FROM_HERE,
       base::Bind(&DumbTask, kStatus1),
       SyncTaskManager::PRIORITY_LOW,
       base::Bind(&IncrementAndAssign, 0, &callback_count, &callback_status1));
 
   // This runs last (expected counter == 4).
-  task_manager.ScheduleTaskAtPriority(
+  task_manager.ScheduleTask(
       FROM_HERE,
       base::Bind(&DumbTask, kStatus2),
       SyncTaskManager::PRIORITY_LOW,
       base::Bind(&IncrementAndAssign, 4, &callback_count, &callback_status2));
 
   // This runs second (expected counter == 1).
-  task_manager.ScheduleTaskAtPriority(
+  task_manager.ScheduleTask(
       FROM_HERE,
       base::Bind(&DumbTask, kStatus3),
       SyncTaskManager::PRIORITY_HIGH,
       base::Bind(&IncrementAndAssign, 1, &callback_count, &callback_status3));
 
   // This runs fourth (expected counter == 3).
-  task_manager.ScheduleTaskAtPriority(
+  task_manager.ScheduleTask(
       FROM_HERE,
       base::Bind(&DumbTask, kStatus4),
       SyncTaskManager::PRIORITY_MED,
       base::Bind(&IncrementAndAssign, 3, &callback_count, &callback_status4));
 
   // This runs third (expected counter == 2).
-  task_manager.ScheduleTaskAtPriority(
+  task_manager.ScheduleTask(
       FROM_HERE,
       base::Bind(&DumbTask, kStatus5),
       SyncTaskManager::PRIORITY_HIGH,

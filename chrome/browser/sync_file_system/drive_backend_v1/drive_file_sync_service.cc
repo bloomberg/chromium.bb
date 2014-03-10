@@ -150,7 +150,7 @@ void DriveFileSyncService::RegisterOrigin(
 
   pending_origin_operations_.Push(origin, OriginOperation::REGISTERING);
 
-  task_manager_->ScheduleTaskAtPriority(
+  task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoRegisterOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
@@ -161,7 +161,7 @@ void DriveFileSyncService::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::ENABLING);
-  task_manager_->ScheduleTaskAtPriority(
+  task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoEnableOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
@@ -172,7 +172,7 @@ void DriveFileSyncService::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::DISABLING);
-  task_manager_->ScheduleTaskAtPriority(
+  task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoDisableOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
@@ -184,7 +184,7 @@ void DriveFileSyncService::UninstallOrigin(
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::UNINSTALLING);
-  task_manager_->ScheduleTaskAtPriority(
+  task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoUninstallOrigin, AsWeakPtr(),
                  origin, flag),
@@ -198,6 +198,7 @@ void DriveFileSyncService::ProcessRemoteChange(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoProcessRemoteChange, AsWeakPtr(),
                  callback),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&EmptyStatusCallback));
 }
 
@@ -303,6 +304,7 @@ void DriveFileSyncService::GetRemoteVersions(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoGetRemoteVersions, AsWeakPtr(),
                  url, callback),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&EmptyStatusCallback));
 }
 
@@ -314,6 +316,7 @@ void DriveFileSyncService::DownloadRemoteVersion(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DoDownloadRemoteVersion, AsWeakPtr(),
                  url, version_id, callback),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&EmptyStatusCallback));
 }
 
@@ -333,6 +336,7 @@ void DriveFileSyncService::ApplyLocalChange(
                  local_file_path,
                  local_file_metadata,
                  url),
+      SyncTaskManager::PRIORITY_MED,
       callback);
 }
 

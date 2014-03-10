@@ -164,7 +164,7 @@ void SyncEngine::RegisterOrigin(
     return;
   }
 
-  task_manager_->ScheduleSyncTaskAtPriority(
+  task_manager_->ScheduleSyncTask(
       FROM_HERE,
       task.PassAs<SyncTask>(),
       SyncTaskManager::PRIORITY_HIGH,
@@ -174,7 +174,7 @@ void SyncEngine::RegisterOrigin(
 void SyncEngine::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTaskAtPriority(
+  task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&SyncEngine::DoEnableApp,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -186,7 +186,7 @@ void SyncEngine::EnableOrigin(
 void SyncEngine::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleTaskAtPriority(
+  task_manager_->ScheduleTask(
       FROM_HERE,
       base::Bind(&SyncEngine::DoDisableApp,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -199,7 +199,7 @@ void SyncEngine::UninstallOrigin(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
-  task_manager_->ScheduleSyncTaskAtPriority(
+  task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(new UninstallAppTask(this, origin.host(), flag)),
       SyncTaskManager::PRIORITY_HIGH,
@@ -212,6 +212,7 @@ void SyncEngine::ProcessRemoteChange(
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(syncer),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngine::DidProcessRemoteChange,
                  weak_ptr_factory_.GetWeakPtr(),
                  syncer, callback));
@@ -344,6 +345,7 @@ void SyncEngine::ApplyLocalChange(
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(syncer),
+      SyncTaskManager::PRIORITY_MED,
       base::Bind(&SyncEngine::DidApplyLocalChange,
                  weak_ptr_factory_.GetWeakPtr(),
                  syncer, callback));
@@ -497,7 +499,7 @@ void SyncEngine::PostInitializeTask() {
                                 drive_service_.get(),
                                 base_dir_.Append(kDatabaseName),
                                 env_override_);
-  task_manager_->ScheduleSyncTaskAtPriority(
+  task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(initializer),
       SyncTaskManager::PRIORITY_HIGH,
@@ -584,7 +586,7 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
 
   if (syncer->needs_remote_change_listing() &&
       !listing_remote_changes_) {
-    task_manager_->ScheduleSyncTaskAtPriority(
+    task_manager_->ScheduleSyncTask(
         FROM_HERE,
         scoped_ptr<SyncTask>(new ListChangesTask(this)),
         SyncTaskManager::PRIORITY_HIGH,

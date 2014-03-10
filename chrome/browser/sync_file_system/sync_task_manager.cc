@@ -86,34 +86,20 @@ void SyncTaskManager::Initialize(SyncStatusCode status) {
 void SyncTaskManager::ScheduleTask(
     const tracked_objects::Location& from_here,
     const Task& task,
-    const SyncStatusCallback& callback) {
-  ScheduleTaskAtPriority(from_here, task, PRIORITY_MED, callback);
-}
-
-void SyncTaskManager::ScheduleSyncTask(
-    const tracked_objects::Location& from_here,
-    scoped_ptr<SyncTask> task,
-    const SyncStatusCallback& callback) {
-  ScheduleSyncTaskAtPriority(from_here, task.Pass(), PRIORITY_MED, callback);
-}
-
-void SyncTaskManager::ScheduleTaskAtPriority(
-    const tracked_objects::Location& from_here,
-    const Task& task,
     Priority priority,
     const SyncStatusCallback& callback) {
   scoped_ptr<TaskToken> token(GetToken(from_here));
   if (!token) {
     PushPendingTask(
         base::Bind(&SyncTaskManager::ScheduleTask, AsWeakPtr(), from_here,
-                   task, callback),
+                   task, priority, callback),
         priority);
     return;
   }
   task.Run(CreateCompletionCallback(token.Pass(), callback));
 }
 
-void SyncTaskManager::ScheduleSyncTaskAtPriority(
+void SyncTaskManager::ScheduleSyncTask(
     const tracked_objects::Location& from_here,
     scoped_ptr<SyncTask> task,
     Priority priority,
@@ -122,7 +108,7 @@ void SyncTaskManager::ScheduleSyncTaskAtPriority(
   if (!token) {
     PushPendingTask(
         base::Bind(&SyncTaskManager::ScheduleSyncTask, AsWeakPtr(), from_here,
-                   base::Passed(&task), callback),
+                   base::Passed(&task), priority, callback),
         priority);
     return;
   }
