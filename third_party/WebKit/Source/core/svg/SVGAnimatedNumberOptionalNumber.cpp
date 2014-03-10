@@ -54,20 +54,6 @@ void SVGAnimatedNumberOptionalNumber::animationEnded()
     m_secondNumber->animationEnded();
 }
 
-void SVGAnimatedNumberOptionalNumber::animValWillChange()
-{
-    NewSVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::animValWillChange();
-    m_firstNumber->animValWillChange();
-    m_secondNumber->animValWillChange();
-}
-
-void SVGAnimatedNumberOptionalNumber::animValDidChange()
-{
-    NewSVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::animValDidChange();
-    m_firstNumber->animValDidChange();
-    m_secondNumber->animValDidChange();
-}
-
 bool SVGAnimatedNumberOptionalNumber::needsSynchronizeAttribute()
 {
     return m_firstNumber->needsSynchronizeAttribute()

@@ -60,16 +60,6 @@ void NewSVGAnimatedPropertyBase::animationStarted()
     m_isAnimating = true;
 }
 
-void NewSVGAnimatedPropertyBase::animValWillChange()
-{
-    ASSERT(isAnimating());
-}
-
-void NewSVGAnimatedPropertyBase::animValDidChange()
-{
-    ASSERT(isAnimating());
-}
-
 void NewSVGAnimatedPropertyBase::animationEnded()
 {
     ASSERT(isAnimating());

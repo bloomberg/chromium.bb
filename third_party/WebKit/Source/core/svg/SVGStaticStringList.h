@@ -55,8 +55,6 @@ public:
     virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() OVERRIDE;
     virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
     virtual void animationEnded() OVERRIDE;
-    virtual void animValWillChange() OVERRIDE;
-    virtual void animValDidChange() OVERRIDE;
     virtual bool needsSynchronizeAttribute() OVERRIDE;
 
     void setBaseValueAsString(const String& value, SVGParsingError& parseError);

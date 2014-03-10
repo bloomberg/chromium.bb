@@ -51,8 +51,6 @@ public:
     virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
     virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void animValWillChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void animValDidChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
 
     virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*) OVERRIDE;
     virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;

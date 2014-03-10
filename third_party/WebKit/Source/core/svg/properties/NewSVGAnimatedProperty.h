@@ -55,8 +55,6 @@ public:
     virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() = 0;
     virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) = 0;
     virtual void animationEnded();
-    virtual void animValWillChange();
-    virtual void animValDidChange();
 
     virtual bool needsSynchronizeAttribute() = 0;
     virtual void synchronizeAttribute();

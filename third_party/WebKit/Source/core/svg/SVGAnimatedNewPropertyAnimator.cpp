@@ -208,22 +208,6 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimValToBas
     return resetAnimation(list);
 }
 
-void SVGAnimatedNewPropertyAnimator::animValWillChange(const SVGElementAnimatedPropertyList& list)
-{
-    ASSERT(isAnimatingSVGDom());
-    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
-
-    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animValWillChange);
-}
-
-void SVGAnimatedNewPropertyAnimator::animValDidChange(const SVGElementAnimatedPropertyList& list)
-{
-    ASSERT(isAnimatingSVGDom());
-    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
-
-    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animValDidChange);
-}
-
 class ParsePropertyFromString {
 public:
     explicit ParsePropertyFromString(SVGAnimatedNewPropertyAnimator* animator)

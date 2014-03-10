@@ -70,16 +70,6 @@ void SVGStaticStringList::animationEnded()
     ASSERT_NOT_REACHED();
 }
 
-void SVGStaticStringList::animValWillChange()
-{
-    ASSERT_NOT_REACHED();
-}
-
-void SVGStaticStringList::animValDidChange()
-{
-    ASSERT_NOT_REACHED();
-}
-
 bool SVGStaticStringList::needsSynchronizeAttribute()
 {
     return m_tearOff;

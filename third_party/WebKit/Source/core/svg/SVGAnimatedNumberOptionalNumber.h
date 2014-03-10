@@ -52,8 +52,6 @@ public:
     virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
     virtual bool needsSynchronizeAttribute() OVERRIDE;
     virtual void animationEnded() OVERRIDE;
-    virtual void animValWillChange() OVERRIDE;
-    virtual void animValDidChange() OVERRIDE;
 
     SVGAnimatedNumber* firstNumber() { return m_firstNumber.get(); }
     SVGAnimatedNumber* secondNumber() { return m_secondNumber.get(); }

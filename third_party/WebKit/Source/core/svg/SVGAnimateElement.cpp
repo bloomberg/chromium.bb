@@ -93,13 +93,6 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     // Target element might have changed.
     m_animator->setContextElement(targetElement);
 
-    // Be sure to detach list wrappers before we modfiy their underlying value. If we'd do
-    // if after calculateAnimatedValue() ran the cached pointers in the list propery tear
-    // offs would point nowhere, and we couldn't create copies of those values anymore,
-    // while detaching. This is covered by assertions, moving this down would fire them.
-    if (!m_animatedProperties.isEmpty())
-        m_animator->animValWillChange(m_animatedProperties);
-
     // Values-animation accumulates using the last values entry corresponding to the end of duration time.
     NewSVGPropertyBase* toAtEndOfDurationProperty = m_toAtEndOfDurationProperty ? m_toAtEndOfDurationProperty.get() : m_toProperty.get();
     m_animator->calculateAnimatedValue(percentage, repeatCount, m_fromProperty.get(), m_toProperty.get(), toAtEndOfDurationProperty, resultAnimationElement->m_animatedProperty.get());
@@ -191,7 +184,6 @@ void SVGAnimateElement::resetAnimatedType()
             m_animatedProperty = animator->startAnimValAnimation(m_animatedProperties);
         else {
             m_animatedProperty = animator->resetAnimValToBaseVal(m_animatedProperties);
-            animator->animValDidChange(m_animatedProperties);
         }
         return;
     }
@@ -338,7 +330,6 @@ void SVGAnimateElement::applyResultsToTarget()
     // SVG DOM animVal animation code-path.
     // At this point the SVG DOM values are already changed, unlike for CSS.
     // We only have to trigger update notifications here.
-    m_animator->animValDidChange(m_animatedProperties);
     notifyTargetAndInstancesAboutAnimValChange(targetElement(), attributeName());
 }
 

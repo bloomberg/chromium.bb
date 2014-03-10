@@ -65,20 +65,6 @@ void SVGAnimatedIntegerOptionalInteger::animationEnded()
     m_secondInteger->animationEnded();
 }
 
-void SVGAnimatedIntegerOptionalInteger::animValWillChange()
-{
-    NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animValWillChange();
-    m_firstInteger->animValWillChange();
-    m_secondInteger->animValWillChange();
-}
-
-void SVGAnimatedIntegerOptionalInteger::animValDidChange()
-{
-    NewSVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animValDidChange();
-    m_firstInteger->animValDidChange();
-    m_secondInteger->animValDidChange();
-}
-
 bool SVGAnimatedIntegerOptionalInteger::needsSynchronizeAttribute()
 {
     return m_firstInteger->needsSynchronizeAttribute()
