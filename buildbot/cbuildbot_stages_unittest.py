@@ -2264,7 +2264,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def _PassString(self):
     record = results_lib.Result('Pass', results_lib.Results.SUCCESS, 'None',
-                                'Pass', '0')
+                                'Pass', '', '0')
     return results_lib.Results.SPLIT_TOKEN.join(record) + '\n'
 
   def testRunStages(self):

@@ -308,6 +308,10 @@ class BuilderStage(object):
     """Run if the stage is skipped."""
     pass
 
+  def _RecordResult(self, *args, **kwargs):
+    """Record a successful or failed result."""
+    results_lib.Results.Record(*args, **kwargs)
+
   def Run(self):
     """Have the builder execute the stage."""
     # See if this stage should be skipped.
@@ -315,8 +319,8 @@ class BuilderStage(object):
         self.config_name and not getattr(self._run.config, self.config_name)):
       self._PrintLoudly('Not running Stage %s' % self.name)
       self.HandleSkip()
-      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED,
-                                 prefix=self._prefix)
+      self._RecordResult(self.name, results_lib.Results.SKIPPED,
+                         prefix=self._prefix)
       return
 
     record = results_lib.Results.PreviouslyCompletedRecord(self.name)
@@ -325,8 +329,9 @@ class BuilderStage(object):
       # successfully in a previous run.
       self._PrintLoudly('Stage %s processed previously' % self.name)
       self.HandleSkip()
-      results_lib.Results.Record(self.name, results_lib.Results.SUCCESS,
-                                 prefix=self._prefix, time=float(record.time))
+      self._RecordResult(self.name, results_lib.Results.SUCCESS,
+                         prefix=self._prefix, board=record.board,
+                         time=float(record.time))
       return
 
     start_time = time.time()
@@ -363,8 +368,8 @@ class BuilderStage(object):
       raise
     finally:
       elapsed_time = time.time() - start_time
-      results_lib.Results.Record(self.name, result, description,
-                                 prefix=self._prefix, time=elapsed_time)
+      self._RecordResult(self.name, result, description, prefix=self._prefix,
+                         time=elapsed_time)
       self._Finish()
       sys.stdout.flush()
       sys.stderr.flush()

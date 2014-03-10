@@ -136,7 +136,7 @@ class RecordedTraceback(object):
     self.traceback = traceback
 
 
-_result_fields = ['name', 'result', 'description', 'prefix', 'time']
+_result_fields = ['name', 'result', 'description', 'prefix', 'board', 'time']
 Result = collections.namedtuple('Result', _result_fields)
 
 
@@ -195,7 +195,8 @@ class _Results(object):
     """Return true if stage has posted results."""
     return name in [entry.name for entry in self._results_log]
 
-  def Record(self, name, result, description=None, prefix=None, time=0):
+  def Record(self, name, result, description=None, prefix=None, board='',
+             time=0):
     """Store off an additional stage result.
 
     Args:
@@ -210,11 +211,13 @@ class _Results(object):
         The textual backtrace of the exception, or None
       prefix: The prefix of the stage (e.g. HWTest). Defaults to
         the value of name.
+      board: The board associated with the stage, if any. Defaults to ''.
       time: How long the result took to complete.
     """
     if prefix is None:
       prefix = name
-    self._results_log.append(Result(name, result, description, prefix, time))
+    result = Result(name, result, description, prefix, board, time)
+    self._results_log.append(result)
 
   def Get(self):
     """Fetch stage results.

@@ -145,6 +145,11 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
     if len(self._boards) > 1 or self._run.config.grouped:
       self.name = '%s [%s]' % (self.name, board)
 
+  def _RecordResult(self, *args, **kwargs):
+    """Record a successful or failed result."""
+    kwargs.setdefault('board', self._current_board)
+    super(BoardSpecificBuilderStage, self)._RecordResult(*args, **kwargs)
+
   def GetParallel(self, board_attr, timeout=None, pretty_name=None):
     """Wait for given |board_attr| to show up.
 

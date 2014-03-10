@@ -204,6 +204,7 @@ class CBuildbotMetadata(object):
           # The result might be a custom exception.
           'summary': str(entry.result),
           'duration': '%s' % timestr,
+          'board': entry.board,
           'description': entry.description,
           'log': builder_run.ConstructDashboardURL(stage=entry.name),
       })
