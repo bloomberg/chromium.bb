@@ -73,10 +73,14 @@ public class ObserverList<E> implements Iterable<E> {
      * @return true if an element was removed as a result of this call.
      */
     public boolean removeObserver(E obs) {
-        int index = mObservers.indexOf(obs);
-
-        if (index == -1)
+        if (obs == null) {
             return false;
+        }
+
+        int index = mObservers.indexOf(obs);
+        if (index == -1) {
+            return false;
+        }
 
         if (mIterationDepth == 0) {
             // No one is iterating over the list.

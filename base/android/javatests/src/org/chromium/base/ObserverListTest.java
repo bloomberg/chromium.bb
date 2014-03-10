@@ -245,5 +245,11 @@ public class ObserverListTest extends InstrumentationTestCase {
         assertFalse(observerList.removeObserver(new Object()));
         assertTrue(observerList.removeObserver(b));
         assertFalse(observerList.removeObserver(null));
+
+        // If we remove an object while iterating, it will be replaced by 'null'.
+        observerList.addObserver(a);
+        Iterator<Object> iterator = observerList.iterator();
+        assertTrue(observerList.removeObserver(a));
+        assertFalse(observerList.removeObserver(null));
     }
 }
