@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/local_value_store_cache.h"
+#include "extensions/browser/api/storage/local_value_store_cache.h"
 
 #include <limits>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/api/storage/local_storage_backend.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
-#include "chrome/browser/extensions/api/storage/weak_unlimited_settings_storage.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/storage/local_storage_backend.h"
+#include "extensions/browser/api/storage/settings_storage_factory.h"
+#include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
+#include "extensions/browser/api/storage/weak_unlimited_settings_storage.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"

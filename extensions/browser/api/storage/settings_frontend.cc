@@ -1,20 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/settings_frontend.h"
+#include "extensions/browser/api/storage/settings_frontend.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/local_value_store_cache.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
+#include "extensions/browser/api/storage/local_value_store_cache.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"

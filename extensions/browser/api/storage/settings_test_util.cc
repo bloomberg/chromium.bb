@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/settings_test_util.h"
+#include "extensions/browser/api/storage/settings_test_util.h"
 
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/api/storage/settings_frontend.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
+#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -110,12 +111,6 @@ EventRouter* MockExtensionSystem::event_router() {
   return event_router_.get();
 }
 
-ExtensionService* MockExtensionSystem::extension_service() {
-  ExtensionServiceInterface* as_interface =
-      static_cast<ExtensionServiceInterface*>(&extension_service_);
-  return static_cast<ExtensionService*>(as_interface);
-}
-
 BrowserContextKeyedService* BuildMockExtensionSystem(
     content::BrowserContext* profile) {
   return new MockExtensionSystem(static_cast<Profile*>(profile));
@@ -125,8 +120,9 @@ BrowserContextKeyedService* BuildMockExtensionSystem(
 
 MockProfile::MockProfile(const base::FilePath& file_path)
     : TestingProfile(file_path) {
-  ExtensionSystemFactory::GetInstance()->SetTestingFactoryAndUse(this,
-      &BuildMockExtensionSystem);
+  ExtensionsBrowserClient::Get()
+      ->GetExtensionSystemFactory()
+      ->SetTestingFactoryAndUse(this, &BuildMockExtensionSystem);
 }
 
 MockProfile::~MockProfile() {}

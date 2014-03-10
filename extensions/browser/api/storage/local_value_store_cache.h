@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_
+#ifndef EXTENSIONS_BROWSER_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_
+#define EXTENSIONS_BROWSER_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/storage/value_store_cache.h"
+#include "extensions/browser/api/storage/value_store_cache.h"
 
 namespace base {
 class FilePath;
@@ -47,4 +47,4 @@ class LocalValueStoreCache : public ValueStoreCache {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_
+#endif  // EXTENSIONS_BROWSER_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_

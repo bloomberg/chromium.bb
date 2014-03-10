@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_OBSERVER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_OBSERVER_H_
+#ifndef EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_OBSERVER_H_
+#define EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_OBSERVER_H_
 
 #include "base/observer_list_threadsafe.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
@@ -27,4 +27,4 @@ typedef ObserverListThreadSafe<SettingsObserver>
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_OBSERVER_H_
+#endif  // EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_OBSERVER_H_

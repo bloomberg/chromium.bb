@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/local_storage_backend.h"
+#include "extensions/browser/api/storage/local_storage_backend.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
+#include "extensions/browser/api/storage/settings_storage_factory.h"
 
 namespace extensions {
 

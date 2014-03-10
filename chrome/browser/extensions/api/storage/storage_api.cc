@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/quota_service.h"
 
 namespace extensions {

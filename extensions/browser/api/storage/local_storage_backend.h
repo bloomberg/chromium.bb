@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_LOCAL_STORAGE_BACKEND_H_
-#define CHROME_BROWSER_EXTENSIONS_API_STORAGE_LOCAL_STORAGE_BACKEND_H_
+#ifndef EXTENSIONS_BROWSER_API_STORAGE_LOCAL_STORAGE_BACKEND_H_
+#define EXTENSIONS_BROWSER_API_STORAGE_LOCAL_STORAGE_BACKEND_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/storage/settings_backend.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
+#include "extensions/browser/api/storage/settings_backend.h"
+#include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 
 namespace base {
 class FilePath;
@@ -44,4 +44,4 @@ class LocalStorageBackend : public SettingsBackend {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_STORAGE_LOCAL_STORAGE_BACKEND_H_
+#endif  // EXTENSIONS_BROWSER_API_STORAGE_LOCAL_STORAGE_BACKEND_H_

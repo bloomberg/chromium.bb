@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/storage/settings_observer.h"
+#include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/value_store/value_store.h"
 
 namespace policy {

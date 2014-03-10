@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_frontend.h"
-#include "chrome/browser/extensions/api/storage/settings_test_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
+#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -14,9 +14,9 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/storage/settings_observer.h"
-#include "chrome/browser/extensions/api/storage/value_store_cache.h"
 #include "components/policy/core/common/policy_service.h"
+#include "extensions/browser/api/storage/settings_observer.h"
+#include "extensions/browser/api/storage/value_store_cache.h"
 
 class Profile;
 

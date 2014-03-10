@@ -14,10 +14,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/storage/settings_backend.h"
-#include "chrome/browser/extensions/api/storage/settings_observer.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
+#include "extensions/browser/api/storage/settings_backend.h"
+#include "extensions/browser/api/storage/settings_observer.h"
+#include "extensions/browser/api/storage/settings_storage_factory.h"
+#include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "sync/api/syncable_service.h"
 
 namespace syncer {

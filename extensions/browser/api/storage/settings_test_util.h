@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_TEST_UTIL_H_
-#define CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_TEST_UTIL_H_
+#ifndef EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_TEST_UTIL_H_
+#define EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_TEST_UTIL_H_
 
 #include <set>
 #include <string>
@@ -12,12 +12,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 
@@ -58,16 +56,14 @@ class MockExtensionSystem : public TestExtensionSystem {
   virtual ~MockExtensionSystem();
 
   virtual EventRouter* event_router() OVERRIDE;
-  virtual ExtensionService* extension_service() OVERRIDE;
 
  private:
   scoped_ptr<EventRouter> event_router_;
-  TestExtensionService extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExtensionSystem);
 };
 
-// A Profile which returns an ExtensionService with enough functionality for
+// A Profile which returns an ExtensionSystem with enough functionality for
 // the tests.
 class MockProfile : public TestingProfile {
  public:
@@ -104,4 +100,4 @@ class ScopedSettingsStorageFactory : public SettingsStorageFactory {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_STORAGE_SETTINGS_TEST_UTIL_H_
+#endif  // EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_TEST_UTIL_H_
