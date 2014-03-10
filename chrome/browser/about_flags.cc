@@ -1297,11 +1297,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(ENABLE_APP_LIST)
   {
-    "disable-sync-app-list",
-    IDS_FLAGS_DISABLE_SYNC_APP_LIST_NAME,
-    IDS_FLAGS_DISABLE_SYNC_APP_LIST_DESCRIPTION,
+    "enable-sync-app-list",
+    IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME,
+    IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableSyncAppList)
+    SINGLE_VALUE_TYPE(switches::kEnableSyncAppList)
   },
 #endif
   {

@@ -33,8 +33,8 @@ namespace app_list {
 namespace {
 
 bool SyncAppListEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kDisableSyncAppList);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableSyncAppList);
 }
 
 void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,

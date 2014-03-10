@@ -55,6 +55,11 @@ class TwoClientAppListSyncTest : public SyncTest {
   virtual ~TwoClientAppListSyncTest() {}
 
   // SyncTest
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    SyncTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableSyncAppList);
+  }
+
   virtual bool SetupClients() OVERRIDE {
     if (!SyncTest::SetupClients())
       return false;
