@@ -221,7 +221,7 @@ private:
 // The BasicObjectHeader is the minimal object header. It is used when
 // encountering heap space of size allocationGranularity to mark it as
 // as freelist entry.
-class BasicObjectHeader {
+class HEAP_EXPORT BasicObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     explicit BasicObjectHeader(size_t encodedSize)
@@ -249,7 +249,7 @@ protected:
 // [ LargeObjectHeader | ] [ FinalizedObjectHeader | ] HeapObjectHeader | payload
 // The [ ] notation denotes that the LargeObjectHeader and the FinalizedObjectHeader
 // are independently optional.
-class HeapObjectHeader : public BasicObjectHeader {
+class HEAP_EXPORT HeapObjectHeader : public BasicObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     explicit HeapObjectHeader(size_t encodedSize)
@@ -287,7 +287,7 @@ public:
     void zapMagic();
 
     static void finalize(const GCInfo*, Address, size_t);
-    HEAP_EXPORT static HeapObjectHeader* fromPayload(const void*);
+    static HeapObjectHeader* fromPayload(const void*);
 
     static const intptr_t magic = 0xc0de247;
     static const intptr_t zappedMagic = 0xC0DEdead;
@@ -305,7 +305,7 @@ const size_t objectHeaderSize = sizeof(HeapObjectHeader);
 
 // Each object on the GeneralHeap needs to carry a pointer to its
 // own GCInfo structure for tracing and potential finalization.
-class FinalizedHeapObjectHeader : public HeapObjectHeader {
+class HEAP_EXPORT FinalizedHeapObjectHeader : public HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     FinalizedHeapObjectHeader(size_t encodedSize, const GCInfo* gcInfo)
@@ -328,7 +328,7 @@ public:
     NO_SANITIZE_ADDRESS
     inline bool hasFinalizer() { return m_gcInfo->hasFinalizer(); }
 
-    HEAP_EXPORT static FinalizedHeapObjectHeader* fromPayload(const void*);
+    static FinalizedHeapObjectHeader* fromPayload(const void*);
 
 private:
     const GCInfo* m_gcInfo;
