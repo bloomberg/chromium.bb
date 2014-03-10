@@ -73,15 +73,8 @@ inline bool IsArchitectureArm() {
 }
 
 bool IsAcceleratedVideoDecodeEnabled() {
-  // Accelerated video decode is currently enabled on Chrome OS,
-  // but not on Linux: crbug.com/137247.
-  bool is_enabled = IsChromeOS();
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  is_enabled &=
-      !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
-
-  return is_enabled;
+  return !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
 }
 
 intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,

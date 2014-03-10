@@ -54,17 +54,15 @@
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#elif defined(OS_CHROMEOS)
-#if defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
-#elif defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #if defined(USE_X11)
 #include "ui/gl/gl_implementation.h"
 #endif  // USE_X11
-#endif  // ARCH_CPU_ARMEL
 #else
 #error The VideoAccelerator tests are not supported on this platform.
 #endif  // OS_WIN
@@ -556,8 +554,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 #if defined(OS_WIN)
   decoder_.reset(
       new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
-#elif defined(OS_CHROMEOS)
-#if defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
   scoped_ptr<V4L2Device> device = V4L2Device::Create();
   if (!device.get()) {
@@ -570,13 +567,12 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       base::Bind(&DoNothingReturnTrue),
       device.Pass(),
       base::MessageLoopProxy::current()));
-#elif defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   CHECK_EQ(gfx::kGLImplementationDesktopGL, gfx::GetGLImplementation())
       << "Hardware video decode does not work with OSMesa";
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
       base::Bind(&DoNothingReturnTrue)));
-#endif  // ARCH_CPU_ARMEL
 #endif  // OS_WIN
   CHECK(decoder_.get());
   SetState(CS_DECODER_SET);
