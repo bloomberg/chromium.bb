@@ -20,12 +20,6 @@ struct AutoRepeatRate {
   unsigned int repeat_interval_in_ms;
 };
 
-enum ModifierLockStatus {
-  kDisableLock = 0,
-  kEnableLock,
-  kDontChange,
-};
-
 enum ModifierKey {
   kSearchKey = 0,  // Customizable.
   kControlKey,  // Customizable.
@@ -65,39 +59,16 @@ class CHROMEOS_EXPORT XKeyboard {
   // core/master keyboard.
   virtual void ReapplyCurrentModifierLockStatus() = 0;
 
-  // Sets the Caps Lock and Num Lock status. Do not call the function from
-  // non-UI threads.
-  virtual void SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
-                                  ModifierLockStatus new_num_lock_status) = 0;
-
-  // Sets the num lock status to |enable_num_lock|. Do not call the function
-  // from non-UI threads.
-  virtual void SetNumLockEnabled(bool enable_num_lock) = 0;
+  // Disables the num lock.
+  virtual void DisableNumLock() = 0;
 
   // Sets the caps lock status to |enable_caps_lock|. Do not call the function
   // from non-UI threads.
   virtual void SetCapsLockEnabled(bool enable_caps_lock) = 0;
 
-  // Returns true if num lock is enabled. Do not call the function from non-UI
-  // threads.
-  virtual bool NumLockIsEnabled() = 0;
-
   // Returns true if caps lock is enabled. Do not call the function from non-UI
   // threads.
   virtual bool CapsLockIsEnabled() = 0;
-
-  // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0. Do not call
-  // the function from non-UI threads.
-  // TODO(yusukes): Move this and webdriver::GetXModifierMask() functions in
-  // chrome/test/webdriver/keycode_text_conversion_x.cc to ui/base/x/x11_util.
-  // The two functions are almost the same.
-  virtual unsigned int GetNumLockMask() = 0;
-
-  // Set true on |out_caps_lock_enabled| if Caps Lock is enabled. Set true on
-  // |out_num_lock_enabled| if Num Lock is enabled. Both out parameters can be
-  // NULL. Do not call the function from non-UI threads.
-  virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
-                                  bool* out_num_lock_enabled) = 0;
 
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.

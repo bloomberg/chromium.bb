@@ -58,7 +58,6 @@ class SystemKeyEventListener : public base::MessageLoopForUI::Observer {
 
   bool stopped_;
 
-  unsigned int num_lock_mask_;
   bool caps_lock_is_on_;
   ObserverList<CapsLockObserver> caps_lock_observers_;
 

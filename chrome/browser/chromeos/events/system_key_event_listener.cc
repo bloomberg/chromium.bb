@@ -43,12 +43,10 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
-      num_lock_mask_(0),
       xkb_event_base_(0) {
   input_method::XKeyboard* xkeyboard =
       input_method::InputMethodManager::Get()->GetXKeyboard();
-  num_lock_mask_ = xkeyboard->GetNumLockMask();
-  xkeyboard->GetLockedModifiers(&caps_lock_is_on_, NULL);
+  caps_lock_is_on_ = xkeyboard->CapsLockIsEnabled();
 
   XDisplay* display = gfx::GetXDisplay();
   int xkb_major_version = XkbMajorVersion;
@@ -121,9 +119,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
       if (xkey_event->state.mods) {
         // TODO(yusukes,adlr): Let the user know that num lock is unsupported.
         // Force turning off Num Lock (crosbug.com/29169)
-        input_method_manager->GetXKeyboard()->SetLockedModifiers(
-            input_method::kDontChange  /* caps lock */,
-            input_method::kDisableLock  /* num lock */);
+        input_method_manager->GetXKeyboard()->DisableNumLock();
       }
       return true;
     }

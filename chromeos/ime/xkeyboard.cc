@@ -74,20 +74,20 @@ class XKeyboardImpl : public XKeyboard {
       const std::string& layout_name) OVERRIDE;
   virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE;
   virtual void ReapplyCurrentModifierLockStatus() OVERRIDE;
-  virtual void SetLockedModifiers(
-      ModifierLockStatus new_caps_lock_status,
-      ModifierLockStatus new_num_lock_status) OVERRIDE;
-  virtual void SetNumLockEnabled(bool enable_num_lock) OVERRIDE;
+  virtual void DisableNumLock() OVERRIDE;
   virtual void SetCapsLockEnabled(bool enable_caps_lock) OVERRIDE;
-  virtual bool NumLockIsEnabled() OVERRIDE;
   virtual bool CapsLockIsEnabled() OVERRIDE;
-  virtual unsigned int GetNumLockMask() OVERRIDE;
-  virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
-                                  bool* out_num_lock_enabled) OVERRIDE;
   virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
 
  private:
+  // Returns a mask for Num Lock (e.g. 1U << 4). Returns 0 on error.
+  unsigned int GetNumLockMask();
+
+  // Sets the caps-lock status. Note that calling this function always disables
+  // the num-lock.
+  void SetLockedModifiers(bool caps_lock_enabled);
+
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
   // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
   bool SetLayoutInternal(const std::string& layout_name, bool force);
@@ -106,9 +106,9 @@ class XKeyboardImpl : public XKeyboard {
   const bool is_running_on_chrome_os_;
   unsigned int num_lock_mask_;
 
-  // The current Num Lock and Caps Lock status. If true, enabled.
-  bool current_num_lock_status_;
+  // The current Caps Lock status. If true, enabled.
   bool current_caps_lock_status_;
+
   // The XKB layout name which we set last time like "us" and "us(dvorak)".
   std::string current_layout_name_;
 
@@ -139,7 +139,56 @@ XKeyboardImpl::XKeyboardImpl()
     LOG_IF(ERROR, num_lock_mask_ != Mod2Mask)
         << "NumLock is not assigned to Mod2Mask.  : " << num_lock_mask_;
   }
-  GetLockedModifiers(&current_caps_lock_status_, &current_num_lock_status_);
+
+  current_caps_lock_status_ = CapsLockIsEnabled();
+}
+
+unsigned int XKeyboardImpl::GetNumLockMask() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  static const unsigned int kBadMask = 0;
+
+  unsigned int real_mask = kBadMask;
+  XkbDescPtr xkb_desc =
+      XkbGetKeyboard(GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
+  if (!xkb_desc)
+    return kBadMask;
+
+  if (xkb_desc->dpy && xkb_desc->names && xkb_desc->names->vmods) {
+    const std::string string_to_find(kNumLockVirtualModifierString);
+    for (size_t i = 0; i < XkbNumVirtualMods; ++i) {
+      const unsigned int virtual_mod_mask = 1U << i;
+      char* virtual_mod_str_raw_ptr =
+          XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]);
+      if (!virtual_mod_str_raw_ptr)
+        continue;
+      const std::string virtual_mod_str = virtual_mod_str_raw_ptr;
+      XFree(virtual_mod_str_raw_ptr);
+
+      if (string_to_find == virtual_mod_str) {
+        if (!XkbVirtualModsToReal(xkb_desc, virtual_mod_mask, &real_mask)) {
+          DVLOG(1) << "XkbVirtualModsToReal failed";
+          real_mask = kBadMask;  // reset the return value, just in case.
+        }
+        break;
+      }
+    }
+  }
+  XkbFreeKeyboard(xkb_desc, 0, True /* free all components */);
+  return real_mask;
+}
+
+void XKeyboardImpl::SetLockedModifiers(bool caps_lock_enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Always turn off num lock.
+  unsigned int affect_mask = num_lock_mask_;
+  unsigned int value_mask = 0;
+
+  affect_mask |= LockMask;
+  value_mask |= (caps_lock_enabled ? LockMask : 0);
+  current_caps_lock_status_ = caps_lock_enabled;
+
+  XkbLockModifiers(GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
 }
 
 bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
@@ -232,71 +281,11 @@ void XKeyboardImpl::PollUntilChildFinish(const base::ProcessHandle handle) {
   }
 }
 
-bool XKeyboardImpl::NumLockIsEnabled() {
-  bool num_lock_enabled = false;
-  GetLockedModifiers(NULL /* Caps Lock */, &num_lock_enabled);
-  return num_lock_enabled;
-}
-
 bool XKeyboardImpl::CapsLockIsEnabled() {
-  bool caps_lock_enabled = false;
-  GetLockedModifiers(&caps_lock_enabled, NULL /* Num Lock */);
-  return caps_lock_enabled;
-}
-
-unsigned int XKeyboardImpl::GetNumLockMask() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  static const unsigned int kBadMask = 0;
-
-  unsigned int real_mask = kBadMask;
-  XkbDescPtr xkb_desc =
-      XkbGetKeyboard(GetXDisplay(), XkbAllComponentsMask, XkbUseCoreKbd);
-  if (!xkb_desc)
-    return kBadMask;
-
-  if (xkb_desc->dpy && xkb_desc->names && xkb_desc->names->vmods) {
-    const std::string string_to_find(kNumLockVirtualModifierString);
-    for (size_t i = 0; i < XkbNumVirtualMods; ++i) {
-      const unsigned int virtual_mod_mask = 1U << i;
-      char* virtual_mod_str_raw_ptr =
-          XGetAtomName(xkb_desc->dpy, xkb_desc->names->vmods[i]);
-      if (!virtual_mod_str_raw_ptr)
-        continue;
-      const std::string virtual_mod_str = virtual_mod_str_raw_ptr;
-      XFree(virtual_mod_str_raw_ptr);
-
-      if (string_to_find == virtual_mod_str) {
-        if (!XkbVirtualModsToReal(xkb_desc, virtual_mod_mask, &real_mask)) {
-          DVLOG(1) << "XkbVirtualModsToReal failed";
-          real_mask = kBadMask;  // reset the return value, just in case.
-        }
-        break;
-      }
-    }
-  }
-  XkbFreeKeyboard(xkb_desc, 0, True /* free all components */);
-  return real_mask;
-}
-
-void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
-                                       bool* out_num_lock_enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (out_num_lock_enabled && !num_lock_mask_) {
-    DVLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
-    if (out_caps_lock_enabled)
-      *out_caps_lock_enabled = false;
-    if (out_num_lock_enabled)
-      *out_num_lock_enabled = false;
-    return;
-  }
-
   XkbStateRec status;
   XkbGetState(GetXDisplay(), XkbUseCoreKbd, &status);
-  if (out_caps_lock_enabled)
-    *out_caps_lock_enabled = status.locked_mods & LockMask;
-  if (out_num_lock_enabled)
-    *out_num_lock_enabled = status.locked_mods & num_lock_mask_;
+  return (status.locked_mods & LockMask);
 }
 
 bool XKeyboardImpl::SetAutoRepeatEnabled(bool enabled) {
@@ -321,39 +310,8 @@ bool XKeyboardImpl::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   return true;
 }
 
-void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
-                                       ModifierLockStatus new_num_lock_status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!num_lock_mask_) {
-    DVLOG(1) << "Cannot set locked modifiers. Num Lock mask unknown.";
-    return;
-  }
-
-  unsigned int affect_mask = 0;
-  unsigned int value_mask = 0;
-  if (new_caps_lock_status != kDontChange) {
-    affect_mask |= LockMask;
-    value_mask |= ((new_caps_lock_status == kEnableLock) ? LockMask : 0);
-    current_caps_lock_status_ = (new_caps_lock_status == kEnableLock);
-  }
-  if (new_num_lock_status != kDontChange) {
-    affect_mask |= num_lock_mask_;
-    value_mask |= ((new_num_lock_status == kEnableLock) ? num_lock_mask_ : 0);
-    current_num_lock_status_ = (new_num_lock_status == kEnableLock);
-  }
-
-  if (affect_mask)
-    XkbLockModifiers(GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
-}
-
-void XKeyboardImpl::SetNumLockEnabled(bool enable_num_lock) {
-  SetLockedModifiers(
-      kDontChange, enable_num_lock ? kEnableLock : kDisableLock);
-}
-
 void XKeyboardImpl::SetCapsLockEnabled(bool enable_caps_lock) {
-  SetLockedModifiers(
-      enable_caps_lock ? kEnableLock : kDisableLock, kDontChange);
+  SetLockedModifiers(enable_caps_lock);
 }
 
 bool XKeyboardImpl::SetCurrentKeyboardLayoutByName(
@@ -374,8 +332,11 @@ bool XKeyboardImpl::ReapplyCurrentKeyboardLayout() {
 }
 
 void XKeyboardImpl::ReapplyCurrentModifierLockStatus() {
-  SetLockedModifiers(current_caps_lock_status_ ? kEnableLock : kDisableLock,
-                     current_num_lock_status_ ? kEnableLock : kDisableLock);
+  SetLockedModifiers(current_caps_lock_status_);
+}
+
+void XKeyboardImpl::DisableNumLock() {
+  SetCapsLockEnabled(current_caps_lock_status_);
 }
 
 void XKeyboardImpl::OnSetLayoutFinish() {
