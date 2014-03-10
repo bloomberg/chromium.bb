@@ -171,7 +171,7 @@ body {
   position: absolute;
   top: 18px;
   width: 32px;
-  z-index: 3;
+  z-index: 2;
 }
 
 ::-webkit-scrollbar {
