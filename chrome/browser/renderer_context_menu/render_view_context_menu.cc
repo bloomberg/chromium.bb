@@ -1721,7 +1721,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         print_view_manager->PrintNow();
 #endif  // defined(ENABLE_FULL_PRINTING)
       } else {
-        rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->GetRoutingID()));
+        if (render_frame_host) {
+          render_frame_host->Send(new PrintMsg_PrintNodeUnderContextMenu(
+              render_frame_host->GetRoutingID()));
+        }
       }
 #endif  // defined(ENABLE_PRINTING)
       break;
@@ -2031,12 +2034,15 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 }
 
 void RenderViewContextMenu::GetImageThumbnailForSearch() {
-  source_web_contents_->GetRenderViewHost()->Send(
-       new ChromeViewMsg_RequestThumbnailForContextNode(
-           source_web_contents_->GetRenderViewHost()->GetRoutingID(),
-           kImageSearchThumbnailMinSize,
-           gfx::Size(kImageSearchThumbnailMaxWidth,
-                     kImageSearchThumbnailMaxHeight)));
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!render_frame_host)
+    return;
+  render_frame_host->Send(new ChromeViewMsg_RequestThumbnailForContextNode(
+      render_frame_host->GetRoutingID(),
+      kImageSearchThumbnailMinSize,
+      gfx::Size(kImageSearchThumbnailMaxWidth,
+                kImageSearchThumbnailMaxHeight)));
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {

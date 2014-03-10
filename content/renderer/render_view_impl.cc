@@ -3154,10 +3154,6 @@ blink::WebElement RenderViewImpl::GetFocusedElement() const {
   return WebElement();
 }
 
-blink::WebNode RenderViewImpl::GetContextMenuNode() const {
-  return context_menu_node_;
-}
-
 bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   if (node.isNull())
     return false;

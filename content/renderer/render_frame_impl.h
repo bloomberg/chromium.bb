@@ -171,6 +171,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual int ShowContextMenu(ContextMenuClient* client,
                               const ContextMenuParams& params) OVERRIDE;
   virtual void CancelContextMenu(int request_id) OVERRIDE;
+  virtual blink::WebNode GetContextMenuNode() const OVERRIDE;
   virtual blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,
       const WebPluginInfo& info,

@@ -117,12 +117,12 @@ class PrintWebViewHelper
   virtual void DidStopLoading() OVERRIDE;
 
   // Message handlers ---------------------------------------------------------
-
-  // Print the document.
   void OnPrintPages();
-
-  // Print the document with the print preview frame/node.
   void OnPrintForSystemDialog();
+  void OnInitiatePrintPreview(bool selection_only);
+  void OnPrintPreview(const base::DictionaryValue& settings);
+  void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
+  void OnPrintingDone(bool success);
 
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.
@@ -136,12 +136,6 @@ class PrintWebViewHelper
 
   // Returns true if the current destination printer is PRINT_TO_PDF.
   bool IsPrintToPdfRequested(const base::DictionaryValue& settings);
-
-  // Initiate print preview.
-  void OnInitiatePrintPreview(bool selection_only);
-
-  // Start the process of generating a print preview using |settings|.
-  void OnPrintPreview(const base::DictionaryValue& settings);
 
   // Prepare frame for creating preview document.
   void PrepareFrameForPreviewDocument();
@@ -159,15 +153,6 @@ class PrintWebViewHelper
 
   // Finalize the print ready preview document.
   bool FinalizePrintReadyDocument();
-
-  // Print / preview the node under the context menu.
-  void OnPrintNodeUnderContextMenu();
-
-  // Print the pages for print preview. Do not display the native print dialog
-  // for user settings. |job_settings| has new print job settings values.
-  void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
-
-  void OnPrintingDone(bool success);
 
   // Enable/Disable window.print calls.  If |blocked| is true window.print
   // calls will silently fail.  Call with |blocked| set to false to reenable.

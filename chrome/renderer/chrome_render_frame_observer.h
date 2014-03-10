@@ -7,6 +7,10 @@
 
 #include "content/public/renderer/render_frame_observer.h"
 
+namespace gfx {
+class Size;
+}
+
 // This class holds the Chrome specific parts of RenderFrame, and has the same
 // lifetime.
 class ChromeRenderFrameObserver : public content::RenderFrameObserver {
@@ -20,6 +24,10 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
 
   // IPC handlers
   void OnSetIsPrerendering(bool is_prerendering);
+  void OnRequestThumbnailForContextNode(
+      int thumbnail_min_area_pixels,
+      const gfx::Size& thumbnail_max_size_pixels);
+  void OnPrintNodeUnderContextMenu();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderFrameObserver);
 };

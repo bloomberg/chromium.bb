@@ -14,6 +14,7 @@ struct WebPreferences;
 
 namespace blink {
 class WebFrame;
+class WebNode;
 class WebPlugin;
 class WebURLRequest;
 struct WebPluginParams;
@@ -63,6 +64,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Cancels a context menu in the event that the client is destroyed before the
   // menu is closed.
   virtual void CancelContextMenu(int request_id) = 0;
+
+  // Gets the node that the context menu was pressed over.
+  virtual blink::WebNode GetContextMenuNode() const = 0;
 
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
   // plugin was found.

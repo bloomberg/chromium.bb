@@ -621,7 +621,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void SetWebkitPreferences(const WebPreferences& preferences) OVERRIDE;
   virtual blink::WebView* GetWebView() OVERRIDE;
   virtual blink::WebElement GetFocusedElement() const OVERRIDE;
-  virtual blink::WebNode GetContextMenuNode() const OVERRIDE;
   virtual bool IsEditableNode(const blink::WebNode& node) const OVERRIDE;
   virtual void EvaluateScript(const base::string16& frame_xpath,
                               const base::string16& jscript,

@@ -217,6 +217,8 @@
         'renderer/aw_key_systems.h',
         'renderer/aw_permission_client.cc',
         'renderer/aw_permission_client.h',
+        'renderer/aw_render_frame_observer.cc',
+        'renderer/aw_render_frame_observer.h',
         'renderer/aw_render_process_observer.cc',
         'renderer/aw_render_process_observer.h',
         'renderer/aw_render_view_ext.cc',

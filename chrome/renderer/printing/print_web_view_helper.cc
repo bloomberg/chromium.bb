@@ -836,8 +836,6 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
     IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
-                        OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview, OnPrintForPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
@@ -1159,10 +1157,6 @@ void PrintWebViewHelper::OnPrintingDone(bool success) {
 
 void PrintWebViewHelper::SetScriptedPrintBlocked(bool blocked) {
   is_scripted_printing_blocked_ = blocked;
-}
-
-void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
-  PrintNode(render_view()->GetContextMenuNode());
 }
 
 void PrintWebViewHelper::OnInitiatePrintPreview(bool selection_only) {

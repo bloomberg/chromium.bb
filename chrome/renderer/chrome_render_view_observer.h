@@ -74,8 +74,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnJavaScriptStressTestControl(int cmd, int param);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetVisuallyDeemphasized(bool deemphasized);
-  void OnRequestThumbnailForContextNode(int thumbnail_min_area_pixels,
-                                        gfx::Size thumbnail_max_size_pixels);
   void OnGetFPS();
 #if defined(OS_ANDROID)
   void OnUpdateTopControlsState(content::TopControlsState constraints,

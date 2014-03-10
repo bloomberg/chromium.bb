@@ -926,6 +926,10 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
   pending_context_menus_.Remove(request_id);
 }
 
+blink::WebNode RenderFrameImpl::GetContextMenuNode() const {
+  return render_view_->context_menu_node_;
+}
+
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     blink::WebFrame* frame,
     const WebPluginInfo& info,

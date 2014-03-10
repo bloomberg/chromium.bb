@@ -80,9 +80,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // the element will be Null.
   virtual blink::WebElement GetFocusedElement() const = 0;
 
-  // Gets the node that the context menu was pressed over.
-  virtual blink::WebNode GetContextMenuNode() const = 0;
-
   // Returns true if the parameter node is a textfield, text area, a content
   // editable div, or has an ARIA role of textbox.
   virtual bool IsEditableNode(const blink::WebNode& node) const = 0;
