@@ -190,7 +190,7 @@ bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
             if (!current->renderer())
                 return false;
 
-            setGradientAttributes(current, attributes, current->hasTagName(SVGNames::radialGradientTag));
+            setGradientAttributes(current, attributes, isSVGRadialGradientElement(*current));
             processedGradients.add(current);
         } else {
             break;

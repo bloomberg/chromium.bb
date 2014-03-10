@@ -71,7 +71,7 @@ void SVGFontFaceUriElement::childrenChanged(bool changedByParser, Node* beforeCh
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 
-    if (!parentNode() || !parentNode()->hasTagName(font_face_srcTag))
+    if (!isSVGFontFaceSrcElement(parentNode()))
         return;
 
     ContainerNode* grandparent = parentNode()->parentNode();

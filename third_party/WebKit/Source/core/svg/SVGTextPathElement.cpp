@@ -139,9 +139,7 @@ RenderObject* SVGTextPathElement::createRenderer(RenderStyle*)
 
 bool SVGTextPathElement::rendererIsNeeded(const RenderStyle& style)
 {
-    if (parentNode()
-        && (parentNode()->hasTagName(SVGNames::aTag)
-            || parentNode()->hasTagName(SVGNames::textTag)))
+    if (parentNode() && (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
         return Element::rendererIsNeeded(style);
 
     return false;

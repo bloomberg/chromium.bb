@@ -503,15 +503,15 @@ RenderObject* SVGUseElement::createRenderer(RenderStyle*)
     return new RenderSVGTransformableContainer(this);
 }
 
-static bool isDirectReference(const Node* node)
+static bool isDirectReference(const Node& node)
 {
-    return node->hasTagName(SVGNames::pathTag)
-           || node->hasTagName(SVGNames::rectTag)
-           || node->hasTagName(SVGNames::circleTag)
-           || node->hasTagName(SVGNames::ellipseTag)
-           || node->hasTagName(SVGNames::polygonTag)
-           || node->hasTagName(SVGNames::polylineTag)
-           || node->hasTagName(SVGNames::textTag);
+    return isSVGPathElement(node)
+        || isSVGRectElement(node)
+        || isSVGCircleElement(node)
+        || isSVGEllipseElement(node)
+        || isSVGPolygonElement(node)
+        || isSVGPolylineElement(node)
+        || isSVGTextElement(node);
 }
 
 void SVGUseElement::toClipPath(Path& path)
@@ -523,7 +523,7 @@ void SVGUseElement::toClipPath(Path& path)
         return;
 
     if (n->isSVGElement() && toSVGElement(n)->isSVGGraphicsElement()) {
-        if (!isDirectReference(n)) {
+        if (!isDirectReference(*n)) {
             // Spec: Indirect references are an error (14.3.5)
             document().accessSVGExtensions().reportError("Not allowed to use indirect reference in <clip-path>");
         } else {
@@ -542,7 +542,7 @@ RenderObject* SVGUseElement::rendererClipChild() const
     if (!n)
         return 0;
 
-    if (n->isSVGElement() && isDirectReference(n))
+    if (n->isSVGElement() && isDirectReference(*n))
         return toSVGElement(n)->renderer();
 
     return 0;
@@ -734,7 +734,8 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
 
 void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
 {
-    if (element->hasTagName(SVGNames::symbolTag)) {
+    ASSERT(element);
+    if (isSVGSymbolElement(*element)) {
         // Spec: The referenced 'symbol' and its contents are deep-cloned into the generated tree,
         // with the exception that the 'symbol' is replaced by an 'svg'. This generated 'svg' will
         // always have explicit values for attributes width and height. If attributes width and/or
@@ -800,11 +801,11 @@ void SVGUseElement::associateInstancesWithShadowTreeElements(Node* target, SVGEl
         return;
 
     SVGElement* originalElement = targetInstance->correspondingElement();
-
-    if (originalElement->hasTagName(SVGNames::useTag)) {
+    ASSERT(originalElement);
+    if (isSVGUseElement(*originalElement)) {
         // <use> gets replaced by <g>
         ASSERT(AtomicString(target->nodeName()) == SVGNames::gTag);
-    } else if (originalElement->hasTagName(SVGNames::symbolTag)) {
+    } else if (isSVGSymbolElement(*originalElement)) {
         // <symbol> gets replaced by <svg>
         ASSERT(AtomicString(target->nodeName()) == SVGNames::svgTag);
     } else {

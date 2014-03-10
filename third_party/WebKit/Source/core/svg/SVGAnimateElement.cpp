@@ -38,7 +38,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& doc
     : SVGAnimationElement(tagName, document)
     , m_animatedPropertyType(AnimatedString)
 {
-    ASSERT(hasTagName(SVGNames::animateTag) || hasTagName(SVGNames::setTag) || hasTagName(SVGNames::animateTransformTag));
+    ASSERT(isSVGAnimateElement(*this));
     ScriptWrappable::init(this);
 }
 
@@ -72,7 +72,7 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     ASSERT(m_animatedPropertyType == determineAnimatedPropertyType());
 
     ASSERT(percentage >= 0 && percentage <= 1);
-    ASSERT(m_animatedPropertyType != AnimatedTransformList || hasTagName(SVGNames::animateTransformTag));
+    ASSERT(m_animatedPropertyType != AnimatedTransformList || isSVGAnimateTransformElement(*this));
     ASSERT(m_animatedPropertyType != AnimatedUnknown);
     ASSERT(m_animator);
     ASSERT(m_animator->type() == m_animatedPropertyType);
@@ -84,7 +84,7 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     ASSERT(resultAnimationElement->m_animatedProperty);
     ASSERT(resultAnimationElement->m_animatedPropertyType == m_animatedPropertyType);
 
-    if (hasTagName(SVGNames::setTag))
+    if (isSVGSetElement(*this))
         percentage = 1;
 
     if (calcMode() == CalcModeDiscrete)
@@ -138,7 +138,7 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
     if (animationMode() == FromByAnimation && !animatedPropertyTypeSupportsAddition())
         return false;
 
-    ASSERT(!hasTagName(SVGNames::setTag));
+    ASSERT(!isSVGSetElement(*this));
 
     determinePropertyValueTypes(fromString, byString);
     ensureAnimator()->calculateFromAndByValues(m_fromProperty, m_toProperty, fromString, byString);
@@ -320,7 +320,7 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
 
 void SVGAnimateElement::applyResultsToTarget()
 {
-    ASSERT(m_animatedPropertyType != AnimatedTransformList || hasTagName(SVGNames::animateTransformTag));
+    ASSERT(m_animatedPropertyType != AnimatedTransformList || isSVGAnimateTransformElement(*this));
     ASSERT(m_animatedPropertyType != AnimatedUnknown);
     ASSERT(m_animator);
 

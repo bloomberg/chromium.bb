@@ -129,14 +129,7 @@ SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(Render
     ASSERT(node);
     ASSERT(node->isSVGElement());
 
-    if (!node->hasTagName(SVGNames::textTag)
-#if ENABLE(SVG_FONTS)
-        && !node->hasTagName(SVGNames::altGlyphTag)
-#endif
-        && !node->hasTagName(SVGNames::tspanTag))
-        return 0;
-
-    return toSVGTextPositioningElement(node);
+    return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node) : 0;
 }
 
 }

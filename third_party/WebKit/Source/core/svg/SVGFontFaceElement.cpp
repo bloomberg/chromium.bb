@@ -264,7 +264,7 @@ String SVGFontFaceElement::fontFamily() const
 SVGFontElement* SVGFontFaceElement::associatedFontElement() const
 {
     ASSERT(parentNode() == m_fontElement);
-    ASSERT(!parentNode() || parentNode()->hasTagName(SVGNames::fontTag));
+    ASSERT(!parentNode() || isSVGFontElement(*parentNode()));
     return m_fontElement;
 }
 

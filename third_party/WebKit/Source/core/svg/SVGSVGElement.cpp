@@ -340,7 +340,7 @@ static bool isIntersectionOrEnclosureTarget(RenderObject* renderer)
     return renderer->isSVGShape()
         || renderer->isSVGText()
         || renderer->isSVGImage()
-        || renderer->node()->hasTagName(SVGNames::useTag);
+        || isSVGUseElement(*renderer->node());
 }
 
 bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, const FloatRect& rect,

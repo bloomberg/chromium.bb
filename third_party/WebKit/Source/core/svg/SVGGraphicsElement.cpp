@@ -60,12 +60,12 @@ PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElemen
     return SVGMatrixTearOff::create(ctm);
 }
 
-static bool isViewportElement(const Element* element)
+static bool isViewportElement(const Element& element)
 {
-    return (element->hasTagName(SVGNames::svgTag)
-        || element->hasTagName(SVGNames::symbolTag)
-        || element->hasTagName(SVGNames::foreignObjectTag)
-        || element->hasTagName(SVGNames::imageTag));
+    return (isSVGSVGElement(element)
+        || isSVGSymbolElement(element)
+        || isSVGForeignObjectElement(element)
+        || isSVGImageElement(element));
 }
 
 AffineTransform SVGGraphicsElement::computeCTM(SVGElement::CTMScope mode,
@@ -87,7 +87,7 @@ AffineTransform SVGGraphicsElement::computeCTM(SVGElement::CTMScope mode,
         switch (mode) {
         case NearestViewportScope:
             // Stop at the nearest viewport ancestor.
-            done = currentElement != this && isViewportElement(currentElement);
+            done = currentElement != this && isViewportElement(*currentElement);
             break;
         case AncestorScope:
             // Stop at the designated ancestor.
@@ -220,7 +220,7 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
 SVGElement* SVGGraphicsElement::nearestViewportElement() const
 {
     for (Element* current = parentOrShadowHostElement(); current; current = current->parentOrShadowHostElement()) {
-        if (isViewportElement(current))
+        if (isViewportElement(*current))
             return toSVGElement(current);
     }
 
@@ -231,7 +231,7 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const
 {
     SVGElement* farthest = 0;
     for (Element* current = parentOrShadowHostElement(); current; current = current->parentOrShadowHostElement()) {
-        if (isViewportElement(current))
+        if (isViewportElement(*current))
             farthest = toSVGElement(current);
     }
     return farthest;

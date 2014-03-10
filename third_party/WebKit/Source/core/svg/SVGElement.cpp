@@ -184,7 +184,7 @@ SVGElementRareData* SVGElement::ensureSVGRareData()
 
 bool SVGElement::isOutermostSVGSVGElement() const
 {
-    if (!hasTagName(SVGNames::svgTag))
+    if (!isSVGSVGElement(*this))
         return false;
 
     // Element may not be in the document, pretend we're outermost for viewport(), getCTM(), etc.
@@ -192,7 +192,7 @@ bool SVGElement::isOutermostSVGSVGElement() const
         return true;
 
     // We act like an outermost SVG element, if we're a direct child of a <foreignObject> element.
-    if (parentNode()->hasTagName(SVGNames::foreignObjectTag))
+    if (isSVGForeignObjectElement(*parentNode()))
         return true;
 
     // If we're living in a shadow tree, we're a <svg> element that got created as replacement

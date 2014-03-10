@@ -170,7 +170,7 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
             if (!current->renderer())
                 return false;
 
-            setGradientAttributes(current, attributes, current->hasTagName(SVGNames::linearGradientTag));
+            setGradientAttributes(current, attributes, isSVGLinearGradientElement(*current));
             processedGradients.add(current);
         } else {
             return true;

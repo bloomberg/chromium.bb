@@ -183,7 +183,7 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
     }
 
     if (name == SVGNames::keyPointsAttr) {
-        if (hasTagName(SVGNames::animateMotionTag)) {
+        if (isSVGAnimateMotionElement(*this)) {
             // This is specified to be an animateMotion attribute only but it is simpler to put it here
             // where the other timing calculatations are.
             parseKeyTimes(value, m_keyPoints, false);
@@ -305,7 +305,7 @@ void SVGAnimationElement::setCalcMode(const AtomicString& calcMode)
     else if (calcMode == spline)
         setCalcMode(CalcModeSpline);
     else
-        setCalcMode(hasTagName(SVGNames::animateMotionTag) ? CalcModePaced : CalcModeLinear);
+        setCalcMode(isSVGAnimateMotionElement(*this) ? CalcModePaced : CalcModeLinear);
 }
 
 void SVGAnimationElement::setAttributeType(const AtomicString& attributeType)
@@ -494,7 +494,7 @@ AnimatedPropertyType SVGAnimationElement::determineAnimatedPropertyType() const
 
         // Only <animatedTransform> is allowed to animate AnimatedTransformList.
         // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
-        if (propertyType == AnimatedTransformList && !hasTagName(SVGNames::animateTransformTag))
+        if (propertyType == AnimatedTransformList && !isSVGAnimateTransformElement(*this))
             return AnimatedUnknown;
 
         return propertyType;

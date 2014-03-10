@@ -46,13 +46,13 @@ RenderObject* SVGTSpanElement::createRenderer(RenderStyle*)
 bool SVGTSpanElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (parentNode()
-        && (parentNode()->hasTagName(SVGNames::aTag)
+        && (isSVGAElement(*parentNode())
 #if ENABLE(SVG_FONTS)
-            || parentNode()->hasTagName(SVGNames::altGlyphTag)
+            || isSVGAltGlyphElement(*parentNode())
 #endif
-            || parentNode()->hasTagName(SVGNames::textTag)
-            || parentNode()->hasTagName(SVGNames::textPathTag)
-            || parentNode()->hasTagName(SVGNames::tspanTag)))
+            || isSVGTextElement(*parentNode())
+            || isSVGTextPathElement(*parentNode())
+            || isSVGTSpanElement(*parentNode())))
         return Element::rendererIsNeeded(style);
 
     return false;

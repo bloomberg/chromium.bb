@@ -156,7 +156,7 @@ void SVGAElement::defaultEventHandler(Event* event)
                     return;
                 }
                 // Only allow navigation to internal <view> anchors.
-                if (targetElement && !targetElement->hasTagName(SVGNames::viewTag))
+                if (targetElement && !isSVGViewElement(*targetElement))
                     return;
             }
 

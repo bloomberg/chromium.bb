@@ -138,7 +138,7 @@ RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(RenderStyle*)
 
 bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const RenderStyle& style)
 {
-    if (parentNode() && (parentNode()->hasTagName(SVGNames::filterTag)))
+    if (isSVGFilterElement(parentNode()))
         return SVGElement::rendererIsNeeded(style);
 
     return false;

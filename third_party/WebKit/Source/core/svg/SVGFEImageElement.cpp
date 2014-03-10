@@ -177,7 +177,7 @@ void SVGFEImageElement::notifyFinished(Resource*)
     Element* parent = parentElement();
     ASSERT(parent);
 
-    if (!parent->hasTagName(SVGNames::filterTag) || !parent->renderer())
+    if (!isSVGFilterElement(*parent) || !parent->renderer())
         return;
 
     if (RenderObject* renderer = this->renderer())
