@@ -44,6 +44,7 @@ libwayland_server_la_SOURCES =			\
 	src/event-loop.c
 
 nodist_libwayland_server_la_SOURCES =		\
+	protocol/wayland-server-protocol.h	\
 	protocol/wayland-protocol.c
 
 libwayland_client_la_CFLAGS = $(FFI_CFLAGS) $(GCC_CFLAGS) -pthread
@@ -53,6 +54,7 @@ libwayland_client_la_SOURCES =			\
 	src/wayland-client.c
 
 nodist_libwayland_client_la_SOURCES =		\
+	protocol/wayland-client-protocol.h	\
 	protocol/wayland-protocol.c
 
 pkgconfig_DATA += src/wayland-client.pc src/wayland-server.pc
