@@ -143,9 +143,13 @@ bool MockRenderProcessHost::Send(IPC::Message* msg) {
 
 TransportDIB* MockRenderProcessHost::MapTransportDIB(TransportDIB::Id dib_id) {
 #if defined(OS_WIN)
-  HANDLE duped;
-  DuplicateHandle(GetCurrentProcess(), dib_id.handle, GetCurrentProcess(),
-                  &duped, 0, TRUE, DUPLICATE_SAME_ACCESS);
+  // NULL should be used here instead of INVALID_HANDLE_VALUE (or pseudo-handle)
+  // except for when dealing with the small number of Win16-derived APIs
+  // that require INVALID_HANDLE_VALUE (e.g. CreateFile and friends).
+  HANDLE duped = NULL;
+  if (!DuplicateHandle(GetCurrentProcess(), dib_id.handle, GetCurrentProcess(),
+                       &duped, 0, TRUE, DUPLICATE_SAME_ACCESS))
+    duped = NULL;
   return TransportDIB::Map(duped);
 #elif defined(TOOLKIT_GTK)
   return TransportDIB::Map(dib_id.shmkey);
