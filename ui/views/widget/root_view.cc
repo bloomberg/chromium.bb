@@ -21,6 +21,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+typedef ui::EventDispatchDetails DispatchDetails;
+
 namespace views {
 namespace internal {
 
@@ -70,7 +72,8 @@ RootView::RootView(Widget* widget)
       focus_search_(this, false, false),
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL),
-      event_dispatch_target_(NULL) {
+      event_dispatch_target_(NULL),
+      old_dispatch_target_(NULL) {
 }
 
 RootView::~RootView() {
@@ -135,7 +138,7 @@ void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
 void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
   for (View* v = GetEventHandlerForPoint(event->location());
        v && v != this && !event->stopped_propagation(); v = v->parent()) {
-    ui::EventDispatchDetails dispatch_details = DispatchEventToTarget(v, event);
+    ui::EventDispatchDetails dispatch_details = DispatchEvent(v, event);
     if (dispatch_details.dispatcher_destroyed ||
         dispatch_details.target_destroyed) {
       return;
@@ -164,7 +167,7 @@ void RootView::DispatchTouchEvent(ui::TouchEvent* event) {
     ui::TouchEvent touch_event(*event, static_cast<View*>(this),
                                touch_pressed_handler_);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(touch_pressed_handler_, &touch_event);
+        DispatchEvent(touch_pressed_handler_, &touch_event);
     if (touch_event.handled())
       event->SetHandled();
     if (touch_event.stopped_propagation())
@@ -187,7 +190,7 @@ void RootView::DispatchTouchEvent(ui::TouchEvent* event) {
     ui::TouchEvent touch_event(*event, static_cast<View*>(this),
                                touch_pressed_handler_);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(touch_pressed_handler_, &touch_event);
+        DispatchEvent(touch_pressed_handler_, &touch_event);
     if (touch_event.handled())
       event->SetHandled();
     if (touch_event.stopped_propagation())
@@ -229,7 +232,7 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
             scroll_gesture_handler_ : gesture_handler_;
     ui::GestureEvent handler_event(*event, static_cast<View*>(this), handler);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(handler, &handler_event);
+        DispatchEvent(handler, &handler_event);
     if (dispatch_details.dispatcher_destroyed)
       return;
 
@@ -269,7 +272,7 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
         ui::GestureEvent gesture_event(*event, static_cast<View*>(this),
                                        scroll_gesture_handler_);
         ui::EventDispatchDetails dispatch_details =
-            DispatchEventToTarget(scroll_gesture_handler_, &gesture_event);
+            DispatchEvent(scroll_gesture_handler_, &gesture_event);
         if (gesture_event.stopped_propagation()) {
           event->StopPropagation();
           return;
@@ -324,7 +327,7 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
     ui::GestureEvent gesture_event(*event, static_cast<View*>(this),
                                    gesture_handler_);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(gesture_handler_, &gesture_event);
+        DispatchEvent(gesture_handler_, &gesture_event);
     if (dispatch_details.dispatcher_destroyed)
       return;
 
@@ -434,7 +437,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
                                        mouse_pressed_handler_);
     drag_info_.Reset();
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(mouse_pressed_handler_, &mouse_pressed_event);
+        DispatchEvent(mouse_pressed_handler_, &mouse_pressed_event);
     if (dispatch_details.dispatcher_destroyed)
       return true;
     return true;
@@ -465,7 +468,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
 
     drag_info_.Reset();
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(mouse_pressed_handler_, &mouse_pressed_event);
+        DispatchEvent(mouse_pressed_handler_, &mouse_pressed_event);
     if (dispatch_details.dispatcher_destroyed)
       return mouse_pressed_event.handled();
 
@@ -511,7 +514,7 @@ bool RootView::OnMouseDragged(const ui::MouseEvent& event) {
     ui::MouseEvent mouse_event(event, static_cast<View*>(this),
                                mouse_pressed_handler_);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(mouse_pressed_handler_, &mouse_event);
+        DispatchEvent(mouse_pressed_handler_, &mouse_event);
     if (dispatch_details.dispatcher_destroyed)
       return false;
   }
@@ -529,7 +532,7 @@ void RootView::OnMouseReleased(const ui::MouseEvent& event) {
     View* mouse_pressed_handler = mouse_pressed_handler_;
     SetMouseHandler(NULL);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(mouse_pressed_handler, &mouse_released);
+        DispatchEvent(mouse_pressed_handler, &mouse_released);
     if (dispatch_details.dispatcher_destroyed)
       return;
   }
@@ -576,7 +579,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
            !mouse_move_handler_->Contains(v))) {
         MouseEnterExitEvent exit(event, ui::ET_MOUSE_EXITED);
         ui::EventDispatchDetails dispatch_details =
-            DispatchEventToTarget(mouse_move_handler_, &exit);
+            DispatchEvent(mouse_move_handler_, &exit);
         if (dispatch_details.dispatcher_destroyed)
           return;
         NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
@@ -590,7 +593,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
         entered.ConvertLocationToTarget(static_cast<View*>(this),
                                         mouse_move_handler_);
         ui::EventDispatchDetails dispatch_details =
-            DispatchEventToTarget(mouse_move_handler_, &entered);
+            DispatchEvent(mouse_move_handler_, &entered);
         if (dispatch_details.dispatcher_destroyed)
           return;
         NotifyEnterExitOfDescendant(entered, ui::ET_MOUSE_ENTERED, v,
@@ -605,7 +608,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
   } else if (mouse_move_handler_ != NULL) {
     MouseEnterExitEvent exited(event, ui::ET_MOUSE_EXITED);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(mouse_move_handler_, &exited);
+        DispatchEvent(mouse_move_handler_, &exited);
     if (dispatch_details.dispatcher_destroyed)
       return;
     NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
@@ -623,7 +626,7 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
   if (mouse_move_handler_ != NULL) {
     MouseEnterExitEvent exited(event, ui::ET_MOUSE_EXITED);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(mouse_move_handler_, &exited);
+        DispatchEvent(mouse_move_handler_, &exited);
     if (dispatch_details.dispatcher_destroyed)
       return;
     NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
@@ -636,7 +639,7 @@ bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   for (View* v = GetEventHandlerForPoint(event.location());
        v && v != this && !event.handled(); v = v->parent()) {
     ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(v, const_cast<ui::MouseWheelEvent*>(&event));
+        DispatchEvent(v, const_cast<ui::MouseWheelEvent*>(&event));
     if (dispatch_details.dispatcher_destroyed ||
         dispatch_details.target_destroyed) {
       return event.handled();
@@ -684,6 +687,8 @@ void RootView::ViewHierarchyChanged(
       scroll_gesture_handler_ = NULL;
     if (event_dispatch_target_ == details.child)
       event_dispatch_target_ = NULL;
+    if (old_dispatch_target_ == details.child)
+      old_dispatch_target_ = NULL;
   }
 }
 
@@ -699,6 +704,7 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
     gesture_handler_ = NULL;
     scroll_gesture_handler_ = NULL;
     event_dispatch_target_ = NULL;
+    old_dispatch_target_ = NULL;
   }
 }
 
@@ -740,16 +746,6 @@ void RootView::SetMouseLocationAndFlags(const ui::MouseEvent& event) {
   last_mouse_event_y_ = event.y();
 }
 
-ui::EventDispatchDetails RootView::DispatchEventToTarget(View* target,
-                                                         ui::Event* event) {
-  View* old_target = event_dispatch_target_;
-  event_dispatch_target_ = target;
-  ui::EventDispatchDetails details = DispatchEvent(target, event);
-  if (!details.dispatcher_destroyed)
-    event_dispatch_target_ = old_target;
-  return details;
-}
-
 void RootView::NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
                                            ui::EventType type,
                                            View* view,
@@ -763,8 +759,7 @@ void RootView::NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
     // of the callbacks can mark the event as handled, and that would cause
     // incorrect event dispatch.
     MouseEnterExitEvent notify_event(event, type);
-    ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(p, &notify_event);
+    ui::EventDispatchDetails dispatch_details = DispatchEvent(p, &notify_event);
     if (dispatch_details.dispatcher_destroyed ||
         dispatch_details.target_destroyed) {
       return;
@@ -775,8 +770,7 @@ void RootView::NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
 
 void RootView::DispatchKeyEventStartAt(View* view, ui::KeyEvent* event) {
   for (; view && view != this && !event->handled(); view = view->parent()) {
-    ui::EventDispatchDetails dispatch_details =
-        DispatchEventToTarget(view, event);
+    ui::EventDispatchDetails dispatch_details = DispatchEvent(view, event);
     if (dispatch_details.dispatcher_destroyed ||
         dispatch_details.target_destroyed) {
       return;
@@ -786,6 +780,29 @@ void RootView::DispatchKeyEventStartAt(View* view, ui::KeyEvent* event) {
 
 bool RootView::CanDispatchToTarget(ui::EventTarget* target) {
   return event_dispatch_target_ == target;
+}
+
+ui::EventDispatchDetails RootView::PreDispatchEvent(ui::EventTarget* target,
+                                                    ui::Event* event) {
+  old_dispatch_target_ = event_dispatch_target_;
+  event_dispatch_target_ = static_cast<View*>(target);
+  return DispatchDetails();
+}
+
+ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
+                                                     const ui::Event& event) {
+  DispatchDetails details;
+  if (target != event_dispatch_target_)
+    details.target_destroyed = true;
+
+  event_dispatch_target_ = old_dispatch_target_;
+  old_dispatch_target_ = NULL;
+
+#ifndef NDEBUG
+  DCHECK(!event_dispatch_target_ || Contains(event_dispatch_target_));
+#endif
+
+  return details;
 }
 
 }  // namespace internal

@@ -145,10 +145,6 @@ class VIEWS_EXPORT RootView : public View,
   // be applied to the point prior to calling this).
   void SetMouseLocationAndFlags(const ui::MouseEvent& event);
 
-  ui::EventDispatchDetails DispatchEventToTarget(
-      View* target,
-      ui::Event* event) WARN_UNUSED_RESULT;
-
   // |view| is the view receiving |event|. This function sends the event to all
   // the Views up the hierarchy that has |notify_enter_exit_on_child_| flag
   // turned on, but does not contain |sibling|.
@@ -163,6 +159,10 @@ class VIEWS_EXPORT RootView : public View,
 
   // Overridden from ui::EventDispatcherDelegate:
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
+  virtual ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
+                                                    ui::Event* event) OVERRIDE;
+  virtual ui::EventDispatchDetails PostDispatchEvent(
+      ui::EventTarget* target, const ui::Event& event) OVERRIDE;
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -219,6 +219,7 @@ class VIEWS_EXPORT RootView : public View,
   View* focus_traversable_parent_view_;
 
   View* event_dispatch_target_;
+  View* old_dispatch_target_;
 
   // Drag and drop -------------------------------------------------------------
 
