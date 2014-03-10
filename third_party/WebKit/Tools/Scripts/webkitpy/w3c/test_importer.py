@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -393,7 +391,7 @@ class TestImporter(object):
 
                 copied_files.append(new_filepath.replace(self._webkit_root, ''))
 
-            if not self.options.import_in_place and not self.options.dry_run:
+            if not self.import_in_place and not self.options.dry_run:
                 self.remove_deleted_files(new_path, copied_files)
                 self.write_import_log(new_path, copied_files, prefixed_properties)
 
