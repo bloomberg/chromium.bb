@@ -7,12 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/signin/core/signin_client.h"
 
 class CookieSettings;
 class Profile;
 
-class ChromeSigninClient : public SigninClient {
+class ChromeSigninClient : public SigninClient,
+                           public BrowserContextKeyedService {
  public:
   explicit ChromeSigninClient(Profile* profile);
   virtual ~ChromeSigninClient();
@@ -25,8 +27,6 @@ class ChromeSigninClient : public SigninClient {
   virtual bool AreSigninCookiesAllowed() OVERRIDE;
 
  private:
-  // Non-owning; this object is owned by the SigninManager, which is
-  // outlived by Profile.
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);

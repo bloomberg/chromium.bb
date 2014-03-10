@@ -82,13 +82,13 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
           .find(kChromiumSyncService) != std::string::npos;
 }
 
-SigninManager::SigninManager(scoped_ptr<SigninClient> client)
+SigninManager::SigninManager(SigninClient* client)
     : prohibit_signout_(false),
       had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
       signin_host_id_(ChildProcessHost::kInvalidUniqueID),
-      client_(client.Pass()) {}
+      client_(client) {}
 
 void SigninManager::SetSigninProcess(int process_id) {
   if (process_id == signin_host_id_)

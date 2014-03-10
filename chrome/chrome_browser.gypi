@@ -2102,6 +2102,8 @@
         'browser/signin/account_reconcilor_factory.h',
         'browser/signin/chrome_signin_client.cc',
         'browser/signin/chrome_signin_client.h',
+        'browser/signin/chrome_signin_client_factory.cc',
+        'browser/signin/chrome_signin_client_factory.h',
         'browser/signin/local_auth.cc',
         'browser/signin/local_auth.h',
         'browser/signin/mutable_profile_oauth2_token_service.cc',

@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -55,7 +55,7 @@ BrowserContextKeyedService* SigninManagerBuild(
   SigninManager* service = NULL;
   Profile* profile = static_cast<Profile*>(context);
   service = new SigninManager(
-      scoped_ptr<SigninClient>(new ChromeSigninClient(profile)));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
   service->Initialize(profile, NULL);
   return service;
 }
@@ -146,7 +146,7 @@ class SigninManagerTest : public testing::Test {
   void CreateNakedSigninManager() {
     DCHECK(!manager_);
     naked_manager_.reset(new SigninManager(
-        scoped_ptr<SigninClient>(new ChromeSigninClient(profile()))));
+        ChromeSigninClientFactory::GetInstance()->GetForProfile(profile())));
 
     manager_ = naked_manager_.get();
     manager_->AddObserver(&test_observer_);
