@@ -46,6 +46,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   GtkStyle* GetEntryStyle() const;
   GtkStyle* GetLabelStyle() const;
   GtkStyle* GetButtonStyle() const;
+  GtkStyle* GetTreeStyle() const;
   GtkStyle* GetMenuStyle() const;
   GtkStyle* GetMenuItemStyle() const;
 
@@ -53,6 +54,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   mutable OwnedWidgetGtk fake_entry_;
   mutable OwnedWidgetGtk fake_label_;
   mutable OwnedWidgetGtk fake_button_;
+  mutable OwnedWidgetGtk fake_tree_;
 
   mutable OwnedWidgetGtk fake_menu_;
   mutable GtkWidget* fake_menu_item_;
