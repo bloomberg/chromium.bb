@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -575,26 +574,23 @@ void CrxUpdateService::ProcessPendingItems() {
 }
 
 CrxUpdateItem* CrxUpdateService::FindReadyComponent() const {
-  std::vector<CrxUpdateItem*> ready;
-  std::vector<CrxUpdateItem*> ready_on_demand;
-  for (std::vector<CrxUpdateItem*>::const_iterator it = work_items_.begin();
-       it != work_items_.end();
-       ++it) {
-    CrxUpdateItem* item = *it;
-    if (item->status == CrxUpdateItem::kCanUpdate) {
-      if (item->on_demand)
-        ready_on_demand.push_back(item);
-      else
-        ready.push_back(item);
+  class Helper {
+   public:
+    static bool IsReadyOnDemand(CrxUpdateItem* item) {
+      return item->on_demand && IsReady(item);
     }
-  }
+    static bool IsReady(CrxUpdateItem* item) {
+      return item->status == CrxUpdateItem::kCanUpdate;
+    }
+  };
 
-  if (ready_on_demand.size() > 0) {
-    return ready_on_demand[base::RandInt(0, ready_on_demand.size() - 1)];
-  }
-  if (ready.size() > 0) {
-    return ready[base::RandInt(0, ready.size() - 1)];
-  }
+  std::vector<CrxUpdateItem*>::const_iterator it = std::find_if(
+      work_items_.begin(), work_items_.end(), Helper::IsReadyOnDemand);
+  if (it != work_items_.end())
+    return *it;
+  it = std::find_if(work_items_.begin(), work_items_.end(), Helper::IsReady);
+  if (it != work_items_.end())
+    return *it;
   return NULL;
 }
 
