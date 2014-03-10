@@ -53,6 +53,8 @@ public:
         return adoptRef(new DirectoryReaderSync(fileSystem, fullPath));
     }
 
+    virtual ~DirectoryReaderSync();
+
     EntrySyncVector readEntries(ExceptionState&);
 
     void addEntries(const EntrySyncVector& entries)

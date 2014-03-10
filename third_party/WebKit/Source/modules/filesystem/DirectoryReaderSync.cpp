@@ -86,6 +86,10 @@ DirectoryReaderSync::DirectoryReaderSync(PassRefPtr<DOMFileSystemBase> fileSyste
     ScriptWrappable::init(this);
 }
 
+DirectoryReaderSync::~DirectoryReaderSync()
+{
+}
+
 EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
 {
     if (!m_callbacksId) {

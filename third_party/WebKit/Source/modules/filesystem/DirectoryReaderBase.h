@@ -43,6 +43,8 @@ public:
     DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
     void setHasMoreEntries(bool hasMoreEntries) { m_hasMoreEntries = hasMoreEntries; }
 
+    virtual ~DirectoryReaderBase() { }
+
 protected:
     DirectoryReaderBase(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
         : m_fileSystem(fileSystem)

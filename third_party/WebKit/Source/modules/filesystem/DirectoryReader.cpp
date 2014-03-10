@@ -78,6 +78,10 @@ DirectoryReader::DirectoryReader(PassRefPtr<DOMFileSystemBase> fileSystem, const
     ScriptWrappable::init(this);
 }
 
+DirectoryReader::~DirectoryReader()
+{
+}
+
 void DirectoryReader::readEntries(PassOwnPtr<EntriesCallback> entriesCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     if (!m_isReading) {
