@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
 import android.os.Build;
+import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
@@ -192,12 +193,10 @@ class ScreenOrientationListener {
         assert mAppContext == context.getApplicationContext();
         assert mAppContext != null;
 
-        // TODO(mlamouri): we should check if the observer was really added,
-        // http://crbug.com/347557
-        if (mObservers.hasObserver(observer)) {
+        if (!mObservers.addObserver(observer)) {
+            Log.w(TAG, "Adding an observer that is already present!");
             return;
         }
-        mObservers.addObserver(observer);
         mObserverCount++;
 
         // If we got our first observer, we should start listening.
@@ -224,12 +223,10 @@ class ScreenOrientationListener {
      * @param observer The observer that will no longer receive notification.
      */
     public void removeObserver(ScreenOrientationObserver observer) {
-        // TODO(mlamouri): we should check if the observer was really removed,
-        // http://crbug.com/347557
-        if (!mObservers.hasObserver(observer)) {
+        if (!mObservers.removeObserver(observer)) {
+            Log.w(TAG, "Removing an inexistent observer!");
             return;
         }
-        mObservers.removeObserver(observer);
         mObserverCount--;
 
         if (mObserverCount == 0) {

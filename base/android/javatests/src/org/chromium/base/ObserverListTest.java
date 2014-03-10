@@ -215,4 +215,35 @@ public class ObserverListTest extends InstrumentationTestCase {
         assertTrue(it.hasNext());
         assertTrue(15 == it.next());
     }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testAddObserverReturnValue() {
+        ObserverList<Object> observerList = new ObserverList<Object>();
+
+        Object a = new Object();
+        assertTrue(observerList.addObserver(a));
+        assertFalse(observerList.addObserver(a));
+
+        Object b = new Object();
+        assertTrue(observerList.addObserver(b));
+        assertFalse(observerList.addObserver(null));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRemoveObserverReturnValue() {
+        ObserverList<Object> observerList = new ObserverList<Object>();
+
+        Object a = new Object();
+        Object b = new Object();
+        observerList.addObserver(a);
+        observerList.addObserver(b);
+
+        assertTrue(observerList.removeObserver(a));
+        assertFalse(observerList.removeObserver(a));
+        assertFalse(observerList.removeObserver(new Object()));
+        assertTrue(observerList.removeObserver(b));
+        assertFalse(observerList.removeObserver(null));
+    }
 }

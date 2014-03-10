@@ -53,27 +53,30 @@ public class ObserverList<E> implements Iterable<E> {
      * <p/>
      * An observer should not be added to the same list more than once. If an iteration is already
      * in progress, this observer will be not be visible during that iteration.
+     *
+     * @return true if the observer list changed as a result of the call.
      */
-    public void addObserver(E obs) {
+    public boolean addObserver(E obs) {
         // Avoid adding null elements to the list as they may be removed on a compaction.
         if (obs == null || mObservers.contains(obs)) {
-            assert false;
-            return;
+            return false;
         }
 
         // Structurally modifying the underlying list here. This means we
         // cannot use the underlying list's iterator to iterate over the list.
-        mObservers.add(obs);
+        return mObservers.add(obs);
     }
 
     /**
      * Remove an observer from the list if it is in the list.
+     *
+     * @return true if an element was removed as a result of this call.
      */
-    public void removeObserver(E obs) {
+    public boolean removeObserver(E obs) {
         int index = mObservers.indexOf(obs);
 
         if (index == -1)
-            return;
+            return false;
 
         if (mIterationDepth == 0) {
             // No one is iterating over the list.
@@ -81,6 +84,8 @@ public class ObserverList<E> implements Iterable<E> {
         } else {
             mObservers.set(index, null);
         }
+
+        return true;
     }
 
     public boolean hasObserver(E obs) {

@@ -185,9 +185,7 @@ public class NetworkChangeNotifier {
     }
 
     private void addConnectionTypeObserverInternal(ConnectionTypeObserver observer) {
-        if (!mConnectionTypeObservers.hasObserver(observer)) {
-            mConnectionTypeObservers.addObserver(observer);
-        }
+        mConnectionTypeObservers.addObserver(observer);
     }
 
     /**

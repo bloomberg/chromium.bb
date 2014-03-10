@@ -173,8 +173,8 @@ public class TemplateUrlService {
      */
     public void registerLoadListener(LoadListener listener) {
         ThreadUtils.assertOnUiThread();
-        assert !mLoadListeners.hasObserver(listener);
-        mLoadListeners.addObserver(listener);
+        boolean added = mLoadListeners.addObserver(listener);
+        assert added;
     }
 
     /**
@@ -183,8 +183,8 @@ public class TemplateUrlService {
      */
     public void unregisterLoadListener(LoadListener listener) {
         ThreadUtils.assertOnUiThread();
-        assert (mLoadListeners.hasObserver(listener));
-        mLoadListeners.removeObserver(listener);
+        boolean removed = mLoadListeners.removeObserver(listener);
+        assert removed;
     }
 
     /**
