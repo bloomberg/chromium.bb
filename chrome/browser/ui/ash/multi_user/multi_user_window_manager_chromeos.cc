@@ -662,20 +662,18 @@ void MultiUserWindowManagerChromeOS::TransitionUser(
 void MultiUserWindowManagerChromeOS::TransitionWallpaper(
     MultiUserWindowManagerChromeOS::AnimationStep animation_step) {
   // Handle the wallpaper switch.
-  if (chromeos::WallpaperManager::Get()) {
-    ash::UserWallpaperDelegate* wallpaper_delegate =
-        ash::Shell::GetInstance()->user_wallpaper_delegate();
-    if (animation_step == HIDE_OLD_USER) {
-      // Set the wallpaper cross dissolve animation duration to our complete
-      // animation cycle for a fade in and fade out.
-      wallpaper_delegate->SetAnimationDurationOverride(2 * kUserFadeTimeMS);
-      chromeos::WallpaperManager::Get()->SetUserWallpaperDelayed(
-          current_user_id_);
-    } else {
-      // Revert the wallpaper cross dissolve animation duration back to the
-      // default.
-      wallpaper_delegate->SetAnimationDurationOverride(0);
-    }
+  ash::UserWallpaperDelegate* wallpaper_delegate =
+      ash::Shell::GetInstance()->user_wallpaper_delegate();
+  if (animation_step == HIDE_OLD_USER) {
+    // Set the wallpaper cross dissolve animation duration to our complete
+    // animation cycle for a fade in and fade out.
+    wallpaper_delegate->SetAnimationDurationOverride(2 * kUserFadeTimeMS);
+    chromeos::WallpaperManager::Get()->SetUserWallpaperDelayed(
+        current_user_id_);
+  } else {
+    // Revert the wallpaper cross dissolve animation duration back to the
+    // default.
+    wallpaper_delegate->SetAnimationDurationOverride(0);
   }
 }
 
