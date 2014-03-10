@@ -335,7 +335,6 @@ TEST_F(GLRendererWithDefaultHarnessTest,
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
 
@@ -361,7 +360,6 @@ TEST_F(GLRendererWithDefaultHarnessTest,
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
 
@@ -387,7 +385,6 @@ TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   EXPECT_TRUE(renderer_->stencil_enabled());
 }
@@ -612,7 +609,6 @@ TEST_F(GLRendererTest, OpaqueBackground) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
   Mock::VerifyAndClearExpectations(context);
 }
@@ -650,7 +646,6 @@ TEST_F(GLRendererTest, TransparentBackground) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
 
   Mock::VerifyAndClearExpectations(context);
@@ -690,7 +685,6 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
   Mock::VerifyAndClearExpectations(context);
 }
@@ -773,7 +767,6 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
   renderer.SetVisible(false);
   EXPECT_TRUE(context->last_call_was_set_visibility());
@@ -867,7 +860,6 @@ TEST_F(GLRendererTest, ActiveTextureState) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
   Mock::VerifyAndClearExpectations(context);
 }
@@ -944,7 +936,6 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
 
   // In multiple render passes all but the root pass should clear the
@@ -1027,7 +1018,6 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
                      1.f,
                      viewport_rect,
                      viewport_rect,
-                     true,
                      false);
 }
 
@@ -1105,7 +1095,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                        1.f,
                        viewport_rect,
                        clip_rect,
-                       true,
                        false);
     EXPECT_EQ(0, context->discarded());
     context->reset();
@@ -1126,28 +1115,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                        1.f,
                        viewport_rect,
                        clip_rect,
-                       true,
-                       false);
-    EXPECT_EQ(1, context->discarded());
-    context->reset();
-  }
-  {
-    // Partial frame, disallow partial swap, should discard.
-    RenderPass::Id root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
-    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
-    root_pass->damage_rect = gfx::RectF(2.f, 2.f, 3.f, 3.f);
-
-    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-    renderer.DrawFrame(&render_passes_in_draw_order_,
-                       NULL,
-                       1.f,
-                       viewport_rect,
-                       clip_rect,
-                       false,
                        false);
     EXPECT_EQ(1, context->discarded());
     context->reset();
@@ -1170,7 +1137,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                        1.f,
                        viewport_rect,
                        clip_rect,
-                       true,
                        false);
     EXPECT_EQ(0, context->discarded());
     context->reset();
@@ -1193,7 +1159,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                        1.f,
                        viewport_rect,
                        clip_rect,
-                       true,
                        false);
     EXPECT_EQ(0, context->discarded());
     context->reset();
@@ -1215,7 +1180,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                        1.f,
                        viewport_rect,
                        clip_rect,
-                       true,
                        false);
     EXPECT_EQ(0, context->discarded());
     context->reset();
@@ -1238,7 +1202,6 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                        1.f,
                        viewport_rect,
                        clip_rect,
-                       true,
                        false);
     EXPECT_EQ(0, context->discarded());
     context->reset();
@@ -1318,7 +1281,6 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
                      1.f,
                      device_viewport_rect,
                      device_viewport_rect,
-                     true,
                      false);
 }
 
@@ -1385,7 +1347,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassProgram(TexCoordPrecisionMedium);
 
@@ -1410,7 +1371,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassColorMatrixProgram(TexCoordPrecisionMedium);
 
@@ -1436,7 +1396,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassMaskProgram(TexCoordPrecisionMedium);
 
@@ -1461,7 +1420,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassMaskColorMatrixProgram(TexCoordPrecisionMedium);
 
@@ -1487,7 +1445,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassProgramAA(TexCoordPrecisionMedium);
 
@@ -1512,7 +1469,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassColorMatrixProgramAA(TexCoordPrecisionMedium);
 
@@ -1538,7 +1494,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassMaskProgramAA(TexCoordPrecisionMedium);
 
@@ -1563,7 +1518,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
   TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecisionMedium);
 }
@@ -1609,7 +1563,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
 
   // If use_aa incorrectly ignores clipping, it will use the
@@ -1641,7 +1594,6 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
                        1.f,
                        viewport_rect,
                        viewport_rect,
-                       true,
                        false);
 
   TestSolidColorProgramAA();
@@ -1722,7 +1674,6 @@ class MockOutputSurfaceTest : public GLRendererTest {
                          device_scale_factor,
                          device_viewport_rect,
                          device_viewport_rect,
-                         true,
                          false);
   }
 

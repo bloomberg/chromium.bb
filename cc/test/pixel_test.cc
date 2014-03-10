@@ -73,15 +73,12 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
   gfx::Rect device_clip_rect = external_device_clip_rect_.IsEmpty()
                                    ? device_viewport_rect
                                    : external_device_clip_rect_;
-  bool allow_partial_swap = true;
-
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   renderer_->DrawFrame(pass_list,
                        offscreen_contexts.get(),
                        device_scale_factor,
                        device_viewport_rect,
                        device_clip_rect,
-                       allow_partial_swap,
                        disable_picture_quad_image_filtering_);
 
   // Wait for the readback to complete.

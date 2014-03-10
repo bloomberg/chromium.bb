@@ -26,6 +26,7 @@ DebugRectHistory::~DebugRectHistory() {}
 
 void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     LayerImpl* root_layer,
+    LayerImpl* hud_layer,
     const LayerImplList& render_surface_layer_list,
     const std::vector<gfx::Rect>& occluding_screen_space_rects,
     const std::vector<gfx::Rect>& non_occluding_screen_space_rects,
@@ -47,7 +48,7 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     SavePaintRects(root_layer);
 
   if (debug_state.show_property_changed_rects)
-    SavePropertyChangedRects(render_surface_layer_list);
+    SavePropertyChangedRects(render_surface_layer_list, hud_layer);
 
   if (debug_state.show_surface_damage_rects)
     SaveSurfaceDamageRects(render_surface_layer_list);
@@ -89,7 +90,8 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SavePropertyChangedRects(
-    const LayerImplList& render_surface_layer_list) {
+    const LayerImplList& render_surface_layer_list,
+    LayerImpl* hud_layer) {
   for (int surface_index = render_surface_layer_list.size() - 1;
        surface_index >= 0;
        --surface_index) {
@@ -107,7 +109,7 @@ void DebugRectHistory::SavePropertyChangedRects(
               layer, render_surface_layer->id()))
         continue;
 
-      if (layer->LayerIsAlwaysDamaged())
+      if (layer == hud_layer)
         continue;
 
       if (layer->LayerPropertyChanged()) {

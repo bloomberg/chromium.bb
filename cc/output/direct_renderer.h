@@ -37,7 +37,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
                          float device_scale_factor,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,
-                         bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) OVERRIDE;
 
   struct CC_EXPORT DrawingFrame {
@@ -92,9 +91,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
 
-  void DrawRenderPass(DrawingFrame* frame,
-                      const RenderPass* render_pass,
-                      bool allow_partial_swap);
+  void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
   bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 
   void RunOnDemandRasterTask(internal::Task* on_demand_raster_task);

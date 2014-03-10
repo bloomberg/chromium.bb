@@ -45,8 +45,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   virtual void ReleaseResources() OVERRIDE;
 
-  virtual bool LayerIsAlwaysDamaged() const OVERRIDE;
-
  private:
   class Graph {
    public:

@@ -33,7 +33,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
                          float device_scale_factor,
                          const gfx::Rect& device_viewport_rect,
                          const gfx::Rect& device_clip_rect,
-                         bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) OVERRIDE;
 
   virtual void Finish() OVERRIDE {}

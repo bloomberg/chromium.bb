@@ -450,13 +450,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void SetStackingOrderChanged(bool stacking_order_changed);
 
-  bool LayerPropertyChanged() const {
-    return layer_property_changed_ || LayerIsAlwaysDamaged();
-  }
+  bool LayerPropertyChanged() const { return layer_property_changed_; }
 
   void ResetAllChangeTrackingForSubtree();
-
-  virtual bool LayerIsAlwaysDamaged() const;
 
   LayerAnimationController* layer_animation_controller() {
     return layer_animation_controller_.get();

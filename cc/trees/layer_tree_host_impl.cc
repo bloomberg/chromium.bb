@@ -753,6 +753,17 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       render_surface_layer->render_surface()->AppendRenderPasses(frame);
   }
 
+  // When we are displaying the HUD, change the root damage rect to cover the
+  // entire root surface. This will disable partial-swap/scissor optimizations
+  // that would prevent the HUD from updating, since the HUD does not cause
+  // damage itself, to prevent it from messing with damage visualizations. Since
+  // damage visualizations are done off the LayerImpls and RenderSurfaceImpls,
+  // changing the RenderPass does not affect them.
+  if (active_tree_->hud_layer()) {
+    RenderPass* root_pass = frame->render_passes.back();
+    root_pass->damage_rect = root_pass->output_rect;
+  }
+
   bool record_metrics_for_frame =
       settings_.show_overdraw_in_tracing &&
       base::debug::TraceLog::GetInstance() &&
@@ -1361,6 +1372,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   if (debug_state_.ShowHudRects()) {
     debug_rect_history_->SaveDebugRectsForCurrentFrame(
         active_tree_->root_layer(),
+        active_tree_->hud_layer(),
         *frame->render_surface_layer_list,
         frame->occluding_screen_space_rects,
         frame->non_occluding_screen_space_rects,
@@ -1401,7 +1413,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   }
 
   if (output_surface_->ForcedDrawToSoftwareDevice()) {
-    bool allow_partial_swap = false;
     bool disable_picture_quad_image_filtering =
         IsCurrentlyScrolling() || needs_animate_layers();
 
@@ -1412,20 +1423,13 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                       device_scale_factor_,
                                       DeviceViewport(),
                                       DeviceClip(),
-                                      allow_partial_swap,
                                       disable_picture_quad_image_filtering);
   } else {
-    // We don't track damage on the HUD layer (it interacts with damage tracking
-    // visualizations), so disable partial swaps to make the HUD layer display
-    // properly.
-    bool allow_partial_swap = !debug_state_.ShowHudRects();
-
     renderer_->DrawFrame(&frame->render_passes,
                          offscreen_context_provider_.get(),
                          device_scale_factor_,
                          DeviceViewport(),
                          DeviceClip(),
-                         allow_partial_swap,
                          false);
   }
   // The render passes should be consumed by the renderer.

@@ -184,8 +184,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
 void HeadsUpDisplayLayerImpl::ReleaseResources() { hud_resource_.reset(); }
 
-bool HeadsUpDisplayLayerImpl::LayerIsAlwaysDamaged() const { return true; }
-
 void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 

@@ -716,10 +716,6 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
   num_dependents_need_push_properties_ = 0;
 }
 
-bool LayerImpl::LayerIsAlwaysDamaged() const {
-  return false;
-}
-
 gfx::Vector2dF LayerImpl::ScrollOffsetForAnimation() const {
   return TotalScrollOffset();
 }

@@ -96,7 +96,6 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
                         device_scale_factor,
                         device_viewport_rect,
                         device_viewport_rect,
-                        true,
                         false);
 
   SkBitmap output;
@@ -201,7 +200,6 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                         device_scale_factor,
                         device_viewport_rect,
                         device_viewport_rect,
-                        true,
                         false);
 
   SkBitmap output;
@@ -283,7 +281,6 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
                         device_scale_factor,
                         device_viewport_rect,
                         device_viewport_rect,
-                        true,
                         false);
 
   SkBitmap output;
@@ -339,7 +336,6 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
                         device_scale_factor,
                         viewport_rect,
                         viewport_rect,
-                        true,
                         false);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
@@ -364,7 +360,6 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
                         device_scale_factor,
                         viewport_rect,
                         viewport_rect,
-                        true,
                         false);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
@@ -416,7 +411,6 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
                         device_scale_factor,
                         viewport_rect,
                         viewport_rect,
-                        true,
                         false);
   renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
