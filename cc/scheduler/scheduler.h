@@ -118,6 +118,8 @@ class CC_EXPORT Scheduler {
     return inside_action_ == action;
   }
 
+  bool IsBeginMainFrameSent() const;
+
  private:
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings,

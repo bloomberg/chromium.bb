@@ -207,7 +207,7 @@ void ThreadProxy::ForceCommitForReadbackOnImplThread(
   impl().readback_request = request;
 
   impl().scheduler->SetNeedsForcedCommitForReadback();
-  if (impl().scheduler->CommitPending()) {
+  if (impl().scheduler->IsBeginMainFrameSent()) {
     begin_main_frame_sent_completion->Signal();
     return;
   }

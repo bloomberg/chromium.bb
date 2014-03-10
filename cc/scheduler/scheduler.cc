@@ -294,6 +294,11 @@ void Scheduler::PollForAnticipatedDrawTriggers() {
   state_machine_.DidLeavePollForAnticipatedDrawTriggers();
 }
 
+bool Scheduler::IsBeginMainFrameSent() const {
+  return state_machine_.commit_state() ==
+         SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
+}
+
 void Scheduler::DrawAndSwapIfPossible() {
   DrawSwapReadbackResult result =
       client_->ScheduledActionDrawAndSwapIfPossible();
