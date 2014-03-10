@@ -142,6 +142,7 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::WebMediaConstraints& constraints,
     int effects,
+    MediaStreamType type,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       playout_data_source_(playout_data_source),
@@ -149,7 +150,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       typing_detected_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
-  InitializeAudioProcessingModule(constraints, effects);
+  InitializeAudioProcessingModule(constraints, effects, type);
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -260,7 +261,8 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
-    const blink::WebMediaConstraints& constraints, int effects) {
+    const blink::WebMediaConstraints& constraints, int effects,
+    MediaStreamType type) {
   DCHECK(!audio_processing_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAudioTrackProcessing)) {
@@ -268,7 +270,12 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   RTCMediaConstraints native_constraints(constraints);
-  ApplyFixedAudioConstraints(&native_constraints);
+
+  // Only apply the fixed constraints for gUM of MEDIA_DEVICE_AUDIO_CAPTURE.
+  DCHECK(IsAudioMediaType(type));
+  if (type == MEDIA_DEVICE_AUDIO_CAPTURE)
+    ApplyFixedAudioConstraints(&native_constraints);
+
   if (effects & media::AudioParameters::ECHO_CANCELLER) {
     // If platform echo canceller is enabled, disable the software AEC.
     native_constraints.AddMandatory(

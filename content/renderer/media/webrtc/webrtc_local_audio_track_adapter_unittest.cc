@@ -35,7 +35,8 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 480),
         adapter_(WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL)),
         capturer_(WebRtcAudioCapturer::CreateCapturer(
-            -1, StreamDeviceInfo(), blink::WebMediaConstraints(), NULL)),
+            -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
+            blink::WebMediaConstraints(), NULL)),
         track_(new WebRtcLocalAudioTrack(adapter_, capturer_, NULL)) {}
 
  protected:

@@ -212,7 +212,8 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
     : constraints_(constraints),
       audio_processor_(
           new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
-              constraints, device_info.device.input.effects, audio_device)),
+              constraints, device_info.device.input.effects,
+              device_info.device.type, audio_device)),
       running_(false),
       render_view_id_(render_view_id),
       device_info_(device_info),

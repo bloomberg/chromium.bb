@@ -164,7 +164,9 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   media::CHANNEL_LAYOUT_STEREO, 2, 0, 48000, 16, 480);
     blink::WebMediaConstraints constraints;
-    capturer_ = WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
+    StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
+                            std::string(), std::string());
+    capturer_ = WebRtcAudioCapturer::CreateCapturer(-1, device,
                                                     constraints, NULL);
     capturer_source_ = new MockCapturerSource(capturer_.get());
     EXPECT_CALL(*capturer_source_.get(), OnInitialize(_, capturer_.get(), -1))
@@ -471,9 +473,10 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
 
   // Create a new capturer with new source with different audio format.
   blink::WebMediaConstraints constraints;
+  StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
+                          std::string(), std::string());
   scoped_refptr<WebRtcAudioCapturer> new_capturer(
-      WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
-                                          constraints, NULL));
+      WebRtcAudioCapturer::CreateCapturer(-1, device, constraints, NULL));
   scoped_refptr<MockCapturerSource> new_source(
       new MockCapturerSource(new_capturer.get()));
   EXPECT_CALL(*new_source.get(), OnInitialize(_, new_capturer.get(), -1));

@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -156,7 +157,8 @@ TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
       new WebRtcAudioDeviceImpl());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
-          constraints, 0, webrtc_audio_device.get()));
+          constraints, 0, MEDIA_DEVICE_AUDIO_CAPTURE,
+          webrtc_audio_device.get()));
   EXPECT_FALSE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
 
@@ -178,7 +180,8 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
       new WebRtcAudioDeviceImpl());
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
-          constraints, 0, webrtc_audio_device.get()));
+          constraints, 0, MEDIA_DEVICE_AUDIO_CAPTURE,
+          webrtc_audio_device.get()));
   EXPECT_TRUE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
   VerifyDefaultComponents(audio_processor);
@@ -187,6 +190,38 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
                              kAudioProcessingSampleRate,
                              kAudioProcessingNumberOfChannel,
                              kAudioProcessingSampleRate / 100);
+  // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
+  // |audio_processor|.
+  audio_processor = NULL;
+}
+
+TEST_F(MediaStreamAudioProcessorTest, VerifyTabCaptureWithoutAudioProcessing) {
+  // Setup the audio processor with enabling the flag.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioTrackProcessing);
+  blink::WebMediaConstraints constraints;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  // Create MediaStreamAudioProcessor instance for MEDIA_TAB_AUDIO_CAPTURE type.
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          constraints, 0, MEDIA_TAB_AUDIO_CAPTURE,
+          webrtc_audio_device.get()));
+  EXPECT_FALSE(audio_processor->has_audio_processing());
+  audio_processor->OnCaptureFormatChanged(params_);
+
+  ProcessDataAndVerifyFormat(audio_processor,
+                             params_.sample_rate(),
+                             params_.channels(),
+                             params_.sample_rate() / 100);
+
+  // Create MediaStreamAudioProcessor instance for MEDIA_LOOPBACK_AUDIO_CAPTURE.
+  audio_processor =
+      new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
+          constraints, 0, MEDIA_LOOPBACK_AUDIO_CAPTURE,
+          webrtc_audio_device.get());
+  EXPECT_FALSE(audio_processor->has_audio_processing());
+
   // Set |audio_processor| to NULL to make sure |webrtc_audio_device| outlives
   // |audio_processor|.
   audio_processor = NULL;

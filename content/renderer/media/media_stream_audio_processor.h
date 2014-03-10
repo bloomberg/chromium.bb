@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -51,6 +52,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // |playout_data_source| won't be used.
   MediaStreamAudioProcessor(const blink::WebMediaConstraints& constraints,
                             int effects,
+                            MediaStreamType type,
                             WebRtcPlayoutDataSource* playout_data_source);
 
   // Called when format of the capture data has changed.
@@ -119,7 +121,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
-      const blink::WebMediaConstraints& constraints, int effects);
+      const blink::WebMediaConstraints& constraints, int effects,
+      MediaStreamType type);
 
   // Helper to initialize the capture converter.
   void InitializeCaptureConverter(const media::AudioParameters& source_params);
