@@ -250,7 +250,7 @@ def _PullTraces(controllers, output, compress, write_json):
     result = trace_files[0]
 
   _PrintMessage('done')
-  _PrintMessage('Trace written to %s' % os.path.abspath(result))
+  _PrintMessage('Trace written to file://%s' % os.path.abspath(result))
   return result
 
 
