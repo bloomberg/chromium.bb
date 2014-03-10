@@ -32,6 +32,7 @@
 #include "core/html/canvas/WebGLExtensionName.h"
 #include "core/html/canvas/WebGLGetInfo.h"
 #include "core/page/Page.h"
+#include "core/rendering/RenderBoxModelObject.h"
 #include "platform/Timer.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -365,7 +366,7 @@ protected:
     void detachAndRemoveAllObjects();
 
     void destroyContext();
-    void markContextChanged();
+    void markContextChanged(ContentChangeType);
 
     // Query if the GL implementation is NPOT strict.
     bool isGLES2NPOTStrict() { return m_isGLES2NPOTStrict; }

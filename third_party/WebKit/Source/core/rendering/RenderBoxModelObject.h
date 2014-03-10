@@ -48,7 +48,8 @@ enum ContentChangeType {
     CanvasChanged,
     CanvasPixelsChanged,
     VideoChanged,
-    FullScreenChanged
+    FullScreenChanged,
+    CanvasContextChanged
 };
 
 class KeyframeList;

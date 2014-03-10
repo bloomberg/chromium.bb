@@ -711,7 +711,7 @@ void WebGLRenderingContextBase::destroyContext()
     }
 }
 
-void WebGLRenderingContextBase::markContextChanged()
+void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
 {
     if (m_framebufferBinding || isContextLost())
         return;
@@ -723,7 +723,7 @@ void WebGLRenderingContextBase::markContextChanged()
     if (renderBox && renderBox->hasAcceleratedCompositing()) {
         m_markedCanvasDirty = true;
         canvas()->clearCopiedImage();
-        renderBox->contentChanged(CanvasChanged);
+        renderBox->contentChanged(changeType);
     } else {
         if (!m_markedCanvasDirty) {
             m_markedCanvasDirty = true;
@@ -1259,7 +1259,7 @@ void WebGLRenderingContextBase::clear(GLbitfield mask)
     }
     if (!clearIfComposited(mask))
         m_context->clear(mask);
-    markContextChanged();
+    markContextChanged(CanvasChanged);
 }
 
 void WebGLRenderingContextBase::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a)
@@ -1752,7 +1752,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei cou
     handleTextureCompleteness("drawArrays", true);
     m_context->drawArrays(mode, first, count);
     handleTextureCompleteness("drawArrays", false);
-    markContextChanged();
+    markContextChanged(CanvasChanged);
 }
 
 void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum type, long long offset)
@@ -1765,7 +1765,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
     handleTextureCompleteness("drawElements", true);
     m_context->drawElements(mode, count, type, static_cast<GLintptr>(offset));
     handleTextureCompleteness("drawElements", false);
-    markContextChanged();
+    markContextChanged(CanvasChanged);
 }
 
 void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
@@ -1781,7 +1781,7 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
     handleTextureCompleteness("drawArraysInstancedANGLE", true);
     m_context->drawArraysInstancedANGLE(mode, first, count, primcount);
     handleTextureCompleteness("drawArraysInstancedANGLE", false);
-    markContextChanged();
+    markContextChanged(CanvasChanged);
 }
 
 void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount)
@@ -1797,7 +1797,7 @@ void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei 
     handleTextureCompleteness("drawElementsInstancedANGLE", true);
     m_context->drawElementsInstancedANGLE(mode, count, type, static_cast<GLintptr>(offset), primcount);
     handleTextureCompleteness("drawElementsInstancedANGLE", false);
-    markContextChanged();
+    markContextChanged(CanvasChanged);
 }
 
 void WebGLRenderingContextBase::enable(GLenum cap)
@@ -5141,7 +5141,7 @@ bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLe
     }
 
     if (!count) {
-        markContextChanged();
+        markContextChanged(CanvasChanged);
         return false;
     }
 
@@ -5186,7 +5186,7 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
     }
 
     if (!count) {
-        markContextChanged();
+        markContextChanged(CanvasChanged);
         return false;
     }
 
@@ -5368,6 +5368,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
 
     setupFlags();
     initializeNewContext();
+    markContextChanged(CanvasContextChanged);
     canvas()->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextrestored, false, true, ""));
 }
 

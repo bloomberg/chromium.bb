@@ -380,6 +380,9 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         // FIXME: Ideally we'd be smarter about tracking dirtiness and wouldn't need a ForceUpdate here.
         m_pendingUpdateType = GraphicsLayerUpdater::ForceUpdate;
         break;
+    case CompositingUpdateAfterCanvasContextChange:
+        m_needsToUpdateLayerTreeGeometry = true;
+        break;
     }
 
     m_renderView.frameView()->scheduleAnimation();
