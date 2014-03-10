@@ -97,7 +97,4 @@ leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread
 # http://crbug.com/350125
 leak:BookmarkNodeData::ClipboardContainsBookmarks
 
-# http://crbug.com/350125
-leak:BookmarkNodeData::ClipboardContainsBookmarks
-
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
