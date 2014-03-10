@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/common/resource_type.h"
@@ -28,10 +30,20 @@ class ServiceWorkerProviderHost
   int process_id() const { return process_id_; }
   int provider_id() const { return provider_id_; }
 
+  // Adds and removes script client thread ID, who is listening events
+  // dispatched from ServiceWorker to the document (and any of its dedicated
+  // workers) corresponding to this provider.
+  void AddScriptClient(int thread_id);
+  void RemoveScriptClient(int thread_id);
+
   // The service worker version that corresponds with navigator.serviceWorker
   // for our document.
   ServiceWorkerVersion* associated_version() const {
     return  associated_version_.get();
+  }
+
+  const std::set<int>& script_client_thread_ids() const {
+    return script_client_thread_ids_;
   }
 
   // Returns true if this provider host should handle requests for
@@ -41,6 +53,7 @@ class ServiceWorkerProviderHost
  private:
   const int process_id_;
   const int provider_id_;
+  std::set<int> script_client_thread_ids_;
   scoped_refptr<ServiceWorkerVersion> associated_version_;
 };
 

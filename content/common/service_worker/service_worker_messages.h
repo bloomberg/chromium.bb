@@ -84,6 +84,16 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
                      int /* provider_id */)
 
+// Informs the browser of a new scriptable API client in the child process.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_AddScriptClient,
+                     int /* thread_id */,
+                     int /* provider_id */)
+
+// Informs the browser that the scriptable API client is unregistered.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
+                     int /* thread_id */,
+                     int /* provider_id */)
+
 // Informs the browser that install event handling has finished.
 // Sent via EmbeddedWorker. If there was an exception during the
 // event handling it'll be reported back separately (to be propagated

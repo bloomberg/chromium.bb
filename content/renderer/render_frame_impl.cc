@@ -1039,10 +1039,16 @@ blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebFrame* frame) {
 blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
     blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(kinuko): Get the provider_id for the frame (via dataSource) and
-  // pass it to the WebServiceWorkerProviderImpl constructor.
+  // At this point we should have non-null data source.
+  DCHECK(frame->dataSource());
+  ServiceWorkerNetworkProvider* provider =
+      ServiceWorkerNetworkProvider::FromDocumentState(
+          DocumentState::FromDataSource(frame->dataSource()));
+  int provider_id = provider ?
+      provider->provider_id() :
+      kInvalidServiceWorkerProviderId;
   return new WebServiceWorkerProviderImpl(
-      ChildThread::current()->thread_safe_sender());
+      ChildThread::current()->thread_safe_sender(), provider_id);
 }
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebFrame* frame) {

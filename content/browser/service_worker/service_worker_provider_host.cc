@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
+#include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 
@@ -15,6 +16,16 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
+}
+
+void ServiceWorkerProviderHost::AddScriptClient(int thread_id) {
+  DCHECK(!ContainsKey(script_client_thread_ids_, thread_id));
+  script_client_thread_ids_.insert(thread_id);
+}
+
+void ServiceWorkerProviderHost::RemoveScriptClient(int thread_id) {
+  DCHECK(ContainsKey(script_client_thread_ids_, thread_id));
+  script_client_thread_ids_.erase(thread_id);
 }
 
 bool ServiceWorkerProviderHost::ShouldHandleRequest(

@@ -17,14 +17,14 @@ class WebServiceWorkerProviderClient;
 
 namespace content {
 
+class ServiceWorkerDispatcher;
 class ThreadSafeSender;
 
 class WebServiceWorkerProviderImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerProvider) {
  public:
-  // TODO(kinuko): This should be given the provider_id from the network
-  // layer.
-  explicit WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender);
+  WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender,
+                               int provider_id);
   virtual ~WebServiceWorkerProviderImpl();
 
   virtual void setClient(blink::WebServiceWorkerProviderClient* client);
@@ -37,8 +37,10 @@ class WebServiceWorkerProviderImpl
                                        WebServiceWorkerCallbacks*);
 
  private:
+  ServiceWorkerDispatcher* GetDispatcher();
+
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  blink::WebServiceWorkerProviderClient* client_;
+  const int provider_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);
 };

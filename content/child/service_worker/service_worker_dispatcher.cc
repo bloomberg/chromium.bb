@@ -77,6 +77,25 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
       CurrentWorkerId(), request_id, pattern));
 }
 
+void ServiceWorkerDispatcher::AddScriptClient(
+    int provider_id,
+    blink::WebServiceWorkerProviderClient* client) {
+  DCHECK(client);
+  DCHECK(!ContainsKey(script_clients_, provider_id));
+  script_clients_[provider_id] = client;
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_AddScriptClient(
+      CurrentWorkerId(), provider_id));
+}
+
+void ServiceWorkerDispatcher::RemoveScriptClient(int provider_id) {
+  // This could be possibly called multiple times to ensure termination.
+  if (ContainsKey(script_clients_, provider_id)) {
+    script_clients_.erase(provider_id);
+    thread_safe_sender_->Send(new ServiceWorkerHostMsg_RemoveScriptClient(
+        CurrentWorkerId(), provider_id));
+  }
+}
+
 ServiceWorkerDispatcher* ServiceWorkerDispatcher::ThreadSpecificInstance(
     ThreadSafeSender* thread_safe_sender) {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {

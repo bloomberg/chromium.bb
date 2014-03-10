@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_H_
 
+#include <map>
+
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -38,15 +40,21 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void OnMessageReceived(const IPC::Message& msg);
   bool Send(IPC::Message* msg);
 
-  // Corresponds to navigator.registerServiceWorker()
+  // Corresponds to navigator.serviceWorker.register()
   void RegisterServiceWorker(
       const GURL& pattern,
       const GURL& script_url,
       blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
-  // Corresponds to navigator.unregisterServiceWorker()
+  // Corresponds to navigator.serviceWorker.unregister()
   void UnregisterServiceWorker(
       const GURL& pattern,
       blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
+
+  // Called when navigator.serviceWorker is instantiated or detached
+  // for a document whose provider can be identified by |provider_id|.
+  void AddScriptClient(int provider_id,
+                       blink::WebServiceWorkerProviderClient* client);
+  void RemoveScriptClient(int provider_id);
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.
@@ -54,6 +62,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       ThreadSafeSender* thread_safe_sender);
 
  private:
+  typedef std::map<int, blink::WebServiceWorkerProviderClient*> ScriptClientMap;
+
   // WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
@@ -69,6 +79,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   IDMap<blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
         IDMapOwnPointer> pending_callbacks_;
+  ScriptClientMap script_clients_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 

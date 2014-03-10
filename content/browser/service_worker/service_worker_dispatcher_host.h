@@ -46,6 +46,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                  const GURL& pattern);
   void OnProviderCreated(int provider_id);
   void OnProviderDestroyed(int provider_id);
+  void OnAddScriptClient(int thread_id, int provider_id);
+  void OnRemoveScriptClient(int thread_id, int provider_id);
   void OnWorkerStarted(int thread_id,
                        int embedded_worker_id);
   void OnWorkerStopped(int embedded_worker_id);
