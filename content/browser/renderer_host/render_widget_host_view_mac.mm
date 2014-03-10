@@ -526,11 +526,8 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
   return true;
 }
 
-void RenderWidgetHostViewMac::CreateSoftwareLayerAndDestroyCompositedLayer() {
-  TRACE_EVENT0(
-      "browser",
-      "RenderWidgetHostViewMac::CreateSoftwareLayerAndDestroyCompositedLayer");
-
+void RenderWidgetHostViewMac::CreateSoftwareLayer() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::CreateSoftwareLayer");
   if (software_layer_ || !use_core_animation_)
     return;
 
@@ -544,9 +541,8 @@ void RenderWidgetHostViewMac::CreateSoftwareLayerAndDestroyCompositedLayer() {
     return;
   }
 
-  // Make the layer current and get rid of the old layer, if there is one.
-  [cocoa_view_ setLayer:software_layer_];
-  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+  // Make the layer visible.
+  [background_layer_ addSublayer:software_layer_];
 }
 
 void RenderWidgetHostViewMac::DestroySoftwareLayer() {
@@ -554,19 +550,14 @@ void RenderWidgetHostViewMac::DestroySoftwareLayer() {
     return;
 
   ScopedCAActionDisabler disabler;
-
-  if ([cocoa_view_ layer] == software_layer_.get())
-    [cocoa_view_ setLayer:background_layer_];
   [software_layer_ removeFromSuperlayer];
   [software_layer_ disableRendering];
   software_layer_.reset();
 }
 
-bool RenderWidgetHostViewMac::CreateCompositedLayerAndDestroySoftwareLayer() {
-  TRACE_EVENT0(
-      "browser",
-      "RenderWidgetHostViewMac::CreateCompositedLayerAndDestroySoftwareLayer");
-
+bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer");
   if (compositing_iosurface_layer_ || !use_core_animation_)
     return true;
 
@@ -580,14 +571,23 @@ bool RenderWidgetHostViewMac::CreateCompositedLayerAndDestroySoftwareLayer() {
     return false;
   }
 
-  // Make the layer current and get rid of the old layer, if there is one.
-  [cocoa_view_ setLayer:compositing_iosurface_layer_];
-  DestroySoftwareLayer();
+  // Make the layer visible.
+  [background_layer_ addSublayer:compositing_iosurface_layer_];
 
-  // Creating the CompositingIOSurfaceLayer may attempt to draw in setLayer,
-  // which, if it fails, will promptly tear down everything that was just
-  // created. If that happened, return failure.
+  // Creating the CompositingIOSurfaceLayer may attempt to draw inside
+  // addSublayer, which, if it fails, will promptly tear down everything that
+  // was just created. If that happened, return failure.
   return compositing_iosurface_layer_;
+}
+
+void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer() {
+  if (!compositing_iosurface_layer_)
+    return;
+
+  ScopedCAActionDisabler disabler;
+  [compositing_iosurface_layer_ removeFromSuperlayer];
+  [compositing_iosurface_layer_ disableCompositing];
+  compositing_iosurface_layer_.reset();
 }
 
 void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
@@ -595,16 +595,9 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
   // Any pending frames will not be displayed, so ack them now.
   SendPendingSwapAck();
 
-  ScopedCAActionDisabler disabler;
-
+  DestroyCompositedIOSurfaceLayer();
   compositing_iosurface_.reset();
-  if (compositing_iosurface_layer_) {
-    if ([cocoa_view_ layer] == compositing_iosurface_layer_.get())
-      [cocoa_view_ setLayer:background_layer_];
-    [compositing_iosurface_layer_ removeFromSuperlayer];
-    [compositing_iosurface_layer_ disableCompositing];
-    compositing_iosurface_layer_.reset();
-  }
+
   switch (destroy_context_behavior) {
     case kLeaveContextBoundToView:
       break;
@@ -792,9 +785,8 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
   ScopedCAActionDisabler disabler;
 
   if (software_layer_) {
-    [software_layer_ disableRendering];
-    software_layer_.reset();
-    CreateSoftwareLayerAndDestroyCompositedLayer();
+    DestroySoftwareLayer();
+    CreateSoftwareLayer();
   }
 
   // Dynamically calling setContentsScale on a CAOpenGLLayer for which
@@ -802,9 +794,8 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
   // content. Work around this by replacing the entire layer when the scale
   // factor changes.
   if (compositing_iosurface_layer_) {
-    [compositing_iosurface_layer_ disableCompositing];
-    compositing_iosurface_layer_.reset();
-    CreateCompositedLayerAndDestroySoftwareLayer();
+    DestroyCompositedIOSurfaceLayer();
+    CreateCompositedIOSurfaceLayer();
   }
 
   render_widget_host_->NotifyScreenInfoChanged();
@@ -1493,7 +1484,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   // Create the layer for the composited content only after the IOSurface has
   // been initialized.
-  if (!CreateCompositedLayerAndDestroySoftwareLayer()) {
+  if (!CreateCompositedIOSurfaceLayer()) {
     LOG(ERROR) << "Failed to create CompositingIOSurface layer";
     GotAcceleratedCompositingError();
     return;
@@ -2006,14 +1997,15 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
       [cocoa_view_ setNeedsDisplay:YES];
     }
 
-    // Delete software backingstore.
+    // Delete software backingstore and layer.
     BackingStoreManager::RemoveBackingStore(render_widget_host_);
     software_frame_manager_->DiscardCurrentFrame();
+    DestroySoftwareLayer();
   }
 }
 
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
-  CreateSoftwareLayerAndDestroyCompositedLayer();
+  CreateSoftwareLayer();
   [software_layer_ setNeedsDisplay];
   SendVSyncParametersToRenderer();
 
@@ -2966,8 +2958,10 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   // this is not sufficient.
   ScopedCAActionDisabler disabler;
   CGRect frame = NSRectToCGRect([renderWidgetHostView_->cocoa_view() bounds]);
-  [[self layer] setFrame:frame];
-  [[self layer] setNeedsDisplay];
+  [renderWidgetHostView_->software_layer_ setFrame:frame];
+  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
+  [renderWidgetHostView_->compositing_iosurface_layer_ setFrame:frame];
+  [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 - (void)callSetNeedsDisplayInRect {
@@ -2977,7 +2971,8 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
   renderWidgetHostView_->invalid_rect_ = NSZeroRect;
 
-  [[self layer] setNeedsDisplay];
+  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
+  [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 // Fills with white the parts of the area to the right and bottom for |rect|
@@ -3970,7 +3965,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   // Resize the view's layers to match the new window size.
   ScopedCAActionDisabler disabler;
-  [[self layer] setFrame:NSRectToCGRect([self bounds])];
+  [renderWidgetHostView_->software_layer_
+      setFrame:NSRectToCGRect([self bounds])];
+  [renderWidgetHostView_->compositing_iosurface_layer_
+      setFrame:NSRectToCGRect([self bounds])];
 }
 
 - (void)undo:(id)sender {

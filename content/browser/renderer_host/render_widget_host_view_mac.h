@@ -445,13 +445,12 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
-  // The background CoreAnimation layer used before compositing nor software
-  // compositing has been enabled, and when the compositing or software
-  // compositing surface has been evicted.
+  // The background CoreAnimation layer which is hosted by |cocoa_view_|.
+  // The compositing or software layers will be added as sublayers to this.
   base::scoped_nsobject<CALayer> background_layer_;
 
-  // The CoreAnimation layer for software compositing. Note that at most one of
-  // |software_layer_| and |compositing_iosurface_layer_| may be non-NULL.
+  // The CoreAnimation layer for software compositing. This should be NULL
+  // when software compositing is not in use.
   base::scoped_nsobject<SoftwareLayer> software_layer_;
 
   // Accelerated compositing structures. These may be dynamically created and
@@ -549,15 +548,16 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // invoke it from the message loop.
   void ShutdownHost();
 
-  void CreateSoftwareLayerAndDestroyCompositedLayer();
+  void CreateSoftwareLayer();
   void DestroySoftwareLayer();
 
   bool CreateCompositedIOSurface();
-  bool CreateCompositedLayerAndDestroySoftwareLayer();
+  bool CreateCompositedIOSurfaceLayer();
   enum DestroyContextBehavior {
     kLeaveContextBoundToView,
     kDestroyContext,
   };
+  void DestroyCompositedIOSurfaceLayer();
   void DestroyCompositedIOSurfaceAndLayer(DestroyContextBehavior
       destroy_context_behavior);
 
