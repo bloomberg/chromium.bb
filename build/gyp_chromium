@@ -550,8 +550,9 @@ if __name__ == '__main__':
           'GYP_CROSSCOMPILE' not in os.environ)):
     os.environ['GYP_CROSSCOMPILE'] = '1'
 
-  if not RunGN(gn_vars_dict):
-    sys.exit(1)
+  # TODO(brettw) bug 350974 either turn back on GN or delete all of this code.
+  #if not RunGN(gn_vars_dict):
+  #  sys.exit(1)
   args.extend(
       ['-I' + i for i in additional_include_files(supplemental_includes, args)])
 
