@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
 
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/content/common/autofill_messages.h"

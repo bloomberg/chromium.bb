@@ -124,4 +124,32 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS != "ios"', {
+      'targets': [
+        {
+          'target_name': 'password_manager_content_browser',
+          'type': 'static_library',
+          'dependencies': [
+            'autofill_content_browser',
+            'autofill_content_common',
+            'autofill_core_common',
+            'password_manager_core_browser',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_browser',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+            '../net/net.gyp:net',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'password_manager/content/browser/content_password_manager_driver.cc',
+            'password_manager/content/browser/content_password_manager_driver.h',
+          ],
+        },
+      ],
+    }],
+  ],
 }
