@@ -5,9 +5,12 @@
 #include "base/mac/foundation_util.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
@@ -312,6 +315,76 @@ TEST(FoundationUtilTest, NSStringToFilePath) {
   EXPECT_EQ(FilePath(), NSStringToFilePath(nil));
   EXPECT_EQ(FilePath(), NSStringToFilePath(@""));
   EXPECT_EQ(FilePath("/a/b"), NSStringToFilePath(@"/a/b"));
+}
+
+TEST(StringNumberConversionsTest, FormatNSInteger) {
+  // The PRI[dxu]NS macro assumes that NSInteger is a typedef to "int" on
+  // 32-bit architecture and a typedef to "long" on 64-bit architecture
+  // (respectively "unsigned int" and "unsigned long" for NSUInteger). Use
+  // pointer incompatibility to validate this at compilation.
+#if defined(ARCH_CPU_64_BITS)
+  typedef long FormatNSIntegerAsType;
+  typedef unsigned long FormatNSUIntegerAsType;
+#else
+  typedef int FormatNSIntegerAsType;
+  typedef unsigned int FormatNSUIntegerAsType;
+#endif  // defined(ARCH_CPU_64_BITS)
+
+  NSInteger some_nsinteger;
+  FormatNSIntegerAsType* pointer_to_some_nsinteger ALLOW_UNUSED =
+      &some_nsinteger;
+
+  NSUInteger some_nsuinteger;
+  FormatNSUIntegerAsType* pointer_to_some_nsuinteger ALLOW_UNUSED =
+      &some_nsuinteger;
+
+  // Check that format specifier works correctly for NSInteger.
+  const struct {
+    NSInteger value;
+    const char* expected;
+    const char* expected_hex;
+  } nsinteger_cases[] = {
+#if !defined(ARCH_CPU_64_BITS)
+    {12345678, "12345678", "bc614e"},
+    {-12345678, "-12345678", "ff439eb2"},
+#else
+    {12345678, "12345678", "bc614e"},
+    {-12345678, "-12345678", "ffffffffff439eb2"},
+    {137451299150l, "137451299150", "2000bc614e"},
+    {-137451299150l, "-137451299150", "ffffffdfff439eb2"},
+#endif  // !defined(ARCH_CPU_64_BITS)
+  };
+
+  for (size_t i = 0; i < arraysize(nsinteger_cases); ++i) {
+    EXPECT_EQ(nsinteger_cases[i].expected,
+              StringPrintf("%" PRIdNS, nsinteger_cases[i].value));
+    EXPECT_EQ(nsinteger_cases[i].expected_hex,
+              StringPrintf("%" PRIxNS, nsinteger_cases[i].value));
+  }
+
+  // Check that format specifier works correctly for NSUInteger.
+  const struct {
+    NSUInteger value;
+    const char* expected;
+    const char* expected_hex;
+  } nsuinteger_cases[] = {
+#if !defined(ARCH_CPU_64_BITS)
+    {12345678u, "12345678", "bc614e"},
+    {4282621618u, "4282621618", "ff439eb2"},
+#else
+    {12345678u, "12345678", "bc614e"},
+    {4282621618u, "4282621618", "ff439eb2"},
+    {137451299150ul, "137451299150", "2000bc614e"},
+    {18446743936258252466ul, "18446743936258252466", "ffffffdfff439eb2"},
+#endif  // !defined(ARCH_CPU_64_BITS)
+  };
+
+  for (size_t i = 0; i < arraysize(nsuinteger_cases); ++i) {
+    EXPECT_EQ(nsuinteger_cases[i].expected,
+              StringPrintf("%" PRIuNS, nsuinteger_cases[i].value));
+    EXPECT_EQ(nsuinteger_cases[i].expected_hex,
+              StringPrintf("%" PRIxNS, nsuinteger_cases[i].value));
+  }
 }
 
 }  // namespace mac

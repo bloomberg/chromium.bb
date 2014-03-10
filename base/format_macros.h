@@ -46,6 +46,34 @@
 #define PRIuS "zu"
 #endif
 
+// The size of NSInteger and NSUInteger varies between 32-bit and 64-bit
+// architectures and Apple does not provides standard format macros and
+// recommends casting. This has many drawbacks, so instead define macros
+// for formatting those types.
+#if defined(OS_MACOSX)
+#if defined(ARCH_CPU_64_BITS)
+#if !defined(PRIdNS)
+#define PRIdNS "ld"
+#endif
+#if !defined(PRIuNS)
+#define PRIuNS "lu"
+#endif
+#if !defined(PRIxNS)
+#define PRIxNS "lx"
+#endif
+#else  // defined(ARCH_CPU_64_BITS)
+#if !defined(PRIdNS)
+#define PRIdNS "d"
+#endif
+#if !defined(PRIuNS)
+#define PRIuNS "u"
+#endif
+#if !defined(PRIxNS)
+#define PRIxNS "x"
+#endif
+#endif
+#endif  // defined(OS_MACOSX)
+
 #else  // OS_WIN
 
 #if !defined(PRId64)
