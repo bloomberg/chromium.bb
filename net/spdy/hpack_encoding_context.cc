@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "net/spdy/hpack_constants.h"
 #include "net/spdy/hpack_entry.h"
 
 namespace net {
@@ -102,7 +103,8 @@ const size_t kStaticEntryCount = arraysize(kStaticTable);
 
 const uint32 HpackEncodingContext::kUntouched = HpackEntry::kUntouched;
 
-HpackEncodingContext::HpackEncodingContext() {}
+HpackEncodingContext::HpackEncodingContext()
+    : settings_header_table_size_(kDefaultHeaderTableSizeSetting) {}
 
 HpackEncodingContext::~HpackEncodingContext() {}
 
@@ -164,32 +166,36 @@ void HpackEncodingContext::ClearTouchesAt(uint32 index) {
   header_table_.GetMutableEntry(index)->ClearTouches();
 }
 
-void HpackEncodingContext::SetMaxSize(uint32 max_size) {
-  header_table_.SetMaxSize(max_size);
+void HpackEncodingContext::ApplyHeaderTableSizeSetting(uint32 size) {
+  settings_header_table_size_ = size;
+  if (size < header_table_.max_size()) {
+    // Implicit maximum-size context update.
+    CHECK(ProcessContextUpdateNewMaximumSize(size));
+  }
 }
 
-bool HpackEncodingContext::ProcessIndexedHeader(
-    uint32 index_or_zero,
-    uint32* new_index,
-    std::vector<uint32>* removed_referenced_indices) {
-  if (index_or_zero > GetEntryCount())
+bool HpackEncodingContext::ProcessContextUpdateNewMaximumSize(uint32 size) {
+  if (size > settings_header_table_size_) {
     return false;
-
-  if (index_or_zero == 0) {
-    *new_index = 0;
-    removed_referenced_indices->clear();
-    // Empty the reference set.
-    for (size_t i = 1; i <= header_table_.GetEntryCount(); ++i) {
-      HpackEntry* entry = header_table_.GetMutableEntry(i);
-      if (entry->IsReferenced()) {
-        removed_referenced_indices->push_back(i);
-        entry->SetReferenced(false);
-      }
-    }
-    return true;
   }
+  header_table_.SetMaxSize(size);
+  return true;
+}
 
-  uint32 index = index_or_zero;
+bool HpackEncodingContext::ProcessContextUpdateEmptyReferenceSet() {
+  for (size_t i = 1; i <= header_table_.GetEntryCount(); ++i) {
+    HpackEntry* entry = header_table_.GetMutableEntry(i);
+    if (entry->IsReferenced()) {
+      entry->SetReferenced(false);
+    }
+  }
+  return true;
+}
+
+bool HpackEncodingContext::ProcessIndexedHeader(uint32 index, uint32* new_index,
+    std::vector<uint32>* removed_referenced_indices) {
+  CHECK_GT(index, 0u);
+  CHECK_LT(index, GetEntryCount());
 
   if (index <= header_table_.GetEntryCount()) {
     *new_index = index;

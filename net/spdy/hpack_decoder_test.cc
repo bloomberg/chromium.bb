@@ -12,10 +12,39 @@
 #include "base/strings/string_piece.h"
 #include "net/spdy/hpack_encoder.h"
 #include "net/spdy/hpack_input_stream.h"
+#include "net/spdy/hpack_output_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+namespace test {
+
+class HpackEncodingContextPeer {
+ public:
+  explicit HpackEncodingContextPeer(const HpackEncodingContext& context)
+      : context_(context) {}
+  const HpackHeaderTable& header_table() {
+    return context_.header_table_;
+  }
+
+ private:
+  const HpackEncodingContext& context_;
+};
+
+class HpackDecoderPeer {
+ public:
+  explicit HpackDecoderPeer(const HpackDecoder& decoder)
+      : decoder_(decoder) {}
+  HpackEncodingContextPeer context_peer() {
+    return HpackEncodingContextPeer(decoder_.context_);
+  }
+
+ private:
+  const HpackDecoder& decoder_;
+};
+
+}  // namespace test
 
 namespace {
 
@@ -30,10 +59,9 @@ const size_t kLiteralBound = 1024;
 class HpackDecoderTest : public ::testing::Test {
  protected:
   HpackDecoderTest()
-      : decoder_(huffman_table_, kLiteralBound) {}
-
-  virtual void SetUp() {
-  }
+      : decoder_(huffman_table_, kLiteralBound),
+        decoder_peer_(decoder_),
+        context_peer_(decoder_peer_.context_peer()) {}
 
   // Utility function to decode a string into a header set, assuming
   // that the emitted headers have unique names.
@@ -49,6 +77,8 @@ class HpackDecoderTest : public ::testing::Test {
 
   HpackHuffmanTable huffman_table_;
   HpackDecoder decoder_;
+  test::HpackDecoderPeer decoder_peer_;
+  test::HpackEncodingContextPeer context_peer_;
 };
 
 // Decoding an encoded name with a valid string literal should work.
@@ -118,9 +148,51 @@ TEST_F(HpackDecoderTest, IndexedHeaderBasic) {
   EXPECT_EQ(expected_header_set2, header_set2);
 }
 
-// Decoding an indexed header with index 0 should clear the reference
-// set.
-TEST_F(HpackDecoderTest, IndexedHeaderZero) {
+// Test a too-large indexed header.
+TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
+  HpackHeaderPairVector header_list;
+  // High-bit set, and a prefix of one more than the number of static entries.
+  EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece("\xbd", 1), &header_list));
+}
+
+TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
+  HpackHeaderPairVector header_list;
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+            context_peer_.header_table().max_size());
+  {
+    // Maximum-size update with size 126. Succeeds.
+    EXPECT_TRUE(decoder_.DecodeHeaderSet(StringPiece("\x80\x7e", 2),
+                                         &header_list));
+    EXPECT_EQ(126u, context_peer_.header_table().max_size());
+  }
+  string input;
+  {
+    // Maximum-size update with kDefaultHeaderTableSizeSetting. Succeeds.
+    HpackOutputStream output_stream(kuint32max);
+    output_stream.AppendBits(0x80, 8);  // Context update.
+    output_stream.AppendBits(0x00, 1);  // Size update.
+    output_stream.AppendUint32ForTest(kDefaultHeaderTableSizeSetting);
+
+    output_stream.TakeString(&input);
+    EXPECT_TRUE(decoder_.DecodeHeaderSet(StringPiece(input), &header_list));
+    EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+              context_peer_.header_table().max_size());
+  }
+  {
+    // Maximum-size update with kDefaultHeaderTableSizeSetting + 1. Fails.
+    HpackOutputStream output_stream(kuint32max);
+    output_stream.AppendBits(0x80, 8);  // Context update.
+    output_stream.AppendBits(0x00, 1);  // Size update.
+    output_stream.AppendUint32ForTest(kDefaultHeaderTableSizeSetting + 1);
+
+    output_stream.TakeString(&input);
+    EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece(input), &header_list));
+    EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+              context_peer_.header_table().max_size());
+  }
+}
+
+TEST_F(HpackDecoderTest, ContextUpdateClearReferenceSet) {
   // Toggle on a couple of headers.
   std::map<string, string> header_set1 =
       DecodeUniqueHeaderSet("\x82\x86");
@@ -129,9 +201,9 @@ TEST_F(HpackDecoderTest, IndexedHeaderZero) {
   expected_header_set1[":path"] = "/index.html";
   EXPECT_EQ(expected_header_set1, header_set1);
 
-  // Toggle index 0 to clear the reference set.
+  // Send a context update to clear the reference set.
   std::map<string, string> header_set2 =
-      DecodeUniqueHeaderSet("\x80");
+      DecodeUniqueHeaderSet("\x80\x80");
   std::map<string, string> expected_header_set2;
   EXPECT_EQ(expected_header_set2, header_set2);
 }
@@ -263,7 +335,7 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
       Pair(":scheme", "http"),
       Pair("cache-control", "no-cache")));
 
-  // 80                                      | == Empty reference set ==
+  // 8080                                    | == Empty reference set ==
   //                                         |   idx = 0
   //                                         |   flag = 1
   // 85                                      | == Indexed - Add ==
@@ -291,7 +363,7 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   //                                         | custom-value
   //                                         | -> custom-key: custom-value
   char third[] =
-      "\x80\x85\x8c\x8b\x84\x00\x88\x4e\xb0\x8b\x74\x97\x90\xfa\x7f\x89"
+      "\x80\x80\x85\x8c\x8b\x84\x00\x88\x4e\xb0\x8b\x74\x97\x90\xfa\x7f\x89"
       "\x4e\xb0\x8b\x74\x97\x9a\x17\xa8\xff";
   header_set = DecodeUniqueHeaderSet(StringPiece(third, arraysize(third)-1));
 
@@ -309,7 +381,7 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
     EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
   }
   std::map<string, string> header_set;
-  decoder_.SetMaxHeadersSize(256);
+  decoder_.ApplyHeaderTableSizeSetting(256);
 
   // 08                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 8)

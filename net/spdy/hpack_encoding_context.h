@@ -16,15 +16,20 @@
 #include "net/spdy/hpack_header_table.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
-// .
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
 namespace net {
+
+namespace test {
+class HpackEncodingContextPeer;
+}  // namespace test
 
 // An encoding context is simply a header table and its associated
 // reference set and a static table.
 class NET_EXPORT_PRIVATE HpackEncodingContext {
  public:
+  friend class test::HpackEncodingContextPeer;
+
   // The constant returned by GetTouchesAt() if the indexed entry
   // hasn't been touched (which is distinct from having a touch count
   // of 0).
@@ -69,20 +74,27 @@ class NET_EXPORT_PRIVATE HpackEncodingContext {
   // kUntouched.
   void ClearTouchesAt(uint32 index);
 
-  // Sets the maximum size of the encoding text, evicting entries if
-  // necessary.
-  void SetMaxSize(uint32 max_size);
+  // Called upon acknowledgement of SETTINGS_HEADER_TABLE_SIZE.
+  // If |max_size| is smaller than the current header table size, the change
+  // is treated as an implicit maximum-size context update.
+  void ApplyHeaderTableSizeSetting(uint32 max_size);
 
   // The Process*() functions below return true on success and false
   // if an error was encountered.
 
+  // Section 4.4. Sets the maximum size of the header table, evicting entries
+  // as needed. Fails if |max_size| is larger than SETTINGS_HEADER_TABLE_SIZE.
+  bool ProcessContextUpdateNewMaximumSize(uint32 max_size);
+
+  // Section 4.4. Drops all headers from the reference set.
+  bool ProcessContextUpdateEmptyReferenceSet();
+
   // Tries to update the encoding context given an indexed header
-  // opcode for the given index (or zero) as described in
-  // 3.2.1. new_index is filled in with the index of a mutable entry,
+  // opcode for the given index as described in section 3.2.1.
+  // new_index is filled in with the index of a mutable entry,
   // or 0 if one was not created. removed_referenced_indices is filled
-  // in with the indices of all entries removed from the reference
-  // set.
-  bool ProcessIndexedHeader(uint32 index_or_zero,
+  // in with the indices of all entries removed from the reference set.
+  bool ProcessIndexedHeader(uint32 nonzero_index,
                             uint32* new_index,
                             std::vector<uint32>* removed_referenced_indices);
 
@@ -99,6 +111,9 @@ class NET_EXPORT_PRIVATE HpackEncodingContext {
       std::vector<uint32>* removed_referenced_indices);
 
  private:
+  // Last acknowledged value for SETTINGS_HEADER_TABLE_SIZE.
+  uint32 settings_header_table_size_;
+
   HpackHeaderTable header_table_;
 
   DISALLOW_COPY_AND_ASSIGN(HpackEncodingContext);

@@ -35,7 +35,7 @@ bool HpackInputStream::MatchPrefixAndConsume(HpackPrefix prefix) {
     return false;
 
   if ((next_octet >> (8 - prefix.bit_size)) == prefix.bits) {
-    bit_offset_ = prefix.bit_size;
+    ConsumeBits(prefix.bit_size);
     return true;
   }
 

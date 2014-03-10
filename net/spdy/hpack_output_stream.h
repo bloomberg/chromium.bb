@@ -16,8 +16,7 @@
 #include "net/spdy/hpack_encoding_context.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
-// .
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
 namespace net {
 

@@ -7,23 +7,82 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "net/spdy/hpack_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
+namespace test {
+
+class HpackEncodingContextPeer {
+ public:
+  explicit HpackEncodingContextPeer(const HpackEncodingContext& context)
+      : context_(context) {}
+
+  const HpackHeaderTable& header_table() {
+    return context_.header_table_;
+  }
+  uint32 settings_header_table_size() {
+    return context_.settings_header_table_size_;
+  }
+
+ private:
+  const HpackEncodingContext& context_;
+};
+
+}  // namespace test
+
 namespace {
 
-// Try to process an indexed header with an invalid index. That should
-// fail.
-TEST(HpackEncodingContextTest, IndexedHeaderInvalid) {
-  HpackEncodingContext encoding_context;
+TEST(HpackEncodingContextTest, ApplyHeaderTableSizeSetting) {
+  HpackEncodingContext context;
+  test::HpackEncodingContextPeer peer(context);
 
-  uint32 new_index = 0;
-  std::vector<uint32> removed_referenced_indices;
-  EXPECT_FALSE(
-      encoding_context.ProcessIndexedHeader(kuint32max,
-                                            &new_index,
-                                            &removed_referenced_indices));
+  // Default setting and table size are kDefaultHeaderTableSizeSetting.
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+            peer.settings_header_table_size());
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+            peer.header_table().max_size());
+
+  // Applying a larger table size setting doesn't affect the headers table.
+  context.ApplyHeaderTableSizeSetting(kDefaultHeaderTableSizeSetting * 2);
+
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting * 2,
+            peer.settings_header_table_size());
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+            peer.header_table().max_size());
+
+  // Applying a smaller size setting does update the headers table.
+  context.ApplyHeaderTableSizeSetting(kDefaultHeaderTableSizeSetting / 2);
+
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting / 2,
+            peer.settings_header_table_size());
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting / 2,
+            peer.header_table().max_size());
+}
+
+TEST(HpackEncodingContextTest, ProcessContextUpdateNewMaximumSize) {
+  HpackEncodingContext context;
+  test::HpackEncodingContextPeer peer(context);
+
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting,
+            peer.settings_header_table_size());
+
+  // Shrink maximum size by half. Succeeds.
+  EXPECT_TRUE(context.ProcessContextUpdateNewMaximumSize(
+      kDefaultHeaderTableSizeSetting / 2));
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting / 2,
+            peer.header_table().max_size());
+
+  // Double maximum size. Succeeds.
+  EXPECT_TRUE(context.ProcessContextUpdateNewMaximumSize(
+      kDefaultHeaderTableSizeSetting));
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting, peer.header_table().max_size());
+
+  // One beyond table size setting. Fails.
+  EXPECT_FALSE(context.ProcessContextUpdateNewMaximumSize(
+      kDefaultHeaderTableSizeSetting + 1));
+  EXPECT_EQ(kDefaultHeaderTableSizeSetting, peer.header_table().max_size());
 }
 
 // Try to process an indexed header with an index for a static
@@ -75,7 +134,7 @@ TEST(HpackEncodingContextTest, IndexedHeaderStatic) {
 // fit. That should succeed without making a copy.
 TEST(HpackEncodingContextTest, IndexedHeaderStaticCopyDoesNotFit) {
   HpackEncodingContext encoding_context;
-  encoding_context.SetMaxSize(0);
+  encoding_context.ProcessContextUpdateNewMaximumSize(0);
 
   uint32 new_index = 0;
   std::vector<uint32> removed_referenced_indices;
@@ -88,13 +147,13 @@ TEST(HpackEncodingContextTest, IndexedHeaderStaticCopyDoesNotFit) {
   EXPECT_EQ(0u, encoding_context.GetMutableEntryCount());
 }
 
-// Add a bunch of new headers and then try to process an indexed
-// header with index 0. That should clear the reference set.
-TEST(HpackEncodingContextTest, IndexedHeaderZero) {
+// Add a bunch of new headers and then process a context update to empty the
+// reference set. Expect it to be empty.
+TEST(HpackEncodingContextTest, ProcessContextUpdateEmptyReferenceSet) {
   HpackEncodingContext encoding_context;
+  test::HpackEncodingContextPeer peer(encoding_context);
 
   uint32 kEntryCount = 50;
-  std::vector<uint32> expected_removed_referenced_indices;
 
   for (uint32 i = 1; i <= kEntryCount; ++i) {
     uint32 new_index = 0;
@@ -106,16 +165,15 @@ TEST(HpackEncodingContextTest, IndexedHeaderZero) {
     EXPECT_EQ(1u, new_index);
     EXPECT_TRUE(removed_referenced_indices.empty());
     EXPECT_EQ(i, encoding_context.GetMutableEntryCount());
-    expected_removed_referenced_indices.push_back(i);
   }
 
-  uint32 new_index = 0;
-  std::vector<uint32> removed_referenced_indices;
-  EXPECT_TRUE(
-      encoding_context.ProcessIndexedHeader(0, &new_index,
-                                            &removed_referenced_indices));
-  EXPECT_EQ(0u, new_index);
-  EXPECT_EQ(expected_removed_referenced_indices, removed_referenced_indices);
+  for (uint32 i = 1; i <= kEntryCount; ++i) {
+    EXPECT_TRUE(peer.header_table().GetEntry(i).IsReferenced());
+  }
+  encoding_context.ProcessContextUpdateEmptyReferenceSet();
+  for (uint32 i = 1; i <= kEntryCount; ++i) {
+    EXPECT_FALSE(peer.header_table().GetEntry(i).IsReferenced());
+  }
 }
 
 // NOTE: It's too onerous to try to test invalid input to
@@ -145,7 +203,7 @@ TEST(HpackEncodingContextTest, LiteralHeaderIncrementalIndexing) {
 // into the table.
 TEST(HpackEncodingContextTest, LiteralHeaderIncrementalIndexingDoesNotFit) {
   HpackEncodingContext encoding_context;
-  encoding_context.SetMaxSize(0);
+  encoding_context.ProcessContextUpdateNewMaximumSize(0);
 
   uint32 index = 0;
   std::vector<uint32> removed_referenced_indices;

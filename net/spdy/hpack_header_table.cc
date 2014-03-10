@@ -5,11 +5,14 @@
 #include "net/spdy/hpack_header_table.h"
 
 #include "base/logging.h"
+#include "net/spdy/hpack_constants.h"
 #include "net/spdy/hpack_string_util.h"
 
 namespace net {
 
-HpackHeaderTable::HpackHeaderTable() : size_(0), max_size_(4096) {}
+HpackHeaderTable::HpackHeaderTable()
+    : size_(0),
+      max_size_(kDefaultHeaderTableSizeSetting) {}
 
 HpackHeaderTable::~HpackHeaderTable() {}
 

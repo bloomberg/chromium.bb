@@ -5,6 +5,7 @@
 #include "net/spdy/hpack_decoder.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "net/spdy/hpack_constants.h"
 #include "net/spdy/hpack_output_stream.h"
 
@@ -20,8 +21,8 @@ HpackDecoder::HpackDecoder(const HpackHuffmanTable& table,
 
 HpackDecoder::~HpackDecoder() {}
 
-void HpackDecoder::SetMaxHeadersSize(uint32 max_size) {
-  context_.SetMaxSize(max_size);
+void HpackDecoder::ApplyHeaderTableSizeSetting(uint32 max_size) {
+  context_.ApplyHeaderTableSizeSetting(max_size);
 }
 
 bool HpackDecoder::DecodeHeaderSet(StringPiece input,
@@ -29,7 +30,7 @@ bool HpackDecoder::DecodeHeaderSet(StringPiece input,
   HpackInputStream input_stream(max_string_literal_size_, input);
   while (input_stream.HasMoreData()) {
     // May add to |header_list|.
-    if (!ProcessNextHeaderRepresentation(&input_stream, header_list))
+    if (!DecodeNextOpcode(&input_stream, header_list))
       return false;
   }
 
@@ -48,82 +49,105 @@ bool HpackDecoder::DecodeHeaderSet(StringPiece input,
   return true;
 }
 
-bool HpackDecoder::ProcessNextHeaderRepresentation(
-    HpackInputStream* input_stream, HpackHeaderPairVector* header_list) {
-  // Touches are used below to track which headers have been emitted.
-
-  // Implements 4.2. Indexed Header Field Representation.
+bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream,
+                                    HpackHeaderPairVector* header_list) {
+  // Implements 4.4: Encoding context update. Context updates are a special-case
+  // of indexed header, and must be tested prior to |kIndexedOpcode| below.
+  if (input_stream->MatchPrefixAndConsume(kEncodingContextOpcode)) {
+    return DecodeNextContextUpdate(input_stream);
+  }
+  // Implements 4.2: Indexed Header Field Representation.
   if (input_stream->MatchPrefixAndConsume(kIndexedOpcode)) {
-    uint32 index_or_zero = 0;
-    if (!input_stream->DecodeNextUint32(&index_or_zero))
-      return false;
-
-    if (index_or_zero > context_.GetEntryCount())
-      return false;
-
-    bool emitted = false;
-    if (index_or_zero > 0) {
-      uint32 index = index_or_zero;
-      // The index will be put into the reference set.
-      if (!context_.IsReferencedAt(index)) {
-        header_list->push_back(
-            HpackHeaderPair(context_.GetNameAt(index).as_string(),
-                            context_.GetValueAt(index).as_string()));
-        emitted = true;
-      }
-    }
-
-    uint32 new_index = 0;
-    std::vector<uint32> removed_referenced_indices;
-    context_.ProcessIndexedHeader(
-        index_or_zero, &new_index, &removed_referenced_indices);
-
-    if (emitted && new_index > 0)
-      context_.AddTouchesAt(new_index, 0);
-
-    return true;
+    return DecodeNextIndexedHeader(input_stream, header_list);
   }
-
-  // Implements 4.3.1. Literal Header Field without Indexing.
+  // Implements 4.3.1: Literal Header Field without Indexing.
   if (input_stream->MatchPrefixAndConsume(kLiteralNoIndexOpcode)) {
-    StringPiece name;
-    if (!DecodeNextName(input_stream, &name))
-      return false;
-
-    StringPiece value;
-    if (!DecodeNextStringLiteral(input_stream, false, &value))
-      return false;
-
-    header_list->push_back(
-        HpackHeaderPair(name.as_string(), value.as_string()));
-    return true;
+    return DecodeNextLiteralHeader(input_stream, false, header_list);
   }
-
-  // Implements 4.3.2. Literal Header Field with Incremental Indexing.
+  // Implements 4.3.2: Literal Header Field with Incremental Indexing.
   if (input_stream->MatchPrefixAndConsume(kLiteralIncrementalIndexOpcode)) {
-    StringPiece name;
-    if (!DecodeNextName(input_stream, &name))
-      return false;
+    return DecodeNextLiteralHeader(input_stream, true, header_list);
+  }
+  // Unrecognized opcode.
+  return false;
+}
 
-    StringPiece value;
-    if (!DecodeNextStringLiteral(input_stream, false, &value))
+bool HpackDecoder::DecodeNextContextUpdate(HpackInputStream* input_stream) {
+  if (input_stream->MatchPrefixAndConsume(kEncodingContextEmptyReferenceSet)) {
+    return context_.ProcessContextUpdateEmptyReferenceSet();
+  }
+  if (input_stream->MatchPrefixAndConsume(kEncodingContextNewMaximumSize)) {
+    uint32 size = 0;
+    if (!input_stream->DecodeNextUint32(&size)) {
       return false;
+    }
+    return context_.ProcessContextUpdateNewMaximumSize(size);
+  }
+  // Unrecognized encoding context update.
+  return false;
+}
 
+bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream,
+                                           HpackHeaderPairVector* header_list) {
+  uint32 index = 0;
+  if (!input_stream->DecodeNextUint32(&index))
+    return false;
+
+  // If index == 0, |kEncodingContextOpcode| would have matched.
+  CHECK_NE(index, 0u);
+
+  if (index > context_.GetEntryCount())
+    return false;
+
+  bool emitted = false;
+  // The index will be put into the reference set.
+  if (!context_.IsReferencedAt(index)) {
     header_list->push_back(
-        HpackHeaderPair(name.as_string(), value.as_string()));
-
-    uint32 new_index = 0;
-    std::vector<uint32> removed_referenced_indices;
-    context_.ProcessLiteralHeaderWithIncrementalIndexing(
-        name, value, &new_index, &removed_referenced_indices);
-
-    if (new_index > 0)
-      context_.AddTouchesAt(new_index, 0);
-
-    return true;
+        HpackHeaderPair(context_.GetNameAt(index).as_string(),
+                        context_.GetValueAt(index).as_string()));
+    emitted = true;
   }
 
-  return false;
+  uint32 new_index = 0;
+  std::vector<uint32> removed_referenced_indices;
+  if (!context_.ProcessIndexedHeader(
+      index, &new_index, &removed_referenced_indices)) {
+    return false;
+  }
+  if (emitted && new_index > 0)
+    context_.AddTouchesAt(new_index, 0);
+
+  return true;
+}
+
+bool HpackDecoder::DecodeNextLiteralHeader(HpackInputStream* input_stream,
+                                           bool should_index,
+                                           HpackHeaderPairVector* header_list) {
+  StringPiece name;
+  if (!DecodeNextName(input_stream, &name))
+    return false;
+
+  StringPiece value;
+  if (!DecodeNextStringLiteral(input_stream, false, &value))
+    return false;
+
+  header_list->push_back(
+      HpackHeaderPair(name.as_string(), value.as_string()));
+
+  if (!should_index)
+    return true;
+
+  uint32 new_index = 0;
+  std::vector<uint32> removed_referenced_indices;
+  if (!context_.ProcessLiteralHeaderWithIncrementalIndexing(
+      name, value, &new_index, &removed_referenced_indices)) {
+    return false;
+  }
+
+  if (new_index > 0)
+    context_.AddTouchesAt(new_index, 0);
+
+  return true;
 }
 
 bool HpackDecoder::DecodeNextName(

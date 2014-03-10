@@ -15,23 +15,30 @@
 #include "net/spdy/hpack_encoding_context.h"
 #include "net/spdy/hpack_input_stream.h"
 
-namespace net {
-
 // An HpackDecoder decodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
+
+namespace net {
 
 class HpackHuffmanTable;
 
+namespace test {
+class HpackDecoderPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE HpackDecoder {
  public:
-  // |table| is an initialized HPACK request or response Huffman table,
-  // having an externally-managed lifetime which spans beyond HpackDecoder.
+  friend class test::HpackDecoderPeer;
+
+  // |table| is an initialized HPACK Huffman table, having an
+  // externally-managed lifetime which spans beyond HpackDecoder.
   explicit HpackDecoder(const HpackHuffmanTable& table,
                         uint32 max_string_literal_size);
   ~HpackDecoder();
 
-  // Set the maximum size of the headers table used by the decoder.
-  void SetMaxHeadersSize(uint32 max_size);
+  // Called upon acknowledgement of SETTINGS_HEADER_TABLE_SIZE.
+  // See HpackEncodingContext::ApplyHeaderTableSizeSetting().
+  void ApplyHeaderTableSizeSetting(uint32 max_size);
 
   // Decodes the given string into the given header set. Returns
   // whether or not the decoding was successful.
@@ -58,13 +65,17 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   const HpackHuffmanTable& huffman_table_;
   std::string huffman_key_buffer_, huffman_value_buffer_;
 
-  // Tries to process the next header representation and maybe emit
-  // headers into |header_list| according to it. Returns true if
-  // successful, or false if an error was encountered.
-  bool ProcessNextHeaderRepresentation(
-      HpackInputStream* input_stream,
-      HpackHeaderPairVector* header_list);
-
+  // Handlers for decoding HPACK opcodes and header representations
+  // (or parts thereof). These methods emit headers into
+  // |header_list|, and return true on success and false on error.
+  bool DecodeNextOpcode(HpackInputStream* input_stream,
+                        HpackHeaderPairVector* header_list);
+  bool DecodeNextContextUpdate(HpackInputStream* input_stream);
+  bool DecodeNextIndexedHeader(HpackInputStream* input_stream,
+                               HpackHeaderPairVector* header_list);
+  bool DecodeNextLiteralHeader(HpackInputStream* input_stream,
+                               bool should_index,
+                               HpackHeaderPairVector* header_list);
   bool DecodeNextName(HpackInputStream* input_stream,
                       base::StringPiece* next_name);
   bool DecodeNextStringLiteral(HpackInputStream* input_stream,
