@@ -226,7 +226,7 @@ deps_os = {
         'src/third_party/ffmpeg':
             None,
         'src/third_party/google_toolbox_for_mac/src':
-            Var('git_url') + '/external/google-toolbox-for-mac.git@dbda5f50cbc4623c260591bce483afa4d6dcc3f8',
+            Var('git_url') + '/external/google-toolbox-for-mac.git@704fb56df6a9a0884801045a158e021945d9d991',
         'src/third_party/hunspell':
             None,
         'src/third_party/hunspell_dictionaries':
@@ -297,7 +297,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@78cf441c4ed0727b7bdadd63818e529898c3e4dd',
         'src/third_party/google_toolbox_for_mac/src':
-            Var('git_url') + '/external/google-toolbox-for-mac.git@dbda5f50cbc4623c260591bce483afa4d6dcc3f8',
+            Var('git_url') + '/external/google-toolbox-for-mac.git@704fb56df6a9a0884801045a158e021945d9d991',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
