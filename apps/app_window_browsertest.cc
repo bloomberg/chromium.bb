@@ -13,10 +13,10 @@ namespace {
 
 typedef extensions::PlatformAppBrowserTest AppWindowBrowserTest;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_FrameInsetsForDefaultFrame FrameInsetsForDefaultFrame
-#else
+#if defined(TOOLKIT_GTK)
 #define MAYBE_FrameInsetsForDefaultFrame DISABLED_FrameInsetsForDefaultFrame
+#else
+#define MAYBE_FrameInsetsForDefaultFrame FrameInsetsForDefaultFrame
 #endif
 
 // Verifies that the NativeAppWindows implement GetFrameInsets() correctly.
@@ -33,10 +33,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
   CloseAppWindow(app_window);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_FrameInsetsForColoredFrame FrameInsetsForColoredFrame
-#else
+#if defined(TOOLKIT_GTK)
 #define MAYBE_FrameInsetsForColoredFrame DISABLED_FrameInsetsForColoredFrame
+#else
+#define MAYBE_FrameInsetsForColoredFrame FrameInsetsForColoredFrame
 #endif
 
 // Verifies that the NativeAppWindows implement GetFrameInsets() correctly.

@@ -185,8 +185,6 @@ gfx::Rect HeaderPainter::GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) {
   gfx::Rect window_bounds(client_bounds);
   window_bounds.Inset(0, -header_height, 0, 0);
-  if (window_bounds.y() < 0)
-    window_bounds.set_y(0);
   return window_bounds;
 }
 
