@@ -48,6 +48,11 @@ for basename in barebones_tests:
   # which cannot be handled by the TLS rewrite in binutils.
   if basename == 'reloc' and is_glibc and env.Bit('build_x86_64'):
     continue
+  # For MIPS32, barebones_reloc requires a call to 64-bit atomics implemented
+  # in compiler-rt library, so this test has to be skipped for this arch.
+  if (basename == 'reloc' and env.Bit('build_mips32') and
+      not env.Bit('pnacl_generate_pexe')):
+    continue
 
   src = 'barebones_' + basename + '.c'
   nexe_name = 'barebones_' + basename
