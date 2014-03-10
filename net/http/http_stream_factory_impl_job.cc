@@ -753,10 +753,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       // TODO(rch): support QUIC proxies for HTTPS urls.
       return ERR_NOT_IMPLEMENTED;
     }
-    HostPortProxyPair destination;
-    destination.first = proxy_info_.is_quic() ?
+    HostPortPair destination = proxy_info_.is_quic() ?
         proxy_info_.proxy_server().host_port_pair() : origin_;
-    destination.second = ProxyServer::Direct();
     next_state_ = STATE_INIT_CONNECTION_COMPLETE;
     bool secure_quic = using_ssl_ || proxy_info_.is_quic();
     int rv = quic_request_.Request(

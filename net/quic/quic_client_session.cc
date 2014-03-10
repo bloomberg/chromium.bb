@@ -493,10 +493,10 @@ void QuicClientSession::CloseAllObservers(int net_error) {
 }
 
 base::Value* QuicClientSession::GetInfoAsValue(
-    const std::set<HostPortProxyPair>& aliases) const {
+    const std::set<HostPortPair>& aliases) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   // TODO(rch): remove "host_port_pair" when Chrome 34 is stable.
-  dict->SetString("host_port_pair", aliases.begin()->first.ToString());
+  dict->SetString("host_port_pair", aliases.begin()->ToString());
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
   dict->SetInteger("total_streams", num_total_streams_);
@@ -508,9 +508,9 @@ base::Value* QuicClientSession::GetInfoAsValue(
                    crypto_stream_->GetSSLInfo(&ssl_info) && ssl_info.cert);
 
   base::ListValue* alias_list = new base::ListValue();
-  for (std::set<HostPortProxyPair>::const_iterator it = aliases.begin();
+  for (std::set<HostPortPair>::const_iterator it = aliases.begin();
        it != aliases.end(); it++) {
-    alias_list->Append(new base::StringValue(it->first.ToString()));
+    alias_list->Append(new base::StringValue(it->ToString()));
   }
   dict->Set("aliases", alias_list);
 

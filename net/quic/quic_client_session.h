@@ -147,7 +147,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // that this session has been closed, which will delete the session.
   void CloseSessionOnError(int error);
 
-  base::Value* GetInfoAsValue(const std::set<HostPortProxyPair>& aliases) const;
+  base::Value* GetInfoAsValue(const std::set<HostPortPair>& aliases) const;
 
   const BoundNetLog& net_log() const { return net_log_; }
 
