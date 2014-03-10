@@ -344,8 +344,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   }
 
 #if defined(ENABLE_APP_LIST)
-  // App List sync is disabled by default.  Register only if enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncAppList)) {
+  if (!command_line_->HasSwitch(switches::kDisableSyncAppList)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
