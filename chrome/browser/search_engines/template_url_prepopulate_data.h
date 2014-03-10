@@ -49,7 +49,8 @@ int GetDataVersion(PrefService* prefs);
 // |default_search_provider_index| is set to the index of the default search
 // provider.
 ScopedVector<TemplateURL> GetPrepopulatedEngines(
-    Profile* profile, size_t* default_search_provider_index);
+    Profile* profile,
+    size_t* default_search_provider_index);
 
 // Removes prepopulated engines and their version stored in user prefs.
 void ClearPrepopulatedEnginesInPrefs(Profile* profile);

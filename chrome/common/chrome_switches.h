@@ -70,7 +70,6 @@ extern const char kCloudPrintServiceURL[];
 extern const char kComponentUpdater[];
 extern const char kConflictingModulesCheck[];
 extern const char kContentSettings2[];
-extern const char kCountry[];
 extern const char kCrashOnHangThreads[];
 extern const char kCreateBrowserOnStartupForTests[];
 #if defined(OS_ANDROID) || defined(OS_IOS)

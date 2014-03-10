@@ -241,10 +241,9 @@ TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
 
 // Verifies that built-in search providers are processed correctly.
 TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
-  // Use United States.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kCountry, "US");
   TestingProfile profile;
+  // Use United States.
+  profile.GetPrefs()->SetInteger(prefs::kCountryIDAtInstall, 'U'<<8|'S');
   size_t default_index;
   ScopedVector<TemplateURL> t_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile,

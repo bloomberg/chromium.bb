@@ -208,11 +208,6 @@ const char kConflictingModulesCheck[]       = "conflicting-modules-check";
 // Toggles a new version of the content settings dialog in options.
 const char kContentSettings2[]              = "new-content-settings";
 
-// The Country we should use. This is normally obtained from the operating
-// system during first run and cached in the preferences afterwards. This is a
-// string value, the 2 letter code from ISO 3166-1.
-const char kCountry[]                       = "country";
-
 // Comma-separated list of BrowserThreads that cause browser process to crash
 // if the given browser thread is not responsive. UI,IO,DB,FILE,CACHE are the
 // list of BrowserThreads that are supported.
