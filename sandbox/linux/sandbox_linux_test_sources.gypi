@@ -15,6 +15,8 @@
   ],
   'sources': [
     'tests/main.cc',
+    'tests/test_utils.cc',
+    'tests/test_utils.h',
     'tests/unit_tests.cc',
     'tests/unit_tests.h',
     'services/broker_process_unittest.cc',

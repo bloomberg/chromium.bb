@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
+#include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,14 +73,11 @@ TEST(BrokerProcess, CreateAndDestroy) {
   scoped_ptr<BrokerProcess> open_broker(
       new BrokerProcess(EPERM, read_whitelist, std::vector<std::string>()));
   ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
-  pid_t broker_pid = open_broker->broker_pid();
 
+  ASSERT_TRUE(TestUtils::CurrentProcessHasChildren());
   // Destroy the broker and check it has exited properly.
   open_broker.reset();
-  int status = 0;
-  ASSERT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
-  ASSERT_TRUE(WIFEXITED(status));
-  ASSERT_EQ(WEXITSTATUS(status), 0);
+  ASSERT_FALSE(TestUtils::CurrentProcessHasChildren());
 }
 
 TEST(BrokerProcess, TestOpenAccessNull) {
@@ -268,7 +266,6 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
   scoped_ptr<BrokerProcess> open_broker(new BrokerProcess(
       EPERM, read_whitelist, std::vector<std::string>(), fast_check_in_client));
   ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
-  pid_t broker_pid = open_broker->broker_pid();
 
   int fd = -1;
   fd = open_broker->Open(kFileCpuInfo, O_RDWR);
@@ -306,13 +303,9 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
   // ourselves.
   ASSERT_EQ(memcmp(buf, buf2, read_len1), 0);
 
+  ASSERT_TRUE(TestUtils::CurrentProcessHasChildren());
   open_broker.reset();
-
-  // Now we check that the broker has exited properly.
-  int status = 0;
-  ASSERT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
-  ASSERT_TRUE(WIFEXITED(status));
-  ASSERT_EQ(WEXITSTATUS(status), 0);
+  ASSERT_FALSE(TestUtils::CurrentProcessHasChildren());
 }
 
 // Run the same thing twice. The second time, we make sure that no security
@@ -375,14 +368,18 @@ SANDBOX_TEST(BrokerProcess, BrokerDied) {
                             true /* fast_check_in_client */,
                             true /* quiet_failures_for_tests */);
   SANDBOX_ASSERT(open_broker.Init(base::Bind(&NoOpCallback)));
-  pid_t broker_pid = open_broker.broker_pid();
+  const pid_t broker_pid = open_broker.broker_pid();
   SANDBOX_ASSERT(kill(broker_pid, SIGKILL) == 0);
 
-  // Now we check that the broker has exited properly.
-  int status = 0;
-  SANDBOX_ASSERT(waitpid(broker_pid, &status, 0) == broker_pid);
-  SANDBOX_ASSERT(WIFSIGNALED(status));
-  SANDBOX_ASSERT(WTERMSIG(status) == SIGKILL);
+  // Now we check that the broker has been signaled, but do not reap it.
+  siginfo_t process_info;
+  SANDBOX_ASSERT(HANDLE_EINTR(waitid(
+                     P_PID, broker_pid, &process_info, WEXITED | WNOWAIT)) ==
+                 0);
+  SANDBOX_ASSERT(broker_pid == process_info.si_pid);
+  SANDBOX_ASSERT(CLD_KILLED == process_info.si_code);
+  SANDBOX_ASSERT(SIGKILL == process_info.si_status);
+
   // Check that doing Open with a dead broker won't SIGPIPE us.
   SANDBOX_ASSERT(open_broker.Open("/proc/cpuinfo", O_RDONLY) == -ENOMEM);
   SANDBOX_ASSERT(open_broker.Access("/proc/cpuinfo", O_RDONLY) == -ENOMEM);

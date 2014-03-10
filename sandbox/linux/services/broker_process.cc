@@ -5,10 +5,12 @@
 #include "sandbox/linux/services/broker_process.h"
 
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -133,7 +135,14 @@ BrokerProcess::BrokerProcess(int denied_errno,
 
 BrokerProcess::~BrokerProcess() {
   if (initialized_ && ipc_socketpair_ != -1) {
-    close(ipc_socketpair_);
+    // Closing the socket should be enough to notify the child to die,
+    // unless it has been duplicated.
+    PCHECK(0 == IGNORE_EINTR(close(ipc_socketpair_)));
+    PCHECK(0 == kill(broker_pid_, SIGKILL));
+    siginfo_t process_info;
+    // Reap the child.
+    int ret = HANDLE_EINTR(waitid(P_PID, broker_pid_, &process_info, WEXITED));
+    PCHECK(0 == ret);
   }
 }
 
