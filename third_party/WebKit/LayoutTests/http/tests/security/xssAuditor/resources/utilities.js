@@ -28,7 +28,7 @@ function sendRequestFromIFrame(url, params, HTTPMethod, callbackWhenDone)
     if (document.getElementById('frame'))
         document.body.removeChild(document.getElementById('frame'));
     var iFrameObj = document.createElement('iframe');
-    iFrameObj.name = 'frame';
+    iFrameObj.id = 'frame';
     document.body.appendChild(iFrameObj);
     var frameContent = iFrameObj.contentDocument;
     frameContent.open();

@@ -137,6 +137,8 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
 void HTMLFrameElementBase::setNameAndOpenURL()
 {
     m_frameName = getNameAttribute();
+    if (m_frameName.isNull())
+        m_frameName = getIdAttribute();
     openURL();
 }
 
