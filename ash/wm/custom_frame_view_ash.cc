@@ -475,7 +475,16 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() {
 }
 
 gfx::Size CustomFrameViewAsh::GetMaximumSize() {
-  return frame_->client_view()->GetMaximumSize();
+  gfx::Size max_client_size(frame_->client_view()->GetMaximumSize());
+  int width = 0;
+  int height = 0;
+
+  if (max_client_size.width() > 0)
+    width = std::max(header_view_->GetMinimumWidth(), max_client_size.width());
+  if (max_client_size.height() > 0)
+    height = NonClientTopBorderHeight() + max_client_size.height();
+
+  return gfx::Size(width, height);
 }
 
 void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {

@@ -65,6 +65,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
 
  private:
   class OverlayView;
+  friend class TestWidgetConstraintsDelegate;
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
