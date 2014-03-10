@@ -5,10 +5,13 @@
 #include <algorithm>
 
 #include "ash/shell.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "chromeos/ime/input_method_whitelist.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,6 +99,9 @@ class ModeIndicatorBrowserTest : public InProcessBrowserTest {
   }
 
   void InitializeIMF() {
+    InputMethodManager::Get()
+        ->GetInputMethodUtil()
+        ->InitXkbInputMethodsForTesting();
     // Make sure ComponentExtensionIMEManager is initialized.
     // ComponentExtensionIMEManagerImpl::InitializeAsync posts
     // ReadComponentExtensionsInfo to the FILE thread for the
@@ -126,7 +132,8 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
   ASSERT_TRUE(imm);
 
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:fr::fra");
+  keyboard_layouts.push_back(
+      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:fr::fra"));
 
   // Add keyboard layouts to enable the mode indicator.
   imm->EnableLoginLayouts("fr", keyboard_layouts);
@@ -193,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
   ASSERT_TRUE(imm);
 
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:fr::fra");
+  keyboard_layouts.push_back(
+      extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:fr::fra"));
 
   // Add keyboard layouts to enable the mode indicator.
   imm->EnableLoginLayouts("fr", keyboard_layouts);

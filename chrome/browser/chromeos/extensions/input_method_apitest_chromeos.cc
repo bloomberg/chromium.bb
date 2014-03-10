@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -27,6 +28,7 @@ const char kInitialInputMethodOnLoginScreen[] = "xkb:us::eng";
 const char kNewInputMethod[] = "fr::fra";
 const char kSetInputMethodMessage[] = "setInputMethod";
 const char kSetInputMethodDone[] = "done";
+const char kBackgroundReady[] = "ready";
 
 // Class that listens for the JS message then changes input method and replies
 // back.
@@ -36,10 +38,6 @@ class SetInputMethodListener : public content::NotificationObserver {
   explicit SetInputMethodListener(int count) : count_(count) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
-    std::vector<std::string> keyboard_layouts;
-    keyboard_layouts.push_back(kInitialInputMethodOnLoginScreen);
-    chromeos::input_method::InputMethodManager::Get()->EnableLoginLayouts(
-        kLoginScreenUILanguage, keyboard_layouts);
   }
 
   virtual ~SetInputMethodListener() {
@@ -51,11 +49,27 @@ class SetInputMethodListener : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     const std::string& content = *content::Details<std::string>(details).ptr();
+    if (content == kBackgroundReady) {
+      // Initializes IMF for testing when receives ready message from
+      // background.
+      chromeos::input_method::InputMethodManager* manager =
+          chromeos::input_method::InputMethodManager::Get();
+      manager->GetInputMethodUtil()->InitXkbInputMethodsForTesting();
+
+      std::vector<std::string> keyboard_layouts;
+      keyboard_layouts.push_back(
+          chromeos::extension_ime_util::GetInputMethodIDByKeyboardLayout(
+              kInitialInputMethodOnLoginScreen));
+      manager->EnableLoginLayouts(kLoginScreenUILanguage, keyboard_layouts);
+      return;
+    }
+
     const std::string expected_message =
         base::StringPrintf("%s:%s", kSetInputMethodMessage, kNewInputMethod);
     if (content == expected_message) {
-      chromeos::input_method::InputMethodManager::Get()->
-          ChangeInputMethod(base::StringPrintf("xkb:%s", kNewInputMethod));
+      chromeos::input_method::InputMethodManager::Get()->ChangeInputMethod(
+          chromeos::extension_ime_util::GetInputMethodIDByKeyboardLayout(
+              base::StringPrintf("xkb:%s", kNewInputMethod)));
 
       scoped_refptr<extensions::TestSendMessageFunction> function =
           content::Source<extensions::TestSendMessageFunction>(
@@ -82,9 +96,6 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
-  chromeos::extension_ime_util::ScopedUseExtensionKeyboardFlagForTesting
-      scoped_flag(false);
-
   // Two test, two calls. See JS code for more info.
   SetInputMethodListener listener(2);
 

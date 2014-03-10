@@ -49,7 +49,7 @@ const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 
-const char kUSlayout[] = "xkb:us::eng";
+const char kUSLayout[] = "xkb:us::eng";
 
 const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60; // 8 hours.
 const int kDerelectIdleTimeoutSeconds = 5 * 60; // 5 minutes.
@@ -85,11 +85,20 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
       weak_ptr_factory_(this) {
   DCHECK(core_oobe_actor_);
   SetupTimeouts();
+
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  manager->SetInputMethodLoginDefault();
+  manager->GetComponentExtensionIMEManager()->AddObserver(this);
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
   if (screen_)
     screen_->OnActorDestroyed(this);
+
+  input_method::InputMethodManager::Get()
+      ->GetComponentExtensionIMEManager()
+      ->RemoveObserver(this);
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
@@ -373,11 +382,17 @@ base::ListValue* NetworkScreenHandler::GetLanguageList() {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
-  // GetSupportedInputMethods() never returns NULL.
-  scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-      manager->GetSupportedInputMethods());
+  ComponentExtensionIMEManager* comp_manager =
+      manager->GetComponentExtensionIMEManager();
+  input_method::InputMethodDescriptors descriptors;
+  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
+    if (comp_manager->IsInitialized())
+      descriptors = comp_manager->GetXkbIMEAsInputMethodDescriptor();
+  } else {
+    descriptors = *(manager->GetSupportedInputMethods());
+  }
   base::ListValue* languages_list =
-      options::CrosLanguageOptionsHandler::GetUILanguageList(*descriptors);
+      options::CrosLanguageOptionsHandler::GetUILanguageList(descriptors);
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {
     base::DictionaryValue* language_info = NULL;
     if (!languages_list->GetDictionary(i, &language_info))
@@ -422,23 +437,40 @@ base::DictionaryValue* CreateInputMethodsEntry(
   return input_method.release();
 }
 
+void NetworkScreenHandler::OnImeComponentExtensionInitialized() {
+  input_method::InputMethodManager::Get()->SetInputMethodLoginDefault();
+
+  // Refreshes the language and keyboard list once the component extension
+  // IMEs are initialized.
+  base::DictionaryValue localized_strings;
+  static_cast<OobeUI*>(this->web_ui()->GetController())
+      ->GetLocalizedStrings(&localized_strings);
+  this->core_oobe_actor_->ReloadContent(localized_strings);
+  this->EnableContinue(this->is_continue_enabled_);
+}
+
 // static
 base::ListValue* NetworkScreenHandler::GetInputMethods() {
   base::ListValue* input_methods_list = new base::ListValue;
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
+    ComponentExtensionIMEManager* comp_manager =
+        manager->GetComponentExtensionIMEManager();
+    if (!comp_manager->IsInitialized()) {
+      input_method::InputMethodDescriptor fallback =
+          util->GetFallbackInputMethodDescriptor();
+      input_methods_list->Append(
+          CreateInputMethodsEntry(fallback, fallback.id()));
+      return input_methods_list;
+    }
+  }
+
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
-  // Uses extension_ime_util::MaybeGetLegacyXkbId() to make sure the input
-  // method id is in legacy xkb id format (e.g. xkb:us::eng), instead of
-  // extension based xkd id format (e.g. _comp_ime_...xkb:us::eng).
-  // Same for the rests.
-  // TODO(shuchen): support wait for component extension loading, and then show
-  // OOBE window. So that extension_ime_util::MaybeGetLegacyXkbId() can be
-  // removed.
-  std::string current_input_method_id = extension_ime_util::MaybeGetLegacyXkbId(
-      manager->GetCurrentInputMethod().id());
+  const std::string& current_input_method_id =
+      manager->GetCurrentInputMethod().id();
   const std::vector<std::string>& hardware_login_input_methods =
       util->GetHardwareLoginInputMethodIds();
   std::set<std::string> input_methods_added;
@@ -447,14 +479,12 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
            hardware_login_input_methods.begin();
        i != hardware_login_input_methods.end();
        ++i) {
-    // Makes sure the id is in legacy xkb id format.
-    const std::string id = extension_ime_util::MaybeGetLegacyXkbId(*i);
-    input_methods_added.insert(id);
     const input_method::InputMethodDescriptor* ime =
-        util->GetInputMethodDescriptorFromId(id);
+        util->GetInputMethodDescriptorFromId(*i);
     DCHECK(ime != NULL);
     // Do not crash in case of misconfiguration.
     if (ime != NULL) {
+      input_methods_added.insert(*i);
       input_methods_list->Append(
           CreateInputMethodsEntry(*ime, current_input_method_id));
     }
@@ -463,8 +493,7 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
   bool optgroup_added = false;
   for (size_t i = 0; i < input_methods->size(); ++i) {
     // Makes sure the id is in legacy xkb id format.
-    const std::string& ime_id = extension_ime_util::MaybeGetLegacyXkbId(
-        (*input_methods)[i].id());
+    const std::string& ime_id = (*input_methods)[i].id();
     if (!InsertString(ime_id, input_methods_added))
       continue;
     if (!optgroup_added) {
@@ -475,9 +504,11 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
         CreateInputMethodsEntry((*input_methods)[i], current_input_method_id));
   }
   // "xkb:us::eng" should always be in the list of available layouts.
-  if (input_methods_added.count(kUSlayout) == 0) {
+  const std::string& us_keyboard_id =
+      extension_ime_util::GetInputMethodIDByKeyboardLayout(kUSLayout);
+  if (input_methods_added.find(us_keyboard_id) == input_methods_added.end()) {
     const input_method::InputMethodDescriptor* us_eng_descriptor =
-        util->GetInputMethodDescriptorFromId(kUSlayout);
+        util->GetInputMethodDescriptorFromId(us_keyboard_id);
     DCHECK(us_eng_descriptor != NULL);
     if (!optgroup_added) {
       optgroup_added = true;

@@ -66,9 +66,9 @@ class IMEBridgeImpl : public IMEBridge {
       const std::string& engine_id) OVERRIDE {
     std::map<std::string, IMEEngineHandlerInterface*>::const_iterator itor =
         engine_handler_map_.find(engine_id);
-    // |engine_id| must be found unless it's empty, but if it's not found, fall
-    // back to NULL when non-debug build.
-    DCHECK(itor != engine_handler_map_.end() || engine_id.empty());
+    // It is normal in that the engine is not found, because sometimes the
+    // extension based xkb id may be provided but the xkb component extension
+    // is not installed, for example, in browser_tests.
     if (itor == engine_handler_map_.end()) {
       engine_handler_ = NULL;
       return NULL;

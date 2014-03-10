@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 #include "ui/gfx/point.h"
 
 class PrefRegistrySimple;
@@ -27,7 +28,8 @@ struct NetworkScreenHandlerOnLanguageChangedCallbackData;
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
 class NetworkScreenHandler : public NetworkScreenActor,
-                             public BaseScreenHandler {
+                             public BaseScreenHandler,
+                             public ComponentExtensionIMEManager::Observer {
  public:
   explicit NetworkScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~NetworkScreenHandler();
@@ -50,6 +52,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
+
+  // ComponentExtensionIMEManager::Observer implementation:
+  virtual void OnImeComponentExtensionInitialized() OVERRIDE;
 
   // Registers the preference for derelict state.
   static void RegisterPrefs(PrefRegistrySimple* registry);

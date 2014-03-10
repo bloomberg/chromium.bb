@@ -95,7 +95,7 @@ class CrosLanguageOptionsHandler
   void InputMethodOptionsOpenCallback(const base::ListValue* args);
 
   // ComponentExtensionIMEManager::Observer override.
-  virtual void OnInitialized() OVERRIDE;
+  virtual void OnImeComponentExtensionInitialized() OVERRIDE;
 
   // Gets the list of languages with |descriptors| based on
   // |base_language_codes|.

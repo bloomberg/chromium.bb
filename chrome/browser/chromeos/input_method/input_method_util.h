@@ -140,6 +140,9 @@ class InputMethodUtil {
   // Sets the list of component extension IMEs.
   void SetComponentExtensions(const InputMethodDescriptors& imes);
 
+  // Initializes the extension based xkb IMEs for testing.
+  void InitXkbInputMethodsForTesting();
+
   // Returns the fallback input method descriptor (the very basic US
   // keyboard). This function is mostly used for testing, but may be used
   // as the fallback, when there is no other choice.
@@ -190,7 +193,7 @@ class InputMethodUtil {
   std::map<std::string, std::string> id_to_language_code_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
   XkbIdToDescriptorMap xkb_id_to_descriptor_;
-  ComponentExtIMEMap component_extension_ime_id_to_descriptor_;
+  std::map<std::string, std::string> xkb_layout_to_indicator_;
 
   typedef base::hash_map<std::string, int> HashType;
   HashType english_to_resource_id_;

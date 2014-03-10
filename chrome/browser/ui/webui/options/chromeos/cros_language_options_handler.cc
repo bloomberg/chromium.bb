@@ -450,7 +450,7 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
-void CrosLanguageOptionsHandler::OnInitialized() {
+void CrosLanguageOptionsHandler::OnImeComponentExtensionInitialized() {
   if (composition_extension_appended_ || !is_page_initialized_) {
     // If an option page is not ready to call JavaScript, appending component
     // extension IMEs will be done in InitializePage function later.

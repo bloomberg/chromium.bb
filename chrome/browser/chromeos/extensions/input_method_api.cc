@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/event_names.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -76,8 +77,11 @@ InputMethodAPI::~InputMethodAPI() {
 
 // static
 std::string InputMethodAPI::GetInputMethodForXkb(const std::string& xkb_id) {
-  size_t prefix_length = std::string(kXkbPrefix).length();
-  DCHECK(xkb_id.substr(0, prefix_length) == kXkbPrefix);
+  std::string xkb_prefix =
+      chromeos::extension_ime_util::GetInputMethodIDByKeyboardLayout(
+          kXkbPrefix);
+  size_t prefix_length = xkb_prefix.length();
+  DCHECK(xkb_id.substr(0, prefix_length) == xkb_prefix);
   return xkb_id.substr(prefix_length);
 }
 

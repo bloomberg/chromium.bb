@@ -9,11 +9,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/input_method_manager.h"
+#include "chromeos/ime/input_method_whitelist.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -221,6 +225,24 @@ void OobeLocalizationTest::RunLocalizationTest(
   StartupCustomizationDocument::GetInstance()->Init(
       statistics_provider_.get());
 
+  input_method::InputMethodManager::Get()
+      ->GetInputMethodUtil()
+      ->InitXkbInputMethodsForTesting();
+
+  std::string expected_keyboard_select = expected_keyboard_select_control;
+  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
+    // Modifies the expected keyboard select control options for the new
+    // extension based xkb id.
+    size_t pos = 0;
+    std::string repl_old = "xkb:";
+    std::string repl_new = "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:";
+    while ((pos = expected_keyboard_select.find(repl_old, pos)) !=
+           std::string::npos) {
+      expected_keyboard_select.replace(pos, repl_old.length(), repl_new);
+      pos += repl_new.length();
+    }
+  }
+
   // Bring up the OOBE network screen.
   chromeos::ShowLoginWizard(chromeos::WizardController::kNetworkScreenName);
   content::WindowedNotificationObserver(
@@ -233,15 +255,18 @@ void OobeLocalizationTest::RunLocalizationTest(
 
   VerifyInitialOptions(kLocaleSelect, expected_locale.c_str(), true);
   VerifyInitialOptions(kKeyboardSelect,
-                       expected_keyboard_layout.c_str(),
+                       extension_ime_util::GetInputMethodIDByKeyboardLayout(
+                           expected_keyboard_layout).c_str(),
                        false);
 
   // Make sure we have a fallback keyboard.
-  VerifyOptionExists(kKeyboardSelect, kUSLayout);
+  VerifyOptionExists(
+      kKeyboardSelect,
+      extension_ime_util::GetInputMethodIDByKeyboardLayout(kUSLayout).c_str());
 
   // Note, that sort order is locale-specific, but is unlikely to change.
   // Especially for keyboard layouts.
-  EXPECT_EQ(expected_keyboard_select_control, DumpOptions(kKeyboardSelect));
+  EXPECT_EQ(expected_keyboard_select, DumpOptions(kKeyboardSelect));
 
   // Shut down the display host.
   chromeos::LoginDisplayHostImpl::default_host()->Finalize();

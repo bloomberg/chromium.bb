@@ -122,7 +122,7 @@ class ComponentExtensionIMEManagerTest :
         scoped_ptr<ComponentExtensionIMEManagerDelegate>(
             mock_delegate_).Pass());
     EXPECT_TRUE(component_ext_mgr_->IsInitialized());
-
+    component_ext_mgr_->NotifyInitialized();
   }
 
   virtual void TearDown() {
@@ -136,7 +136,7 @@ class ComponentExtensionIMEManagerTest :
   std::vector<ComponentExtensionIME> ime_list_;
 
  private:
-  virtual void OnInitialized() OVERRIDE {
+  virtual void OnImeComponentExtensionInitialized() OVERRIDE {
     ++on_initialized_callcount_;
   }
 

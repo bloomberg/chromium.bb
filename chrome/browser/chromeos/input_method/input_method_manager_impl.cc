@@ -112,7 +112,11 @@ void InputMethodManagerImpl::SetState(State new_state) {
 
 scoped_ptr<InputMethodDescriptors>
 InputMethodManagerImpl::GetSupportedInputMethods() const {
-  return whitelist_.GetSupportedInputMethods();
+  scoped_ptr<InputMethodDescriptors> whitelist_imes =
+      whitelist_.GetSupportedInputMethods();
+  if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
+    return whitelist_imes.Pass();
+  return scoped_ptr<InputMethodDescriptors>(new InputMethodDescriptors).Pass();
 }
 
 scoped_ptr<InputMethodDescriptors>
@@ -246,17 +250,12 @@ bool InputMethodManagerImpl::EnableInputMethodImpl(
 
 // Starts or stops the system input method framework as needed.
 void InputMethodManagerImpl::ReconfigureIMFramework() {
-  if (component_extension_ime_manager_->IsInitialized())
-    LoadNecessaryComponentExtensions();
-
-  const bool need_engine =
-      !ContainsOnlyKeyboardLayout(active_input_method_ids_);
+  LoadNecessaryComponentExtensions();
 
   // Initialize candidate window controller and widgets such as
   // candidate window, infolist and mode indicator.  Note, mode
   // indicator is used by only keyboard layout input methods.
-  if (need_engine || active_input_method_ids_.size() > 1)
-    MaybeInitializeCandidateWindowController();
+  MaybeInitializeCandidateWindowController();
 }
 
 bool InputMethodManagerImpl::EnableInputMethod(
@@ -352,7 +351,9 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     engine->Disable();
 
   // Configure the next engine handler.
-  if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
+  if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch) &&
+      !extension_ime_util::IsKeyboardLayoutExtension(
+          input_method_id_to_switch)) {
     IMEBridge::Get()->SetCurrentEngineHandler(NULL);
   } else {
     IMEEngineHandlerInterface* next_engine =
@@ -425,9 +426,8 @@ void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
   // some component extension IMEs may have been removed from the Chrome OS
   // image. If specified component extension IME no longer exists, falling back
   // to an existing IME.
-  std::vector<std::string> unfiltered_input_method_ids =
-      active_input_method_ids_;
-  active_input_method_ids_.clear();
+  std::vector<std::string> unfiltered_input_method_ids;
+  unfiltered_input_method_ids.swap(active_input_method_ids_);
   for (size_t i = 0; i < unfiltered_input_method_ids.size(); ++i) {
     if (!extension_ime_util::IsComponentExtensionIME(
         unfiltered_input_method_ids[i])) {
@@ -440,6 +440,8 @@ void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
       active_input_method_ids_.push_back(unfiltered_input_method_ids[i]);
     }
   }
+  // TODO(shuchen): move this call in ComponentExtensionIMEManager.
+  component_extension_ime_manager_->NotifyInitialized();
 }
 
 void InputMethodManagerImpl::ActivateInputMethodMenuItem(
@@ -833,15 +835,6 @@ void InputMethodManagerImpl::OnScreenUnlocked() {
 bool InputMethodManagerImpl::InputMethodIsActivated(
     const std::string& input_method_id) {
   return Contains(active_input_method_ids_, input_method_id);
-}
-
-bool InputMethodManagerImpl::ContainsOnlyKeyboardLayout(
-    const std::vector<std::string>& value) {
-  for (size_t i = 0; i < value.size(); ++i) {
-    if (!InputMethodUtil::IsKeyboardLayout(value[i]))
-      return false;
-  }
-  return true;
 }
 
 void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {

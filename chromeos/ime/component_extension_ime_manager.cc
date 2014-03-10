@@ -76,7 +76,7 @@ ComponentExtensionIMEManagerDelegate::~ComponentExtensionIMEManagerDelegate() {
 }
 
 ComponentExtensionIMEManager::ComponentExtensionIMEManager()
-    : is_initialized_(false) {
+    : is_initialized_(false), was_initialization_notified_(false) {
   for (size_t i = 0; i < arraysize(kLoginLayoutWhitelist); ++i) {
     login_layout_set_.insert(kLoginLayoutWhitelist[i]);
   }
@@ -90,7 +90,14 @@ void ComponentExtensionIMEManager::Initialize(
   delegate_ = delegate.Pass();
   component_extension_imes_ = delegate_->ListIME();
   is_initialized_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnInitialized());
+}
+
+void ComponentExtensionIMEManager::NotifyInitialized() {
+  if (is_initialized_ && !was_initialization_notified_) {
+    FOR_EACH_OBSERVER(
+        Observer, observers_, OnImeComponentExtensionInitialized());
+    was_initialization_notified_ = true;
+  }
 }
 
 bool ComponentExtensionIMEManager::IsInitialized() {
@@ -199,6 +206,18 @@ input_method::InputMethodDescriptors
               component_extension_imes_[i].options_page_url,
               component_extension_imes_[i].input_view_url));
     }
+  }
+  return result;
+}
+
+input_method::InputMethodDescriptors
+ComponentExtensionIMEManager::GetXkbIMEAsInputMethodDescriptor() {
+  input_method::InputMethodDescriptors result;
+  const input_method::InputMethodDescriptors& descriptors =
+      GetAllIMEAsInputMethodDescriptor();
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    if (extension_ime_util::IsKeyboardLayoutExtension(descriptors[i].id()))
+      result.push_back(descriptors[i]);
   }
   return result;
 }

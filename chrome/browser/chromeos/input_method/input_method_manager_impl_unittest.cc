@@ -94,13 +94,6 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext_xkb_engine_us.layouts.push_back("us");
     ext_xkb.engines.push_back(ext_xkb_engine_us);
 
-    ComponentExtensionEngine ext_xkb_engine_dvorak;
-    ext_xkb_engine_dvorak.engine_id = "xkb:us:dvorak:eng";
-    ext_xkb_engine_dvorak.display_name = "xkb:us:dvorak:eng";
-    ext_xkb_engine_dvorak.language_codes.push_back("en-US");
-    ext_xkb_engine_dvorak.layouts.push_back("us(dvorak)");
-    ext_xkb.engines.push_back(ext_xkb_engine_dvorak);
-
     ComponentExtensionEngine ext_xkb_engine_intl;
     ext_xkb_engine_intl.engine_id = "xkb:us:intl:eng";
     ext_xkb_engine_intl.display_name = "xkb:us:intl:eng";
@@ -115,12 +108,12 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext_xkb_engine_altgr_intl.layouts.push_back("us(altgr-intl)");
     ext_xkb.engines.push_back(ext_xkb_engine_altgr_intl);
 
-    ComponentExtensionEngine ext_xkb_engine_fr;
-    ext_xkb_engine_fr.engine_id = "xkb:fr::fra";
-    ext_xkb_engine_fr.display_name = "xkb:fr::fra";
-    ext_xkb_engine_fr.language_codes.push_back("fr");
-    ext_xkb_engine_fr.layouts.push_back("fr");
-    ext_xkb.engines.push_back(ext_xkb_engine_fr);
+    ComponentExtensionEngine ext_xkb_engine_dvorak;
+    ext_xkb_engine_dvorak.engine_id = "xkb:us:dvorak:eng";
+    ext_xkb_engine_dvorak.display_name = "xkb:us:dvorak:eng";
+    ext_xkb_engine_dvorak.language_codes.push_back("en-US");
+    ext_xkb_engine_dvorak.layouts.push_back("us(dvorak)");
+    ext_xkb.engines.push_back(ext_xkb_engine_dvorak);
 
     ComponentExtensionEngine ext_xkb_engine_colemak;
     ext_xkb_engine_colemak.engine_id = "xkb:us:colemak:eng";
@@ -128,6 +121,13 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext_xkb_engine_colemak.language_codes.push_back("en-US");
     ext_xkb_engine_colemak.layouts.push_back("us(colemak)");
     ext_xkb.engines.push_back(ext_xkb_engine_colemak);
+
+    ComponentExtensionEngine ext_xkb_engine_fr;
+    ext_xkb_engine_fr.engine_id = "xkb:fr::fra";
+    ext_xkb_engine_fr.display_name = "xkb:fr::fra";
+    ext_xkb_engine_fr.language_codes.push_back("fr");
+    ext_xkb_engine_fr.layouts.push_back("fr");
+    ext_xkb.engines.push_back(ext_xkb_engine_fr);
 
     ComponentExtensionEngine ext_xkb_engine_se;
     ext_xkb_engine_se.engine_id = "xkb:se::swe";
@@ -356,23 +356,27 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
 
 TEST_F(InputMethodManagerImplTest, TestGetSupportedInputMethods) {
   InitComponentExtension();
-  scoped_ptr<InputMethodDescriptors> methods(
-      manager_->GetSupportedInputMethods());
-  ASSERT_TRUE(methods.get());
+  InputMethodDescriptors methods;
+  if (extension_ime_util::UseWrappedExtensionKeyboardLayouts()) {
+    methods = manager_->GetComponentExtensionIMEManager()
+                  ->GetXkbIMEAsInputMethodDescriptor();
+  } else {
+    methods = *(manager_->GetSupportedInputMethods());
+  }
   // Try to find random 4-5 layuts and IMEs to make sure the returned list is
   // correct.
   const InputMethodDescriptor* id_to_find =
       manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
           kNaclMozcUsId);
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
-      "xkb:us::eng");
-  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
+      XkbId("xkb:us::eng"));
+  EXPECT_TRUE(Contain(methods, *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
-      "xkb:us:dvorak:eng");
-  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
+      XkbId("xkb:us:dvorak:eng"));
+  EXPECT_TRUE(Contain(methods, *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
-      "xkb:fr::fra");
-  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
+      XkbId("xkb:fr::fra"));
+  EXPECT_TRUE(Contain(methods, *id_to_find));
 }
 
 TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
@@ -393,7 +397,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
 TEST_F(InputMethodManagerImplTest, TestEnableLayoutsAndCurrentInputMethod) {
   // For http://crbug.com/329061
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:se::swe");
+  keyboard_layouts.push_back(XkbId("xkb:se::swe"));
 
   InitComponentExtension();
   manager_->EnableLoginLayouts("en-US", keyboard_layouts);
@@ -481,8 +485,8 @@ TEST_F(InputMethodManagerImplTest, TestEnableTwoLayouts) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
-  ids.push_back("xkb:us:colemak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
+  ids.push_back(XkbId("xkb:us:colemak:eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   // Since all the IDs added avobe are keyboard layouts, Start() should not be
@@ -508,9 +512,9 @@ TEST_F(InputMethodManagerImplTest, TestEnableThreeLayouts) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us::eng");
-  ids.push_back("xkb:us:dvorak:eng");
-  ids.push_back("xkb:us:colemak:eng");
+  ids.push_back(XkbId("xkb:us::eng"));
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
+  ids.push_back(XkbId("xkb:us:colemak:eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(3U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
@@ -539,7 +543,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   ids.push_back(kNaclMozcUsId);
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(1, observer.input_method_changed_count_);
@@ -565,7 +569,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndIme2) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   ids.push_back(kNaclMozcUsId);
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(1, observer.input_method_changed_count_);
@@ -620,8 +624,8 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsThenLock) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us::eng");
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us::eng"));
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
@@ -661,7 +665,7 @@ TEST_F(InputMethodManagerImplTest, SwitchInputMethodTest) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   ids.push_back(kExt2Engine2Id);
   ids.push_back(kExt2Engine1Id);
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
@@ -701,8 +705,8 @@ TEST_F(InputMethodManagerImplTest, TestXkbSetting) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
-  ids.push_back("xkb:us:colemak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
+  ids.push_back(XkbId("xkb:us:colemak:eng"));
   ids.push_back(kNaclMozcJpId);
   ids.push_back(kNaclMozcUsId);
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
@@ -751,7 +755,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
 
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us::eng");
+  ids.push_back(XkbId("xkb:us::eng"));
   ids.push_back(kNaclMozcUsId);
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
@@ -813,7 +817,7 @@ TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
   manager_->AddObserver(&observer);
   InitComponentExtension();
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:us::eng");
+  keyboard_layouts.push_back(XkbId("xkb:us::eng"));
   // For http://crbug.com/19655#c11 - (1)
   manager_->EnableLoginLayouts("en-US", keyboard_layouts);
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
@@ -857,7 +861,7 @@ TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
   keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
 
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:us::eng");
+  keyboard_layouts.push_back(XkbId("xkb:us::eng"));
   manager_->EnableLoginLayouts("en-US", keyboard_layouts);
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(XkbId("xkb:us::eng"), manager_->GetCurrentInputMethod().id());
@@ -918,7 +922,7 @@ TEST_F(InputMethodManagerImplTest,
   keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
 
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
 
@@ -936,7 +940,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   manager_->AddObserver(&observer);
   InitComponentExtension();
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:us::eng");
+  keyboard_layouts.push_back(XkbId("xkb:us::eng"));
   manager_->EnableLoginLayouts("en-US", keyboard_layouts);
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(expect_id, manager_->GetCurrentInputMethod().id());
@@ -975,7 +979,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
   keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
 
   std::vector<std::string> keyboard_layouts;
-  keyboard_layouts.push_back("xkb:us::eng");
+  keyboard_layouts.push_back(XkbId("xkb:us::eng"));
   manager_->EnableLoginLayouts("ja", keyboard_layouts);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(XkbId("xkb:us::eng"), manager_->GetCurrentInputMethod().id());
@@ -1006,7 +1010,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:jp::jpn");
+  ids.push_back(XkbId("xkb:jp::jpn"));
   ids.push_back(kNaclMozcJpId);
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(XkbId("xkb:jp::jpn"), manager_->GetCurrentInputMethod().id());
@@ -1037,7 +1041,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
   EXPECT_EQ("jp", xkeyboard_->last_layout_);
 
   // Add Dvorak.
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(XkbId("xkb:jp::jpn"), manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("jp", xkeyboard_->last_layout_);
@@ -1057,7 +1061,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us:dvorak:eng");
+  ids.push_back(XkbId("xkb:us:dvorak:eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
@@ -1139,7 +1143,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   manager_->AddObserver(&observer);
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("xkb:us::eng");
+  ids.push_back(XkbId("xkb:us::eng"));
   EXPECT_TRUE(manager_->ReplaceEnabledInputMethods(ids));
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);

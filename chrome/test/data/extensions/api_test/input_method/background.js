@@ -11,7 +11,7 @@ function setAndGetTest() {
       chrome.test.assertEq('done', response);
       console.log('Getting current input method.');
       chrome.inputMethodPrivate.get(function (inputMethod) {
-        chrome.test.assertEq(inputMethod, kNewInputMethod);
+        chrome.test.assertEq(kNewInputMethod, inputMethod);
         chrome.test.succeed();
       }
     );
@@ -34,4 +34,5 @@ function setAndObserveTest() {
   );
 }
 
+chrome.test.sendMessage('ready');
 chrome.test.runTests([setAndGetTest, setAndObserveTest]);
