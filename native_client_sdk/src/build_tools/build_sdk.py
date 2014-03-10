@@ -844,10 +844,14 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
 
   build_script = 'build_tools/naclports-linux-sdk-bundle.sh'
   buildbot_common.BuildStep('Build naclports')
-  buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
 
   bundle_dir = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
   out_dir = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
+
+  # Remove the sdk_bundle directory to remove stale files from previous builds.
+  buildbot_common.RemoveDir(bundle_dir)
+
+  buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
 
   # Some naclports do not include a standalone LICENSE/COPYING file
   # so we explicitly list those here for inclusion.
