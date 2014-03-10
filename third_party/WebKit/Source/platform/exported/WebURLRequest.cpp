@@ -75,7 +75,6 @@ public:
         : m_resourceRequestAllocation(*p->m_resourceRequest)
     {
         m_resourceRequest = &m_resourceRequestAllocation;
-        m_allowStoredCredentials = p->m_allowStoredCredentials;
     }
 
     virtual void dispose() { delete this; }
@@ -127,24 +126,14 @@ void WebURLRequest::setFirstPartyForCookies(const WebURL& firstPartyForCookies)
     m_private->m_resourceRequest->setFirstPartyForCookies(firstPartyForCookies);
 }
 
-bool WebURLRequest::allowCookies() const
-{
-    return m_private->m_resourceRequest->allowCookies();
-}
-
-void WebURLRequest::setAllowCookies(bool allowCookies)
-{
-    m_private->m_resourceRequest->setAllowCookies(allowCookies);
-}
-
 bool WebURLRequest::allowStoredCredentials() const
 {
-    return m_private->m_allowStoredCredentials;
+    return m_private->m_resourceRequest->allowStoredCredentials();
 }
 
 void WebURLRequest::setAllowStoredCredentials(bool allowStoredCredentials)
 {
-    m_private->m_allowStoredCredentials = allowStoredCredentials;
+    m_private->m_resourceRequest->setAllowStoredCredentials(allowStoredCredentials);
 }
 
 WebURLRequest::CachePolicy WebURLRequest::cachePolicy() const

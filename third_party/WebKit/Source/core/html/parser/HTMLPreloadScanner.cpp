@@ -142,7 +142,7 @@ public:
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
         if (isCORSEnabled())
-            request->setCrossOriginEnabled(allowCredentials());
+            request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());
         return request.release();
     }
@@ -242,7 +242,7 @@ private:
         return m_isCORSEnabled;
     }
 
-    StoredCredentials allowCredentials() const
+    StoredCredentials allowStoredCredentials() const
     {
         return m_allowCredentials;
     }

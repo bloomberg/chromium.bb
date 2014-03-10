@@ -911,7 +911,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     // This helps with the case where the server sends back
     // "Access-Control-Allow-Origin: *" all the time, but some of the
     // client's requests are made without CORS and some with.
-    if (existingResource->resourceRequest().allowCookies() != request.allowCookies()) {
+    if (existingResource->resourceRequest().allowStoredCredentials() != request.allowStoredCredentials()) {
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to difference in credentials settings.");
         return Reload;
     }

@@ -268,7 +268,7 @@ bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin)
 
 bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin, String& errorDescription)
 {
-    return WebCore::passesAccessControlCheck(m_response, resourceRequest().allowCookies() ? AllowStoredCredentials : DoNotAllowStoredCredentials, securityOrigin, errorDescription);
+    return WebCore::passesAccessControlCheck(m_response, resourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials, securityOrigin, errorDescription);
 }
 
 static double currentAge(const ResourceResponse& response, double responseTimestamp)

@@ -44,7 +44,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
 
     request->setHTTPBody(data->m_httpBody);
-    request->setAllowCookies(data->m_allowCookies);
+    request->setAllowStoredCredentials(data->m_allowStoredCredentials);
     request->setReportUploadProgress(data->m_reportUploadProgress);
     request->setHasUserGesture(data->m_hasUserGesture);
     request->setDownloadToFile(data->m_downloadToFile);
@@ -69,7 +69,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
 
     if (m_httpBody)
         data->m_httpBody = m_httpBody->deepCopy();
-    data->m_allowCookies = m_allowCookies;
+    data->m_allowStoredCredentials = m_allowStoredCredentials;
     data->m_reportUploadProgress = m_reportUploadProgress;
     data->m_hasUserGesture = m_hasUserGesture;
     data->m_downloadToFile = m_downloadToFile;
@@ -216,14 +216,14 @@ void ResourceRequest::setHTTPBody(PassRefPtr<FormData> httpBody)
     m_httpBody = httpBody;
 }
 
-bool ResourceRequest::allowCookies() const
+bool ResourceRequest::allowStoredCredentials() const
 {
-    return m_allowCookies;
+    return m_allowStoredCredentials;
 }
 
-void ResourceRequest::setAllowCookies(bool allowCookies)
+void ResourceRequest::setAllowStoredCredentials(bool allowCredentials)
 {
-    m_allowCookies = allowCookies;
+    m_allowStoredCredentials = allowCredentials;
 }
 
 ResourceLoadPriority ResourceRequest::priority() const
@@ -272,7 +272,7 @@ bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& 
     if (a.httpMethod() != b.httpMethod())
         return false;
 
-    if (a.allowCookies() != b.allowCookies())
+    if (a.allowStoredCredentials() != b.allowStoredCredentials())
         return false;
 
     if (a.priority() != b.priority())
@@ -332,7 +332,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_cachePolicy = cachePolicy;
     m_timeoutInterval = s_defaultTimeoutInterval;
     m_httpMethod = "GET";
-    m_allowCookies = true;
+    m_allowStoredCredentials = true;
     m_reportUploadProgress = false;
     m_reportLoadTiming = false;
     m_reportRawHeaders = false;

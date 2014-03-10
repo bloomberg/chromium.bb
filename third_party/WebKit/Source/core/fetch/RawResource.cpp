@@ -154,7 +154,7 @@ bool RawResource::canReuse(const ResourceRequest& newRequest) const
     if (m_resourceRequest.httpBody() != newRequest.httpBody())
         return false;
 
-    if (m_resourceRequest.allowCookies() != newRequest.allowCookies())
+    if (m_resourceRequest.allowStoredCredentials() != newRequest.allowStoredCredentials())
         return false;
 
     // Ensure most headers match the existing headers before continuing.

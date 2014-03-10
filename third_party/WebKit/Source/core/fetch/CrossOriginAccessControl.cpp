@@ -103,7 +103,7 @@ bool isOnAccessControlResponseHeaderWhitelist(const String& name)
 void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* securityOrigin, StoredCredentials allowCredentials)
 {
     request.removeCredentials();
-    request.setAllowCookies(allowCredentials == AllowStoredCredentials);
+    request.setAllowStoredCredentials(allowCredentials == AllowStoredCredentials);
 
     if (securityOrigin)
         request.setHTTPOrigin(securityOrigin->toAtomicString());
@@ -240,7 +240,7 @@ bool CrossOriginAccessControl::handleRedirect(Resource* resource, SecurityOrigin
         bool allowRedirect = isLegalRedirectLocation(requestURL, errorDescription);
         if (allowRedirect) {
             // Step 5: perform resource sharing access check.
-            StoredCredentials withCredentials = resource->resourceRequest().allowCookies() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+            StoredCredentials withCredentials = resource->resourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
             allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription);
             if (allowRedirect) {
                 RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
