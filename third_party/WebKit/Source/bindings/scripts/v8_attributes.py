@@ -31,6 +31,7 @@
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import idl_types
 from v8_globals import includes, interfaces
 import v8_types
 import v8_utilities
@@ -110,7 +111,7 @@ def generate_attribute(interface, attribute):
         'is_setter_raises_exception': is_setter_raises_exception,
         'has_setter_exception_state': (
             is_setter_raises_exception or has_strict_type_checking or
-            v8_types.is_integer_type(idl_type)),
+            idl_types.is_integer_type(idl_type)),
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
@@ -167,7 +168,7 @@ def generate_getter(interface, attribute, contents):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'jsValue'
         # EventHandler has special handling
-        if idl_type != 'EventHandler' and v8_types.is_interface_type(idl_type):
+        if idl_type != 'EventHandler' and idl_types.is_interface_type(idl_type):
             release = True
 
     if 'ReflectOnly' in extended_attributes:
@@ -242,8 +243,8 @@ def is_keep_alive_for_gc(interface, attribute):
          # There are some exceptions, however:
          not(
              # Node lifetime is managed by object grouping.
-             v8_types.inherits_interface(interface.name, 'Node') or
-             v8_types.inherits_interface(idl_type, 'Node') or
+             idl_types.inherits_interface(interface.name, 'Node') or
+             idl_types.inherits_interface(idl_type, 'Node') or
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.
@@ -303,7 +304,7 @@ def setter_expression(interface, attribute, contents):
             arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(jsValue, true, info.GetIsolate())')
         else:
             arguments.append('V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)')
-    elif v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
+    elif idl_types.is_interface_type(idl_type) and not idl_types.array_type(idl_type):
         # FIXME: should be able to eliminate WTF::getPtr in most or all cases
         arguments.append('WTF::getPtr(cppValue)')
     else:

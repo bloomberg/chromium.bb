@@ -31,6 +31,7 @@
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import idl_types
 from v8_globals import includes
 import v8_types
 import v8_utilities
@@ -92,7 +93,7 @@ def generate_method(interface, method):
             is_check_security_for_frame or
             any(argument for argument in arguments
                 if argument.idl_type == 'SerializedScriptValue' or
-                   v8_types.is_integer_type(argument.idl_type)) or
+                   idl_types.is_integer_type(argument.idl_type)) or
             name in ['addEventListener', 'removeEventListener', 'dispatchEvent'],
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -146,7 +147,7 @@ def generate_argument(interface, method, argument, index):
         'idl_type': idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
-        'is_callback_interface': v8_types.is_callback_interface(idl_type),
+        'is_callback_interface': idl_types.is_callback_interface(idl_type),
         'is_nullable': argument.is_nullable,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
@@ -167,7 +168,7 @@ def generate_argument(interface, method, argument, index):
 def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         idl_type = argument.idl_type
-        if (v8_types.is_callback_interface(idl_type) or
+        if (idl_types.is_callback_interface(idl_type) or
             idl_type in ['NodeFilter', 'XPathNSResolver']):
             # FIXME: remove this special case
             return '%s.release()' % argument.name
@@ -196,7 +197,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     extended_attributes = method.extended_attributes
     if idl_type == 'void':
         return None
-    is_union_type = v8_types.is_union_type(idl_type)
+    is_union_type = idl_types.is_union_type(idl_type)
 
     release = False
     # [CallWith=ScriptState], [RaisesException]
@@ -207,12 +208,12 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
         cpp_value = 'result'
 
         if is_union_type:
-            release = [v8_types.is_interface_type(union_member_type)
+            release = [idl_types.is_interface_type(union_member_type)
                        for union_member_type in idl_type.union_member_types]
         else:
-            release = v8_types.is_interface_type(idl_type)
+            release = idl_types.is_interface_type(idl_type)
 
-    script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
+    script_wrappable = 'imp' if idl_types.inherits_interface(interface_name, 'Node') else ''
     return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
@@ -253,7 +254,7 @@ def property_attributes(method):
 
 def union_arguments(idl_type):
     """Return list of ['result0Enabled', 'result0', 'result1Enabled', ...] for union types, for use in setting return value"""
-    if not v8_types.is_union_type(idl_type):
+    if not idl_types.is_union_type(idl_type):
         return None
     return [arg
             for i in range(len(idl_type.union_member_types))

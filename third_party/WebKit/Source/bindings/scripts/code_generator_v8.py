@@ -68,6 +68,7 @@ templates_dir = os.path.normpath(os.path.join(
 sys.path.insert(1, third_party_dir)
 import jinja2
 
+import idl_types
 import v8_callback_interface
 from v8_globals import includes, interfaces
 import v8_interface
@@ -82,11 +83,11 @@ class CodeGeneratorV8(object):
         self.jinja_env = initialize_jinja_env(cache_dir)
 
         # Set global type info
-        v8_types.set_ancestors(dict(
+        idl_types.set_ancestors(dict(
             (interface_name, interface_info['ancestors'])
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['ancestors']))
-        v8_types.set_callback_interfaces(set(
+        idl_types.set_callback_interfaces(set(
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['is_callback_interface']))
@@ -110,9 +111,9 @@ class CodeGeneratorV8(object):
         interfaces.update(definitions.interfaces)
 
         # Set local type info
-        v8_types.set_callback_functions(definitions.callback_functions.keys())
-        v8_types.set_enums((enum.name, enum.values)
-                           for enum in definitions.enumerations.values())
+        idl_types.set_callback_functions(definitions.callback_functions.keys())
+        idl_types.set_enums((enum.name, enum.values)
+                            for enum in definitions.enumerations.values())
 
         # Select appropriate Jinja template and contents function
         if interface.is_callback:

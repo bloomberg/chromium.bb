@@ -63,117 +63,13 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 
-# pylint doesn't understand ABCs.
-# pylint: disable=W0232, E0203, W0201
-
-import abc
-import re
-
+from idl_types import IdlUnionType, TypedObject
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
     # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
     'DOMTimeStamp': 'unsigned long long',
 }
-
-
-################################################################################
-# Type classes (for typedef resolution)
-################################################################################
-
-class TypedObject(object):
-    """Object with a type, such as an Attribute or Operation (return value).
-
-    The type can be an actual type, or can be a typedef, which must be resolved
-    before passing data to the code generator.
-    """
-    __metaclass__ = abc.ABCMeta
-    idl_type = None
-    extended_attributes = None
-
-    def resolve_typedefs(self, typedefs):
-        """Resolve typedefs to actual types in the object."""
-        # Constructors don't have their own return type, because it's the
-        # interface itself.
-        if not self.idl_type:
-            return
-        # (Types are represented either as strings or as IdlUnionType objects.)
-        # Union types are objects, which have a member function for this
-        if isinstance(self.idl_type, IdlUnionType):
-            # Method 'resolve_typedefs' call is ok, but pylint can't infer this
-            # pylint: disable=E1101
-            self.idl_type.resolve_typedefs(typedefs)
-            return
-        # Otherwise, IDL type is represented as string, so use a function
-        self.idl_type = resolve_typedefs(self.idl_type, typedefs)
-
-class IdlType(object):
-    # FIXME: replace type strings with these objects,
-    # so don't need to parse everywhere types are used.
-    # Types are stored internally as strings, not objects,
-    # e.g., as 'sequence<Foo>' or 'Foo[]',
-    # hence need to parse the string whenever a type is used.
-    # FIXME: incorporate Nullable, Variadic, etc.
-    # FIXME: properly should nest types
-    # Formally types are nested, e.g., short?[] vs. short[]?,
-    # but in practice these complex types aren't used and can treat
-    # as orthogonal properties.
-    def __init__(self, base_type, is_array=False, is_sequence=False):
-        if is_array and is_sequence:
-            raise ValueError('Array of Sequences are not allowed.')
-        self.base_type = base_type
-        self.is_array = is_array
-        self.is_sequence = is_sequence
-
-    def __str__(self):
-        type_string = self.base_type
-        if self.is_array:
-            return type_string + '[]'
-        if self.is_sequence:
-            return 'sequence<%s>' % type_string
-        return type_string
-
-    @classmethod
-    def from_string(cls, type_string):
-        sequence_re = r'^sequence<([^>]*)>$'
-        if type_string.endswith('[]'):
-            type_string = type_string[:-2]
-            sequence_match = re.match(sequence_re, type_string)
-            if sequence_match:
-                raise ValueError('Array of Sequences are not allowed.')
-            return cls(type_string, is_array=True)
-        sequence_match = re.match(sequence_re, type_string)
-        if sequence_match:
-            base_type = sequence_match.group(1)
-            return cls(base_type, is_sequence=True)
-        return cls(type_string)
-
-    def resolve_typedefs(self, typedefs):
-        if self.base_type in typedefs:
-            self.base_type = typedefs[self.base_type]
-        return self  # Fluent interface
-
-
-class IdlUnionType(object):
-    # FIXME: remove class, just treat as tuple
-    def __init__(self, node):
-        self.union_member_types = [type_node_to_type(member_type_node)
-                                   for member_type_node in node.GetChildren()]
-
-    def resolve_typedefs(self, typedefs):
-        self.union_member_types = [
-            typedefs.get(union_member_type, union_member_type)
-            for union_member_type in self.union_member_types]
-
-
-def resolve_typedefs(idl_type, typedefs):
-    """Return an IDL type (as string) with typedefs resolved."""
-    # FIXME: merge into above, as only one use
-    # Converts a string representation to and from an IdlType object to handle
-    # parsing of composite types (arrays and sequences) and encapsulate typedef
-    # resolution, e.g., GLint[] -> unsigned long[] requires parsing the '[]'.
-    # Use fluent interface to avoid auxiliary variable.
-    return str(IdlType.from_string(idl_type).resolve_typedefs(typedefs))
 
 
 ################################################################################
@@ -674,7 +570,7 @@ def type_node_inner_to_type(node):
     elif node_class == 'Sequence':
         return sequence_node_to_type(node)
     elif node_class == 'UnionType':
-        return IdlUnionType(node)
+        return union_type_node_to_idl_union_type(node)
     raise ValueError('Unrecognized node class: %s' % node_class)
 
 
@@ -699,3 +595,9 @@ def typedef_node_to_type(node):
     if child_class != 'Type':
         raise ValueError('Unrecognized node class: %s' % child_class)
     return type_node_to_type(child)
+
+
+def union_type_node_to_idl_union_type(node):
+    union_member_types = [type_node_to_type(member_type_node)
+                          for member_type_node in node.GetChildren()]
+    return IdlUnionType(union_member_types)

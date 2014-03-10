@@ -33,11 +33,12 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 from collections import defaultdict
 
+import idl_types
+from idl_types import inherits_interface, is_interface_type
 import v8_attributes
 from v8_globals import includes
 import v8_methods
 import v8_types
-from v8_types import inherits_interface, is_interface_type
 import v8_utilities
 from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute_value, runtime_enabled_function_name
 
@@ -404,9 +405,9 @@ def overload_check_argument(index, argument):
         return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
                             '%s->IsString()' % cpp_value,
                             '%s->IsObject()' % cpp_value])
-    if v8_types.array_or_sequence_type(idl_type):
+    if idl_types.array_or_sequence_type(idl_type):
         return '%s->IsArray()' % cpp_value
-    if v8_types.is_callback_interface(idl_type):
+    if idl_types.is_callback_interface(idl_type):
         return ' || '.join(['%s->IsNull()' % cpp_value,
                             '%s->IsFunction()' % cpp_value])
     if v8_types.is_wrapper_type(idl_type):
@@ -443,7 +444,7 @@ def generate_constructor(interface, constructor):
             interface.extended_attributes.get('RaisesException') == 'Constructor' or
             any(argument for argument in constructor.arguments
                 if argument.idl_type == 'SerializedScriptValue' or
-                   v8_types.is_integer_type(argument.idl_type)),
+                   idl_types.is_integer_type(argument.idl_type)),
         'is_constructor': True,
         'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
@@ -531,7 +532,7 @@ def interface_length(interface, constructors):
 
 def property_getter(getter, cpp_arguments):
     def is_null_expression(idl_type):
-        if v8_types.is_union_type(idl_type):
+        if idl_types.is_union_type(idl_type):
             return ' && '.join('!result%sEnabled' % i
                                for i, _ in
                                enumerate(idl_type.union_member_types))
@@ -545,11 +546,11 @@ def property_getter(getter, cpp_arguments):
     extended_attributes = getter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    if v8_types.is_union_type(idl_type):
-        release = [v8_types.is_interface_type(union_member_type)
+    if idl_types.is_union_type(idl_type):
+        release = [is_interface_type(union_member_type)
                    for union_member_type in idl_type.union_member_types]
     else:
-        release = v8_types.is_interface_type(idl_type)
+        release = is_interface_type(idl_type)
 
     # FIXME: make more generic, so can use v8_methods.cpp_value
     cpp_method_name = 'imp->%s' % cpp_name(getter)
@@ -593,7 +594,7 @@ def property_setter(setter):
         'idl_type': idl_type,
         'is_custom': 'Custom' in extended_attributes,
         'has_exception_state': is_raises_exception or
-                               v8_types.is_integer_type(idl_type),
+                               idl_types.is_integer_type(idl_type),
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(

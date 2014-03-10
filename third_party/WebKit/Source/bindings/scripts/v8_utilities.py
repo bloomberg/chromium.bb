@@ -35,6 +35,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import re
 
+import idl_types
 from v8_globals import includes
 import v8_types
 
@@ -95,10 +96,10 @@ def uncapitalize(name):
 ################################################################################
 
 def enum_validation_expression(idl_type):
-    if not v8_types.is_enum(idl_type):
+    if not idl_types.is_enum(idl_type):
         return None
     return ' || '.join(['string == "%s"' % enum_value
-                        for enum_value in v8_types.enum_values(idl_type)])
+                        for enum_value in idl_types.enum_values(idl_type)])
 
 
 def scoped_name(interface, definition, base_name):
