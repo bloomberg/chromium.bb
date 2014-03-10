@@ -220,7 +220,7 @@ class FileDownloader {
   int64_t open_time_;
   int32_t status_code_;
   DownloadMode mode_;
-  static const uint32_t kTempBufferSize = 2048;
+  static const uint32_t kTempBufferSize = 16384;
   std::vector<char> temp_buffer_;
   std::deque<char> buffer_;
   UrlSchemeType url_scheme_;
