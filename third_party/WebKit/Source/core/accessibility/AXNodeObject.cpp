@@ -185,7 +185,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return LinkRole;
     if (node()->isTextNode())
         return StaticTextRole;
-    if (node()->hasTagName(buttonTag))
+    if (isHTMLButtonElement(*node()))
         return buttonRoleType();
     if (isHTMLInputElement(*node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
@@ -212,15 +212,15 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return TextAreaRole;
     if (headingLevel())
         return HeadingRole;
-    if (node()->hasTagName(divTag))
+    if (isHTMLDivElement(*node()))
         return DivRole;
-    if (node()->hasTagName(pTag))
+    if (isHTMLParagraphElement(*node()))
         return ParagraphRole;
-    if (node()->hasTagName(labelTag))
+    if (isHTMLLabelElement(*node()))
         return LabelRole;
     if (node()->isElementNode() && toElement(node())->isFocusable())
         return GroupRole;
-    if (node()->hasTagName(aTag) && isClickable())
+    if (isHTMLAnchorElement(*node()) && isClickable())
         return LinkRole;
 
     return UnknownRole;
@@ -322,7 +322,7 @@ bool AXNodeObject::isGenericFocusableElement() const
     // cases already, so we don't need to include them here.
     if (roleValue() == WebAreaRole)
         return false;
-    if (node() && node()->hasTagName(bodyTag))
+    if (isHTMLBodyElement(node()))
         return false;
 
     // An SVG root is focusable by default, but it's probably not interactive, so don't
@@ -345,7 +345,7 @@ HTMLLabelElement* AXNodeObject::labelForElement(Element* element) const
     }
 
     for (Element* parent = element->parentElement(); parent; parent = parent->parentElement()) {
-        if (parent->hasTagName(labelTag))
+        if (isHTMLLabelElement(*parent))
             return toHTMLLabelElement(parent);
     }
 
@@ -473,11 +473,7 @@ bool AXNodeObject::isControl() const
 
 bool AXNodeObject::isFieldset() const
 {
-    Node* node = this->node();
-    if (!node)
-        return false;
-
-    return node->hasTagName(fieldsetTag);
+    return isHTMLFieldSetElement(node());
 }
 
 bool AXNodeObject::isHeading() const
@@ -555,10 +551,10 @@ bool AXNodeObject::isNativeImage() const
     if (!node)
         return false;
 
-    if (node->hasTagName(imgTag))
+    if (isHTMLImageElement(*node))
         return true;
 
-    if (node->hasTagName(appletTag) || node->hasTagName(embedTag) || node->hasTagName(objectTag))
+    if (isHTMLAppletElement(*node) || isHTMLEmbedElement(*node) || isHTMLObjectElement(*node))
         return true;
 
     if (isHTMLInputElement(*node))
@@ -766,18 +762,13 @@ bool AXNodeObject::canSetValueAttribute() const
 bool AXNodeObject::canvasHasFallbackContent() const
 {
     Node* node = this->node();
-    if (!node || !node->hasTagName(canvasTag))
+    if (!isHTMLCanvasElement(node))
         return false;
 
     // If it has any children that are elements, we'll assume it might be fallback
     // content. If it has no children or its only children are not elements
     // (e.g. just text nodes), it doesn't have fallback content.
-    for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-        if (child->isElementNode())
-            return true;
-    }
-
-    return false;
+    return ElementTraversal::firstChild(*node);
 }
 
 bool AXNodeObject::exposesTitleUIElement() const
@@ -1329,7 +1320,7 @@ void AXNodeObject::addChildren()
     m_haveChildren = true;
 
     // The only time we add children from the DOM tree to a node with a renderer is when it's a canvas.
-    if (renderer() && !m_node->hasTagName(canvasTag))
+    if (renderer() && !isHTMLCanvasElement(*m_node))
         return;
 
     for (Node* child = m_node->firstChild(); child; child = child->nextSibling())
@@ -1400,7 +1391,7 @@ Element* AXNodeObject::actionElement() const
         HTMLInputElement& input = toHTMLInputElement(*node);
         if (!input.isDisabledFormControl() && (isCheckboxOrRadio() || input.isTextButton()))
             return &input;
-    } else if (node->hasTagName(buttonTag)) {
+    } else if (isHTMLButtonElement(*node)) {
         return toElement(node);
     }
 
@@ -1413,7 +1404,7 @@ Element* AXNodeObject::actionElement() const
     if (isImageButton())
         return toElement(node);
 
-    if (node->hasTagName(selectTag))
+    if (isHTMLSelectElement(*node))
         return toElement(node);
 
     switch (roleValue()) {
@@ -1445,7 +1436,7 @@ Element* AXNodeObject::anchorElement() const
     // search up the DOM tree for an anchor element
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     for ( ; node; node = node->parentNode()) {
-        if (node->hasTagName(aTag) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (isHTMLAnchorElement(*node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
             return toElement(node);
     }
 
@@ -1493,7 +1484,7 @@ HTMLLabelElement* AXNodeObject::labelElementContainer() const
 
     // find if this has a parent that is a label
     for (Node* parentNode = node(); parentNode; parentNode = parentNode->parentNode()) {
-        if (parentNode->hasTagName(labelTag))
+        if (isHTMLLabelElement(*parentNode))
             return toHTMLLabelElement(parentNode);
     }
 
@@ -1631,7 +1622,7 @@ String AXNodeObject::alternativeTextForWebArea() const
 
     Node* owner = document->ownerElement();
     if (owner) {
-        if (owner->hasTagName(frameTag) || owner->hasTagName(iframeTag)) {
+        if (isHTMLFrameElement(*owner) || isHTMLIFrameElement(*owner)) {
             const AtomicString& title = toElement(owner)->getAttribute(titleAttr);
             if (!title.isEmpty())
                 return title;
@@ -1741,8 +1732,7 @@ void AXNodeObject::titleElementText(Vector<AccessibilityText>& textOrder)
     if (!node)
         return;
 
-    bool isInputTag = node->hasTagName(inputTag);
-    if (isInputTag || AXObject::isARIAInput(ariaRoleAttribute()) || isControl()) {
+    if (isHTMLInputElement(*node) || AXObject::isARIAInput(ariaRoleAttribute()) || isControl()) {
         HTMLLabelElement* label = labelForElement(toElement(node));
         if (label) {
             AXObject* labelObject = axObjectCache()->getOrCreate(label);
@@ -1771,7 +1761,7 @@ void AXNodeObject::visibleText(Vector<AccessibilityText>& textOrder) const
     }
 
     // If this node isn't rendered, there's no inner text we can extract from a select element.
-    if (!isAXRenderObject() && node->hasTagName(selectTag))
+    if (!isAXRenderObject() && isHTMLSelectElement(*node))
         return;
 
     bool useTextUnderElement = false;
@@ -1779,7 +1769,7 @@ void AXNodeObject::visibleText(Vector<AccessibilityText>& textOrder) const
     switch (roleValue()) {
     case PopUpButtonRole:
         // Native popup buttons should not use their button children's text as a title. That value is retrieved through stringValue().
-        if (node->hasTagName(selectTag))
+        if (isHTMLSelectElement(*node))
             break;
     case ButtonRole:
     case ToggleButtonRole:

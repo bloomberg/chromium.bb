@@ -60,7 +60,7 @@ bool AXListBoxOption::isEnabled() const
     if (!m_optionElement)
         return false;
 
-    if (m_optionElement->hasTagName(optgroupTag))
+    if (isHTMLOptGroupElement(*m_optionElement))
         return false;
 
     if (equalIgnoringCase(getAttribute(aria_disabledAttr), "true"))
@@ -124,10 +124,7 @@ bool AXListBoxOption::computeAccessibilityIsIgnored() const
 
 bool AXListBoxOption::canSetSelectedAttribute() const
 {
-    if (!m_optionElement)
-        return false;
-
-    if (!m_optionElement->hasTagName(optionTag))
+    if (!isHTMLOptionElement(m_optionElement))
         return false;
 
     if (m_optionElement->isDisabledFormControl())

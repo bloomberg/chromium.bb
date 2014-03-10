@@ -38,7 +38,7 @@ AXMenuListOption::AXMenuListOption()
 
 void AXMenuListOption::setElement(HTMLElement* element)
 {
-    ASSERT_ARG(element, element->hasTagName(optionTag));
+    ASSERT_ARG(element, isHTMLOptionElement(element));
     m_element = element;
 }
 

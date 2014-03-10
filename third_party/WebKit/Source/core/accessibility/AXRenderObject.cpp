@@ -283,14 +283,14 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return ListItemRole;
     if (m_renderer->isListMarker())
         return ListMarkerRole;
-    if (node && node->hasTagName(buttonTag))
+    if (isHTMLButtonElement(node))
         return buttonRoleType();
-    if (node && node->hasTagName(legendTag))
+    if (isHTMLLegendElement(node))
         return LegendRole;
     if (m_renderer->isText())
         return StaticTextRole;
     if (cssBox && cssBox->isImage()) {
-        if (node && node->hasTagName(inputTag))
+        if (isHTMLInputElement(node))
             return ariaHasPopup() ? PopUpButtonRole : ButtonRole;
         if (isSVGImage())
             return SVGRootRole;
@@ -298,7 +298,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     }
 
     // Note: if JavaScript is disabled, the renderer won't be a RenderHTMLCanvas.
-    if (node && node->hasTagName(canvasTag) && m_renderer->isCanvas())
+    if (isHTMLCanvasElement(node) && m_renderer->isCanvas())
         return CanvasRole;
 
     if (cssBox && cssBox->isRenderView())
@@ -354,16 +354,16 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (m_renderer->isHR())
         return HorizontalRuleRole;
 
-    if (node && node->hasTagName(pTag))
+    if (isHTMLParagraphElement(node))
         return ParagraphRole;
 
-    if (node && node->hasTagName(labelTag))
+    if (isHTMLLabelElement(node))
         return LabelRole;
 
-    if (node && node->hasTagName(divTag))
+    if (isHTMLDivElement(node))
         return DivRole;
 
-    if (node && node->hasTagName(formTag))
+    if (isHTMLFormElement(node))
         return FormRole;
 
     if (node && node->hasTagName(articleTag))
@@ -388,7 +388,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return DialogRole;
 
     // The HTML element should not be exposed as an element. That's what the RenderView element does.
-    if (node && node->hasTagName(htmlTag))
+    if (isHTMLHtmlElement(node))
         return IgnoredRole;
 
     // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
@@ -398,7 +398,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(footerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
         return FooterRole;
 
-    if (node && node->hasTagName(aTag) && isClickable())
+    if (isHTMLAnchorElement(node) && isClickable())
         return LinkRole;
 
     if (m_renderer->isRenderBlockFlow())
@@ -662,7 +662,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
     // don't ignore labels, because they serve as TitleUIElements
     Node* node = m_renderer->node();
-    if (node && node->hasTagName(labelTag))
+    if (isHTMLLabelElement(node))
         return false;
 
     // Anything that is content editable should not be ignored.
@@ -688,7 +688,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     // objects are often containers with meaningful information, the inclusion of a span can have
     // the side effect of causing the immediate parent accessible to be ignored. This is especially
     // problematic for platforms which have distinct roles for textual block elements.
-    if (node && node->hasTagName(spanTag))
+    if (isHTMLSpanElement(node))
         return true;
 
     if (m_renderer->isRenderBlockFlow() && m_renderer->childrenInline() && !canSetFocusAttribute())
@@ -1525,7 +1525,7 @@ Element* AXRenderObject::anchorElement() const
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     Node* node = currRenderer->node();
     for ( ; node; node = node->parentNode()) {
-        if (node->hasTagName(aTag) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (isHTMLAnchorElement(*node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
             return toElement(node);
     }
 
@@ -2173,7 +2173,7 @@ void AXRenderObject::addImageMapChildren()
 
 void AXRenderObject::addCanvasChildren()
 {
-    if (!node() || !node()->hasTagName(canvasTag))
+    if (!isHTMLCanvasElement(node()))
         return;
 
     // If it's a canvas, it won't have rendered children, but it might have accessible fallback content.

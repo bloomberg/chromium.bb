@@ -66,7 +66,8 @@ bool AXMenuListPopup::computeAccessibilityIsIgnored() const
 
 AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) const
 {
-    if (!element->hasTagName(optionTag))
+    ASSERT(element);
+    if (!isHTMLOptionElement(*element))
         return 0;
 
     AXObject* object = document()->axObjectCache()->getOrCreate(MenuListOptionRole);

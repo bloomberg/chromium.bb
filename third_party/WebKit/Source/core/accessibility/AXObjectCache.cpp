@@ -271,7 +271,7 @@ static PassRefPtr<AXObject> createFromRenderer(RenderObject* renderer)
     // If the node is aria role="list" or the aria role is empty and its a
     // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
     if (node && ((nodeHasRole(node, "list") || nodeHasRole(node, "directory"))
-        || (nodeHasRole(node, nullAtom) && (node->hasTagName(ulTag) || node->hasTagName(olTag) || node->hasTagName(dlTag)))))
+        || (nodeHasRole(node, nullAtom) && (isHTMLUListElement(*node) || isHTMLOListElement(*node) || isHTMLDListElement(*node)))))
         return AXList::create(renderer);
 
     // aria tables
@@ -831,7 +831,7 @@ void AXObjectCache::handleAttributeChanged(const QualifiedName& attrName, Elemen
         handleAriaRoleChanged(element);
     else if (attrName == altAttr || attrName == titleAttr)
         textChanged(element);
-    else if (attrName == forAttr && element->hasTagName(labelTag))
+    else if (attrName == forAttr && isHTMLLabelElement(*element))
         labelChanged(element);
 
     if (!attrName.localName().string().startsWith("aria-"))
@@ -920,7 +920,7 @@ void AXObjectCache::textMarkerDataForVisiblePosition(TextMarkerData& textMarkerD
     if (!domNode)
         return;
 
-    if (domNode->hasTagName(inputTag) && toHTMLInputElement(domNode)->isPasswordField())
+    if (isHTMLInputElement(*domNode) && toHTMLInputElement(*domNode).isPasswordField())
         return;
 
     // find or create an accessibility object for this node

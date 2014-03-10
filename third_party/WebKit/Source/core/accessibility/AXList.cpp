@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXList.h"
 
+#include "core/html/HTMLUListElement.h"
 #include "core/rendering/RenderObject.h"
 
 using namespace std;
@@ -61,15 +62,13 @@ bool AXList::isUnorderedList() const
     if (!m_renderer)
         return false;
 
-    Node* node = m_renderer->node();
-
     // The ARIA spec says the "list" role is supposed to mimic a UL or OL tag.
     // Since it can't be both, it's probably OK to say that it's an un-ordered list.
     // On the Mac, there's no distinction to the client.
     if (ariaRoleAttribute() == ListRole)
         return true;
 
-    return node && node->hasTagName(ulTag);
+    return isHTMLUListElement(m_renderer->node());
 }
 
 bool AXList::isOrderedList() const
@@ -81,8 +80,7 @@ bool AXList::isOrderedList() const
     if (ariaRoleAttribute() == DirectoryRole)
         return true;
 
-    Node* node = m_renderer->node();
-    return node && node->hasTagName(olTag);
+    return isHTMLOListElement(m_renderer->node());
 }
 
 bool AXList::isDescriptionList() const
@@ -90,8 +88,7 @@ bool AXList::isDescriptionList() const
     if (!m_renderer)
         return false;
 
-    Node* node = m_renderer->node();
-    return node && node->hasTagName(dlTag);
+    return isHTMLDListElement(m_renderer->node());
 }
 
 

@@ -126,7 +126,7 @@ void AXListBox::selectedChildren(AccessibilityChildrenVector& result)
 AXObject* AXListBox::listBoxOptionAXObject(HTMLElement* element) const
 {
     // skip hr elements
-    if (!element || element->hasTagName(hrTag))
+    if (!element || isHTMLHRElement(*element))
         return 0;
 
     AXObject* listBoxObject = m_renderer->document().axObjectCache()->getOrCreate(ListBoxOptionRole);
