@@ -18741,6 +18741,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.TrackedPreferenceMigratedLegacyDeviceId"
+    enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference whose value has not changed since the last
+    time Chrome set it, but which was last set using a legacy device ID. Each
+    user should report this at most once per preference id and immediately be
+    migrated to the latest hashing model.
+  </summary>
+</histogram>
+
 <histogram name="Settings.TrackedPreferenceReset" enum="TrackedPreference">
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
 </histogram>
