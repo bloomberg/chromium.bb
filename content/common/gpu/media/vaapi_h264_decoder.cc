@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 
@@ -62,6 +63,7 @@ VaapiH264Decoder::VaapiH264Decoder(
       max_frame_num_(0),
       max_pic_num_(0),
       max_long_term_frame_idx_(0),
+      max_num_reorder_frames_(0),
       curr_sps_id_(-1),
       curr_pps_id_(-1),
       vaapi_wrapper_(vaapi_wrapper),
@@ -105,7 +107,7 @@ void VaapiH264Decoder::Reset() {
 
   dpb_.Clear();
   parser_.Reset();
-  last_output_poc_ = 0;
+  last_output_poc_ = std::numeric_limits<int>::min();
 
   // If we are in kDecoding, we can resume without processing an SPS.
   if (state_ == kDecoding)
@@ -1042,7 +1044,7 @@ void VaapiH264Decoder::ClearDPB() {
     UnassignSurfaceFromPoC((*it)->pic_order_cnt);
 
   dpb_.Clear();
-  last_output_poc_ = 0;
+  last_output_poc_ = std::numeric_limits<int>::min();
 }
 
 bool VaapiH264Decoder::OutputAllRemainingPics() {
@@ -1088,7 +1090,7 @@ bool VaapiH264Decoder::StartNewFrame(media::H264SliceHeader* slice_hdr) {
         return false;
     }
     dpb_.Clear();
-    last_output_poc_ = 0;
+    last_output_poc_ = std::numeric_limits<int>::min();
   }
 
   // curr_pic_ should have either been added to DPB or discarded when finishing
@@ -1329,20 +1331,18 @@ bool VaapiH264Decoder::FinishPicture() {
   dpb_.GetNotOutputtedPicsAppending(not_outputted);
   // Include the one we've just decoded.
   not_outputted.push_back(pic.get());
+
   // Sort in output order.
   std::sort(not_outputted.begin(), not_outputted.end(), POCAscCompare());
 
-  // Try to output as many pictures as we can. A picture can be output
-  // if its POC is next after the previously outputted one (which means
-  // last_output_poc_ + 2, because POCs are incremented by 2 to accommodate
-  // fields when decoding interleaved streams). POC can also be equal to
-  // last outputted picture's POC when it wraps around back to 0.
+  // Try to output as many pictures as we can. A picture can be output,
+  // if the number of decoded and not yet outputted pictures that would remain
+  // in DPB afterwards would at least be equal to max_num_reorder_frames.
   // If the outputted picture is not a reference picture, it doesn't have
   // to remain in the DPB and can be removed.
   H264Picture::PtrVector::iterator output_candidate = not_outputted.begin();
-  for (; output_candidate != not_outputted.end() &&
-      (*output_candidate)->pic_order_cnt <= last_output_poc_ + 2;
-      ++output_candidate) {
+  size_t num_remaining = not_outputted.size();
+  while (num_remaining > max_num_reorder_frames_) {
     int poc = (*output_candidate)->pic_order_cnt;
     DCHECK_GE(poc, last_output_poc_);
     if (!OutputPic(*output_candidate))
@@ -1356,6 +1356,9 @@ bool VaapiH264Decoder::FinishPicture() {
       // Mark as unused.
       UnassignSurfaceFromPoC(poc);
     }
+
+    ++output_candidate;
+    --num_remaining;
   }
 
   // If we haven't managed to output the picture that we just decoded, or if
@@ -1397,6 +1400,43 @@ static int LevelToMaxDpbMbs(int level) {
       DVLOG(1) << "Invalid codec level (" << level << ")";
       return 0;
   }
+}
+
+bool VaapiH264Decoder::UpdateMaxNumReorderFrames(const media::H264SPS* sps) {
+  if (sps->vui_parameters_present_flag && sps->bitstream_restriction_flag) {
+    max_num_reorder_frames_ =
+        base::checked_cast<size_t>(sps->max_num_reorder_frames);
+    if (max_num_reorder_frames_ > dpb_.max_num_pics()) {
+      DVLOG(1)
+          << "max_num_reorder_frames present, but larger than MaxDpbFrames ("
+          << max_num_reorder_frames_ << " > " << dpb_.max_num_pics() << ")";
+      max_num_reorder_frames_ = 0;
+      return false;
+    }
+    return true;
+  }
+
+  // max_num_reorder_frames not present, infer from profile/constraints
+  // (see VUI semantics in spec).
+  if (sps->constraint_set3_flag) {
+    switch (sps->profile_idc) {
+      case 44:
+      case 86:
+      case 100:
+      case 110:
+      case 122:
+      case 244:
+        max_num_reorder_frames_ = 0;
+        break;
+      default:
+        max_num_reorder_frames_ = dpb_.max_num_pics();
+        break;
+    }
+  } else {
+    max_num_reorder_frames_ = dpb_.max_num_pics();
+  }
+
+  return true;
 }
 
 bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
@@ -1458,6 +1498,10 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   }
 
   dpb_.set_max_num_pics(max_dpb_size);
+
+  if (!UpdateMaxNumReorderFrames(sps))
+    return false;
+  DVLOG(1) << "max_num_reorder_frames: " << max_num_reorder_frames_;
 
   *need_new_buffers = true;
   return true;

@@ -143,6 +143,8 @@ class CONTENT_EXPORT VaapiH264Decoder {
   // frame (see spec).
   void UpdatePicNums();
 
+  bool UpdateMaxNumReorderFrames(const media::H264SPS* sps);
+
   // Prepare reference picture lists (ref_pic_list[01]_).
   bool PrepareRefPicLists(media::H264SliceHeader* slice_hdr);
 
@@ -241,6 +243,7 @@ class CONTENT_EXPORT VaapiH264Decoder {
   int max_frame_num_;
   int max_pic_num_;
   int max_long_term_frame_idx_;
+  size_t max_num_reorder_frames_;
 
   int frame_num_;
   int prev_frame_num_;

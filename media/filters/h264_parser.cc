@@ -579,6 +579,109 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
   return kOk;
 }
 
+H264Parser::Result H264Parser::ParseAndIgnoreHRDParameters(
+    bool* hrd_parameters_present) {
+  int data;
+  READ_BOOL_OR_RETURN(&data);  // {nal,vcl}_hrd_parameters_present_flag
+  if (!data)
+    return kOk;
+
+  *hrd_parameters_present = true;
+
+  int cpb_cnt_minus1;
+  READ_UE_OR_RETURN(&cpb_cnt_minus1);
+  IN_RANGE_OR_RETURN(cpb_cnt_minus1, 0, 31);
+  READ_BITS_OR_RETURN(8, &data);  // bit_rate_scale, cpb_size_scale
+  for (int i = 0; i <= cpb_cnt_minus1; ++i) {
+    READ_UE_OR_RETURN(&data);  // bit_rate_value_minus1[i]
+    READ_UE_OR_RETURN(&data);  // cpb_size_value_minus1[i]
+    READ_BOOL_OR_RETURN(&data);  // cbr_flag
+  }
+  READ_BITS_OR_RETURN(20, &data);  // cpb/dpb delays, etc.
+
+  return kOk;
+}
+
+H264Parser::Result H264Parser::ParseVUIParameters(H264SPS* sps) {
+  bool aspect_ratio_info_present_flag;
+  READ_BOOL_OR_RETURN(&aspect_ratio_info_present_flag);
+  if (aspect_ratio_info_present_flag) {
+    int aspect_ratio_idc;
+    READ_BITS_OR_RETURN(8, &aspect_ratio_idc);
+    if (aspect_ratio_idc == kExtendedSar) {
+      READ_BITS_OR_RETURN(16, &sps->sar_width);
+      READ_BITS_OR_RETURN(16, &sps->sar_height);
+    } else {
+      const int max_aspect_ratio_idc = arraysize(kTableSarWidth) - 1;
+      IN_RANGE_OR_RETURN(aspect_ratio_idc, 0, max_aspect_ratio_idc);
+      sps->sar_width = kTableSarWidth[aspect_ratio_idc];
+      sps->sar_height = kTableSarHeight[aspect_ratio_idc];
+    }
+  }
+
+  int data;
+  // Read and ignore overscan and video signal type info.
+  READ_BOOL_OR_RETURN(&data);  // overscan_info_present_flag
+  if (data)
+    READ_BOOL_OR_RETURN(&data);  // overscan_appropriate_flag
+
+  READ_BOOL_OR_RETURN(&data);  // video_signal_type_present_flag
+  if (data) {
+    READ_BITS_OR_RETURN(3, &data);  // video_format
+    READ_BOOL_OR_RETURN(&data);  // video_full_range_flag
+    READ_BOOL_OR_RETURN(&data);  // colour_description_present_flag
+    if (data)
+      READ_BITS_OR_RETURN(24, &data);  // color description syntax elements
+  }
+
+  READ_BOOL_OR_RETURN(&data);  // chroma_loc_info_present_flag
+  if (data) {
+    READ_UE_OR_RETURN(&data);  // chroma_sample_loc_type_top_field
+    READ_UE_OR_RETURN(&data);  // chroma_sample_loc_type_bottom_field
+  }
+
+  // Read and ignore timing info.
+  READ_BOOL_OR_RETURN(&data);  // timing_info_present_flag
+  if (data) {
+    READ_BITS_OR_RETURN(16, &data);  // num_units_in_tick
+    READ_BITS_OR_RETURN(16, &data);  // num_units_in_tick
+    READ_BITS_OR_RETURN(16, &data);  // time_scale
+    READ_BITS_OR_RETURN(16, &data);  // time_scale
+    READ_BOOL_OR_RETURN(&data);  // fixed_frame_rate_flag
+  }
+
+  // Read and ignore NAL HRD parameters, if present.
+  bool hrd_parameters_present = false;
+  Result res = ParseAndIgnoreHRDParameters(&hrd_parameters_present);
+  if (res != kOk)
+    return res;
+
+  // Read and ignore VCL HRD parameters, if present.
+  res = ParseAndIgnoreHRDParameters(&hrd_parameters_present);
+  if (res != kOk)
+    return res;
+
+  if (hrd_parameters_present)  // One of NAL or VCL params present is enough.
+    READ_BOOL_OR_RETURN(&data);  // low_delay_hrd_flag
+
+  READ_BOOL_OR_RETURN(&data);  // pic_struct_present_flag
+  READ_BOOL_OR_RETURN(&sps->bitstream_restriction_flag);
+  if (sps->bitstream_restriction_flag) {
+    READ_BOOL_OR_RETURN(&data);  // motion_vectors_over_pic_boundaries_flag
+    READ_UE_OR_RETURN(&data);  // max_bytes_per_pic_denom
+    READ_UE_OR_RETURN(&data);  // max_bits_per_mb_denom
+    READ_UE_OR_RETURN(&data);  // log2_max_mv_length_horizontal
+    READ_UE_OR_RETURN(&data);  // log2_max_mv_length_vertical
+    READ_UE_OR_RETURN(&sps->max_num_reorder_frames);
+    READ_UE_OR_RETURN(&sps->max_dec_frame_buffering);
+    TRUE_OR_RETURN(sps->max_dec_frame_buffering >= sps->max_num_ref_frames);
+    IN_RANGE_OR_RETURN(
+        sps->max_num_reorder_frames, 0, sps->max_dec_frame_buffering);
+  }
+
+  return kOk;
+}
+
 static void FillDefaultSeqScalingLists(H264SPS* sps) {
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < kH264ScalingList4x4Length; ++j)
@@ -599,8 +702,13 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   scoped_ptr<H264SPS> sps(new H264SPS());
 
   READ_BITS_OR_RETURN(8, &sps->profile_idc);
-  READ_BITS_OR_RETURN(6, &sps->constraint_setx_flag);
-  READ_BITS_OR_RETURN(2, &data);
+  READ_BOOL_OR_RETURN(&sps->constraint_set0_flag);
+  READ_BOOL_OR_RETURN(&sps->constraint_set1_flag);
+  READ_BOOL_OR_RETURN(&sps->constraint_set2_flag);
+  READ_BOOL_OR_RETURN(&sps->constraint_set3_flag);
+  READ_BOOL_OR_RETURN(&sps->constraint_set4_flag);
+  READ_BOOL_OR_RETURN(&sps->constraint_set5_flag);
+  READ_BITS_OR_RETURN(2, &data);  // reserved_zero_2bits
   READ_BITS_OR_RETURN(8, &sps->level_idc);
   READ_UE_OR_RETURN(&sps->seq_parameter_set_id);
   TRUE_OR_RETURN(sps->seq_parameter_set_id < 32);
@@ -692,21 +800,10 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
 
   READ_BOOL_OR_RETURN(&sps->vui_parameters_present_flag);
   if (sps->vui_parameters_present_flag) {
-    bool aspect_ratio_info_present_flag;
-    READ_BOOL_OR_RETURN(&aspect_ratio_info_present_flag);
-    if (aspect_ratio_info_present_flag) {
-      int aspect_ratio_idc;
-      READ_BITS_OR_RETURN(8, &aspect_ratio_idc);
-      if (aspect_ratio_idc == kExtendedSar) {
-        READ_BITS_OR_RETURN(16, &sps->sar_width);
-        READ_BITS_OR_RETURN(16, &sps->sar_height);
-      } else {
-        const int max_aspect_ratio_idc = arraysize(kTableSarWidth) - 1;
-        IN_RANGE_OR_RETURN(aspect_ratio_idc, 0, max_aspect_ratio_idc);
-        sps->sar_width = kTableSarWidth[aspect_ratio_idc];
-        sps->sar_height = kTableSarHeight[aspect_ratio_idc];
-      }
-    }
+    DVLOG(4) << "VUI parameters present";
+    res = ParseVUIParameters(sps.get());
+    if (res != kOk)
+      return res;
   }
 
   // If an SPS with the same id already exists, replace it.
