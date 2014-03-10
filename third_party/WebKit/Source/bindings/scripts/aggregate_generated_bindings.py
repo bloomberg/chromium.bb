@@ -43,6 +43,8 @@ aggregate_generated_bindings.py IDL_FILES_LIST -- OUTPUT_FILE1 OUTPUT_FILE2 ...
 IDL_FILES_LIST is a text file containing the IDL file paths, so the command
 line doesn't exceed OS length limits.
 OUTPUT_FILE1 etc. are filenames of output files.
+
+Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
 import errno
@@ -196,7 +198,7 @@ def resolve_cygpath(cygdrive_names):
 
 def main(args):
     if len(args) <= 3:
-        raise 'Expected at least 4 arguments.'
+        raise Exception('Expected at least 4 arguments.')
     input_file_name = args[1]
     in_out_break_index = args.index('--')
     output_file_names = args[in_out_break_index + 1:]
@@ -218,8 +220,6 @@ def main(args):
                 if hash(meta_data['name']) % total_partitions == partition]
         file_contents = generate_content(files_meta_data_this_partition)
         write_content(file_contents, file_name)
-
-    return 0
 
 
 if __name__ == '__main__':
