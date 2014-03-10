@@ -2,7 +2,7 @@
 
 <!--
 Tests that AudioBufferSourceNode can playback at different rates properly.
-Render 72 notes over a 6 octave range.
+Render 60 notes over a 5 octave range.
 -->
 
 <html>
@@ -18,8 +18,8 @@ Render 72 notes over a 6 octave range.
 window.onload = init;
 
 var sampleRate = 44100.0;
-var numberOfNotes = 72; // play over a 6 octave range
-var noteDuration = 0.050;
+var numberOfNotes = 60; // play over a 5 octave range
+var noteDuration = 0.025;
 var noteSpacing = noteDuration + 0.005; // leave 5ms of silence between each "note"
 var lengthInSeconds = numberOfNotes * noteSpacing;
 
@@ -77,7 +77,7 @@ function init() {
     // We'll loop this to play notes of a given duration, at a given playback rate.
     sinWaveBuffer = createOneCycleSinWaveBuffer(440.0, sampleRate);
 
-    // Play 48 notes over a 4 octave range.
+    // Play 60 notes over a 5 octave range.
     for (var i = 0; i < numberOfNotes; ++i) {
         var time = i * noteSpacing;
 
