@@ -26,6 +26,7 @@
 #define MemoryCache_h
 
 #include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "public/platform/WebThread.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -65,11 +66,33 @@ public:
     MemoryCache();
     virtual ~MemoryCache();
 
-    typedef HashMap<String, Resource*> ResourceMap;
+    class MemoryCacheEntry {
+    public:
+        static PassOwnPtr<MemoryCacheEntry> create(Resource* resource) { return adoptPtr(new MemoryCacheEntry(resource)); }
+
+        ResourcePtr<Resource> m_resource;
+        bool m_inLiveDecodedResourcesList;
+
+        MemoryCacheEntry* m_previousInLiveResourcesList;
+        MemoryCacheEntry* m_nextInLiveResourcesList;
+        MemoryCacheEntry* m_previousInAllResourcesList;
+        MemoryCacheEntry* m_nextInAllResourcesList;
+
+    private:
+        MemoryCacheEntry(Resource* resource)
+            : m_resource(resource)
+            , m_inLiveDecodedResourcesList(false)
+            , m_previousInLiveResourcesList(0)
+            , m_nextInLiveResourcesList(0)
+            , m_previousInAllResourcesList(0)
+            , m_nextInAllResourcesList(0)
+        {
+        }
+    };
 
     struct LRUList {
-        Resource* m_head;
-        Resource* m_tail;
+        MemoryCacheEntry* m_head;
+        MemoryCacheEntry* m_tail;
         LRUList() : m_head(0), m_tail(0) { }
     };
 
@@ -138,6 +161,7 @@ public:
     // Track decoded resources that are in the cache and referenced by a Web page.
     void insertInLiveDecodedResourcesList(Resource*);
     void removeFromLiveDecodedResourcesList(Resource*);
+    bool isInLiveDecodedResourcesList(Resource*);
 
     void addToLiveResourcesSize(Resource*);
     void removeFromLiveResourcesSize(Resource*);
@@ -157,7 +181,7 @@ public:
     virtual void didProcessTask() OVERRIDE;
 
 private:
-    LRUList* lruListFor(Resource*);
+    LRUList* lruListFor(MemoryCacheEntry*);
 
 #ifdef MEMORY_CACHE_STATS
     void dumpStats(Timer<MemoryCache>*);
@@ -203,7 +227,8 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
-    HashMap<String, Resource*> m_resources;
+    typedef HashMap<String, OwnPtr<MemoryCacheEntry> > ResourceMap;
+    ResourceMap m_resources;
 
     friend class MemoryCacheTest;
 #ifdef MEMORY_CACHE_STATS
