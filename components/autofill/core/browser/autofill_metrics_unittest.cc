@@ -8,25 +8,22 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "components/webdata/common/web_data_results.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
@@ -203,12 +200,12 @@ class TestAutofillManager : public AutofillManager {
   }
 
   void FormSubmitted(const FormData& form, const TimeTicks& timestamp) {
-    message_loop_runner_ = new content::MessageLoopRunner();
+    run_loop_.reset(new base::RunLoop());
     if (!OnFormSubmitted(form, timestamp))
       return;
 
     // Wait for the asynchronous FormSubmitted() call to complete.
-    message_loop_runner_->Run();
+    run_loop_->Run();
   }
 
   virtual void UploadFormDataAsyncCallback(
@@ -216,7 +213,7 @@ class TestAutofillManager : public AutofillManager {
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time) OVERRIDE {
-    message_loop_runner_->Quit();
+    run_loop_->Quit();
 
     AutofillManager::UploadFormDataAsyncCallback(submitted_form,
                                                  load_time,
@@ -226,14 +223,14 @@ class TestAutofillManager : public AutofillManager {
 
  private:
   bool autofill_enabled_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
 }  // namespace
 
-class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
+class AutofillMetricsTest : public testing::Test {
  public:
   virtual ~AutofillMetricsTest();
 
@@ -241,6 +238,8 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   virtual void TearDown() OVERRIDE;
 
  protected:
+  base::MessageLoop message_loop_;
+  TestAutofillManagerDelegate manager_delegate_;
   scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestPersonalDataManager> personal_data_;
@@ -254,23 +253,17 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 }
 
 void AutofillMetricsTest::SetUp() {
-  ChromeRenderViewHostTestHarness::SetUp();
+  manager_delegate_.SetPrefs(test::PrefServiceForTesting());
 
   // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
-  autofill::test::DisableSystemServices(profile()->GetPrefs());
-
-  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
-
-  TabAutofillManagerDelegate::CreateForWebContents(web_contents());
-  autofill::TabAutofillManagerDelegate* manager_delegate =
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
+  test::DisableSystemServices(manager_delegate_.GetPrefs());
 
   personal_data_.reset(new TestPersonalDataManager());
-  personal_data_->set_database(manager_delegate->GetDatabase());
-  personal_data_->SetPrefService(profile()->GetPrefs());
+  personal_data_->set_database(manager_delegate_.GetDatabase());
+  personal_data_->SetPrefService(manager_delegate_.GetPrefs());
   autofill_driver_.reset(new TestAutofillDriver());
   autofill_manager_.reset(new TestAutofillManager(
-      autofill_driver_.get(), manager_delegate, personal_data_.get()));
+      autofill_driver_.get(), &manager_delegate_, personal_data_.get()));
 
   external_delegate_.reset(new AutofillExternalDelegate(
       autofill_manager_.get(),
@@ -284,7 +277,6 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();
-  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 // Test that we log quality metrics appropriately.
@@ -596,11 +588,8 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   personal_data_->set_autofill_enabled(true);
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
-  autofill::TabAutofillManagerDelegate* manager_delegate =
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
-  personal_data_->Init(manager_delegate->GetDatabase(),
-                       profile()->GetPrefs(),
-                       profile()->IsOffTheRecord());
+  personal_data_->Init(
+      manager_delegate_.GetDatabase(), manager_delegate_.GetPrefs(), false);
 }
 
 // Test that we correctly log when Autofill is disabled.
@@ -608,11 +597,8 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   personal_data_->set_autofill_enabled(false);
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(false)).Times(1);
-  autofill::TabAutofillManagerDelegate* manager_delegate =
-      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents());
-  personal_data_->Init(manager_delegate->GetDatabase(),
-                       profile()->GetPrefs(),
-                       profile()->IsOffTheRecord());
+  personal_data_->Init(
+      manager_delegate_.GetDatabase(), manager_delegate_.GetPrefs(), false);
 }
 
 // Test that we log the number of Autofill suggestions when filling a form.

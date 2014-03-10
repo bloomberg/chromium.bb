@@ -31,6 +31,7 @@
             'autofill/core/browser/autofill_ie_toolbar_import_win_unittest.cc',
             'autofill/core/browser/autofill_manager_unittest.cc',
             'autofill/core/browser/autofill_merge_unittest.cc',
+            'autofill/core/browser/autofill_metrics_unittest.cc',
             'autofill/core/browser/autofill_profile_unittest.cc',
             'autofill/core/browser/autofill_regexes_unittest.cc',
             'autofill/core/browser/autofill_type_unittest.cc',
