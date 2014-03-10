@@ -22,12 +22,8 @@ class PrefHashStoreTransaction {
     // The preference has been cleared since the last hash.
     CLEARED,
     // The preference value corresponds to its stored hash, which was calculated
-    // using a deprecated hash algorithm which isn't as safe as the current one.
-    WEAK_LEGACY,
-    // The preference value corresponds to its stored hash, but the hash was
-    // calculated using a deprecated hash algorithm which is just as safe as
-    // the current one.
-    SECURE_LEGACY,
+    // using a legacy hash algorithm.
+    MIGRATED,
     // The preference value has been changed since the last hash.
     CHANGED,
     // No stored hash exists for the preference value.

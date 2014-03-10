@@ -6,11 +6,8 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/tracked/pref_hash_calculator_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
@@ -208,8 +205,8 @@ TEST(PrefHashCalculatorTest, TestCompatibilityWithPrefMetricsService) {
             Validate("session.startup_urls", &startup_urls, kExpectedValue));
 }
 
-TEST(PrefHashCalculatorTest, TestLegacyNoDeviceIdNoPathAlgorithm) {
-  static const char kTestedLegacyHash[] =
+TEST(PrefHashCalculatorTest, TestLegacyAlgorithm) {
+  static const char kExpectedValue[] =
       "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2";
   static const char kDeviceId[] = "not_used";
 
@@ -220,53 +217,7 @@ TEST(PrefHashCalculatorTest, TestLegacyNoDeviceIdNoPathAlgorithm) {
   dict.Set("c", new base::StringValue("baz"));
 
   // 32 NULL bytes is the seed that was used to generate the legacy hash.
-  EXPECT_EQ(PrefHashCalculator::VALID_WEAK_LEGACY,
+  EXPECT_EQ(PrefHashCalculator::VALID_LEGACY,
             PrefHashCalculator(std::string(32u, 0), kDeviceId).Validate(
-                "unused_path", &dict, kTestedLegacyHash));
-}
-
-std::string MockGetLegacyDeviceId(const std::string& modern_device_id) {
-  if (modern_device_id.empty())
-    return std::string();
-  return modern_device_id + "_LEGACY";
-}
-
-TEST(PrefHashCalculatorTest, TestLegacyDeviceIdAlgorithm) {
-  // The full algorithm should kick in when the device id is non-empty and we
-  // should thus get VALID_SECURE_LEGACY on verification.
-  static const char kDeviceId[] = "DEVICE_ID";
-  static const char kSeed[] = "01234567890123456789012345678901";
-  static const char kPrefPath[] = "test.pref";
-  static const char kPrefValue[] = "http://example.com/";
-  // Test hash based on the mock legacy id (based on kDeviceId) + kPrefPath +
-  // kPrefValue under kSeed.
-  static const char kTestedHash[] =
-      "09ABD84B13E4366B24DFF898C8C4614E033514B4E2EF3C6810F50B63273C83AD";
-
-  const base::StringValue string_value(kPrefValue);
-  EXPECT_EQ(PrefHashCalculator::VALID_SECURE_LEGACY,
-            PrefHashCalculator(kSeed, kDeviceId,
-                               base::Bind(&MockGetLegacyDeviceId)).Validate(
-                kPrefPath, &string_value, kTestedHash));
-}
-
-TEST(PrefHashCalculatorTest, TestLegacyDeviceIdAlgorithmOnEmptyDeviceId) {
-  // MockGetLegacyDeviceId will return a legacy device ID that is the same
-  // (empty) as the modern device ID here. So this MAC will be valid using
-  // either ID. The PrefHashCalculator should return VALID, not
-  // VALID_SECURE_LEGACY, in this case.
-  static const char kEmptyDeviceId[] = "";
-  static const char kSeed[] = "01234567890123456789012345678901";
-  static const char kPrefPath[] = "test.pref";
-  static const char kPrefValue[] = "http://example.com/";
-  // Test hash based on an empty legacy device id + kPrefPath + kPrefValue under
-  // kSeed.
-  static const char kTestedHash[] =
-      "842C71283B9C3D86AA934CD639FDB0428BF0E2B6EC8537A21575CC4C4FA0A615";
-
-  const base::StringValue string_value(kPrefValue);
-  EXPECT_EQ(PrefHashCalculator::VALID,
-            PrefHashCalculator(kSeed, kEmptyDeviceId,
-                               base::Bind(&MockGetLegacyDeviceId)).Validate(
-                kPrefPath, &string_value, kTestedHash));
+                "pref.path1", &dict, kExpectedValue));
 }

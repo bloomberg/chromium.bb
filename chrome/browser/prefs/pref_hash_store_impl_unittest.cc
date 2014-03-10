@@ -69,7 +69,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
           "path1",
           "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2");
     }
-    EXPECT_EQ(PrefHashStoreTransaction::WEAK_LEGACY,
+    EXPECT_EQ(PrefHashStoreTransaction::MIGRATED,
               transaction->CheckValue("path1", &dict));
     transaction->StoreHash("path1", &dict);
     EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
