@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -97,8 +98,8 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
       menu_model_->AddItem(LAUNCH_NEW, base::string16());
 
     int index = 0;
-    extension_menu_items_->AppendExtensionItems(app_id_, base::string16(),
-                                                &index);
+    extension_menu_items_->AppendExtensionItems(
+        extensions::MenuItem::ExtensionKey(app_id_), base::string16(), &index);
 
     // Show Pin/Unpin option if shelf is available.
     if (controller_->GetPinnable() != AppListControllerDelegate::NO_PIN) {

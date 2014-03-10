@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/webview/webview_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guestview/guestview_constants.h"
@@ -167,6 +168,15 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
 WebViewGuest* WebViewGuest::FromWebContents(WebContents* contents) {
   GuestView* guest = GuestView::FromWebContents(contents);
   return guest ? guest->AsWebView() : NULL;
+}
+
+// static.
+int WebViewGuest::GetViewInstanceId(WebContents* contents) {
+  WebViewGuest* guest = FromWebContents(contents);
+  if (!guest)
+    return guestview::kInstanceIDNone;
+
+  return guest->view_instance_id();
 }
 
 // static
@@ -676,6 +686,12 @@ void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
 }
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
+  // Clean up custom context menu items for this guest.
+  extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
+      Profile::FromBrowserContext(browser_context()));
+  menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
+      embedder_extension_id(), view_instance_id()));
+
   RemoveWebViewFromExtensionRendererState(web_contents);
 }
 

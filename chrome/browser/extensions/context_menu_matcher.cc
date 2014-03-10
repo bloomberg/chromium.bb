@@ -28,7 +28,7 @@ ContextMenuMatcher::ContextMenuMatcher(
 }
 
 void ContextMenuMatcher::AppendExtensionItems(
-    const std::string& extension_id,
+    const MenuItem::ExtensionKey& extension_key,
     const base::string16& selection_text,
     int* index) {
   DCHECK_GE(*index, 0);
@@ -40,8 +40,8 @@ void ContextMenuMatcher::AppendExtensionItems(
   const Extension* extension = NULL;
   MenuItem::List items;
   bool can_cross_incognito;
-  if (!GetRelevantExtensionTopLevelItems(extension_id, &extension,
-                                         &can_cross_incognito, items))
+  if (!GetRelevantExtensionTopLevelItems(
+          extension_key, &extension, &can_cross_incognito, items))
     return;
 
   if (items.empty())
@@ -86,7 +86,7 @@ void ContextMenuMatcher::AppendExtensionItems(
       RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito,
                                       selection_text, submenu, index);
     }
-    SetExtensionIcon(extension_id);
+    SetExtensionIcon(extension_key.extension_id);
   }
 }
 
@@ -96,13 +96,13 @@ void ContextMenuMatcher::Clear() {
 }
 
 base::string16 ContextMenuMatcher::GetTopLevelContextMenuTitle(
-    const std::string& extension_id,
+    const MenuItem::ExtensionKey& extension_key,
     const base::string16& selection_text) {
   const Extension* extension = NULL;
   MenuItem::List items;
   bool can_cross_incognito;
-  GetRelevantExtensionTopLevelItems(extension_id, &extension,
-      &can_cross_incognito, items);
+  GetRelevantExtensionTopLevelItems(
+      extension_key, &extension, &can_cross_incognito, items);
 
   base::string16 title;
 
@@ -144,20 +144,20 @@ void ContextMenuMatcher::ExecuteCommand(int command_id,
 }
 
 bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
-    const std::string& extension_id,
+    const MenuItem::ExtensionKey& extension_key,
     const Extension** extension,
     bool* can_cross_incognito,
     MenuItem::List& items) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  *extension = service->GetExtensionById(extension_id, false);
+  *extension = service->GetExtensionById(extension_key.extension_id, false);
 
   if (!*extension)
     return false;
 
   // Find matching items.
   MenuManager* manager = MenuManager::Get(profile_);
-  const MenuItem::List* all_items = manager->MenuItems(extension_id);
+  const MenuItem::List* all_items = manager->MenuItems(extension_key);
   if (!all_items || all_items->empty())
     return false;
 

@@ -24,6 +24,7 @@ extern const char kOnInputMethodChanged[];
 
 // Context menus.
 extern const char kOnContextMenus[];
+extern const char kOnWebviewContextMenus[];
 
 // Notifications.
 extern const char kOnNotificationError[];

@@ -56,6 +56,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       // if there is one.
       var id = arguments[0].menuItemId;
       var instanceId = arguments[0].webviewInstanceId;
+      delete arguments[0].webviewInstanceId;
       var onclick = webviewContextMenus.handlersForId(instanceId, id)[id];
       if (onclick) {
         $Function.apply(onclick, null, arguments);

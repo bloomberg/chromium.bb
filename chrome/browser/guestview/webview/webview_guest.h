@@ -38,6 +38,9 @@ class WebViewGuest : public GuestView,
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
   static WebViewGuest* FromWebContents(content::WebContents* contents);
+  // Returns guestview::kInstanceIDNone if |contents| does not correspond to a
+  // WebViewGuest.
+  static int GetViewInstanceId(content::WebContents* contents);
 
   // GuestView implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,

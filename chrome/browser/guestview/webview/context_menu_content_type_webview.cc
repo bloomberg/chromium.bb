@@ -21,9 +21,11 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
     case ITEM_GROUP_SEARCH_PROVIDER:
     case ITEM_GROUP_PRINT:
     case ITEM_GROUP_ALL_EXTENSION:
-    case ITEM_GROUP_CURRENT_EXTENSION:
     case ITEM_GROUP_PRINT_PREVIEW:
       return false;
+    case ITEM_GROUP_CURRENT_EXTENSION:
+      // Show contextMenus API items.
+      return true;
     default:
       return ContextMenuContentType::SupportsGroup(group);
   }

@@ -1,0 +1,15 @@
+{
+  "name": "Packaged App Test: <webview> contextMenus API",
+  "description": "Verifies basic functionality of <webview> contextMenus API.",
+  "version": "1",
+  "permissions": [
+    "webview",
+    /* TODO(lazyboy): Fix embedder requiring contextMenus permission. */
+    "contextMenus"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

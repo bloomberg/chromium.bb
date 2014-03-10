@@ -17,16 +17,16 @@ namespace context_menus_api_helpers {
 
 namespace {
 
-template<typename PropertyWithEnumT>
+template <typename PropertyWithEnumT>
 scoped_ptr<extensions::MenuItem::Id> GetParentId(
     const PropertyWithEnumT& property,
     bool is_off_the_record,
-    std::string extension_id) {
+    const MenuItem::ExtensionKey& key) {
   if (!property.parent_id)
     return scoped_ptr<extensions::MenuItem::Id>();
 
   scoped_ptr<extensions::MenuItem::Id> parent_id(
-      new extensions::MenuItem::Id(is_off_the_record, extension_id));
+      new extensions::MenuItem::Id(is_off_the_record, key));
   if (property.parent_id->as_integer)
     parent_id->uid = *property.parent_id->as_integer;
   else if (property.parent_id->as_string)
@@ -86,6 +86,7 @@ MenuItem::ContextList GetContexts(const PropertyWithEnumT& property) {
         contexts.Add(extensions::MenuItem::FRAME);
         break;
       case PropertyWithEnumT::CONTEXTS_TYPE_LAUNCHER:
+        // Not available for <webview>.
         contexts.Add(extensions::MenuItem::LAUNCHER);
         break;
       case PropertyWithEnumT::CONTEXTS_TYPE_NONE:
@@ -120,6 +121,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
                     const Extension* extension,
                     const MenuItem::Id& item_id,
                     std::string* error) {
+  bool is_webview = item_id.extension_key.webview_instance_id != 0;
   MenuManager* menu_manager = MenuManager::Get(profile);
 
   if (menu_manager->GetItemById(item_id)) {
@@ -128,7 +130,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
     return false;
   }
 
-  if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
+  if (!is_webview && BackgroundInfo::HasLazyBackgroundPage(extension) &&
       create_properties.onclick.get()) {
     *error = kOnclickDisallowedError;
     return false;
@@ -141,9 +143,12 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   else
     contexts.Add(MenuItem::PAGE);
 
-  if (contexts.Contains(MenuItem::LAUNCHER) && !extension->is_platform_app()) {
-    *error = kLauncherNotAllowedError;
-    return false;
+  if (contexts.Contains(MenuItem::LAUNCHER)) {
+    // Launcher item is not allowed for <webview>.
+    if (!extension->is_platform_app() || is_webview) {
+      *error = kLauncherNotAllowedError;
+      return false;
+    }
   }
 
   // Title.
@@ -180,9 +185,8 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
 
   // Parent id.
   bool success = true;
-  scoped_ptr<MenuItem::Id> parent_id(GetParentId(create_properties,
-                                                 profile->IsOffTheRecord(),
-                                                 extension->id()));
+  scoped_ptr<MenuItem::Id> parent_id(GetParentId(
+      create_properties, profile->IsOffTheRecord(), item_id.extension_key));
   if (parent_id.get()) {
     MenuItem* parent = GetParent(*parent_id, menu_manager, error);
     if (!parent)
@@ -195,7 +199,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   if (!success)
     return false;
 
-  menu_manager->WriteToStorage(extension);
+  menu_manager->WriteToStorage(extension, item_id.extension_key);
   return true;
 }
 
@@ -207,6 +211,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
                     const MenuItem::Id& item_id,
                     std::string* error) {
   bool radio_item_updated = false;
+  bool is_webview = item_id.extension_key.webview_instance_id != 0;
   MenuManager* menu_manager = MenuManager::Get(profile);
 
   MenuItem* item = menu_manager->GetItemById(item_id);
@@ -262,10 +267,12 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
   if (update_properties.contexts.get()) {
     contexts = GetContexts(update_properties);
 
-    if (contexts.Contains(MenuItem::LAUNCHER) &&
-        !extension->is_platform_app()) {
-      *error = kLauncherNotAllowedError;
-      return false;
+    if (contexts.Contains(MenuItem::LAUNCHER)) {
+      // Launcher item is not allowed for <webview>.
+      if (!extension->is_platform_app() || is_webview) {
+        *error = kLauncherNotAllowedError;
+        return false;
+      }
     }
 
     if (contexts != item->contexts())
@@ -274,9 +281,8 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
 
   // Parent id.
   MenuItem* parent = NULL;
-  scoped_ptr<MenuItem::Id> parent_id(GetParentId(update_properties,
-                                                 profile->IsOffTheRecord(),
-                                                 extension->id()));
+  scoped_ptr<MenuItem::Id> parent_id(GetParentId(
+      update_properties, profile->IsOffTheRecord(), item_id.extension_key));
   if (parent_id.get()) {
     MenuItem* parent = GetParent(*parent_id, menu_manager, error);
     if (!parent || !menu_manager->ChangeParent(item->id(), &parent->id()))
@@ -295,7 +301,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
   if (!parent && radio_item_updated && !menu_manager->ItemUpdated(item->id()))
     return false;
 
-  menu_manager->WriteToStorage(extension);
+  menu_manager->WriteToStorage(extension, item_id.extension_key);
   return true;
 }
 

@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -405,8 +406,10 @@ RenderViewContextMenu::RenderViewContextMenu(
       profile_(Profile::FromBrowserContext(
           source_web_contents_->GetBrowserContext())),
       menu_model_(this),
-      extension_items_(profile_, this, &menu_model_,
-                    base::Bind(MenuItemMatchesParams, params_)),
+      extension_items_(profile_,
+                       this,
+                       &menu_model_,
+                       base::Bind(MenuItemMatchesParams, params_)),
       speech_input_submenu_model_(this),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
@@ -525,17 +528,20 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 
   // Get a list of extension id's that have context menu items, and sort by the
   // top level context menu title of the extension.
-  std::set<std::string> ids = menu_manager->ExtensionIds();
+  std::set<MenuItem::ExtensionKey> ids = menu_manager->ExtensionIds();
   std::vector<base::string16> sorted_menu_titles;
   std::map<base::string16, std::string> map_ids;
-  for (std::set<std::string>::iterator i = ids.begin(); i != ids.end(); ++i) {
-    const Extension* extension = service->GetExtensionById(*i, false);
+  for (std::set<MenuItem::ExtensionKey>::iterator i = ids.begin();
+       i != ids.end();
+       ++i) {
+    const Extension* extension =
+        service->GetExtensionById(i->extension_id, false);
     // Platform apps have their context menus created directly in
     // AppendPlatformAppItems.
     if (extension && !extension->is_platform_app()) {
       base::string16 menu_title = extension_items_.GetTopLevelContextMenuTitle(
           *i, printable_selection_text);
-      map_ids[menu_title] = *i;
+      map_ids[menu_title] = i->extension_id;
       sorted_menu_titles.push_back(menu_title);
     }
   }
@@ -549,8 +555,9 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   base::TimeTicks begin = base::TimeTicks::Now();
   for (size_t i = 0; i < sorted_menu_titles.size(); ++i) {
     const std::string& id = map_ids[sorted_menu_titles[i]];
-    extension_items_.AppendExtensionItems(id, printable_selection_text,
-                                          &index);
+    const MenuItem::ExtensionKey extension_key(id);
+    extension_items_.AppendExtensionItems(
+        extension_key, printable_selection_text, &index);
   }
 
   UMA_HISTOGRAM_TIMES("Extensions.ContextMenus_BuildTime",
@@ -566,8 +573,10 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   if (extension) {
     // Only add extension items from this extension.
     int index = 0;
-    extension_items_.AppendExtensionItems(extension->id(),
-                                          PrintableSelectionText(), &index);
+    const MenuItem::ExtensionKey key(
+        extension->id(), WebViewGuest::GetViewInstanceId(source_web_contents_));
+    extension_items_.AppendExtensionItems(
+        key, PrintableSelectionText(), &index);
   }
 }
 

@@ -198,9 +198,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
       const content::ContextMenuParams& params,
       extensions::MenuItem::ContextList contexts,
       const extensions::URLPatternSet& target_url_patterns);
-  static bool MenuItemMatchesParams(
-      const content::ContextMenuParams& params,
-      const extensions::MenuItem* item);
+  static bool MenuItemMatchesParams(const content::ContextMenuParams& params,
+                                    const extensions::MenuItem* item);
 
   // Gets the extension (if any) associated with the WebContents that we're in.
   const extensions::Extension* GetExtension() const;

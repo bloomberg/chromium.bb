@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -13,6 +14,8 @@
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -42,8 +45,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+using extensions::MenuItem;
 using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
+using ui::MenuModel;
 
 namespace {
 const char kEmptyResponsePath[] = "/close-socket";
@@ -484,6 +489,25 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     }
 
     return scoped_ptr<net::test_server::HttpResponse>();
+  }
+
+  // Shortcut to return the current MenuManager.
+  extensions::MenuManager* menu_manager() {
+    return extensions::MenuManager::Get(browser()->profile());
+  }
+
+  // This gets all the items that any extension has registered for possible
+  // inclusion in context menus.
+  MenuItem::List GetItems() {
+    MenuItem::List result;
+    std::set<MenuItem::ExtensionKey> extension_ids =
+        menu_manager()->ExtensionIds();
+    std::set<MenuItem::ExtensionKey>::iterator i;
+    for (i = extension_ids.begin(); i != extension_ids.end(); ++i) {
+      const MenuItem::List* list = menu_manager()->MenuItems(*i);
+      result.insert(result.end(), list->begin(), list->end());
+    }
+    return result;
   }
 
   enum TestServer {
@@ -1508,6 +1532,69 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 
   mock->WaitForSetMediaPermission();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
+  GuestContentBrowserClient new_client;
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
+
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  launched_listener.AlsoListenForFailureMessage("TEST_FAILED");
+  LoadAndLaunchPlatformApp("web_view/context_menus/basic");
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  content::WebContents* guest_web_contents = new_client.WaitForGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  SetBrowserClientForTesting(old_client);
+
+  content::WebContents* embedder = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(embedder);
+
+  // 1. Basic property test.
+  ExecuteScriptWaitForTitle(embedder, "checkProperties()", "ITEM_CHECKED");
+
+  // 2. Create a menu item and wait for created callback to be called.
+  ExecuteScriptWaitForTitle(embedder, "createMenuItem()", "ITEM_CREATED");
+
+  // 3. Click the created item, wait for the click handlers to fire from JS.
+  ExtensionTestMessageListener click_listener("ITEM_CLICKED", false);
+  GURL page_url("http://www.google.com");
+  // Create and build our test context menu.
+  scoped_ptr<TestRenderViewContextMenu> menu(TestRenderViewContextMenu::Create(
+      guest_web_contents, page_url, GURL(), GURL()));
+
+  // Look for the extension item in the menu, and execute it.
+  int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
+  menu->ExecuteCommand(command_id, 0);
+
+  // Wait for embedder's script to tell us its onclick fired, it does
+  // chrome.test.sendMessage('ITEM_CLICKED')
+  ASSERT_TRUE(click_listener.WaitUntilSatisfied());
+
+  // 4. Update the item's title and verify.
+  ExecuteScriptWaitForTitle(embedder, "updateMenuItem()", "ITEM_UPDATED");
+  MenuItem::List items = GetItems();
+  ASSERT_EQ(1u, items.size());
+  MenuItem* item = items.at(0);
+  EXPECT_EQ("new_title", item->title());
+
+  // 5. Remove the item.
+  ExecuteScriptWaitForTitle(embedder, "removeItem()", "ITEM_REMOVED");
+  MenuItem::List items_after_removal = GetItems();
+  ASSERT_EQ(0u, items_after_removal.size());
+
+  // 6. Add some more items.
+  ExecuteScriptWaitForTitle(
+      embedder, "createThreeMenuItems()", "ITEM_MULTIPLE_CREATED");
+  MenuItem::List items_after_insertion = GetItems();
+  ASSERT_EQ(3u, items_after_insertion.size());
+
+  // 7. Test removeAll().
+  ExecuteScriptWaitForTitle(embedder, "removeAllItems()", "ITEM_ALL_REMOVED");
+  MenuItem::List items_after_all_removal = GetItems();
+  ASSERT_EQ(0u, items_after_all_removal.size());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllow) {

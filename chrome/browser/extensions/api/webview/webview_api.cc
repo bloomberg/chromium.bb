@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
+#include "chrome/browser/extensions/api/context_menus/context_menus_api.h"
 #include "chrome/browser/extensions/api/context_menus/context_menus_api_helpers.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,7 +66,7 @@ bool WebviewContextMenusCreateFunction::RunImpl() {
 
   MenuItem::Id id(
       Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
-      extension_id());
+      MenuItem::ExtensionKey(extension_id(), params->instance_id));
 
   if (params->create_properties.id.get()) {
     id.string_uid = *params->create_properties.id;
@@ -77,9 +78,15 @@ bool WebviewContextMenusCreateFunction::RunImpl() {
         properties->GetInteger(helpers::kGeneratedIdKey, &id.uid));
   }
 
-  // TODO(lazyboy): Implement.
-  SendResponse(false);
-  return false;
+  bool success = extensions::context_menus_api_helpers::CreateMenuItem(
+      params->create_properties,
+      Profile::FromBrowserContext(browser_context()),
+      GetExtension(),
+      id,
+      &error_);
+
+  SendResponse(success);
+  return success;
 }
 
 bool WebviewContextMenusUpdateFunction::RunImpl() {
@@ -88,7 +95,9 @@ bool WebviewContextMenusUpdateFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  MenuItem::Id item_id(profile->IsOffTheRecord(), extension_id());
+  MenuItem::Id item_id(
+      profile->IsOffTheRecord(),
+      MenuItem::ExtensionKey(extension_id(), params->instance_id));
 
   if (params->id.as_string)
     item_id.string_uid = *params->id.as_string;
@@ -97,9 +106,10 @@ bool WebviewContextMenusUpdateFunction::RunImpl() {
   else
     NOTREACHED();
 
-  // TODO(lazyboy): Implement.
-  SendResponse(false);
-  return false;
+  bool success = extensions::context_menus_api_helpers::UpdateMenuItem(
+      params->update_properties, profile, GetExtension(), item_id, &error_);
+  SendResponse(success);
+  return success;
 }
 
 bool WebviewContextMenusRemoveFunction::RunImpl() {
@@ -107,9 +117,35 @@ bool WebviewContextMenusRemoveFunction::RunImpl() {
       webview::ContextMenusRemove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // TODO(lazyboy): Implement.
-  SendResponse(false);
-  return false;
+  MenuManager* menu_manager =
+      MenuManager::Get(Profile::FromBrowserContext(browser_context()));
+
+  MenuItem::Id id(
+      Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
+      MenuItem::ExtensionKey(extension_id(), params->instance_id));
+
+  if (params->menu_item_id.as_string) {
+    id.string_uid = *params->menu_item_id.as_string;
+  } else if (params->menu_item_id.as_integer) {
+    id.uid = *params->menu_item_id.as_integer;
+  } else {
+    NOTREACHED();
+  }
+
+  bool success = true;
+  MenuItem* item = menu_manager->GetItemById(id);
+  // Ensure one <webview> can't remove another's menu items.
+  if (!item || item->id().extension_key != id.extension_key) {
+    error_ = ErrorUtils::FormatErrorMessage(
+        context_menus_api_helpers::kCannotFindItemError,
+        context_menus_api_helpers::GetIDString(id));
+    success = false;
+  } else if (!menu_manager->RemoveContextMenuItem(id)) {
+    success = false;
+  }
+
+  SendResponse(success);
+  return success;
 }
 
 bool WebviewContextMenusRemoveAllFunction::RunImpl() {
@@ -117,9 +153,14 @@ bool WebviewContextMenusRemoveAllFunction::RunImpl() {
       webview::ContextMenusRemoveAll::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // TODO(lazyboy): Implement.
-  SendResponse(false);
-  return false;
+  MenuManager* menu_manager =
+      MenuManager::Get(Profile::FromBrowserContext(browser_context()));
+
+  int webview_instance_id = params->instance_id;
+  menu_manager->RemoveAllContextItems(
+      MenuItem::ExtensionKey(GetExtension()->id(), webview_instance_id));
+  SendResponse(true);
+  return true;
 }
 
 WebviewClearDataFunction::WebviewClearDataFunction()

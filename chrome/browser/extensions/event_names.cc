@@ -11,6 +11,7 @@ namespace event_names {
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 
 const char kOnContextMenus[] = "contextMenus";
+const char kOnWebviewContextMenus[] = "webview.contextMenus";
 
 const char kOnNotificationError[] = "notifications.onError";
 
