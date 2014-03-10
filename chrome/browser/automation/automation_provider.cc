@@ -92,9 +92,7 @@ using content::WebContents;
 AutomationProvider::AutomationProvider(Profile* profile)
     : profile_(profile),
       reply_message_(NULL),
-      reinitialize_on_channel_error_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAutomationReinitializeOnChannelError)),
+      reinitialize_on_channel_error_(false),
       use_initial_load_observers_(true),
       is_connected_(false),
       initial_tab_loads_complete_(false),

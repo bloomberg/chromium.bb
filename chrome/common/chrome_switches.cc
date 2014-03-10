@@ -134,11 +134,6 @@ const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
 
-// Causes the automation provider to reinitialize its IPC channel instead of
-// shutting down when a client disconnects.
-const char kAutomationReinitializeOnChannelError[] =
-    "automation-reinitialize-on-channel-error";
-
 // Certificate Transparency: Uses the provided log(s) for checking Signed
 // Certificate Timestamps provided with certificates.
 // The switch's value is:
