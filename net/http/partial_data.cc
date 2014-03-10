@@ -382,40 +382,26 @@ void PartialData::FixResponseHeaders(HttpResponseHeaders* headers,
   if (truncated_)
     return;
 
+  if (byte_range_.IsValid() && success) {
+    headers->UpdateWithNewRange(byte_range_, resource_size_, !sparse_entry_);
+    return;
+  }
+
   headers->RemoveHeader(kLengthHeader);
   headers->RemoveHeader(kRangeHeader);
 
-  int64 range_len, start, end;
   if (byte_range_.IsValid()) {
-    if (success) {
-      if (!sparse_entry_)
-        headers->ReplaceStatusLine("HTTP/1.1 206 Partial Content");
-
-      DCHECK(byte_range_.HasFirstBytePosition());
-      DCHECK(byte_range_.HasLastBytePosition());
-      start = byte_range_.first_byte_position();
-      end = byte_range_.last_byte_position();
-      range_len = end - start + 1;
-    } else {
-      headers->ReplaceStatusLine(
-          "HTTP/1.1 416 Requested Range Not Satisfiable");
-      start = 0;
-      end = 0;
-      range_len = 0;
-    }
-
-    headers->AddHeader(
-        base::StringPrintf("%s: bytes %" PRId64 "-%" PRId64 "/%" PRId64,
-                           kRangeHeader, start, end, resource_size_));
+    headers->ReplaceStatusLine("HTTP/1.1 416 Requested Range Not Satisfiable");
+    headers->AddHeader(base::StringPrintf("%s: bytes 0-0/%" PRId64,
+                                          kRangeHeader, resource_size_));
+    headers->AddHeader(base::StringPrintf("%s: 0", kLengthHeader));
   } else {
     // TODO(rvargas): Is it safe to change the protocol version?
     headers->ReplaceStatusLine("HTTP/1.1 200 OK");
     DCHECK_NE(resource_size_, 0);
-    range_len = resource_size_;
+    headers->AddHeader(base::StringPrintf("%s: %" PRId64, kLengthHeader,
+                                          resource_size_));
   }
-
-  headers->AddHeader(base::StringPrintf("%s: %" PRId64, kLengthHeader,
-                                        range_len));
 }
 
 void PartialData::FixContentLength(HttpResponseHeaders* headers) {

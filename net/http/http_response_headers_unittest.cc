@@ -9,6 +9,7 @@
 #include "base/pickle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1848,6 +1849,58 @@ TEST(HttpResponseHeadersTest, ReplaceStatus) {
     std::string resulting_headers;
     parsed->GetNormalizedHeaders(&resulting_headers);
     EXPECT_EQ(std::string(tests[i].expected_headers), resulting_headers);
+  }
+}
+
+TEST(HttpResponseHeadersTest, UpdateWithNewRange) {
+  const struct {
+    const char* orig_headers;
+    const char* expected_headers;
+    const char* expected_headers_with_replaced_status;
+  } tests[] = {
+    { "HTTP/1.1 200 OK\n"
+      "Content-Length: 450\n",
+
+      "HTTP/1.1 200 OK\n"
+      "Content-Range: bytes 3-5/450\n"
+      "Content-Length: 3\n",
+
+      "HTTP/1.1 206 Partial Content\n"
+      "Content-Range: bytes 3-5/450\n"
+      "Content-Length: 3\n",
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Content-Length: 5\n",
+
+      "HTTP/1.1 200 OK\n"
+      "Content-Range: bytes 3-5/5\n"
+      "Content-Length: 3\n",
+
+      "HTTP/1.1 206 Partial Content\n"
+      "Content-Range: bytes 3-5/5\n"
+      "Content-Length: 3\n",
+    },
+  };
+  const net::HttpByteRange range = net::HttpByteRange::Bounded(3, 5);
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    std::string orig_headers(tests[i].orig_headers);
+    std::replace(orig_headers.begin(), orig_headers.end(), '\n', '\0');
+    scoped_refptr<net::HttpResponseHeaders> parsed(
+        new net::HttpResponseHeaders(orig_headers + '\0'));
+    int64 content_size = parsed->GetContentLength();
+    std::string resulting_headers;
+
+    // Update headers without replacing status line.
+    parsed->UpdateWithNewRange(range, content_size, false);
+    parsed->GetNormalizedHeaders(&resulting_headers);
+    EXPECT_EQ(std::string(tests[i].expected_headers), resulting_headers);
+
+    // Replace status line too.
+    parsed->UpdateWithNewRange(range, content_size, true);
+    parsed->GetNormalizedHeaders(&resulting_headers);
+    EXPECT_EQ(std::string(tests[i].expected_headers_with_replaced_status),
+              resulting_headers);
   }
 }
 

@@ -310,8 +310,7 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
     return;
   }
 
-  DCHECK(range_requested_.HasFirstBytePosition() &&
-         range_requested_.HasLastBytePosition());
+  DCHECK(range_requested_.IsValid());
   int offset = static_cast<int>(range_requested_.first_byte_position());
   int length = static_cast<int>(range_requested_.last_byte_position() -
                                 range_requested_.first_byte_position() + 1);
@@ -321,23 +320,11 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
 
   // Make a copy of the full response headers and fix them up
   // for the range we'll be returning.
-  const char kLengthHeader[] = "Content-Length";
-  const char kRangeHeader[] = "Content-Range";
-  const char kPartialStatusLine[] = "HTTP/1.1 206 Partial Content";
   range_response_info_.reset(
       new net::HttpResponseInfo(*info_->http_response_info()));
   net::HttpResponseHeaders* headers = range_response_info_->headers.get();
-  headers->RemoveHeader(kLengthHeader);
-  headers->RemoveHeader(kRangeHeader);
-  headers->ReplaceStatusLine(kPartialStatusLine);
-  headers->AddHeader(
-      base::StringPrintf("%s: %d", kLengthHeader, length));
-  headers->AddHeader(
-      base::StringPrintf("%s: bytes %d-%d/%d",
-                         kRangeHeader,
-                         offset,
-                         offset + length - 1,
-                         resource_size));
+  headers->UpdateWithNewRange(
+      range_requested_, resource_size, true /* replace status line */);
 }
 
 void AppCacheURLRequestJob::OnReadComplete(int result) {
