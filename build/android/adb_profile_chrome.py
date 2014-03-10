@@ -27,7 +27,7 @@ from pylib import pexpect
 _TRACE_VIEWER_ROOT = os.path.join(constants.DIR_SOURCE_ROOT,
                                   'third_party', 'trace-viewer')
 sys.path.append(_TRACE_VIEWER_ROOT)
-from build import trace2html
+from trace_viewer.build import trace2html
 
 _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'
 
