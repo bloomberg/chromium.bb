@@ -16,6 +16,7 @@ class _EndureBenchmark(test.Test):
       'perf_stats_interval': '100s'
   }
 
+
 class EndureCalendarForwardBackward(_EndureBenchmark):
   page_set = 'page_sets/calendar_forward_backward.json'
 
@@ -46,4 +47,15 @@ class EndureIndexedDBOffline(_EndureBenchmark):
 
 class EndurePlusAltPostsPhotos(_EndureBenchmark):
   page_set = 'page_sets/plus_alt_posts_photos.json'
+
+
+class EndureGmailRefresh(test.Test):
+  test = endure.Endure
+  # Options for endure gmail page refresh benchmark test.
+  options = {
+      'skip_navigate_on_repeat': True,
+      'page_repeat_iters': 20,
+      'perf_stats_interval': '1'
+  }
+  page_set = 'page_sets/endure_gmail_refresh.json'
 
