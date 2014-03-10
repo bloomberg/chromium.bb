@@ -107,6 +107,46 @@
         ]
       },
       {
+        "id": "FindCallbackResults",
+        "type": "object",
+        "description": "Contains all of the results of the find request.",
+        "properties": {
+          "numberOfMatches": {
+            "type": "integer",
+            "description": "The number of times <code>searchText</code> was matched on the page."
+          },
+          "activeMatchOrdinal": {
+            "type": "integer",
+            "description": "The ordinal number of the current match."
+          },
+          "selectionRect": {
+            "$ref": "SelectionRect",
+            "description": "Describes a rectangle around the active match in screen coordinates."
+          },
+          "canceled": {
+            "type": "boolean",
+            "description": "Indicates whether this find request was canceled."
+          }
+        }
+      },
+      {
+        "id": "FindOptions",
+        "type": "object",
+        "description": "Options for the find request.",
+        "properties": {
+          "backward": {
+            "type": "boolean",
+            "description": "Flag to find matches in reverse order. The default value is <code>false</code>.",
+            "optional": true
+          },
+          "matchCase": {
+            "type": "boolean",
+            "description": "Flag to match with case-sensitivity. The default value is <code>false</code>.",
+            "optional": true
+          }
+        }
+      },
+      {
         "id": "NewWindow",
         "type": "object",
         "description": "Interface attached to <code>newwindow</code> DOM events.",
@@ -221,6 +261,29 @@
         ]
       },
       {
+        "id": "SelectionRect",
+        "type": "object",
+        "description": "<p>Describes a rectangle in screen coordinates.</p><p>The containment semantics are array-like; that is, the coordinate <code>(left, top)</code> is considered to be contained by the rectangle, but the coordinate <code>(left + width, top)</code> is not.</p>",
+        "properties": {
+          "left": {
+            "type": "integer",
+            "description": "Distance from the left edge of the screen to the left edge of the rectangle."
+          },
+          "top": {
+            "type": "integer",
+            "description": "Distance from the top edge of the screen to the top edge of the rectangle."
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width of the rectangle."
+          },
+          "height": {
+            "type": "integer",
+            "description": "Height of the rectangle."
+          }
+        }
+      },
+      {
         "id": "WebRequestEventInteface",
         "type": "object",
         "description": "Interface which provides access to webRequest events on the guest page. See the <a href=\"http://developer.chrome.com/extensions/webRequest.html\">chrome.webRequest</a> extensions API for details on webRequest life cycle and related concepts.<p>To illustrate how usage differs from the extensions webRequest API, consider the following example code which blocks any guest requests for URLs which match <code>*://www.evil.com/*</code>:</p><pre>webview.request.onBeforeRequest.addListener(\r  function(details) { return {cancel: true}; },\r  {urls: [\"*://www.evil.com/*\"]},\r  [\"blocking\"]);</pre><p>Additionally, this interface supports declarative webRequest rules through <code>onRequest</code> and <code>onMessage</code> events. See <a href=\"http://developer.chrome.com/extensions/declarativeWebRequest.html\">declarativeWebRequest</a> for API details.</p>Note that conditions and actions for declarative webview webRequests should be instantiated from their <code>chrome.webViewRequest.*</code> counterparts. The following example code declaratively blocks all requests to <code>\"example.com\"</code> on the webview <code>myWebview</code>:</p><pre>var rule = {\r  conditions: [\r    new chrome.webViewRequest.RequestMatcher({ url: { hostSuffix: 'example.com' } })\r  ],\r  actions: [ new chrome.webViewRequest.CancelRequest() ]\r};\rmyWebview.request.onRequest.addRules([rule]);</pre>",
@@ -291,6 +354,38 @@
                 "type": "array",
                 "items": {"type": "any", "minimum": 0},
                 "description": "The result of the script in every injected frame."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "find",
+        "type": "function",
+        "description": "Initiates a find-in-page request.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "searchText",
+            "description": "The string to find in the page."
+          },
+          {
+            "$ref": "FindOptions",
+            "name": "options",
+            "optional": true,
+            "description": "Options for the find request."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after all find results have been returned for this find request.",
+            "optional": true,
+            "parameters": [
+              {
+                "$ref": "FindCallbackResults",
+                "name": "results",
+                "description": "Contains all of the results of the find request. <code>results</code> can be omitted if it is not utilized in the callback function body; for example, if the callback is only used to discern when the find request has completed.",
+                "optional": true
               }
             ]
           }
@@ -377,6 +472,20 @@
         "parameters": []
       },
       {
+        "name": "stopFinding",
+        "type": "function",
+        "description": "Ends the current find session (clearing all highlighting) and cancels all find requests in progress.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "action",
+            "description": "Determines what to do with the active match after the find session has ended. <code>clear</code> will clear the highlighting over the active match; <code>keep</code> will keep the active match highlighted; <code>activate</code> will keep the active match highlighted and simulate a user click on that match. The default action is <code>keep</code>.",
+            "optional": true,
+            "enum": ["clear", "keep", "activate"]
+          }
+        ]
+      },
+      {
         "name": "terminate",
         "type": "function",
         "description": "Forcibly kills the guest web page's renderer process. This may affect multiple <code>webview</code> tags in the current app if they share the same process, but it will not affect <code>webview</code> tags in other apps.",
@@ -461,6 +570,43 @@
             "description": "String indicating the reason for the exit.",
             "type": "string",
             "enum": ["normal", "abnormal", "crash", "kill"]
+          }
+        ]
+      },
+      {
+        "name": "findupdate",
+        "options": { "supportsDom": true },
+        "description": "Fired when new find results are available for an active find request. This might happen multiple times for a single find request as matches are found.",
+        "parameters": [
+          {
+            "name": "searchText",
+            "type": "string",
+            "description": "The string that is being searched for in the page."
+          },
+          {
+            "name": "numberOfMatches",
+            "type": "integer",
+            "description": "The number of matches found for <code>searchText</code> on the page so far."
+          },
+          {
+            "name": "activeMatchOrdinal",
+            "type": "integer",
+            "description": "The ordinal number of the current active match, if it has been found. This will be <code>0</code> until then."
+          },
+          {
+            "name": "selectionRect",
+            "$ref": "SelectionRect",
+            "description": "Describes a rectangle around the active match, if it has been found, in screen coordinates."
+          },
+          {
+            "name": "canceled",
+            "type": "boolean",
+            "description": "Indicates whether the find request was canceled."
+          },
+          {
+            "name": "finalUpdate",
+            "type": "string",
+            "description": "Indicates that all find requests have completed and that no more <code>findupdate</code> events will be fired until more find requests are made."
           }
         ]
       },
