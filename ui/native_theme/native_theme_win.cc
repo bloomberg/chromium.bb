@@ -87,7 +87,7 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   temp_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
   temp_bitmap.setPixels(buffer);
   SkBitmap bitmap;
-  temp_bitmap.copyTo(&bitmap, temp_bitmap.config());
+  temp_bitmap.copyTo(&bitmap);
   skia::RefPtr<SkShader> shader = skia::AdoptRef(
       SkShader::CreateBitmapShader(
           bitmap, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
@@ -664,7 +664,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   const SkBitmap& hdc_bitmap =
       offscreen_canvas.getDevice()->accessBitmap(false);
   SkBitmap bitmap;
-  hdc_bitmap.copyTo(&bitmap, SkBitmap::kARGB_8888_Config);
+  hdc_bitmap.copyTo(&bitmap, kPMColor_SkColorType);
 
   // Post-process the pixels to fix up the alpha values (see big comment above).
   const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);
