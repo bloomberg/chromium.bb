@@ -102,7 +102,7 @@ def write_global_constructors_partial_interface(interface_name, destination_file
               # FIXME: sort by interface name (not first by extended attributes)
               for constructor_attribute in sorted(constructor_attributes_list)] +
              ['};\n'])
-    write_file(lines, destination_filename, only_if_changed)
+    write_file(''.join(lines), destination_filename, only_if_changed)
 
 
 ################################################################################

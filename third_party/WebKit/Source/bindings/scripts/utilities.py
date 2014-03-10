@@ -24,16 +24,16 @@ class IdlBadFilenameError(Exception):
 
 def get_file_contents(filename):
     with open(filename) as f:
-        return ''.join(f.readlines())
+        return f.read()
 
 
-def write_file(new_lines, destination_filename, only_if_changed):
+def write_file(new_text, destination_filename, only_if_changed):
     if only_if_changed and os.path.isfile(destination_filename):
         with open(destination_filename) as destination_file:
-            if destination_file.readlines() == new_lines:
+            if destination_file.read() == new_text:
                 return
     with open(destination_filename, 'w') as destination_file:
-        destination_file.write(''.join(new_lines))
+        destination_file.write(new_text)
 
 
 def write_pickle_file(pickle_filename, data, only_if_changed):

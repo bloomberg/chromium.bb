@@ -32,6 +32,7 @@
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import abc
 from optparse import OptionParser
 import os
 import cPickle as pickle
@@ -39,7 +40,7 @@ import sys
 
 from code_generator_v8 import CodeGeneratorV8
 from idl_reader import IdlReader
-# from utilities import write_file  # FIXME: import once in same directory
+from utilities import write_file
 
 
 def parse_options():
@@ -61,53 +62,79 @@ def parse_options():
     return options, idl_filename
 
 
-# FIXME: import from utilities once moved into same directory (lines vs. text)
-def write_file(new_text, destination_filename, only_if_changed):
-    if only_if_changed and os.path.isfile(destination_filename):
-        with open(destination_filename) as destination_file:
-            if destination_file.read() == new_text:
-                return
-    with open(destination_filename, 'w') as destination_file:
-        destination_file.write(new_text)
+def idl_filename_to_interface_name(idl_filename):
+    basename = os.path.basename(idl_filename)
+    interface_name, _ = os.path.splitext(basename)
+    return interface_name
 
 
 class IdlCompiler(object):
-    def __init__(self, output_directory, interfaces_info, idl_attributes_file, only_if_changed=False):
-        self.output_directory = output_directory
+    """Abstract Base Class for IDL compilers.
+
+    In concrete classes:
+    * self.code_generator must be set, implementing generate_code()
+      (returning a list of output code), and
+    * compile_file() must be implemented (handling output filenames).
+    """
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, output_directory, idl_attributes_file,
+                 code_generator=None, interfaces_info=None,
+                 interfaces_info_filename='', only_if_changed=False):
+        """
+        Args:
+            interfaces_info:
+                interfaces_info dict
+                (avoids auxiliary file in run-bindings-tests)
+            interfaces_info_file: filename of pickled interfaces_info
+        """
+        self.code_generator = code_generator
+        if interfaces_info_filename:
+            with open(interfaces_info_filename) as interfaces_info_file:
+                interfaces_info = pickle.load(interfaces_info_file)
+        self.interfaces_info = interfaces_info
         self.only_if_changed = only_if_changed
-        self.reader = IdlReader(interfaces_info, idl_attributes_file, output_directory)
-        self.code_generator = CodeGeneratorV8(interfaces_info, output_directory)
+        self.output_directory = output_directory
+        self.reader = IdlReader(interfaces_info, idl_attributes_file,
+                                output_directory)
 
-    def compile(self, idl_filename):
-        basename = os.path.basename(idl_filename)
-        interface_name, _ = os.path.splitext(basename)
-
+    def compile_and_write(self, idl_filename, output_filenames):
+        interface_name = idl_filename_to_interface_name(idl_filename)
         definitions = self.reader.read_idl_definitions(idl_filename)
-        header_text, cpp_text = self.code_generator.generate_code(definitions, interface_name)
+        output_code_list = self.code_generator.generate_code(
+            definitions, interface_name)
+        for output_code, output_filename in zip(output_code_list,
+                                                output_filenames):
+            write_file(output_code, output_filename, self.only_if_changed)
 
+    @abc.abstractmethod
+    def compile_file(self, idl_filename):
+        pass
+
+
+class IdlCompilerV8(IdlCompiler):
+    def __init__(self, *args, **kwargs):
+        IdlCompiler.__init__(self, *args, **kwargs)
+        self.code_generator = CodeGeneratorV8(self.interfaces_info,
+                                              self.output_directory)
+
+    def compile_file(self, idl_filename):
+        interface_name = idl_filename_to_interface_name(idl_filename)
         header_filename = os.path.join(self.output_directory,
                                        'V8%s.h' % interface_name)
         cpp_filename = os.path.join(self.output_directory,
                                     'V8%s.cpp' % interface_name)
-        write_file(header_text, header_filename, self.only_if_changed)
-        write_file(cpp_text, cpp_filename, self.only_if_changed)
+        self.compile_and_write(idl_filename, (header_filename, cpp_filename))
 
 
 def main():
     options, idl_filename = parse_options()
+    idl_compiler = IdlCompilerV8(options.output_directory,
+                                 options.idl_attributes_file,
+                                 interfaces_info_filename=options.interfaces_info_file,
+                                 only_if_changed=options.write_file_only_if_changed)
+    idl_compiler.compile_file(idl_filename)
 
-    interfaces_info_filename = options.interfaces_info_file
-    if interfaces_info_filename:
-        with open(interfaces_info_filename) as interfaces_info_file:
-            interfaces_info = pickle.load(interfaces_info_file)
-    else:
-        interfaces_info = None
-
-    idl_compiler = IdlCompiler(options.output_directory,
-                               interfaces_info,
-                               options.idl_attributes_file,
-                               options.write_file_only_if_changed)
-    idl_compiler.compile(idl_filename)
 
 if __name__ == '__main__':
     sys.exit(main())

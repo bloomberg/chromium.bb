@@ -112,7 +112,7 @@ def write_event_interfaces_file(interfaces_info, destination_filename, only_if_c
                        for interface_name in event_interfaces]
     interface_lines.sort()
     lines.extend(interface_lines)
-    write_file(lines, destination_filename, only_if_changed)
+    write_file(''.join(lines), destination_filename, only_if_changed)
 
 
 ################################################################################
