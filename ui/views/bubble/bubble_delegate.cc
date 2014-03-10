@@ -316,10 +316,8 @@ int BubbleDelegateView::GetFadeDuration() {
 }
 
 void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
-  if (!color_explicitly_set_) {
-    color_ = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_WindowBackground);
-  }
+  if (!color_explicitly_set_)
+    color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
   set_background(Background::CreateSolidBackground(color()));
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)

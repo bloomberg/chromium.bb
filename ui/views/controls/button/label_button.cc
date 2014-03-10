@@ -26,9 +26,11 @@ namespace {
 // The spacing between the icon and text.
 const int kSpacing = 5;
 
+#if !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Default text and shadow colors for STYLE_BUTTON.
 const SkColor kStyleButtonTextColor = SK_ColorBLACK;
 const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
+#endif
 
 }  // namespace
 
@@ -315,14 +317,20 @@ void LabelButton::ResetColorsFromNativeTheme() {
     label_->SetAutoColorReadabilityEnabled(true);
     label_->ClearEmbellishing();
   } else if (style() == STYLE_BUTTON) {
+    // TODO(erg): This is disabled on desktop linux because of the binary asset
+    // confusion. These details should either be pushed into ui::NativeThemeWin
+    // or should be obsoleted by rendering buttons with paint calls instead of
+    // with static assets. http://crbug.com/350498
+#if !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
     constant_text_color = true;
     colors[STATE_NORMAL] = kStyleButtonTextColor;
     label_->SetBackgroundColor(theme->GetSystemColor(
         ui::NativeTheme::kColorId_ButtonBackgroundColor));
-    label_->set_background(NULL);
     label_->SetAutoColorReadabilityEnabled(false);
     label_->SetShadowColors(kStyleButtonShadowColor, kStyleButtonShadowColor);
     label_->SetShadowOffset(0, 1);
+#endif
+    label_->set_background(NULL);
   } else {
     label_->set_background(NULL);
   }

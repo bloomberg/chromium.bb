@@ -128,6 +128,14 @@ bool BookmarkBubbleView::AcceleratorPressed(
   return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
+void BookmarkBubbleView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  views::BubbleDelegateView::OnNativeThemeChanged(theme);
+  const SkColor background_color = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground);
+  set_color(background_color);
+  set_background(views::Background::CreateSolidBackground(background_color));
+}
+
 void BookmarkBubbleView::Init() {
   views::Label* title_label = new views::Label(
       l10n_util::GetStringUTF16(
@@ -267,11 +275,7 @@ BookmarkBubbleView::BookmarkBubbleView(
       sync_promo_view_(NULL),
       remove_bookmark_(false),
       apply_edits_(true) {
-  const SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
-  set_color(background_color);
   set_move_with_anchor(true);
-  set_background(views::Background::CreateSolidBackground(background_color));
   set_margins(gfx::Insets(views::kPanelVertMargin, 0, 0, 0));
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
