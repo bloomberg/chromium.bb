@@ -235,6 +235,7 @@ static void NaClSecureReverseClientCallback(
   struct NaClManifestProxy          *manifest_proxy;
   struct NaClReverseHostInterface   *reverse_host_interface;
   struct NaClReverseQuotaInterface  *reverse_quota_interface;
+  int runtime_host_setup_status;
   UNREFERENCED_PARAMETER(tif);
 
   NaClLog(4,
@@ -270,8 +271,12 @@ static void NaClSecureReverseClientCallback(
     NaClLog(LOG_FATAL, "Reverse interface ctor failed\n");
     goto cleanup_reverse_host_interface;
   }
-  NaClAppRuntimeHostSetup(nap, (struct NaClRuntimeHostInterface *)
-      reverse_host_interface);
+
+  runtime_host_setup_status = NaClAppRuntimeHostSetup(
+      nap, (struct NaClRuntimeHostInterface *) reverse_host_interface);
+  if (runtime_host_setup_status != LOAD_OK) {
+    NaClLog(LOG_FATAL, "NaClAppRuntimeHostSetup failed\n");
+  }
 
   reverse_quota_interface = (struct NaClReverseQuotaInterface *)
     malloc(sizeof *reverse_quota_interface);
