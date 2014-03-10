@@ -1565,6 +1565,9 @@ x11_compositor_create(struct wl_display *display,
 			height = option_height;
 
 		weston_config_section_get_int(section, "scale", &scale, 1);
+		if (option_scale)
+			scale = option_scale;
+
 		weston_config_section_get_string(section,
 						 "transform", &t, "normal");
 		transform = parse_transform(t, name);
