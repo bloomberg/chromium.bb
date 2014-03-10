@@ -49,13 +49,10 @@ public:
     bool isInitialized();
 
     // WebCore::NotificationPresenter implementation.
-    virtual bool show(WebCore::NotificationBase*) OVERRIDE;
-    virtual void cancel(WebCore::NotificationBase*) OVERRIDE;
-    virtual void notificationObjectDestroyed(WebCore::NotificationBase*) OVERRIDE;
+    virtual bool show(WebCore::Notification*) OVERRIDE;
+    virtual void cancel(WebCore::Notification*) OVERRIDE;
+    virtual void notificationObjectDestroyed(WebCore::Notification*) OVERRIDE;
     virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*) OVERRIDE;
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::VoidCallback>) OVERRIDE;
-#endif
     virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>) OVERRIDE;
 
 private:

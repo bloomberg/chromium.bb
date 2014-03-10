@@ -34,7 +34,7 @@
 #include "WebTextDirection.h"
 #include "core/events/Event.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
-#include "modules/notifications/NotificationBase.h"
+#include "modules/notifications/Notification.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -44,7 +44,7 @@ using namespace WebCore;
 
 namespace blink {
 
-class WebNotificationPrivate : public NotificationBase {
+class WebNotificationPrivate : public Notification {
 };
 
 void WebNotification::reset()
@@ -124,20 +124,20 @@ void WebNotification::dispatchClickEvent()
     m_private->dispatchClickEvent();
 }
 
-WebNotification::WebNotification(const WTF::PassRefPtr<NotificationBase>& notification)
+WebNotification::WebNotification(const WTF::PassRefPtr<Notification>& notification)
     : m_private(static_cast<WebNotificationPrivate*>(notification.leakRef()))
 {
 }
 
-WebNotification& WebNotification::operator=(const WTF::PassRefPtr<NotificationBase>& notification)
+WebNotification& WebNotification::operator=(const WTF::PassRefPtr<Notification>& notification)
 {
     assign(static_cast<WebNotificationPrivate*>(notification.leakRef()));
     return *this;
 }
 
-WebNotification::operator WTF::PassRefPtr<NotificationBase>() const
+WebNotification::operator WTF::PassRefPtr<Notification>() const
 {
-    return WTF::PassRefPtr<NotificationBase>(const_cast<WebNotificationPrivate*>(m_private));
+    return WTF::PassRefPtr<Notification>(const_cast<WebNotificationPrivate*>(m_private));
 }
 
 void WebNotification::assign(WebNotificationPrivate* p)
