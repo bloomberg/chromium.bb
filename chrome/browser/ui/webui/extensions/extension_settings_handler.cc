@@ -843,10 +843,12 @@ void ExtensionSettingsHandler::HandleEnableMessage(
 
   const Extension* extension =
       extension_service_->GetInstalledExtension(extension_id);
-  if (!extension ||
-      !management_policy_->UserMayModifySettings(extension, NULL)) {
-    LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable was"
-               << "made. Extension id: " << extension->id();
+  if (!extension)
+    return;
+
+  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
+    LOG(ERROR) << "An attempt was made to enable an extension that is "
+               << "non-usermanagable. Extension id: " << extension->id();
     return;
   }
 
@@ -917,8 +919,8 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
     return;
 
   if (!management_policy_->UserMayModifySettings(extension, NULL)) {
-    LOG(ERROR) << "Attempt to change allow file access of an extension that is "
-               << "non-usermanagable was made. Extension id : "
+    LOG(ERROR) << "An attempt was made to change allow file access of an"
+               << " extension that is non-usermanagable. Extension id : "
                << extension->id();
     return;
   }
@@ -938,8 +940,8 @@ void ExtensionSettingsHandler::HandleUninstallMessage(
     return;
 
   if (!management_policy_->UserMayModifySettings(extension, NULL)) {
-    LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
-               << "was made. Extension id : " << extension->id();
+    LOG(ERROR) << "An attempt was made to uninstall an extension that is "
+               << "non-usermanagable. Extension id : " << extension->id();
     return;
   }
 
