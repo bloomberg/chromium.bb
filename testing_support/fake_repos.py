@@ -752,6 +752,82 @@ class FakeRepoTransitive(FakeReposBase):
     pass
 
 
+class FakeRepoSkiaDEPS(FakeReposBase):
+  """Simulates the Skia DEPS transition in Chrome."""
+
+  NB_GIT_REPOS = 5
+
+  DEPS_svn_pre = """deps = {
+  'src/third_party/skia/gyp': '%(svn_base)sskia/gyp',
+  'src/third_party/skia/include': '%(svn_base)sskia/include',
+  'src/third_party/skia/src': '%(svn_base)sskia/src',
+}"""
+
+  DEPS_git_pre = """deps = {
+  'src/third_party/skia/gyp': '%(git_base)srepo_3',
+  'src/third_party/skia/include': '%(git_base)srepo_4',
+  'src/third_party/skia/src': '%(git_base)srepo_5',
+}"""
+
+  DEPS_post = """deps = {
+  'src/third_party/skia': '%(git_base)srepo_1',
+}"""
+
+  def populateSvn(self):
+    """Create revisions which simulate the Skia DEPS transition in Chrome."""
+    subprocess2.check_call(
+        ['svn', 'checkout', self.svn_base, self.svn_checkout,
+         '-q', '--non-interactive', '--no-auth-cache',
+         '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
+    assert os.path.isdir(join(self.svn_checkout, '.svn'))
+
+    # Skia repo.
+    self._commit_svn({
+        'skia/skia_base_file': 'root-level file.',
+        'skia/gyp/gyp_file': 'file in the gyp directory',
+        'skia/include/include_file': 'file in the include directory',
+        'skia/src/src_file': 'file in the src directory',
+    })
+
+    # Chrome repo.
+    self._commit_svn({
+        'trunk/src/DEPS': self.DEPS_svn_pre % {'svn_base': self.svn_base},
+        'trunk/src/myfile': 'svn/trunk/src@1'
+    })
+    self._commit_svn({
+        'trunk/src/DEPS': self.DEPS_post % {'git_base': self.git_base},
+        'trunk/src/myfile': 'svn/trunk/src@2'
+    })
+
+  def populateGit(self):
+    # Skia repo.
+    self._commit_git('repo_1', {
+        'skia_base_file': 'root-level file.',
+        'gyp/gyp_file': 'file in the gyp directory',
+        'include/include_file': 'file in the include directory',
+        'src/src_file': 'file in the src directory',
+    })
+    self._commit_git('repo_3', { # skia/gyp
+        'gyp_file': 'file in the gyp directory',
+    })
+    self._commit_git('repo_4', { # skia/include
+        'include_file': 'file in the include directory',
+    })
+    self._commit_git('repo_5', { # skia/src
+        'src_file': 'file in the src directory',
+    })
+
+    # Chrome repo.
+    self._commit_git('repo_2', {
+        'DEPS': self.DEPS_git_pre % {'git_base': self.git_base},
+        'myfile': 'svn/trunk/src@1'
+    })
+    self._commit_git('repo_2', {
+        'DEPS': self.DEPS_post % {'git_base': self.git_base},
+        'myfile': 'svn/trunk/src@2'
+    })
+
+
 class FakeReposTestBase(trial_dir.TestCase):
   """This is vaguely inspired by twisted."""
   # Static FakeRepos instances. Lazy loaded.
