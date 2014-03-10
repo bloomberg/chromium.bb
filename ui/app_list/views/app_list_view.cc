@@ -411,6 +411,12 @@ void AppListView::Layout() {
   }
 }
 
+void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
+  BubbleDelegateView::SchedulePaintInRect(rect);
+  if (GetBubbleFrameView())
+    GetBubbleFrameView()->SchedulePaint();
+}
+
 void AppListView::OnWidgetDestroying(views::Widget* widget) {
   BubbleDelegateView::OnWidgetDestroying(widget);
   if (delegate_ && widget == GetWidget())

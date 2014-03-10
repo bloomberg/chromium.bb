@@ -75,6 +75,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Invoked from an IconLoader when icon loading is finished.
   void OnItemIconLoaded(IconLoader* loader);
 
+  // Overridden from views::View:
+  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE;
+
   // Overridden from AppsGridViewDelegate:
   virtual void ActivateApp(AppListItem* item, int event_flags) OVERRIDE;
   virtual void GetShortcutPathForApp(

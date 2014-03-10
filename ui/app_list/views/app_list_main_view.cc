@@ -204,6 +204,13 @@ void AppListMainView::OnItemIconLoaded(IconLoader* loader) {
   }
 }
 
+void AppListMainView::ChildVisibilityChanged(views::View* child) {
+  // Repaint the AppListView's background which will repaint the background for
+  // the search box.
+  if (child == search_box_view_ && parent())
+    parent()->SchedulePaint();
+}
+
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
   // TODO(jennyz): Activate the folder via AppListModel notification.
   if (item->GetItemType() == AppListFolderItem::kItemType)

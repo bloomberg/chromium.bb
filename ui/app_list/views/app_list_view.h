@@ -124,6 +124,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
