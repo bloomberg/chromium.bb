@@ -142,21 +142,11 @@ public class PrintingControllerTest extends ChromeShellTestBase {
 
     private PrintingControllerImpl createControllerOnUiThread() {
         try {
-            final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
-                @Override
-                public void print(String printJobName,
-                        PrintDocumentAdapter documentAdapter,
-                        PrintAttributes attributes) {
-                    // Do nothing, as we will emulate the framework call sequence within the test.
-                }
-            };
-
             final FutureTask<PrintingControllerImpl> task =
                     new FutureTask<PrintingControllerImpl>(new Callable<PrintingControllerImpl>() {
                 @Override
                 public PrintingControllerImpl call() throws Exception {
                     return (PrintingControllerImpl) PrintingControllerImpl.create(
-                            mockPrintManagerDelegate,
                             new PrintDocumentAdapterWrapper(),
                             PRINT_JOB_NAME);
                 }
@@ -174,10 +164,19 @@ public class PrintingControllerTest extends ChromeShellTestBase {
     private void startControllerOnUiThread(final PrintingControllerImpl controller,
             final TestShellTab tab) {
         try {
+            final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
+                @Override
+                public void print(String printJobName,
+                        PrintDocumentAdapter documentAdapter,
+                        PrintAttributes attributes) {
+                    // Do nothing, as we will emulate the framework call sequence within the test.
+                }
+            };
+
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    controller.startPrint(new TabPrinter(tab));
+                    controller.startPrint(new TabPrinter(tab), mockPrintManagerDelegate);
                 }
             });
         } catch (Throwable e) {

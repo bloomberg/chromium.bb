@@ -33,6 +33,7 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
+import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -248,7 +249,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                 return true;
             case R.id.print:
                 if (getActiveTab() != null) {
-                    mPrintingController.startPrint(new TabPrinter(getActiveTab()));
+                    mPrintingController.startPrint(new TabPrinter(getActiveTab()),
+                            new PrintManagerDelegateImpl(this));
                 }
                 return true;
             case R.id.distill_page:

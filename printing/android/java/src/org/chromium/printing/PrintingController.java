@@ -40,12 +40,18 @@ public interface PrintingController {
     int[] getPageNumbers();
 
     /**
+     * @return If the controller is busy.
+     */
+    public boolean isBusy();
+
+    /**
      * Initiates the printing process for the Android API.
      *
      * @param printable An object capable of starting native side PDF generation, i.e. typically
      *                  a Tab.
+     * @param printManager The print manager that manages the print job.
      */
-    void startPrint(final Printable printable);
+    void startPrint(final Printable printable, PrintManagerDelegate printManager);
 
     /**
      * This method is called by the native side to signal PDF writing process is completed.

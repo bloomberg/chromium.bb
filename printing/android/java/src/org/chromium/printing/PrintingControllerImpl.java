@@ -45,8 +45,6 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     private final String mErrorMessage;
 
-    private final PrintManagerDelegate mPrintManager;
-
     private PrintingContextInterface mPrintingContext;
 
     /** The file descriptor into which the PDF will be written.  Provided by the framework. */
@@ -86,10 +84,10 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     /** Total number of pages to print with initial print dialog settings. */
     private int mLastKnownMaxPages = PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
 
-    private PrintingControllerImpl(PrintManagerDelegate printManager,
-                                   PrintDocumentAdapterWrapper printDocumentAdapterWrapper,
+    private boolean mIsBusy = false;
+
+    private PrintingControllerImpl(PrintDocumentAdapterWrapper printDocumentAdapterWrapper,
                                    String errorText) {
-        mPrintManager = printManager;
         mErrorMessage = errorText;
         mPrintDocumentAdapterWrapper = printDocumentAdapterWrapper;
         mPrintDocumentAdapterWrapper.setPdfGenerator(this);
@@ -107,13 +105,12 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
      *                  doesn't need any string dependency.
      * @return The resulting PrintingController.
      */
-    public static PrintingController create(PrintManagerDelegate printManager,
+    public static PrintingController create(
             PrintDocumentAdapterWrapper printDocumentAdapterWrapper, String errorText) {
         ThreadUtils.assertOnUiThread();
 
         if (sInstance == null) {
-            sInstance = new PrintingControllerImpl(printManager,
-                    printDocumentAdapterWrapper, errorText);
+            sInstance = new PrintingControllerImpl(printDocumentAdapterWrapper, errorText);
         }
         return sInstance;
     }
@@ -161,14 +158,21 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     }
 
     @Override
+    public boolean isBusy() {
+        return mIsBusy;
+    }
+
+    @Override
     public void setPrintingContext(final PrintingContextInterface printingContext) {
         mPrintingContext = printingContext;
     }
 
     @Override
-    public void startPrint(final Printable printable) {
+    public void startPrint(final Printable printable, PrintManagerDelegate printManager) {
+        if (mIsBusy) return;
+        mIsBusy = true;
         mPrintable = printable;
-        mPrintDocumentAdapterWrapper.print(mPrintManager, printable.getTitle());
+        mPrintDocumentAdapterWrapper.print(printManager, printable.getTitle());
     }
 
     @Override
@@ -323,6 +327,9 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
         mFileDescriptor = -1;
 
         resetCallbacks();
+        // The printmanager contract is that onFinish() is always called as the last
+        // callback. We set busy to false here.
+        mIsBusy = false;
     }
 
     private void resetCallbacks() {

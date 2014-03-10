@@ -4,6 +4,7 @@
 
 package org.chromium.printing;
 
+import android.content.Context;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
@@ -14,8 +15,8 @@ import android.print.PrintManager;
 public class PrintManagerDelegateImpl implements PrintManagerDelegate {
     private final PrintManager mPrintManager;
 
-    public PrintManagerDelegateImpl(PrintManager printManager) {
-        mPrintManager = printManager;
+    public PrintManagerDelegateImpl(Context context) {
+        mPrintManager =  (PrintManager) context.getSystemService(Context.PRINT_SERVICE);
     }
 
     @Override
