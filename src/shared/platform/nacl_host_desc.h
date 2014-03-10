@@ -286,15 +286,6 @@ extern nacl_off64_t NaClHostDescSeek(struct NaClHostDesc *d,
                                      int                 whence);
 
 /*
- * TODO(bsy): Need to enumerate which request is supported and the
- * size of the argument, as well as whether the arg is input or
- * output.
- */
-extern int NaClHostDescIoctl(struct NaClHostDesc  *d,
-                             int                  request,
-                             void                 *arg) NACL_WUR;
-
-/*
  * Fstat.
  */
 extern int NaClHostDescFstat(struct NaClHostDesc  *d,

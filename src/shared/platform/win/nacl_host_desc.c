@@ -1324,16 +1324,6 @@ ssize_t NaClHostDescPWrite(struct NaClHostDesc *d,
   return bytes_sent;
 }
 
-int NaClHostDescIoctl(struct NaClHostDesc *d,
-                      int                 request,
-                      void                *arg) {
-  UNREFERENCED_PARAMETER(request);
-  UNREFERENCED_PARAMETER(arg);
-
-  NaClHostDescCheckValidity("NaClHostDescIoctl", d);
-  return -NACL_ABI_ENOSYS;
-}
-
 int NaClHostDescFstat(struct NaClHostDesc   *d,
                       nacl_host_stat_t      *nasp) {
   NaClHostDescCheckValidity("NaClHostDescFstat", d);
