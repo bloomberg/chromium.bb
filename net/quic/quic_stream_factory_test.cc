@@ -41,20 +41,35 @@ class QuicStreamFactoryPeer {
  public:
   static QuicCryptoClientConfig* GetOrCreateCryptoConfig(
       QuicStreamFactory* factory,
-      const HostPortProxyPair& host_port_proxy_pair) {
-    return factory->GetOrCreateCryptoConfig(host_port_proxy_pair);
+      const HostPortProxyPair& host_port_proxy_pair,
+      bool is_https) {
+    QuicStreamFactory::SessionKey session_key(host_port_proxy_pair, is_https);
+    return factory->GetOrCreateCryptoConfig(session_key);
   }
 
   static bool HasActiveSession(QuicStreamFactory* factory,
-                               const HostPortProxyPair& host_port_proxy_pair) {
-    return factory->HasActiveSession(host_port_proxy_pair);
+                               const HostPortProxyPair& host_port_proxy_pair,
+                               bool is_https) {
+    QuicStreamFactory::SessionKey session_key(host_port_proxy_pair, is_https);
+    return factory->HasActiveSession(session_key);
   }
 
   static QuicClientSession* GetActiveSession(
       QuicStreamFactory* factory,
-      const HostPortProxyPair& host_port_proxy_pair) {
-    DCHECK(factory->HasActiveSession(host_port_proxy_pair));
-    return factory->active_sessions_[host_port_proxy_pair];
+      const HostPortProxyPair& host_port_proxy_pair,
+      bool is_https) {
+    QuicStreamFactory::SessionKey session_key(host_port_proxy_pair, is_https);
+    DCHECK(factory->HasActiveSession(session_key));
+    return factory->active_sessions_[session_key];
+  }
+
+  static scoped_ptr<QuicHttpStream> CreateIfSessionExists(
+      QuicStreamFactory* factory,
+      const HostPortProxyPair& host_port_proxy_pair,
+      bool is_https,
+      const BoundNetLog& net_log) {
+    QuicStreamFactory::SessionKey session_key(host_port_proxy_pair, is_https);
+    return factory->CreateIfSessionExists(session_key, net_log);
   }
 
   static bool IsLiveSession(QuicStreamFactory* factory,
@@ -88,6 +103,12 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     factory_.set_require_confirmation(false);
   }
 
+  scoped_ptr<QuicHttpStream> CreateIfSessionExists(
+      const HostPortProxyPair& host_port_proxy_pair,
+      const BoundNetLog& net_log) {
+    return QuicStreamFactoryPeer::CreateIfSessionExists(
+        &factory_, host_port_proxy_pair, false, net_log_);
+  }
 
   int GetSourcePortForNewSession(const HostPortProxyPair& destination) {
     return GetSourcePortForNewSessionInner(destination, false);
@@ -101,8 +122,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   int GetSourcePortForNewSessionInner(const HostPortProxyPair& destination,
                                       bool goaway_received) {
     // Should only be called if there is no active session for this destination.
-    EXPECT_EQ(NULL, factory_.CreateIfSessionExists(destination,
-                                                   net_log_).get());
+    EXPECT_EQ(NULL, CreateIfSessionExists(destination, net_log_).get());
     size_t socket_count = socket_factory_.udp_client_sockets().size();
 
     MockRead reads[] = {
@@ -127,7 +147,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     stream.reset();
 
     QuicClientSession* session = QuicStreamFactoryPeer::GetActiveSession(
-        &factory_, destination);
+        &factory_, destination, is_https_);
 
     if (socket_count + 1 != socket_factory_.udp_client_sockets().size()) {
       EXPECT_TRUE(false);
@@ -144,8 +164,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     }
 
     factory_.OnSessionClosed(session);
-    EXPECT_EQ(NULL, factory_.CreateIfSessionExists(destination,
-                                                   net_log_).get());
+    EXPECT_EQ(NULL, CreateIfSessionExists(destination, net_log_).get());
     EXPECT_TRUE(socket_data.at_read_eof());
     EXPECT_TRUE(socket_data.at_write_eof());
     return port;
@@ -174,8 +193,7 @@ INSTANTIATE_TEST_CASE_P(Version, QuicStreamFactoryTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicStreamFactoryTest, CreateIfSessionExists) {
-  EXPECT_EQ(NULL, factory_.CreateIfSessionExists(host_port_proxy_pair_,
-                                                 net_log_).get());
+  EXPECT_EQ(NULL, CreateIfSessionExists(host_port_proxy_pair_, net_log_).get());
 }
 
 TEST_P(QuicStreamFactoryTest, Create) {
@@ -200,7 +218,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
   EXPECT_TRUE(stream.get());
 
   // Will reset stream 3.
-  stream = factory_.CreateIfSessionExists(host_port_proxy_pair_, net_log_);
+  stream = CreateIfSessionExists(host_port_proxy_pair_, net_log_);
   EXPECT_TRUE(stream.get());
 
   // TODO(rtenneti): We should probably have a tests that HTTP and HTTPS result
@@ -218,6 +236,54 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data1.StopAfter(1);
+  socket_data2.StopAfter(1);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_proxy_pair_,
+                            is_https_,
+                            "GET",
+                            cert_verifier_.get(),
+                            net_log_,
+                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_proxy_pair_,
+                             !is_https_,
+                             "GET",
+                             cert_verifier_.get(),
+                             net_log_,
+                             callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  stream = request2.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+  stream.reset();
+
+  EXPECT_NE(QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, host_port_proxy_pair_, is_https_),
+            QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, host_port_proxy_pair_, !is_https_));
+
+  EXPECT_TRUE(socket_data1.at_read_eof());
+  EXPECT_TRUE(socket_data1.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
 TEST_P(QuicStreamFactoryTest, Pooling) {
@@ -262,8 +328,9 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   EXPECT_TRUE(stream2.get());
 
   EXPECT_EQ(
-      QuicStreamFactoryPeer::GetActiveSession(&factory_, host_port_proxy_pair_),
-      QuicStreamFactoryPeer::GetActiveSession(&factory_, server2));
+      QuicStreamFactoryPeer::GetActiveSession(
+          &factory_, host_port_proxy_pair_, is_https_),
+      QuicStreamFactoryPeer::GetActiveSession(&factory_, server2, is_https_));
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
@@ -313,12 +380,12 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
-  factory_.OnSessionGoingAway(
-      QuicStreamFactoryPeer::GetActiveSession(&factory_,
-                                              host_port_proxy_pair_));
-  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(&factory_,
-                                                       host_port_proxy_pair_));
-  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(&factory_, server2));
+  factory_.OnSessionGoingAway(QuicStreamFactoryPeer::GetActiveSession(
+      &factory_, host_port_proxy_pair_, is_https_));
+  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
+      &factory_, host_port_proxy_pair_, is_https_));
+  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
+      &factory_, server2, is_https_));
 
   TestCompletionCallback callback3;
   QuicStreamRequest request3(&factory_);
@@ -332,7 +399,8 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
   EXPECT_TRUE(stream3.get());
 
-  EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(&factory_, server2));
+  EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(
+      &factory_, server2, is_https_));
 
   EXPECT_TRUE(socket_data1.at_read_eof());
   EXPECT_TRUE(socket_data1.at_write_eof());
@@ -395,8 +463,10 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
-  EXPECT_EQ(QuicStreamFactoryPeer::GetActiveSession(&factory_, server1),
-            QuicStreamFactoryPeer::GetActiveSession(&factory_, server2));
+  EXPECT_EQ(QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server1, is_https_),
+            QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server2, is_https_));
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
@@ -461,8 +531,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
 
-  EXPECT_NE(QuicStreamFactoryPeer::GetActiveSession(&factory_, server1),
-            QuicStreamFactoryPeer::GetActiveSession(&factory_, server2));
+  EXPECT_NE(QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server1, is_https_),
+            QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server2, is_https_));
 
   EXPECT_TRUE(socket_data1.at_read_eof());
   EXPECT_TRUE(socket_data1.at_write_eof());
@@ -497,13 +569,12 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   // Mark the session as going away.  Ensure that while it is still alive
   // that it is no longer active.
   QuicClientSession* session = QuicStreamFactoryPeer::GetActiveSession(
-      &factory_, host_port_proxy_pair_);
+      &factory_, host_port_proxy_pair_, is_https_);
   factory_.OnSessionGoingAway(session);
   EXPECT_EQ(true, QuicStreamFactoryPeer::IsLiveSession(&factory_, session));
-  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(&factory_,
-                                                       host_port_proxy_pair_));
-  EXPECT_EQ(NULL, factory_.CreateIfSessionExists(host_port_proxy_pair_,
-                                                 net_log_).get());
+  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(
+      &factory_, host_port_proxy_pair_, is_https_));
+  EXPECT_EQ(NULL, CreateIfSessionExists(host_port_proxy_pair_, net_log_).get());
 
   // Create a new request for the same destination and verify that a
   // new session is created.
@@ -520,10 +591,11 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   EXPECT_TRUE(stream2.get());
 
   EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(&factory_,
-                                                      host_port_proxy_pair_));
+                                                      host_port_proxy_pair_,
+                                                      is_https_));
   EXPECT_NE(session,
             QuicStreamFactoryPeer::GetActiveSession(
-                &factory_, host_port_proxy_pair_));
+                &factory_, host_port_proxy_pair_, is_https_));
   EXPECT_EQ(true, QuicStreamFactoryPeer::IsLiveSession(&factory_, session));
 
   stream2.reset();
@@ -665,7 +737,7 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   run_loop.RunUntilIdle();
 
   scoped_ptr<QuicHttpStream> stream(
-      factory_.CreateIfSessionExists(host_port_proxy_pair_, net_log_));
+      CreateIfSessionExists(host_port_proxy_pair_, net_log_));
   EXPECT_TRUE(stream.get());
   stream.reset();
 
@@ -973,8 +1045,8 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
                                             ProxyServer::Direct());
 
     QuicCryptoClientConfig* crypto_config1 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                       host_port_proxy_pair1);
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
+            &factory_, host_port_proxy_pair1, is_https_);
     DCHECK(crypto_config1);
     QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
@@ -989,8 +1061,8 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     HostPortProxyPair host_port_proxy_pair2(HostPortPair(r2_host_name, 80),
                                             ProxyServer::Direct());
     QuicCryptoClientConfig* crypto_config2 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                       host_port_proxy_pair2);
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
+            &factory_, host_port_proxy_pair2, is_https_);
     DCHECK(crypto_config2);
     QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());
@@ -1014,8 +1086,8 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
                                             ProxyServer::Direct());
 
     QuicCryptoClientConfig* crypto_config1 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                       host_port_proxy_pair1);
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
+            &factory_, host_port_proxy_pair1, is_https_);
     DCHECK(crypto_config1);
     QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
@@ -1030,8 +1102,8 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     HostPortProxyPair host_port_proxy_pair2(HostPortPair(r4_host_name, 80),
                                             ProxyServer::Direct());
     QuicCryptoClientConfig* crypto_config2 =
-        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                       host_port_proxy_pair2);
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
+            &factory_, host_port_proxy_pair2, is_https_);
     DCHECK(crypto_config2);
     QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());

@@ -503,6 +503,9 @@ base::Value* QuicClientSession::GetInfoAsValue(
   dict->SetString("peer_address", peer_address().ToString());
   dict->SetString("connection_id", base::Uint64ToString(connection_id()));
   dict->SetBoolean("connected", connection()->connected());
+  SSLInfo ssl_info;
+  dict->SetBoolean("secure",
+                   crypto_stream_->GetSSLInfo(&ssl_info) && ssl_info.cert);
 
   base::ListValue* alias_list = new base::ListValue();
   for (std::set<HostPortProxyPair>::const_iterator it = aliases.begin();
