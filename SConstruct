@@ -3095,6 +3095,7 @@ irt_variant_tests = [
     'tests/sel_ldr_seccomp/nacl.scons',
     'tests/sel_main_chrome/nacl.scons',
     'tests/signal_handler/nacl.scons',
+    'tests/simd/nacl.scons',
     'tests/sleep/nacl.scons',
     'tests/srpc/nacl.scons',
     'tests/srpc_hw/nacl.scons',

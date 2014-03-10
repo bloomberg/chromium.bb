@@ -1,0 +1,49 @@
+# -*- python -*-
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+def AddTest(env, src, exit_status='0', golden_file=None, test_suffix='',
+            is_broken=False, compile_env=None, link_env=None,
+            EXTRA_LIBS=[]):
+  name = src.split('.')[0] + test_suffix
+
+  compile_env = compile_env or env
+  link_env = link_env or env
+
+  obj = compile_env.ComponentObject(name, src)
+  nexe = link_env.ComponentProgram(
+      name, obj, EXTRA_LIBS=['${NONIRT_LIBS}'] + EXTRA_LIBS)
+  node = env.CommandSelLdrTestNacl(
+      name + '.out', nexe, exit_status=exit_status,
+      stdout_golden=golden_file)
+  env.AddNodeToTestSuite(
+      node, ['toolchain_tests', 'small_tests'], 'run_' + name + '_test',
+      is_broken=is_broken)
+
+cxx_flags = (['-Wc++11-narrowing', '-std=gnu++11']
+             if env.Bit('bitcode') else ['-std=gnu++0x'])
+
+native_env = env.Clone()
+if env.Bit('bitcode'):
+  native_flags = []
+elif env.Bit('target_x86_32'):
+  native_flags = ['-msse2', '-msse3', '-msse4']
+elif env.Bit('target_x86_64'):
+  native_flags = ['-msse2', '-msse3', '-msse4']
+elif env.Bit('target_arm'):
+  native_flags = ['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard']
+elif env.Bit('target_mips32'):
+  native_flags = []
+native_env.Append(CCFLAGS=native_flags + cxx_flags)
+
+ref_env = env.Clone()
+ref_flags = ['-DVREFIMPL']
+ref_env.Append(CCFLAGS=ref_flags + cxx_flags)
+
+# TODO(jfb): The native environment currently doesn't compile.
+if env.Bit('bitcode'):
+  AddTest(native_env, 'simd.cc', test_suffix='_native')
+AddTest(ref_env, 'simd.cc', test_suffix='_ref')
