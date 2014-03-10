@@ -44,6 +44,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -53,8 +54,7 @@
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
-#include "core/html/canvas/DOMPath.h"
-#include "core/frame/ImageBitmap.h"
+#include "core/html/canvas/Path2D.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTheme.h"
@@ -826,12 +826,12 @@ void CanvasRenderingContext2D::beginPath()
     m_path.clear();
 }
 
-PassRefPtr<DOMPath> CanvasRenderingContext2D::currentPath()
+PassRefPtr<Path2D> CanvasRenderingContext2D::currentPath()
 {
-    return DOMPath::create(m_path);
+    return Path2D::create(m_path);
 }
 
-void CanvasRenderingContext2D::setCurrentPath(DOMPath* path)
+void CanvasRenderingContext2D::setCurrentPath(Path2D* path)
 {
     if (!path)
         return;
@@ -932,12 +932,12 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
     fillInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::fill(DOMPath* domPath, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::fill(Path2D* domPath, ExceptionState& exceptionState)
 {
     fill(domPath, "nonzero", exceptionState);
 }
 
-void CanvasRenderingContext2D::fill(DOMPath* domPath, const String& windingRuleString, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::fill(Path2D* domPath, const String& windingRuleString, ExceptionState& exceptionState)
 {
     if (!domPath) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
@@ -980,7 +980,7 @@ void CanvasRenderingContext2D::stroke()
     strokeInternal(m_path);
 }
 
-void CanvasRenderingContext2D::stroke(DOMPath* domPath, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::stroke(Path2D* domPath, ExceptionState& exceptionState)
 {
     if (!domPath) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
@@ -1014,12 +1014,12 @@ void CanvasRenderingContext2D::clip(const String& windingRuleString)
     clipInternal(m_path, windingRuleString);
 }
 
-void CanvasRenderingContext2D::clip(DOMPath* domPath, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::clip(Path2D* domPath, ExceptionState& exceptionState)
 {
     clip(domPath, "nonzero", exceptionState);
 }
 
-void CanvasRenderingContext2D::clip(DOMPath* domPath, const String& windingRuleString, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::clip(Path2D* domPath, const String& windingRuleString, ExceptionState& exceptionState)
 {
     if (!domPath) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
@@ -1034,12 +1034,12 @@ bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const
     return isPointInPathInternal(m_path, x, y, windingRuleString);
 }
 
-bool CanvasRenderingContext2D::isPointInPath(DOMPath* domPath, const float x, const float y, ExceptionState& exceptionState)
+bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, ExceptionState& exceptionState)
 {
     return isPointInPath(domPath, x, y, "nonzero", exceptionState);
 }
 
-bool CanvasRenderingContext2D::isPointInPath(DOMPath* domPath, const float x, const float y, const String& windingRuleString, ExceptionState& exceptionState)
+bool CanvasRenderingContext2D::isPointInPath(Path2D* domPath, const float x, const float y, const String& windingRuleString, ExceptionState& exceptionState)
 {
     if (!domPath) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
@@ -1075,7 +1075,7 @@ bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)
     return isPointInStrokeInternal(m_path, x, y);
 }
 
-bool CanvasRenderingContext2D::isPointInStroke(DOMPath* domPath, const float x, const float y, ExceptionState& exceptionState)
+bool CanvasRenderingContext2D::isPointInStroke(Path2D* domPath, const float x, const float y, ExceptionState& exceptionState)
 {
     if (!domPath) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));

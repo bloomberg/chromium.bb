@@ -11,10 +11,10 @@ PASS ctx.arcTo(10, 10, 20, 20, 0) did not throw exception.
 PASS ctx.arcTo(10, 10, 20, 20, -5) threw exception IndexSizeError: Failed to execute 'arcTo' on 'CanvasRenderingContext2D': The radius provided (-5) is negative..
 PASS path.arc(10, 10, 5, 0, 1, false) did not throw exception.
 PASS path.arc(10, 10, 0, 0, 1, false) did not throw exception.
-PASS path.arc(10, 10, -5, 0, 1, false) threw exception IndexSizeError: Failed to execute 'arc' on 'Path': The radius provided (-5) is negative..
+PASS path.arc(10, 10, -5, 0, 1, false) threw exception IndexSizeError: Failed to execute 'arc' on 'Path2D': The radius provided (-5) is negative..
 PASS path.arcTo(10, 10, 20, 20, 5) did not throw exception.
 PASS path.arcTo(10, 10, 20, 20, 0) did not throw exception.
-PASS path.arcTo(10, 10, 20, 20, -5) threw exception IndexSizeError: Failed to execute 'arcTo' on 'Path': The radius provided (-5) is negative..
+PASS path.arcTo(10, 10, 20, 20, -5) threw exception IndexSizeError: Failed to execute 'arcTo' on 'Path2D': The radius provided (-5) is negative..
 PASS successfullyParsed is true
 
 TEST COMPLETE

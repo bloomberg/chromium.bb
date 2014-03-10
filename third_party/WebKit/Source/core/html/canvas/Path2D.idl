@@ -29,12 +29,11 @@
 [
     RuntimeEnabled=ExperimentalCanvasFeatures,
     Constructor,
-    Constructor(Path path),
-    Constructor(DOMString text),
-    ImplementedAs=DOMPath
-] interface Path {
+    Constructor(Path2D path),
+    Constructor(DOMString text)
+] interface Path2D {
 
-    [RaisesException] void addPath(Path? path, SVGMatrix? transform);
+    [RaisesException] void addPath(Path2D? path, SVGMatrix? transform);
 
     // FIXME: These methods should be shared with CanvasRenderingContext2D in the CanvasPathMethods interface.
     void closePath();

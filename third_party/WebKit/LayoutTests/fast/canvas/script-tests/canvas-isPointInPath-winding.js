@@ -34,7 +34,7 @@ function prepareTestScenario() {
     ctx.beginPath();
 
     debug('Testing default isPointInPath with Path object');
-    path = new Path();
+    path = new Path2D();
     path.rect(0, 0, 100, 100);
     path.rect(25, 25, 50, 50);
     shouldBeTrue("ctx.isPointInPath(path, 50, 50)");
@@ -43,14 +43,14 @@ function prepareTestScenario() {
     debug('');
 
     debug('Testing nonzero isPointInPath with Path object');
-    path = new Path();
+    path = new Path2D();
     path.rect(0, 0, 100, 100);
     path.rect(25, 25, 50, 50);
     shouldBeTrue("ctx.isPointInPath(path, 50, 50, 'nonzero')");
     debug('');
 
     debug('Testing evenodd isPointInPath with Path object');
-    path = new Path();
+    path = new Path2D();
     path.rect(0, 0, 100, 100);
     path.rect(25, 25, 50, 50);
     shouldBeFalse("ctx.isPointInPath(path, 50, 50, 'evenodd')");

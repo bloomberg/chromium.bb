@@ -39,7 +39,7 @@ function testStrokeWith(path) {
 
 // Execute test.
 function prepareTestScenario() {
-    var path = new Path();
+    var path = new Path2D();
     drawRectangleOn(path);
 
     testStrokeWith();

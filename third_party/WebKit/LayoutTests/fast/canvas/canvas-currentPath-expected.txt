@@ -36,7 +36,7 @@ PASS ctx.isPointInPath(249,249) is true
 
 Test that currentPath returns a path object.
 PASS p is null
-PASS p is an instance of Path
+PASS p is an instance of Path2D
 
 Create context path and test that it exists.
 PASS ctx.isPointInPath(49,49) is true

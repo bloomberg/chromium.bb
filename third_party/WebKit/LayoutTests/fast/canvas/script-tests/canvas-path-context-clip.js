@@ -55,7 +55,7 @@ function testClipWith(fillRule, path) {
 // Execute test.
 function prepareTestScenario() {
     fillRules = [undefined, 'nonzero', 'evenodd'];
-    var path = new Path();
+    var path = new Path2D();
     drawRectanglesOn(path);
 
     for (var i = 0; i < fillRules.length; i++) {

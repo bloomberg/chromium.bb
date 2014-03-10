@@ -50,7 +50,7 @@ namespace WebCore {
 class CanvasGradient;
 class CanvasPattern;
 class CanvasStyle;
-class DOMPath;
+class Path2D;
 class Element;
 class ExceptionState;
 class FloatRect;
@@ -146,22 +146,22 @@ public:
 
     void beginPath();
 
-    PassRefPtr<DOMPath> currentPath();
-    void setCurrentPath(DOMPath*);
+    PassRefPtr<Path2D> currentPath();
+    void setCurrentPath(Path2D*);
     void fill(const String& winding = "nonzero");
-    void fill(DOMPath*, ExceptionState&);
-    void fill(DOMPath*, const String& winding, ExceptionState&);
+    void fill(Path2D*, ExceptionState&);
+    void fill(Path2D*, const String& winding, ExceptionState&);
     void stroke();
-    void stroke(DOMPath*, ExceptionState&);
+    void stroke(Path2D*, ExceptionState&);
     void clip(const String& winding = "nonzero");
-    void clip(DOMPath*, ExceptionState&);
-    void clip(DOMPath*, const String& winding, ExceptionState&);
+    void clip(Path2D*, ExceptionState&);
+    void clip(Path2D*, const String& winding, ExceptionState&);
 
     bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
-    bool isPointInPath(DOMPath*, const float x, const float y, ExceptionState&);
-    bool isPointInPath(DOMPath*, const float x, const float y, const String& winding, ExceptionState&);
+    bool isPointInPath(Path2D*, const float x, const float y, ExceptionState&);
+    bool isPointInPath(Path2D*, const float x, const float y, const String& winding, ExceptionState&);
     bool isPointInStroke(const float x, const float y);
-    bool isPointInStroke(DOMPath*, const float x, const float y, ExceptionState&);
+    bool isPointInStroke(Path2D*, const float x, const float y, ExceptionState&);
 
     void clearRect(float x, float y, float width, float height);
     void fillRect(float x, float y, float width, float height);

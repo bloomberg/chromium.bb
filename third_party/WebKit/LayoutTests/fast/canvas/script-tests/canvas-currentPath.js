@@ -1,5 +1,7 @@
 description("Test the behavior of currentPath in Canvas");
-var ctx = document.createElement('canvas').getContext('2d');
+var c = document.createElement('canvas');
+document.body.appendChild(c);
+var ctx = c.getContext('2d');
 
 var testStrings = [
     "ctx.isPointInPath(49,49)",
@@ -25,7 +27,7 @@ ctx.fillStyle = '#0f0';
 ctx.beginPath();
 
 debug("Create path object, replace current context path with the path of this object.");
-var p = new Path();
+var p = new Path2D();
 p.rect(0,0,200,200);
 testPointCollection([false, false, false, false, false]);
 
@@ -60,7 +62,7 @@ shouldBeNull("p");
 ctx.beginPath();
 ctx.rect(0,0,200,200);
 p = ctx.currentPath;
-shouldBeType("p", "Path");
+shouldBeType("p", "Path2D");
 debug("");
 
 debug("Create context path and test that it exists.");

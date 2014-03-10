@@ -25,8 +25,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef DOMPath_h
-#define DOMPath_h
+#ifndef Path2D_h
+#define Path2D_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasPathMethods.h"
@@ -38,20 +38,19 @@
 
 namespace WebCore {
 
-class DOMPath FINAL : public RefCounted<DOMPath>, public CanvasPathMethods, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(DOMPath); WTF_MAKE_FAST_ALLOCATED;
+class Path2D FINAL : public RefCounted<Path2D>, public CanvasPathMethods, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(Path2D); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<DOMPath> create() { return adoptRef(new DOMPath); }
-    static PassRefPtr<DOMPath> create(const String& pathData) { return adoptRef(new DOMPath(pathData)); }
-    static PassRefPtr<DOMPath> create(DOMPath* path) { return adoptRef(new DOMPath(path)); }
+    static PassRefPtr<Path2D> create() { return adoptRef(new Path2D); }
+    static PassRefPtr<Path2D> create(const String& pathData) { return adoptRef(new Path2D(pathData)); }
+    static PassRefPtr<Path2D> create(Path2D* path) { return adoptRef(new Path2D(path)); }
 
-    static PassRefPtr<DOMPath> create(const Path& path) { return adoptRef(new DOMPath(path)); }
+    static PassRefPtr<Path2D> create(const Path& path) { return adoptRef(new Path2D(path)); }
 
     const Path& path() const { return m_path; }
 
-    virtual ~DOMPath() { }
 
-    void addPath(DOMPath* path, SVGMatrixTearOff* transform, ExceptionState& exceptionState)
+    void addPath(Path2D* path, SVGMatrixTearOff* transform, ExceptionState& exceptionState)
     {
         if (!path) {
             exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Path"));
@@ -60,25 +59,26 @@ public:
         Path src = path->path();
         m_path.addPath(src, transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
     }
+    virtual ~Path2D() { }
 private:
-    DOMPath() : CanvasPathMethods()
+    Path2D() : CanvasPathMethods()
     {
         ScriptWrappable::init(this);
     }
 
-    DOMPath(const Path& path)
+    Path2D(const Path& path)
         : CanvasPathMethods(path)
     {
         ScriptWrappable::init(this);
     }
 
-    DOMPath(DOMPath* path)
+    Path2D(Path2D* path)
         : CanvasPathMethods(path->path())
     {
         ScriptWrappable::init(this);
     }
 
-    DOMPath(const String& pathData)
+    Path2D(const String& pathData)
         : CanvasPathMethods()
     {
         ScriptWrappable::init(this);

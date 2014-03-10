@@ -6,7 +6,7 @@ document.body.appendChild(ctx.canvas);
 ctx.strokeStyle = '#0ff';
 
 // Create new path.
-var path = new Path();
+var path = new Path2D();
 path.rect(20,20,100,100);
 
 debug("Initial behavior: lineWidth = 1.0")
@@ -53,7 +53,7 @@ shouldBeFalse("ctx.isPointInStroke(path,114,70)");
 debug("");
 
 debug("Check lineJoin = 'bevel'");
-path = new Path();
+path = new Path2D();
 path.moveTo(10,10);
 path.lineTo(110,20);
 path.lineTo(10,30);
@@ -73,7 +73,7 @@ shouldBeFalse("ctx.isPointInStroke(path,113,20)");
 debug("");
 
 debug("Check lineCap = 'butt'");
-path = new Path();
+path = new Path2D();
 path.moveTo(10,10);
 path.lineTo(110,10);
 ctx.lineCap = "butt";
