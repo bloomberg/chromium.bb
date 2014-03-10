@@ -31,7 +31,9 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLAnchorElement.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/rendering/RenderImage.h"
@@ -408,6 +410,59 @@ Image* HTMLImageElement::imageContents()
 bool HTMLImageElement::isInteractiveContent() const
 {
     return fastHasAttribute(usemapAttr);
+}
+
+PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageMode, SourceImageStatus* status) const
+{
+    if (!complete() || !cachedImage()) {
+        *status = IncompleteSourceImageStatus;
+        return nullptr;
+    }
+
+    if (cachedImage()->errorOccurred()) {
+        *status = UndecodableSourceImageStatus;
+        return nullptr;
+    }
+
+    RefPtr<Image> sourceImage = cachedImage()->imageForRenderer(renderer());
+
+    // We need to synthesize a container size if a renderer is not available to provide one.
+    if (!renderer() && sourceImage->usesContainerSize())
+        sourceImage->setContainerSize(sourceImage->size());
+
+    *status = NormalSourceImageStatus;
+    return sourceImage.release();
+}
+
+bool HTMLImageElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const
+{
+    ImageResource* image = cachedImage();
+    if (!image)
+        return false;
+    return !image->isAccessAllowed(destinationSecurityOrigin);
+}
+
+FloatSize HTMLImageElement::sourceSize() const
+{
+    ImageResource* image = cachedImage();
+    if (!image)
+        return FloatSize();
+    LayoutSize size;
+    size = image->imageSizeForRenderer(renderer(), 1.0f); // FIXME: Not sure about this.
+
+    return size;
+}
+
+FloatSize HTMLImageElement::defaultDestinationSize() const
+{
+    ImageResource* image = cachedImage();
+    if (!image)
+        return FloatSize();
+    LayoutSize size;
+    size = image->imageSizeForRenderer(renderer(), 1.0f); // FIXME: Not sure about this.
+    if (renderer() && renderer()->isRenderImage() && image->image() && !image->image()->hasRelativeWidth())
+        size.scale(toRenderImage(renderer())->imageDevicePixelRatio());
+    return size;
 }
 
 }

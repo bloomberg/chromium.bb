@@ -47,6 +47,7 @@ namespace blink { class WebLayer; }
 
 namespace WebCore {
 
+class CanvasImageSource;
 class CanvasGradient;
 class CanvasPattern;
 class CanvasStyle;
@@ -177,22 +178,9 @@ public:
 
     void clearShadow();
 
-    void drawImage(ImageBitmap*, float x, float y, ExceptionState&);
-    void drawImage(ImageBitmap*, float x, float y, float width, float height, ExceptionState&);
-    void drawImage(ImageBitmap*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-    void drawImage(HTMLImageElement*, float x, float y, ExceptionState&);
-    void drawImage(HTMLImageElement*, float x, float y, float width, float height, ExceptionState&);
-    void drawImage(HTMLImageElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
-    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const blink::WebBlendMode&, ExceptionState&);
-    void drawImage(HTMLCanvasElement*, float x, float y, ExceptionState&);
-    void drawImage(HTMLCanvasElement*, float x, float y, float width, float height, ExceptionState&);
-    void drawImage(HTMLCanvasElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-    void drawImage(HTMLCanvasElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
-    void drawImage(HTMLVideoElement*, float x, float y, ExceptionState&);
-    void drawImage(HTMLVideoElement*, float x, float y, float width, float height, ExceptionState&);
-    void drawImage(HTMLVideoElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-    void drawImage(HTMLVideoElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
+    void drawImage(CanvasImageSource*, float x, float y, ExceptionState&);
+    void drawImage(CanvasImageSource*, float x, float y, float width, float height, ExceptionState&);
+    void drawImage(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
 
     void drawImageFromRect(HTMLImageElement*, float sx = 0, float sy = 0, float sw = 0, float sh = 0,
                            float dx = 0, float dy = 0, float dw = 0, float dh = 0, const String& compositeOperation = emptyString());
@@ -203,8 +191,7 @@ public:
 
     PassRefPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState&);
     PassRefPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
-    PassRefPtr<CanvasPattern> createPattern(HTMLImageElement*, const String& repetitionType, ExceptionState&);
-    PassRefPtr<CanvasPattern> createPattern(HTMLCanvasElement*, const String& repetitionType, ExceptionState&);
+    PassRefPtr<CanvasPattern> createPattern(CanvasImageSource*, const String& repetitionType, ExceptionState&);
 
     PassRefPtr<ImageData> createImageData(PassRefPtr<ImageData>, ExceptionState&) const;
     PassRefPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;
@@ -298,7 +285,6 @@ private:
     void applyShadow();
     bool shouldDrawShadows() const;
 
-    void drawImageInternal(Image*, const FloatRect&, const FloatRect&, const CompositeOperator&, const blink::WebBlendMode&);
     bool computeDirtyRect(const FloatRect& localBounds, FloatRect*);
     bool computeDirtyRect(const FloatRect& localBounds, const FloatRect& transformedClipBounds, FloatRect*);
     void didDraw(const FloatRect&);
@@ -310,6 +296,9 @@ private:
 
     void applyStrokePattern();
     void applyFillPattern();
+
+    void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&, CompositeOperator, blink::WebBlendMode);
+    void drawVideo(HTMLVideoElement*, FloatRect srcRect, FloatRect dstRect);
 
     void fillInternal(const Path&, const String& windingRuleString);
     void strokeInternal(const Path&);

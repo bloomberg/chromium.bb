@@ -7,6 +7,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
 #include "wtf/PassRefPtr.h"
@@ -18,7 +19,7 @@ class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
 
-class ImageBitmap FINAL : public RefCounted<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient {
+class ImageBitmap FINAL : public RefCounted<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource {
 
 public:
     static PassRefPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&);
@@ -32,13 +33,18 @@ public:
     PassRefPtr<HTMLImageElement> imageElement() const { return m_imageElement; }
 
     IntRect bitmapRect() const { return m_bitmapRect; }
-    IntPoint bitmapOffset() const { return m_bitmapOffset; }
 
     int width() const { return m_cropRect.width(); }
     int height() const { return m_cropRect.height(); }
     IntSize size() const { return m_cropRect.size(); }
 
     virtual ~ImageBitmap();
+
+    // CanvasImageSource implementation
+    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const OVERRIDE;
+    virtual bool wouldTaintOrigin(SecurityOrigin*) const OVERRIDE { return false; };
+    virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const OVERRIDE;
+    virtual FloatSize sourceSize() const OVERRIDE;
 
 private:
     ImageBitmap(HTMLImageElement*, const IntRect&);

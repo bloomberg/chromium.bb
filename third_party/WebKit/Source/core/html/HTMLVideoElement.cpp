@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLImageLoader.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderImage.h"
@@ -173,7 +174,7 @@ void HTMLVideoElement::updateDisplayState()
         setDisplayMode(Poster);
 }
 
-void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, const IntRect& destRect)
+void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, const IntRect& destRect) const
 {
     MediaPlayer* player = HTMLMediaElement::player();
     if (!player)
@@ -230,6 +231,36 @@ KURL HTMLVideoElement::posterImageURL() const
 KURL HTMLVideoElement::mediaPlayerPosterURL()
 {
     return posterImageURL();
+}
+
+PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageMode mode, SourceImageStatus* status) const
+{
+    if (!hasAvailableVideoFrame()) {
+        *status = InvalidSourceImageStatus;
+        return nullptr;
+    }
+
+    IntSize intrinsicSize(videoWidth(), videoHeight());
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(intrinsicSize);
+    if (!imageBuffer) {
+        *status = InvalidSourceImageStatus;
+        return nullptr;
+    }
+
+    paintCurrentFrameInContext(imageBuffer->context(), IntRect(IntPoint(0, 0), intrinsicSize));
+
+    *status = NormalSourceImageStatus;
+    return imageBuffer->copyImage(mode == CopySourceImageIfVolatile ? CopyBackingStore : DontCopyBackingStore, Unscaled);
+}
+
+bool HTMLVideoElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const
+{
+    return !hasSingleSecurityOrigin() || (!(player() && player()->didPassCORSAccessCheck()) && destinationSecurityOrigin->taintsCanvas(currentSrc()));
+}
+
+FloatSize HTMLVideoElement::sourceSize() const
+{
+    return FloatSize(videoWidth(), videoHeight());
 }
 
 }

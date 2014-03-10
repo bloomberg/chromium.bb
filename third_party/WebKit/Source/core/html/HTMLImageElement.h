@@ -26,6 +26,7 @@
 
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
+#include "core/html/canvas/CanvasImageSource.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/WeakPtr.h"
 
@@ -33,7 +34,7 @@ namespace WebCore {
 
 class HTMLFormElement;
 
-class HTMLImageElement FINAL : public HTMLElement {
+class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
 public:
     static PassRefPtr<HTMLImageElement> create(Document&);
     static PassRefPtr<HTMLImageElement> create(Document&, HTMLFormElement*);
@@ -83,6 +84,12 @@ public:
 
     virtual HTMLFormElement* formOwner() const OVERRIDE;
     void formRemovedFromTree(const Node& formRoot);
+
+    // CanvasImageSourceImplementations
+    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const;
+    virtual bool wouldTaintOrigin(SecurityOrigin*) const OVERRIDE;
+    virtual FloatSize sourceSize() const OVERRIDE;
+    virtual FloatSize defaultDestinationSize() const OVERRIDE;
 
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0);

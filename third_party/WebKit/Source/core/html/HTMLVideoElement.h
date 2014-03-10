@@ -27,6 +27,7 @@
 #define HTMLVideoElement_h
 
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/canvas/CanvasImageSource.h"
 
 namespace blink {
 class WebGraphicsContext3D;
@@ -37,7 +38,7 @@ namespace WebCore {
 class ExceptionState;
 class HTMLImageLoader;
 
-class HTMLVideoElement FINAL : public HTMLMediaElement {
+class HTMLVideoElement FINAL : public HTMLMediaElement, public CanvasImageSource {
 public:
     static PassRefPtr<HTMLVideoElement> create(Document&);
 
@@ -49,7 +50,7 @@ public:
     unsigned webkitDroppedFrameCount() const;
 
     // Used by canvas to gain raw pixel access
-    void paintCurrentFrameInContext(GraphicsContext*, const IntRect&);
+    void paintCurrentFrameInContext(GraphicsContext*, const IntRect&) const;
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
     // See more details at MediaPlayer::copyVideoTextureToPlatformTexture() defined in Source/WebCore/platform/graphics/MediaPlayer.h.
@@ -61,6 +62,12 @@ public:
 
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
     virtual KURL mediaPlayerPosterURL() OVERRIDE;
+
+    // CanvasImageSource implementation
+    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const OVERRIDE;
+    virtual bool isVideoElement() const OVERRIDE { return true; }
+    virtual bool wouldTaintOrigin(SecurityOrigin*) const OVERRIDE;
+    virtual FloatSize sourceSize() const OVERRIDE;
 
 private:
     HTMLVideoElement(Document&);

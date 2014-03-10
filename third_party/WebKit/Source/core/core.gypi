@@ -2418,6 +2418,7 @@
             'html/canvas/CanvasContextAttributes.h',
             'html/canvas/CanvasGradient.cpp',
             'html/canvas/CanvasGradient.h',
+            'html/canvas/CanvasImageSource.h',
             'html/canvas/CanvasPathMethods.cpp',
             'html/canvas/CanvasPathMethods.h',
             'html/canvas/CanvasPattern.cpp',

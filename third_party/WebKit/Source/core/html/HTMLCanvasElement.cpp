@@ -599,4 +599,40 @@ void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
+PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageMode mode, SourceImageStatus* status) const
+{
+    if (!width() || !height()) {
+        *status = ZeroSizeCanvasSourceImageStatus;
+        return nullptr;
+    }
+
+    if (!buffer()) {
+        *status = InvalidSourceImageStatus;
+        return nullptr;
+    }
+
+    if (mode == CopySourceImageIfVolatile) {
+        *status = NormalSourceImageStatus;
+        return copiedImage();
+    }
+
+    if (m_context && m_context->is3d()) {
+        m_context->paintRenderingResultsToCanvas();
+        *status = ExternalSourceImageStatus;
+    } else {
+        *status = NormalSourceImageStatus;
+    }
+    return m_imageBuffer->copyImage(DontCopyBackingStore, Unscaled);
+}
+
+bool HTMLCanvasElement::wouldTaintOrigin(SecurityOrigin*) const
+{
+    return !originClean();
+}
+
+FloatSize HTMLCanvasElement::sourceSize() const
+{
+    return FloatSize(width(), height());
+}
+
 }

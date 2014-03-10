@@ -34,4 +34,3 @@ interface HTMLCanvasElement : HTMLElement {
     // The custom binding is needed to handle context creation attributes.
     [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] any getContext([Default=Undefined] optional DOMString contextId);
 };
-

@@ -7,9 +7,6 @@
     window.jsTestIsAsync = true;
     description("This test checks behavior of Canvas::drawImage with a broken source image.");
 
-    var InvalidStateError = "InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The source width is 0.";
-    var TypeMismatchError = "TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object.";
-
     // Create an image with invalid data.
     var invalidImage = new Image();
     invalidImage.src = 'resources/repaint.js';
@@ -23,11 +20,11 @@
         shouldThrow("ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20)");
 
         // broken images should not throw
-        shouldBe("ctx.drawImage(invalidImage, 0, 0)", "undefined");
-        shouldBe("ctx.drawImage(invalidImage, 0, 0, 20, 20)", "undefined");
-        shouldBe("ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20)", "undefined");
-        shouldBe("ctx.drawImage(invalidImage, 0, 0, 0, 20)", "undefined");
-        shouldBe("ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20)", "undefined");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20)");
 
         finishJSTest();
     }

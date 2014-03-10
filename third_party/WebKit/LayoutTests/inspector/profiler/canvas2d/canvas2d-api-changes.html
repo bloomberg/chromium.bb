@@ -149,7 +149,7 @@ function test()
         output(property);
     }
 
-    var pattern = ctx.createPattern(new Image(), "repeat");
+    var pattern = ctx.createPattern(canvas, "repeat");
     if (!pattern) {
         output("ERROR: Could not create a pattern object.");
         return;

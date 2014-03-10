@@ -35,10 +35,7 @@ namespace blink { class WebLayer; }
 
 namespace WebCore {
 
-class CanvasPattern;
 class HTMLCanvasElement;
-class HTMLImageElement;
-class HTMLVideoElement;
 class KURL;
 class WebGLObject;
 
@@ -59,25 +56,11 @@ public:
     virtual void paintRenderingResultsToCanvas() {}
 
     virtual blink::WebLayer* platformLayer() const { return 0; }
-
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);
-    bool wouldTaintOrigin(const CanvasPattern*);
-    bool wouldTaintOrigin(const HTMLCanvasElement*);
-    bool wouldTaintOrigin(const HTMLImageElement*);
-    bool wouldTaintOrigin(const HTMLVideoElement*);
-    bool wouldTaintOrigin(const KURL&);
-
-    template<class T> void checkOrigin(const T* arg)
-    {
-        if (wouldTaintOrigin(arg))
-            canvas()->setOriginTainted();
-    }
-    void checkOrigin(const KURL&);
 
 private:
     HTMLCanvasElement* m_canvas;
-    HashSet<String> m_cleanURLs;
 };
 
 } // namespace WebCore

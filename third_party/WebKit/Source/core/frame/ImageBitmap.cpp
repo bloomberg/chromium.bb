@@ -200,4 +200,28 @@ PassRefPtr<Image> ImageBitmap::bitmapImage() const
     return m_bitmap;
 }
 
+PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageMode, SourceImageStatus* status) const
+{
+    *status = NormalSourceImageStatus;
+    return bitmapImage();
+}
+
+void ImageBitmap::adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const
+{
+    FloatRect intersectRect = intersection(m_bitmapRect, *srcRect);
+    FloatRect newSrcRect = intersectRect;
+    newSrcRect.move(m_bitmapOffset - m_bitmapRect.location());
+    FloatRect newDstRect(FloatPoint(intersectRect.location() - srcRect->location()), m_bitmapRect.size());
+    newDstRect.scale(dstRect->width() / srcRect->width() * intersectRect.width() / m_bitmapRect.width(),
+        dstRect->height() / srcRect->height() * intersectRect.height() / m_bitmapRect.height());
+    newDstRect.moveBy(dstRect->location());
+    *srcRect = newSrcRect;
+    *dstRect = newDstRect;
+}
+
+FloatSize ImageBitmap::sourceSize() const
+{
+    return FloatSize(width(), height());
+}
+
 }
