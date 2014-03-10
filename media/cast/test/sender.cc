@@ -205,11 +205,13 @@ class SendProcess {
   SendProcess(scoped_refptr<base::SingleThreadTaskRunner> thread_proxy,
               base::TickClock* clock,
               const VideoSenderConfig& video_config,
-              FrameInput* frame_input)
+              scoped_refptr<AudioFrameInput> audio_frame_input,
+              scoped_refptr<VideoFrameInput> video_frame_input)
       : test_app_thread_proxy_(thread_proxy),
         video_config_(video_config),
         audio_diff_(kFrameTimerMs),
-        frame_input_(frame_input),
+        audio_frame_input_(audio_frame_input),
+        video_frame_input_(video_frame_input),
         synthetic_count_(0),
         clock_(clock),
         start_time_(),
@@ -245,7 +247,7 @@ class SendProcess {
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         clock_->NowTicks(),
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -277,21 +279,21 @@ class SendProcess {
       test_app_thread_proxy_->PostDelayedTask(
           FROM_HERE,
           base::Bind(&SendProcess::SendVideoFrameOnTime,
-                     base::Unretained(this),
+                     weak_factory_.GetWeakPtr(),
                      video_frame),
           video_frame_time - elapsed_time);
     } else {
       test_app_thread_proxy_->PostTask(
           FROM_HERE,
           base::Bind(&SendProcess::SendVideoFrameOnTime,
-                     base::Unretained(this),
+                     weak_factory_.GetWeakPtr(),
                      video_frame));
     }
   }
 
   void SendVideoFrameOnTime(scoped_refptr<media::VideoFrame> video_frame) {
     send_time_ = clock_->NowTicks();
-    frame_input_->InsertRawVideoFrame(video_frame, send_time_);
+    video_frame_input_->InsertRawVideoFrame(video_frame, send_time_);
     test_app_thread_proxy_->PostTask(
         FROM_HERE, base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
   }
@@ -300,7 +302,8 @@ class SendProcess {
   scoped_refptr<base::SingleThreadTaskRunner> test_app_thread_proxy_;
   const VideoSenderConfig video_config_;
   int audio_diff_;
-  const scoped_refptr<FrameInput> frame_input_;
+  const scoped_refptr<AudioFrameInput> audio_frame_input_;
+  const scoped_refptr<VideoFrameInput> video_frame_input_;
   FILE* video_file_;
   uint8 synthetic_count_;
   base::TickClock* const clock_;  // Not owned by this class.
@@ -336,8 +339,9 @@ void LogRawEvents(
 }
 
 void InitializationResult(media::cast::CastInitializationStatus result) {
-  CHECK_EQ(result, media::cast::STATUS_INITIALIZED);
-  VLOG(1) << "Cast Sender initialized";
+  bool end_result = result == media::cast::STATUS_AUDIO_INITIALIZED ||
+                    result == media::cast::STATUS_VIDEO_INITIALIZED;
+  CHECK(end_result) << "Cast sender uninitialized";
 }
 
 net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
@@ -359,14 +363,14 @@ void WriteLogsToFileAndStopSubscribing(
   media::cast::FrameEventMap frame_events;
   media::cast::PacketEventMap packet_events;
   media::cast::RtpTimestamp first_rtp_timestamp;
-  video_event_subscriber->GetEventsAndReset(&frame_events, &packet_events,
-                                            &first_rtp_timestamp);
+  video_event_subscriber->GetEventsAndReset(
+      &frame_events, &packet_events, &first_rtp_timestamp);
 
   VLOG(0) << "Video frame map size: " << frame_events.size();
   VLOG(0) << "Video packet map size: " << packet_events.size();
 
-  if (!serializer.SerializeEventsForStream(false, frame_events, packet_events,
-                                           first_rtp_timestamp)) {
+  if (!serializer.SerializeEventsForStream(
+          false, frame_events, packet_events, first_rtp_timestamp)) {
     VLOG(1) << "Failed to serialize video events.";
     return;
   }
@@ -377,14 +381,14 @@ void WriteLogsToFileAndStopSubscribing(
   // Serialize audio events.
   cast_environment->Logging()->RemoveRawEventSubscriber(
       audio_event_subscriber.get());
-  audio_event_subscriber->GetEventsAndReset(&frame_events, &packet_events,
-                                            &first_rtp_timestamp);
+  audio_event_subscriber->GetEventsAndReset(
+      &frame_events, &packet_events, &first_rtp_timestamp);
 
   VLOG(0) << "Audio frame map size: " << frame_events.size();
   VLOG(0) << "Audio packet map size: " << packet_events.size();
 
-  if (!serializer.SerializeEventsForStream(true, frame_events, packet_events,
-                                           first_rtp_timestamp)) {
+  if (!serializer.SerializeEventsForStream(
+          true, frame_events, packet_events, first_rtp_timestamp)) {
     VLOG(1) << "Failed to serialize audio events.";
     return;
   }
@@ -406,7 +410,6 @@ void WriteLogsToFileAndStopSubscribing(
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  VLOG(1) << "Cast Sender";
   base::Thread test_thread("Cast sender test app thread");
   base::Thread audio_thread("Cast audio encoder thread");
   base::Thread video_thread("Cast video encoder thread");
@@ -472,23 +475,25 @@ int main(int argc, char** argv) {
   transport_sender->InitializeAudio(transport_audio_config);
   transport_sender->InitializeVideo(transport_video_config);
 
-  scoped_ptr<media::cast::CastSender> cast_sender(
-      media::cast::CastSender::CreateCastSender(
-          cast_environment,
-          &audio_config,
-          &video_config,
-          NULL,  // gpu_factories.
-          base::Bind(&InitializationResult),
-          transport_sender.get()));
+  scoped_ptr<media::cast::CastSender> cast_sender =
+      media::cast::CastSender::Create(cast_environment, transport_sender.get());
+
+  cast_sender->InitializeVideo(
+      video_config, base::Bind(&InitializationResult), NULL);
+  cast_sender->InitializeAudio(audio_config, base::Bind(&InitializationResult));
 
   transport_sender->SetPacketReceiver(cast_sender->packet_receiver());
 
-  media::cast::FrameInput* frame_input = cast_sender->frame_input();
+  scoped_refptr<media::cast::AudioFrameInput> audio_frame_input =
+      cast_sender->audio_frame_input();
+  scoped_refptr<media::cast::VideoFrameInput> video_frame_input =
+      cast_sender->video_frame_input();
   scoped_ptr<media::cast::SendProcess> send_process(
       new media::cast::SendProcess(test_thread.message_loop_proxy(),
                                    cast_environment->Clock(),
                                    video_config,
-                                   frame_input));
+                                   audio_frame_input,
+                                   video_frame_input));
 
   // Set up event subscribers.
   int logging_duration = media::cast::GetLoggingDuration();

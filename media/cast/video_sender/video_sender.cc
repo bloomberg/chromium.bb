@@ -95,7 +95,7 @@ VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    const CastInitializationCallback& initialization_status,
+    const CastInitializationCallback& cast_initialization_cb,
     transport::CastTransportSender* const transport_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
           video_config.rtp_config.max_delay_ms)),
@@ -149,12 +149,12 @@ VideoSender::VideoSender(
                video_config.rtcp_c_name));
   rtcp_->SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
 
-  // TODO(pwestin): pass cast_initialization to |video_encoder_|
+  // TODO(pwestin): pass cast_initialization_cb to |video_encoder_|
   // and remove this call.
   cast_environment_->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,
-      base::Bind(initialization_status, STATUS_INITIALIZED));
+      base::Bind(cast_initialization_cb, STATUS_VIDEO_INITIALIZED));
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
 
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));

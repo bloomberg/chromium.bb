@@ -43,8 +43,7 @@ const int kMaxAudioEventEntries = kMaxSerializedBytes / 75;
 }  // namespace
 
 CastSessionDelegate::CastSessionDelegate()
-    : transport_configured_(false),
-      io_message_loop_proxy_(
+    : io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()),
       weak_factory_(this) {
   DCHECK(io_message_loop_proxy_);
@@ -63,10 +62,48 @@ CastSessionDelegate::~CastSessionDelegate() {
   }
 }
 
-void CastSessionDelegate::Initialize(
-    const media::cast::CastLoggingConfig& logging_config) {
-  if (cast_environment_)
-    return;  // Already initialized.
+void CastSessionDelegate::StartAudio(
+    const AudioSenderConfig& config,
+    const AudioFrameInputAvailableCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  audio_frame_input_available_callback_ = callback;
+  media::cast::transport::CastTransportAudioConfig transport_config;
+  transport_config.base.ssrc = config.sender_ssrc;
+  transport_config.codec = config.codec;
+  transport_config.base.rtp_config = config.rtp_config;
+  transport_config.frequency = config.frequency;
+  transport_config.channels = config.channels;
+  cast_transport_->InitializeAudio(transport_config);
+  cast_sender_->InitializeAudio(
+      config,
+      base::Bind(&CastSessionDelegate::InitializationResult,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void CastSessionDelegate::StartVideo(
+    const VideoSenderConfig& config,
+    const VideoFrameInputAvailableCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  video_frame_input_available_callback_ = callback;
+
+  media::cast::transport::CastTransportVideoConfig transport_config;
+  transport_config.base.ssrc = config.sender_ssrc;
+  transport_config.codec = config.codec;
+  transport_config.base.rtp_config = config.rtp_config;
+  cast_transport_->InitializeVideo(transport_config);
+  // TODO(mikhal): Pass in a valid GpuVideoAcceleratorFactories to support
+  // hardware video encoding.
+  cast_sender_->InitializeVideo(
+      config,
+      base::Bind(&CastSessionDelegate::InitializationResult,
+                 weak_factory_.GetWeakPtr()),
+      NULL /* GPU*/);
+}
+
+void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
+                                   const net::IPEndPoint& remote_endpoint) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
@@ -79,40 +116,26 @@ void CastSessionDelegate::Initialize(
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
       NULL,
       base::MessageLoopProxy::current(),
-      logging_config);
+      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled());
+
+  // Logging: enable raw events and stats collection.
+  media::cast::CastLoggingConfig logging_config =
+      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled();
+  // Rationale for using unretained: The callback cannot be called after the
+  // destruction of CastTransportSenderIPC, and they both share the same thread.
+  cast_transport_.reset(new CastTransportSenderIPC(
+      local_endpoint,
+      remote_endpoint,
+      base::Bind(&CastSessionDelegate::StatusNotificationCB,
+                 base::Unretained(this)),
+      logging_config,
+      base::Bind(&CastSessionDelegate::LogRawEvents, base::Unretained(this))));
+
+  cast_sender_ = CastSender::Create(cast_environment_, cast_transport_.get());
+  cast_transport_->SetPacketReceiver(cast_sender_->packet_receiver());
 }
 
-void CastSessionDelegate::StartAudio(
-    const AudioSenderConfig& config,
-    const FrameInputAvailableCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  audio_config_.reset(new AudioSenderConfig(config));
-  video_frame_input_available_callback_ = callback;
-  StartSendingInternal();
-}
-
-void CastSessionDelegate::StartVideo(
-    const VideoSenderConfig& config,
-    const FrameInputAvailableCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  audio_frame_input_available_callback_ = callback;
-
-  video_config_.reset(new VideoSenderConfig(config));
-  StartSendingInternal();
-}
-
-void CastSessionDelegate::StartUDP(const net::IPEndPoint& local_endpoint,
-                                   const net::IPEndPoint& remote_endpoint) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  transport_configured_ = true;
-  local_endpoint_ = local_endpoint;
-  remote_endpoint_ = remote_endpoint;
-  StartSendingInternal();
-}
-
-void CastSessionDelegate::ToggleLogging(bool is_audio,
-                                        bool enable) {
+void CastSessionDelegate::ToggleLogging(bool is_audio, bool enable) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (enable) {
     if (is_audio) {
@@ -148,11 +171,12 @@ void CastSessionDelegate::ToggleLogging(bool is_audio,
 }
 
 void CastSessionDelegate::GetEventLogsAndReset(
-    bool is_audio, const EventLogsCallback& callback) {
+    bool is_audio,
+    const EventLogsCallback& callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
-  media::cast::EncodingEventSubscriber* subscriber = is_audio ?
-      audio_event_subscriber_.get() : video_event_subscriber_.get();
+  media::cast::EncodingEventSubscriber* subscriber =
+      is_audio ? audio_event_subscriber_.get() : video_event_subscriber_.get();
   if (!subscriber) {
     callback.Run(make_scoped_ptr(new std::string).Pass());
     return;
@@ -202,73 +226,20 @@ void CastSessionDelegate::StatusNotificationCB(
   // TODO(hubbe): Call javascript UDPTransport error function.
 }
 
-void CastSessionDelegate::StartSendingInternal() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  // No transport, wait.
-  if (!transport_configured_)
-    return;
-
-  // No audio or video, wait.
-  if (!audio_config_ || !video_config_)
-    return;
-
-  // Logging: enable raw events and stats collection.
-  media::cast::CastLoggingConfig logging_config =
-      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled();
-  Initialize(logging_config);
-
-  // Rationale for using unretained: The callback cannot be called after the
-  // destruction of CastTransportSenderIPC, and they both share the same thread.
-  cast_transport_.reset(new CastTransportSenderIPC(
-      local_endpoint_,
-      remote_endpoint_,
-      base::Bind(&CastSessionDelegate::StatusNotificationCB,
-                 base::Unretained(this)),
-      logging_config,
-      base::Bind(&CastSessionDelegate::LogRawEvents,
-                 base::Unretained(this))));
-
-  // TODO(hubbe): set config.aes_key and config.aes_iv_mask.
-  if (audio_config_) {
-    media::cast::transport::CastTransportAudioConfig config;
-    config.base.ssrc = audio_config_->sender_ssrc;
-    config.codec = audio_config_->codec;
-    config.base.rtp_config = audio_config_->rtp_config;
-    config.frequency = audio_config_->frequency;
-    config.channels = audio_config_->channels;
-    cast_transport_->InitializeAudio(config);
-  }
-  if (video_config_) {
-    media::cast::transport::CastTransportVideoConfig config;
-    config.base.ssrc = video_config_->sender_ssrc;
-    config.codec = video_config_->codec;
-    config.base.rtp_config = video_config_->rtp_config;
-    cast_transport_->InitializeVideo(config);
-  }
-
-  cast_sender_.reset(CastSender::CreateCastSender(
-      cast_environment_,
-      audio_config_.get(),
-      video_config_.get(),
-      NULL,  // GPU.
-      base::Bind(&CastSessionDelegate::InitializationResult,
-                 weak_factory_.GetWeakPtr()),
-      cast_transport_.get()));
-  cast_transport_->SetPacketReceiver(cast_sender_->packet_receiver());
-}
-
 void CastSessionDelegate::InitializationResult(
     media::cast::CastInitializationStatus result) const {
   DCHECK(cast_sender_);
 
   // TODO(pwestin): handle the error codes.
-  if (result == media::cast::STATUS_INITIALIZED) {
+  if (result == media::cast::STATUS_AUDIO_INITIALIZED) {
     if (!audio_frame_input_available_callback_.is_null()) {
-      audio_frame_input_available_callback_.Run(cast_sender_->frame_input());
+      audio_frame_input_available_callback_.Run(
+          cast_sender_->audio_frame_input());
     }
+  } else if (result == media::cast::STATUS_VIDEO_INITIALIZED) {
     if (!video_frame_input_available_callback_.is_null()) {
-      video_frame_input_available_callback_.Run(cast_sender_->frame_input());
+      video_frame_input_available_callback_.Run(
+          cast_sender_->video_frame_input());
     }
   }
 }

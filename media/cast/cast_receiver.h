@@ -68,7 +68,7 @@ class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver> {
 // This Class is thread safe.
 class CastReceiver {
  public:
-  static CastReceiver* CreateCastReceiver(
+  static scoped_ptr<CastReceiver> Create(
       scoped_refptr<CastEnvironment> cast_environment,
       const AudioReceiverConfig& audio_config,
       const VideoReceiverConfig& video_config,

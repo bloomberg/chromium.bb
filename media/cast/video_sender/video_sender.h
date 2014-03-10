@@ -47,7 +47,7 @@ class VideoSender : public base::NonThreadSafe,
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
               const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-              const CastInitializationCallback& initialization_status,
+              const CastInitializationCallback& cast_initialization_cb,
               transport::CastTransportSender* const transport_sender);
 
   virtual ~VideoSender();

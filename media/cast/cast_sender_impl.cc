@@ -12,17 +12,13 @@
 namespace media {
 namespace cast {
 
-// The LocalFrameInput class posts all incoming frames; audio and video to the
-// main cast thread for processing.
-// This make the cast sender interface thread safe.
-class LocalFrameInput : public FrameInput {
+// The LocalVideoFrameInput class posts all incoming video frames to the main
+// cast thread for processing.
+class LocalVideoFrameInput : public VideoFrameInput {
  public:
-  LocalFrameInput(scoped_refptr<CastEnvironment> cast_environment,
-                  base::WeakPtr<AudioSender> audio_sender,
-                  base::WeakPtr<VideoSender> video_sender)
-      : cast_environment_(cast_environment),
-        audio_sender_(audio_sender),
-        video_sender_(video_sender) {}
+  LocalVideoFrameInput(scoped_refptr<CastEnvironment> cast_environment,
+                       base::WeakPtr<VideoSender> video_sender)
+      : cast_environment_(cast_environment), video_sender_(video_sender) {}
 
   virtual void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
@@ -34,6 +30,26 @@ class LocalFrameInput : public FrameInput {
                                            video_frame,
                                            capture_time));
   }
+
+ protected:
+  virtual ~LocalVideoFrameInput() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<LocalVideoFrameInput>;
+
+  scoped_refptr<CastEnvironment> cast_environment_;
+  base::WeakPtr<VideoSender> video_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalVideoFrameInput);
+};
+
+// The LocalAudioFrameInput class posts all incoming audio frames to the main
+// cast thread for processing. Therefore frames can be inserted from any thread.
+class LocalAudioFrameInput : public AudioFrameInput {
+ public:
+  LocalAudioFrameInput(scoped_refptr<CastEnvironment> cast_environment,
+                       base::WeakPtr<AudioSender> audio_sender)
+      : cast_environment_(cast_environment), audio_sender_(audio_sender) {}
 
   virtual void InsertAudio(const AudioBus* audio_bus,
                            const base::TimeTicks& recorded_time,
@@ -48,96 +64,71 @@ class LocalFrameInput : public FrameInput {
   }
 
  protected:
-  virtual ~LocalFrameInput() {}
+  virtual ~LocalAudioFrameInput() {}
 
  private:
-  friend class base::RefCountedThreadSafe<LocalFrameInput>;
+  friend class base::RefCountedThreadSafe<LocalAudioFrameInput>;
 
   scoped_refptr<CastEnvironment> cast_environment_;
   base::WeakPtr<AudioSender> audio_sender_;
-  base::WeakPtr<VideoSender> video_sender_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalFrameInput);
+  DISALLOW_COPY_AND_ASSIGN(LocalAudioFrameInput);
 };
 
-CastSender* CastSender::CreateCastSender(
+scoped_ptr<CastSender> CastSender::Create(
     scoped_refptr<CastEnvironment> cast_environment,
-    const AudioSenderConfig* audio_config,
-    const VideoSenderConfig* video_config,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender) {
   CHECK(cast_environment);
-  return new CastSenderImpl(cast_environment,
-                            audio_config,
-                            video_config,
-                            gpu_factories,
-                            initialization_status,
-                            transport_sender);
+  return scoped_ptr<CastSender>(
+      new CastSenderImpl(cast_environment, transport_sender));
 }
 
 CastSenderImpl::CastSenderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
-    const AudioSenderConfig* audio_config,
-    const VideoSenderConfig* video_config,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender)
-    : initialization_callback_(initialization_status),
-      packet_receiver_(
-          base::Bind(&CastSenderImpl::ReceivedPacket, base::Unretained(this))),
-      cast_environment_(cast_environment),
+    : cast_environment_(cast_environment),
+      transport_sender_(transport_sender),
       weak_factory_(this) {
   CHECK(cast_environment);
-  CHECK(audio_config || video_config);
+}
 
-  base::WeakPtr<AudioSender> audio_sender_ptr;
-  base::WeakPtr<VideoSender> video_sender_ptr;
+void CastSenderImpl::InitializeAudio(
+    const AudioSenderConfig& audio_config,
+    const CastInitializationCallback& cast_initialization_cb) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  CHECK(audio_config.use_external_encoder ||
+        cast_environment_->HasAudioEncoderThread());
 
-  if (audio_config) {
-    CHECK(audio_config->use_external_encoder ||
-          cast_environment->HasAudioEncoderThread());
+  audio_sender_.reset(
+      new AudioSender(cast_environment_, audio_config, transport_sender_));
 
-    audio_sender_.reset(
-        new AudioSender(cast_environment, *audio_config, transport_sender));
-    ssrc_of_audio_sender_ = audio_config->incoming_feedback_ssrc;
-    audio_sender_ptr = audio_sender_->AsWeakPtr();
+  CastInitializationStatus status = audio_sender_->InitializationResult();
 
-    CastInitializationStatus status = audio_sender_->InitializationResult();
-    if (status != STATUS_INITIALIZED || !video_config) {
-      if (status == STATUS_INITIALIZED && !video_config) {
-        // Audio only.
-        frame_input_ = new LocalFrameInput(
-            cast_environment, audio_sender_ptr, video_sender_ptr);
-      }
-      cast_environment->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(&CastSenderImpl::InitializationResult,
-                     weak_factory_.GetWeakPtr(),
-                     status));
-      return;
-    }
+  if (status == STATUS_AUDIO_INITIALIZED) {
+    ssrc_of_audio_sender_ = audio_config.incoming_feedback_ssrc;
+    audio_frame_input_ =
+        new LocalAudioFrameInput(cast_environment_, audio_sender_->AsWeakPtr());
   }
-  if (video_config) {
-    CHECK(video_config->use_external_encoder ||
-          cast_environment->HasVideoEncoderThread());
+  cast_initialization_cb.Run(status);
+}
 
-    video_sender_.reset(
-        new VideoSender(cast_environment,
-                        *video_config,
-                        gpu_factories,
-                        base::Bind(&CastSenderImpl::InitializationResult,
-                                   weak_factory_.GetWeakPtr()),
-                        transport_sender));
-    video_sender_ptr = video_sender_->AsWeakPtr();
-    ssrc_of_video_sender_ = video_config->incoming_feedback_ssrc;
-  }
-  frame_input_ =
-      new LocalFrameInput(cast_environment, audio_sender_ptr, video_sender_ptr);
+void CastSenderImpl::InitializeVideo(
+    const VideoSenderConfig& video_config,
+    const CastInitializationCallback& cast_initialization_cb,
+    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  CHECK(video_config.use_external_encoder ||
+        cast_environment_->HasVideoEncoderThread());
 
-  // Handing over responsibility to call NotifyInitialization to the
-  // video sender.
+  video_sender_.reset(new VideoSender(cast_environment_,
+                                      video_config,
+                                      gpu_factories,
+                                      cast_initialization_cb,
+                                      transport_sender_));
+
+  ssrc_of_video_sender_ = video_config.incoming_feedback_ssrc;
+  video_frame_input_ =
+      new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
 }
 
 CastSenderImpl::~CastSenderImpl() {}
@@ -203,16 +194,17 @@ void CastSenderImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
   }
 }
 
-scoped_refptr<FrameInput> CastSenderImpl::frame_input() { return frame_input_; }
-
-transport::PacketReceiverCallback CastSenderImpl::packet_receiver() {
-  return packet_receiver_;
-  return base::Bind(&CastSenderImpl::ReceivedPacket, base::Unretained(this));
+scoped_refptr<AudioFrameInput> CastSenderImpl::audio_frame_input() {
+  return audio_frame_input_;
 }
 
-void CastSenderImpl::InitializationResult(CastInitializationStatus status)
-    const {
-  initialization_callback_.Run(status);
+scoped_refptr<VideoFrameInput> CastSenderImpl::video_frame_input() {
+  return video_frame_input_;
+}
+
+transport::PacketReceiverCallback CastSenderImpl::packet_receiver() {
+  return base::Bind(&CastSenderImpl::ReceivedPacket,
+                    weak_factory_.GetWeakPtr());
 }
 
 }  // namespace cast

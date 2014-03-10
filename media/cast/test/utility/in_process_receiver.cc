@@ -67,8 +67,8 @@ void InProcessReceiver::StartOnMainThread() {
                        remote_end_point_,
                        base::Bind(&InProcessReceiver::UpdateCastTransportStatus,
                                   base::Unretained(this))));
-  cast_receiver_.reset(CastReceiver::CreateCastReceiver(
-      cast_environment_, audio_config_, video_config_, transport_.get()));
+  cast_receiver_ = CastReceiver::Create(
+      cast_environment_, audio_config_, video_config_, transport_.get());
 
   // TODO(hubbe): Make the cast receiver do this automatically.
   transport_->StartReceiving(cast_receiver_->packet_receiver());

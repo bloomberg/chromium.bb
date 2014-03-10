@@ -44,25 +44,32 @@ class CastTransportSender;
 // thread. All methods are accessible only on the IO thread.
 class CastSessionDelegate {
  public:
-  typedef base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
-      FrameInputAvailableCallback;
+  typedef base::Callback<void(const scoped_refptr<
+      media::cast::AudioFrameInput>&)> AudioFrameInputAvailableCallback;
+  typedef base::Callback<void(const scoped_refptr<
+      media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
   typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
 
   CastSessionDelegate();
   virtual ~CastSessionDelegate();
 
+  // This will start the session by configuring and creating the Cast transport
+  // and the Cast sender.
+  // Must be called before initialization of audio or video.
+  void StartUDP(const net::IPEndPoint& local_endpoint,
+                const net::IPEndPoint& remote_endpoint);
+
   // After calling StartAudio() or StartVideo() encoding of that media will
   // begin as soon as data is delivered to its sink, if the second method is
   // called the first media will be restarted. It is strongly recommended not to
   // deliver any data between calling the two methods.
   // It's OK to call only one of the two methods.
+  // StartUDP must be called before these methods.
   void StartAudio(const media::cast::AudioSenderConfig& config,
-                  const FrameInputAvailableCallback& callback);
+                  const AudioFrameInputAvailableCallback& callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
-                  const FrameInputAvailableCallback& callback);
-  void StartUDP(const net::IPEndPoint& local_endpoint,
-                const net::IPEndPoint& remote_endpoint);
+                  const VideoFrameInputAvailableCallback& callback);
 
   void ToggleLogging(bool is_audio, bool enable);
   void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
@@ -75,13 +82,6 @@ class CastSessionDelegate {
   void InitializationResult(media::cast::CastInitializationStatus result) const;
 
  private:
-  // Start encoding threads and initialize the CastEnvironment.
-  void Initialize(const media::cast::CastLoggingConfig& logging_config);
-
-  // Configure CastSender. It is ready to accept audio / video frames after
-  // receiving a successful call to InitializationResult.
-  void StartSendingInternal();
-
   void StatusNotificationCB(
       media::cast::transport::CastTransportStatus status);
 
@@ -93,16 +93,8 @@ class CastSessionDelegate {
   scoped_ptr<media::cast::CastSender> cast_sender_;
   scoped_ptr<media::cast::transport::CastTransportSender> cast_transport_;
 
-  // Configuration for audio and video.
-  scoped_ptr<media::cast::AudioSenderConfig> audio_config_;
-  scoped_ptr<media::cast::VideoSenderConfig> video_config_;
-
-  FrameInputAvailableCallback audio_frame_input_available_callback_;
-  FrameInputAvailableCallback video_frame_input_available_callback_;
-
-  net::IPEndPoint local_endpoint_;
-  net::IPEndPoint remote_endpoint_;
-  bool transport_configured_;
+  AudioFrameInputAvailableCallback audio_frame_input_available_callback_;
+  VideoFrameInputAvailableCallback video_frame_input_available_callback_;
 
   scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber_;
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber_;

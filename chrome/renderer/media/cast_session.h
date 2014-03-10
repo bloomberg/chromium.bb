@@ -21,7 +21,8 @@ class MessageLoopProxy;
 namespace media {
 class VideoFrame;
 namespace cast {
-class FrameInput;
+class AudioFrameInput;
+class VideoFrameInput;
 struct AudioSenderConfig;
 struct VideoSenderConfig;
 }  // namespace cast
@@ -38,9 +39,10 @@ class CastSessionDelegate;
 // CastSessionDelegate on the IO thread.
 class CastSession : public base::RefCounted<CastSession> {
  public:
-  typedef
-  base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
-      FrameInputAvailableCallback;
+  typedef base::Callback<void(const scoped_refptr<
+      media::cast::AudioFrameInput>&)> AudioFrameInputAvailableCallback;
+  typedef base::Callback<void(const scoped_refptr<
+      media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
   typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
@@ -53,9 +55,9 @@ class CastSession : public base::RefCounted<CastSession> {
   // media::cast::FrameInput will be given through the callback. The
   // callback will be made on the main thread.
   void StartAudio(const media::cast::AudioSenderConfig& config,
-                  const FrameInputAvailableCallback& callback);
+                  const AudioFrameInputAvailableCallback& callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
-                  const FrameInputAvailableCallback& callback);
+                  const VideoFrameInputAvailableCallback& callback);
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint);
 

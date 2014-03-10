@@ -82,13 +82,13 @@ class LocalFrameReceiver : public FrameReceiver {
   VideoReceiver* video_receiver_;
 };
 
-CastReceiver* CastReceiver::CreateCastReceiver(
+scoped_ptr<CastReceiver> CastReceiver::Create(
     scoped_refptr<CastEnvironment> cast_environment,
     const AudioReceiverConfig& audio_config,
     const VideoReceiverConfig& video_config,
     transport::PacketSender* const packet_sender) {
-  return new CastReceiverImpl(
-      cast_environment, audio_config, video_config, packet_sender);
+  return scoped_ptr<CastReceiver>(new CastReceiverImpl(
+      cast_environment, audio_config, video_config, packet_sender));
 }
 
 CastReceiverImpl::CastReceiverImpl(

@@ -52,16 +52,16 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
         sampling_rate % 100 != 0 ||
         samples_per_10ms_ * num_channels_ >
             transport::EncodedAudioFrame::kMaxNumberOfSamples) {
-      initialization_status_ = STATUS_INVALID_AUDIO_CONFIGURATION;
+      cast_initialization_cb_ = STATUS_INVALID_AUDIO_CONFIGURATION;
     } else {
-      initialization_status_ = STATUS_INITIALIZED;
+      cast_initialization_cb_ = STATUS_AUDIO_INITIALIZED;
     }
   }
 
   virtual ~ImplBase() {}
 
   CastInitializationStatus InitializationResult() const {
-    return initialization_status_;
+    return cast_initialization_cb_;
   }
 
   void LogAudioFrameEvent(uint32 rtp_timestamp,
@@ -156,7 +156,7 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
   const int num_channels_;
   const int samples_per_10ms_;
   const FrameEncodedCallback callback_;
-  CastInitializationStatus initialization_status_;
+  CastInitializationStatus cast_initialization_cb_;
 
  private:
   // In the case where a call to EncodeAudio() cannot completely fill the
@@ -192,7 +192,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
         encoder_memory_(new uint8[opus_encoder_get_size(num_channels)]),
         opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
         buffer_(new float[num_channels * samples_per_10ms_]) {
-    if (ImplBase::initialization_status_ != STATUS_INITIALIZED) {
+    if (ImplBase::cast_initialization_cb_ != STATUS_AUDIO_INITIALIZED) {
       return;
     }
 
@@ -316,7 +316,6 @@ AudioEncoder::AudioEncoder(
   // Note: It doesn't matter which thread constructs AudioEncoder, just so long
   // as all calls to InsertAudio() are by the same thread.
   insert_thread_checker_.DetachFromThread();
-
   switch (audio_config.codec) {
     case transport::kOpus:
       impl_.reset(new OpusImpl(cast_environment,
@@ -340,6 +339,7 @@ AudioEncoder::AudioEncoder(
 AudioEncoder::~AudioEncoder() {}
 
 CastInitializationStatus AudioEncoder::InitializationResult() const {
+  DCHECK(insert_thread_checker_.CalledOnValidThread());
   if (impl_) {
     return impl_->InitializationResult();
   }

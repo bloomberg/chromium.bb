@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This is the main interface for the cast sender. All configuration are done
-// at creation.
+// This is the main interface for the cast sender.
 //
-// The FrameInput and PacketReciever interfaces should normally be accessed from
-// the IO thread. However they are allowed to be called from any thread.
+// The AudioFrameInput, VideoFrameInput and PacketReciever interfaces should
+// be accessed from the main thread.
 
 #ifndef MEDIA_CAST_CAST_SENDER_H_
 #define MEDIA_CAST_CAST_SENDER_H_
@@ -23,23 +22,32 @@
 
 namespace media {
 class AudioBus;
+class GpuVideoAcceleratorFactories;
 class VideoFrame;
-}
 
-namespace media {
 namespace cast {
+class AudioSender;
+class VideoSender;
 
-// This Class is thread safe.
-class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
+class VideoFrameInput : public base::RefCountedThreadSafe<VideoFrameInput> {
  public:
-  // The video_frame must be valid until the callback is called.
-  // The callback is called from the main cast thread as soon as
-  // the encoder is done with the frame; it does not mean that the encoded frame
-  // has been sent out.
+  // Insert video frames into Cast sender. Frames will be encoded, packetized
+  // and sent to the network.
   virtual void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time) = 0;
 
+ protected:
+  virtual ~VideoFrameInput() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<VideoFrameInput>;
+};
+
+class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
+ public:
+  // Insert audio frames into Cast sender. Frames will be encoded, packetized
+  // and sent to the network.
   // The |audio_bus| must be valid until the |done_callback| is called.
   // The callback is called from the main cast thread as soon as the encoder is
   // done with |audio_bus|; it does not mean that the encoded data has been
@@ -49,36 +57,44 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
                            const base::Closure& done_callback) = 0;
 
  protected:
-  virtual ~FrameInput() {}
+  virtual ~AudioFrameInput() {}
 
  private:
-  friend class base::RefCountedThreadSafe<FrameInput>;
+  friend class base::RefCountedThreadSafe<AudioFrameInput>;
 };
 
-// This Class is thread safe.
-// The provided CastTransportSender object will always be called from the main
-// cast thread.
-//  At least one of AudioSenderConfig and VideoSenderConfig have to be provided.
+// The provided CastTransportSender and the CastSender should be called from the
+// main thread.
 class CastSender {
  public:
-  static CastSender* CreateCastSender(
+  static scoped_ptr<CastSender> Create(
       scoped_refptr<CastEnvironment> cast_environment,
-      const AudioSenderConfig* audio_config,
-      const VideoSenderConfig* video_config,
-      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      const CastInitializationCallback& cast_initialization,
       transport::CastTransportSender* const transport_sender);
 
   virtual ~CastSender() {}
 
-  // All audio and video frames for the session should be inserted to this
-  // object.
-  // Can be called from any thread.
-  virtual scoped_refptr<FrameInput> frame_input() = 0;
+  // All video frames for the session should be inserted to this object.
+  virtual scoped_refptr<VideoFrameInput> video_frame_input() = 0;
+
+  // All audio frames for the session should be inserted to this object.
+  virtual scoped_refptr<AudioFrameInput> audio_frame_input() = 0;
 
   // All RTCP packets for the session should be inserted to this object.
-  // Can be called from any thread.
+  // This function and the callback must be called on the main thread.
   virtual transport::PacketReceiverCallback packet_receiver() = 0;
+
+  // Initialize the audio stack. Must be called in order to send audio frames.
+  // Status of the initialization will be returned on cast_initialization_cb.
+  virtual void InitializeAudio(
+      const AudioSenderConfig& audio_config,
+      const CastInitializationCallback& cast_initialization_cb) = 0;
+
+  // Initialize the video stack. Must be called in order to send video frames.
+  // Status of the initialization will be returned on cast_initialization_cb.
+  virtual void InitializeVideo(
+      const VideoSenderConfig& video_config,
+      const CastInitializationCallback& cast_initialization_cb,
+      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories) = 0;
 };
 
 }  // namespace cast

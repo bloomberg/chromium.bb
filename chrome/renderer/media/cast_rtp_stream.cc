@@ -155,7 +155,8 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // Attach this sink to MediaStreamTrack. This method call must
   // be made on the render thread. Incoming data can then be
   // passed to media::cast::FrameInput on any thread.
-  void AddToTrack(const scoped_refptr<media::cast::FrameInput>& frame_input) {
+  void AddToTrack(
+      const scoped_refptr<media::cast::VideoFrameInput>& frame_input) {
     DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
 
     frame_input_ = frame_input;
@@ -167,7 +168,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 
  private:
   blink::WebMediaStreamTrack track_;
-  scoped_refptr<media::cast::FrameInput> frame_input_;
+  scoped_refptr<media::cast::VideoFrameInput> frame_input_;
   bool sink_added_;
   CastRtpStream::ErrorCallback error_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
@@ -301,7 +302,8 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   }
 
   // See CastVideoSink for details.
-  void AddToTrack(const scoped_refptr<media::cast::FrameInput>& frame_input) {
+  void AddToTrack(
+      const scoped_refptr<media::cast::AudioFrameInput>& frame_input) {
     DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
     frame_input_ = frame_input;
     if (!sink_added_) {
@@ -316,7 +318,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 
  private:
   blink::WebMediaStreamTrack track_;
-  scoped_refptr<media::cast::FrameInput> frame_input_;
+  scoped_refptr<media::cast::AudioFrameInput> frame_input_;
   bool sink_added_;
   CastRtpStream::ErrorCallback error_callback_;
   base::WeakPtrFactory<CastAudioSink> weak_factory_;
@@ -348,26 +350,19 @@ CastRtpPayloadParams::CastRtpPayloadParams()
       min_bitrate(0),
       channels(0),
       width(0),
-      height(0) {
-}
+      height(0) {}
 
-CastRtpPayloadParams::~CastRtpPayloadParams() {
-}
+CastRtpPayloadParams::~CastRtpPayloadParams() {}
 
-CastRtpParams::CastRtpParams() {
-}
+CastRtpParams::CastRtpParams() {}
 
-CastRtpParams::~CastRtpParams() {
-}
+CastRtpParams::~CastRtpParams() {}
 
 CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
                              const scoped_refptr<CastSession>& session)
-    : track_(track),
-      cast_session_(session),
-      weak_factory_(this) {}
+    : track_(track), cast_session_(session), weak_factory_(this) {}
 
-CastRtpStream::~CastRtpStream() {
-}
+CastRtpStream::~CastRtpStream() {}
 
 std::vector<CastRtpParams> CastRtpStream::GetSupportedParams() {
   if (IsAudio())
@@ -376,9 +371,7 @@ std::vector<CastRtpParams> CastRtpStream::GetSupportedParams() {
     return SupportedVideoParams();
 }
 
-CastRtpParams CastRtpStream::GetParams() {
-  return params_;
-}
+CastRtpParams CastRtpStream::GetParams() { return params_; }
 
 void CastRtpStream::Start(const CastRtpParams& params,
                           const base::Closure& start_callback,
@@ -404,8 +397,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
         params.payload.clock_rate));
     cast_session_->StartAudio(
         config,
-        base::Bind(&CastAudioSink::AddToTrack,
-                   audio_sink_->AsWeakPtr()));
+        base::Bind(&CastAudioSink::AddToTrack, audio_sink_->AsWeakPtr()));
     start_callback.Run();
   } else {
     VideoSenderConfig config;
@@ -420,8 +412,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
                                             weak_factory_.GetWeakPtr()))));
     cast_session_->StartVideo(
         config,
-        base::Bind(&CastVideoSink::AddToTrack,
-                   video_sink_->AsWeakPtr()));
+        base::Bind(&CastVideoSink::AddToTrack, video_sink_->AsWeakPtr()));
     start_callback.Run();
   }
 }

@@ -24,7 +24,7 @@ CastSession::~CastSession() {
 }
 
 void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
-                             const FrameInputAvailableCallback& callback) {
+                             const AudioFrameInputAvailableCallback& callback) {
   DCHECK(content::RenderThread::Get()
              ->GetMessageLoop()
              ->message_loop_proxy()
@@ -39,7 +39,7 @@ void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
 }
 
 void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
-                             const FrameInputAvailableCallback& callback) {
+                             const VideoFrameInputAvailableCallback& callback) {
   DCHECK(content::RenderThread::Get()
              ->GetMessageLoop()
              ->message_loop_proxy()

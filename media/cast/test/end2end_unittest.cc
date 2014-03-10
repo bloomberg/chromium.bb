@@ -95,6 +95,14 @@ void UpdateCastTransportStatus(transport::CastTransportStatus status) {
   EXPECT_TRUE(result);
 }
 
+void AudioInitializationStatus(CastInitializationStatus status) {
+  EXPECT_EQ(STATUS_AUDIO_INITIALIZED, status);
+}
+
+void VideoInitializationStatus(CastInitializationStatus status) {
+  EXPECT_EQ(STATUS_VIDEO_INITIALIZED, status);
+}
+
 // This is wrapped in a struct because it needs to be put into a std::map.
 typedef struct {
   int counter[kNumOfLoggingEvents];
@@ -396,8 +404,8 @@ class End2EndTest : public ::testing::Test {
       : start_time_(),
         testing_clock_sender_(new base::SimpleTestTickClock()),
         testing_clock_receiver_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(
-            testing_clock_sender_)),
+        task_runner_(
+            new test::FakeSingleThreadTaskRunner(testing_clock_sender_)),
         logging_config_(GetLoggingConfigWithRawEventsAndStatsEnabled()),
         cast_environment_sender_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_sender_).Pass(),
@@ -492,11 +500,10 @@ class End2EndTest : public ::testing::Test {
   }
 
   void Create() {
-    cast_receiver_.reset(
-        CastReceiver::CreateCastReceiver(cast_environment_receiver_,
-                                         audio_receiver_config_,
-                                         video_receiver_config_,
-                                         &receiver_to_sender_));
+    cast_receiver_ = CastReceiver::Create(cast_environment_receiver_,
+                                          audio_receiver_config_,
+                                          video_receiver_config_,
+                                          &receiver_to_sender_);
     net::IPEndPoint dummy_endpoint;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         NULL,
@@ -512,18 +519,21 @@ class End2EndTest : public ::testing::Test {
     transport_sender_->InitializeAudio(transport_audio_config_);
     transport_sender_->InitializeVideo(transport_video_config_);
 
-    cast_sender_.reset(CastSender::CreateCastSender(
-        cast_environment_sender_,
-        &audio_sender_config_,
-        &video_sender_config_,
-        NULL,
-        base::Bind(&End2EndTest::InitializationResult, base::Unretained(this)),
-        transport_sender_.get()));
+    cast_sender_ =
+        CastSender::Create(cast_environment_sender_, transport_sender_.get());
+
+    // Initializing audio and video senders.
+    cast_sender_->InitializeAudio(audio_sender_config_,
+                                  base::Bind(&AudioInitializationStatus));
+    cast_sender_->InitializeVideo(
+        video_sender_config_, base::Bind(&VideoInitializationStatus), NULL);
 
     receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver());
     sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver());
 
-    frame_input_ = cast_sender_->frame_input();
+    audio_frame_input_ = cast_sender_->audio_frame_input();
+    video_frame_input_ = cast_sender_->video_frame_input();
+
     frame_receiver_ = cast_receiver_->frame_receiver();
 
     audio_bus_factory_.reset(
@@ -555,7 +565,7 @@ class End2EndTest : public ::testing::Test {
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
     PopulateVideoFrame(video_frame, start_value);
-    frame_input_->InsertRawVideoFrame(video_frame, capture_time);
+    video_frame_input_->InsertRawVideoFrame(video_frame, capture_time);
   }
 
   void RunTasks(int during_ms) {
@@ -565,10 +575,6 @@ class End2EndTest : public ::testing::Test {
       testing_clock_receiver_->Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
-  }
-
-  void InitializationResult(CastInitializationStatus result) {
-    EXPECT_EQ(result, STATUS_INITIALIZED);
   }
 
   void LogRawEvents(const std::vector<PacketEvent>& packet_events) {
@@ -608,7 +614,8 @@ class End2EndTest : public ::testing::Test {
 
   scoped_ptr<CastReceiver> cast_receiver_;
   scoped_ptr<CastSender> cast_sender_;
-  scoped_refptr<FrameInput> frame_input_;
+  scoped_refptr<AudioFrameInput> audio_frame_input_;
+  scoped_refptr<VideoFrameInput> video_frame_input_;
   scoped_refptr<FrameReceiver> frame_receiver_;
 
   scoped_refptr<TestReceiverAudioCallback> test_receiver_audio_callback_;
@@ -620,7 +627,6 @@ class End2EndTest : public ::testing::Test {
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
   std::vector<GenericEvent> generic_events_;
-
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
   base::MessageLoop message_loop_;
 };
@@ -657,7 +663,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -714,7 +720,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
         send_time);
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -749,7 +755,7 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -799,7 +805,7 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -841,7 +847,7 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -1072,7 +1078,7 @@ TEST_F(End2EndTest, CryptoAudio) {
           send_time);
     }
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
@@ -1250,7 +1256,7 @@ TEST_F(End2EndTest, AudioLogging) {
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(
+    audio_frame_input_->InsertAudio(
         audio_bus_ptr,
         send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));

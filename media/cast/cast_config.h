@@ -134,17 +134,6 @@ struct PcmAudioFrame {
 typedef transport::Packet Packet;
 typedef transport::PacketList PacketList;
 
-enum CastInitializationStatus {
-  STATUS_INITIALIZED,
-  STATUS_INVALID_CAST_ENVIRONMENT,
-  STATUS_INVALID_CRYPTO_CONFIGURATION,
-  STATUS_UNSUPPORTED_AUDIO_CODEC,
-  STATUS_INVALID_AUDIO_CONFIGURATION,
-  STATUS_INVALID_VIDEO_CONFIGURATION,
-  STATUS_GPU_ACCELERATION_NOT_SUPPORTED,
-  STATUS_GPU_ACCELERATION_ERROR,
-};
-
 typedef base::Callback<void(CastInitializationStatus)>
     CastInitializationCallback;
 

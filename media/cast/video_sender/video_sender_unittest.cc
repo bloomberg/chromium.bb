@@ -63,12 +63,12 @@ class PeerVideoSender : public VideoSender {
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      const CastInitializationCallback& initialization_status,
+      const CastInitializationCallback& cast_initialization_cb,
       transport::CastTransportSender* const transport_sender)
       : VideoSender(cast_environment,
                     video_config,
                     gpu_factories,
-                    initialization_status,
+                    cast_initialization_cb,
                     transport_sender) {}
   using VideoSender::OnReceivedCastFeedback;
 };
@@ -174,7 +174,7 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   void InitializationResult(CastInitializationStatus result) {
-    EXPECT_EQ(result, STATUS_INITIALIZED);
+    EXPECT_EQ(result, STATUS_VIDEO_INITIALIZED);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
