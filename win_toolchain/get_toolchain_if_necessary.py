@@ -147,31 +147,28 @@ def CanAccessToolchainBucket():
   return code == 0
 
 
-def ConfigureGsAccess():
-  """Starts the authentication flow for gs://, and confirms that it's
-  accessible after completion, or retries indefinitely.
+def RequestGsAuthentication():
+  """Requests that the user authenticate to be able to access gs:// as a
+  Googler. This allows much faster downloads, and pulling (old) toolchains
+  that match src/ revisions.
   """
-  while not CanAccessToolchainBucket():
-    print 'Access to gs://chrome-wintoolchain/ not configured.'
-    print '-----------------------------------------------------------------'
-    print
-    print 'You appear to be a Googler.'
-    print
-    print 'I\'m sorry for the hassle, but you need to do a one-time manual'
-    print 'authentication. Instructions will open in a new window. This is'
-    print 'a run of "gsutil config".'
-    print
-    print 'NOTE: Just press Enter when asked for a "project-id".'
-    print
-    print '-----------------------------------------------------------------'
-    print
-    sys.stdout.flush()
-    # gclient's buffering makes this hang if we're run from inside gclient
-    # as is typical. So, spawn a new window for the config prompt. :(
-    subprocess.check_call(
-        ['start', '/wait', 'cmd', '/c',
-         'download_from_google_storage', '--config'],
-        shell=True)
+  print 'Access to gs://chrome-wintoolchain/ not configured.'
+  print '-----------------------------------------------------------------'
+  print
+  print 'You appear to be a Googler.'
+  print
+  print 'I\'m sorry for the hassle, but you need to do a one-time manual'
+  print 'authentication. Please run:'
+  print
+  print '    download_from_google_storage --config'
+  print
+  print 'and follow the instructions. NOTE: Just press Enter when asked for'
+  print 'a "project-id".'
+  print
+  print '-----------------------------------------------------------------'
+  print
+  sys.stdout.flush()
+  sys.exit(1)
 
 
 def DelayBeforeRemoving(target_dir):
@@ -197,6 +194,8 @@ def main():
 
   # We assume that the Pro hash is the first one.
   desired_hashes = args
+  if len(desired_hashes) == 0:
+    sys.exit('Desired hashes are required.')
 
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
@@ -211,11 +210,10 @@ def main():
   current_hash = CalculateHash(target_dir)
   if current_hash not in desired_hashes:
     should_use_gs = False
-    if (CanAccessToolchainBucket() or
-        HaveSrcInternalAccess() or
-        LooksLikeGoogler()):
+    if HaveSrcInternalAccess() or LooksLikeGoogler():
       should_use_gs = True
-      ConfigureGsAccess()
+      if not CanAccessToolchainBucket():
+        RequestGsAuthentication()
     print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
           ('Pro' if should_use_gs else 'Express'))
     print('  current_hash: %s' % current_hash)
