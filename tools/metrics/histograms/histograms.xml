@@ -34489,6 +34489,28 @@ other types of suffix sets.
   <int value="15" label="PROCEED_NEW_SITE"/>
   <int value="16"
       label="User manually typed proceed (PROCEED_MANUAL_NONOVERRIDABLE)"/>
+  <int value="17"
+      label="Chrome captive portal detection enabled
+             (CAPTIVE_PORTAL_DETECTION_ENABLED)"/>
+  <int value="18"
+      label="Chrome captive portal detection enabled on an overridable SSL
+             error page (CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE)"/>
+  <int value="19"
+      label="Received a captive portal result
+             (CAPTIVE_PORTAL_PROBE_COMPLETED)"/>
+  <int value="20"
+      label="Received a captive portal result on an overridable SSL error
+             page (CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE)"/>
+  <int value="21"
+      label="Received no response or Non-HTTP login page
+             (CAPTIVE_PORTAL_NO_RESPONSE)"/>
+  <int value="22"
+      label="Received no response or Non-HTTP login page on an overridable
+             SSL error page (CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE)"/>
+  <int value="23" label="Detected captive portal (CAPTIVE_PORTAL_DETECTED)"/>
+  <int value="24"
+      label="Detected captive portal on an overridable SSL error page
+             (CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>
 </enum>
 
 <enum name="StartupURLsMigration" type="int">
