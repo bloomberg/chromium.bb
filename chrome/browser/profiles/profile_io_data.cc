@@ -682,15 +682,19 @@ ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers) const {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) const {
   DCHECK(initialized_);
   ChromeURLRequestContext* context = NULL;
   if (ContainsKey(app_request_context_map_, partition_descriptor)) {
     context = app_request_context_map_[partition_descriptor];
   } else {
-    context = AcquireIsolatedAppRequestContext(
-        main_context, partition_descriptor, protocol_handler_interceptor.Pass(),
-        protocol_handlers);
+    context =
+        AcquireIsolatedAppRequestContext(main_context,
+                                         partition_descriptor,
+                                         protocol_handler_interceptor.Pass(),
+                                         protocol_handlers,
+                                         protocol_interceptors.Pass());
     app_request_context_map_[partition_descriptor] = context;
   }
   DCHECK(context);
@@ -891,7 +895,9 @@ std::string ProfileIOData::GetSSLSessionCacheShard() {
   return base::StringPrintf("profile/%u", ssl_session_cache_instance++);
 }
 
-void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
+void ProfileIOData::Init(
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) const {
   // The basic logic is implemented here. The specific initialization
   // is done in InitializeInternal(), implemented by subtypes. Static helper
   // functions have been provided to assist in common operations.
@@ -992,7 +998,8 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
       io_thread_globals->cert_verifier.get());
 #endif
 
-  InitializeInternal(profile_params_.get(), protocol_handlers);
+  InitializeInternal(
+      profile_params_.get(), protocol_handlers, protocol_interceptors.Pass());
 
   profile_params_.reset();
   initialized_ = true;
@@ -1007,6 +1014,7 @@ void ProfileIOData::ApplyProfileParamsToContext(
 
 scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory,
+    content::ProtocolHandlerScopedVector protocol_interceptors,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     net::NetworkDelegate* network_delegate,
@@ -1052,14 +1060,21 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       new net::FtpProtocolHandler(ftp_transaction_factory));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
+#if defined(DEBUG_DEVTOOLS)
+  protocol_interceptors.push_back(new DebugDevToolsInterceptor);
+#endif
+
+  // Set up interceptors in the reverse order.
   scoped_ptr<net::URLRequestJobFactory> top_job_factory =
       job_factory.PassAs<net::URLRequestJobFactory>();
-#if defined(DEBUG_DEVTOOLS)
-  top_job_factory.reset(new net::ProtocolInterceptJobFactory(
-      top_job_factory.Pass(),
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          new DebugDevToolsInterceptor)));
-#endif
+  for (content::ProtocolHandlerScopedVector::reverse_iterator i =
+           protocol_interceptors.rbegin();
+       i != protocol_interceptors.rend();
+       ++i) {
+    top_job_factory.reset(new net::ProtocolInterceptJobFactory(
+        top_job_factory.Pass(), make_scoped_ptr(*i)));
+  }
+  protocol_interceptors.weak_clear();
 
   if (protocol_handler_interceptor) {
     protocol_handler_interceptor->Chain(top_job_factory.Pass());

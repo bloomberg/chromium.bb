@@ -165,7 +165,8 @@ base::Time FakeProfile::GetStartTime() const {
 }
 
 net::URLRequestContextGetter* FakeProfile::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers) {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
   return NULL;
 }
 
@@ -173,7 +174,8 @@ net::URLRequestContextGetter*
 FakeProfile::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers) {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
   return NULL;
 }
 

@@ -256,7 +256,8 @@ class Profile : public content::BrowserContext {
   // ContextBrowserClient to call this function.
   // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
   virtual net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers) = 0;
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors) = 0;
 
   // Creates the net::URLRequestContextGetter for a StoragePartition. Should
   // only be called once per partition_path per ContentBrowserClient object.
@@ -267,7 +268,8 @@ class Profile : public content::BrowserContext {
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,
-      content::ProtocolHandlerMap* protocol_handlers) = 0;
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors) = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;

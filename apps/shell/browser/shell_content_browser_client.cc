@@ -60,10 +60,10 @@ bool ShellContentBrowserClient::ShouldUseProcessPerSite(
   return true;
 }
 
-net::URLRequestContextGetter*
-ShellContentBrowserClient::CreateRequestContext(
+net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
-    content::ProtocolHandlerMap* protocol_handlers) {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
   // Handle chrome-extension: and chrome-extension-resource: requests.
   extensions::InfoMap* extension_info_map =
       browser_main_parts_->extension_system()->info_map();
@@ -76,7 +76,7 @@ ShellContentBrowserClient::CreateRequestContext(
           CreateExtensionResourceProtocolHandler());
   // Let content::ShellBrowserContext handle the rest of the setup.
   return browser_main_parts_->browser_context()->CreateRequestContext(
-      protocol_handlers);
+      protocol_handlers, protocol_interceptors.Pass());
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

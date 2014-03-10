@@ -26,10 +26,12 @@ content::BrowserMainParts* ExamplesContentBrowserClient::CreateBrowserMainParts(
 net::URLRequestContextGetter*
 ExamplesContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
-    content::ProtocolHandlerMap* protocol_handlers) {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
   content::ShellBrowserContext* shell_context =
       examples_browser_main_parts_->browser_context();
-  return shell_context->CreateRequestContext(protocol_handlers);
+  return shell_context->CreateRequestContext(protocol_handlers,
+                                             protocol_interceptors.Pass());
 }
 
 }  // namespace examples

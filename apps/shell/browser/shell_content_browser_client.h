@@ -32,7 +32,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
                                        const GURL& effective_url) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
-      content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
   // TODO(jamescook): Quota management?
   // TODO(jamescook): Speech recognition?
   virtual bool IsHandledURL(const GURL& url) OVERRIDE;

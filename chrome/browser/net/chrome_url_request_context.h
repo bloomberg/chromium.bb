@@ -74,7 +74,8 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
   static ChromeURLRequestContextGetter* Create(
       Profile* profile,
       const ProfileIOData* profile_io_data,
-      content::ProtocolHandlerMap* protocol_handlers);
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors);
 
   // Create an instance for an original profile for media. This is expected to
   // get called on UI thread. This method takes a profile and reuses the
@@ -95,7 +96,8 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
-      content::ProtocolHandlerMap* protocol_handlers);
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors);
 
   // Create an instance for an original profile for media with isolated
   // storage. This is expected to get called on UI thread.

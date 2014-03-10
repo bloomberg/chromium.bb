@@ -267,8 +267,10 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
 }
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers) {
-  return io_data_.CreateMainRequestContextGetter(protocol_handlers).get();
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
+  return io_data_.CreateMainRequestContextGetter(
+      protocol_handlers, protocol_interceptors.Pass()).get();
 }
 
 net::URLRequestContextGetter*
@@ -365,12 +367,16 @@ net::URLRequestContextGetter*
 }
 
 net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
-        const base::FilePath& partition_path,
-        bool in_memory,
-        content::ProtocolHandlerMap* protocol_handlers) {
+OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory,
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
   return io_data_.CreateIsolatedAppRequestContextGetter(
-                      partition_path, in_memory, protocol_handlers).get();
+      partition_path,
+      in_memory,
+      protocol_handlers,
+      protocol_interceptors.Pass()).get();
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {

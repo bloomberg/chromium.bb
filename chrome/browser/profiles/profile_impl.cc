@@ -861,11 +861,13 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
 }
 
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers) {
-  return io_data_
-      .CreateMainRequestContextGetter(protocol_handlers,
-                                      g_browser_process->local_state(),
-                                      g_browser_process->io_thread()).get();
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
+  return io_data_.CreateMainRequestContextGetter(
+      protocol_handlers,
+      protocol_interceptors.Pass(),
+      g_browser_process->local_state(),
+      g_browser_process->io_thread()).get();
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
@@ -974,9 +976,13 @@ net::URLRequestContextGetter*
 ProfileImpl::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers) {
+    content::ProtocolHandlerMap* protocol_handlers,
+    content::ProtocolHandlerScopedVector protocol_interceptors) {
   return io_data_.CreateIsolatedAppRequestContextGetter(
-                      partition_path, in_memory, protocol_handlers).get();
+      partition_path,
+      in_memory,
+      protocol_handlers,
+      protocol_interceptors.Pass()).get();
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {

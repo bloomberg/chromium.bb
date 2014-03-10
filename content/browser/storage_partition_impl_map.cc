@@ -416,12 +416,16 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContext(
             browser_context_,
-            &protocol_handlers));
+            &protocol_handlers,
+            ProtocolHandlerScopedVector()));
   } else {
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContextForStoragePartition(
-            browser_context_, partition->GetPath(), in_memory,
-            &protocol_handlers));
+            browser_context_,
+            partition->GetPath(),
+            in_memory,
+            &protocol_handlers,
+            ProtocolHandlerScopedVector()));
   }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?

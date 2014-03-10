@@ -97,7 +97,9 @@ class TestProfileIOData : public ProfileIOData {
   // ProfileIOData overrides:
   virtual void InitializeInternal(
       ProfileParams* profile_params,
-      content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE {
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors)
+      const OVERRIDE {
     NOTREACHED();
   }
   virtual void InitializeExtensionsRequestContext(
@@ -109,7 +111,9 @@ class TestProfileIOData : public ProfileIOData {
       const StoragePartitionDescriptor& details,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
-      content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE {
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors)
+      const OVERRIDE {
     NOTREACHED();
     return NULL;
   }
@@ -124,13 +128,14 @@ class TestProfileIOData : public ProfileIOData {
     NOTREACHED();
     return NULL;
   }
-  virtual ChromeURLRequestContext*
-      AcquireIsolatedAppRequestContext(
-          ChromeURLRequestContext* main_context,
-          const StoragePartitionDescriptor& partition_descriptor,
-          scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-              protocol_handler_interceptor,
-          content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE {
+  virtual ChromeURLRequestContext* AcquireIsolatedAppRequestContext(
+      ChromeURLRequestContext* main_context,
+      const StoragePartitionDescriptor& partition_descriptor,
+      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+          protocol_handler_interceptor,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::ProtocolHandlerScopedVector protocol_interceptors)
+      const OVERRIDE {
     NOTREACHED();
     return NULL;
   }

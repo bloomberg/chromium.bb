@@ -64,12 +64,14 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     base::MessageLoop* io_loop,
     base::MessageLoop* file_loop,
     ProtocolHandlerMap* protocol_handlers,
+    ProtocolHandlerScopedVector protocol_interceptors,
     net::NetLog* net_log)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),
       io_loop_(io_loop),
       file_loop_(file_loop),
-      net_log_(net_log) {
+      net_log_(net_log),
+      protocol_interceptors_(protocol_interceptors.Pass()) {
   // Must first be created on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -214,7 +216,20 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
                 GetTaskRunnerWithShutdownBehavior(
                     base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
     DCHECK(set_protocol);
-    storage_->set_job_factory(job_factory.release());
+
+    // Set up interceptors in the reverse order.
+    scoped_ptr<net::URLRequestJobFactory> top_job_factory =
+        job_factory.PassAs<net::URLRequestJobFactory>();
+    for (ProtocolHandlerScopedVector::reverse_iterator i =
+             protocol_interceptors_.rbegin();
+         i != protocol_interceptors_.rend();
+         ++i) {
+      top_job_factory.reset(new net::ProtocolInterceptJobFactory(
+          top_job_factory.Pass(), make_scoped_ptr(*i)));
+    }
+    protocol_interceptors_.weak_clear();
+
+    storage_->set_job_factory(top_job_factory.release());
   }
 
   return url_request_context_.get();

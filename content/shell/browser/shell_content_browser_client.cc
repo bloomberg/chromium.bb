@@ -154,10 +154,12 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
 
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
     BrowserContext* content_browser_context,
-    ProtocolHandlerMap* protocol_handlers) {
+    ProtocolHandlerMap* protocol_handlers,
+    ProtocolHandlerScopedVector protocol_interceptors) {
   ShellBrowserContext* shell_browser_context =
       ShellBrowserContextForBrowserContext(content_browser_context);
-  return shell_browser_context->CreateRequestContext(protocol_handlers);
+  return shell_browser_context->CreateRequestContext(
+      protocol_handlers, protocol_interceptors.Pass());
 }
 
 net::URLRequestContextGetter*
@@ -165,11 +167,15 @@ ShellContentBrowserClient::CreateRequestContextForStoragePartition(
     BrowserContext* content_browser_context,
     const base::FilePath& partition_path,
     bool in_memory,
-    ProtocolHandlerMap* protocol_handlers) {
+    ProtocolHandlerMap* protocol_handlers,
+    ProtocolHandlerScopedVector protocol_interceptors) {
   ShellBrowserContext* shell_browser_context =
       ShellBrowserContextForBrowserContext(content_browser_context);
   return shell_browser_context->CreateRequestContextForStoragePartition(
-      partition_path, in_memory, protocol_handlers);
+      partition_path,
+      in_memory,
+      protocol_handlers,
+      protocol_interceptors.Pass());
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

@@ -69,11 +69,13 @@ class ShellBrowserContext : public BrowserContext {
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers);
+      ProtocolHandlerMap* protocol_handlers,
+      ProtocolHandlerScopedVector protocol_interceptors);
   net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,
-      ProtocolHandlerMap* protocol_handlers);
+      ProtocolHandlerMap* protocol_handlers,
+      ProtocolHandlerScopedVector protocol_interceptors);
 
  private:
   class ShellResourceContext;

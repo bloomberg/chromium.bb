@@ -105,6 +105,10 @@ typedef std::map<
   std::string, linked_ptr<net::URLRequestJobFactory::ProtocolHandler> >
     ProtocolHandlerMap;
 
+// A scoped vector of protocol handlers.
+typedef ScopedVector<net::URLRequestJobFactory::ProtocolHandler>
+    ProtocolHandlerScopedVector;
+
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
 // principal implementation. The methods are assumed to be called on the UI
@@ -195,7 +199,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
   virtual net::URLRequestContextGetter* CreateRequestContext(
       BrowserContext* browser_context,
-      ProtocolHandlerMap* protocol_handlers);
+      ProtocolHandlerMap* protocol_handlers,
+      ProtocolHandlerScopedVector protocol_interceptors);
 
   // Creates the net::URLRequestContextGetter for a StoragePartition. Should
   // only be called once per partition_path per ContentBrowserClient object.
@@ -204,7 +209,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const base::FilePath& partition_path,
       bool in_memory,
-      ProtocolHandlerMap* protocol_handlers);
+      ProtocolHandlerMap* protocol_handlers,
+      ProtocolHandlerScopedVector protocol_interceptors);
 
   // Returns whether a specified URL is handled by the embedder's internal
   // protocol handlers.
