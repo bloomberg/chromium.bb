@@ -6110,6 +6110,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WEBGL_DESCRIPTION" desc="Description for the flag to enable WebGL.">
         Enabling this option allows web applications to access the WebGL API.
       </message>
+      <message name="IDS_FLAGS_ENABLE_D3D11_NAME" desc="Name of the 'Enable D3D11' lab.">
+        Enable D3D11
+      </message>
+      <message name="IDS_FLAGS_ENABLE_D3D11_DESCRIPTION" desc="Description for the flag to enable D3D11.">
+        Enabling this option allows the use of Direct3D 11 on configurations that support it.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
         Enable WebGL Draft Extensions
       </message>
