@@ -46,6 +46,8 @@ class FeatureSwitch {
     DISALLOW_COPY_AND_ASSIGN(ScopedOverride);
   };
 
+  // |switch_name| can be NULL, in which case the feature is controlled solely
+  // by the default and override values.
   FeatureSwitch(const char* switch_name,
                 DefaultValue default_value);
   FeatureSwitch(const CommandLine* command_line,
@@ -58,13 +60,13 @@ class FeatureSwitch {
 
   bool IsEnabled() const;
 
-  std::string GetLegacyEnableFlag() const;
-  std::string GetLegacyDisableFlag() const;
-
  private:
   void Init(const CommandLine* command_line,
             const char* switch_name,
             DefaultValue default_value);
+
+  std::string GetLegacyEnableFlag() const;
+  std::string GetLegacyDisableFlag() const;
 
   const CommandLine* command_line_;
   const char* switch_name_;

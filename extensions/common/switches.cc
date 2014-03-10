@@ -59,10 +59,6 @@ const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
 // Enables setting global commands through the Extensions Commands API.
 const char kGlobalCommands[] = "global-commands";
 
-// Should we prompt the user before allowing external extensions to install?
-// Default is yes.
-const char kPromptForExternalExtensions[] = "prompt-for-external-extensions";
-
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";
