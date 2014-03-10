@@ -338,37 +338,38 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
     writePositionAndStyle(ts, shape);
 
     SVGElement* svgElement = shape.element();
+    ASSERT(svgElement);
     SVGLengthContext lengthContext(svgElement);
 
-    if (svgElement->hasTagName(SVGNames::rectTag)) {
-        SVGRectElement* element = toSVGRectElement(svgElement);
-        writeNameValuePair(ts, "x", element->x()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "y", element->y()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "width", element->width()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "height", element->height()->currentValue()->value(lengthContext));
-    } else if (svgElement->hasTagName(SVGNames::lineTag)) {
-        SVGLineElement* element = toSVGLineElement(svgElement);
-        writeNameValuePair(ts, "x1", element->x1()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "y1", element->y1()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "x2", element->x2()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "y2", element->y2()->currentValue()->value(lengthContext));
-    } else if (svgElement->hasTagName(SVGNames::ellipseTag)) {
-        SVGEllipseElement* element = toSVGEllipseElement(svgElement);
-        writeNameValuePair(ts, "cx", element->cx()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "cy", element->cy()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "rx", element->rx()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "ry", element->ry()->currentValue()->value(lengthContext));
-    } else if (svgElement->hasTagName(SVGNames::circleTag)) {
-        SVGCircleElement* element = toSVGCircleElement(svgElement);
-        writeNameValuePair(ts, "cx", element->cx()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "cy", element->cy()->currentValue()->value(lengthContext));
-        writeNameValuePair(ts, "r", element->r()->currentValue()->value(lengthContext));
-    } else if (svgElement->hasTagName(SVGNames::polygonTag) || svgElement->hasTagName(SVGNames::polylineTag)) {
-        writeNameAndQuotedValue(ts, "points", toSVGPolyElement(svgElement)->points()->currentValue()->valueAsString());
-    } else if (svgElement->hasTagName(SVGNames::pathTag)) {
+    if (isSVGRectElement(*svgElement)) {
+        SVGRectElement& element = toSVGRectElement(*svgElement);
+        writeNameValuePair(ts, "x", element.x()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "y", element.y()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "width", element.width()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "height", element.height()->currentValue()->value(lengthContext));
+    } else if (isSVGLineElement(*svgElement)) {
+        SVGLineElement& element = toSVGLineElement(*svgElement);
+        writeNameValuePair(ts, "x1", element.x1()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "y1", element.y1()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "x2", element.x2()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "y2", element.y2()->currentValue()->value(lengthContext));
+    } else if (isSVGEllipseElement(*svgElement)) {
+        SVGEllipseElement& element = toSVGEllipseElement(*svgElement);
+        writeNameValuePair(ts, "cx", element.cx()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "cy", element.cy()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "rx", element.rx()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "ry", element.ry()->currentValue()->value(lengthContext));
+    } else if (isSVGCircleElement(*svgElement)) {
+        SVGCircleElement& element = toSVGCircleElement(*svgElement);
+        writeNameValuePair(ts, "cx", element.cx()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "cy", element.cy()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "r", element.r()->currentValue()->value(lengthContext));
+    } else if (isSVGPolyElement(*svgElement)) {
+        writeNameAndQuotedValue(ts, "points", toSVGPolyElement(*svgElement).points()->currentValue()->valueAsString());
+    } else if (isSVGPathElement(*svgElement)) {
         String pathString;
         // FIXME: We should switch to UnalteredParsing here - this will affect the path dumping output of dozens of tests.
-        buildStringFromByteStream(toSVGPathElement(svgElement)->pathByteStream(), pathString, NormalizedParsing);
+        buildStringFromByteStream(toSVGPathElement(*svgElement).pathByteStream(), pathString, NormalizedParsing);
         writeNameAndQuotedValue(ts, "data", pathString);
     } else
         ASSERT_NOT_REACHED();

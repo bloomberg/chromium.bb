@@ -42,7 +42,8 @@ RenderSVGViewportContainer::RenderSVGViewportContainer(SVGElement* node)
 
 void RenderSVGViewportContainer::determineIfLayoutSizeChanged()
 {
-    if (!element()->hasTagName(SVGNames::svgTag))
+    ASSERT(element());
+    if (!isSVGSVGElement(*element()))
         return;
 
     m_isLayoutSizeChanged = toSVGSVGElement(element())->hasRelativeLengths() && selfNeedsLayout();
@@ -57,7 +58,8 @@ void RenderSVGViewportContainer::applyViewportClip(PaintInfo& paintInfo)
 void RenderSVGViewportContainer::calcViewport()
 {
     SVGElement* element = this->element();
-    if (!element->hasTagName(SVGNames::svgTag))
+    ASSERT(element);
+    if (!isSVGSVGElement(*element))
         return;
     SVGSVGElement* svg = toSVGSVGElement(element);
     FloatRect oldViewport = m_viewport;
@@ -74,7 +76,7 @@ void RenderSVGViewportContainer::calcViewport()
         const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
         for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
             const SVGElementInstance* instance = (*it);
-            ASSERT(instance->correspondingElement()->hasTagName(SVGNames::svgTag) || instance->correspondingElement()->hasTagName(SVGNames::symbolTag));
+            ASSERT(isSVGSVGElement(instance->correspondingElement()) || isSVGSymbolElement(instance->correspondingElement()));
             if (instance->shadowTreeElement() == svg) {
                 ASSERT(correspondingElement == instance->correspondingElement());
                 useElement = instance->directUseElement();
@@ -85,7 +87,7 @@ void RenderSVGViewportContainer::calcViewport()
         }
 
         ASSERT(useElement);
-        bool isSymbolElement = correspondingElement->hasTagName(SVGNames::symbolTag);
+        bool isSymbolElement = isSVGSymbolElement(*correspondingElement);
 
         // Spec (<use> on <symbol>): This generated 'svg' will always have explicit values for attributes width and height.
         // If attributes width and/or height are provided on the 'use' element, then these attributes
@@ -132,7 +134,8 @@ bool RenderSVGViewportContainer::calculateLocalTransform()
 
 AffineTransform RenderSVGViewportContainer::viewportTransform() const
 {
-    if (element()->hasTagName(SVGNames::svgTag)) {
+    ASSERT(element());
+    if (isSVGSVGElement(*element())) {
         SVGSVGElement* svg = toSVGSVGElement(element());
         return svg->viewBoxToViewTransform(m_viewport.width(), m_viewport.height());
     }
@@ -151,11 +154,10 @@ bool RenderSVGViewportContainer::pointIsInsideViewportClip(const FloatPoint& poi
 
 void RenderSVGViewportContainer::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    ASSERT(element());
     // An empty viewBox disables rendering.
-    if (element()->hasTagName(SVGNames::svgTag)) {
-        if (toSVGSVGElement(element())->hasEmptyViewBox())
-            return;
-    }
+    if (isSVGSVGElement(*element()) && toSVGSVGElement(*element()).hasEmptyViewBox())
+        return;
 
     RenderSVGContainer::paint(paintInfo, paintOffset);
 }

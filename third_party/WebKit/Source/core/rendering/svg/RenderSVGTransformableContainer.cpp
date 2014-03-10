@@ -49,7 +49,8 @@ static bool hasValidPredecessor(const Node* node)
 
 bool RenderSVGTransformableContainer::isChildAllowed(RenderObject* child, RenderStyle* style) const
 {
-    if (element()->hasTagName(SVGNames::switchTag)) {
+    ASSERT(element());
+    if (isSVGSwitchElement(*element())) {
         Node* node = child->node();
         // Reject non-SVG/non-valid elements.
         if (!node->isSVGElement() || !toSVGElement(node)->isValid())
@@ -57,10 +58,10 @@ bool RenderSVGTransformableContainer::isChildAllowed(RenderObject* child, Render
         // Reject this child if it isn't the first valid node.
         if (hasValidPredecessor(node))
             return false;
-    } else if (element()->hasTagName(SVGNames::aTag)) {
+    } else if (isSVGAElement(*element())) {
         // http://www.w3.org/2003/01/REC-SVG11-20030114-errata#linking-text-environment
         // The 'a' element may contain any element that its parent may contain, except itself.
-        if (child->node()->hasTagName(SVGNames::aTag))
+        if (isSVGAElement(*child->node()))
             return false;
         if (parent() && parent()->isSVG())
             return parent()->isChildAllowed(child, style);
@@ -71,16 +72,17 @@ bool RenderSVGTransformableContainer::isChildAllowed(RenderObject* child, Render
 bool RenderSVGTransformableContainer::calculateLocalTransform()
 {
     SVGGraphicsElement* element = toSVGGraphicsElement(this->element());
+    ASSERT(element);
 
     // If we're either the renderer for a <use> element, or for any <g> element inside the shadow
     // tree, that was created during the use/symbol/svg expansion in SVGUseElement. These containers
     // need to respect the translations induced by their corresponding use elements x/y attributes.
     SVGUseElement* useElement = 0;
-    if (element->hasTagName(SVGNames::useTag))
+    if (isSVGUseElement(*element)) {
         useElement = toSVGUseElement(element);
-    else if (element->isInShadowTree() && element->hasTagName(SVGNames::gTag)) {
+    } else if (element->isInShadowTree() && isSVGGElement(*element)) {
         SVGElement* correspondingElement = element->correspondingElement();
-        if (correspondingElement && correspondingElement->hasTagName(SVGNames::useTag))
+        if (isSVGUseElement(correspondingElement))
             useElement = toSVGUseElement(correspondingElement);
     }
 

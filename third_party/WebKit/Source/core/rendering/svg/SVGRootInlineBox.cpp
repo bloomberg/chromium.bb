@@ -104,7 +104,7 @@ void SVGRootInlineBox::layoutCharactersInTextBoxes(InlineFlowBox* start, SVGText
                 continue;
 
             SVGInlineFlowBox* flowBox = toSVGInlineFlowBox(child);
-            bool isTextPath = node->hasTagName(SVGNames::textPathTag);
+            bool isTextPath = isSVGTextPathElement(*node);
             if (isTextPath) {
                 // Build text chunks for all <textPath> children, using the line layout algorithm.
                 // This is needeed as text-anchor is just an additional startOffset for text paths.

@@ -137,19 +137,19 @@ static HashSet<AtomicString>& chainableResourceTags()
     return s_tagList;
 }
 
-static inline AtomicString targetReferenceFromResource(SVGElement* element)
+static inline AtomicString targetReferenceFromResource(SVGElement& element)
 {
     String target;
-    if (element->hasTagName(SVGNames::patternTag))
-        target = toSVGPatternElement(element)->href()->currentValue()->value();
-    else if (element->hasTagName(SVGNames::linearGradientTag) || element->hasTagName(SVGNames::radialGradientTag))
-        target = toSVGGradientElement(element)->href()->currentValue()->value();
-    else if (element->hasTagName(SVGNames::filterTag))
-        target = toSVGFilterElement(element)->href()->currentValue()->value();
+    if (isSVGPatternElement(element))
+        target = toSVGPatternElement(element).href()->currentValue()->value();
+    else if (isSVGGradientElement(element))
+        target = toSVGGradientElement(element).href()->currentValue()->value();
+    else if (isSVGFilterElement(element))
+        target = toSVGFilterElement(element).href()->currentValue()->value();
     else
         ASSERT_NOT_REACHED();
 
-    return SVGURIReference::fragmentIdentifierFromIRIString(target, element->document());
+    return SVGURIReference::fragmentIdentifierFromIRIString(target, element.document());
 }
 
 static inline bool svgPaintTypeHasURL(SVGPaint::SVGPaintType paintType)
@@ -285,7 +285,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
     }
 
     if (chainableResourceTags().contains(tagName)) {
-        AtomicString id = targetReferenceFromResource(element);
+        AtomicString id = targetReferenceFromResource(*element);
         if (!ensureResources(resources)->setLinkedResource(getRenderSVGResourceContainerById(document, id)))
             registerPendingResource(extensions, id, element);
     }

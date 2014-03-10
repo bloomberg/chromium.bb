@@ -41,7 +41,8 @@ bool RenderSVGTextPath::isChildAllowed(RenderObject* child, RenderStyle*) const
 
 #if ENABLE(SVG_FONTS)
     // 'altGlyph' is supported by the content model for 'textPath', but...
-    if (child->node()->hasTagName(SVGNames::altGlyphTag))
+    ASSERT(child->node());
+    if (isSVGAltGlyphElement(*child->node()))
         return false;
 #endif
 
@@ -52,20 +53,20 @@ Path RenderSVGTextPath::layoutPath() const
 {
     SVGTextPathElement* textPathElement = toSVGTextPathElement(node());
     Element* targetElement = SVGURIReference::targetElementFromIRIString(textPathElement->href()->currentValue()->value(), textPathElement->document());
-    if (!targetElement || !targetElement->hasTagName(SVGNames::pathTag))
+    if (!isSVGPathElement(targetElement))
         return Path();
 
-    SVGPathElement* pathElement = toSVGPathElement(targetElement);
+    SVGPathElement& pathElement = toSVGPathElement(*targetElement);
 
     Path pathData;
-    updatePathFromGraphicsElement(pathElement, pathData);
+    updatePathFromGraphicsElement(&pathElement, pathData);
 
     // Spec:  The transform attribute on the referenced 'path' element represents a
     // supplemental transformation relative to the current user coordinate system for
     // the current 'text' element, including any adjustments to the current user coordinate
     // system due to a possible transform attribute on the current 'text' element.
     // http://www.w3.org/TR/SVG/text.html#TextPathElement
-    pathData.transform(pathElement->animatedLocalTransform());
+    pathData.transform(pathElement.animatedLocalTransform());
     return pathData;
 }
 

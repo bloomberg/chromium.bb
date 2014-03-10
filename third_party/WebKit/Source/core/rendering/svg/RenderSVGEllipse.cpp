@@ -76,21 +76,21 @@ void RenderSVGEllipse::updateShapeFromElement()
 void RenderSVGEllipse::calculateRadiiAndCenter()
 {
     ASSERT(element());
-    if (element()->hasTagName(SVGNames::circleTag)) {
-        SVGCircleElement* circle = toSVGCircleElement(element());
+    if (isSVGCircleElement(*element())) {
+        SVGCircleElement& circle = toSVGCircleElement(*element());
 
-        SVGLengthContext lengthContext(circle);
-        float radius = circle->r()->currentValue()->value(lengthContext);
+        SVGLengthContext lengthContext(&circle);
+        float radius = circle.r()->currentValue()->value(lengthContext);
         m_radii = FloatSize(radius, radius);
-        m_center = FloatPoint(circle->cx()->currentValue()->value(lengthContext), circle->cy()->currentValue()->value(lengthContext));
+        m_center = FloatPoint(circle.cx()->currentValue()->value(lengthContext), circle.cy()->currentValue()->value(lengthContext));
         return;
     }
 
-    SVGEllipseElement* ellipse = toSVGEllipseElement(element());
+    SVGEllipseElement& ellipse = toSVGEllipseElement(*element());
 
-    SVGLengthContext lengthContext(ellipse);
-    m_radii = FloatSize(ellipse->rx()->currentValue()->value(lengthContext), ellipse->ry()->currentValue()->value(lengthContext));
-    m_center = FloatPoint(ellipse->cx()->currentValue()->value(lengthContext), ellipse->cy()->currentValue()->value(lengthContext));
+    SVGLengthContext lengthContext(&ellipse);
+    m_radii = FloatSize(ellipse.rx()->currentValue()->value(lengthContext), ellipse.ry()->currentValue()->value(lengthContext));
+    m_center = FloatPoint(ellipse.cx()->currentValue()->value(lengthContext), ellipse.cy()->currentValue()->value(lengthContext));
 }
 
 void RenderSVGEllipse::fillShape(GraphicsContext* context) const

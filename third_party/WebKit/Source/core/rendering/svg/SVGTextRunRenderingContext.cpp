@@ -198,7 +198,7 @@ GlyphData SVGTextRunRenderingContext::glyphDataForCharacter(const Font& font, co
             RenderObject* parentRenderObject = renderObject->isText() ? renderObject->parent() : renderObject;
             ASSERT(parentRenderObject);
             if (Element* parentRenderObjectElement = toElement(parentRenderObject->node())) {
-                if (parentRenderObjectElement->hasTagName(SVGNames::altGlyphTag))
+                if (isSVGAltGlyphElement(*parentRenderObjectElement))
                     glyphData.fontData = primaryFont;
             }
         }

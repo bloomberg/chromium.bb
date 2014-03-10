@@ -281,13 +281,13 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
             continue;
 
         WindRule newClipRule = style->svgStyle()->clipRule();
-        bool isUseElement = childElement->hasTagName(SVGNames::useTag);
+        bool isUseElement = isSVGUseElement(*childElement);
         if (isUseElement) {
-            SVGUseElement* useElement = toSVGUseElement(childElement);
-            renderer = useElement->rendererClipChild();
+            SVGUseElement& useElement = toSVGUseElement(*childElement);
+            renderer = useElement.rendererClipChild();
             if (!renderer)
                 continue;
-            if (!useElement->hasAttribute(SVGNames::clip_ruleAttr))
+            if (!useElement.hasAttribute(SVGNames::clip_ruleAttr))
                 newClipRule = renderer->style()->svgStyle()->clipRule();
         }
 
@@ -315,7 +315,7 @@ void RenderSVGResourceClipper::calculateClipContentRepaintRect()
         RenderObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
-        if (!renderer->isSVGShape() && !renderer->isSVGText() && !childElement->hasTagName(SVGNames::useTag))
+        if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))
             continue;
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
@@ -345,7 +345,7 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
         RenderObject* renderer = childElement->renderer();
         if (!renderer)
             continue;
-        if (!renderer->isSVGShape() && !renderer->isSVGText() && !childElement->hasTagName(SVGNames::useTag))
+        if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))
             continue;
         IntPoint hitPoint;
         HitTestResult result(hitPoint);

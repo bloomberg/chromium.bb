@@ -28,6 +28,7 @@
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGAElement.h"
 
 namespace WebCore {
 
@@ -36,9 +37,9 @@ bool RenderSVGInline::isChildAllowed(RenderObject* child, RenderStyle* style) co
     if (child->isText())
         return SVGRenderSupport::isRenderableTextNode(child);
 
-    if (node()->hasTagName(SVGNames::aTag)) {
+    if (isSVGAElement(*node())) {
         // Disallow direct descendant 'a'.
-        if (child->node()->hasTagName(SVGNames::aTag))
+        if (isSVGAElement(*child->node()))
             return false;
     }
 

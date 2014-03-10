@@ -26,6 +26,7 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGAltGlyphElement.h"
 
 namespace WebCore {
 
@@ -42,7 +43,8 @@ bool RenderSVGTSpan::isChildAllowed(RenderObject* child, RenderStyle*) const
 
 #if ENABLE(SVG_FONTS)
     // Only allow other types of  children if this is not an 'altGlyph'.
-    if (node()->hasTagName(SVGNames::altGlyphTag))
+    ASSERT(node());
+    if (isSVGAltGlyphElement(*node()))
         return false;
 #endif
 
