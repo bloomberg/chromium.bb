@@ -218,7 +218,6 @@ struct window {
 	struct rectangle min_allocation;
 	struct rectangle pending_allocation;
 	int x, y;
-	int resize_edges;
 	int redraw_needed;
 	int redraw_task_scheduled;
 	struct task redraw_task;
@@ -1363,7 +1362,7 @@ window_get_display(struct window *window)
 }
 
 static void
-surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
+surface_create_surface(struct surface *surface, uint32_t flags)
 {
 	struct display *display = surface->window->display;
 	struct rectangle allocation = surface->allocation;
@@ -1383,7 +1382,7 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 							 flags, &allocation);
 
 	surface->cairo_surface = surface->toysurface->prepare(
-		surface->toysurface, dx, dy,
+		surface->toysurface, 0, 0,
 		allocation.width, allocation.height, flags,
 		surface->buffer_transform, surface->buffer_scale);
 }
@@ -1393,8 +1392,6 @@ window_create_main_surface(struct window *window)
 {
 	struct surface *surface = window->main_surface;
 	uint32_t flags = 0;
-	int dx = 0;
-	int dy = 0;
 
 	if (window->resizing)
 		flags |= SURFACE_HINT_RESIZE;
@@ -1402,17 +1399,7 @@ window_create_main_surface(struct window *window)
 	if (window->preferred_format == WINDOW_PREFERRED_FORMAT_RGB565)
 		flags |= SURFACE_HINT_RGB565;
 
-	if (window->resize_edges & THEME_LOCATION_RESIZING_LEFT)
-		dx = surface->server_allocation.width -
-			surface->allocation.width;
-
-	if (window->resize_edges & THEME_LOCATION_RESIZING_TOP)
-		dy = surface->server_allocation.height -
-			surface->allocation.height;
-
-	window->resize_edges = 0;
-
-	surface_create_surface(surface, dx, dy, flags);
+	surface_create_surface(surface, flags);
 }
 
 int
@@ -1684,7 +1671,7 @@ widget_get_cairo_surface(struct widget *widget)
 		if (surface == window->main_surface)
 			window_create_main_surface(window);
 		else
-			surface_create_surface(surface, 0, 0, 0);
+			surface_create_surface(surface, 0);
 	}
 
 	return surface->cairo_surface;
