@@ -74,6 +74,36 @@ class MyObjectSubclass : public MyObject {
   }
 };
 
+class MyCallableObject : public Wrappable<MyCallableObject> {
+ public:
+  static WrapperInfo kWrapperInfo;
+
+  static gin::Handle<MyCallableObject> Create(v8::Isolate* isolate) {
+    return CreateHandle(isolate, new MyCallableObject());
+  }
+
+  int result() { return result_; }
+
+ private:
+  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) OVERRIDE {
+    return Wrappable<MyCallableObject>::GetObjectTemplateBuilder(isolate)
+        .SetCallAsFunctionHandler(&MyCallableObject::Call);
+  }
+
+  MyCallableObject() : result_(0) {
+  }
+
+  virtual ~MyCallableObject() {
+  }
+
+  void Call(int val) {
+    result_ = val;
+  }
+
+  int result_;
+};
+
 class MyObject2 : public Wrappable<MyObject2> {
  public:
   static WrapperInfo kWrapperInfo;
@@ -90,6 +120,7 @@ ObjectTemplateBuilder MyObject::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("value", &MyObject::value, &MyObject::set_value);
 }
 
+WrapperInfo MyCallableObject::kWrapperInfo = { kEmbedderNativeGin };
 WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
 WrapperInfo MyObjectBlink::kWrapperInfo = { kEmbedderNativeGin };
 
@@ -211,6 +242,29 @@ TEST_F(WrappableTest, ErrorInObjectConstructorProperty) {
   gin::Handle<MyObject> obj = MyObject::Create(isolate);
   EXPECT_TRUE(obj.IsEmpty());
   EXPECT_TRUE(try_catch.HasCaught());
+}
+
+TEST_F(WrappableTest, CallAsFunction) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  gin::Handle<MyCallableObject> object(MyCallableObject::Create(isolate));
+  EXPECT_EQ(0, object->result());
+  v8::Handle<v8::String> source = StringToV8(isolate,
+                                             "(function(obj) {"
+                                             "obj(42);"
+                                             "})");
+  gin::TryCatch try_catch;
+  v8::Handle<v8::Script> script = v8::Script::Compile(source);
+  v8::Handle<v8::Value> val = script->Run();
+  v8::Handle<v8::Function> func;
+  EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
+  v8::Handle<v8::Value> argv[] = {
+    ConvertToV8(isolate, object.get())
+  };
+  func->Call(v8::Undefined(isolate), 1, argv);
+  EXPECT_FALSE(try_catch.HasCaught());
+  EXPECT_EQ(42, object->result());
 }
 
 }  // namespace gin

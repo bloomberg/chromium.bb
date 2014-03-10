@@ -27,6 +27,11 @@ struct CallbackTraits {
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback));
   }
+  static void SetAsFunctionHandler(v8::Isolate* isolate,
+                                   v8::Local<v8::ObjectTemplate> tmpl,
+                                   T callback) {
+    CreateFunctionHandler(isolate, tmpl, base::Bind(callback));
+  }
 };
 
 // Specialization for base::Callback.
@@ -35,6 +40,11 @@ struct CallbackTraits<base::Callback<T> > {
   static v8::Handle<v8::FunctionTemplate> CreateTemplate(
       v8::Isolate* isolate, const base::Callback<T>& callback) {
     return CreateFunctionTemplate(isolate, callback);
+  }
+  static void SetAsFunctionHandler(v8::Isolate* isolate,
+                                   v8::Local<v8::ObjectTemplate> tmpl,
+                                   const base::Callback<T>& callback) {
+    CreateFunctionHandler(isolate, tmpl, callback);
   }
 };
 
@@ -49,6 +59,12 @@ struct CallbackTraits<T, typename base::enable_if<
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback),
                                   HolderIsFirstArgument);
+  }
+  static void SetAsFunctionHandler(v8::Isolate* isolate,
+                                   v8::Local<v8::ObjectTemplate> tmpl,
+                                   T callback) {
+    CreateFunctionHandler(
+        isolate, tmpl, base::Bind(callback), HolderIsFirstArgument);
   }
 };
 
@@ -102,6 +118,11 @@ class GIN_EXPORT ObjectTemplateBuilder {
     return SetPropertyImpl(name,
                            CallbackTraits<T>::CreateTemplate(isolate_, getter),
                            CallbackTraits<U>::CreateTemplate(isolate_, setter));
+  }
+  template<typename T>
+  ObjectTemplateBuilder& SetCallAsFunctionHandler(const T& callback) {
+    CallbackTraits<T>::SetAsFunctionHandler(isolate_, template_, callback);
+    return *this;
   }
 
   v8::Local<v8::ObjectTemplate> Build();
