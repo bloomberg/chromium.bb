@@ -106,16 +106,20 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
 
 // Creates an HMAC algorithm whose parameters struct is compatible with key
 // generation. It is an error to call this with a hash_id that is not a SHA*.
-// The key_length_bytes parameter is optional, with zero meaning unspecified.
+// The key_length_bits parameter is optional, with zero meaning unspecified.
 blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId hash_id,
-    unsigned int key_length_bytes) {
+    unsigned int key_length_bits) {
+#if !defined(WEBCRYPTO_HMAC_BITS)
+  // TODO(eroman): Delete
+  key_length_bits /= 8;
+#endif
   DCHECK(IsHashAlgorithm(hash_id));
   // key_length_bytes == 0 means unspecified
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdHmac,
       new blink::WebCryptoHmacKeyGenParams(
-          CreateAlgorithm(hash_id), (key_length_bytes != 0), key_length_bytes));
+          CreateAlgorithm(hash_id), (key_length_bits != 0), key_length_bits));
 }
 
 // Returns a slightly modified version of the input vector.
@@ -865,7 +869,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyHmac)) {
     blink::WebArrayBuffer key_bytes;
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
     blink::WebCryptoAlgorithm algorithm =
-        CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 64);
+        CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 512);
     ASSERT_STATUS_SUCCESS(GenerateSecretKey(algorithm, true, 0, &key));
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
