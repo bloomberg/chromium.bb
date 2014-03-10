@@ -57,23 +57,30 @@ class SyncTaskManager
   void Initialize(SyncStatusCode status);
 
   // Schedules a task at PRIORITY_MED.
-  void ScheduleTask(const Task& task,
+  void ScheduleTask(const tracked_objects::Location& from_here,
+                    const Task& task,
                     const SyncStatusCallback& callback);
-  void ScheduleSyncTask(scoped_ptr<SyncTask> task,
+  void ScheduleSyncTask(const tracked_objects::Location& from_here,
+                        scoped_ptr<SyncTask> task,
                         const SyncStatusCallback& callback);
 
   // Schedules a task at the given priority.
-  void ScheduleTaskAtPriority(const Task& task,
+  void ScheduleTaskAtPriority(const tracked_objects::Location& from_here,
+                              const Task& task,
                               Priority priority,
                               const SyncStatusCallback& callback);
-  void ScheduleSyncTaskAtPriority(scoped_ptr<SyncTask> task,
+  void ScheduleSyncTaskAtPriority(const tracked_objects::Location& from_here,
+                                  scoped_ptr<SyncTask> task,
                                   Priority priority,
                                   const SyncStatusCallback& callback);
 
   // Runs the posted task only when we're idle.  Returns true if tha task is
   // scheduled.
-  bool ScheduleTaskIfIdle(const Task& task, const SyncStatusCallback& callback);
-  bool ScheduleSyncTaskIfIdle(scoped_ptr<SyncTask> task,
+  bool ScheduleTaskIfIdle(const tracked_objects::Location& from_here,
+                          const Task& task,
+                          const SyncStatusCallback& callback);
+  bool ScheduleSyncTaskIfIdle(const tracked_objects::Location& from_here,
+                              scoped_ptr<SyncTask> task,
                               const SyncStatusCallback& callback);
 
   void NotifyTaskDone(scoped_ptr<TaskToken> token,

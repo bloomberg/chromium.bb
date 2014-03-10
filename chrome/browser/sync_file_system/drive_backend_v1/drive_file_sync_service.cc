@@ -151,6 +151,7 @@ void DriveFileSyncService::RegisterOrigin(
   pending_origin_operations_.Push(origin, OriginOperation::REGISTERING);
 
   task_manager_->ScheduleTaskAtPriority(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoRegisterOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
@@ -161,6 +162,7 @@ void DriveFileSyncService::EnableOrigin(
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::ENABLING);
   task_manager_->ScheduleTaskAtPriority(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoEnableOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
@@ -171,6 +173,7 @@ void DriveFileSyncService::DisableOrigin(
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::DISABLING);
   task_manager_->ScheduleTaskAtPriority(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoDisableOrigin, AsWeakPtr(), origin),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
@@ -182,6 +185,7 @@ void DriveFileSyncService::UninstallOrigin(
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::UNINSTALLING);
   task_manager_->ScheduleTaskAtPriority(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoUninstallOrigin, AsWeakPtr(),
                  origin, flag),
       SyncTaskManager::PRIORITY_HIGH,
@@ -191,6 +195,7 @@ void DriveFileSyncService::UninstallOrigin(
 void DriveFileSyncService::ProcessRemoteChange(
     const SyncFileCallback& callback) {
   task_manager_->ScheduleTask(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoProcessRemoteChange, AsWeakPtr(),
                  callback),
       base::Bind(&EmptyStatusCallback));
@@ -295,6 +300,7 @@ void DriveFileSyncService::GetRemoteVersions(
     const fileapi::FileSystemURL& url,
     const RemoteVersionsCallback& callback) {
   task_manager_->ScheduleTask(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoGetRemoteVersions, AsWeakPtr(),
                  url, callback),
       base::Bind(&EmptyStatusCallback));
@@ -305,6 +311,7 @@ void DriveFileSyncService::DownloadRemoteVersion(
     const std::string& version_id,
     const DownloadVersionCallback& callback) {
   task_manager_->ScheduleTask(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoDownloadRemoteVersion, AsWeakPtr(),
                  url, version_id, callback),
       base::Bind(&EmptyStatusCallback));
@@ -320,6 +327,7 @@ void DriveFileSyncService::ApplyLocalChange(
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleTask(
+      FROM_HERE,
       base::Bind(&DriveFileSyncService::DoApplyLocalChange, AsWeakPtr(),
                  local_file_change,
                  local_file_path,
@@ -1178,6 +1186,7 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
   if (!pending_batch_sync_origins_.empty()) {
     if (GetCurrentState() == REMOTE_SERVICE_OK || may_have_unfetched_changes_) {
       task_manager_->ScheduleTaskIfIdle(
+          FROM_HERE,
           base::Bind(&DriveFileSyncService::StartBatchSync, AsWeakPtr()),
           SyncStatusCallback());
     }
@@ -1187,6 +1196,7 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
   if (may_have_unfetched_changes_ &&
       !metadata_store_->incremental_sync_origins().empty()) {
     task_manager_->ScheduleTaskIfIdle(
+        FROM_HERE,
         base::Bind(&DriveFileSyncService::FetchChangesForIncrementalSync,
                    AsWeakPtr()),
         SyncStatusCallback());

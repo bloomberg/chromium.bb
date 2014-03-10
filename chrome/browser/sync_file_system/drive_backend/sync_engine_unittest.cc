@@ -278,6 +278,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
   EXPECT_EQ(REMOTE_SERVICE_OK, sync_engine()->GetCurrentState());
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_AUTHENTICATION_FAILED),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -285,6 +286,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_ACCESS_FORBIDDEN),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -292,6 +294,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -299,6 +302,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_NETWORK_ERROR),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -306,6 +310,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_ABORT),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -313,6 +318,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_STATUS_FAILED),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -320,6 +326,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_CORRUPTION),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -327,6 +334,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_DISABLED));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_IO_ERROR),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -334,6 +342,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_DISABLED));
 
   GetSyncEngineTaskManager()->ScheduleTask(
+      FROM_HERE,
       base::Bind(&EmptyTask, SYNC_DATABASE_ERROR_FAILED),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -341,6 +350,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_DISABLED));
 
   GetSyncEngineTaskManager()->ScheduleSyncTask(
+      FROM_HERE,
       scoped_ptr<SyncTask>(new MockSyncTask(false)),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),
@@ -348,6 +358,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  REMOTE_SERVICE_DISABLED));
 
   GetSyncEngineTaskManager()->ScheduleSyncTask(
+      FROM_HERE,
       scoped_ptr<SyncTask>(new MockSyncTask(true)),
       base::Bind(&SyncEngineTest::CheckServiceState,
                  AsWeakPtr(),

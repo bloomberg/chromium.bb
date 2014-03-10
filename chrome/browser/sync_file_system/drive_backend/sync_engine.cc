@@ -165,13 +165,17 @@ void SyncEngine::RegisterOrigin(
   }
 
   task_manager_->ScheduleSyncTaskAtPriority(
-      task.PassAs<SyncTask>(), SyncTaskManager::PRIORITY_HIGH, callback);
+      FROM_HERE,
+      task.PassAs<SyncTask>(),
+      SyncTaskManager::PRIORITY_HIGH,
+      callback);
 }
 
 void SyncEngine::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleTaskAtPriority(
+      FROM_HERE,
       base::Bind(&SyncEngine::DoEnableApp,
                  weak_ptr_factory_.GetWeakPtr(),
                  origin.host()),
@@ -183,6 +187,7 @@ void SyncEngine::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleTaskAtPriority(
+      FROM_HERE,
       base::Bind(&SyncEngine::DoDisableApp,
                  weak_ptr_factory_.GetWeakPtr(),
                  origin.host()),
@@ -195,6 +200,7 @@ void SyncEngine::UninstallOrigin(
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleSyncTaskAtPriority(
+      FROM_HERE,
       scoped_ptr<SyncTask>(new UninstallAppTask(this, origin.host(), flag)),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
@@ -204,6 +210,7 @@ void SyncEngine::ProcessRemoteChange(
     const SyncFileCallback& callback) {
   RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(this);
   task_manager_->ScheduleSyncTask(
+      FROM_HERE,
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidProcessRemoteChange,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -335,6 +342,7 @@ void SyncEngine::ApplyLocalChange(
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
       this, local_metadata, local_change, local_path, url);
   task_manager_->ScheduleSyncTask(
+      FROM_HERE,
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidApplyLocalChange,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -490,6 +498,7 @@ void SyncEngine::PostInitializeTask() {
                                 base_dir_.Append(kDatabaseName),
                                 env_override_);
   task_manager_->ScheduleSyncTaskAtPriority(
+      FROM_HERE,
       scoped_ptr<SyncTask>(initializer),
       SyncTaskManager::PRIORITY_HIGH,
       base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
@@ -576,6 +585,7 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
   if (syncer->needs_remote_change_listing() &&
       !listing_remote_changes_) {
     task_manager_->ScheduleSyncTaskAtPriority(
+        FROM_HERE,
         scoped_ptr<SyncTask>(new ListChangesTask(this)),
         SyncTaskManager::PRIORITY_HIGH,
         base::Bind(&SyncEngine::DidFetchChanges,
@@ -614,6 +624,7 @@ void SyncEngine::MaybeStartFetchChanges() {
     if (!metadata_database_->HasDirtyTracker() && should_check_conflict_) {
       should_check_conflict_ = false;
       task_manager_->ScheduleSyncTaskIfIdle(
+          FROM_HERE,
           scoped_ptr<SyncTask>(new ConflictResolver(this)),
           base::Bind(&SyncEngine::DidResolveConflict,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -622,6 +633,7 @@ void SyncEngine::MaybeStartFetchChanges() {
   }
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
+          FROM_HERE,
           scoped_ptr<SyncTask>(new ListChangesTask(this)),
           base::Bind(&SyncEngine::DidFetchChanges,
                      weak_ptr_factory_.GetWeakPtr()))) {
