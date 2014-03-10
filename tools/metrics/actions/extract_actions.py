@@ -161,7 +161,6 @@ def AddComputedActions(actions):
   for input_method_id in INPUT_METHOD_IDS:
     actions.add('LanguageOptions_DisableInputMethod_%s' % input_method_id)
     actions.add('LanguageOptions_EnableInputMethod_%s' % input_method_id)
-    actions.add('InputMethodOptions_Open_%s' % input_method_id)
   for language_code in LANGUAGE_CODES:
     actions.add('LanguageOptions_UiLanguageChange_%s' % language_code)
     actions.add('LanguageOptions_SpellCheckLanguageChange_%s' % language_code)

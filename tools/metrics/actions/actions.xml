@@ -3012,463 +3012,1291 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InputMethodOptions_Open_chewing">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_english-m">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_hangul">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:am:sera">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ar:kbd">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:bn:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:fa:isiri">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:gu:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:hi:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:kn:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ml:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:mr:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ta:inscript">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ta:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ta:phonetic">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ta:tamil99">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:ta:typewriter">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:te:itrans">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:th:kesmanee">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:th:pattachote">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:th:tis820">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:vi:tcvn">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:vi:telex">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:vi:viqr">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:vi:vni">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:zh:cangjie">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_m17n:zh:quick">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_mozc">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_mozc-chewing">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_mozc-dv">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_mozc-hangul">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_mozc-jp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_pinyin">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_pinyin-dv">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:am:phonetic:arm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:be::fra">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:be::ger">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:be::nld">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:bg::bul">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:bg:phonetic:bul">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:br::por">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:by::bel">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ca::fra">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ca:eng:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ca:multix:fra">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ch::ger">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ch:fr:fra">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:cz::cze">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:cz:qwerty:cze">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:de::ger">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:de:neo:ger">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:dk::dan">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ee::est">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:es::spa">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:es:cat:cat">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:fi::fin">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:fr::fra">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:gb:dvorak:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:gb:extd:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ge::geo">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:gr::gre">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:hr::scr">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:hu::hun">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:il::heb">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:is::ice">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:it::ita">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:jp::jpn">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:kr:kr104:kor">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:latam::spa">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:lt::lit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:lv::lav">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:lv:apostrophe:lav">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:mn::mon">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:nl::nld">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:no::nob">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:no::nor">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:pl::pol">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:pt::por">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ro::rum">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:rs::srp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ru::rus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ru:phonetic:rus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:se::swe">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:si::slv">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:sk::slo">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:tr::tur">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:ua::ukr">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:us::eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:us:altgr-intl:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:us:colemak:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:us:dvorak:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InputMethodOptions_Open_xkb:us:intl:eng">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>yukishiino@chromium.org</owner>
+  <owner>nona@chromium.org</owner>
+  <owner>uekawa@chromium.org</owner>
+  <owner>komatsu@chromium.org</owner>
+  <description>
+    Counts the number of times the input method configuration was opened.
+  </description>
+  <obsolete>
+    IMEs have since become extensions and no longer available as predetermined
+    list.
+  </obsolete>
 </action>
 
 <action name="InsertBacktab">
