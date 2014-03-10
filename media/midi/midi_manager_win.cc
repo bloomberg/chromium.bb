@@ -354,7 +354,7 @@ class MidiManagerWin::InDeviceInfo {
   base::TimeTicks start_time_;
   bool started_;
   bool device_to_be_closed_;
-  DISALLOW_COPY_AND_ASSIGN(MidiManagerWin::InDeviceInfo);
+  DISALLOW_COPY_AND_ASSIGN(InDeviceInfo);
 };
 
 class MidiManagerWin::OutDeviceInfo {
@@ -494,7 +494,7 @@ class MidiManagerWin::OutDeviceInfo {
   // True if the MidiManagerWin is trying to stop the sender thread.
   volatile bool quitting_;
 
-  DISALLOW_COPY_AND_ASSIGN(MidiManagerWin::OutDeviceInfo);
+  DISALLOW_COPY_AND_ASSIGN(OutDeviceInfo);
 };
 
 MidiManagerWin::MidiManagerWin()

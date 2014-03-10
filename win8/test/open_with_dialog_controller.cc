@@ -90,7 +90,7 @@ class OpenWithDialogController::Context {
   HRESULT automation_result_;
   std::vector<base::string16> automation_choices_;
   base::WeakPtrFactory<Context> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(OpenWithDialogController::Context);
+  DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
 OpenWithDialogController::Context::Context()
