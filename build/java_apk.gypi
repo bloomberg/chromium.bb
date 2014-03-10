@@ -46,8 +46,6 @@
 #    By default, the package given in AndroidManifest.xml will be used.
 #  java_strings_grd - The name of the grd file from which to generate localized
 #    strings.xml files, if any.
-#  library_manifest_paths'- Paths to additional AndroidManifest.xml files from
-#    libraries.
 #  use_chromium_linker - Enable the content dynamic linker that allows sharing the
 #    RELRO section of the native libraries between the different processes.
 #  enable_chromium_linker_tests - Enable the content dynamic linker test support
@@ -73,7 +71,6 @@
     'additional_res_packages': [],
     'is_test_apk%': 0,
     'java_strings_grd%': '',
-    'library_manifest_paths' : [],
     'resource_input_paths': [],
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',
@@ -109,7 +106,6 @@
     'push_stamp': '<(intermediate_dir)/push.stamp',
     'link_stamp': '<(intermediate_dir)/link.stamp',
     'package_resources_stamp': '<(intermediate_dir)/package_resources.stamp',
-    'codegen_input_paths': [],
     'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'incomplete_apk_path': '<(intermediate_dir)/<(apk_name)-incomplete.apk',
@@ -483,8 +479,6 @@
         '<(DEPTH)/build/android/gyp/ant.py',
         '<(android_manifest_path)',
         '>@(additional_input_paths)',
-        '>@(codegen_input_paths)',
-        '>@(library_manifest_paths)',
         '>@(resource_input_paths)',
       ],
       'outputs': [
@@ -501,7 +495,6 @@
         '-DANDROID_SDK_ROOT=<(android_sdk_root)',
         '-DANDROID_SDK_VERSION=<(android_sdk_version)',
         '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-        '-DLIBRARY_MANIFEST_PATHS=>(library_manifest_paths)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DRESOURCE_DIR=<(resource_dir)',
 
@@ -683,7 +676,6 @@
         '<(android_manifest_path)',
         '<(codegen_stamp)',
 
-        '>@(library_manifest_paths)',
         '>@(additional_input_paths)',
       ],
       'conditions': [

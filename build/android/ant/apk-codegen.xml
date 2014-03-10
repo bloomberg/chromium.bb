@@ -61,17 +61,6 @@
   <!-- Set to empty if not set by the loadresource above -->
   <property name="project.library.packages" value=""/>
 
-  <path id="project.library.manifest.file.path">
-    <filelist files="${LIBRARY_MANIFEST_PATHS}"/>
-  </path>
-
-  <!-- manifest merger default value -->
-  <condition property="manifestmerger.enabled"
-      value="false"
-      else="true">
-    <equals arg1="${LIBRARY_MANIFEST_PATHS}" arg2="" />
-  </condition>
-
   <property name="resource.absolute.dir" value="${RESOURCE_DIR}"/>
 
   <property name="manifest.file" value="${ANDROID_MANIFEST}" />
@@ -82,17 +71,8 @@
 
   <property name="aapt.ignore.assets" value="" />
 
-  <target name="-mergemanifest">
-      <mergemanifest
-              appManifest="${manifest.abs.file}"
-              outManifest="${out.manifest.abs.file}"
-              enabled="${manifestmerger.enabled}">
-        <library refid="project.library.manifest.file.path" />
-      </mergemanifest>
-  </target>
-
   <!-- Code Generation: compile resources (aapt -> R.java), aidl -->
-  <target name="-code-gen" depends="-mergemanifest">
+  <target name="-code-gen">
       <mkdir dir="${out.absolute.dir}" />
       <mkdir dir="${out.res.absolute.dir}" />
       <mkdir dir="${gen.absolute.dir}" />
