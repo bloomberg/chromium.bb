@@ -297,6 +297,8 @@
         '..',
       ],
       'sources': [
+        'browser/test_extensions_browser_client.cc',
+        'browser/test_extensions_browser_client.h',
         'browser/test_management_policy.cc',
         'browser/test_management_policy.h',
         'common/extension_builder.cc',

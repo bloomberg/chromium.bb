@@ -131,6 +131,13 @@ class ProcessManager : public content::NotificationObserver {
   void SetKeepaliveImpulseDecrementCallbackForTesting(
       const ImpulseCallbackForTesting& callback);
 
+  // Creates an incognito-context instance for tests. Tests for non-incognito
+  // contexts can just use Create() above.
+  static ProcessManager* CreateIncognitoForTesting(
+      content::BrowserContext* incognito_context,
+      content::BrowserContext* original_context,
+      ProcessManager* original_manager);
+
  protected:
   // If |context| is incognito pass the master context as |original_context|.
   // Otherwise pass the same context for both.

@@ -95,7 +95,8 @@ void OnRenderViewHostUnregistered(BrowserContext* context,
 class IncognitoProcessManager : public ProcessManager {
  public:
   IncognitoProcessManager(BrowserContext* incognito_context,
-                          BrowserContext* original_context);
+                          BrowserContext* original_context,
+                          ProcessManager* original_manager);
   virtual ~IncognitoProcessManager() {}
   virtual bool CreateBackgroundHost(const Extension* extension,
                                     const GURL& url) OVERRIDE;
@@ -189,10 +190,24 @@ ProcessManager* ProcessManager::Create(BrowserContext* context) {
 
   if (context->IsOffTheRecord()) {
     BrowserContext* original_context = client->GetOriginalContext(context);
-    return new IncognitoProcessManager(context, original_context);
+    ProcessManager* original_manager =
+        ExtensionSystem::Get(original_context)->process_manager();
+    return new IncognitoProcessManager(
+        context, original_context, original_manager);
   }
 
   return new ProcessManager(context, context);
+}
+
+// static
+ProcessManager* ProcessManager::CreateIncognitoForTesting(
+    BrowserContext* incognito_context,
+    BrowserContext* original_context,
+    ProcessManager* original_manager) {
+  DCHECK(incognito_context->IsOffTheRecord());
+  DCHECK(!original_context->IsOffTheRecord());
+  return new IncognitoProcessManager(
+      incognito_context, original_context, original_manager);
 }
 
 ProcessManager::ProcessManager(BrowserContext* context,
@@ -861,10 +876,10 @@ bool ProcessManager::DeferLoadingBackgroundHosts() const {
 
 IncognitoProcessManager::IncognitoProcessManager(
     BrowserContext* incognito_context,
-    BrowserContext* original_context)
+    BrowserContext* original_context,
+    ProcessManager* original_manager)
     : ProcessManager(incognito_context, original_context),
-      original_manager_(
-          ExtensionSystem::Get(original_context)->process_manager()) {
+      original_manager_(original_manager) {
   DCHECK(incognito_context->IsOffTheRecord());
 
   // The original profile will have its own ProcessManager to
