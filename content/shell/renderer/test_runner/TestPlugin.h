@@ -15,6 +15,10 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
+namespace blink {
+class WebFrame;
+}  // namespace blink
+
 namespace WebTestRunner {
 
 class WebTestDelegate;
