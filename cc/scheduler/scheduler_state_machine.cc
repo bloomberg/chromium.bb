@@ -1104,7 +1104,7 @@ void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
   }
 }
 
-void SchedulerStateMachine::FinishCommit() {
+void SchedulerStateMachine::NotifyReadyToCommit() {
   DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED) << *AsValue();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
 }

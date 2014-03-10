@@ -91,9 +91,9 @@ void Scheduler::SetMainThreadNeedsLayerTextures() {
   ProcessScheduledActions();
 }
 
-void Scheduler::FinishCommit() {
-  TRACE_EVENT0("cc", "Scheduler::FinishCommit");
-  state_machine_.FinishCommit();
+void Scheduler::NotifyReadyToCommit() {
+  TRACE_EVENT0("cc", "Scheduler::NotifyReadyToCommit");
+  state_machine_.NotifyReadyToCommit();
   ProcessScheduledActions();
 }
 

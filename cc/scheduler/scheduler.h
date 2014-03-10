@@ -81,7 +81,7 @@ class CC_EXPORT Scheduler {
 
   void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
 
-  void FinishCommit();
+  void NotifyReadyToCommit();
   void BeginMainFrameAborted(bool did_handle);
 
   void DidManageTiles();

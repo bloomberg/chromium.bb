@@ -199,7 +199,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction.
   // Indicates that all painting is complete.
-  void FinishCommit();
+  void NotifyReadyToCommit();
 
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction if the client rejects the BeginMainFrame message.

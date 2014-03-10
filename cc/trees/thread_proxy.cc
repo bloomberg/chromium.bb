@@ -1403,7 +1403,7 @@ void ThreadProxy::DidBeginImplFrameDeadline() {
 
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {
   DCHECK(IsImplThread());
-  impl().scheduler->FinishCommit();
+  impl().scheduler->NotifyReadyToCommit();
 }
 
 void ThreadProxy::DidCommitAndDrawFrame() {
