@@ -147,25 +147,25 @@ namespace {
 
 typedef void (NewSVGAnimatedPropertyBase::*NewSVGAnimatedPropertyMethod)();
 
-void invokeMethodOnAllTargetProperties(const SVGElementAnimatedPropertyList& list, const QualifiedName& attributeName, NewSVGAnimatedPropertyMethod method)
+void invokeMethodOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, NewSVGAnimatedPropertyMethod method)
 {
-    SVGElementAnimatedPropertyList::const_iterator it = list.begin();
-    SVGElementAnimatedPropertyList::const_iterator itEnd = list.end();
+    Vector<SVGElement*>::const_iterator it = list.begin();
+    Vector<SVGElement*>::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
-        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = it->element->propertyFromAttribute(attributeName);
+        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
         if (animatedProperty)
             (animatedProperty.get()->*method)();
     }
 }
 
-void setAnimatedValueOnAllTargetProperties(const SVGElementAnimatedPropertyList& list, const QualifiedName& attributeName, PassRefPtr<NewSVGPropertyBase> passValue)
+void setAnimatedValueOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, PassRefPtr<NewSVGPropertyBase> passValue)
 {
     RefPtr<NewSVGPropertyBase> value = passValue;
 
-    SVGElementAnimatedPropertyList::const_iterator it = list.begin();
-    SVGElementAnimatedPropertyList::const_iterator itEnd = list.end();
+    Vector<SVGElement*>::const_iterator it = list.begin();
+    Vector<SVGElement*>::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
-        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = it->element->propertyFromAttribute(attributeName);
+        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
         if (animatedProperty)
             animatedProperty->setAnimatedValue(value);
     }
@@ -173,7 +173,7 @@ void setAnimatedValueOnAllTargetProperties(const SVGElementAnimatedPropertyList&
 
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimation(const SVGElementAnimatedPropertyList& list)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimation(const Vector<SVGElement*>& list)
 {
     ASSERT(isAnimatingSVGDom());
     RefPtr<NewSVGPropertyBase> animatedValue = m_animatedProperty->createAnimatedValue();
@@ -183,7 +183,7 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimation(co
     return animatedValue.release();
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList& list)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::startAnimValAnimation(const Vector<SVGElement*>& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
@@ -193,7 +193,7 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::startAnimValAnima
     return resetAnimation(list);
 }
 
-void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const SVGElementAnimatedPropertyList& list)
+void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const Vector<SVGElement*>& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
@@ -201,7 +201,7 @@ void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const SVGElementAnimat
     invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationEnded);
 }
 
-PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList& list)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimValToBaseVal(const Vector<SVGElement*>& list)
 {
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 

@@ -48,15 +48,15 @@ public:
     // SVGAnimatedTypeAnimator:
     virtual PassRefPtr<NewSVGPropertyBase> constructFromString(const String&) OVERRIDE;
 
-    virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const Vector<SVGElement*>&) OVERRIDE;
+    virtual void stopAnimValAnimation(const Vector<SVGElement*>&) OVERRIDE;
+    virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const Vector<SVGElement*>&) OVERRIDE;
 
     virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*) OVERRIDE;
     virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;
 
 private:
-    PassRefPtr<NewSVGPropertyBase> resetAnimation(const SVGElementAnimatedPropertyList&);
+    PassRefPtr<NewSVGPropertyBase> resetAnimation(const Vector<SVGElement*>&);
 
     bool isAnimatingSVGDom() const { return m_animatedProperty; }
     bool isAnimatingCSSProperty() const { return !m_animatedProperty; }

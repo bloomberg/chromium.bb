@@ -30,7 +30,6 @@
 
 namespace WebCore {
 
-class SVGAnimatedProperty;
 class SVGAnimatedTypeAnimator;
 
 class SVGAnimateElement : public SVGAnimationElement {
@@ -69,7 +68,7 @@ private:
     RefPtr<NewSVGPropertyBase> m_toAtEndOfDurationProperty;
     RefPtr<NewSVGPropertyBase> m_animatedProperty;
 
-    SVGElementAnimatedPropertyList m_animatedProperties;
+    Vector<SVGElement*> m_animatedElements;
     OwnPtr<SVGAnimatedTypeAnimator> m_animator;
 };
 

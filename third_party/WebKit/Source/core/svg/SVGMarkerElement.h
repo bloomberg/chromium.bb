@@ -61,8 +61,6 @@ public:
     void setOrientToAuto();
     void setOrientToAngle(PassRefPtr<SVGAngleTearOff>);
 
-    static const SVGPropertyInfo* orientTypePropertyInfo();
-
     SVGAnimatedLength* refX() const { return m_refX.get(); }
     SVGAnimatedLength* refY() const { return m_refY.get(); }
     SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }

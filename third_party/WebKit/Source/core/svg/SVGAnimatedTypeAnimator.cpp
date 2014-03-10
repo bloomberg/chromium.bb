@@ -25,15 +25,6 @@
 
 namespace WebCore {
 
-SVGElementAnimatedProperties::SVGElementAnimatedProperties()
-    : element(0)
-{ }
-
-SVGElementAnimatedProperties::SVGElementAnimatedProperties(SVGElement* element, Vector<RefPtr<SVGAnimatedProperty> >& properties)
-    : element(element)
-    , properties(properties)
-{ }
-
 SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(AnimatedPropertyType type, SVGAnimationElement* animationElement, SVGElement* contextElement)
     : m_type(type)
     , m_animationElement(animationElement)
@@ -58,57 +49,6 @@ void SVGAnimatedTypeAnimator::calculateFromAndByValues(RefPtr<NewSVGPropertyBase
     from = constructFromString(fromString);
     to = constructFromString(byString);
     to->add(from, m_contextElement);
-}
-
-static bool supportsAnimVal(AnimatedPropertyType type)
-{
-    // AnimatedColor is only used for CSS property animations.
-    return type != AnimatedUnknown && type != AnimatedColor;
-}
-
-SVGElementAnimatedPropertyList SVGAnimatedTypeAnimator::findAnimatedPropertiesForAttributeName(SVGElement* targetElement, const QualifiedName& attributeName)
-{
-    ASSERT(targetElement);
-
-    SVGElementAnimatedPropertyList propertiesByInstance;
-
-    Vector<RefPtr<SVGAnimatedProperty> > targetProperties;
-
-    if (!supportsAnimVal(m_type))
-        return SVGElementAnimatedPropertyList();
-
-    SVGElementAnimatedProperties propertiesPair(targetElement, targetProperties);
-    propertiesByInstance.append(propertiesPair);
-
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        SVGElement* shadowTreeElement = (*it)->shadowTreeElement();
-        if (!shadowTreeElement)
-            continue;
-
-        Vector<RefPtr<SVGAnimatedProperty> > instanceProperties;
-        // FIXME: This |instanceProperties| is not used, so it is OK to pass empty vector here.
-        //        This will be removed in further refactoring.
-        SVGElementAnimatedProperties instancePropertiesPair(shadowTreeElement, instanceProperties);
-        propertiesByInstance.append(instancePropertiesPair);
-    }
-
-#if !ASSERT_DISABLED
-    SVGElementAnimatedPropertyList::const_iterator propertiesEnd = propertiesByInstance.end();
-    for (SVGElementAnimatedPropertyList::const_iterator it = propertiesByInstance.begin(); it != propertiesEnd; ++it) {
-        size_t propertiesSize = it->properties.size();
-        for (size_t i = 0; i < propertiesSize; ++i) {
-            RefPtr<SVGAnimatedProperty> property = it->properties[i];
-            if (property->animatedPropertyType() != m_type) {
-                ASSERT(m_type == AnimatedAngle);
-                ASSERT(property->animatedPropertyType() == AnimatedEnumeration);
-            }
-        }
-    }
-#endif
-
-    return propertiesByInstance;
 }
 
 }

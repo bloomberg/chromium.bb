@@ -21,23 +21,16 @@
 #ifndef SVGAnimatedTypeAnimator_h
 #define SVGAnimatedTypeAnimator_h
 
-#include "core/svg/SVGElementInstance.h"
-#include "core/svg/properties/NewSVGProperty.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg/properties/SVGPropertyInfo.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-struct SVGElementAnimatedProperties {
-    SVGElementAnimatedProperties();
-
-    SVGElementAnimatedProperties(SVGElement*, Vector<RefPtr<SVGAnimatedProperty> >&);
-
-    SVGElement* element;
-    Vector<RefPtr<SVGAnimatedProperty> > properties;
-};
-typedef Vector<SVGElementAnimatedProperties> SVGElementAnimatedPropertyList;
-
+class NewSVGPropertyBase;
+class SVGElement;
 class SVGAnimationElement;
 
 class SVGAnimatedTypeAnimator {
@@ -46,9 +39,9 @@ public:
     virtual ~SVGAnimatedTypeAnimator();
     virtual PassRefPtr<NewSVGPropertyBase> constructFromString(const String&) = 0;
 
-    virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const SVGElementAnimatedPropertyList&) = 0;
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) = 0;
-    virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&) = 0;
+    virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const Vector<SVGElement*>&) = 0;
+    virtual void stopAnimValAnimation(const Vector<SVGElement*>&) = 0;
+    virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const Vector<SVGElement*>&) = 0;
 
     virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*) = 0;
     virtual float calculateDistance(const String& fromString, const String& toString) = 0;
@@ -58,8 +51,6 @@ public:
 
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
-
-    SVGElementAnimatedPropertyList findAnimatedPropertiesForAttributeName(SVGElement*, const QualifiedName&);
 
 protected:
     SVGAnimatedTypeAnimator(AnimatedPropertyType, SVGAnimationElement*, SVGElement*);

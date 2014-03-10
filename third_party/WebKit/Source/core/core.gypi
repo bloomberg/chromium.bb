@@ -3196,8 +3196,6 @@
             'svg/graphics/filters/SVGFilterBuilder.h',
             'svg/properties/NewSVGAnimatedProperty.cpp',
             'svg/properties/NewSVGPropertyTearOff.cpp',
-            'svg/properties/SVGAnimatedProperty.cpp',
-            'svg/properties/SVGAnimatedProperty.h',
         ],
         'webcore_testing_idl_files': [
           'testing/GCObservation.idl',

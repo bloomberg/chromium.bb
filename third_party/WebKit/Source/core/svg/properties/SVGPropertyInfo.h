@@ -20,18 +20,7 @@
 #ifndef SVGPropertyInfo_h
 #define SVGPropertyInfo_h
 
-#include "core/dom/QualifiedName.h"
-#include "wtf/PassRefPtr.h"
-
 namespace WebCore {
-
-class SVGAnimatedProperty;
-class SVGElement;
-
-enum AnimatedPropertyState {
-    PropertyIsReadWrite,
-    PropertyIsReadOnly
-};
 
 enum AnimatedPropertyType {
     AnimatedAngle,
@@ -55,32 +44,6 @@ enum AnimatedPropertyType {
     AnimatedTransform,
     AnimatedTransformList,
     AnimatedUnknown
-};
-
-struct SVGPropertyInfo {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    typedef void (*SynchronizeProperty)(SVGElement*);
-    typedef PassRefPtr<SVGAnimatedProperty> (*LookupOrCreateWrapperForAnimatedProperty)(SVGElement*);
-
-    SVGPropertyInfo(AnimatedPropertyType newType, AnimatedPropertyState newState, const QualifiedName& newAttributeName,
-                    const AtomicString& newPropertyIdentifier, SynchronizeProperty newSynchronizeProperty,
-                    LookupOrCreateWrapperForAnimatedProperty newLookupOrCreateWrapperForAnimatedProperty)
-        : animatedPropertyType(newType)
-        , animatedPropertyState(newState)
-        , attributeName(newAttributeName)
-        , propertyIdentifier(newPropertyIdentifier)
-        , synchronizeProperty(newSynchronizeProperty)
-        , lookupOrCreateWrapperForAnimatedProperty(newLookupOrCreateWrapperForAnimatedProperty)
-    {
-    }
-
-    AnimatedPropertyType animatedPropertyType;
-    AnimatedPropertyState animatedPropertyState;
-    const QualifiedName& attributeName;
-    const AtomicString& propertyIdentifier;
-    SynchronizeProperty synchronizeProperty;
-    LookupOrCreateWrapperForAnimatedProperty lookupOrCreateWrapperForAnimatedProperty;
 };
 
 }

@@ -30,7 +30,6 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 
 namespace WebCore {
 
