@@ -38,19 +38,90 @@
 
 namespace WebCore {
 
+class DirectoryReader::EntriesCallbackHelper : public EntriesCallback {
+public:
+    EntriesCallbackHelper(PassRefPtr<DirectoryReader> reader)
+        : m_reader(reader)
+    {
+    }
+
+    virtual void handleEvent(const Vector<RefPtr<Entry> >& entries) OVERRIDE
+    {
+        m_reader->addEntries(entries);
+    }
+
+private:
+    // FIXME: This RefPtr keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
+    RefPtr<DirectoryReader> m_reader;
+};
+
+class DirectoryReader::ErrorCallbackHelper : public ErrorCallback {
+public:
+    ErrorCallbackHelper(PassRefPtr<DirectoryReader> reader)
+        : m_reader(reader)
+    {
+    }
+
+    virtual void handleEvent(FileError* error) OVERRIDE
+    {
+        m_reader->onError(error);
+    }
+
+private:
+    RefPtr<DirectoryReader> m_reader;
+};
+
 DirectoryReader::DirectoryReader(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
+    , m_isReading(false)
 {
     ScriptWrappable::init(this);
 }
 
 void DirectoryReader::readEntries(PassOwnPtr<EntriesCallback> entriesCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
-    if (!m_hasMoreEntries) {
-        filesystem()->scheduleCallback(entriesCallback, EntryVector());
+    if (!m_isReading) {
+        m_isReading = true;
+        filesystem()->readDirectory(this, m_fullPath, adoptPtr(new EntriesCallbackHelper(this)), adoptPtr(new ErrorCallbackHelper(this)));
+    }
+
+    if (m_error) {
+        filesystem()->scheduleCallback(errorCallback, m_error.get());
         return;
     }
-    filesystem()->readDirectory(this, m_fullPath, entriesCallback, errorCallback);
+
+    if (m_entriesCallback) {
+        // Non-null m_entriesCallback means multiple readEntries() calls are made concurrently. We don't allow doing it.
+        filesystem()->scheduleCallback(errorCallback, FileError::create(FileError::INVALID_STATE_ERR));
+        return;
+    }
+
+    if (!m_hasMoreEntries || !m_entries.isEmpty()) {
+        filesystem()->scheduleCallback(entriesCallback, m_entries);
+        m_entries.clear();
+        return;
+    }
+
+    m_entriesCallback = entriesCallback;
+    m_errorCallback = errorCallback;
+}
+
+void DirectoryReader::addEntries(const Vector<RefPtr<Entry> >& entries)
+{
+    m_entries.appendVector(entries);
+    if (m_entriesCallback) {
+        OwnPtr<EntriesCallback> entriesCallback = m_entriesCallback.release();
+        Vector<RefPtr<Entry> > entries;
+        entries.swap(m_entries);
+        entriesCallback->handleEvent(entries);
+    }
+}
+
+void DirectoryReader::onError(FileError* error)
+{
+    m_error = error;
+    if (m_errorCallback)
+        m_errorCallback->handleEvent(error);
 }
 
 }

@@ -36,6 +36,9 @@
 #include "WebFileSystemType.h"
 #include "WebURL.h"
 
+// FIXME: Remove this #define.
+#define READ_DIRECTORY_RETURNS_INT
+
 namespace blink {
 
 class WebFileWriter;
@@ -133,10 +136,10 @@ public:
     // WebFileSystemCallbacks::didFail() must be called otherwise.
     virtual void directoryExists(const WebURL& path, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); }
 
-    // Reads directory entries of a given directory at |path|.
+    // Reads directory entries of a given directory at |path| and returns a callbacks ID which can be used to wait for additional results.
     // WebFileSystemCallbacks::didReadDirectory() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
-    virtual void readDirectory(const WebURL& path, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual int readDirectory(const WebURL& path, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); return 0; }
 
     // Creates a WebFileWriter that can be used to write to the given file.
     // WebFileSystemCallbacks::didCreateFileWriter() must be called with the created WebFileWriter when the operation is completed successfully.
@@ -152,6 +155,11 @@ public:
     // WebFileSystemCallbacks::didCreateSnapshotFile() with the metadata of the snapshot file must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
     virtual void createSnapshotFileAndReadMetadata(const WebURL& path, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Waits for additional results returned for the method call and returns true if possible.
+    // Returns false if there is no running method call corresponding for the given ID.
+    // |callbacksId| must be the value returned by the original method call.
+    virtual bool waitForAdditionalResult(int callbacksId) { BLINK_ASSERT_NOT_REACHED(); return false; }
 
 protected:
     virtual ~WebFileSystem() { }

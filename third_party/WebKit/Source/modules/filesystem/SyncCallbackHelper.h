@@ -36,7 +36,6 @@
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/DirectoryReaderSync.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/EntrySync.h"
@@ -57,22 +56,6 @@ struct HelperResultType {
     static ReturnType createFromCallbackArg(CallbackArg argument)
     {
         return ResultType::create(argument);
-    }
-};
-
-template <>
-struct HelperResultType<EntrySyncVector, const EntryVector&> {
-    typedef EntrySyncVector ReturnType;
-    typedef EntrySyncVector StorageType;
-
-    static EntrySyncVector createFromCallbackArg(const EntryVector& entries)
-    {
-        EntrySyncVector result;
-        size_t entryCount = entries.size();
-        result.reserveInitialCapacity(entryCount);
-        for (size_t i = 0; i < entryCount; ++i)
-            result.uncheckedAppend(EntrySync::create(entries[i].get()));
-        return result;
     }
 };
 
@@ -175,7 +158,6 @@ struct EmptyType : public RefCounted<EmptyType> {
 };
 
 typedef SyncCallbackHelper<EntryCallback, Entry*, EntrySync> EntrySyncCallbackHelper;
-typedef SyncCallbackHelper<EntriesCallback, const EntryVector&, EntrySyncVector> EntriesSyncCallbackHelper;
 typedef SyncCallbackHelper<MetadataCallback, Metadata*, Metadata> MetadataSyncCallbackHelper;
 typedef SyncCallbackHelper<VoidCallback, EmptyType*, EmptyType> VoidSyncCallbackHelper;
 typedef SyncCallbackHelper<FileSystemCallback, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
