@@ -32,6 +32,7 @@
 #include "WorkerPermissionClient.h"
 
 #include "core/workers/WorkerGlobalScope.h"
+#include "public/platform/WebPermissionCallbacks.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
 #include "wtf/PassOwnPtr.h"
@@ -61,6 +62,16 @@ bool WorkerPermissionClient::allowFileSystem()
     if (!m_proxy)
         return true;
     return m_proxy->allowFileSystem();
+}
+
+void WorkerPermissionClient::requestFileSystemAccess(const WebPermissionCallbacks& callbacks)
+{
+    if (!m_proxy) {
+        WebPermissionCallbacks permissionCallbacks(callbacks);
+        permissionCallbacks.doAllow();
+        return;
+    }
+    m_proxy->requestFileSystemAccess(callbacks);
 }
 
 bool WorkerPermissionClient::allowIndexedDB(const WebString& name)

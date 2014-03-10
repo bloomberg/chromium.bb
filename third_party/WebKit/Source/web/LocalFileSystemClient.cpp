@@ -35,7 +35,9 @@
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/PermissionCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebPermissionCallbacks.h"
 #include "public/web/WebPermissionClient.h"
 #include "wtf/text/WTFString.h"
 
@@ -62,6 +64,23 @@ bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
     }
     ASSERT(context->isWorkerGlobalScope());
     return WorkerPermissionClient::from(*toWorkerGlobalScope(context))->allowFileSystem();
+}
+
+void LocalFileSystemClient::requestFileSystemAccess(ExecutionContext* context, PassOwnPtr<WebCore::PermissionCallbacks> callbacks)
+{
+    ASSERT(context);
+    if (context->isDocument()) {
+        Document* document = toDocument(context);
+        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+        if (!webFrame->permissionClient()) {
+            callbacks->onAllowed();
+            return;
+        }
+        webFrame->permissionClient()->requestFileSystemAccess(webFrame, callbacks);
+        return;
+    }
+    ASSERT(context->isWorkerGlobalScope());
+    WorkerPermissionClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccess(callbacks);
 }
 
 LocalFileSystemClient::LocalFileSystemClient()

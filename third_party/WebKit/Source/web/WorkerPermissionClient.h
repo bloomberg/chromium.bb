@@ -41,6 +41,7 @@ class ExecutionContext;
 namespace blink {
 
 class WebFrame;
+class WebPermissionCallbacks;
 class WebString;
 class WebWorkerPermissionClientProxy;
 
@@ -52,6 +53,7 @@ public:
 
     bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize);
     bool allowFileSystem();
+    void requestFileSystemAccess(const WebPermissionCallbacks&);
     bool allowIndexedDB(const WebString& name);
 
     static const char* supplementName();

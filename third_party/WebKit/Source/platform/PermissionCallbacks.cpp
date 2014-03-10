@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,27 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LocalFileSystemClient_h
-#define LocalFileSystemClient_h
+#include "config.h"
 
-#include "modules/filesystem/FileSystemClient.h"
-#include "wtf/Forward.h"
+#include "platform/PermissionCallbacks.h"
 
-namespace blink {
+namespace WebCore {
 
-class LocalFileSystemClient FINAL : public WebCore::FileSystemClient {
-public:
-    static PassOwnPtr<FileSystemClient> create();
+PassOwnPtr<PermissionCallbacks> PermissionCallbacks::create(const Closure& allowed, const Closure& denied)
+{
+    return adoptPtr(new PermissionCallbacks(allowed, denied));
+}
 
-    virtual ~LocalFileSystemClient();
+PermissionCallbacks::PermissionCallbacks(const Closure& allowed, const Closure& denied)
+    : m_allowed(allowed)
+    , m_denied(denied)
+{
+}
 
-    virtual bool allowFileSystem(WebCore::ExecutionContext*) OVERRIDE;
-    virtual void requestFileSystemAccess(WebCore::ExecutionContext*, PassOwnPtr<WebCore::PermissionCallbacks>) OVERRIDE;
-
-private:
-    LocalFileSystemClient();
-};
-
-} // namespace blink
-
-#endif // LocalFileSystemClient_h
+} // namespace WebCore

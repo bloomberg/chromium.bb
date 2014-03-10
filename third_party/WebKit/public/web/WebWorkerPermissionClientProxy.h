@@ -31,8 +31,11 @@
 #ifndef WebWorkerPermissionClientProxy_h
 #define WebWorkerPermissionClientProxy_h
 
+#include "public/platform/WebPermissionCallbacks.h"
+
 namespace blink {
 
+class WebPermissionCallbacks;
 class WebString;
 
 // Proxy interface to talk to the document's PermissionClient implementation.
@@ -48,9 +51,17 @@ public:
         return true;
     }
 
+    // FIXME: This is going away once requestFileSystemAccess has been wired
+    // out into the Blink embedder.
     virtual bool allowFileSystem()
     {
         return true;
+    }
+
+    virtual void requestFileSystemAccess(const WebPermissionCallbacks& callbacks)
+    {
+        WebPermissionCallbacks permissionCallbacks(callbacks);
+        permissionCallbacks.doAllow();
     }
 
     virtual bool allowIndexedDB(const WebString& name)

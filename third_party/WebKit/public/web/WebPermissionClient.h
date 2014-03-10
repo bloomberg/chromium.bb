@@ -35,6 +35,7 @@ namespace blink {
 
 class WebDocument;
 class WebFrame;
+class WebPermissionCallbacks;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
@@ -46,6 +47,8 @@ public:
 
     // Controls whether access to File System is allowed for this frame.
     virtual bool allowFileSystem(WebFrame*) { return true; }
+
+    virtual void requestFileSystemAccess(WebFrame* frame, const WebPermissionCallbacks& callbacks) { }
 
     // Controls whether images are allowed for this frame.
     virtual bool allowImage(WebFrame* frame, bool enabledPerSettings, const WebURL& imageURL) { return enabledPerSettings; }
