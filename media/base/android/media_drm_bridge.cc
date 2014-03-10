@@ -187,11 +187,16 @@ bool MediaDrmBridge::IsAvailable() {
 
 // static
 bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
+  DCHECK(IsAvailable());
   return SECURITY_LEVEL_1 == security_level;
 }
 
+// static
 bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
                                               SecurityLevel security_level) {
+  if (!IsAvailable())
+    return false;
+
   // Pass 0 as |cdm_id| and NULL as |manager| as they are not used in
   // creation time of MediaDrmBridge.
   scoped_ptr<MediaDrmBridge> media_drm_bridge =
@@ -202,9 +207,13 @@ bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
   return media_drm_bridge->SetSecurityLevel(security_level);
 }
 
+// static
 bool MediaDrmBridge::IsKeySystemSupportedWithType(
     const std::string& key_system,
     const std::string& container_mime_type) {
+  if (!IsAvailable())
+    return false;
+
   std::vector<uint8> scheme_uuid = GetUUID(key_system);
   if (scheme_uuid.empty())
     return false;

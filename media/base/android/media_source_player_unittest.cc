@@ -17,8 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/android/surface_texture.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
-
 namespace media {
 
 // Helper macro to skip the test if MediaCodecBridge isn't available.
@@ -32,17 +30,10 @@ namespace media {
 
 const int kDefaultDurationInMs = 10000;
 
-const char kAudioMp4[] = "audio/mp4";
-const char kVideoMp4[] = "video/mp4";
-const char kAudioWebM[] = "audio/webm";
-const char kVideoWebM[] = "video/webm";
-const MediaDrmBridge::SecurityLevel kL1 = MediaDrmBridge::SECURITY_LEVEL_1;
-const MediaDrmBridge::SecurityLevel kL3 = MediaDrmBridge::SECURITY_LEVEL_3;
-
 // TODO(wolenetz/qinmin): Simplify tests with more effective mock usage, and
 // fix flaky pointer-based MDJ inequality testing. See http://crbug.com/327839.
 
-// Mock of MediaPlayerManager for testing purpose
+// Mock of MediaPlayerManager for testing purpose.
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
   explicit MockMediaPlayerManager(base::MessageLoop* message_loop)
@@ -732,14 +723,6 @@ class MediaSourcePlayerTest : public testing::Test {
 
   base::TimeTicks StartTimeTicks() {
     return player_.start_time_ticks_;
-  }
-
-  bool IsTypeSupported(const std::string& key_system,
-                       MediaDrmBridge::SecurityLevel security_level,
-                       const std::string& container,
-                       const std::vector<std::string>& codecs) {
-    return MediaSourcePlayer::IsTypeSupported(
-        key_system, security_level, container, codecs);
   }
 
   base::MessageLoop message_loop_;
@@ -2077,71 +2060,5 @@ TEST_F(MediaSourcePlayerTest, SurfaceChangeClearedEvenIfMediaCryptoAbsent) {
   EXPECT_FALSE(IsPendingSurfaceChange());
   EXPECT_FALSE(GetMediaDecoderJob(false));
 }
-
-// TODO(xhwang): Enable this test when the test devices are updated.
-TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
-  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
-    VLOG(0) << "Could not run test - not supported on device.";
-    return;
-  }
-
-  // We test "L3" fully. But for "L1" we don't check the result as it depend on
-  // whether the test device supports "L1" decoding.
-
-  std::vector<std::string> codec_avc(1, "avc1");
-  std::vector<std::string> codec_aac(1, "mp4a");
-  std::vector<std::string> codec_avc_aac(1, "avc1");
-  codec_avc_aac.push_back("mp4a");
-
-  EXPECT_TRUE(IsTypeSupported(kWidevineKeySystem, kL3, kVideoMp4, codec_avc));
-  IsTypeSupported(kWidevineKeySystem, kL1, kVideoMp4, codec_avc);
-
-  // TODO(xhwang): L1/L3 doesn't apply to audio, so the result is messy.
-  // Clean this up after we have a solution to specifying decoding mode.
-  EXPECT_TRUE(IsTypeSupported(kWidevineKeySystem, kL3, kAudioMp4, codec_aac));
-  IsTypeSupported(kWidevineKeySystem, kL1, kAudioMp4, codec_aac);
-
-  EXPECT_TRUE(
-      IsTypeSupported(kWidevineKeySystem, kL3, kVideoMp4, codec_avc_aac));
-  IsTypeSupported(kWidevineKeySystem, kL1, kVideoMp4, codec_avc_aac);
-
-  std::vector<std::string> codec_vp8(1, "vp8");
-  std::vector<std::string> codec_vorbis(1, "vorbis");
-  std::vector<std::string> codec_vp8_vorbis(1, "vp8");
-  codec_vp8_vorbis.push_back("vorbis");
-
-  // TODO(xhwang): WebM is actually not supported but currently
-  // MediaDrmBridge.IsKeySystemSupportedWithType() doesn't check the container
-  // type.
-  // Fix IsKeySystemSupportedWithType() and update this test as necessary.
-  EXPECT_TRUE(IsTypeSupported(kWidevineKeySystem, kL3, kVideoWebM, codec_vp8));
-  IsTypeSupported(kWidevineKeySystem, kL1, kVideoWebM, codec_vp8);
-
-  // TODO(xhwang): L1/L3 doesn't apply to audio, so the result is messy.
-  // Clean this up after we have a solution to specifying decoding mode.
-  EXPECT_TRUE(
-      IsTypeSupported(kWidevineKeySystem, kL3, kAudioWebM, codec_vorbis));
-  IsTypeSupported(kWidevineKeySystem, kL1, kAudioWebM, codec_vorbis);
-
-  EXPECT_TRUE(
-      IsTypeSupported(kWidevineKeySystem, kL3, kVideoWebM, codec_vp8_vorbis));
-  IsTypeSupported(kWidevineKeySystem, kL1, kVideoWebM, codec_vp8_vorbis);
-}
-
-TEST_F(MediaSourcePlayerTest, IsTypeSupported_InvalidKeySystem) {
-  if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {
-    VLOG(0) << "Could not run test - not supported on device.";
-    return;
-  }
-
-  const char kInvalidKeySystem[] = "invalid.keysystem";
-
-  std::vector<std::string> codec_avc(1, "avc1");
-  EXPECT_FALSE(IsTypeSupported(kInvalidKeySystem, kL3, kVideoMp4, codec_avc));
-  EXPECT_FALSE(IsTypeSupported(kInvalidKeySystem, kL1, kVideoMp4, codec_avc));
-}
-
-// TODO(xhwang): Are these IsTypeSupported tests device specific?
-// TODO(xhwang): Add more IsTypeSupported tests.
 
 }  // namespace media
