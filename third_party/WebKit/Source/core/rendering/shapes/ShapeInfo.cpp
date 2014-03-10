@@ -62,6 +62,13 @@ static void getShapeImageAndRect(const ShapeValue* shapeValue, const RenderBox* 
         rect = LayoutRect(LayoutPoint(), imageSize);
 }
 
+static LayoutRect getShapeImageMarginRect(const RenderBox& renderBox, const LayoutSize& referenceBoxLogicalSize)
+{
+    LayoutPoint marginBoxOrigin(-renderBox.marginLogicalLeft() - renderBox.borderAndPaddingLogicalLeft(), -renderBox.marginBefore() - renderBox.borderBefore() - renderBox.paddingBefore());
+    LayoutSize marginBoxSizeDelta(renderBox.marginLogicalWidth() + renderBox.borderAndPaddingLogicalWidth(), renderBox.marginLogicalHeight() + renderBox.borderAndPaddingLogicalHeight());
+    return LayoutRect(marginBoxOrigin, referenceBoxLogicalSize + marginBoxSizeDelta);
+}
+
 template<class RenderType>
 const Shape& ShapeInfo<RenderType>::computedShape() const
 {
@@ -82,9 +89,10 @@ const Shape& ShapeInfo<RenderType>::computedShape() const
         break;
     case ShapeValue::Image: {
         Image* image;
-        LayoutRect rect;
-        getShapeImageAndRect(shapeValue, &m_renderer, m_referenceBoxLogicalSize, image, rect);
-        m_shape = Shape::createRasterShape(image, shapeImageThreshold, rect, m_referenceBoxLogicalSize, writingMode, margin, padding);
+        LayoutRect imageRect;
+        getShapeImageAndRect(shapeValue, &m_renderer, m_referenceBoxLogicalSize, image, imageRect);
+        const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
+        m_shape = Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin, padding);
         break;
     }
     case ShapeValue::Box: {

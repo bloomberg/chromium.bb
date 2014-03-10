@@ -256,40 +256,42 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     return shape.release();
 }
 
-PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageRect, const LayoutSize&, WritingMode writingMode, Length margin, Length padding)
+PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageR, const LayoutRect& marginR, WritingMode writingMode, Length margin, Length padding)
 {
-    IntRect toRect = pixelSnappedIntRect(imageRect);
-    IntSize bufferSize = toRect.size();
-    IntSize rasterSize = IntSize(toRect.maxX(), toRect.maxY());
-    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(rasterSize.height()));
-    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(bufferSize);
+    IntRect imageRect = pixelSnappedIntRect(imageR);
+    IntRect marginRect = pixelSnappedIntRect(marginR);
+    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(marginRect.height(), -marginRect.y()));
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageRect.size());
 
     if (imageBuffer) {
         GraphicsContext* graphicsContext = imageBuffer->context();
-        graphicsContext->drawImage(image, FloatRect(0, 0, bufferSize.width(), bufferSize.height()));
+        graphicsContext->drawImage(image, IntRect(IntPoint(), imageRect.size()));
 
-        RefPtr<Uint8ClampedArray> pixelArray = imageBuffer->getUnmultipliedImageData(IntRect(IntPoint(), bufferSize));
-        unsigned pixelArrayLength = pixelArray->length();
+        RefPtr<Uint8ClampedArray> pixelArray = imageBuffer->getUnmultipliedImageData(IntRect(IntPoint(), imageRect.size()));
         unsigned pixelArrayOffset = 3; // Each pixel is four bytes: RGBA.
         uint8_t alphaPixelThreshold = threshold * 255;
 
-        ASSERT(static_cast<unsigned>(bufferSize.width() * bufferSize.height() * 4) == pixelArrayLength);
+        ASSERT(static_cast<unsigned>(imageRect.width() * imageRect.height() * 4) == pixelArray->length());
 
-        for (int y = 0; y < bufferSize.height(); ++y) {
+        int minBufferY = std::max(0, marginRect.y() - imageRect.y());
+        int maxBufferY = std::min(imageRect.height(), marginRect.maxY() - imageRect.y());
+
+        for (int y = minBufferY; y < maxBufferY; ++y) {
             int startX = -1;
-            for (int x = 0; x < bufferSize.width() && pixelArrayOffset < pixelArrayLength; ++x, pixelArrayOffset += 4) {
+            for (int x = 0; x < imageRect.width(); ++x, pixelArrayOffset += 4) {
                 uint8_t alpha = pixelArray->item(pixelArrayOffset);
-                if ((startX == -1) && alpha > alphaPixelThreshold) {
+                bool alphaAboveThreshold = alpha > alphaPixelThreshold;
+                if (startX == -1 && alphaAboveThreshold) {
                     startX = x;
-                } else if (startX != -1 && (alpha <= alphaPixelThreshold || x == bufferSize.width() - 1)) {
-                    intervals->appendInterval(y + toRect.y(), startX + toRect.x(), x + toRect.x());
+                } else if (startX != -1 && (!alphaAboveThreshold || x == imageRect.width() - 1)) {
+                    intervals->appendInterval(y + imageRect.y(), startX + imageRect.x(), x + imageRect.x());
                     startX = -1;
                 }
             }
         }
     }
 
-    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(intervals.release(), rasterSize));
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(intervals.release(), marginRect.size()));
     rasterShape->m_writingMode = writingMode;
     rasterShape->m_margin = floatValueForLength(margin, 0);
     rasterShape->m_padding = floatValueForLength(padding, 0);
