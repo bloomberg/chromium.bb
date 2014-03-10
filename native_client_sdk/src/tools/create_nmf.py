@@ -582,7 +582,6 @@ def main(argv):
     remap[parts[0]] = parts[1]
 
   if options.path_prefix:
-    sys.stderr.write('warning: option -P/--path-prefix is deprecated.\n')
     options.lib_prefix = options.path_prefix
 
   for libpath in options.lib_path:
