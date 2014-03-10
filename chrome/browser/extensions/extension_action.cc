@@ -50,17 +50,19 @@ class GetAttentionImageSource : public gfx::ImageSkiaSource {
   const gfx::ImageSkia icon_;
 };
 
+template <class T>
+bool HasValue(const std::map<int, T>& map, int tab_id) {
+  return map.find(tab_id) != map.end();
+}
+
 }  // namespace
 
 const int ExtensionAction::kDefaultTabId = -1;
 
-ExtensionAction::ExtensionAction(
-    const std::string& extension_id,
-    extensions::ActionInfo::Type action_type,
-    const extensions::ActionInfo& manifest_data)
-    : extension_id_(extension_id),
-      action_type_(action_type),
-      has_changed_(false) {
+ExtensionAction::ExtensionAction(const std::string& extension_id,
+                                 extensions::ActionInfo::Type action_type,
+                                 const extensions::ActionInfo& manifest_data)
+    : extension_id_(extension_id), action_type_(action_type) {
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
   SetIsVisible(kDefaultTabId,
@@ -203,6 +205,34 @@ gfx::ImageSkia ExtensionAction::GetIconWithBadge(
                                    GetBadgeBackgroundColor(tab_id),
                                    action_type()),
      icon.size());
+}
+
+bool ExtensionAction::HasPopupUrl(int tab_id) const {
+  return HasValue(popup_url_, tab_id);
+}
+
+bool ExtensionAction::HasTitle(int tab_id) const {
+  return HasValue(title_, tab_id);
+}
+
+bool ExtensionAction::HasBadgeText(int tab_id) const {
+  return HasValue(badge_text_, tab_id);
+}
+
+bool ExtensionAction::HasBadgeBackgroundColor(int tab_id) const {
+  return HasValue(badge_background_color_, tab_id);
+}
+
+bool ExtensionAction::HasBadgeTextColor(int tab_id) const {
+  return HasValue(badge_text_color_, tab_id);
+}
+
+bool ExtensionAction::HasIsVisible(int tab_id) const {
+  return HasValue(is_visible_, tab_id);
+}
+
+bool ExtensionAction::HasIcon(int tab_id) const {
+  return HasValue(icon_, tab_id);
 }
 
 // Determines which icon would be returned by |GetIcon|, and returns its width.

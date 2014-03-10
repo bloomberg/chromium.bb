@@ -1121,6 +1121,7 @@
         'browser/extensions/api/dns/mock_host_resolver_creator.h',
         'browser/extensions/api/downloads/downloads_api_browsertest.cc',
         'browser/extensions/api/extension_action/browser_action_apitest.cc',
+        'browser/extensions/api/extension_action/browser_action_browsertest.cc',
         'browser/extensions/api/extension_action/page_action_apitest.cc',
         'browser/extensions/api/feedback_private/feedback_private_apitest.cc',
         'browser/extensions/api/feedback_private/feedback_browsertest.cc',

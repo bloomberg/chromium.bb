@@ -138,34 +138,48 @@ std::string RepresentationToString(const gfx::ImageSkia& image, float scale) {
 // Set |action|'s default values to those specified in |dict|.
 void SetDefaultsFromValue(const base::DictionaryValue* dict,
                           ExtensionAction* action) {
-  const int kTabId = ExtensionAction::kDefaultTabId;
+  const int kDefaultTabId = ExtensionAction::kDefaultTabId;
   std::string str_value;
   int int_value;
   SkBitmap bitmap;
   gfx::ImageSkia icon;
 
-  if (dict->GetString(kPopupUrlStorageKey, &str_value))
-    action->SetPopupUrl(kTabId, GURL(str_value));
-  if (dict->GetString(kTitleStorageKey, &str_value))
-    action->SetTitle(kTabId, str_value);
-  if (dict->GetString(kBadgeTextStorageKey, &str_value))
-    action->SetBadgeText(kTabId, str_value);
-  if (dict->GetString(kBadgeBackgroundColorStorageKey, &str_value))
-    action->SetBadgeBackgroundColor(kTabId, RawStringToSkColor(str_value));
-  if (dict->GetString(kBadgeTextColorStorageKey, &str_value))
-    action->SetBadgeTextColor(kTabId, RawStringToSkColor(str_value));
-  if (dict->GetInteger(kAppearanceStorageKey, &int_value)) {
+  // For each value, don't set it if it has been modified already.
+  if (dict->GetString(kPopupUrlStorageKey, &str_value) &&
+      !action->HasPopupUrl(kDefaultTabId)) {
+    action->SetPopupUrl(kDefaultTabId, GURL(str_value));
+  }
+  if (dict->GetString(kTitleStorageKey, &str_value) &&
+      !action->HasTitle(kDefaultTabId)) {
+    action->SetTitle(kDefaultTabId, str_value);
+  }
+  if (dict->GetString(kBadgeTextStorageKey, &str_value) &&
+      !action->HasBadgeText(kDefaultTabId)) {
+    action->SetBadgeText(kDefaultTabId, str_value);
+  }
+  if (dict->GetString(kBadgeBackgroundColorStorageKey, &str_value) &&
+      !action->HasBadgeBackgroundColor(kDefaultTabId)) {
+    action->SetBadgeBackgroundColor(kDefaultTabId,
+                                    RawStringToSkColor(str_value));
+  }
+  if (dict->GetString(kBadgeTextColorStorageKey, &str_value) &&
+      !action->HasBadgeTextColor(kDefaultTabId)) {
+    action->SetBadgeTextColor(kDefaultTabId, RawStringToSkColor(str_value));
+  }
+  if (dict->GetInteger(kAppearanceStorageKey, &int_value) &&
+      !action->HasIsVisible(kDefaultTabId)) {
     switch (int_value) {
       case INVISIBLE:
       case OBSOLETE_WANTS_ATTENTION:
-        action->SetIsVisible(kTabId, false);
+        action->SetIsVisible(kDefaultTabId, false);
       case ACTIVE:
-        action->SetIsVisible(kTabId, true);
+        action->SetIsVisible(kDefaultTabId, true);
     }
   }
 
   const base::DictionaryValue* icon_value = NULL;
-  if (dict->GetDictionary(kIconStorageKey, &icon_value)) {
+  if (dict->GetDictionary(kIconStorageKey, &icon_value) &&
+      !action->HasIcon(kDefaultTabId)) {
     for (size_t i = 0; i < arraysize(kIconSizes); i++) {
       if (icon_value->GetString(kIconSizes[i].size_string, &str_value) &&
           StringToSkBitmap(str_value, &bitmap)) {
@@ -174,27 +188,29 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
         icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
       }
     }
-    action->SetIcon(kTabId, gfx::Image(icon));
+    action->SetIcon(kDefaultTabId, gfx::Image(icon));
   }
 }
 
 // Store |action|'s default values in a DictionaryValue for use in storing to
 // disk.
 scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
-  const int kTabId = ExtensionAction::kDefaultTabId;
+  const int kDefaultTabId = ExtensionAction::kDefaultTabId;
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  dict->SetString(kPopupUrlStorageKey, action->GetPopupUrl(kTabId).spec());
-  dict->SetString(kTitleStorageKey, action->GetTitle(kTabId));
-  dict->SetString(kBadgeTextStorageKey, action->GetBadgeText(kTabId));
-  dict->SetString(kBadgeBackgroundColorStorageKey,
-                  SkColorToRawString(action->GetBadgeBackgroundColor(kTabId)));
+  dict->SetString(kPopupUrlStorageKey,
+                  action->GetPopupUrl(kDefaultTabId).spec());
+  dict->SetString(kTitleStorageKey, action->GetTitle(kDefaultTabId));
+  dict->SetString(kBadgeTextStorageKey, action->GetBadgeText(kDefaultTabId));
+  dict->SetString(
+      kBadgeBackgroundColorStorageKey,
+      SkColorToRawString(action->GetBadgeBackgroundColor(kDefaultTabId)));
   dict->SetString(kBadgeTextColorStorageKey,
-                  SkColorToRawString(action->GetBadgeTextColor(kTabId)));
+                  SkColorToRawString(action->GetBadgeTextColor(kDefaultTabId)));
   dict->SetInteger(kAppearanceStorageKey,
-                   action->GetIsVisible(kTabId) ? ACTIVE : INVISIBLE);
+                   action->GetIsVisible(kDefaultTabId) ? ACTIVE : INVISIBLE);
 
-  gfx::ImageSkia icon = action->GetExplicitlySetIcon(kTabId);
+  gfx::ImageSkia icon = action->GetExplicitlySetIcon(kDefaultTabId);
   if (!icon.isNull()) {
     base::DictionaryValue* icon_value = new base::DictionaryValue();
     for (size_t i = 0; i < arraysize(kIconSizes); i++) {
@@ -440,7 +456,6 @@ void ExtensionActionStorageManager::Observe(
       if (profile != profile_)
         break;
 
-      extension_action->set_has_changed(true);
       WriteToStorage(extension_action);
       break;
     }
@@ -479,13 +494,6 @@ void ExtensionActionStorageManager::ReadFromStorage(
     // http://crbug.com/349371
     return;
   }
-
-  // Don't load values from storage if the extension has updated a value
-  // already. The extension may have only updated some of the values, but
-  // this is a good first approximation. If the extension is doing stuff
-  // to the browser action, we can assume it is ready to take over.
-  if (browser_action->has_changed())
-    return;
 
   const base::DictionaryValue* dict = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict))
