@@ -22,7 +22,6 @@
   <property name="out.dir" value="bin" />
   <property name="out.absolute.dir" location="${out.dir}" />
   <property name="out.classes.absolute.dir" location="${out.dir}/classes" />
-  <property name="out.manifest.abs.file" location="${out.dir}/AndroidManifest.xml" />
 
   <!-- tools location -->
   <property name="sdk.dir" location="${ANDROID_SDK_ROOT}"/>
@@ -54,6 +53,9 @@
   <property name="proguard.enabled" value="${PROGUARD_ENABLED}" />
   <property name="proguard.config" value="${PROGUARD_FLAGS}" />
 
+  <property name="manifest.file" value="${ANDROID_MANIFEST}" />
+  <property name="manifest.abs.file" location="${manifest.file}" />
+
   <!-- Obfuscate target
       This is only active in release builds when proguard.config is defined
       in default.properties.
@@ -67,7 +69,7 @@
     <if condition="${project.is.testapp}">
       <then>
         <!-- get the project manifest package -->
-        <xpath input="${out.manifest.abs.file}"
+        <xpath input="${manifest.abs.file}"
                 expression="/manifest/@package" output="project.app.package" />
         <loadresource property="project.app.packagepath">
           <propertyresource name="project.app.package"/>

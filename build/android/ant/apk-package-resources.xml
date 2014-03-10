@@ -19,7 +19,6 @@
   <property name="out.dir" location="${OUT_DIR}" />
   <property name="out.absolute.dir" location="${out.dir}" />
   <property name="out.res.absolute.dir" location="${out.dir}/res" />
-  <property name="out.manifest.abs.file" location="${out.dir}/AndroidManifest.xml" />
 
   <!-- tools location -->
   <property name="sdk.dir" location="${ANDROID_SDK_ROOT}"/>
@@ -91,6 +90,9 @@
 
   <property name="build.packaging.nocrunch" value="true" />
 
+  <property name="manifest.file" value="${ANDROID_MANIFEST}" />
+  <property name="manifest.abs.file" location="${manifest.file}" />
+
   <!-- Intermediate files -->
   <property name="resource.package.file.name" value="${APK_NAME}.ap_" />
 
@@ -113,7 +115,7 @@
         versioncode="${version.code}"
         versionname="${version.name}"
         debug="${build.is.packaging.debug}"
-        manifest="${out.manifest.abs.file}"
+        manifest="${manifest.abs.file}"
         assets="${asset.absolute.dir}"
         androidjar="${project.target.android.jar}"
         apkfolder="${out.absolute.dir}"
