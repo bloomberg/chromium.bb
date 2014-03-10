@@ -232,8 +232,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
 
   net::URLRequestJobFactoryImpl job_factory;
   job_factory.SetProtocolHandler(
-      chrome::kAboutScheme,
-      new chrome_browser_net::AboutProtocolHandler());
+      content::kAboutScheme, new chrome_browser_net::AboutProtocolHandler());
   context_->set_job_factory(&job_factory);
 
   GURL redirect_url("about:redirected");

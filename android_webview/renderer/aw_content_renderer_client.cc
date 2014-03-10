@@ -98,7 +98,7 @@ bool AwContentRendererClient::HandleNavigation(
   // So we filter out non-top about:blank navigations here.
   if (frame->parent() && (gurl.SchemeIs(content::kHttpScheme) ||
                           gurl.SchemeIs(content::kHttpsScheme) ||
-                          gurl.SchemeIs(chrome::kAboutScheme)))
+                          gurl.SchemeIs(content::kAboutScheme)))
     return false;
 
   // use NavigationInterception throttle to handle the call as that can

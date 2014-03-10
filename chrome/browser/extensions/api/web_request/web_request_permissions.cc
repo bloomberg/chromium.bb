@@ -68,7 +68,7 @@ bool IsSensitiveURL(const GURL& url) {
 // to. Extensions still need specific permissions for a given URL, which is
 // covered by CanExtensionAccessURL.
 bool HasWebRequestScheme(const GURL& url) {
-  return (url.SchemeIs(chrome::kAboutScheme) ||
+  return (url.SchemeIs(content::kAboutScheme) ||
           url.SchemeIs(content::kFileScheme) ||
           url.SchemeIs(content::kFileSystemScheme) ||
           url.SchemeIs(content::kFtpScheme) ||
@@ -132,7 +132,7 @@ bool WebRequestPermissions::CanExtensionAccessURL(
     case REQUIRE_HOST_PERMISSION:
       // about: URLs are not covered in host permissions, but are allowed
       // anyway.
-      if (!((url.SchemeIs(chrome::kAboutScheme) ||
+      if (!((url.SchemeIs(content::kAboutScheme) ||
              extensions::PermissionsData::HasHostPermission(extension, url) ||
              url.GetOrigin() == extension->url()))) {
         return false;

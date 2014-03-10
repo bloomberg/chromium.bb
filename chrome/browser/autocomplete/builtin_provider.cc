@@ -63,7 +63,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       (input.type() == AutocompleteInput::QUERY))
     return;
 
-  const base::string16 kAbout = base::ASCIIToUTF16(chrome::kAboutScheme) +
+  const base::string16 kAbout = base::ASCIIToUTF16(content::kAboutScheme) +
       base::ASCIIToUTF16(content::kStandardSchemeSeparator);
   const base::string16 kChrome = base::ASCIIToUTF16(content::kChromeUIScheme) +
       base::ASCIIToUTF16(content::kStandardSchemeSeparator);
@@ -77,7 +77,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     ACMatchClassifications styles;
     // Highlight the input portion matching "chrome://"; or if the user has
     // input "about:" (with optional slashes), highlight the whole "chrome://".
-    const size_t kAboutSchemeLength = strlen(chrome::kAboutScheme);
+    const size_t kAboutSchemeLength = strlen(content::kAboutScheme);
     bool highlight = starting_chrome || text.length() > kAboutSchemeLength;
     styles.push_back(ACMatchClassification(0, highlight ? kMatch : kUrl));
     size_t offset = starting_chrome ? text.length() : kChrome.length();

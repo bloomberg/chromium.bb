@@ -139,7 +139,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  EXPECT_TRUE(p->IsPseudoScheme(chrome::kAboutScheme));
+  EXPECT_TRUE(p->IsPseudoScheme(kAboutScheme));
   EXPECT_TRUE(p->IsPseudoScheme(kJavaScriptScheme));
   EXPECT_TRUE(p->IsPseudoScheme(kViewSourceScheme));
 

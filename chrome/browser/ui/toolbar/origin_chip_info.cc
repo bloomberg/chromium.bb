@@ -167,7 +167,7 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
 
   // About scheme pages. Currently all about: URLs other than about:blank
   // redirect to chrome: URLs, so this only affects about:blank.
-  if (url.SchemeIs(chrome::kAboutScheme))
+  if (url.SchemeIs(content::kAboutScheme))
     return base::UTF8ToUTF16(url.spec());
 
   // Chrome built-in pages.

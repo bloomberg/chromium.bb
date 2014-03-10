@@ -9,17 +9,12 @@
 
 // Contains constants for known URLs and portions thereof.
 
-// TODO(jam): rename this to content.
-namespace chrome {
+namespace content {
 
 // Canonical schemes you can use as input to GURL.SchemeIs().
 // TODO(jam): some of these don't below in the content layer, but are accessed
 // from there.
 CONTENT_EXPORT extern const char kAboutScheme[];
-}  // namespace chrome
-
-namespace content {
-
 CONTENT_EXPORT extern const char kBlobScheme[];
 CONTENT_EXPORT extern const char kChromeDevToolsScheme[];
 CONTENT_EXPORT extern const char kChromeUIScheme[];  // Used for WebUIs.

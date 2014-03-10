@@ -317,7 +317,7 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   RegisterWebSafeScheme(kFileSystemScheme);
 
   // We know about the following pseudo schemes and treat them specially.
-  RegisterPseudoScheme(chrome::kAboutScheme);
+  RegisterPseudoScheme(kAboutScheme);
   RegisterPseudoScheme(kJavaScriptScheme);
   RegisterPseudoScheme(kViewSourceScheme);
 }

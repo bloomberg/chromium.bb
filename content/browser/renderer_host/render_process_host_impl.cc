@@ -1608,7 +1608,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     return;
   }
 
-  if (url->SchemeIs(chrome::kAboutScheme)) {
+  if (url->SchemeIs(kAboutScheme)) {
     // The renderer treats all URLs in the about: scheme as being about:blank.
     // Canonicalize about: URLs to about:blank.
     *url = GURL(kAboutBlankURL);

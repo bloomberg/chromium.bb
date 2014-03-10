@@ -2646,7 +2646,7 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   // CompleteInitialization() task has executed as well.
   content::RunAllPendingInMessageLoop();
 
-  GURL kAboutHistograms = GURL(std::string(chrome::kAboutScheme) +
+  GURL kAboutHistograms = GURL(std::string(content::kAboutScheme) +
                                std::string(content::kStandardSchemeSeparator) +
                                std::string(content::kChromeUIHistogramHost));
   ui_test_utils::NavigateToURL(browser(), kAboutHistograms);

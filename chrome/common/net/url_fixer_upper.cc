@@ -428,7 +428,7 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
   }
 
   // Proceed with about and chrome schemes, but not file or nonstandard schemes.
-  if ((scheme != chrome::kAboutScheme) &&
+  if ((scheme != content::kAboutScheme) &&
       (scheme != content::kChromeUIScheme) &&
       ((scheme == content::kFileScheme) ||
        !url_util::IsStandard(
@@ -535,7 +535,7 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
 
   // Parse and rebuild about: and chrome: URLs, except about:blank.
   bool chrome_url = !LowerCaseEqualsASCII(trimmed, content::kAboutBlankURL) &&
-                    ((scheme == chrome::kAboutScheme) ||
+                    ((scheme == content::kAboutScheme) ||
                      (scheme == content::kChromeUIScheme));
 
   // For some schemes whose layouts we understand, we rebuild it.

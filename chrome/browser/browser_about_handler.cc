@@ -21,7 +21,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
 
   // Check that about: URLs are fixed up to chrome: by URLFixerUpper::FixupURL.
   DCHECK((*url == GURL(content::kAboutBlankURL)) ||
-         !url->SchemeIs(chrome::kAboutScheme));
+         !url->SchemeIs(content::kAboutScheme));
 
   // Only handle chrome://foo/, URLFixerUpper::FixupURL translates about:foo.
   if (!url->SchemeIs(content::kChromeUIScheme))

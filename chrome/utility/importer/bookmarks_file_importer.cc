@@ -46,7 +46,7 @@ bool CanImportURL(const GURL& url) {
   // If |url| starts with chrome:// or about:, check if it's one of the URLs
   // that we support.
   if (url.SchemeIs(content::kChromeUIScheme) ||
-      url.SchemeIs(chrome::kAboutScheme)) {
+      url.SchemeIs(content::kAboutScheme)) {
     if (url.host() == chrome::kChromeUIUberHost ||
         url.host() == chrome::kChromeUIAboutHost)
       return true;

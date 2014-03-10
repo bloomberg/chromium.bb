@@ -2553,8 +2553,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // browser process, and issue a special POST navigation in WebKit (via
   // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
   // for examples of how to send the httpBody data.
-  if (!frame->parent() && is_content_initiated &&
-      !url.SchemeIs(chrome::kAboutScheme)) {
+  if (!frame->parent() && is_content_initiated && !url.SchemeIs(kAboutScheme)) {
     bool send_referrer = false;
 
     // All navigations to or from WebUI URLs or within WebUI-enabled

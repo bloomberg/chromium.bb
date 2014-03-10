@@ -39,7 +39,7 @@ void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
   DCHECK(whitelist);
   if (!whitelist->empty())
     return;  // Nothing to do, already initialized.
-  whitelist->insert(std::string(chrome::kAboutScheme));
+  whitelist->insert(std::string(content::kAboutScheme));
   whitelist->insert(std::string(content::kChromeUIScheme));
   whitelist->insert(std::string(content::kFileScheme));
   whitelist->insert(std::string(content::kFtpScheme));

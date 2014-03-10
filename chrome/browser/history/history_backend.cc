@@ -454,7 +454,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         content::PAGE_TRANSITION_CHAIN_START;
 
     RedirectList redirects = request.redirects;
-    if (redirects[0].SchemeIs(chrome::kAboutScheme)) {
+    if (redirects[0].SchemeIs(content::kAboutScheme)) {
       // When the redirect source + referrer is "about" we skip it. This
       // happens when a page opens a new frame/window to about:blank and then
       // script sets the URL to somewhere else (used to hide the referrer). It
