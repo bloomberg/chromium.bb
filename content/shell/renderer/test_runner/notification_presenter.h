@@ -6,7 +6,6 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_NOTIFICATION_PRESENTER_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -26,7 +25,7 @@ class NotificationPresenter : public blink::WebNotificationPresenter {
   virtual ~NotificationPresenter();
 
   // Called by the TestRunner to simulate a user granting permission.
-  void GrantPermission(const std::string& origin);
+  void GrantPermission(const std::string& origin, bool permission_granted);
 
   // Called by the TestRunner to simulate a user clicking on a notification.
   bool SimulateClick(const std::string& title);
@@ -54,8 +53,9 @@ class NotificationPresenter : public blink::WebNotificationPresenter {
  private:
   WebTestRunner::WebTestDelegate* delegate_;
 
-  // Set of origins which are allowed to show notifications.
-  std::set<std::string> allowed_origins_;
+  // Map of known origins and whether they are allowed to show notifications.
+  typedef std::map<std::string, bool> KnownOriginMap;
+  KnownOriginMap known_origins_;
 
   // Map of currently active notifications.
   typedef std::map<std::string, blink::WebNotification> ActiveNotificationMap;

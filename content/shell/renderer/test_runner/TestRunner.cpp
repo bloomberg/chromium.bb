@@ -1821,12 +1821,15 @@ void TestRunner::setMIDISysExPermission(const CppArgumentList& arguments, CppVar
 
 void TestRunner::grantWebNotificationPermission(const CppArgumentList& arguments, CppVariant* result)
 {
-    if (arguments.size() != 1 || !arguments[0].isString()) {
-        result->set(false);
+    result->setNull();
+    if (arguments.size() < 1 || !arguments[0].isString())
         return;
-    }
-    notification_presenter_->GrantPermission(arguments[0].toString());
-    result->set(true);
+
+    bool permissionGranted = true;
+    if (arguments.size() == 2 && arguments[1].isBool())
+        permissionGranted = arguments[1].toBoolean();
+
+    notification_presenter_->GrantPermission(arguments[0].toString(), permissionGranted);
 }
 
 void TestRunner::simulateLegacyWebNotificationClick(const CppArgumentList& arguments, CppVariant* result)

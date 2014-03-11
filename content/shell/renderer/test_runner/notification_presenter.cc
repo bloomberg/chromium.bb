@@ -37,8 +37,9 @@ NotificationPresenter::NotificationPresenter() : delegate_(0) {}
 
 NotificationPresenter::~NotificationPresenter() {}
 
-void NotificationPresenter::GrantPermission(const std::string& origin) {
-  allowed_origins_.insert(origin);
+void NotificationPresenter::GrantPermission(const std::string& origin,
+                                            bool permission_granted) {
+  known_origins_[origin] = permission_granted;
 }
 
 bool NotificationPresenter::SimulateClick(const std::string& title) {
@@ -63,7 +64,7 @@ void NotificationPresenter::CancelAllActiveNotifications() {
 
 void NotificationPresenter::Reset() {
   // TODO(peter): Ensure that |active_notifications_| is empty as well.
-  allowed_origins_.clear();
+  known_origins_.clear();
 }
 
 bool NotificationPresenter::show(const WebNotification& notification) {
@@ -121,7 +122,12 @@ void NotificationPresenter::objectDestroyed(
 WebNotificationPresenter::Permission NotificationPresenter::checkPermission(
     const WebSecurityOrigin& security_origin) {
   const std::string origin = security_origin.toString().utf8();
-  if (allowed_origins_.find(origin) != allowed_origins_.end())
+  const KnownOriginMap::iterator it = known_origins_.find(origin);
+  if (it == known_origins_.end())
+    return WebNotificationPresenter::PermissionNotAllowed;
+
+  // Values in |known_origins_| indicate whether permission has been granted.
+  if (it->second)
     return WebNotificationPresenter::PermissionAllowed;
 
   return WebNotificationPresenter::PermissionDenied;
