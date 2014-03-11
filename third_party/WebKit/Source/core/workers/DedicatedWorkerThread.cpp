@@ -38,12 +38,12 @@
 
 namespace WebCore {
 
-PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
     return adoptRef(new DedicatedWorkerThread(workerLoaderProxy, workerObjectProxy, timeOrigin, startupData));
 }
 
-DedicatedWorkerThread::DedicatedWorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
+DedicatedWorkerThread::DedicatedWorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
     : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
@@ -54,7 +54,7 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 {
 }
 
-PassRefPtrWillBeRawPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
     return DedicatedWorkerGlobalScope::create(this, startupData, m_timeOrigin);
 }

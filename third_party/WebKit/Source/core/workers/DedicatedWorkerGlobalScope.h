@@ -39,12 +39,12 @@
 namespace WebCore {
 
 class DedicatedWorkerThread;
-struct WorkerThreadStartupData;
+class WorkerThreadStartupData;
 
 class DedicatedWorkerGlobalScope FINAL : public WorkerGlobalScope {
 public:
     typedef WorkerGlobalScope Base;
-    static PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
+    static PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>, double timeOrigin);
     virtual ~DedicatedWorkerGlobalScope();
 
     virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return true; }

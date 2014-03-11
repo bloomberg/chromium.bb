@@ -35,18 +35,18 @@
 
 namespace WebCore {
 
-struct WorkerThreadStartupData;
+class WorkerThreadStartupData;
 
 class ServiceWorkerThread FINAL : public WorkerThread {
 public:
-    static PassRefPtr<ServiceWorkerThread> create(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    static PassRefPtr<ServiceWorkerThread> create(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
     virtual ~ServiceWorkerThread();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>) OVERRIDE;
 
 private:
-    ServiceWorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    ServiceWorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 };
 
 } // namespace WebCore

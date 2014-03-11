@@ -37,12 +37,12 @@
 
 namespace WebCore {
 
-PassRefPtr<ServiceWorkerThread> ServiceWorkerThread::create(WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtr<ServiceWorkerThread> ServiceWorkerThread::create(WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
     return adoptRef(new ServiceWorkerThread(workerLoaderProxy, workerReportingProxy, startupData));
 }
 
-ServiceWorkerThread::ServiceWorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
+ServiceWorkerThread::ServiceWorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
     : WorkerThread(workerLoaderProxy, workerReportingProxy, startupData)
 {
 }
@@ -51,7 +51,7 @@ ServiceWorkerThread::~ServiceWorkerThread()
 {
 }
 
-PassRefPtrWillBeRawPtr<WorkerGlobalScope> ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
+PassRefPtrWillBeRawPtr<WorkerGlobalScope> ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
     return ServiceWorkerGlobalScope::create(this, startupData);
 }
