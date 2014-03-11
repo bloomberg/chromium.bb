@@ -87,7 +87,7 @@ class ClipboardData {
 
   const SkBitmap& bitmap() const { return bitmap_; }
   void SetBitmapData(const SkBitmap& bitmap) {
-    bitmap.copyTo(&bitmap_, bitmap.getConfig());
+    bitmap.copyTo(&bitmap_);
     format_ |= BITMAP;
   }
 
@@ -248,7 +248,7 @@ class AuraClipboard {
 
     // A shallow copy should be fine here, but just to be safe...
     const SkBitmap& clipboard_bitmap = GetData()->bitmap();
-    clipboard_bitmap.copyTo(&img, clipboard_bitmap.getConfig());
+    clipboard_bitmap.copyTo(&img);
     return img;
   }
 

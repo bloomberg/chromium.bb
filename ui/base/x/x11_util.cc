@@ -396,7 +396,7 @@ void UnrefCustomXCursor(::Cursor cursor) {
 
 XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
                                      const gfx::Point& hotspot) {
-  DCHECK(cursor_image->config() == SkBitmap::kARGB_8888_Config);
+  DCHECK(cursor_image->colorType() == kPMColor_SkColorType);
   gfx::Point hotspot_point = hotspot;
   SkBitmap scaled;
 
@@ -1218,10 +1218,9 @@ bool CopyAreaToCanvas(XID drawable,
       image->data[i + 3] = 0xff;
 
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     image->width, image->height,
-                     image->bytes_per_line);
-    bitmap.setPixels(image->data);
+    bitmap.installPixels(SkImageInfo::MakeN32Premul(image->width,
+                                                    image->height),
+                         image->data, image->bytes_per_line);
     gfx::ImageSkia image_skia;
     gfx::ImageSkiaRep image_rep(bitmap, canvas->image_scale());
     image_skia.AddRepresentation(image_rep);
