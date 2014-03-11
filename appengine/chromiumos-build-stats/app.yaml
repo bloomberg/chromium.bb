@@ -1,7 +1,8 @@
-application: chromiumos-build-stats
-version: 4
-runtime: python
+application: chromiumos-build-stat
+version: 5
+runtime: python27
 api_version: 1
+threadsafe: false
 
 handlers:
 - url: /stylesheets
@@ -9,10 +10,16 @@ handlers:
   secure: always
 
 - url: /upload_command_stats
-  script: main.py
+  script: main.app
   secure: always
 
 - url: /.*
-  script: main.py
+  script: main.app
   secure: always
   login: required
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest

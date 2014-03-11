@@ -8,9 +8,10 @@ import re
 
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template
 from google.appengine.api import users
+
+import webapp2
+import jinja2
 
 import model
 
@@ -20,8 +21,13 @@ import model
 # about 1 per second.  That should not be a problem for us.
 DATASTORE_KEY = db.Key.from_path('Stats', 'default')
 
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
 
-class MainPage(webapp.RequestHandler):
+
+class MainPage(webapp2.RequestHandler):
   """Provide interface for interacting with DB."""
 
   # Regex to peel SQL-like SELECT off front, if present, grabbing SELECT args.
@@ -84,7 +90,6 @@ class MainPage(webapp.RequestHandler):
     """Support GET to stats page."""
     # Note that google.com authorization is required to access this page, which
     # is controlled in app.yaml and on appspot admin page.
-
     orig_query = self.request.get('query')
     logging.debug('Received raw query %r', orig_query)
 
@@ -106,12 +111,6 @@ class MainPage(webapp.RequestHandler):
     # need not be exposed to interface.  Insert the clause intelligently.
     query = self._AdjustWhereInQuery(query)
 
-    # If results are sorted by any column that column should be in bold.
-    bold_columns = None
-    match = self.QUERY_ORDER_RE.search(query)
-    if match:
-      bold_columns = set(self.COMMA_RE.split(match.group(1)))
-
     stat_entries = []
     error_msg = None
     try:
@@ -119,24 +118,19 @@ class MainPage(webapp.RequestHandler):
     except datastore_errors.BadQueryError as ex:
       error_msg = '<p>%s.</p><p>Actual GCL query used: "%s"</p>' % (ex, query)
 
-    results_html_table = self._PrepareResultsTable(stat_entries, columns,
-                                                   bold_columns=bold_columns)
-
-    column_html_list = self._PrepareColumnList(self.ALL_COLUMNS,
-                                               self.DEFAULT_COLUMNS)
-
+    results_table = self._PrepareResultsTable(stat_entries, columns)
     template_values = {
-      'column_list': column_html_list,
       'error_msg': error_msg,
-      'example_queries': self.EXAMPLE_QUERIES,
       'gcl_query': query,
-      'results_table': results_html_table,
-      'user_email': users.get_current_user(),
       'user_query': orig_query,
+      'user_email': users.get_current_user(),
+      'results_table': results_table,
+      'column_list': self.ALL_COLUMNS,
+      'example_queries': self.EXAMPLE_QUERIES,
       }
 
-    path = os.path.join(os.path.dirname(__file__), 'index.html')
-    self.response.out.write(template.render(path, template_values))
+    template = JINJA_ENVIRONMENT.get_template('index.html')
+    self.response.out.write(template.render(template_values))
 
   def _RemoveSelectFromQuery(self, query):
     """Remove SELECT clause from |query|, return tuple (new_query, columns)."""
@@ -164,41 +158,20 @@ class MainPage(webapp.RequestHandler):
     else:
       return 'WHERE ANCESTOR IS :1 %s' % query
 
-  def _PrepareResultsTable(self, stat_entries, columns, bold_columns):
-    """Prepare html table for |stat_entries| using only |columns|."""
+  def _PrepareResultsTable(self, stat_entries, columns):
+    """Prepare table for |stat_entries| using only |columns|."""
     # One header blank for row numbers, then each column name.
-    headers = ('<tr>\n<td></td>\n%s\n</tr>' %
-               '\n'.join(['<td>%s</td>' % c for c in columns]))
-
+    table = [[c for c in [''] + columns]]
     # Prepare list of table rows, one for each stat entry.
-    rows = []
     for stat_ix, stat_entry in enumerate(stat_entries):
-      row_data = ['<td>%d</td>' % (stat_ix + 1)]
-      for col in columns:
-        datum = getattr(stat_entry, col)
-        if bold_columns and col in bold_columns:
-          datum = '<b>%s</b>' % datum
-        row_data.append('<td>%s</td>' % datum)
+      row = [stat_ix + 1]
+      row += [getattr(stat_entry, col) for col in columns]
+      table.append(row)
 
-      rows.append('<tr>%s</tr>' % '\n'.join(row_data))
-
-    return headers + '\n' + '\n'.join(rows)
-
-  def _PrepareColumnList(self, columns, default_columns):
-    """Prepare html list for |columns| with each |default_columns| bolded."""
-    default_columns = set(default_columns)
-
-    items = []
-    for col in columns:
-      if col in default_columns:
-        col = '<b>%s</b>' % col
-
-      items.append('<li>%s</li>' % col)
-
-    return '\n'.join(items)
+    return table
 
 
-class PostPage(webapp.RequestHandler):
+class PostPage(webapp2.RequestHandler):
   """Provides interface for uploading command stats to database."""
 
   NO_VALUE = '__NO_VALUE_AT_ALL__'
