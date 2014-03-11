@@ -1961,6 +1961,10 @@ void FrameView::scrollToAnchor()
 
 bool FrameView::updateWidgets()
 {
+    // This is always called from updateWidgetsTimerFired.
+    // m_updateWidgetsTimer should only be scheduled if we have widgets to update.
+    // Thus I believe we can stop checking isEmpty here, and just ASSERT isEmpty:
+    ASSERT(!m_widgetUpdateSet.isEmpty());
     if (m_nestedLayoutCount > 1 || m_widgetUpdateSet.isEmpty())
         return true;
 
@@ -2011,6 +2015,13 @@ void FrameView::flushAnyPendingPostLayoutTasks()
         updateWidgetsTimerFired(0);
 }
 
+void FrameView::scheduleUpdateWidgetsIfNecessary()
+{
+    if (m_updateWidgetsTimer.isActive() || m_widgetUpdateSet.isEmpty())
+        return;
+    m_updateWidgetsTimer.startOneShot(0, FROM_HERE);
+}
+
 void FrameView::performPostLayoutTasks()
 {
     TRACE_EVENT0("webkit", "FrameView::performPostLayoutTasks");
@@ -2052,8 +2063,7 @@ void FrameView::performPostLayoutTasks()
     if (!renderView())
         return;
 
-    if (!m_updateWidgetsTimer.isActive())
-        m_updateWidgetsTimer.startOneShot(0, FROM_HERE);
+    scheduleUpdateWidgetsIfNecessary();
 
     if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())

@@ -374,6 +374,7 @@ private:
 
     virtual void notifyPageThatContentAreaWillPaint() const OVERRIDE;
 
+    void scheduleUpdateWidgetsIfNecessary();
     void updateWidgetsTimerFired(Timer<FrameView>*);
     bool updateWidgets();
 
