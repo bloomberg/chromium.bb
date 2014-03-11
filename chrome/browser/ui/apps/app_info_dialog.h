@@ -16,9 +16,9 @@ class Extension;
 
 // Shows the chrome app information dialog box.
 // |close_callback| may be null.
-void ShowChromeAppInfoDialog(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const extensions::Extension* app,
-                             const base::Closure& close_callback);
+void ShowAppInfoDialog(gfx::NativeWindow parent_window,
+                       Profile* profile,
+                       const extensions::Extension* app,
+                       const base::Closure& close_callback);
 
 #endif  // CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_

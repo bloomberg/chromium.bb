@@ -16,10 +16,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-void ShowChromeAppInfoDialog(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const extensions::Extension* app,
-                             const base::Closure& close_callback) {
+void ShowAppInfoDialog(gfx::NativeWindow parent_window,
+                       Profile* profile,
+                       const extensions::Extension* app,
+                       const base::Closure& close_callback) {
   CreateBrowserModalDialogViews(
       new AppInfoDialog(parent_window, profile, app, close_callback),
       parent_window)->Show();

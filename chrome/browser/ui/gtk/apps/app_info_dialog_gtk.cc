@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 
-void ShowChromeAppInfoDialog(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const extensions::Extension* app,
-                             const base::Closure& close_callback) {
+void ShowAppInfoDialog(gfx::NativeWindow parent_window,
+                       Profile* profile,
+                       const extensions::Extension* app,
+                       const base::Closure& close_callback) {
   NOTIMPLEMENTED();
 }

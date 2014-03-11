@@ -96,8 +96,10 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
     return;
 
   OnShowExtensionPrompt();
-  ShowChromeAppInfoDialog(
-      parent_window, profile, extension,
+  ShowAppInfoDialog(
+      parent_window,
+      profile,
+      extension,
       base::Bind(&AppListControllerDelegate::OnCloseExtensionPrompt,
                  base::Unretained(this)));
 }
