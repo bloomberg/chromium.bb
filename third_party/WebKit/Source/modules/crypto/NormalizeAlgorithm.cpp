@@ -74,7 +74,6 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"RSASSA-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
     {"RSAES-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
     {"SHA-1", blink::WebCryptoAlgorithmIdSha1},
-    {"SHA-224", blink::WebCryptoAlgorithmIdSha224},
     {"SHA-256", blink::WebCryptoAlgorithmIdSha256},
     {"SHA-384", blink::WebCryptoAlgorithmIdSha384},
     {"SHA-512", blink::WebCryptoAlgorithmIdSha512},
@@ -121,7 +120,6 @@ const OperationParamsMapping operationParamsMappings[] = {
 
     // SHA-*
     {blink::WebCryptoAlgorithmIdSha1, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
-    {blink::WebCryptoAlgorithmIdSha224, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdSha256, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdSha384, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdSha512, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
