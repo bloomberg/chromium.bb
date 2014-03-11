@@ -412,8 +412,6 @@ void LayerTreeHostImpl::ManageTiles() {
     return;
   if (!tile_priorities_dirty_)
     return;
-  if (!device_viewport_valid_for_tile_management_)
-    return;
 
   tile_priorities_dirty_ = false;
   tile_manager_->ManageTiles(global_tile_state_);
