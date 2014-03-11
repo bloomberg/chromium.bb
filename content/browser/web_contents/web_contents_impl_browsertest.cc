@@ -232,7 +232,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 // TODO(shrikant): enable this for Windows when issue with
 // force-compositing-mode is resolved (http://crbug.com/281726).
-#if defined(OS_WIN) || defined(OS_ANDROID)
+// For TOOLKIT_GTK failure, see http://crbug.com/351234.
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(TOOLKIT_GTK)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #else
 #define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
