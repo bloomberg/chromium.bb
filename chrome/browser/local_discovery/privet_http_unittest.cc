@@ -881,6 +881,43 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
       kSampleLocalPrintResponse));
 };
 
+TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname(
+      "123456789:123456789:123456789:123456789:123456789:123456789:123456789:");
+  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->SetData(
+      RefCountedBytesFromString("Sample print data"));
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+                                      kSampleInfoResponse));
+
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/capabilities"),
+                              kSampleCapabilitiesResponse));
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
+      "Sample print ticket",
+      kSampleCreatejobResponse));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  // TODO(noamsml): Is encoding spaces as pluses standard?
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL(
+          "http://10.0.0.8:6006/privet/printer/submitdoc?"
+          "client_name=Chrome&user_name=sample%40gmail.com&"
+          "job_name=123456789%3A123456789%3A123456789%3A1...123456789"
+          "%3A123456789%3A123456789%3A&job_id=1234"),
+      "Sample print data",
+      kSampleLocalPrintResponse));
+};
+
 TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");

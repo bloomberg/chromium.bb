@@ -12,10 +12,12 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "components/cloud_devices/printer_description.h"
 #include "net/base/url_util.h"
 #include "printing/units.h"
+#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
 namespace local_discovery {
@@ -48,6 +50,8 @@ const int kPrivetCancelationTimeoutSeconds = 3;
 const int kPrivetLocalPrintMaxRetries = 2;
 
 const int kPrivetLocalPrintDefaultTimeout = 5;
+
+const size_t kPrivetLocalPrintMaxJobNameLength = 64;
 
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
@@ -563,10 +567,15 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
                                     user_);
   }
 
+  base::string16 shortened_jobname;
+
+  gfx::ElideString(base::UTF8ToUTF16(jobname_),
+                   kPrivetLocalPrintMaxJobNameLength,
+                   &shortened_jobname);
+
   if (!jobname_.empty()) {
-    url = net::AppendQueryParameter(url,
-                                    kPrivetURLKeyJobname,
-                                    jobname_);
+    url = net::AppendQueryParameter(
+        url, kPrivetURLKeyJobname, base::UTF16ToUTF8(shortened_jobname));
   }
 
   if (!jobid_.empty()) {
