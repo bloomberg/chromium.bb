@@ -62,6 +62,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace WebCore {
 
@@ -299,14 +300,14 @@ bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame*
     return true;
 }
 
-void computeDigest(const CString& source, blink::WebCryptoAlgorithmId algorithmId, DigestValue& digest)
+void computeDigest(const char* source, size_t length, blink::WebCryptoAlgorithmId algorithmId, DigestValue& digest)
 {
     blink::WebCrypto* crypto = blink::Platform::current()->crypto();
     blink::WebArrayBuffer result;
 
     ASSERT(crypto);
 
-    crypto->digestSynchronous(algorithmId, reinterpret_cast<const unsigned char*>(source.data()), source.length(), result);
+    crypto->digestSynchronous(algorithmId, reinterpret_cast<const unsigned char*>(source), length, result);
 
     ASSERT(!result.isNull());
 
@@ -333,14 +334,14 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
     if (hashAlgorithmsUsed == ContentSecurityPolicyHashAlgorithmNone)
         return false;
 
-    CString normalizedSource = UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables);
+    StringUTF8Adaptor normalizedSource(source, StringUTF8Adaptor::Normalize, WTF::EntitiesForUnencodables);
 
     // See comment in CSPSourceList::parseHash about why we are using this sizeof
     // calculation instead of WTF_ARRAY_LENGTH.
     for (size_t i = 0; i < (sizeof(kAlgorithmMap) / sizeof(kAlgorithmMap[0])); i++) {
         DigestValue digest;
         if (kAlgorithmMap[i].cspHashAlgorithm & hashAlgorithmsUsed) {
-            computeDigest(normalizedSource, kAlgorithmMap[i].webCryptoAlgorithmId, digest);
+            computeDigest(normalizedSource.data(), normalizedSource.length(), kAlgorithmMap[i].webCryptoAlgorithmId, digest);
             if (isAllowedByAllWithHash<allowed>(policies, CSPHashValue(kAlgorithmMap[i].cspHashAlgorithm, digest)))
                 return true;
         }
