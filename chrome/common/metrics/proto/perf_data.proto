@@ -321,6 +321,23 @@ message PerfDataProto {
     optional bool did_remap = 7;
   }
 
+  message PerfBuildID {
+    // Misc field in perf_event_header.
+    // Indicates whether the file is mapped in kernel mode or user mode.
+    optional uint32 misc = 1;
+
+    // Process ID.
+    optional uint32 pid = 2;
+
+    // Build id.  Should always contain kBuildIDArraySize bytes of data.
+    // perf_reader.h in Chrome OS defines kBuildIDArraySize = 20.
+    optional bytes build_hash = 3;
+
+    // Filename Md5sum prefix.
+    // The filename was field 4 and has been intentionally left out.
+    optional uint64 filename_md5_prefix = 5;
+  }
+
   repeated PerfFileAttr file_attrs = 1;
   repeated PerfEvent events = 2;
 
@@ -330,4 +347,10 @@ message PerfDataProto {
 
   // Records some stats about the serialized perf events.
   optional PerfEventStats stats = 4;
+
+  // Not added from original: repeated uint64 metadata_mask = 5;
+  // Not added from original: repeated PerfStringMetadata string_metadata = 6;
+
+  // Build ID metadata.
+  repeated PerfBuildID build_ids = 7;
 }
