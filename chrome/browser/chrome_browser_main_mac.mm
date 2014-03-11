@@ -229,18 +229,19 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // Make sure the app controller has been created.
   DCHECK([NSApp delegate]);
 
-  // Prevent Cocoa from turning command-line arguments into
-  // |-application:openFiles:|, since we already handle them directly.
-  [[NSUserDefaults standardUserDefaults]
-      setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
-  // CoreAnimation has poor performance and CoreAnimation and non-CoreAnimation
-  // exhibit window flickering when layers are not hosted in the window server,
-  // which is the default when not not using the 10.9 SDK.
-  // TODO: Remove this when we build with the 10.9 SDK.
-  if (base::mac::IsOSMavericksOrLater())
-    [[NSUserDefaults standardUserDefaults]
-        setObject:@"YES"
-          forKey:@"NSWindowHostsLayersInWindowServer"];
+  [[NSUserDefaults standardUserDefaults] registerDefaults:@{
+      // Prevent Cocoa from turning command-line arguments into
+      // |-application:openFiles:|, since we already handle them directly.
+      // @"NO" looks like a mistake, but the value really is supposed to be a
+      // string.
+      @"NSTreatUnknownArgumentsAsOpen": @"NO",
+      // CoreAnimation has poor performance and CoreAnimation and
+      // non-CoreAnimation exhibit window flickering when layers are not hosted
+      // in the window server, which is the default when not not using the
+      // 10.9 SDK.
+      // TODO: Remove this when we build with the 10.9 SDK.
+      @"NSWindowHostsLayersInWindowServer": @(base::mac::IsOSMavericksOrLater())
+  }];
 }
 
 void ChromeBrowserMainPartsMac::PostProfileInit() {
