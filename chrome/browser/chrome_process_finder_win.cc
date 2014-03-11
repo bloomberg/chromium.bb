@@ -164,7 +164,7 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
   // Format is "START\0<<<current directory>>>\0<<<commandline>>>".
   std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
   base::FilePath cur_dir;
-  if (!file_util::GetCurrentDirectory(&cur_dir))
+  if (!base::GetCurrentDirectory(&cur_dir))
     return NOTIFY_FAILED;
   to_send.append(cur_dir.value());
   to_send.append(L"\0", 1);  // Null separator.

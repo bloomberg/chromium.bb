@@ -739,6 +739,39 @@ int WriteFileDescriptor(const int fd, const char* data, int size) {
   return bytes_written_total;
 }
 
+int AppendToFile(const FilePath& filename, const char* data, int size) {
+  ThreadRestrictions::AssertIOAllowed();
+  int fd = HANDLE_EINTR(open(filename.value().c_str(), O_WRONLY | O_APPEND));
+  if (fd < 0)
+    return -1;
+
+  int bytes_written = WriteFileDescriptor(fd, data, size);
+  if (int ret = IGNORE_EINTR(close(fd)) < 0)
+    return ret;
+  return bytes_written;
+}
+
+// Gets the current working directory for the process.
+bool GetCurrentDirectory(FilePath* dir) {
+  // getcwd can return ENOENT, which implies it checks against the disk.
+  ThreadRestrictions::AssertIOAllowed();
+
+  char system_buffer[PATH_MAX] = "";
+  if (!getcwd(system_buffer, sizeof(system_buffer))) {
+    NOTREACHED();
+    return false;
+  }
+  *dir = FilePath(system_buffer);
+  return true;
+}
+
+// Sets the current working directory for the process.
+bool SetCurrentDirectory(const FilePath& path) {
+  ThreadRestrictions::AssertIOAllowed();
+  int ret = chdir(path.value().c_str());
+  return !ret;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -775,39 +808,6 @@ base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
 
 FILE* OpenFile(const std::string& filename, const char* mode) {
   return OpenFile(FilePath(filename), mode);
-}
-
-int AppendToFile(const FilePath& filename, const char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  int fd = HANDLE_EINTR(open(filename.value().c_str(), O_WRONLY | O_APPEND));
-  if (fd < 0)
-    return -1;
-
-  int bytes_written = base::WriteFileDescriptor(fd, data, size);
-  if (int ret = IGNORE_EINTR(close(fd)) < 0)
-    return ret;
-  return bytes_written;
-}
-
-// Gets the current working directory for the process.
-bool GetCurrentDirectory(FilePath* dir) {
-  // getcwd can return ENOENT, which implies it checks against the disk.
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  char system_buffer[PATH_MAX] = "";
-  if (!getcwd(system_buffer, sizeof(system_buffer))) {
-    NOTREACHED();
-    return false;
-  }
-  *dir = FilePath(system_buffer);
-  return true;
-}
-
-// Sets the current working directory for the process.
-bool SetCurrentDirectory(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  int ret = chdir(path.value().c_str());
-  return !ret;
 }
 
 bool VerifyPathControlledByUser(const FilePath& base,

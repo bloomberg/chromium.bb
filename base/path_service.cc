@@ -187,7 +187,7 @@ bool PathService::Get(int key, FilePath* result) {
 
   // special case the current directory because it can never be cached
   if (key == base::DIR_CURRENT)
-    return file_util::GetCurrentDirectory(result);
+    return base::GetCurrentDirectory(result);
 
   Provider* provider = NULL;
   {

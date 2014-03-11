@@ -585,8 +585,8 @@ GURL URLFixerUpper::FixupRelativeFile(const base::FilePath& base_dir,
   base::FilePath old_cur_directory;
   if (!base_dir.empty()) {
     // Save the old current directory before we move to the new one.
-    file_util::GetCurrentDirectory(&old_cur_directory);
-    file_util::SetCurrentDirectory(base_dir);
+    base::GetCurrentDirectory(&old_cur_directory);
+    base::SetCurrentDirectory(base_dir);
   }
 
   // Allow funny input with extra whitespace and the wrong kind of slashes.
@@ -619,7 +619,7 @@ GURL URLFixerUpper::FixupRelativeFile(const base::FilePath& base_dir,
 
   // Put back the current directory if we saved it.
   if (!base_dir.empty())
-    file_util::SetCurrentDirectory(old_cur_directory);
+    base::SetCurrentDirectory(old_cur_directory);
 
   if (is_file) {
     GURL file_url = net::FilePathToFileURL(full_path);

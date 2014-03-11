@@ -33,7 +33,7 @@ void Run(base::WeakPtr<Runner> runner, const base::FilePath& path) {
 
 std::vector<base::FilePath> GetModuleSearchPaths() {
   std::vector<base::FilePath> module_base(1);
-  CHECK(file_util::GetCurrentDirectory(&module_base[0]));
+  CHECK(base::GetCurrentDirectory(&module_base[0]));
   return module_base;
 }
 

@@ -28,8 +28,8 @@ uint32 WriteDataChunkIntoSnapshotFileOnFileThread(
     const std::string& data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   int bytes_written =
-      file_util::AppendToFile(snapshot_file_path, data.data(),
-                              base::checked_cast<int>(data.size()));
+      base::AppendToFile(snapshot_file_path, data.data(),
+                         base::checked_cast<int>(data.size()));
   return (static_cast<int>(data.size()) == bytes_written) ?
       base::checked_cast<uint32>(bytes_written) : 0;
 }

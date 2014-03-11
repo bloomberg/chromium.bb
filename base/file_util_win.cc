@@ -631,23 +631,8 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
   return -1;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
-
-FILE* OpenFile(const std::string& filename, const char* mode) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return _fsopen(filename.c_str(), mode, _SH_DENYNO);
-}
-
 int AppendToFile(const FilePath& filename, const char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   base::win::ScopedHandle file(CreateFile(filename.value().c_str(),
                                           FILE_APPEND_DATA,
                                           0,
@@ -657,7 +642,7 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
                                           NULL));
   if (!file) {
     DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
-                               << filename.value();
+                               << UTF16ToUTF8(filename.value());
     return -1;
   }
 
@@ -668,19 +653,20 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    DLOG_GETLASTERROR(WARNING) << "writing file " << filename.value()
+    DLOG_GETLASTERROR(WARNING) << "writing file "
+                               << UTF16ToUTF8(filename.value())
                                << " failed";
   } else {
     // Didn't write all the bytes.
     DLOG(WARNING) << "wrote" << written << " bytes to "
-                  << filename.value() << " expected " << size;
+                  << UTF16ToUTF8(filename.value()) << " expected " << size;
   }
   return -1;
 }
 
 // Gets the current working directory for the process.
 bool GetCurrentDirectory(FilePath* dir) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   wchar_t system_buffer[MAX_PATH];
   system_buffer[0] = 0;
@@ -697,9 +683,24 @@ bool GetCurrentDirectory(FilePath* dir) {
 
 // Sets the current working directory for the process.
 bool SetCurrentDirectory(const FilePath& directory) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   BOOL ret = ::SetCurrentDirectory(directory.value().c_str());
   return ret != 0;
+}
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
+
+FILE* OpenFile(const std::string& filename, const char* mode) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return _fsopen(filename.c_str(), mode, _SH_DENYNO);
 }
 
 int GetMaximumPathComponentLength(const FilePath& path) {

@@ -4735,7 +4735,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
 
     base::FilePath dir;
     PathService::Get(base::DIR_EXE, &dir);
-    file_util::SetCurrentDirectory(dir);
+    base::SetCurrentDirectory(dir);
 
     ScopedVector<UploadElementReader> element_readers;
 

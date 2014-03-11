@@ -589,7 +589,7 @@ void PRegTestHarness::AppendRecordToPRegFile(const base::string16& path,
   AppendChars(&buffer, L"]");
 
   ASSERT_EQ(buffer.size(),
-            file_util::AppendToFile(
+            base::AppendToFile(
                 preg_file_path_,
                 reinterpret_cast<const char*>(vector_as_array(&buffer)),
                 buffer.size()));

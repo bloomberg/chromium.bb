@@ -495,7 +495,7 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
   // Change the current directory to the TMP directory. See method comment above
   // for details.
   VLOG(1) << "Changing current directory to: " << tmp_dir.value();
-  if (!file_util::SetCurrentDirectory(tmp_dir))
+  if (!base::SetCurrentDirectory(tmp_dir))
     PLOG(ERROR) << "Failed to change the current directory.";
 
   for (std::vector<base::FilePath>::const_iterator it = setup_files.begin();

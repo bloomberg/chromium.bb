@@ -338,22 +338,22 @@ BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
 BASE_EXPORT int WriteFileDescriptor(const int fd, const char* data, int size);
 #endif
 
+// Append the given buffer into the file. Returns the number of bytes written,
+// or -1 on error.
+BASE_EXPORT int AppendToFile(const FilePath& filename,
+                             const char* data, int size);
+
+// Gets the current working directory for the process.
+BASE_EXPORT bool GetCurrentDirectory(FilePath* path);
+
+// Sets the current working directory for the process.
+BASE_EXPORT bool SetCurrentDirectory(const FilePath& path);
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
 
 namespace file_util {
-
-// Append the given buffer into the file. Returns the number of bytes written,
-// or -1 on error.
-BASE_EXPORT int AppendToFile(const base::FilePath& filename,
-                             const char* data, int size);
-
-// Gets the current working directory for the process.
-BASE_EXPORT bool GetCurrentDirectory(base::FilePath* path);
-
-// Sets the current working directory for the process.
-BASE_EXPORT bool SetCurrentDirectory(const base::FilePath& path);
 
 // Attempts to find a number that can be appended to the |path| to make it
 // unique. If |path| does not exist, 0 is returned.  If it fails to find such

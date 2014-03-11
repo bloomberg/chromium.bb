@@ -193,7 +193,7 @@ bool ExecProcess(const CommandLine& cmdline,
         if (!ShuffleFileDescriptors(&fd_shuffle1))
           _exit(127);
 
-        file_util::SetCurrentDirectory(startup_dir);
+        base::SetCurrentDirectory(startup_dir);
 
         // TODO(brettw) the base version GetAppOutput does a
         // CloseSuperfluousFds call here. Do we need this?

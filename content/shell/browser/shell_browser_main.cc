@@ -87,7 +87,7 @@ GURL GetURLForLayoutTest(const std::string& test_name,
     if (net::FileURLToFilePath(test_url, &local_path))
       *current_working_directory = local_path.DirName();
     else
-      file_util::GetCurrentDirectory(current_working_directory);
+      base::GetCurrentDirectory(current_working_directory);
   }
   return test_url;
 }

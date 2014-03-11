@@ -666,7 +666,7 @@ SourceDir SourceDirForPath(const base::FilePath& source_root,
 
 SourceDir SourceDirForCurrentDirectory(const base::FilePath& source_root) {
   base::FilePath cd;
-  file_util::GetCurrentDirectory(&cd);
+  base::GetCurrentDirectory(&cd);
   return SourceDirForPath(source_root, cd);
 }
 

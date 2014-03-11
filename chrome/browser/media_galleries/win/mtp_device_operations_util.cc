@@ -386,7 +386,7 @@ DWORD CopyDataChunkToLocalFile(IStream* stream,
       base::checked_cast<int>(
           std::min(bytes_read,
                    base::checked_cast<DWORD>(buffer.length())));
-  if (file_util::AppendToFile(local_path, buffer.c_str(), data_len) != data_len)
+  if (base::AppendToFile(local_path, buffer.c_str(), data_len) != data_len)
     return 0U;
   return data_len;
 }

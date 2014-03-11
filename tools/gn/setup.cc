@@ -274,7 +274,7 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
     dotfile_name_ = root_path.Append(kGnFile);
   } else {
     base::FilePath cur_dir;
-    file_util::GetCurrentDirectory(&cur_dir);
+    base::GetCurrentDirectory(&cur_dir);
     dotfile_name_ = FindDotFile(cur_dir);
     if (dotfile_name_.empty()) {
       Err(Location(), "Can't find source root.",

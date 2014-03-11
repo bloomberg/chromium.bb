@@ -232,7 +232,7 @@ TEST_F(NetLogTempFileTest, DoStartClearsFile) {
 
   // Add some junk at the end of the file.
   std::string junk_data("Hello");
-  EXPECT_GT(file_util::AppendToFile(
+  EXPECT_GT(base::AppendToFile(
       net_export_log_, junk_data.c_str(), junk_data.size()), 0);
 
   int64 junk_file_size;

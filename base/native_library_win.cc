@@ -17,23 +17,23 @@ typedef HMODULE (WINAPI* LoadLibraryFunction)(const wchar_t* file_name);
 NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
                                       LoadLibraryFunction load_library_api) {
   // LoadLibrary() opens the file off disk.
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   // Switch the current directory to the library directory as the library
   // may have dependencies on DLLs in this directory.
   bool restore_directory = false;
   FilePath current_directory;
-  if (file_util::GetCurrentDirectory(&current_directory)) {
+  if (GetCurrentDirectory(&current_directory)) {
     FilePath plugin_path = library_path.DirName();
     if (!plugin_path.empty()) {
-      file_util::SetCurrentDirectory(plugin_path);
+      SetCurrentDirectory(plugin_path);
       restore_directory = true;
     }
   }
 
   HMODULE module = (*load_library_api)(library_path.value().c_str());
   if (restore_directory)
-    file_util::SetCurrentDirectory(current_directory);
+    SetCurrentDirectory(current_directory);
 
   return module;
 }

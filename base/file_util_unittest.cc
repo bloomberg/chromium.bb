@@ -1947,11 +1947,11 @@ TEST_F(FileUtilTest, AppendToFile) {
   FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
 
   std::string data("hello");
-  EXPECT_EQ(-1, file_util::AppendToFile(foobar, data.c_str(), data.length()));
+  EXPECT_EQ(-1, AppendToFile(foobar, data.c_str(), data.length()));
   EXPECT_EQ(static_cast<int>(data.length()),
             WriteFile(foobar, data.c_str(), data.length()));
   EXPECT_EQ(static_cast<int>(data.length()),
-            file_util::AppendToFile(foobar, data.c_str(), data.length()));
+            AppendToFile(foobar, data.c_str(), data.length()));
 
   const std::wstring read_content = ReadTextFile(foobar);
   EXPECT_EQ(L"hellohello", read_content);

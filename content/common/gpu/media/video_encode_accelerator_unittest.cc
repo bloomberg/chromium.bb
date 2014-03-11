@@ -497,7 +497,7 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
 
   if (save_to_file_) {
     int size = base::checked_cast<int>(payload_size);
-    EXPECT_EQ(file_util::AppendToFile(
+    EXPECT_EQ(base::AppendToFile(
                   base::FilePath::FromUTF8Unsafe(test_stream_.out_filename),
                   static_cast<char*>(shm->memory()),
                   size),
