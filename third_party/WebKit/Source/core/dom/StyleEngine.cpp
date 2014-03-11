@@ -589,16 +589,16 @@ PassRefPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& tex
     if (!e->document().inQuirksMode()) {
         AtomicString textContent(text);
 
-        WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> >::AddResult result = textToSheetCache().add(textContent, RawPtrWillBeWeakMember<StyleSheetContents>(nullptr));
-        if (result.isNewEntry || !result.storedValue->value) {
+        WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> >::iterator it = textToSheetCache().find(textContent);
+        if (it == textToSheetCache().end()) {
             styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
-            if (result.isNewEntry && styleSheet->contents()->maybeCacheable()) {
-                result.storedValue->value = styleSheet->contents();
+            if (styleSheet->contents()->maybeCacheable()) {
+                textToSheetCache().add(textContent, styleSheet->contents());
                 sheetToTextCache().add(styleSheet->contents(), textContent);
             }
         } else {
-            ASSERT(result.storedValue->value->maybeCacheable());
-            styleSheet = CSSStyleSheet::createInline(result.storedValue->value, e, startPosition);
+            ASSERT(it->value->maybeCacheable());
+            styleSheet = CSSStyleSheet::createInline(it->value, e, startPosition);
         }
     } else {
         // FIXME: currently we don't cache StyleSheetContents inQuirksMode.
