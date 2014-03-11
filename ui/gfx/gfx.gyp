@@ -65,33 +65,6 @@
         'geometry/vector3d_f.h',
       ],
     },
-    # TODO(beng): This should either generate its own executable or be part of
-    #             a gfx_unittests executable. Currently it's built as part of
-    #             ui_unittests.
-    {
-      'target_name': 'gfx_geometry_unittests',
-      'type': 'static_library',
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-        'gfx_geometry',
-      ],
-      'sources': [
-        'geometry/box_unittest.cc',
-        'geometry/cubic_bezier_unittest.cc',
-        'geometry/insets_unittest.cc',
-        'geometry/matrix3_unittest.cc',
-        'geometry/point_unittest.cc',
-        'geometry/point3_unittest.cc',
-        'geometry/quad_unittest.cc',
-        'geometry/rect_unittest.cc',
-        'geometry/safe_integer_conversions_unittest.cc',
-        'geometry/size_unittest.cc',
-        'geometry/vector2d_unittest.cc',
-        'geometry/vector3d_unittest.cc',
-      ],
-    },
     {
       'target_name': 'gfx',
       'type': '<(component)',
@@ -517,12 +490,27 @@
       'target_name': 'gfx_unittests',
       'type': 'executable',
       'sources': [
+        'geometry/box_unittest.cc',
+        'geometry/cubic_bezier_unittest.cc',
+        'geometry/insets_unittest.cc',
+        'geometry/matrix3_unittest.cc',
+        'geometry/point_unittest.cc',
+        'geometry/point3_unittest.cc',
+        'geometry/quad_unittest.cc',
+        'geometry/rect_unittest.cc',
+        'geometry/safe_integer_conversions_unittest.cc',
+        'geometry/size_unittest.cc',
+        'geometry/vector2d_unittest.cc',
+        'geometry/vector3d_unittest.cc',
         'range/range_unittest.cc',
       ],
       'dependencies': [
-        '../../base/base.gyp:run_all_unittests',
-        '../../testing/gtest.gyp:gtest',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:run_all_unittests',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
         'gfx',
+        'gfx_geometry',
       ],
     }
   ],
