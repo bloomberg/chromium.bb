@@ -311,8 +311,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
-  virtual RenderViewHostDelegate::RendererManagement*
-      GetRendererManagementDelegate() OVERRIDE;
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,
                                  const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;

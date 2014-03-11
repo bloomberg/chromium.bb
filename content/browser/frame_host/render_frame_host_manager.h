@@ -39,9 +39,7 @@ class WebUIImpl;
 
 // Manages RenderFrameHosts for a FrameTreeNode.  This class acts as a state
 // machine to make cross-process navigations in a frame possible.
-class CONTENT_EXPORT RenderFrameHostManager
-    : public RenderViewHostDelegate::RendererManagement,
-      public NotificationObserver {
+class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
  public:
   // Functions implemented by our owner that we need.
   //
@@ -196,6 +194,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   // with the navigation instead of closing the tab.
   bool ShouldCloseTabOnUnresponsiveRenderer();
 
+  // Confirms whether we should close the page or navigate away.  This is called
+  // before a cross-site request or before a tab/window is closed (as indicated
+  // by the first parameter) to allow the appropriate renderer to approve or
+  // deny the request.  |proceed| indicates whether the user chose to proceed.
+  // |proceed_time| is the time when the request was allowed to proceed.
+  void OnBeforeUnloadACK(bool for_cross_site_transition,
+                         bool proceed,
+                         const base::TimeTicks& proceed_time);
+
   // The |pending_render_frame_host| is ready to commit a page.  We should
   // ensure that the old RenderFrameHost runs its unload handler first and
   // determine whether a RenderFrameHost transfer is needed.
@@ -250,12 +257,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Returns the currently showing interstitial, NULL if no interstitial is
   // showing.
   InterstitialPageImpl* interstitial_page() const { return interstitial_page_; }
-
-  // RenderViewHostDelegate::RendererManagement implementation.
-  virtual void ShouldClosePage(
-      bool for_cross_site_transition,
-      bool proceed,
-      const base::TimeTicks& proceed_time) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

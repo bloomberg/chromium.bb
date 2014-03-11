@@ -326,9 +326,10 @@ void TestRenderViewHost::SendNavigateWithParameters(
       file_path_for_history_item);
 }
 
-void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
+void TestRenderViewHost::SendBeforeUnloadACK(bool proceed) {
+  // TODO(creis): Move this whole method to TestRenderFrameHost.
   base::TimeTicks now = base::TimeTicks::Now();
-  OnShouldCloseACK(proceed, now, now);
+  main_render_frame_host_->OnBeforeUnloadACK(proceed, now, now);
 }
 
 void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {

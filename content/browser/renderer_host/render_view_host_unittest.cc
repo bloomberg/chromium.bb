@@ -96,7 +96,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage();
   // Needed so that navigations are not suspended on the RVH.
-  test_rvh()->SendShouldCloseACK(true);
+  test_rvh()->SendBeforeUnloadACK(true);
   contents()->Stop();
   controller().Reload(false);
   EXPECT_FALSE(test_rvh()->IsWaitingForUnloadACK());

@@ -104,10 +104,6 @@ using blink::WebPluginAction;
 namespace content {
 namespace {
 
-// Delay to wait on closing the WebContents for a beforeunload/unload handler to
-// fire.
-const int kUnloadTimeoutMS = 1000;
-
 // Translate a WebKit text direction into a base::i18n one.
 base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
     blink::WebTextDirection dir) {
@@ -146,6 +142,9 @@ void DismissVirtualKeyboardTask() {
 #endif
 
 }  // namespace
+
+// static
+const int RenderViewHostImpl::kUnloadTimeoutMS = 1000;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, public:
@@ -567,43 +566,6 @@ void RenderViewHostImpl::CancelSuspendedNavigations() {
   if (suspended_nav_params_)
     suspended_nav_params_.reset();
   navigations_suspended_ = false;
-}
-
-void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
-  if (!IsRenderViewLive()) {
-    // This RenderViewHostImpl doesn't have a live renderer, so just
-    // skip running the onbeforeunload handler.
-    is_waiting_for_beforeunload_ack_ = true;  // Checked by OnShouldCloseACK.
-    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
-    base::TimeTicks now = base::TimeTicks::Now();
-    OnShouldCloseACK(true, now, now);
-    return;
-  }
-
-  // This may be called more than once (if the user clicks the tab close button
-  // several times, or if she clicks the tab close button then the browser close
-  // button), and we only send the message once.
-  if (is_waiting_for_beforeunload_ack_) {
-    // Some of our close messages could be for the tab, others for cross-site
-    // transitions. We always want to think it's for closing the tab if any
-    // of the messages were, since otherwise it might be impossible to close
-    // (if there was a cross-site "close" request pending when the user clicked
-    // the close button). We want to keep the "for cross site" flag only if
-    // both the old and the new ones are also for cross site.
-    unload_ack_is_for_cross_site_transition_ =
-        unload_ack_is_for_cross_site_transition_ && for_cross_site_transition;
-  } else {
-    // Start the hang monitor in case the renderer hangs in the beforeunload
-    // handler.
-    is_waiting_for_beforeunload_ack_ = true;
-    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
-    // Increment the in-flight event count, to ensure that input events won't
-    // cancel the timeout timer.
-    increment_in_flight_event_count();
-    StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
-    send_should_close_start_time_ = base::TimeTicks::Now();
-    Send(new ViewMsg_ShouldClose(GetRoutingID()));
-  }
 }
 
 void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
@@ -1153,7 +1115,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnShouldCloseACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
@@ -1544,51 +1505,6 @@ void RenderViewHostImpl::OnAddMessageToConsole(
 
 void RenderViewHostImpl::OnUserGesture() {
   delegate_->OnUserGesture();
-}
-
-void RenderViewHostImpl::OnShouldCloseACK(
-    bool proceed,
-    const base::TimeTicks& renderer_before_unload_start_time,
-    const base::TimeTicks& renderer_before_unload_end_time) {
-  decrement_in_flight_event_count();
-  StopHangMonitorTimeout();
-  // If this renderer navigated while the beforeunload request was in flight, we
-  // may have cleared this state in OnNavigate, in which case we can ignore
-  // this message.
-  if (!is_waiting_for_beforeunload_ack_ || rvh_state_ != STATE_DEFAULT)
-    return;
-
-  is_waiting_for_beforeunload_ack_ = false;
-
-  RenderViewHostDelegate::RendererManagement* management_delegate =
-      delegate_->GetRendererManagementDelegate();
-  if (management_delegate) {
-    base::TimeTicks before_unload_end_time;
-    if (!send_should_close_start_time_.is_null() &&
-        !renderer_before_unload_start_time.is_null() &&
-        !renderer_before_unload_end_time.is_null()) {
-      // When passing TimeTicks across process boundaries, we need to compensate
-      // for any skew between the processes. Here we are converting the
-      // renderer's notion of before_unload_end_time to TimeTicks in the browser
-      // process. See comments in inter_process_time_ticks_converter.h for more.
-      InterProcessTimeTicksConverter converter(
-          LocalTimeTicks::FromTimeTicks(send_should_close_start_time_),
-          LocalTimeTicks::FromTimeTicks(base::TimeTicks::Now()),
-          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
-          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
-      LocalTimeTicks browser_before_unload_end_time =
-          converter.ToLocalTimeTicks(
-              RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
-      before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
-    }
-    management_delegate->ShouldClosePage(
-        unload_ack_is_for_cross_site_transition_, proceed,
-        before_unload_end_time);
-  }
-
-  // If canceled, notify the delegate to cancel its pending navigation entry.
-  if (!proceed)
-    delegate_->DidCancelLoading();
 }
 
 void RenderViewHostImpl::OnClosePageACK() {

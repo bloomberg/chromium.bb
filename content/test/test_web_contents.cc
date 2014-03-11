@@ -163,7 +163,7 @@ void TestWebContents::ProceedWithCrossSiteNavigation() {
     return;
   TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(
       GetRenderViewHost());
-  rvh->SendShouldCloseACK(true);
+  rvh->SendBeforeUnloadACK(true);
 }
 
 RenderViewHostDelegateView* TestWebContents::GetDelegateView() {

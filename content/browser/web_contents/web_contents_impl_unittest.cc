@@ -487,9 +487,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   RenderFrameHostImpl* pending_rfh = contents()->GetFrameTree()->root()->
       render_manager()->pending_frame_host();
 
-  // Navigations should be suspended in pending_rvh until ShouldCloseACK.
+  // Navigations should be suspended in pending_rvh until BeforeUnloadACK.
   EXPECT_TRUE(pending_rvh->are_navigations_suspended());
-  orig_rvh->SendShouldCloseACK(true);
+  orig_rvh->SendBeforeUnloadACK(true);
   EXPECT_FALSE(pending_rvh->are_navigations_suspended());
 
   // DidNavigate from the pending page
@@ -523,9 +523,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(orig_rvh, goback_rvh);
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
-  // Navigations should be suspended in goback_rvh until ShouldCloseACK.
+  // Navigations should be suspended in goback_rvh until BeforeUnloadACK.
   EXPECT_TRUE(goback_rvh->are_navigations_suspended());
-  pending_rvh->SendShouldCloseACK(true);
+  pending_rvh->SendBeforeUnloadACK(true);
   EXPECT_FALSE(goback_rvh->are_navigations_suspended());
 
   // DidNavigate from the back action
@@ -621,7 +621,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   const GURL url2a("http://www.yahoo.com");
   controller().LoadURL(
       url2a, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  orig_rvh->SendShouldCloseACK(true);
+  orig_rvh->SendBeforeUnloadACK(true);
   TestRenderViewHost* pending_rvh_a =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   contents()->TestDidNavigate(
@@ -636,7 +636,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
                                     std::string());
   TestRenderViewHost* rvh2 =
       static_cast<TestRenderViewHost*>(contents2->GetRenderViewHost());
-  rvh2->SendShouldCloseACK(true);
+  rvh2->SendBeforeUnloadACK(true);
   TestRenderViewHost* pending_rvh_b =
       static_cast<TestRenderViewHost*>(contents2->GetPendingRenderViewHost());
   EXPECT_TRUE(pending_rvh_b != NULL);
@@ -716,9 +716,9 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   int pending_rvh_delete_count = 0;
   pending_rvh->set_delete_counter(&pending_rvh_delete_count);
 
-  // Navigations should be suspended in pending_rvh until ShouldCloseACK.
+  // Navigations should be suspended in pending_rvh until BeforeUnloadACK.
   EXPECT_TRUE(pending_rvh->are_navigations_suspended());
-  orig_rvh->SendShouldCloseACK(true);
+  orig_rvh->SendBeforeUnloadACK(true);
   EXPECT_FALSE(pending_rvh->are_navigations_suspended());
 
   // DidNavigate from the pending page.
@@ -760,7 +760,7 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  orig_rvh->SendShouldCloseACK(true);
+  orig_rvh->SendBeforeUnloadACK(true);
   TestRenderViewHost* pending_rvh =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
 
@@ -847,7 +847,8 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   base::TimeTicks now = base::TimeTicks::Now();
-  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, false, now, now));
+  orig_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
@@ -857,7 +858,8 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   now = base::TimeTicks::Now();
-  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  orig_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
@@ -897,7 +899,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   base::TimeTicks now = base::TimeTicks::Now();
-  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  orig_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
   // Suppose the original renderer navigates before the new one is ready.
@@ -942,7 +945,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   // Simulate beforeunload approval.
   EXPECT_TRUE(ntp_rvh->is_waiting_for_beforeunload_ack());
   base::TimeTicks now = base::TimeTicks::Now();
-  ntp_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  ntp_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
 
   // DidNavigate from the pending page.
   contents()->TestDidNavigate(
@@ -991,7 +995,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   // Simulate beforeunload approval.
   EXPECT_TRUE(google_rvh->is_waiting_for_beforeunload_ack());
   now = base::TimeTicks::Now();
-  google_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  google_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
 
   // DidNavigate from the first back. This aborts the second back's pending RVH.
   contents()->TestDidNavigate(google_rvh, 1, url2, PAGE_TRANSITION_TYPED);
@@ -1040,7 +1045,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
   // Now simulate the onbeforeunload approval and verify the navigation is
   // not canceled.
   base::TimeTicks now = base::TimeTicks::Now();
-  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  orig_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->cross_navigation_pending());
 }
@@ -1104,7 +1110,8 @@ TEST_F(WebContentsImplTest, CrossSiteCantPreemptAfterUnload) {
   controller().LoadURL(
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   base::TimeTicks now = base::TimeTicks::Now();
-  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  orig_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost());
@@ -1161,7 +1168,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {
   controller().LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
   base::TimeTicks now = base::TimeTicks::Now();
-  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  orig_rvh->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
   // Simulate swap out message when the response arrives.

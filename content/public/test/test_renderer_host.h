@@ -87,8 +87,9 @@ class RenderViewHostTester {
   virtual void SendNavigateWithTransition(int page_id, const GURL& url,
                                           PageTransition transition) = 0;
 
-  // Calls OnMsgShouldCloseACK on the RenderViewHost with the given parameter.
-  virtual void SendShouldCloseACK(bool proceed) = 0;
+  // Calls OnBeforeUnloadACK on the main RenderFrameHost with the given
+  // parameter.
+  virtual void SendBeforeUnloadACK(bool proceed) = 0;
 
   // If set, future loads will have |mime_type| set as the mime type.
   // If not set, the mime type will default to "text/html".

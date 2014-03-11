@@ -291,6 +291,10 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
 // existing navigation.
 IPC_MESSAGE_ROUTED1(FrameMsg_Navigate, FrameMsg_Navigate_Params)
 
+// Instructs the renderer to invoke the frame's beforeunload event handler.
+// Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
+IPC_MESSAGE_ROUTED0(FrameMsg_BeforeUnload)
+
 // Instructs the frame to swap out for a cross-site transition, including
 // running the unload event handler. Expects a SwapOut_ACK message when
 // finished.
@@ -432,6 +436,14 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_BuffersSwappedACK,
 // See FrameMsg_CompositorFrameSwapped
 IPC_MESSAGE_ROUTED1(FrameHostMsg_CompositorFrameSwappedACK,
                     FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)
+
+// Provides the result from handling BeforeUnload.  |proceed| matches the return
+// value of the frame's beforeunload handler: true if the user decided to
+// proceed with leaving the page.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
+                    bool /* proceed */,
+                    base::TimeTicks /* before_unload_start_time */,
+                    base::TimeTicks /* before_unload_end_time */)
 
 // Indicates that the current frame has swapped out, after a SwapOut message.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)

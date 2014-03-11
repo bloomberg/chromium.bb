@@ -178,15 +178,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Asks the renderer to exit fullscreen
   virtual void ExitFullscreen() = 0;
 
-  // Causes the renderer to invoke the onbeforeunload event handler.  The
-  // result will be returned via ViewMsg_ShouldClose. See also ClosePage and
-  // SwapOut, which fire the PageUnload event.
-  //
-  // Set bool for_cross_site_transition when this close is just for the current
-  // RenderView in the case of a cross-site transition. False means we're
-  // closing the entire tab.
-  virtual void FirePageBeforeUnload(bool for_cross_site_transition) = 0;
-
   // Notifies the Listener that one or more files have been chosen by the user
   // from a file chooser dialog for the form. |permissions| is the file
   // selection mode in which the chooser dialog was created.

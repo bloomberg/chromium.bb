@@ -74,33 +74,9 @@ struct RendererPreferences;
 //  listener here to serve that need.
 class CONTENT_EXPORT RenderViewHostDelegate {
  public:
-  // RendererManagerment -------------------------------------------------------
-  // Functions for managing switching of Renderers. For WebContents, this is
-  // implemented by the RenderFrameHostManager.
-
-  class CONTENT_EXPORT RendererManagement {
-   public:
-    // Notification whether we should close the page, after an explicit call to
-    // AttemptToClosePage.  This is called before a cross-site request or before
-    // a tab/window is closed (as indicated by the first parameter) to allow the
-    // appropriate renderer to approve or deny the request.  |proceed| indicates
-    // whether the user chose to proceed.  |proceed_time| is the time when the
-    // request was allowed to proceed.
-    virtual void ShouldClosePage(
-        bool for_cross_site_transition,
-        bool proceed,
-        const base::TimeTicks& proceed_time) = 0;
-
-   protected:
-    virtual ~RendererManagement() {}
-  };
-
-  // ---------------------------------------------------------------------------
-
   // Returns the current delegate associated with a feature. May return NULL if
   // there is no corresponding delegate.
   virtual RenderViewHostDelegateView* GetDelegateView();
-  virtual RendererManagement* GetRendererManagementDelegate();
 
   // This is used to give the delegate a chance to filter IPC messages.
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,

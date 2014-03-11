@@ -869,11 +869,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
 // the renderer.
 IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
 
-// Instructs the renderer to invoke the frame's shouldClose method, which
-// runs the onbeforeunload event handler.  Expects the result to be returned
-// via ViewHostMsg_ShouldClose.
-IPC_MESSAGE_ROUTED0(ViewMsg_ShouldClose)
-
 // Tells the renderer to suppress any further modal dialogs until it receives a
 // corresponding ViewMsg_SwapOut message.  This ensures that no
 // PageGroupLoadDeferrer is on the stack for SwapOut.
@@ -1235,15 +1230,6 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
                     gfx::Rect /* selection_rect */,
                     int /* active_match_ordinal */,
                     bool /* final_update */)
-
-// Provides the result from running OnMsgShouldClose.  |proceed| matches the
-// return value of the the frame's shouldClose method (which includes the
-// onbeforeunload handler): true if the user decided to proceed with leaving
-// the page.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_ShouldClose_ACK,
-                    bool /* proceed */,
-                    base::TimeTicks /* before_unload_start_time */,
-                    base::TimeTicks /* before_unload_end_time */)
 
 // Indicates that the current renderer has swapped out, after a SwapOut
 // message.

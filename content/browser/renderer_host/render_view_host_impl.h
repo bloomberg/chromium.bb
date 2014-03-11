@@ -212,7 +212,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const gfx::Point& location,
       const blink::WebPluginAction& action) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
-  virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void FilesSelectedInChooser(
       const std::vector<ui::SelectedFileInfo>& files,
       FileChooserParams::Mode permissions) OVERRIDE;
@@ -585,10 +584,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                              const base::string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
-  void OnShouldCloseACK(
-      bool proceed,
-      const base::TimeTicks& renderer_before_unload_start_time,
-      const base::TimeTicks& renderer_before_unload_end_time);
   void OnClosePageACK();
   void OnSwapOutACK();
   void OnAccessibilityEvents(
@@ -618,6 +613,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   friend class TestRenderViewHost;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
+
+  // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
+  // Delay to wait on closing the WebContents for a beforeunload/unload handler
+  // to fire.
+  static const int kUnloadTimeoutMS;
 
   // Updates the state of this RenderViewHost and clears any waiting state
   // that is no longer relevant.
@@ -706,10 +706,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
-
-  // When the last ShouldClose message was sent.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
-  base::TimeTicks send_should_close_start_time_;
 
   // Set to true if we requested the on screen keyboard to be displayed.
   bool virtual_keyboard_requested_;

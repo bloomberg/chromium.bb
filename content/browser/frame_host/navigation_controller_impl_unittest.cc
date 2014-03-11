@@ -403,7 +403,7 @@ TEST_F(NavigationControllerTest, LoadURL) {
 
   // Simulate the beforeunload ack for the cross-site transition, and then the
   // commit.
-  test_rvh()->SendShouldCloseACK(true);
+  test_rvh()->SendBeforeUnloadACK(true);
   static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -454,7 +454,7 @@ TEST_F(NavigationControllerTest, LoadURLSameTime) {
 
   // Simulate the beforeunload ack for the cross-site transition, and then the
   // commit.
-  test_rvh()->SendShouldCloseACK(true);
+  test_rvh()->SendBeforeUnloadACK(true);
   main_test_rfh()->SendNavigate(1, url2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -734,7 +734,7 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
   EXPECT_EQ(0U, notifications.size());
 
   // After the beforeunload but before it commits, do a new navigation.
-  test_rvh()->SendShouldCloseACK(true);
+  test_rvh()->SendBeforeUnloadACK(true);
   const GURL kNewURL("http://see");
   static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost())->SendNavigate(3, kNewURL);
@@ -814,7 +814,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   const GURL kExistingURL2("http://foo/eh");
   controller.LoadURL(
       kExistingURL2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  test_rvh()->SendShouldCloseACK(true);
+  test_rvh()->SendBeforeUnloadACK(true);
   TestRenderViewHost* foo_rvh = static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost());
   foo_rvh->SendNavigate(1, kExistingURL2);
@@ -824,7 +824,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   // Now make a pending back/forward navigation to a privileged entry.
   // The zeroth entry should be pending.
   controller.GoBack();
-  foo_rvh->SendShouldCloseACK(true);
+  foo_rvh->SendBeforeUnloadACK(true);
   EXPECT_EQ(0U, notifications.size());
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
@@ -1091,7 +1091,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   // transition, and set bindings on the pending RenderViewHost to simulate a
   // privileged url.
   controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  orig_rvh->SendShouldCloseACK(true);
+  orig_rvh->SendBeforeUnloadACK(true);
   contents()->GetPendingRenderViewHost()->AllowBindings(1);
   static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);

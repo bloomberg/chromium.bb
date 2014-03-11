@@ -12,7 +12,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -115,7 +115,7 @@ bool WebDialogView::CanClose() {
     // Fire beforeunload event when user attempts to close the dialog.
     is_attempting_close_dialog_ = true;
     web_view_->
-        web_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
+        web_contents()->GetMainFrame()->DispatchBeforeUnload(false);
   }
   return false;
 }

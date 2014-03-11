@@ -604,7 +604,7 @@ bool DevToolsWindow::InterceptPageBeforeUnload(content::WebContents* contents) {
   // Handle case of devtools inspecting another devtools instance by passing
   // the call up to the inspecting devtools instance.
   if (!DevToolsWindow::InterceptPageBeforeUnload(window->web_contents())) {
-    window->web_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
+    window->web_contents()->GetMainFrame()->DispatchBeforeUnload(false);
   }
   return true;
 }
@@ -876,7 +876,7 @@ void DevToolsWindow::BeforeUnloadFired(content::WebContents* tab,
     // Inspected page is attempting to close.
     content::WebContents* inspected_web_contents = GetInspectedWebContents();
     if (proceed) {
-      inspected_web_contents->GetRenderViewHost()->FirePageBeforeUnload(false);
+      inspected_web_contents->GetMainFrame()->DispatchBeforeUnload(false);
     } else {
       bool should_proceed;
       inspected_web_contents->GetDelegate()->BeforeUnloadFired(
@@ -1002,7 +1002,7 @@ void DevToolsWindow::CloseWindow() {
   // This will prevent any activity after frontend is loaded.
   action_on_load_ = DevToolsToggleAction::NoOp();
   ignore_set_is_docked_ = true;
-  web_contents_->GetRenderViewHost()->FirePageBeforeUnload(false);
+  web_contents_->GetMainFrame()->DispatchBeforeUnload(false);
 }
 
 void DevToolsWindow::SetContentsInsets(

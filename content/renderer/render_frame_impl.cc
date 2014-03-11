@@ -536,6 +536,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameImpl, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
+    IPC_MESSAGE_HANDLER(FrameMsg_BeforeUnload, OnBeforeUnload)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
     IPC_MESSAGE_HANDLER(FrameMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
@@ -739,6 +740,20 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
 
   // In case LoadRequest failed before DidCreateDataSource was called.
   render_view_->pending_navigation_params_.reset();
+}
+
+void RenderFrameImpl::OnBeforeUnload() {
+  // TODO(creis): Move dispatchBeforeUnloadEvent to WebFrame.  Until then, this
+  // should only be called on the main frame.  Eventually, the browser process
+  // should dispatch it to every frame that needs it.
+  CHECK(!frame_->parent());
+
+  base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
+  bool proceed = render_view_->webview()->dispatchBeforeUnloadEvent();
+  base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
+  Send(new FrameHostMsg_BeforeUnload_ACK(routing_id_, proceed,
+                                         before_unload_start_time,
+                                         before_unload_end_time));
 }
 
 void RenderFrameImpl::OnSwapOut() {

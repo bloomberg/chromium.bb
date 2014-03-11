@@ -135,10 +135,10 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   RenderViewHost* pending_rvh = RenderViewHostTester::GetPendingForController(
       controller);
   if (pending_rvh) {
-    // Simulate the ShouldClose_ACK that is received from the current renderer
+    // Simulate the BeforeUnload_ACK that is received from the current renderer
     // for a cross-site navigation.
     DCHECK_NE(old_rvh, pending_rvh);
-    RenderViewHostTester::For(old_rvh)->SendShouldCloseACK(true);
+    RenderViewHostTester::For(old_rvh)->SendBeforeUnloadACK(true);
   }
   // Commit on the pending_rvh, if one exists.
   RenderViewHost* test_rvh = pending_rvh ? pending_rvh : old_rvh;

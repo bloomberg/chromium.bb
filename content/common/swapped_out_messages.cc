@@ -25,7 +25,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_Focus::ID:
     // Handled by RenderViewHost.
     case ViewHostMsg_RenderProcessGone::ID:
-    case ViewHostMsg_ShouldClose_ACK::ID:
     case ViewHostMsg_SwapOut_ACK::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
@@ -35,6 +34,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_RouteCloseEvent::ID:
     case ViewHostMsg_RouteMessageEvent::ID:
     // Handled by RenderFrameHost.
+    case FrameHostMsg_BeforeUnload_ACK::ID:
     case FrameHostMsg_SwapOut_ACK::ID:
     // Frame detach must occur after the RenderView has swapped out.
     case FrameHostMsg_Detach::ID:

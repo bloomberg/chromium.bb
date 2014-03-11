@@ -268,6 +268,53 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   return false;
 }
 
+void RenderFrameHostManager::OnBeforeUnloadACK(
+    bool for_cross_site_transition,
+    bool proceed,
+    const base::TimeTicks& proceed_time) {
+  if (for_cross_site_transition) {
+    // Ignore if we're not in a cross-site navigation.
+    if (!cross_navigation_pending_)
+      return;
+
+    if (proceed) {
+      // Ok to unload the current page, so proceed with the cross-site
+      // navigation.  Note that if navigations are not currently suspended, it
+      // might be because the renderer was deemed unresponsive and this call was
+      // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
+      // is ok to do nothing here.
+      if (pending_render_frame_host_ &&
+          pending_render_frame_host_->render_view_host()->
+              are_navigations_suspended()) {
+        pending_render_frame_host_->render_view_host()->
+            SetNavigationsSuspended(false, proceed_time);
+      }
+    } else {
+      // Current page says to cancel.
+      CancelPending();
+      cross_navigation_pending_ = false;
+    }
+  } else {
+    // Non-cross site transition means closing the entire tab.
+    bool proceed_to_fire_unload;
+    delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
+                                                  &proceed_to_fire_unload);
+
+    if (proceed_to_fire_unload) {
+      // If we're about to close the tab and there's a pending RFH, cancel it.
+      // Otherwise, if the navigation in the pending RFH completes before the
+      // close in the current RFH, we'll lose the tab close.
+      if (pending_render_frame_host_) {
+        CancelPending();
+        cross_navigation_pending_ = false;
+      }
+
+      // This is not a cross-site navigation, the tab is being closed.
+      render_frame_host_->render_view_host()->ClosePage();
+    }
+  }
+}
+
 void RenderFrameHostManager::OnCrossSiteResponse(
     RenderFrameHostImpl* pending_render_frame_host,
     const GlobalRequestID& global_request_id,
@@ -469,53 +516,6 @@ void RenderFrameHostManager::RendererProcessClosing(
     delete swapped_out_hosts_[ids_to_remove.back()];
     swapped_out_hosts_.erase(ids_to_remove.back());
     ids_to_remove.pop_back();
-  }
-}
-
-void RenderFrameHostManager::ShouldClosePage(
-    bool for_cross_site_transition,
-    bool proceed,
-    const base::TimeTicks& proceed_time) {
-  if (for_cross_site_transition) {
-    // Ignore if we're not in a cross-site navigation.
-    if (!cross_navigation_pending_)
-      return;
-
-    if (proceed) {
-      // Ok to unload the current page, so proceed with the cross-site
-      // navigation.  Note that if navigations are not currently suspended, it
-      // might be because the renderer was deemed unresponsive and this call was
-      // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
-      // is ok to do nothing here.
-      if (pending_render_frame_host_ &&
-          pending_render_frame_host_->render_view_host()->
-              are_navigations_suspended()) {
-        pending_render_frame_host_->render_view_host()->
-            SetNavigationsSuspended(false, proceed_time);
-      }
-    } else {
-      // Current page says to cancel.
-      CancelPending();
-      cross_navigation_pending_ = false;
-    }
-  } else {
-    // Non-cross site transition means closing the entire tab.
-    bool proceed_to_fire_unload;
-    delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
-                                                  &proceed_to_fire_unload);
-
-    if (proceed_to_fire_unload) {
-      // If we're about to close the tab and there's a pending RFH, cancel it.
-      // Otherwise, if the navigation in the pending RFH completes before the
-      // close in the current RFH, we'll lose the tab close.
-      if (pending_render_frame_host_) {
-        CancelPending();
-        cross_navigation_pending_ = false;
-      }
-
-      // This is not a cross-site navigation, the tab is being closed.
-      render_frame_host_->render_view_host()->ClosePage();
-    }
   }
 }
 
@@ -1329,9 +1329,9 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
     // Unless we are transferring an existing request, we should now
     // tell the old render view to run its beforeunload handler, since it
     // doesn't otherwise know that the cross-site request is happening.  This
-    // will trigger a call to ShouldClosePage with the reply.
+    // will trigger a call to OnBeforeUnloadACK with the reply.
     if (!is_transfer)
-      render_frame_host_->render_view_host()->FirePageBeforeUnload(true);
+      render_frame_host_->DispatchBeforeUnload(true);
 
     return pending_render_frame_host_.get();
   }

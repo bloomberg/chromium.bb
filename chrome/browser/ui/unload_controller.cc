@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -68,7 +69,7 @@ bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
     // with the NeedToFireBeforeUnload bit cleared.
-    contents->GetRenderViewHost()->FirePageBeforeUnload(false);
+    contents->GetMainFrame()->DispatchBeforeUnload(false);
     return true;
   }
   return false;
@@ -296,7 +297,7 @@ void UnloadController::ProcessPendingTabs() {
       // and then call beforeunload handlers for |web_contents|.
       // See DevToolsWindow::InterceptPageBeforeUnload for details.
       if (!DevToolsWindow::InterceptPageBeforeUnload(web_contents))
-        web_contents->GetRenderViewHost()->FirePageBeforeUnload(false);
+        web_contents->GetMainFrame()->DispatchBeforeUnload(false);
     } else {
       ClearUnloadState(web_contents, true);
     }

@@ -1139,7 +1139,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
-    IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnShouldClose)
     IPC_MESSAGE_HANDLER(ViewMsg_SuppressDialogsUntilSwapOut,
                         OnSuppressDialogsUntilSwapOut)
     IPC_MESSAGE_HANDLER(ViewMsg_SwapOut, OnSwapOut)
@@ -3982,15 +3981,6 @@ void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
   WebPageSerializer::serialize(webview()->mainFrame(), true, this, weburl_links,
                                webstring_paths,
                                local_directory_name.AsUTF16Unsafe());
-}
-
-void RenderViewImpl::OnShouldClose() {
-  base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
-  bool should_close = webview()->dispatchBeforeUnloadEvent();
-  base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
-  Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close,
-                                       before_unload_start_time,
-                                       before_unload_end_time));
 }
 
 void RenderViewImpl::OnSuppressDialogsUntilSwapOut() {

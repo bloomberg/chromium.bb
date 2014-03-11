@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/page_transition_types.h"
@@ -51,6 +52,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual bool IsCrossProcessSubframe() OVERRIDE;
   virtual GURL GetLastCommittedURL() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual void DispatchBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteCustomContextMenuCommand(
@@ -170,6 +172,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                     const GURL& target_url);
   void OnNavigate(const IPC::Message& msg);
   void OnDidStopLoading();
+  void OnBeforeUnloadACK(
+      bool proceed,
+      const base::TimeTicks& renderer_before_unload_start_time,
+      const base::TimeTicks& renderer_before_unload_end_time);
   void OnSwapOutACK();
   void OnContextMenu(const ContextMenuParams& params);
 
@@ -210,6 +216,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   int routing_id_;
   bool is_swapped_out_;
+
+  // When the last BeforeUnload message was sent.
+  base::TimeTicks send_before_unload_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };

@@ -119,10 +119,10 @@ class RenderFrameHostManagerTest
     controller().LoadURL(url, Referrer(), PAGE_TRANSITION_LINK, std::string());
     TestRenderViewHost* old_rvh = test_rvh();
 
-    // Simulate the ShouldClose_ACK that is received from the current renderer
+    // Simulate the BeforeUnload_ACK that is received from the current renderer
     // for a cross-site navigation.
     if (old_rvh != active_rvh())
-      old_rvh->SendShouldCloseACK(true);
+      old_rvh->SendBeforeUnloadACK(true);
 
     // Commit the navigation with a new page ID.
     int32 max_page_id = contents()->GetMaxPageIDForSiteInstance(
@@ -170,7 +170,7 @@ class RenderFrameHostManagerTest
     EXPECT_NE(ntp_rvh, dest_rvh);
 
     // BeforeUnload finishes.
-    ntp_rvh->SendShouldCloseACK(true);
+    ntp_rvh->SendBeforeUnloadACK(true);
 
     dest_rvh->SendNavigate(101, kDestUrl);
     ntp_rvh->OnSwappedOut(false);
@@ -221,7 +221,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
       contents2->GetRenderManagerForTesting()->pending_render_view_host());
   ASSERT_TRUE(dest_rvh2);
 
-  ntp_rvh2->SendShouldCloseACK(true);
+  ntp_rvh2->SendBeforeUnloadACK(true);
   ntp_rvh2->OnSwappedOut(false);
   dest_rvh2->SendNavigate(101, kDestUrl);
 
@@ -237,7 +237,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   contents2->GetController().LoadURL(
       kChromeUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
-  dest_rvh2->SendShouldCloseACK(true);
+  dest_rvh2->SendBeforeUnloadACK(true);
   dest_rvh2->OnSwappedOut(false);
   static_cast<TestRenderViewHost*>(contents2->GetRenderManagerForTesting()->
      pending_render_view_host())->SendNavigate(102, kChromeUrl);
@@ -285,7 +285,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
       increment_active_view_count();
 
   // BeforeUnload finishes.
-  ntp_rvh->SendShouldCloseACK(true);
+  ntp_rvh->SendBeforeUnloadACK(true);
 
   // Assume SwapOutACK times out, so the dest_rvh proceeds and commits.
   dest_rvh->SendNavigate(101, kDestUrl);
@@ -529,10 +529,10 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // Navigate.
   controller().LoadURL(
       kUrl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  // Simulate response from RenderView for FirePageBeforeUnload.
+  // Simulate response from RenderFrame for DispatchBeforeUnload.
   base::TimeTicks now = base::TimeTicks::Now();
-  test_rvh()->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
-      rvh()->GetRoutingID(), true, now, now));
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_BeforeUnload_ACK(
+      main_test_rfh()->GetRoutingID(), true, now, now));
   ASSERT_TRUE(pending_rvh());  // New pending RenderViewHost will be created.
   RenderViewHost* last_rvh = pending_rvh();
   int32 new_id = contents()->GetMaxPageIDForSiteInstance(
@@ -759,15 +759,15 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
       FrameMsg_Navigate::ID));
 
   // Allow closing the current Render View (precondition for swapping out
-  // the RVH): Simulate response from RenderView for ViewMsg_ShouldClose sent by
-  // FirePageBeforeUnload.
+  // the RVH): Simulate response from RenderFrame for FrameMsg_BeforeUnload sent
+  // by DispatchBeforeUnload.
   TestRenderViewHost* test_host =
       static_cast<TestRenderViewHost*>(host->render_view_host());
   MockRenderProcessHost* test_process_host =
       static_cast<MockRenderProcessHost*>(test_host->GetProcess());
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
-      ViewMsg_ShouldClose::ID));
-  test_host->SendShouldCloseACK(true);
+      FrameMsg_BeforeUnload::ID));
+  test_host->SendBeforeUnloadACK(true);
 
   // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
   // call of RenderFrameHostManager::SwapOutOldPage before
@@ -808,8 +808,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // Simulate a response to the second beforeunload request.
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
-      ViewMsg_ShouldClose::ID));
-  test_host->SendShouldCloseACK(true);
+      FrameMsg_BeforeUnload::ID));
+  test_host->SendBeforeUnloadACK(true);
 
   // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
   // call of RenderFrameHostManager::SwapOutOldPage before
@@ -1339,7 +1339,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   // 3) Close the tab. -------------------------
   notifications.ListenFor(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                           Source<RenderWidgetHost>(host2->render_view_host()));
-  manager->ShouldClosePage(false, true, base::TimeTicks());
+  manager->OnBeforeUnloadACK(false, true, base::TimeTicks());
 
   EXPECT_TRUE(
       notifications.Check1AndReset(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED));
@@ -1385,7 +1385,8 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(kUrl2, Referrer(), PAGE_TRANSITION_LINK, std::string());
   base::TimeTicks now = base::TimeTicks::Now();
-  rvh1->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* rvh2 =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
@@ -1439,7 +1440,8 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(kUrl2, Referrer(), PAGE_TRANSITION_LINK, std::string());
   base::TimeTicks now = base::TimeTicks::Now();
-  rvh1->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* rvh2 =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
@@ -1488,7 +1490,8 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(kUrl2, Referrer(), PAGE_TRANSITION_LINK, std::string());
   base::TimeTicks now = base::TimeTicks::Now();
-  rvh1->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* rvh2 =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
@@ -1542,7 +1545,8 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(kUrl2, Referrer(), PAGE_TRANSITION_LINK, std::string());
   base::TimeTicks now = base::TimeTicks::Now();
-  rvh1->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true, now, now));
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* rvh2 =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
