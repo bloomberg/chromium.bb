@@ -493,6 +493,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection = map_.Lookup(ipc_object_id);
+  if (connection->IsConnected())
+    connection->Close();
   parent_->Context()
       ->ConnectionClosed(database_url_map_[ipc_object_id], connection);
   database_url_map_.erase(ipc_object_id);
