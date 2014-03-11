@@ -68,8 +68,7 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   // EnvObserver overrides.
   virtual void OnWindowInitialized(Window* window) OVERRIDE;
-  virtual void OnRootWindowInitialized(
-      WindowEventDispatcher* dispatcher) OVERRIDE;
+  virtual void OnHostInitialized(WindowTreeHost* host) OVERRIDE;
 
   // ui::EventSource overrides.
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;

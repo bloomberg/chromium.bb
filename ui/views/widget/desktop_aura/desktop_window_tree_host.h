@@ -57,10 +57,8 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) = 0;
 
-  // Invoked once the WindowEventDispatcher has been created. Caller owns the
-  // WindowEventDispatcher.
-  virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
-                                   const Widget::InitParams& params) = 0;
+  // Invoked once the DesktopNativeWidgetAura has been created.
+  virtual void OnNativeWidgetCreated(const Widget::InitParams& params) = 0;
 
   // Creates and returns the Tooltip implementation to use. Return value is
   // owned by DesktopNativeWidgetAura and lives as long as

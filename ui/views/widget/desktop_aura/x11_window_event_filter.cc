@@ -12,7 +12,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -61,10 +60,9 @@ const char* kAtomsToCache[] = {
 namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
-    aura::WindowEventDispatcher* dispatcher,
     DesktopWindowTreeHost* window_tree_host)
     : xdisplay_(gfx::GetXDisplay()),
-      xwindow_(dispatcher->host()->GetAcceleratedWidget()),
+      xwindow_(window_tree_host->AsWindowTreeHost()->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_tree_host_(window_tree_host),

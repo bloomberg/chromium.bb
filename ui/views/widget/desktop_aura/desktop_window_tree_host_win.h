@@ -47,8 +47,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // Overridden from DesktopWindowTreeHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) OVERRIDE;
-  virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
-                                   const Widget::InitParams& params) OVERRIDE;
+  virtual void OnNativeWidgetCreated(const Widget::InitParams& params) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual scoped_ptr<aura::client::DragDropClient>
       CreateDragDropClient(DesktopNativeCursorManager* cursor_manager) OVERRIDE;
@@ -225,10 +224,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
 
   // Returns true if a modal window is active in the current root window chain.
   bool IsModalWindowActive() const;
-
-  // We are owned by the WindowEventDispatcher, but we have to have a back
-  // pointer to it.
-  aura::WindowEventDispatcher* dispatcher_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<aura::client::FocusClient> focus_client_;

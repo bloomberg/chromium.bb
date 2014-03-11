@@ -25,10 +25,9 @@ class EnvTestHelper;
 class EnvObserver;
 class InputStateLookup;
 class Window;
-class WindowEventDispatcher;
+class WindowTreeHost;
 
 // A singleton object that tracks general state within Aura.
-// TODO(beng): manage RootWindows.
 class AURA_EXPORT Env : public ui::EventTarget {
  public:
   Env();
@@ -59,9 +58,6 @@ class AURA_EXPORT Env : public ui::EventTarget {
   bool is_touch_down() const { return is_touch_down_; }
   void set_touch_down(bool value) { is_touch_down_ = value; }
 
-  // Invoked by RootWindow when its host is activated.
-  void RootWindowActivated(WindowEventDispatcher* dispatcher);
-
  private:
   friend class test::EnvTestHelper;
   friend class Window;
@@ -72,8 +68,11 @@ class AURA_EXPORT Env : public ui::EventTarget {
   // Called by the Window when it is initialized. Notifies observers.
   void NotifyWindowInitialized(Window* window);
 
-  // Called by the RootWindow when it is initialized. Notifies observers.
-  void NotifyRootWindowInitialized(WindowEventDispatcher* dispatcher);
+  // Called by the WindowTreeHost when it is initialized. Notifies observers.
+  void NotifyHostInitialized(WindowTreeHost* host);
+
+  // Invoked by WindowTreeHost when it is activated. Notifies observers.
+  void NotifyHostActivated(WindowTreeHost* host);
 
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;

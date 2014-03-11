@@ -16,7 +16,6 @@
 
 namespace aura {
 class Window;
-class WindowEventDispatcher;
 }
 
 namespace gfx {
@@ -30,8 +29,7 @@ class NativeWidgetAura;
 // An EventFilter that sets properties on X11 windows.
 class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
  public:
-  X11WindowEventFilter(aura::WindowEventDispatcher* dispatcher,
-                       DesktopWindowTreeHost* window_tree_host);
+  explicit X11WindowEventFilter(DesktopWindowTreeHost* window_tree_host);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.

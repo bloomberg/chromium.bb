@@ -128,7 +128,6 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       is_fullscreen_(false),
       is_always_on_top_(false),
       use_native_frame_(false),
-      dispatcher_(NULL),
       drag_drop_client_(NULL),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
@@ -139,9 +138,9 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
 }
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
-  dispatcher_->window()->ClearProperty(kHostForRootWindow);
-  aura::client::SetWindowMoveClient(dispatcher_->window(), NULL);
-  desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(dispatcher_);
+  window()->ClearProperty(kHostForRootWindow);
+  aura::client::SetWindowMoveClient(window(), NULL);
+  desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   if (custom_window_shape_)
     XDestroyRegion(custom_window_shape_);
   DestroyDispatcher();
@@ -224,29 +223,24 @@ void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
   InitX11Window(sanitized_params);
 }
 
-void DesktopWindowTreeHostX11::OnRootWindowCreated(
-    aura::WindowEventDispatcher* dispatcher,
+void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  dispatcher_ = dispatcher;
-
-  dispatcher_->window()->SetProperty(kViewsWindowForRootWindow,
-                                     content_window_);
-  dispatcher_->window()->SetProperty(kHostForRootWindow, this);
+  window()->SetProperty(kViewsWindowForRootWindow, content_window_);
+  window()->SetProperty(kHostForRootWindow, this);
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation
   // messages to us.
   X11DesktopHandler::get();
 
   // TODO(erg): Unify this code once the other consumer goes away.
-  x11_window_event_filter_.reset(new X11WindowEventFilter(dispatcher_, this));
+  x11_window_event_filter_.reset(new X11WindowEventFilter(this));
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
   desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
       x11_window_event_filter_.get());
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
-  aura::client::SetWindowMoveClient(dispatcher_->window(),
-                                    x11_window_move_client_.get());
+  aura::client::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
   native_widget_delegate_->OnNativeWidgetCreated(true);
 }
@@ -260,7 +254,7 @@ scoped_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientAuraX11(
-      dispatcher_->window(), cursor_manager, xdisplay_, xwindow_);
+      window(), cursor_manager, xdisplay_, xwindow_);
   return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 
@@ -1132,8 +1126,7 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   } else {
     // Another DesktopWindowTreeHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
-    event->ConvertLocationToTarget(dispatcher_->window(),
-                                   g_current_capture->dispatcher_->window());
+    event->ConvertLocationToTarget(window(), g_current_capture->window());
     g_current_capture->SendEventToProcessor(event);
   }
 }
@@ -1141,8 +1134,7 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
 void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
   if (g_current_capture && g_current_capture != this &&
       event->type() == ui::ET_TOUCH_PRESSED) {
-    event->ConvertLocationToTarget(dispatcher_->window(),
-                                   g_current_capture->dispatcher_->window());
+    event->ConvertLocationToTarget(window(), g_current_capture->window());
     g_current_capture->SendEventToProcessor(event);
   } else {
     SendEventToProcessor(event);

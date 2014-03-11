@@ -327,10 +327,10 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 }
 
 void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
-    aura::WindowEventDispatcher* dispatcher) {
+    aura::WindowTreeHost* host) {
   // |dispatcher_| is still valid, but DesktopWindowTreeHost is nearly
   // destroyed. Do cleanup here of members DesktopWindowTreeHost may also use.
-  aura::client::SetDispatcherClient(dispatcher->window(), NULL);
+  aura::client::SetDispatcherClient(host->window(), NULL);
   dispatcher_client_.reset();
 
   // We explicitly do NOT clear the cursor client property. Since the cursor
@@ -340,15 +340,15 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
   // They may want to do this when they are notified that they're being
   // removed from the window hierarchy, which happens soon after this
   // function when DesktopWindowTreeHost* calls DestroyDispatcher().
-  native_cursor_manager_->RemoveRootWindow(dispatcher);
+  native_cursor_manager_->RemoveHost(host);
 
-  aura::client::SetScreenPositionClient(dispatcher->window(), NULL);
+  aura::client::SetScreenPositionClient(host->window(), NULL);
   position_client_.reset();
 
-  aura::client::SetDragDropClient(dispatcher->window(), NULL);
+  aura::client::SetDragDropClient(host->window(), NULL);
   drag_drop_client_.reset();
 
-  aura::client::SetEventClient(dispatcher->window(), NULL);
+  aura::client::SetEventClient(host->window(), NULL);
   event_client_.reset();
 }
 
@@ -440,7 +440,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   host_->window()->SetEventFilter(root_window_event_filter_);
 
   // The host's dispatcher must be added to |native_cursor_manager_| before
-  // OnRootWindowCreated() is called.
+  // OnNativeWidgetCreated() is called.
   cursor_reference_count_++;
   if (!native_cursor_manager_) {
     native_cursor_manager_ = new DesktopNativeCursorManager(
@@ -450,10 +450,10 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     cursor_manager_ = new views::corewm::CursorManager(
         scoped_ptr<corewm::NativeCursorManager>(native_cursor_manager_));
   }
-  native_cursor_manager_->AddRootWindow(host_->dispatcher());
+  native_cursor_manager_->AddHost(host());
   aura::client::SetCursorClient(host_->window(), cursor_manager_);
 
-  desktop_window_tree_host_->OnRootWindowCreated(host_->dispatcher(), params);
+  desktop_window_tree_host_->OnNativeWidgetCreated(params);
 
   UpdateWindowTransparency();
 

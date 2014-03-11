@@ -746,13 +746,13 @@ void WindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 void WindowTreeHostX11::OnWindowInitialized(Window* window) {
 }
 
-void WindowTreeHostX11::OnRootWindowInitialized(
-    WindowEventDispatcher* d) {
+void WindowTreeHostX11::OnHostInitialized(WindowTreeHost* host) {
+  // TODO(beng): I'm not sure that this comment makes much sense anymore??
   // UpdateIsInternalDisplay relies on WED's kDisplayIdKey property being set
   // available by the time WED::Init is called. (set in
   // DisplayManager::CreateRootWindowForDisplay)
-  // Ready when NotifyRootWindowInitialized is called from WED::Init.
-  if (d != dispatcher())
+  // Ready when NotifyHostInitialized is called from WED::Init.
+  if (host != this)
     return;
   UpdateIsInternalDisplay();
 

@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 
@@ -27,14 +28,12 @@ gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(int type) {
   return cursor;
 }
 
-void DesktopNativeCursorManager::AddRootWindow(
-    aura::WindowEventDispatcher* dispatcher) {
-  dispatchers_.insert(dispatcher);
+void DesktopNativeCursorManager::AddHost(aura::WindowTreeHost* host) {
+  hosts_.insert(host);
 }
 
-void DesktopNativeCursorManager::RemoveRootWindow(
-    aura::WindowEventDispatcher* dispatcher) {
-  dispatchers_.erase(dispatcher);
+void DesktopNativeCursorManager::RemoveHost(aura::WindowTreeHost* host) {
+  hosts_.erase(host);
 }
 
 void DesktopNativeCursorManager::SetDisplay(
@@ -57,11 +56,8 @@ void DesktopNativeCursorManager::SetCursor(
   delegate->CommitCursor(new_cursor);
 
   if (delegate->IsCursorVisible()) {
-    for (Dispatchers::const_iterator i = dispatchers_.begin();
-         i != dispatchers_.end();
-         ++i) {
-      (*i)->host()->SetCursor(new_cursor);
-    }
+    for (Hosts::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
+      (*i)->SetCursor(new_cursor);
   }
 }
 
@@ -75,18 +71,12 @@ void DesktopNativeCursorManager::SetVisibility(
   } else {
     gfx::NativeCursor invisible_cursor(ui::kCursorNone);
     cursor_loader_->SetPlatformCursor(&invisible_cursor);
-    for (Dispatchers::const_iterator i = dispatchers_.begin();
-         i != dispatchers_.end();
-         ++i) {
-      (*i)->host()->SetCursor(invisible_cursor);
-    }
+    for (Hosts::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
+      (*i)->SetCursor(invisible_cursor);
   }
 
-  for (Dispatchers::const_iterator i = dispatchers_.begin();
-       i != dispatchers_.end();
-       ++i) {
-    (*i)->host()->OnCursorVisibilityChanged(visible);
-  }
+  for (Hosts::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
+    (*i)->OnCursorVisibilityChanged(visible);
 }
 
 void DesktopNativeCursorManager::SetCursorSet(
@@ -111,11 +101,8 @@ void DesktopNativeCursorManager::SetMouseEventsEnabled(
 
   SetVisibility(delegate->IsCursorVisible(), delegate);
 
-  for (Dispatchers::const_iterator i = dispatchers_.begin();
-       i != dispatchers_.end();
-       ++i) {
-    (*i)->OnMouseEventsEnableStateChanged(enabled);
-  }
+  for (Hosts::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
+    (*i)->dispatcher()->OnMouseEventsEnableStateChanged(enabled);
 }
 
 }  // namespace views

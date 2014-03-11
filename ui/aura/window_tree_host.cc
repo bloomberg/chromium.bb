@@ -105,7 +105,7 @@ WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
 void WindowTreeHost::InitHost() {
   InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
-  Env::GetInstance()->NotifyRootWindowInitialized(dispatcher());
+  Env::GetInstance()->NotifyHostInitialized(this);
   window()->Show();
 }
 
@@ -296,7 +296,7 @@ void WindowTreeHost::OnHostCloseRequested() {
 }
 
 void WindowTreeHost::OnHostActivated() {
-  Env::GetInstance()->RootWindowActivated(dispatcher());
+  Env::GetInstance()->NotifyHostActivated(this);
 }
 
 void WindowTreeHost::OnHostLostWindowCapture() {

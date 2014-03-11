@@ -10,18 +10,18 @@
 namespace aura {
 
 class Window;
-class WindowEventDispatcher;
+class WindowTreeHost;
 
 class AURA_EXPORT EnvObserver {
  public:
   // Called when |window| has been initialized.
   virtual void OnWindowInitialized(Window* window) = 0;
 
- // Called when |root_window| has been initialized.
- virtual void OnRootWindowInitialized(WindowEventDispatcher* dispatcher) {};
+ // Called when a WindowTreeHost is initialized.
+ virtual void OnHostInitialized(WindowTreeHost* host) {};
 
-  // Called when a RootWindow's host is activated.
-  virtual void OnRootWindowActivated(WindowEventDispatcher* dispatcher) {}
+  // Called when a WindowTreeHost is activated.
+  virtual void OnHostActivated(WindowTreeHost* host) {}
 
   // Called right before Env is destroyed.
   virtual void OnWillDestroyEnv() {}

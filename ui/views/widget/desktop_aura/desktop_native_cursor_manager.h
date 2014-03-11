@@ -13,7 +13,7 @@
 #include "ui/views/views_export.h"
 
 namespace aura {
-class WindowEventDispatcher;
+class WindowTreeHost;
 }
 
 namespace ui {
@@ -40,11 +40,11 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   // Builds a cursor and sets the internal platform representation.
   gfx::NativeCursor GetInitializedCursor(int type);
 
-  // Adds |root_window| to the set |root_windows_|.
-  void AddRootWindow(aura::WindowEventDispatcher* dispatcher);
+  // Adds |host| to the set |hosts_|.
+  void AddHost(aura::WindowTreeHost* host);
 
-  // Removes |root_window| from the set |root_windows_|.
-  void RemoveRootWindow(aura::WindowEventDispatcher* dispatcher);
+  // Removes |host| from the set |hosts_|.
+  void RemoveHost(aura::WindowTreeHost* host);
 
  private:
   // Overridden from views::corewm::NativeCursorManager:
@@ -67,9 +67,9 @@ class VIEWS_EXPORT DesktopNativeCursorManager
       bool enabled,
       views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
 
-  // The set of dispatchers to notify of changes in cursor state.
-  typedef std::set<aura::WindowEventDispatcher*> Dispatchers;
-  Dispatchers dispatchers_;
+  // The set of hosts to notify of changes in cursor state.
+  typedef std::set<aura::WindowTreeHost*> Hosts;
+  Hosts hosts_;
 
   scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater_;
   scoped_ptr<ui::CursorLoader> cursor_loader_;

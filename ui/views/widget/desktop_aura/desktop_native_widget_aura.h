@@ -75,8 +75,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   //             WindowDestroying() that takes the window being destroyed.
   // Called from ~DesktopWindowTreeHost. This takes the WindowEventDispatcher
   // as by the time we get here |dispatcher_| is NULL.
-  virtual void OnDesktopWindowTreeHostDestroyed(
-      aura::WindowEventDispatcher* dispatcher);
+  virtual void OnDesktopWindowTreeHostDestroyed(aura::WindowTreeHost* host);
 
   corewm::InputMethodEventFilter* input_method_event_filter() {
     return input_method_event_filter_.get();

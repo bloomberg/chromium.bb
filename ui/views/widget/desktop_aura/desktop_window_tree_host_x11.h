@@ -70,8 +70,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 :
   // Overridden from DesktopWindowTreeHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) OVERRIDE;
-  virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
-                                   const Widget::InitParams& params) OVERRIDE;
+  virtual void OnNativeWidgetCreated(const Widget::InitParams& params) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual scoped_ptr<aura::client::DragDropClient>
       CreateDragDropClient(DesktopNativeCursorManager* cursor_manager) OVERRIDE;
@@ -249,10 +248,6 @@ private:
 
   // True if the window has title-bar / borders provided by the window manager.
   bool use_native_frame_;
-
-  // We are owned by the WindowEventDispatcher, but we have to have a back
-  // pointer to it.
-  aura::WindowEventDispatcher* dispatcher_;
 
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
 
