@@ -30,21 +30,21 @@ namespace {
 
 class RemoteMessagePipeTest : public testing::Test {
  public:
-  RemoteMessagePipeTest() {}
+  RemoteMessagePipeTest() : io_thread_(test::TestIOThread::kAutoStart) {}
   virtual ~RemoteMessagePipeTest() {}
 
   virtual void SetUp() OVERRIDE {
-    test::PostTaskAndWait(io_thread()->task_runner(),
-                          FROM_HERE,
-                          base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
-                                     base::Unretained(this)));
+    io_thread_.PostTaskAndWait(
+        FROM_HERE,
+        base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
+                   base::Unretained(this)));
   }
 
   virtual void TearDown() OVERRIDE {
-    test::PostTaskAndWait(io_thread()->task_runner(),
-                          FROM_HERE,
-                          base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,
-                                     base::Unretained(this)));
+    io_thread_.PostTaskAndWait(
+        FROM_HERE,
+        base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,
+                   base::Unretained(this)));
   }
 
  protected:
@@ -53,8 +53,7 @@ class RemoteMessagePipeTest : public testing::Test {
   // 0, port 1 and MP 1, port 0 must have |ProxyMessagePipeEndpoint|s.
   void ConnectMessagePipes(scoped_refptr<MessagePipe> mp0,
                            scoped_refptr<MessagePipe> mp1) {
-    test::PostTaskAndWait(
-        io_thread()->task_runner(),
+    io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::ConnectMessagePipesOnIOThread,
                    base::Unretained(this), mp0, mp1));
@@ -66,15 +65,14 @@ class RemoteMessagePipeTest : public testing::Test {
   // returns *without* waiting for it to finish connecting.
   void BootstrapMessagePipeNoWait(unsigned channel_index,
                                   scoped_refptr<MessagePipe> mp) {
-    io_thread()->task_runner()->PostTask(
+    io_thread_.PostTask(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::BootstrapMessagePipeOnIOThread,
                    base::Unretained(this), channel_index, mp));
   }
 
   void RestoreInitialState() {
-    test::PostTaskAndWait(
-        io_thread()->task_runner(),
+    io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::RestoreInitialStateOnIOThread,
                    base::Unretained(this)));

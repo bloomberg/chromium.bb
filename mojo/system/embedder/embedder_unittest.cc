@@ -22,7 +22,7 @@ namespace {
 
 class EmbedderTest : public testing::Test {
  public:
-  EmbedderTest() {}
+  EmbedderTest() : io_thread_(system::test::TestIOThread::kAutoStart) {}
   virtual ~EmbedderTest() {}
 
  protected:

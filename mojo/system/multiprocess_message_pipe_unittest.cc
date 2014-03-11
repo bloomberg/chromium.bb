@@ -12,11 +12,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread.h"
 #include "mojo/common/test/multiprocess_test_helper.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
@@ -31,56 +28,37 @@ namespace mojo {
 namespace system {
 namespace {
 
-// TODO(vtl): Replace this with a |TestIOThread|.
-class IOThreadWrapper {
+class ChannelThread {
  public:
-  IOThreadWrapper() : io_thread_("io_thread") {}
-  ~IOThreadWrapper() {
-    CHECK(!channel_.get());
-    CHECK(!io_thread_.IsRunning());
+  ChannelThread() : test_io_thread_(test::TestIOThread::kManualStart) {}
+  ~ChannelThread() {
+    Stop();
   }
 
-  void PostTask(const tracked_objects::Location& from_here,
-                const base::Closure& task) {
-    task_runner()->PostTask(from_here, task);
+  void Start(embedder::ScopedPlatformHandle platform_handle,
+             scoped_refptr<MessagePipe> message_pipe) {
+    test_io_thread_.Start();
+    test_io_thread_.PostTaskAndWait(
+        FROM_HERE,
+        base::Bind(&ChannelThread::InitChannelOnIOThread,
+                   base::Unretained(this), base::Passed(&platform_handle),
+                   message_pipe));
   }
 
-  void PostTaskAndWait(const tracked_objects::Location& from_here,
-                       const base::Closure& task) {
-    test::PostTaskAndWait(task_runner(), from_here, task);
-  }
-
-  void Init(embedder::ScopedPlatformHandle platform_handle,
-            scoped_refptr<MessagePipe> mp) {
-    io_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    PostTask(FROM_HERE,
-             base::Bind(&IOThreadWrapper::InitOnIOThread,
-                        base::Unretained(this),
-                        base::Passed(&platform_handle), mp));
-  }
-
-  void Shutdown() {
-    PostTaskAndWait(FROM_HERE,
-                    base::Bind(&IOThreadWrapper::ShutdownOnIOThread,
-                               base::Unretained(this)));
-    io_thread_.Stop();
-  }
-
-  bool is_initialized() const { return !!channel_.get(); }
-
-  base::MessageLoop* message_loop() {
-    return io_thread_.message_loop();
-  }
-
-  scoped_refptr<base::TaskRunner> task_runner() {
-    return message_loop()->message_loop_proxy();
+  void Stop() {
+    if (channel_) {
+      test_io_thread_.PostTaskAndWait(
+          FROM_HERE,
+          base::Bind(&ChannelThread::ShutdownChannelOnIOThread,
+                     base::Unretained(this)));
+    }
+    test_io_thread_.Stop();
   }
 
  private:
-  void InitOnIOThread(embedder::ScopedPlatformHandle platform_handle,
-                      scoped_refptr<MessagePipe> mp) {
-    CHECK_EQ(base::MessageLoop::current(), message_loop());
+  void InitChannelOnIOThread(embedder::ScopedPlatformHandle platform_handle,
+                             scoped_refptr<MessagePipe> message_pipe) {
+    CHECK_EQ(base::MessageLoop::current(), test_io_thread_.message_loop());
     CHECK(platform_handle.is_valid());
 
     // Create and initialize |Channel|.
@@ -94,22 +72,22 @@ class IOThreadWrapper {
     // receive/process messages (which it can do as soon as it's hooked up to
     // the IO thread message loop, and that message loop runs) before the
     // message pipe endpoint is attached.
-    CHECK_EQ(channel_->AttachMessagePipeEndpoint(mp, 1),
+    CHECK_EQ(channel_->AttachMessagePipeEndpoint(message_pipe, 1),
              Channel::kBootstrapEndpointId);
     channel_->RunMessagePipeEndpoint(Channel::kBootstrapEndpointId,
                                      Channel::kBootstrapEndpointId);
   }
 
-  void ShutdownOnIOThread() {
+  void ShutdownChannelOnIOThread() {
     CHECK(channel_.get());
     channel_->Shutdown();
     channel_ = NULL;
   }
 
-  base::Thread io_thread_;
+  test::TestIOThread test_io_thread_;
   scoped_refptr<Channel> channel_;
 
-  DISALLOW_COPY_AND_ASSIGN(IOThreadWrapper);
+  DISALLOW_COPY_AND_ASSIGN(ChannelThread);
 };
 
 class MultiprocessMessagePipeTest : public testing::Test {
@@ -117,20 +95,15 @@ class MultiprocessMessagePipeTest : public testing::Test {
   MultiprocessMessagePipeTest() {}
   virtual ~MultiprocessMessagePipeTest() {}
 
-  virtual void TearDown() OVERRIDE {
-    if (io_thread_wrapper_.is_initialized())
-      io_thread_wrapper_.Shutdown();
-  }
-
  protected:
   void Init(scoped_refptr<MessagePipe> mp) {
-    io_thread_wrapper_.Init(helper_.server_platform_handle.Pass(), mp);
+    channel_thread_.Start(helper_.server_platform_handle.Pass(), mp);
   }
 
   mojo::test::MultiprocessTestHelper* helper() { return &helper_; }
 
  private:
-  IOThreadWrapper io_thread_wrapper_;
+  ChannelThread channel_thread_;
   mojo::test::MultiprocessTestHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTest);
@@ -156,14 +129,14 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
 // (which it doesn't reply to). It'll return the number of messages received,
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
-  IOThreadWrapper io_thread_wrapper;
+  ChannelThread channel_thread;
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
   scoped_refptr<MessagePipe> mp(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
       scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  io_thread_wrapper.Init(client_platform_handle.Pass(), mp);
+  channel_thread.Start(client_platform_handle.Pass(), mp);
 
   const std::string quitquitquit("quitquitquit");
   int rv = 0;
@@ -202,7 +175,6 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
 
 
   mp->Close(0);
-  io_thread_wrapper.Shutdown();
   return rv;
 }
 
