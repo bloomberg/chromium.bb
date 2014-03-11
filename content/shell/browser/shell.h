@@ -72,7 +72,7 @@ class Shell : public WebContentsDelegate,
   void ShowDevToolsForTest(const std::string& settings);
   void CloseDevTools();
 #if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
-  // Resizes the main window to the given dimensions.
+  // Resizes the web content view to the given dimensions.
   void SizeTo(const gfx::Size& content_size);
 #endif
 

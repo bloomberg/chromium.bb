@@ -262,7 +262,9 @@ void Shell::PlatformSetContents() {
 
 void Shell::SizeTo(const gfx::Size& content_size) {
   if (!headless_) {
-    NOTREACHED();
+    NSRect frame = NSMakeRect(
+        0, 0, content_size.width(), content_size.height() + kURLBarHeight);
+    [window().contentView setFrame:frame];
     return;
   }
   NSView* web_view = web_contents_->GetView()->GetNativeView();
