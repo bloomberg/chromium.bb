@@ -4,15 +4,11 @@
 
 package org.chromium.base;
 
-import android.os.Build;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Printer;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 /**
  * Java mirror of Chrome trace event API. See base/debug/trace_event.h.  Unlike the native version,
  * Java does not have stack objects, so a TRACE_EVENT() which does both TRACE_EVENT_BEGIN() and
@@ -169,83 +165,30 @@ public class TraceEvent {
                         new IdleTracingLooperMonitor() : new BasicLooperMonitor();
     }
 
-    private static long sTraceTagView;
-    private static Method sSystemPropertiesGetLongMethod;
-    private static final String PROPERTY_TRACE_TAG_ENABLEFLAGS = "debug.atrace.tags.enableflags";
-
-    static {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            try {
-                Class<?> traceClass = Class.forName("android.os.Trace");
-                sTraceTagView = traceClass.getField("TRACE_TAG_WEBVIEW").getLong(null);
-
-                Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
-                sSystemPropertiesGetLongMethod = systemPropertiesClass.getDeclaredMethod(
-                        "getLong", String.class, Long.TYPE);
-                Method addChangeCallbackMethod = systemPropertiesClass.getDeclaredMethod(
-                        "addChangeCallback", Runnable.class);
-
-                // Won't reach here if any of the above reflect lookups fail.
-                addChangeCallbackMethod.invoke(null, new Runnable() {
-                    @Override
-                    public void run() {
-                        setEnabledToMatchNative();
-                    }
-                });
-            } catch (ClassNotFoundException e) {
-                Log.e("TraceEvent", "init", e);
-            } catch (NoSuchMethodException e) {
-                Log.e("TraceEvent", "init", e);
-            } catch (IllegalArgumentException e) {
-                Log.e("TraceEvent", "init", e);
-            } catch (IllegalAccessException e) {
-                Log.e("TraceEvent", "init", e);
-            } catch (InvocationTargetException e) {
-                Log.e("TraceEvent", "init", e);
-            } catch (NoSuchFieldException e) {
-                Log.e("TraceEvent", "init", e);
-            }
-        }
-    }
-
     /**
      * Calling this will cause enabled() to be updated to match that set on the native side.
      * The native library must be loaded before calling this method.
      */
     public static void setEnabledToMatchNative() {
         boolean enabled = nativeTraceEnabled();
-
-        if (sSystemPropertiesGetLongMethod != null) {
-            try {
-                long enabledFlags = (Long) sSystemPropertiesGetLongMethod.invoke(
-                        null, PROPERTY_TRACE_TAG_ENABLEFLAGS, 0);
-                if ((enabledFlags & sTraceTagView) != 0) {
-                    nativeStartATrace();
-                    enabled = true;
-                } else {
-                    nativeStopATrace();
-                }
-            } catch (IllegalArgumentException e) {
-                Log.e("TraceEvent", "setEnabledToMatchNative", e);
-            } catch (IllegalAccessException e) {
-                Log.e("TraceEvent", "setEnabledToMatchNative", e);
-            } catch (InvocationTargetException e) {
-                Log.e("TraceEvent", "setEnabledToMatchNative", e);
-            }
-        }
-
-        setEnabled(enabled);
-    }
-
-    /**
-     * Enables or disables tracing.
-     * The native library must be loaded before the first call with enabled == true.
-     */
-    public static synchronized void setEnabled(boolean enabled) {
         if (sEnabled == enabled) return;
         sEnabled = enabled;
         ThreadUtils.getUiThreadLooper().setMessageLogging(
-                enabled ? LooperMonitorHolder.sInstance : null);
+            enabled() ? LooperMonitorHolder.sInstance : null);
+    }
+
+    /**
+     * Enables or disabled Android systrace path of Chrome tracing. If enabled, all Chrome
+     * traces will be also output to Android systrace. Because of the overhead of Android
+     * systrace, this is for WebView only.
+     */
+    public static void setATraceEnabled(boolean enabled) {
+        if (enabled) {
+            nativeStartATrace();
+        } else {
+            nativeStopATrace();
+        }
+        setEnabledToMatchNative();
     }
 
     /**
