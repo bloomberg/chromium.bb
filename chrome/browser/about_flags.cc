@@ -1150,6 +1150,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableTouchViewTesting),
   },
+  {
+    "ash-enable-brightness-control",
+    IDS_FLAGS_ASH_ENABLE_BRIGHTNESS_CONTROL_NAME,
+    IDS_FLAGS_ASH_ENABLE_BRIGHTNESS_CONTROL_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableBrightnessControl)
+  },
 #endif
 #if defined(OS_CHROMEOS)
   {

@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_constants.h"
+#include "ash/display/display_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -219,7 +220,14 @@ void TrayBrightness::HandleBrightnessChanged(double percent,
 
   if (brightness_view_)
     brightness_view_->SetBrightnessPercent(percent);
+
   if (!user_initiated)
+    return;
+
+  // Never show the bubble on systems that lack internal displays: if an
+  // external display's brightness is changed, it may already display the new
+  // level via an on-screen display.
+  if (!Shell::GetInstance()->display_manager()->HasInternalDisplay())
     return;
 
   if (brightness_view_)
