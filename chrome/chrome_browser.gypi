@@ -1649,6 +1649,9 @@
         'browser/prefs/synced_pref_change_registrar.cc',
         'browser/prefs/synced_pref_change_registrar.h',
         'browser/prefs/synced_pref_observer.h',
+        'browser/prefs/tracked/pref_hash_calculator_helper.h',
+        'browser/prefs/tracked/pref_hash_calculator_helper_stub.cc',
+        'browser/prefs/tracked/pref_hash_calculator_helper_win.cc',
         'browser/prefs/tracked/tracked_atomic_preference.cc',
         'browser/prefs/tracked/tracked_atomic_preference.h',
         'browser/prefs/tracked/tracked_preference.h',
@@ -3428,6 +3431,7 @@
           'sources!': [
             'browser/first_run/first_run_dialog.h',
             'browser/lifetime/application_lifetime_stub.cc',
+            'browser/prefs/tracked/pref_hash_calculator_helper_stub.cc',
             'browser/profiles/profile_shortcut_manager_stub.cc',
           ],
           'conditions': [
