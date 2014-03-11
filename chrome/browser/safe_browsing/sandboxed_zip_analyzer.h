@@ -13,9 +13,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -61,10 +61,10 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
   // Launches the utility process.  Must run on the IO thread.
   void StartProcessOnIOThread();
 
-  const base::FilePath zip_file_;
+  const base::FilePath zip_file_name_;
   // Once we have opened the file, we store the handle so that we can use it
   // once the utility process has launched.
-  base::PlatformFile zip_platform_file_;
+  base::File zip_file_;
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
   const ResultCallback callback_;
   // Initialized on the UI thread, but only accessed on the IO thread.
