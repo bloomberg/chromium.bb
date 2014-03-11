@@ -33,8 +33,7 @@ class MockProxyResolver : public ProxyResolver {
   MockProxyResolver()
       : ProxyResolver(true /*expects_pac_bytes*/),
         wrong_loop_(base::MessageLoop::current()),
-        request_count_(0),
-        purge_count_(0) {}
+        request_count_(0) {}
 
   // ProxyResolver implementation.
   virtual int GetProxyForURL(const GURL& query_url,
@@ -80,12 +79,6 @@ class MockProxyResolver : public ProxyResolver {
     return OK;
   }
 
-  virtual void PurgeMemory() OVERRIDE {
-    CheckIsOnWorkerThread();
-    ++purge_count_;
-  }
-
-  int purge_count() const { return purge_count_; }
   int request_count() const { return request_count_; }
 
   const ProxyResolverScriptData* last_script_data() const {
@@ -107,7 +100,6 @@ class MockProxyResolver : public ProxyResolver {
 
   base::MessageLoop* wrong_loop_;
   int request_count_;
-  int purge_count_;
   scoped_refptr<ProxyResolverScriptData> last_script_data_;
   base::TimeDelta resolve_latency_;
 };
@@ -194,10 +186,6 @@ class ForwardingProxyResolver : public ProxyResolver {
       const scoped_refptr<ProxyResolverScriptData>& script_data,
       const CompletionCallback& callback) OVERRIDE {
     return impl_->SetPacScript(script_data, callback);
-  }
-
-  virtual void PurgeMemory() OVERRIDE {
-    impl_->PurgeMemory();
   }
 
  private:
@@ -321,19 +309,6 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   rv = callback3.WaitForResult();
   EXPECT_EQ(3, rv);
   EXPECT_EQ("PROXY request3:80", results3.ToPacString());
-
-  // Ensure that PurgeMemory() reaches the wrapped resolver and happens on the
-  // right thread.
-  EXPECT_EQ(0, mock->purge_count());
-  resolver.PurgeMemory();
-  // There is no way to get a callback directly when PurgeMemory() completes, so
-  // we queue up a dummy request after the PurgeMemory() call and wait until it
-  // finishes to ensure PurgeMemory() has had a chance to run.
-  TestCompletionCallback dummy_callback;
-  rv = resolver.SetPacScript(ProxyResolverScriptData::FromUTF8("dummy"),
-                             dummy_callback.callback());
-  EXPECT_EQ(OK, dummy_callback.WaitForResult());
-  EXPECT_EQ(1, mock->purge_count());
 }
 
 // Tests that the NetLog is updated to include the time the request was waiting

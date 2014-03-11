@@ -185,10 +185,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // |new_proxy_config_service|.
   void ResetConfigService(ProxyConfigService* new_proxy_config_service);
 
-  // Tells the resolver to purge any memory it does not need.
-  void PurgeMemory();
-
-
   // Returns the last configuration fetched from ProxyConfigService.
   const ProxyConfig& fetched_config() {
     return fetched_config_;

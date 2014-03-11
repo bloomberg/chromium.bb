@@ -99,7 +99,6 @@ class NET_EXPORT_PRIVATE MultiThreadedProxyResolver
   virtual void CancelRequest(RequestHandle request) OVERRIDE;
   virtual LoadState GetLoadState(RequestHandle request) const OVERRIDE;
   virtual void CancelSetPacScript() OVERRIDE;
-  virtual void PurgeMemory() OVERRIDE;
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
       const CompletionCallback& callback) OVERRIDE;

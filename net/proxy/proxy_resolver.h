@@ -60,11 +60,6 @@ class NET_EXPORT_PRIVATE ProxyResolver {
 
   virtual void CancelSetPacScript() = 0;
 
-  // Frees any unneeded memory held by the resolver, e.g. garbage in the JS
-  // engine.  Most subclasses don't need to do anything, so we provide a default
-  // no-op implementation.
-  virtual void PurgeMemory() {}
-
   // Called to set the PAC script backend to use.
   // Returns ERR_IO_PENDING in the case of asynchronous completion, and notifies
   // the result through |callback|.

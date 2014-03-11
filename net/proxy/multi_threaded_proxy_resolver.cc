@@ -47,8 +47,6 @@ class MultiThreadedProxyResolver::Executor
   // and resolver.
   void Destroy();
 
-  void PurgeMemory();
-
   // Returns the outstanding job, or NULL.
   Job* outstanding_job() const { return outstanding_job_.get(); }
 
@@ -370,13 +368,6 @@ void MultiThreadedProxyResolver::Executor::Destroy() {
   outstanding_job_ = NULL;
 }
 
-void MultiThreadedProxyResolver::Executor::PurgeMemory() {
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyResolver::PurgeMemory,
-                 base::Unretained(resolver_.get())));
-}
-
 MultiThreadedProxyResolver::Executor::~Executor() {
   // The important cleanup happens as part of Destroy(), which should always be
   // called first.
@@ -481,15 +472,6 @@ void MultiThreadedProxyResolver::CancelSetPacScript() {
   current_script_data_ = NULL;
 
   ReleaseAllExecutors();
-}
-
-void MultiThreadedProxyResolver::PurgeMemory() {
-  DCHECK(CalledOnValidThread());
-  for (ExecutorList::iterator it = executors_.begin();
-       it != executors_.end(); ++it) {
-    Executor* executor = it->get();
-    executor->PurgeMemory();
-  }
 }
 
 int MultiThreadedProxyResolver::SetPacScript(

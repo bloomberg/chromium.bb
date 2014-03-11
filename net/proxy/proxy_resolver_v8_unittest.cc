@@ -103,7 +103,6 @@ class ProxyResolverV8WithMockBindings : public ProxyResolverV8 {
   }
 
   virtual ~ProxyResolverV8WithMockBindings() {
-    PurgeMemory();
   }
 
   MockJSBindings* mock_js_bindings() {

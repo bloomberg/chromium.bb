@@ -504,12 +504,6 @@ class ProxyResolverV8::Context {
     return OK;
   }
 
-  void PurgeMemory() {
-    v8::Locker locked(isolate_);
-    v8::Isolate::Scope isolate_scope(isolate_);
-    v8::V8::LowMemoryNotification();
-  }
-
  private:
   bool GetFindProxyForURL(v8::Local<v8::Value>* function) {
     v8::Local<v8::Context> context =
@@ -749,11 +743,6 @@ LoadState ProxyResolverV8::GetLoadState(RequestHandle request) const {
 
 void ProxyResolverV8::CancelSetPacScript() {
   NOTREACHED();
-}
-
-void ProxyResolverV8::PurgeMemory() {
-  if (context_)
-    context_->PurgeMemory();
 }
 
 int ProxyResolverV8::SetPacScript(

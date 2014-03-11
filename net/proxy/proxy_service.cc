@@ -1355,12 +1355,6 @@ void ProxyService::ResetConfigService(
     ApplyProxyConfigIfAvailable();
 }
 
-void ProxyService::PurgeMemory() {
-  DCHECK(CalledOnValidThread());
-  if (resolver_.get())
-    resolver_->PurgeMemory();
-}
-
 void ProxyService::ForceReloadProxyConfig() {
   DCHECK(CalledOnValidThread());
   ResetProxyConfig(false);

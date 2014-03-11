@@ -1152,15 +1152,6 @@ void ProxyResolverV8Tracing::CancelSetPacScript() {
   set_pac_script_job_ = NULL;
 }
 
-void ProxyResolverV8Tracing::PurgeMemory() {
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyResolverV8::PurgeMemory,
-                 // The use of unretained is safe, since the worker thread
-                 // cannot outlive |this|.
-                 base::Unretained(v8_resolver_.get())));
-}
-
 int ProxyResolverV8Tracing::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
     const CompletionCallback& callback) {
