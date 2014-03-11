@@ -397,16 +397,20 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   int type_int = s.ColumnInt(COLUMN_PASSWORD_TYPE);
   DCHECK(type_int >= 0 && type_int <= PasswordForm::TYPE_GENERATED);
   form->type = static_cast<PasswordForm::Type>(type_int);
-  Pickle pickle(
-      static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
-      s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
-  form->other_possible_usernames = DeserializeVector(pickle);
+  if (s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES)) {
+    Pickle pickle(
+        static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
+        s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
+    form->other_possible_usernames = DeserializeVector(pickle);
+  }
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
-  Pickle form_data_pickle(
-      static_cast<const char*>(s.ColumnBlob(COLUMN_FORM_DATA)),
-      s.ColumnByteLength(COLUMN_FORM_DATA));
-  PickleIterator form_data_iter(form_data_pickle);
-  autofill::DeserializeFormData(&form_data_iter, &form->form_data);
+  if (s.ColumnByteLength(COLUMN_FORM_DATA)) {
+    Pickle form_data_pickle(
+        static_cast<const char*>(s.ColumnBlob(COLUMN_FORM_DATA)),
+        s.ColumnByteLength(COLUMN_FORM_DATA));
+    PickleIterator form_data_iter(form_data_pickle);
+    autofill::DeserializeFormData(&form_data_iter, &form->form_data);
+  }
   form->use_additional_authentication =
       (s.ColumnInt(COLUMN_USE_ADDITIONAL_AUTH) > 0);
   return ENCRYPTION_RESULT_SUCCESS;
