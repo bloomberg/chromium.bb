@@ -1202,6 +1202,7 @@ void FrameView::updateWidgetPositions()
 
 void FrameView::addWidgetToUpdate(RenderEmbeddedObject& object)
 {
+    ASSERT(isInPerformLayout());
     // Tell the DOM element that it needs a widget update.
     Node* node = object.node();
     if (node->hasTagName(objectTag) || node->hasTagName(embedTag))
@@ -1999,6 +2000,7 @@ bool FrameView::updateWidgets()
 
 void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
 {
+    ASSERT(!isInPerformLayout());
     RefPtr<FrameView> protect(this);
     m_updateWidgetsTimer.stop();
     for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
@@ -2009,6 +2011,7 @@ void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
 
 void FrameView::flushAnyPendingPostLayoutTasks()
 {
+    ASSERT(!isInPerformLayout());
     if (m_postLayoutTasksTimer.isActive())
         performPostLayoutTasks();
     if (m_updateWidgetsTimer.isActive())
@@ -2017,6 +2020,7 @@ void FrameView::flushAnyPendingPostLayoutTasks()
 
 void FrameView::scheduleUpdateWidgetsIfNecessary()
 {
+    ASSERT(!isInPerformLayout());
     if (m_updateWidgetsTimer.isActive() || m_widgetUpdateSet.isEmpty())
         return;
     m_updateWidgetsTimer.startOneShot(0, FROM_HERE);
@@ -2024,6 +2028,11 @@ void FrameView::scheduleUpdateWidgetsIfNecessary()
 
 void FrameView::performPostLayoutTasks()
 {
+    // FIXME: We can reach here, even when the page is not active!
+    // http/tests/inspector/elements/html-link-import.html and many other
+    // tests hit that case.
+    // We should ASSERT(isActive()); or at least return early if we can!
+    ASSERT(!isInPerformLayout()); // Always before or after performLayout(), part of the highest-level layout() call.
     TRACE_EVENT0("webkit", "FrameView::performPostLayoutTasks");
     RefPtr<FrameView> protect(this);
 
