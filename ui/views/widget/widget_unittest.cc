@@ -1892,6 +1892,33 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   widget->Close();
 }
 
+class GestureEndConsumerView : public View {
+ private:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_END)
+      event->SetHandled();
+  }
+};
+
+TEST_F(WidgetTest, GestureHandlerNotSetOnGestureEnd) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  widget->SetBounds(gfx::Rect(0, 0, 300, 300));
+  View* view = new GestureEndConsumerView();
+  view->SetBounds(0, 0, 300, 300);
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget->GetRootView());
+  root_view->AddChildView(view);
+
+  widget->Show();
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+  ui::GestureEvent end(ui::ET_GESTURE_END, 15, 15, 0, base::TimeDelta(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  widget->OnGestureEvent(&end);
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  widget->Close();
+}
+
 // Test the result of Widget::GetAllChildWidgets().
 TEST_F(WidgetTest, GetAllChildWidgets) {
   // Create the following widget hierarchy:

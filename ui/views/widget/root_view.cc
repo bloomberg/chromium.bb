@@ -576,6 +576,11 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
         event->StopPropagation();
       else
         event->SetHandled();
+      // Last ui::ET_GESTURE_END should not set the gesture_handler_.
+      if (gesture_event.type() == ui::ET_GESTURE_END &&
+          event->details().touch_points() <= 1) {
+        gesture_handler_ = NULL;
+      }
       return;
     }
 
