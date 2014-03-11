@@ -15415,6 +15415,43 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Power.ExternalBrightnessReadResult"
+    enum="ExternalDisplayReceiveResult">
+  <summary>
+    The result of attempting to read an external display's brightness on Chrome
+    OS. A read attempt is made after successfully requesting the brightness (see
+    Power.ExternalBrightnessRequestResult).
+  </summary>
+</histogram>
+
+<histogram name="Power.ExternalBrightnessRequestResult"
+    enum="ExternalDisplaySendResult">
+  <summary>
+    The result of requesting an external display's brightness on Chrome OS. A
+    request is sent when the user presses a brightness key and the current
+    brightness is not already cached. A successful request is followed shortly
+    thereafter by a read attempt (see Power.ExternalBrightnessReadResult).
+  </summary>
+</histogram>
+
+<histogram name="Power.ExternalBrightnessWriteResult"
+    enum="ExternalDisplaySendResult">
+  <summary>
+    The result of attempting to change an external display's brightness on
+    Chrome OS. A request is sent when the user presses a brightness key and the
+    current brightness is either already cached or successfully loaded.
+  </summary>
+</histogram>
+
+<histogram name="Power.ExternalDisplayOpenResult"
+    enum="ExternalDisplayOpenResult">
+  <summary>
+    The result of attempting to open an I2C device to control an external
+    display's brightness on Chrome OS. An attempt is made when a display is
+    connected to a device that lacks an internal display.
+  </summary>
+</histogram>
+
 <histogram name="Power.FirmwareResumeTimeOnAC" units="milliseconds">
   <summary>
     The time that the firmware took to resume the Chrome OS device from
@@ -27710,6 +27747,29 @@ other types of suffix sets.
   <int value="3" label="Watch video"/>
   <int value="4" label="Error"/>
   <int value="5" label="Close (no action)"/>
+</enum>
+
+<enum name="ExternalDisplayOpenResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed with EACCES (incorrect permission on device)"/>
+  <int value="2" label="Failed with ENOENT (device missing)"/>
+  <int value="3" label="Failed for some other reason"/>
+</enum>
+
+<enum name="ExternalDisplayReceiveResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="ioctl() to I2C device failed"/>
+  <int value="2" label="Bad message checksum"/>
+  <int value="3" label="Bad message address"/>
+  <int value="4" label="Bad message length"/>
+  <int value="5" label="Bad command code in message"/>
+  <int value="6" label="Bad result code in message"/>
+  <int value="7" label="Bad feature index in message"/>
+</enum>
+
+<enum name="ExternalDisplaySendResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="ioctl() to I2C device failed"/>
 </enum>
 
 <enum name="ExternalItemState" type="int">
