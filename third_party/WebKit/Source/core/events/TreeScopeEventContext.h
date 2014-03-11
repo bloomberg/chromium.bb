@@ -37,6 +37,7 @@
 
 namespace WebCore {
 
+class EventPath;
 class EventTarget;
 class Node;
 class TouchEventContext;
@@ -58,8 +59,14 @@ public:
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
 
-    PassRefPtr<NodeList> eventPath() const { return m_eventPath; }
-    void adoptEventPath(Vector<RefPtr<Node> >&);
+    PassRefPtr<NodeList> ensureEventPath(EventPath&);
+
+    bool isInclusiveAncestorOf(const TreeScopeEventContext&);
+    void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
+
+    // For ancestor-descendant relationship check in Q(1).
+    // Preprocessing takes O(N).
+    int calculatePrePostOrderNumber(int orderNumber);
 
 private:
     TreeScopeEventContext(TreeScope&);
@@ -73,6 +80,10 @@ private:
     RefPtr<EventTarget> m_relatedTarget;
     RefPtr<NodeList> m_eventPath;
     RefPtrWillBePersistent<TouchEventContext> m_touchEventContext;
+
+    Vector<TreeScopeEventContext*> m_children;
+    int m_preOrder;
+    int m_postOrder;
 };
 
 #ifndef NDEBUG
@@ -95,6 +106,12 @@ inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> rela
     ASSERT(relatedTarget);
     ASSERT(!isUnreachableNode(*relatedTarget));
     m_relatedTarget = relatedTarget;
+}
+
+inline bool TreeScopeEventContext::isInclusiveAncestorOf(const TreeScopeEventContext& other)
+{
+    ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
+    return m_preOrder <= other.m_preOrder && other.m_postOrder <= m_postOrder;
 }
 
 }

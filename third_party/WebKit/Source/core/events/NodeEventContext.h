@@ -47,11 +47,11 @@ public:
     Node* node() const { return m_node.get(); }
 
     void setTreeScopeEventContext(PassRefPtr<TreeScopeEventContext> prpTreeScopeEventContext) { m_treeScopeEventContext = prpTreeScopeEventContext; }
+    TreeScopeEventContext* treeScopeEventContext() { return m_treeScopeEventContext.get(); }
 
     EventTarget* target() const { return m_treeScopeEventContext->target(); }
     EventTarget* relatedTarget() const { return m_treeScopeEventContext->relatedTarget(); }
     TouchEventContext* touchEventContext() const { return m_treeScopeEventContext->touchEventContext(); }
-    PassRefPtr<NodeList> eventPath() const { return m_treeScopeEventContext->eventPath(); }
 
     bool currentTargetSameAsTarget() const { return m_currentTarget.get() == target(); }
     void handleLocalEvents(Event*) const;

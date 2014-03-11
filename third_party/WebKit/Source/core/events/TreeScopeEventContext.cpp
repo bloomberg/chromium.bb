@@ -28,13 +28,25 @@
 #include "core/events/TreeScopeEventContext.h"
 
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/EventPath.h"
 #include "core/events/TouchEventContext.h"
 
 namespace WebCore {
 
-void TreeScopeEventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
+PassRefPtr<NodeList> TreeScopeEventContext::ensureEventPath(EventPath& path)
 {
+    if (m_eventPath)
+        return m_eventPath;
+
+    Vector<RefPtr<Node> > nodes;
+    nodes.reserveInitialCapacity(path.size());
+    for (size_t i = 0; i < path.size(); ++i) {
+        if (path[i].treeScopeEventContext()->isInclusiveAncestorOf(*this))
+            nodes.append(path[i].node());
+    }
     m_eventPath = StaticNodeList::adopt(nodes);
+    return m_eventPath;
 }
 
 TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
@@ -51,11 +63,22 @@ PassRefPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeS
 
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
     : m_treeScope(treeScope)
+    , m_preOrder(-1)
+    , m_postOrder(-1)
 {
 }
 
 TreeScopeEventContext::~TreeScopeEventContext()
 {
+}
+
+int TreeScopeEventContext::calculatePrePostOrderNumber(int orderNumber)
+{
+    m_preOrder = orderNumber;
+    for (size_t i = 0; i < m_children.size(); ++i)
+        orderNumber = m_children[i]->calculatePrePostOrderNumber(orderNumber + 1);
+    m_postOrder = orderNumber + 1;
+    return orderNumber + 1;
 }
 
 }

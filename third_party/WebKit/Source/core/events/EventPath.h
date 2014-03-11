@@ -75,7 +75,7 @@ private:
 
     void calculatePath();
     void calculateAdjustedTargets();
-    void calculateAdjustedEventPath();
+    void calculateTreeScopePrePostOrderNumbers();
 
     void shrink(size_t newSize) { m_nodeEventContexts.shrink(newSize); }
     void shrinkIfNeeded(const Node* target, const EventTarget* relatedTarget);

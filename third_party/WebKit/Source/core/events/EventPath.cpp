@@ -130,7 +130,8 @@ void EventPath::resetWith(Node* node)
     m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
-    calculateAdjustedEventPath();
+    if (RuntimeEnabledFeatures::shadowDOMEnabled() && !node->isSVGElement())
+        calculateTreeScopePrePostOrderNumbers();
 }
 
 void EventPath::addNodeEventContext(Node* node)
@@ -178,25 +179,30 @@ void EventPath::calculatePath()
     }
 }
 
-void EventPath::calculateAdjustedEventPath()
+void EventPath::calculateTreeScopePrePostOrderNumbers()
 {
-    if (!RuntimeEnabledFeatures::shadowDOMEnabled())
-        return;
+    // Precondition:
+    //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same tree of trees.
+    //   - The root tree must be included.
+    HashMap<const TreeScope*, TreeScopeEventContext*> treeScopeEventContextMap;
+    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i)
+        treeScopeEventContextMap.add(&m_treeScopeEventContexts[i]->treeScope(), m_treeScopeEventContexts[i].get());
+    TreeScopeEventContext* rootTree = 0;
     for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
         TreeScopeEventContext* treeScopeEventContext = m_treeScopeEventContexts[i].get();
-        Vector<RefPtr<Node> > nodes;
-        nodes.reserveInitialCapacity(size());
-        for (size_t i = 0; i < size(); ++i) {
-            if (at(i).node()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScopeEventContext->treeScope())) {
-                ASSERT(!at(i).node()->containingShadowRoot()
-                    || at(i).node()->treeScope() == treeScopeEventContext->treeScope()
-                    || toShadowRoot(treeScopeEventContext->treeScope().rootNode()).type() == ShadowRoot::UserAgentShadowRoot
-                    || at(i).node()->containingShadowRoot()->type() != ShadowRoot::UserAgentShadowRoot);
-                nodes.append(at(i).node());
-            }
+        // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
+        // See the definition of trees of trees in the Shado DOM spec: http://w3c.github.io/webcomponents/spec/shadow/
+        TreeScope* parent = treeScopeEventContext->treeScope().olderShadowRootOrParentTreeScope();
+        if (!parent) {
+            ASSERT(!rootTree);
+            rootTree = treeScopeEventContext;
+            continue;
         }
-        treeScopeEventContext->adoptEventPath(nodes);
+        ASSERT(treeScopeEventContextMap.find(parent) != treeScopeEventContextMap.end());
+        treeScopeEventContextMap.find(parent)->value->addChild(*treeScopeEventContext);
     }
+    ASSERT(rootTree);
+    rootTree->calculatePrePostOrderNumber(0);
 }
 
 TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarget, TreeScope* treeScope, TreeScopeEventContextMap& treeScopeEventContextMap)
