@@ -109,6 +109,8 @@ struct shell_surface {
 	struct weston_view *view;
 	int32_t last_width, last_height;
 	struct wl_listener surface_destroy_listener;
+	struct wl_listener resource_destroy_listener;
+
 	struct weston_surface *parent;
 	struct wl_list children_list;  /* child surfaces of this one */
 	struct wl_list children_link;  /* sibling surfaces of this one */
@@ -3001,7 +3003,7 @@ shell_destroy_shell_surface(struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
-	destroy_shell_surface(shsurf);
+	shsurf->resource = NULL;
 }
 
 static void
@@ -3015,6 +3017,30 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 		wl_resource_destroy(shsurf->resource);
 	else
 		destroy_shell_surface(shsurf);
+}
+
+static void
+fade_out_done(struct weston_view_animation *animation, void *data)
+{
+	struct shell_surface *shsurf = data;
+
+	weston_surface_destroy(shsurf->surface);
+}
+
+static void
+handle_resource_destroy(struct wl_listener *listener, void *data)
+{
+	struct shell_surface *shsurf =
+		container_of(listener, struct shell_surface,
+			     resource_destroy_listener);
+
+	shsurf->surface->ref_count++;
+
+	pixman_region32_fini(&shsurf->surface->pending.input);
+	pixman_region32_init(&shsurf->surface->pending.input);
+	pixman_region32_fini(&shsurf->surface->input);
+	pixman_region32_init(&shsurf->surface->input);
+	weston_fade_run(shsurf->view, 1.0, 0.0, 300.0, fade_out_done, shsurf);
 }
 
 static void
@@ -3055,6 +3081,10 @@ create_common_surface(void *shell, struct weston_surface *surface,
 
 	surface->configure = shell_surface_configure;
 	surface->configure_private = shsurf;
+
+	shsurf->resource_destroy_listener.notify = handle_resource_destroy;
+	wl_resource_add_destroy_listener(surface->resource,
+					 &shsurf->resource_destroy_listener);
 
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
