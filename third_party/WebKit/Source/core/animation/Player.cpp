@@ -301,7 +301,7 @@ double Player::timeToEffectChange()
         return std::numeric_limits<double>::infinity();
     if (m_playbackRate > 0)
         return m_content->timeToForwardsEffectChange() / m_playbackRate;
-    return m_content->timeToReverseEffectChange() / abs(m_playbackRate);
+    return m_content->timeToReverseEffectChange() / std::abs(m_playbackRate);
 }
 
 void Player::cancel()

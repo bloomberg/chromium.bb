@@ -80,7 +80,7 @@ double TimedItem::repeatedDuration() const
 double TimedItem::activeDuration() const
 {
     const double result = m_specified.playbackRate
-        ? repeatedDuration() / abs(m_specified.playbackRate)
+        ? repeatedDuration() / std::abs(m_specified.playbackRate)
         : std::numeric_limits<double>::infinity();
     ASSERT(result >= 0);
     return result;
@@ -125,7 +125,7 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
             timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified) / iterationDuration;
 
             if (!isNull(iterationTime)) {
-                timeToNextIteration = (iterationDuration - iterationTime) / abs(m_specified.playbackRate);
+                timeToNextIteration = (iterationDuration - iterationTime) / std::abs(m_specified.playbackRate);
                 if (activeDuration - activeTime < timeToNextIteration)
                     timeToNextIteration = std::numeric_limits<double>::infinity();
             }
@@ -133,7 +133,7 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
             const double localIterationDuration = 1;
             const double localRepeatedDuration = localIterationDuration * m_specified.iterationCount;
             ASSERT(localRepeatedDuration >= 0);
-            const double localActiveDuration = m_specified.playbackRate ? localRepeatedDuration / abs(m_specified.playbackRate) : std::numeric_limits<double>::infinity();
+            const double localActiveDuration = m_specified.playbackRate ? localRepeatedDuration / std::abs(m_specified.playbackRate) : std::numeric_limits<double>::infinity();
             ASSERT(localActiveDuration >= 0);
             const double localLocalTime = localTime < m_specified.startDelay ? localTime : localActiveDuration + m_specified.startDelay;
             const TimedItem::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_specified);
