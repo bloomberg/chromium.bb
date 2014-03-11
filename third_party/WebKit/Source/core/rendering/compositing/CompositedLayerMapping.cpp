@@ -753,6 +753,9 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
     }
 
+    if (GraphicsLayer* childrenTransformLayer = layerForChildrenTransform())
+        childrenTransformLayer->setAnchorPoint(m_graphicsLayer->anchorPoint());
+
     if (m_foregroundLayer) {
         FloatSize foregroundSize = contentsSize;
         IntSize foregroundOffset = m_graphicsLayer->offsetFromRenderer();
