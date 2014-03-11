@@ -1,7 +1,13 @@
-This directory is for components that have the Content Module as the
-uppermost layer they depend on.  They may depend only on the Content
-API (content/public) and on lower layers (e.g. base/, net/, ipc/
-etc.).
+This directory is for features that are intended for reuse across multiple
+embedders (e.g., Android WebView and Chrome).
+
+By default, subdirectories have the Content Module as the uppermost layer they
+depend on, i.e., they may depend only on the Content API (content/public) and
+on lower layers (e.g. base/, net/, ipc/ etc.). Individual subdirectories may
+further restrict their dependencies, e.g., a component that is used by Chrome
+for iOS (which does not use the content API) will either disallow usage of
+content/public or be in the form of a layered component
+(http://www.chromium.org/developers/design-documents/layered-components-design).
 
 Components that have bits of code that need to live in different
 processes (e.g. some code in the browser process, some in the renderer
