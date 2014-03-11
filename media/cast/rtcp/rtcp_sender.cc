@@ -82,7 +82,8 @@ bool BuildRtcpReceiverLogMessage(
     size_t* number_of_frames,
     size_t* total_number_of_messages_to_send,
     size_t* rtcp_log_size) {
-  size_t remaining_space = kMaxIpPacketSize - start_size;
+  size_t remaining_space =
+      std::min(kMaxReceiverLogBytes, kMaxIpPacketSize - start_size);
   if (remaining_space < kRtcpCastLogHeaderSize + kRtcpReceiverFrameLogSize +
                             kRtcpReceiverEventLogSize) {
     return false;

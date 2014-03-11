@@ -323,12 +323,18 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
 
   p.AddReceiverLog(kSendingSsrc);
 
-  p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs);
-  p.AddReceiverEventLog(0, 5, 0);
-  p.AddReceiverFrameLog(
-      kRtpTimestamp + 2345, kRtcpMaxReceiverLogMessages, kTimeBaseMs);
+  int remaining_bytes = kMaxReceiverLogBytes;
+  remaining_bytes -= kRtcpCastLogHeaderSize;
 
-  for (size_t i = 0; i < kRtcpMaxReceiverLogMessages; ++i) {
+  remaining_bytes -= kRtcpReceiverFrameLogSize;
+  int num_events = remaining_bytes / kRtcpReceiverEventLogSize;
+  EXPECT_LE(num_events, static_cast<int>(kRtcpMaxReceiverLogMessages));
+  // Only the last |num_events| events are sent due to receiver log size cap.
+  p.AddReceiverFrameLog(
+      kRtpTimestamp + 2345,
+      num_events,
+      kTimeBaseMs + (kRtcpMaxReceiverLogMessages - num_events) * kTimeDelayMs);
+  for (int i = 0; i < num_events; i++) {
     p.AddReceiverEventLog(
         kLostPacketId1, 8, static_cast<uint16>(kTimeDelayMs * i));
   }
@@ -379,9 +385,15 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
 
   p.AddReceiverLog(kSendingSsrc);
 
-  // The last 119 events are sent.
-  for (int i = kRtcpMaxReceiverLogMessages - 119;
-       i < static_cast<int>(kRtcpMaxReceiverLogMessages);
+  int remaining_bytes = kMaxReceiverLogBytes;
+  remaining_bytes -= kRtcpCastLogHeaderSize;
+
+  int num_events =
+      remaining_bytes / (kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize);
+
+  // The last |num_events| events are sent due to receiver log size cap.
+  for (size_t i = kRtcpMaxReceiverLogMessages - num_events;
+       i < kRtcpMaxReceiverLogMessages;
        ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp + i, 1, kTimeBaseMs + i * kTimeDelayMs);
     p.AddReceiverEventLog(0, 5, 0);
@@ -390,6 +402,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
 
   ReceiverRtcpEventSubscriber event_subscriber(
       500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+
   for (size_t i = 0; i < kRtcpMaxReceiverLogMessages; ++i) {
     FrameEvent frame_event;
     frame_event.rtp_timestamp = kRtpTimestamp + static_cast<int>(i);

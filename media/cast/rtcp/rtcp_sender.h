@@ -19,6 +19,12 @@
 namespace media {
 namespace cast {
 
+// We limit the size of receiver logs to avoid queuing up packets. We also
+// do not need the amount of redundancy that results from filling up every
+// RTCP packet with log messages. This number should give a redundancy of
+// about 2-3 per log message.
+const size_t kMaxReceiverLogBytes = 200;
+
 class ReceiverRtcpEventSubscriber;
 
 // TODO(mikhal): Resolve duplication between this and RtcpBuilder.
