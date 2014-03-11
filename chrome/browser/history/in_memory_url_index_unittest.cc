@@ -442,7 +442,13 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   EXPECT_EQ(17U, private_data.word_map_.size());
 }
 
-TEST_F(InMemoryURLIndexTest, Retrieval) {
+#if defined(OS_WIN)
+// Flaky on windows trybots: http://crbug.com/351500
+#define MAYBE_Retrieval DISABLED_Retrieval
+#else
+#define MAYBE_Retrieval Retrieval
+#endif
+TEST_F(InMemoryURLIndexTest, MAYBE_Retrieval) {
   // See if a very specific term gives a single result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos);
@@ -668,7 +674,13 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
             private_data.post_scoring_item_count_);
 }
 
-TEST_F(InMemoryURLIndexTest, TitleSearch) {
+#if defined(OS_WIN)
+// Flaky on windows trybots: http://crbug.com/351500
+#define MAYBE_TitleSearch DISABLED_TitleSearch
+#else
+#define MAYBE_TitleSearch TitleSearch
+#endif
+TEST_F(InMemoryURLIndexTest, MAYBE_TitleSearch) {
   // Signal if someone has changed the test DB.
   EXPECT_EQ(29U, GetPrivateData()->history_info_map_.size());
 
