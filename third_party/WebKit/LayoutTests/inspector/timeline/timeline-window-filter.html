@@ -11,7 +11,7 @@ function test()
 
     WebInspector.showPanel("timeline");
     var timeline = WebInspector.panels.timeline;
-
+    var overviewPane = timeline._overviewPane;
     var model = timeline._model;
 
     function createFileReader(file, delegate)
@@ -24,16 +24,31 @@ function test()
     model.loadFromFile({}, new WebInspector.Progress());
     timeline._currentViews[0]._refresh();
 
+    overviewPane._update();
+    InspectorTest.addResult("OverviewPane:");
+    dumpDividers(overviewPane._overviewGrid._grid, overviewPane._overviewCalculator);
+    InspectorTest.addResult("");
+
     function dumpRecordsCountForRange(windowLeft, windowRight)
     {
         var view = timeline._currentViews[0];
-        timeline._overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
+        overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
         view._refresh();
         InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + view._windowStartTime + " - " + view._windowEndTime);
         InspectorTest.addResult("records count: " + view._presentationModel.filteredRecords().length);
+        dumpDividers(view._timelineGrid, view._calculator);
         InspectorTest.addResult("");
+    }
+
+    function dumpDividers(grid, calculator)
+    {
+        var dividers = grid._calculateDividerOffsets(calculator);
+        var labels = [];
+        for (var i = 0; i < dividers.length; ++i)
+            dividers[i] -= calculator.zeroTime();
+        InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
     }
 
     timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Events);
@@ -51,7 +66,7 @@ function test()
     dumpRecordsCountForRange(0.25, 0.75);
     dumpRecordsCountForRange(0.33, 0.66);
 
-    timeline._overviewPane._overviewGrid.setWindow(0.1, 0.9);
+    overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
     InspectorTest.addResult("--------------------------------------------------------");
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
