@@ -301,7 +301,8 @@ PolicyApplicator::~PolicyApplicator() {
   STLDeleteValues(&all_policies_);
   // Notify the handler about all policies being applied, so that the network
   // lists can be updated.
-  handler_->OnPoliciesApplied();
+  if (handler_)
+    handler_->OnPoliciesApplied();
 }
 
 void PolicyApplicator::ApplyRemainingPolicies() {

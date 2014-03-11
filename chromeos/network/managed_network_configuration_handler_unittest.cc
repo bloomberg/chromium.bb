@@ -5,13 +5,17 @@
 #include <iostream>
 #include <sstream>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
+#include "chromeos/dbus/shill_client_helper.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -642,6 +646,44 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
                   _, _));
 
   InitializeStandardProfiles();
+  message_loop_.RunUntilIdle();
+}
+
+class ManagedNetworkConfigurationHandlerShutdownTest
+    : public ManagedNetworkConfigurationHandlerTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    ManagedNetworkConfigurationHandlerTest::SetUp();
+    ON_CALL(*mock_profile_client_, GetProperties(_, _, _)).WillByDefault(
+        Invoke(&ManagedNetworkConfigurationHandlerShutdownTest::GetProperties));
+  }
+
+  static void GetProperties(
+      const dbus::ObjectPath& profile_path,
+      const ShillClientHelper::DictionaryValueCallbackWithoutStatus& callback,
+      const ShillClientHelper::ErrorCallback& error_callback) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(ManagedNetworkConfigurationHandlerShutdownTest::
+                       CallbackWithEmptyDictionary,
+                   callback));
+  }
+
+  static void CallbackWithEmptyDictionary(
+      const ShillClientHelper::DictionaryValueCallbackWithoutStatus& callback) {
+    callback.Run(base::DictionaryValue());
+  }
+};
+
+TEST_F(ManagedNetworkConfigurationHandlerShutdownTest,
+       DuringPolicyApplication) {
+  InitializeStandardProfiles();
+
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  managed_network_configuration_handler_.reset();
   message_loop_.RunUntilIdle();
 }
 
