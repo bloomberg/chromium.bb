@@ -324,6 +324,26 @@ class USBImager(object):
                     self.DeviceNameToPath(target))
 
 
+class FileImager(USBImager):
+  """Copy image to the target path."""
+
+  def Run(self):
+    """Copy the image to the path specified by self.device."""
+    image_path = self.image
+    if not os.path.isfile(self.image):
+      image_path = self.GetImagePathFromDevserver(self.image)
+
+    if os.path.isdir(self.device):
+      logging.info('Copying to %s',
+                   os.path.join(self.device, os.path.basename(image_path)))
+    else:
+      logging.info('Copying to %s', self.device)
+    try:
+      shutil.copy(image_path, self.device)
+    except IOError:
+      logging.error('Failed to copy image %s to %s', image_path, self.device)
+
+
 class DeviceUpdateError(Exception):
   """Thrown when there is an error during device update."""
 
@@ -710,8 +730,9 @@ class FlashCommand(cros.CrosCommand):
   """Update the device with an image.
 
   This command updates the device with the image
-  (ssh://<hostname>:{port} or copy an image to a removable device
-  (usb://<device_path).
+  (ssh://<hostname>:{port}, copies an image to a removable device
+  (usb://<device_path), or copies a xbuddy path to a local
+  file path with (file://file_path).
 
   For device update, it assumes that device is able to accept ssh
   connections.
@@ -751,6 +772,7 @@ When updating the device, there are certain constraints on the local image path:
 
   SSH_MODE = 'ssh'
   USB_MODE = 'usb'
+  FILE_MODE = 'file'
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -808,6 +830,7 @@ When updating the device, there are certain constraints on the local image path:
     self.ssh_hostname = None
     self.ssh_port = None
     self.usb_dev = None
+    self.copy_path = None
     self.any = False
 
   def _ParseDevice(self, device):
@@ -825,6 +848,9 @@ When updating the device, there are certain constraints on the local image path:
     elif parsed.scheme == self.USB_MODE:
       self.run_mode = self.USB_MODE
       self.usb_dev = device[len('%s://' % self.USB_MODE):]
+    elif parsed.scheme == self.FILE_MODE:
+      self.run_mode = self.FILE_MODE
+      self.copy_path = device[len('%s://' % self.FILE_MODE):]
     else:
       cros_build_lib.Die('Does not support device %s' % device)
 
@@ -835,7 +861,7 @@ When updating the device, there are certain constraints on the local image path:
     self._ParseDevice(self.options.device)
 
     try:
-      if self.run_mode == 'ssh':
+      if self.run_mode == self.SSH_MODE:
         logging.info('Preparing to update the remote device %s',
                      self.options.device)
         updater = RemoteDeviceUpdater(
@@ -854,13 +880,20 @@ When updating the device, there are certain constraints on the local image path:
 
         # Perform device update.
         updater.Run()
-      elif self.run_mode == 'usb':
+      elif self.run_mode == self.USB_MODE:
         logging.info('Preparing to image the removable device %s',
                      self.options.device)
         imager = USBImager(self.usb_dev,
                            self.options.image,
                            debug=self.options.debug)
         imager.Run()
+      elif self.run_mode == self.FILE_MODE:
+        logging.info('Preparing to copy image to %s', self.copy_path)
+        imager = FileImager(self.copy_path,
+                            self.options.image,
+                            debug=self.options.debug)
+        imager.Run()
+
 
     except (Exception, KeyboardInterrupt):
       logging.error('Cros Flash failed before completing.')
