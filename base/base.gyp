@@ -824,6 +824,27 @@
       ],  # target_conditions
     },
     {
+      'target_name': 'base_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'base',
+        'test_support_base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'threading/thread_perftest.cc',
+        'test/run_all_unittests.cc',
+        '../testing/perf/perf_test.cc'
+      ],
+      'conditions': [
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'base_i18n_perftests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -1395,6 +1416,22 @@
           ],
         },
 
+      ],
+    }],
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'base_perftests_apk',
+          'type': 'none',
+          'dependencies': [
+            'base_perftests',
+          ],
+          'variables': {
+            'test_suite_name': 'base_perftests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)base_perftests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
       ],
     }],
     ['OS == "win"', {
