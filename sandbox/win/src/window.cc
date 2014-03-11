@@ -100,6 +100,7 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
     // Replace the DACL on the new Desktop with a reduced privilege version.
     // We can soft fail on this for now, as it's just an extra mitigation.
     static const ACCESS_MASK kDesktopDenyMask = WRITE_DAC | WRITE_OWNER |
+                                                DELETE |
                                                 DESKTOP_CREATEMENU |
                                                 DESKTOP_CREATEWINDOW |
                                                 DESKTOP_HOOKCONTROL |
