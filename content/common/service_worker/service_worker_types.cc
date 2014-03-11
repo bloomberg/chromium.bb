@@ -19,9 +19,9 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
-ServiceWorkerFetchResponse::ServiceWorkerFetchResponse() {}
+ServiceWorkerResponse::ServiceWorkerResponse() : status_code(0) {}
 
-ServiceWorkerFetchResponse::ServiceWorkerFetchResponse(
+ServiceWorkerResponse::ServiceWorkerResponse(
     int status_code,
     const std::string& status_text,
     const std::string& method,
@@ -29,9 +29,8 @@ ServiceWorkerFetchResponse::ServiceWorkerFetchResponse(
     : status_code(status_code),
       status_text(status_text),
       method(method),
-      headers(headers) {
-}
+      headers(headers) {}
 
-ServiceWorkerFetchResponse::~ServiceWorkerFetchResponse() {}
+ServiceWorkerResponse::~ServiceWorkerResponse() {}
 
 }  // namespace content

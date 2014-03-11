@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 
 class GURL;
 
@@ -23,8 +24,6 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class ServiceWorkerRegistration;
-struct ServiceWorkerFetchRequest;
-struct ServiceWorkerFetchResponse;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -66,8 +65,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               const IPC::Message& message)> MessageCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode,
-                              const ServiceWorkerFetchResponse& response)>
-      FetchCallback;
+                              ServiceWorkerFetchEventResult,
+                              const ServiceWorkerResponse&)> FetchCallback;
 
   enum Status {
     STOPPED = EmbeddedWorkerInstance::STOPPED,

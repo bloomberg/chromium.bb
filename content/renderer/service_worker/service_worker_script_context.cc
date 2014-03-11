@@ -43,8 +43,9 @@ void ServiceWorkerScriptContext::DidHandleInstallEvent(int request_id) {
 
 void ServiceWorkerScriptContext::DidHandleFetchEvent(
     int request_id,
-    const ServiceWorkerFetchResponse& response) {
-  Send(request_id, ServiceWorkerHostMsg_FetchEventFinished(response));
+    ServiceWorkerFetchEventResult result,
+    const ServiceWorkerResponse& response) {
+  Send(request_id, ServiceWorkerHostMsg_FetchEventFinished(result, response));
 }
 
 void ServiceWorkerScriptContext::Send(int request_id,
@@ -59,10 +60,8 @@ void ServiceWorkerScriptContext::OnInstallEvent(
 
 void ServiceWorkerScriptContext::OnFetchEvent(
     const ServiceWorkerFetchRequest& request) {
-  // TODO(falken): Dispatch the event to Blink and wait for the response from
-  // respondWith. This is just a dummy response now.
-  DidHandleFetchEvent(current_request_id_, ServiceWorkerFetchResponse(
-      200, "OK", "GET", std::map<std::string, std::string>()));
+  // TODO(falken): Pass in the request.
+  proxy_->dispatchFetchEvent(current_request_id_);
 }
 
 }  // namespace content

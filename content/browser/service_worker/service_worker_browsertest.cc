@@ -14,6 +14,8 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,6 +30,12 @@
 namespace content {
 
 namespace {
+
+struct FetchResult {
+  ServiceWorkerStatusCode status;
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+};
 
 void RunAndQuit(const base::Closure& closure,
                 const base::Closure& quit,
@@ -45,25 +53,27 @@ void RunOnIOThread(const base::Closure& closure) {
   run_loop.Run();
 }
 
+// Contrary to the style guide, the output parameter of this function comes
+// before input parameters so Bind can be used on it to create a FetchCallback
+// to pass to DispatchFetchEvent.
 void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
                         const base::Closure& quit,
-                        ServiceWorkerStatusCode* out_status,
-                        ServiceWorkerFetchResponse* out_response,
+                        FetchResult* out_result,
                         ServiceWorkerStatusCode actual_status,
-                        const ServiceWorkerFetchResponse& actual_response) {
-  *out_status = actual_status;
-  *out_response = actual_response;
+                        ServiceWorkerFetchEventResult actual_result,
+                        const ServiceWorkerResponse& actual_response) {
+  out_result->status = actual_status;
+  out_result->result = actual_result;
+  out_result->response = actual_response;
   if (!quit.is_null())
-    BrowserThread::PostTask(run_quit_thread, FROM_HERE, quit);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
 }
 
-ServiceWorkerVersion::FetchCallback CreateFetchResponseReceiver(
+ServiceWorkerVersion::FetchCallback CreateResponseReceiver(
     BrowserThread::ID run_quit_thread,
     const base::Closure& quit,
-    ServiceWorkerStatusCode* out_status,
-    ServiceWorkerFetchResponse* out_response) {
-  return base::Bind(
-      &ReceiveFetchResult, run_quit_thread, quit, out_status, out_response);
+    FetchResult* result) {
+  return base::Bind(&ReceiveFetchResult, run_quit_thread, quit, result);
 }
 
 }  // namespace
@@ -232,6 +242,27 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(SERVICE_WORKER_OK, status);
   }
 
+  void FetchTestHelper(const std::string& worker_url,
+                       ServiceWorkerFetchEventResult* result,
+                       ServiceWorkerResponse* response) {
+    RunOnIOThread(
+        base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
+
+    FetchResult fetch_result;
+    fetch_result.status = SERVICE_WORKER_ERROR_FAILED;
+    base::RunLoop fetch_run_loop;
+    BrowserThread::PostTask(BrowserThread::IO,
+                            FROM_HERE,
+                            base::Bind(&self::FetchOnIOThread,
+                                       this,
+                                       fetch_run_loop.QuitClosure(),
+                                       &fetch_result));
+    fetch_run_loop.Run();
+    ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
+    *result = fetch_result.result;
+    *response = fetch_result.response;
+  }
+
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
     const int64 version_id = 1L;
     registration_ = new ServiceWorkerRegistration(
@@ -258,19 +289,15 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         -1, CreateReceiver(BrowserThread::UI, done, result));
   }
 
-  void FetchOnIOThread(const base::Closure& done,
-                       ServiceWorkerStatusCode* result,
-                       ServiceWorkerFetchResponse* message) {
+  void FetchOnIOThread(const base::Closure& done, FetchResult* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ServiceWorkerFetchRequest request(
         embedded_test_server()->GetURL("/service_worker/empty.html"),
         "GET",
         std::map<std::string, std::string>());
     version_->DispatchFetchEvent(
-        request,
-        CreateFetchResponseReceiver(BrowserThread::UI, done, result, message));
+        request, CreateResponseReceiver(BrowserThread::UI, done, result));
   }
-
 
   void StopOnIOThread(const base::Closure& done,
                       ServiceWorkerStatusCode* result) {
@@ -360,24 +387,32 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   InstallTestHelper("/service_worker/worker_install_rejected.js");
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Fetch) {
-  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
-                           "/service_worker/worker.js"));
-
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  ServiceWorkerFetchResponse response;
-  base::RunLoop fetch_run_loop;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&self::FetchOnIOThread, this,
-                                     fetch_run_loop.QuitClosure(),
-                                     &status, &response));
-  fetch_run_loop.Run();
-  ASSERT_EQ(SERVICE_WORKER_OK, status);
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+  FetchTestHelper("/service_worker/fetch_event.js", &result, &response);
+  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
   ASSERT_EQ(200, response.status_code);
   ASSERT_EQ("OK", response.status_text);
   ASSERT_EQ("GET", response.method);
   std::map<std::string, std::string> expected_headers;
   ASSERT_EQ(expected_headers, response.headers);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       FetchEvent_FallbackToNative) {
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+  FetchTestHelper(
+      "/service_worker/fetch_event_fallback.js", &result, &response);
+  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, result);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Rejected) {
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+  FetchTestHelper("/service_worker/fetch_event_error.js", &result, &response);
+  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, result);
 }
 
 }  // namespace content

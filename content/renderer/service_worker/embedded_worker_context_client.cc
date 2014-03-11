@@ -12,10 +12,12 @@
 #include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_script_context.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -125,7 +127,22 @@ void EmbeddedWorkerContextClient::didHandleInstallEvent(int request_id) {
 
 void EmbeddedWorkerContextClient::didHandleFetchEvent(int request_id) {
   DCHECK(script_context_);
-  NOTIMPLEMENTED();
+  script_context_->DidHandleFetchEvent(
+      request_id,
+      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+      ServiceWorkerResponse());
+}
+
+void EmbeddedWorkerContextClient::didHandleFetchEvent(
+    int request_id,
+    const blink::WebServiceWorkerResponse& web_response) {
+  DCHECK(script_context_);
+  ServiceWorkerResponse response(web_response.statusCode(),
+                                 web_response.statusText().utf8(),
+                                 web_response.method().utf8(),
+                                 std::map<std::string, std::string>());
+  script_context_->DidHandleFetchEvent(
+      request_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response);
 }
 
 void EmbeddedWorkerContextClient::OnSendMessageToWorker(

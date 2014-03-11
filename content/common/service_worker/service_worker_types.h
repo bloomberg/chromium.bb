@@ -40,15 +40,23 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   std::map<std::string, std::string> headers;
 };
 
-// The response sent from the child process to the browser.
-struct CONTENT_EXPORT ServiceWorkerFetchResponse {
-  ServiceWorkerFetchResponse();
-  ServiceWorkerFetchResponse(
-      int status_code,
-      const std::string& status_text,
-      const std::string& method,
-      const std::map<std::string, std::string>& headers);
-  ~ServiceWorkerFetchResponse();
+// Indicates how the service worker handled a fetch event.
+enum ServiceWorkerFetchEventResult {
+  // Browser should fallback to native fetch.
+  SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+  // Service worker provided a ServiceWorkerResponse.
+  SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+  SERVICE_WORKER_FETCH_EVENT_LAST = SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE
+};
+
+// Represents a response to a fetch.
+struct CONTENT_EXPORT ServiceWorkerResponse {
+  ServiceWorkerResponse();
+  ServiceWorkerResponse(int status_code,
+                        const std::string& status_text,
+                        const std::string& method,
+                        const std::map<std::string, std::string>& headers);
+  ~ServiceWorkerResponse();
 
   int status_code;
   std::string status_text;

@@ -26,7 +26,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(headers)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchResponse)
+IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchEventResult,
+                          content::SERVICE_WORKER_FETCH_EVENT_LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(status_code)
   IPC_STRUCT_TRAITS_MEMBER(status_text)
   IPC_STRUCT_TRAITS_MEMBER(method)
@@ -100,6 +103,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
 // to the documents).
 IPC_MESSAGE_CONTROL0(ServiceWorkerHostMsg_InstallEventFinished)
 
-  // Informs the browser that fetch event handling has finished.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_FetchEventFinished,
-                     content::ServiceWorkerFetchResponse)
+// Informs the browser that fetch event handling has finished.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
+                     content::ServiceWorkerFetchEventResult,
+                     content::ServiceWorkerResponse)

@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "url/gurl.h"
@@ -56,6 +57,9 @@ class EmbeddedWorkerContextClient
   virtual void workerContextDestroyed();
   virtual void didHandleInstallEvent(int request_id);
   virtual void didHandleFetchEvent(int request_id);
+  virtual void didHandleFetchEvent(
+      int request_id,
+      const blink::WebServiceWorkerResponse& response);
 
   // TODO: Implement DevTools related method overrides.
 

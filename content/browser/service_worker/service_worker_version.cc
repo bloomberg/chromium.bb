@@ -77,15 +77,18 @@ void HandleInstallFinished(const StatusCallback& callback,
 void HandleFetchResponse(const ServiceWorkerVersion::FetchCallback& callback,
                          ServiceWorkerStatusCode status,
                          const IPC::Message& message) {
-  Tuple1<ServiceWorkerFetchResponse> response;
   if (message.type() != ServiceWorkerHostMsg_FetchEventFinished::ID) {
     NOTREACHED() << "Got unexpected response for FetchEvent: "
                  << message.type();
-    callback.Run(SERVICE_WORKER_ERROR_FAILED, response.a);
+    callback.Run(SERVICE_WORKER_ERROR_FAILED,
+                 SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+                 ServiceWorkerResponse());
     return;
   }
-  ServiceWorkerHostMsg_FetchEventFinished::Read(&message, &response);
-  callback.Run(status, response.a);
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+  ServiceWorkerHostMsg_FetchEventFinished::Read(&message, &result, &response);
+  callback.Run(status, result, response);
 }
 
 }  // namespace
