@@ -9,7 +9,7 @@
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/image_cursors.h"
 #include "ui/gfx/display.h"
-#include "ui/views/corewm/cursor_manager.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 namespace test {

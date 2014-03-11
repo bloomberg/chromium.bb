@@ -24,7 +24,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/display.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {

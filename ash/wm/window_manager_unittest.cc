@@ -24,9 +24,8 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/compound_event_filter.h"
-#include "ui/views/corewm/corewm_switches.h"
-#include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/input_method_event_filter.h"
 
 namespace {
 

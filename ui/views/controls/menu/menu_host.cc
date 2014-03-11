@@ -14,10 +14,10 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/round_rect_painter.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace views {
 

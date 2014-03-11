@@ -9,7 +9,6 @@
 
 #include "apps/app_load_service.h"
 #include "apps/switches.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -70,6 +69,10 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"

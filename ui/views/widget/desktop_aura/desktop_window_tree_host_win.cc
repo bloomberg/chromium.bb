@@ -25,11 +25,7 @@
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_win.h"
-#include "ui/views/corewm/compound_event_filter.h"
-#include "ui/views/corewm/corewm_switches.h"
-#include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/tooltip_win.h"
-#include "ui/views/corewm/window_animations.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
@@ -41,6 +37,9 @@
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/window/native_frame_view.h"
+#include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/input_method_event_filter.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace views {
 

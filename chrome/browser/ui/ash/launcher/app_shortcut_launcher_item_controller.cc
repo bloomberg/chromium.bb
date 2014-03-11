@@ -31,7 +31,7 @@
 #include "extensions/browser/process_manager.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 
 using extensions::Extension;
 

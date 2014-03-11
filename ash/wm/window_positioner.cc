@@ -19,7 +19,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 

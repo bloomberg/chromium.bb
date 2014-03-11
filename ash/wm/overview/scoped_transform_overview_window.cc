@@ -13,9 +13,9 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/views/corewm/window_animations.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 

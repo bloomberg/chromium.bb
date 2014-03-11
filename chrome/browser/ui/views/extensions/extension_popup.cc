@@ -31,8 +31,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
-#include "ui/views/corewm/window_animations.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_util.h"
 #endif
 
 #if defined(OS_WIN)

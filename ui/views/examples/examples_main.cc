@@ -15,10 +15,10 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/screen.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/views/corewm/wm_state.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
+#include "ui/wm/core/wm_state.h"
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"

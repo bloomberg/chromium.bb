@@ -10,7 +10,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(USE_AURA)
-#include "ui/views/corewm/wm_state.h"
+#include "ui/wm/core/wm_state.h"
 #endif
 
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {

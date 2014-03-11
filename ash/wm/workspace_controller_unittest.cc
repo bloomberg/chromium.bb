@@ -34,9 +34,9 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_animations.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_util.h"
 
 using aura::Window;
 

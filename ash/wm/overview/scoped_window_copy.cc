@@ -13,9 +13,9 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/display.h"
-#include "ui/views/corewm/shadow_types.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 

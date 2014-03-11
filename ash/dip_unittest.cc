@@ -22,10 +22,10 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/shadow.h"
-#include "ui/views/corewm/shadow_controller.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 

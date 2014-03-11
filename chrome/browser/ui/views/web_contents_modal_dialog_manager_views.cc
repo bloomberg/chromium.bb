@@ -23,9 +23,9 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/views/corewm/visibility_controller.h"
-#include "ui/views/corewm/window_animations.h"
-#include "ui/views/corewm/window_modality_controller.h"
+#include "ui/wm/core/visibility_controller.h"
+#include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_modality_controller.h"
 #endif
 
 // TODO(wittman): this code should not depend on ash.

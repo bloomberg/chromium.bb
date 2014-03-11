@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/views/corewm/base_focus_rules.h"
+#include "ui/wm/core/base_focus_rules.h"
 
 namespace ash {
 namespace wm {

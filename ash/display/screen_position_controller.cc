@@ -20,7 +20,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {

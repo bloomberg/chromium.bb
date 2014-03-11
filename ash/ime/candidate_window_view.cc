@@ -16,9 +16,9 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/corewm/window_animations.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace ime {

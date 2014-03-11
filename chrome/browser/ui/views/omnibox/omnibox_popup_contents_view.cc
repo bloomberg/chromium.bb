@@ -22,7 +22,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 #endif
 
 // This is the number of pixels in the border image interior to the actual

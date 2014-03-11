@@ -17,11 +17,11 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace {
 

@@ -11,7 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/views/corewm/image_grid.h"
+#include "ui/wm/core/image_grid.h"
 
 namespace {
 

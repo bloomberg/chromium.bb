@@ -9,10 +9,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_layer_type.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace views {
 

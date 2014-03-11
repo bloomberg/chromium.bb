@@ -38,7 +38,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/background.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace internal {

@@ -20,7 +20,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace internal {

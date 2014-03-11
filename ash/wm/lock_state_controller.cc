@@ -20,7 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/wm/core/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"

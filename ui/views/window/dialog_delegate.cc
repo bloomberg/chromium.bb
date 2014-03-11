@@ -10,10 +10,10 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace views {
 

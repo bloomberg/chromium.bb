@@ -29,11 +29,11 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/test/child_modal_window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 using views::MenuItemView;
 using views::MenuRunner;

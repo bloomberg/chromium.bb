@@ -30,7 +30,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -40,6 +39,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "ui/wm/core/window_util.h"
 
 #if defined(OS_WIN)
 #include "ui/views/test/test_views_delegate.h"

@@ -21,7 +21,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event_processor.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

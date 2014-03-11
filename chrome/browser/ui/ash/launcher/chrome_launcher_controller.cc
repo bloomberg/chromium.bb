@@ -84,7 +84,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"

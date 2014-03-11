@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/corewm/window_modality_controller.h"
+#include "ui/wm/core/window_modality_controller.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -14,10 +14,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/test/child_modal_window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace internal {

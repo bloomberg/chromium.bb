@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -18,16 +19,12 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window_event_dispatcher.h"
-#endif
+#include "ui/wm/core/shadow_types.h"
 
 using content::DesktopMediaID;
 

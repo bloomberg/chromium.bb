@@ -38,7 +38,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_types.h"
 
 namespace ash {

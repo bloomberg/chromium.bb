@@ -15,9 +15,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "ui/views/corewm/shadow_types.h"
-#include "ui/views/corewm/window_animations.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/masked_window_targeter.h"
 
 namespace {

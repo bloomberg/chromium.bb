@@ -19,7 +19,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

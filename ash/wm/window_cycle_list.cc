@@ -8,7 +8,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 

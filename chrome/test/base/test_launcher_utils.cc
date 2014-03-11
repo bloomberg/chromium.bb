@@ -15,7 +15,7 @@
 #include "components/encryptor/encryptor_switches.h"
 
 #if defined(USE_AURA)
-#include "ui/views/corewm/corewm_switches.h"
+#include "ui/wm/core/wm_core_switches.h"
 #endif
 
 namespace test_launcher_utils {

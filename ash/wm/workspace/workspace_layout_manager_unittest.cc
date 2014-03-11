@@ -28,9 +28,9 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {

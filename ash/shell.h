@@ -26,7 +26,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "ui/views/corewm/cursor_manager.h"
+#include "ui/wm/core/cursor_manager.h"
 
 class CommandLine;
 

@@ -44,9 +44,9 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/message_center/message_center.h"
-#include "ui/views/corewm/transient_window_manager.h"
-#include "ui/views/corewm/window_animations.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/transient_window_manager.h"
+#include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_util.h"
 
 namespace {
 

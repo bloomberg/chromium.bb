@@ -21,8 +21,8 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
-#include "ui/views/corewm/capture_controller.h"
-#include "ui/views/corewm/wm_state.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/wm_state.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"

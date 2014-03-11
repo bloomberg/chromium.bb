@@ -21,10 +21,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/compound_event_filter.h"
 
 using aura::Window;
 

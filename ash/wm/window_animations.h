@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace aura {
 class Window;

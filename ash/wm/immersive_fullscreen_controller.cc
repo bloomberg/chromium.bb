@@ -25,10 +25,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/corewm/transient_window_manager.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/transient_window_manager.h"
+#include "ui/wm/core/window_util.h"
 
 using views::View;
 

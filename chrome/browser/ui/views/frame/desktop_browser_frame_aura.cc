@@ -18,8 +18,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
-#include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view.h"
+#include "ui/wm/core/visibility_controller.h"
 
 using aura::Window;
 

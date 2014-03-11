@@ -10,8 +10,8 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
-#include "ui/views/corewm/window_animations.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace internal {

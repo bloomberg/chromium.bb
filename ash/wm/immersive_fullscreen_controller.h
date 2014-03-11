@@ -13,9 +13,9 @@
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/views/corewm/transient_window_observer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/core/transient_window_observer.h"
 
 namespace aura {
 class Window;

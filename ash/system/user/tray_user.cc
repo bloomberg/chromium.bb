@@ -60,13 +60,13 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace {
 

@@ -33,10 +33,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/corewm/compound_event_filter.h"
-#include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/tooltip_aura.h"
-#include "ui/views/corewm/window_util.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
@@ -49,6 +46,8 @@
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/widget/desktop_aura/x11_scoped_capture.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
+#include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/window_util.h"
 
 namespace views {
 

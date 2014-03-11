@@ -26,7 +26,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.

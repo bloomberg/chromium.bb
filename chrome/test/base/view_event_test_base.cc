@@ -32,7 +32,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/views/corewm/wm_state.h"
+#include "ui/wm/core/wm_state.h"
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -11,9 +11,9 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/window_modality_controller.h"
 
 namespace views {
 namespace test {

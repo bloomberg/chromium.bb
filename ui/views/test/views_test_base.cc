@@ -11,8 +11,8 @@
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/views/corewm/capture_controller.h"
-#include "ui/views/corewm/wm_state.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/wm_state.h"
 
 namespace views {
 

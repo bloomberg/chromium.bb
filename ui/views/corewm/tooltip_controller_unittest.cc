@@ -23,10 +23,10 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
-#include "ui/views/corewm/wm_state.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)

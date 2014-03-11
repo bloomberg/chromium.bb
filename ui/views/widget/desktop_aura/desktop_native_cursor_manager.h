@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/corewm/native_cursor_manager.h"
 #include "ui/views/views_export.h"
+#include "ui/wm/core/native_cursor_manager.h"
 
 namespace aura {
 class WindowTreeHost;

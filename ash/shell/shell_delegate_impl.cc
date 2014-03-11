@@ -24,7 +24,7 @@
 #include "ash/wm/window_state.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window.h"
-#include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/wm/core/input_method_event_filter.h"
 
 namespace ash {
 namespace shell {

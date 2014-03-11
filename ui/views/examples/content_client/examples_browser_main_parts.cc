@@ -16,11 +16,11 @@
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/corewm/wm_state.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/native_widget_aura.h"
+#include "ui/wm/core/wm_state.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)

@@ -20,8 +20,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/views/corewm/visibility_controller.h"
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/visibility_controller.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 namespace internal {

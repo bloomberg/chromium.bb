@@ -11,8 +11,8 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size_conversions.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 namespace internal {

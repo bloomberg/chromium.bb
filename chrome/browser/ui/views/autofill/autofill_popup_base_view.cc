@@ -12,7 +12,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/views/corewm/window_animations.h"
+#include "ui/wm/core/window_animations.h"
 #endif
 
 namespace autofill {

@@ -69,7 +69,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/corewm/corewm_switches.h"
+#include "ui/wm/core/wm_core_switches.h"
 
 using content::BrowserThread;
 

@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_FOCUS_RULES_H_
 #define UI_VIEWS_WIDGET_DESKTOP_FOCUS_RULES_H_
 
-#include "ui/views/corewm/base_focus_rules.h"
+#include "ui/wm/core/base_focus_rules.h"
 
 namespace views {
 

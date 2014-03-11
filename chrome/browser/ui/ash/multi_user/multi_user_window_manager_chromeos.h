@@ -17,7 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
-#include "ui/views/corewm/transient_window_observer.h"
+#include "ui/wm/core/transient_window_observer.h"
 
 class Browser;
 class MultiUserNotificationBlockerChromeOS;

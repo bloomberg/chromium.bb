@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/test/web_contents_tester.h"
-#include "ui/views/corewm/wm_state.h"
+#include "ui/wm/core/wm_state.h"
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"

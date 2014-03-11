@@ -29,8 +29,8 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
-#include "ui/views/corewm/wm_state.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/wm/core/wm_state.h"
 
 #if defined(USE_X11)
 #include "ui/events/x/touch_factory_x11.h"

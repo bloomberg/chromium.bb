@@ -36,7 +36,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/corewm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace internal {

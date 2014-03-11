@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
-#include "ui/views/corewm/native_cursor_manager.h"
-#include "ui/views/corewm/native_cursor_manager_delegate.h"
+#include "ui/wm/core/native_cursor_manager.h"
+#include "ui/wm/core/native_cursor_manager_delegate.h"
 
 namespace ash {
 
