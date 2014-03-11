@@ -17,6 +17,37 @@ namespace {
 
 const char kEventsExtension[] = "gcm/events";
 
+gcm::GCMClient::SendErrorDetails CreateErrorDetails(
+    const std::string& message_id,
+    const gcm::GCMClient::Result result,
+    const std::string& total_messages) {
+  gcm::GCMClient::SendErrorDetails error;
+  error.message_id = message_id;
+  error.result = result;
+  error.additional_data["expectedMessageId"] = message_id;
+  switch (result) {
+    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+      error.additional_data["expectedErrorMessage"] =
+          "Asynchronous operation is pending.";
+      break;
+    case gcm::GCMClient::SERVER_ERROR:
+      error.additional_data["expectedErrorMessage"] = "Server error occurred.";
+      break;
+    case gcm::GCMClient::NETWORK_ERROR:
+      error.additional_data["expectedErrorMessage"] = "Network error occurred.";
+      break;
+    case gcm::GCMClient::TTL_EXCEEDED:
+      error.additional_data["expectedErrorMessage"] = "Time-to-live exceeded.";
+      break;
+    case gcm::GCMClient::UNKNOWN_ERROR:
+    default:  // Default case is the same as UNKNOWN_ERROR
+      error.additional_data["expectedErrorMessage"] = "Unknown error occurred.";
+      break;
+  }
+  error.additional_data["totalMessages"] = total_messages;
+  return error;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -181,17 +212,28 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnSendError) {
       LoadTestExtension(kEventsExtension, "on_send_error.html");
   ASSERT_TRUE(extension);
 
+  std::string total_expected_messages = "5";
   GcmJsEventRouter router(profile());
-  router.OnSendError(extension->id(), "error_message_1",
-      gcm::GCMClient::ASYNC_OPERATION_PENDING);
-  router.OnSendError(extension->id(), "error_message_2",
-      gcm::GCMClient::SERVER_ERROR);
-  router.OnSendError(extension->id(), "error_message_3",
-      gcm::GCMClient::NETWORK_ERROR);
-  router.OnSendError(extension->id(), "error_message_4",
-      gcm::GCMClient::UNKNOWN_ERROR);
-  router.OnSendError(extension->id(), "error_message_5",
-      gcm::GCMClient::TTL_EXCEEDED);
+  router.OnSendError(extension->id(),
+                     CreateErrorDetails("error_message_1",
+                                        gcm::GCMClient::ASYNC_OPERATION_PENDING,
+                                        total_expected_messages));
+  router.OnSendError(extension->id(),
+                     CreateErrorDetails("error_message_2",
+                                        gcm::GCMClient::SERVER_ERROR,
+                                        total_expected_messages));
+  router.OnSendError(extension->id(),
+                     CreateErrorDetails("error_message_3",
+                                        gcm::GCMClient::NETWORK_ERROR,
+                                        total_expected_messages));
+  router.OnSendError(extension->id(),
+                     CreateErrorDetails("error_message_4",
+                                        gcm::GCMClient::UNKNOWN_ERROR,
+                                        total_expected_messages));
+  router.OnSendError(extension->id(),
+                     CreateErrorDetails("error_message_5",
+                                        gcm::GCMClient::TTL_EXCEEDED,
+                                        total_expected_messages));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

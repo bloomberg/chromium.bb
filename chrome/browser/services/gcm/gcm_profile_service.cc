@@ -253,9 +253,9 @@ class GCMProfileService::IOWorker
       const std::string& app_id,
       const GCMClient::IncomingMessage& message) OVERRIDE;
   virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
-  virtual void OnMessageSendError(const std::string& app_id,
-                                  const std::string& message_id,
-                                  GCMClient::Result result) OVERRIDE;
+  virtual void OnMessageSendError(
+      const std::string& app_id,
+      const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
 
   // Called on IO thread.
@@ -398,8 +398,7 @@ void GCMProfileService::IOWorker::OnMessagesDeleted(const std::string& app_id) {
 
 void GCMProfileService::IOWorker::OnMessageSendError(
     const std::string& app_id,
-    const std::string& message_id,
-    GCMClient::Result result) {
+    const GCMClient::SendErrorDetails& send_error_details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserThread::PostTask(
@@ -408,8 +407,7 @@ void GCMProfileService::IOWorker::OnMessageSendError(
       base::Bind(&GCMProfileService::MessageSendError,
                  service_,
                  app_id,
-                 message_id,
-                 result));
+                 send_error_details));
 }
 
 void GCMProfileService::IOWorker::OnGCMReady() {
@@ -1026,16 +1024,16 @@ void GCMProfileService::MessagesDeleted(const std::string& app_id) {
   GetEventRouter(app_id)->OnMessagesDeleted(app_id);
 }
 
-void GCMProfileService::MessageSendError(const std::string& app_id,
-                                         const std::string& message_id,
-                                         GCMClient::Result result) {
+void GCMProfileService::MessageSendError(
+    const std::string& app_id,
+    const GCMClient::SendErrorDetails& send_error_details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Drop the event if signed out.
   if (username_.empty())
     return;
 
-  GetEventRouter(app_id)->OnSendError(app_id, message_id, result);
+  GetEventRouter(app_id)->OnSendError(app_id, send_error_details);
 }
 
 void GCMProfileService::GCMClientReady() {

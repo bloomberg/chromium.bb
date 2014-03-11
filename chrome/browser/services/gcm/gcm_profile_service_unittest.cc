@@ -172,10 +172,7 @@ class FakeGCMEventRouter : public GCMEventRouter {
   };
 
   explicit FakeGCMEventRouter(Waiter* waiter)
-      : waiter_(waiter),
-        received_event_(NO_EVENT),
-        send_error_result_(GCMClient::SUCCESS) {
-  }
+      : waiter_(waiter), received_event_(NO_EVENT) {}
 
   virtual ~FakeGCMEventRouter() {
   }
@@ -196,29 +193,37 @@ class FakeGCMEventRouter : public GCMEventRouter {
     waiter_->SignalCompleted();
   }
 
-  virtual void OnSendError(const std::string& app_id,
-                           const std::string& message_id,
-                           GCMClient::Result result) OVERRIDE {
+  virtual void OnSendError(
+      const std::string& app_id,
+      const GCMClient::SendErrorDetails& send_error_details) OVERRIDE {
     clear_results();
     received_event_ = SEND_ERROR_EVENT;
     app_id_ = app_id;
-    send_error_message_id_ = message_id;
-    send_error_result_ = result;
+    send_error_details_ = send_error_details;
     waiter_->SignalCompleted();
   }
 
   Event received_event() const { return received_event_; }
   const std::string& app_id() const { return app_id_; }
   const GCMClient::IncomingMessage& message() const { return message_; }
-  const std::string& send_message_id() const { return send_error_message_id_; }
-  GCMClient::Result send_result() const { return send_error_result_; }
+  const GCMClient::SendErrorDetails& send_error_details() const {
+    return send_error_details_;
+  }
+  const std::string& send_error_message_id() const {
+    return send_error_details_.message_id;
+  }
+  GCMClient::Result send_error_result() const {
+    return send_error_details_.result;
+  }
+  const GCMClient::MessageData& send_error_data() const {
+    return send_error_details_.additional_data;
+  }
 
   void clear_results() {
     received_event_ = NO_EVENT;
     app_id_.clear();
     message_.data.clear();
-    send_error_message_id_.clear();
-    send_error_result_ = GCMClient::UNKNOWN_ERROR;
+    send_error_details_ = GCMClient::SendErrorDetails();
   }
 
  private:
@@ -226,8 +231,7 @@ class FakeGCMEventRouter : public GCMEventRouter {
   Event received_event_;
   std::string app_id_;
   GCMClient::IncomingMessage message_;
-  std::string send_error_message_id_;
-  GCMClient::Result send_error_result_;
+  GCMClient::SendErrorDetails send_error_details_;
 };
 
 class FakeGCMClientFactory : public GCMClientFactory {
@@ -1076,9 +1080,10 @@ TEST_F(GCMProfileServiceSingleProfileTest, SendError) {
             consumer()->gcm_event_router()->received_event());
   EXPECT_EQ(kTestingAppId, consumer()->gcm_event_router()->app_id());
   EXPECT_EQ(consumer()->send_message_id(),
-            consumer()->gcm_event_router()->send_message_id());
+            consumer()->gcm_event_router()->send_error_message_id());
   EXPECT_NE(GCMClient::SUCCESS,
-            consumer()->gcm_event_router()->send_result());
+            consumer()->gcm_event_router()->send_error_result());
+  EXPECT_EQ(message.data, consumer()->gcm_event_router()->send_error_data());
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, MessageReceived) {
@@ -1488,10 +1493,12 @@ TEST_F(GCMProfileServiceMultiProfileTest, Combined) {
   EXPECT_EQ(FakeGCMEventRouter::SEND_ERROR_EVENT,
             consumer2()->gcm_event_router()->received_event());
   EXPECT_EQ(kTestingAppId, consumer2()->gcm_event_router()->app_id());
-  EXPECT_EQ(consumer2()->send_message_id(),
-            consumer2()->gcm_event_router()->send_message_id());
+  EXPECT_EQ(out_message4.id,
+            consumer2()->gcm_event_router()->send_error_message_id());
   EXPECT_NE(GCMClient::SUCCESS,
-            consumer2()->gcm_event_router()->send_result());
+            consumer2()->gcm_event_router()->send_error_result());
+  EXPECT_EQ(out_message4.data,
+            consumer2()->gcm_event_router()->send_error_data());
 
   // Sign in with a different user.
   consumer()->SignIn(kTestingUsername3);

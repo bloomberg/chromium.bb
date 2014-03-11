@@ -219,12 +219,13 @@ void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
       app_id, event.Pass());
 }
 
-void GcmJsEventRouter::OnSendError(const std::string& app_id,
-                                   const std::string& message_id,
-                                   gcm::GCMClient::Result result) {
+void GcmJsEventRouter::OnSendError(
+    const std::string& app_id,
+    const gcm::GCMClient::SendErrorDetails& send_error_details) {
   api::gcm::OnSendError::Error error;
-  error.message_id.reset(new std::string(message_id));
-  error.error_message = GcmResultToError(result);
+  error.message_id.reset(new std::string(send_error_details.message_id));
+  error.error_message = GcmResultToError(send_error_details.result);
+  error.details.additional_properties = send_error_details.additional_data;
 
   scoped_ptr<Event> event(new Event(
       api::gcm::OnSendError::kEventName,

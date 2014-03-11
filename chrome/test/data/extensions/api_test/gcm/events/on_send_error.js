@@ -5,26 +5,24 @@
 onload = function() {
   chrome.test.runTests([
     function onSendError() {
-      var errorMessages = [
-          'Asynchronous operation is pending.',
-          'Server error occurred.',
-          'Network error occurred.',
-          'Unknown error occurred.',
-          'Time-to-live exceeded.'
-        ];
-      var messageIds = [
-          'error_message_1',
-          'error_message_2',
-          'error_message_3',
-          'error_message_4',
-          'error_message_5'
-        ];
       var currentError = 0;
+      var totalMessages = 0;
       var eventHandler = function(error) {
-        chrome.test.assertEq(errorMessages[currentError], error.errorMessage);
-        chrome.test.assertEq(messageIds[currentError], error.messageId);
+        chrome.test.assertEq(3, Object.keys(error.details).length);
+        chrome.test.assertTrue(
+            error.details.hasOwnProperty("expectedMessageId"));
+        chrome.test.assertTrue(
+            error.details.hasOwnProperty("expectedErrorMessage"));
+        chrome.test.assertEq(error.details.expectedMessageId, error.messageId);
+        chrome.test.assertEq(error.details.expectedErrorMessage,
+                             error.errorMessage);
         currentError += 1;
-        if (currentError == messageIds.length) {
+        var tempTotalMessages = +error.details.totalMessages;
+        if (totalMessages == 0)
+          totalMessages = tempTotalMessages;
+        else
+          chrome.test.assertEq(totalMessages, tempTotalMessages);
+        if (currentError == totalMessages) {
           chrome.gcm.onSendError.removeListener(eventHandler);
           chrome.test.succeed();
         }

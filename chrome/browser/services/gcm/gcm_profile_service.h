@@ -186,8 +186,7 @@ class GCMProfileService : public BrowserContextKeyedService,
                        GCMClient::IncomingMessage message);
   void MessagesDeleted(const std::string& app_id);
   void MessageSendError(const std::string& app_id,
-                        const std::string& message_id,
-                        GCMClient::Result result);
+                        const GCMClient::SendErrorDetails& send_error_details);
   void GCMClientReady();
 
   // Returns the event router to fire the event for the given app.

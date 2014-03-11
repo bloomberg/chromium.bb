@@ -78,6 +78,16 @@ class GCM_EXPORT GCMClient {
     std::string sender_id;
   };
 
+  // Detailed information of the Send Error event.
+  struct GCM_EXPORT SendErrorDetails {
+    SendErrorDetails();
+    ~SendErrorDetails();
+
+    std::string message_id;
+    MessageData additional_data;
+    Result result;
+  };
+
   // Internal states and activity statistics of a GCM client.
   struct GCM_EXPORT GCMStatistics {
    public:
@@ -130,11 +140,10 @@ class GCM_EXPORT GCMClient {
 
     // Called when a message failed to send to the server.
     // |app_id|: application ID.
-    // |message_id|: ID of the message being sent.
-    // |result|: the type of the error if an error occured, success otherwise.
-    virtual void OnMessageSendError(const std::string& app_id,
-                                    const std::string& message_id,
-                                    Result result) = 0;
+    // |send_error_detials|: Details of the send error event, like mesasge ID.
+    virtual void OnMessageSendError(
+        const std::string& app_id,
+        const SendErrorDetails& send_error_details) = 0;
 
     // Called when the GCM becomes ready. To get to this state, GCMClient
     // finished loading from the GCM store and retrieved the device check-in

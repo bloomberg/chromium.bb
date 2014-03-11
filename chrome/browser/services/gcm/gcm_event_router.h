@@ -18,9 +18,9 @@ class GCMEventRouter {
   virtual void OnMessage(const std::string& app_id,
                          const GCMClient::IncomingMessage& message) = 0;
   virtual void OnMessagesDeleted(const std::string& app_id) = 0;
-  virtual void OnSendError(const std::string& app_id,
-                           const std::string& message_id,
-                           GCMClient::Result result) = 0;
+  virtual void OnSendError(
+      const std::string& app_id,
+      const GCMClient::SendErrorDetails& send_error_details) = 0;
 };
 
 }  // namespace gcm

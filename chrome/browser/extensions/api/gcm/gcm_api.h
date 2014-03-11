@@ -88,9 +88,9 @@ class GcmJsEventRouter : public gcm::GCMEventRouter,
       const std::string& app_id,
       const gcm::GCMClient::IncomingMessage& message) OVERRIDE;
   virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
-  virtual void OnSendError(const std::string& app_id,
-                           const std::string& message_id,
-                           gcm::GCMClient::Result result) OVERRIDE;
+  virtual void OnSendError(
+      const std::string& app_id,
+      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
 
   // EventRouter::Observer:
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;

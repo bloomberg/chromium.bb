@@ -19,6 +19,10 @@ GCMClient::IncomingMessage::IncomingMessage() {
 GCMClient::IncomingMessage::~IncomingMessage() {
 }
 
+GCMClient::SendErrorDetails::SendErrorDetails() : result(UNKNOWN_ERROR) {}
+
+GCMClient::SendErrorDetails::~SendErrorDetails() {}
+
 GCMClient::GCMStatistics::GCMStatistics()
     : gcm_client_created(false), connection_client_created(false) {
 }

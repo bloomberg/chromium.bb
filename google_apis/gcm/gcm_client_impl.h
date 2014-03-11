@@ -161,16 +161,20 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Completes the GCM store destroy request.
   void OnGCMStoreDestroyed(bool success);
 
-  // Handles incoming data message and dispatches it the a relevant user
-  // delegate.
+  // Handles incoming data message and dispatches it the delegate of this class.
   void HandleIncomingMessage(const gcm::MCSMessage& message);
 
-  // Fires OnMessageSendError event on |delegate|, with specified |app_id| and
-  // message ID obtained from |incoming_message| if one is available.
-  void NotifyDelegateOnMessageSendError(
-      GCMClient::Delegate* delegate,
-      const std::string& app_id,
-      const IncomingMessage& incoming_message);
+  // Fires OnMessageReceived event on the delegate of this class, based on the
+  // details in |data_message_stanza| and |message_data|.
+  void HandleIncomingDataMessage(
+      const mcs_proto::DataMessageStanza& data_message_stanza,
+      MessageData& message_data);
+
+  // Fires OnMessageSendError event on the delegate of this calss, based on the
+  // details in |data_message_stanza| and |message_data|.
+  void HandleIncomingSendError(
+      const mcs_proto::DataMessageStanza& data_message_stanza,
+      MessageData& message_data);
 
   // For testing purpose only.
   // Sets an |mcs_client_| for testing. Takes the ownership of |mcs_client|.

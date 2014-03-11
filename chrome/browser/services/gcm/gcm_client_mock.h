@@ -77,12 +77,12 @@ class GCMClientMock : public GCMClient {
   void CheckinFinished();
   void RegisterFinished(const std::string& app_id,
                         const std::string& registrion_id);
-  void SendFinished(const std::string& app_id, const std::string& message_id);
+  void SendFinished(const std::string& app_id, const OutgoingMessage& message);
   void MessageReceived(const std::string& app_id,
                        const IncomingMessage& message);
   void MessagesDeleted(const std::string& app_id);
   void MessageSendError(const std::string& app_id,
-                        const std::string& message_id);
+                        const SendErrorDetails& send_error_details);
 
   Delegate* delegate_;
   Status status_;

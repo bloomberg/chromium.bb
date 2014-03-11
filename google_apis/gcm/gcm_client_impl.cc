@@ -471,17 +471,21 @@ void GCMClientImpl::OnMessageSentToMCS(int64 user_serial_number,
 
   // TTL_EXCEEDED is singled out here, because it can happen long time after the
   // message was sent. That is why it comes as |OnMessageSendError| event rather
-  // than |OnSendFinished|. All other errors will be raised immediately, through
-  // asynchronous callback.
+  // than |OnSendFinished|. SendErrorDetails.additional_data is left empty.
+  // All other errors will be raised immediately, through asynchronous callback.
   // It is expected that TTL_EXCEEDED will be issued for a message that was
   // previously issued |OnSendFinished| with status SUCCESS.
   // For now, we do not report that the message has been sent and acked
   // successfully.
   // TODO(jianli): Consider adding UMA for this status.
-  if (status == MCSClient::TTL_EXCEEDED)
-    delegate_->OnMessageSendError(app_id, message_id, GCMClient::TTL_EXCEEDED);
-  else if (status != MCSClient::SENT)
+  if (status == MCSClient::TTL_EXCEEDED) {
+    SendErrorDetails send_error_details;
+    send_error_details.message_id = message_id;
+    send_error_details.result = GCMClient::TTL_EXCEEDED;
+    delegate_->OnMessageSendError(app_id, send_error_details);
+  } else if (status != MCSClient::SENT) {
     delegate_->OnSendFinished(app_id, message_id, ToGCMClientResult(status));
+  }
 }
 
 void GCMClientImpl::OnMCSError() {
@@ -497,31 +501,31 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
           message.GetProtobuf());
   DCHECK_EQ(data_message_stanza.device_user_id(), kDefaultUserSerialNumber);
 
-  IncomingMessage incoming_message;
-  MessageType message_type = DATA_MESSAGE;
+  // Copying all the data from the stanza to a MessageData object. When present,
+  // keys like kMessageTypeKey or kSendErrorMessageIdKey will be filtered out
+  // later.
+  MessageData message_data;
   for (int i = 0; i < data_message_stanza.app_data_size(); ++i) {
     std::string key = data_message_stanza.app_data(i).key();
-    if (key == kMessageTypeKey)
-      message_type = DecodeMessageType(data_message_stanza.app_data(i).value());
-    else
-      incoming_message.data[key] = data_message_stanza.app_data(i).value();
+    message_data[key] = data_message_stanza.app_data(i).value();
   }
 
+  MessageType message_type = UNKNOWN;
+  MessageData::iterator iter = message_data.find(kMessageTypeKey);
+  if (iter != message_data.end()) {
+    message_type = DecodeMessageType(iter->second);
+    message_data.erase(iter);
+  }
 
   switch (message_type) {
     case DATA_MESSAGE:
-      incoming_message.sender_id = data_message_stanza.from();
-      if (data_message_stanza.has_token())
-        incoming_message.collapse_key = data_message_stanza.token();
-      delegate_->OnMessageReceived(data_message_stanza.category(),
-                                   incoming_message);
+      HandleIncomingDataMessage(data_message_stanza, message_data);
       break;
     case DELETED_MESSAGES:
       delegate_->OnMessagesDeleted(data_message_stanza.category());
       break;
     case SEND_ERROR:
-      NotifyDelegateOnMessageSendError(
-          delegate_, data_message_stanza.category(), incoming_message);
+      HandleIncomingSendError(data_message_stanza, message_data);
       break;
     case UNKNOWN:
     default:  // Treat default the same as UNKNOWN.
@@ -531,16 +535,34 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
   }
 }
 
-void GCMClientImpl::NotifyDelegateOnMessageSendError(
-    GCMClient::Delegate* delegate,
-    const std::string& app_id,
-    const IncomingMessage& incoming_message) {
-  MessageData::const_iterator iter =
-      incoming_message.data.find(kSendErrorMessageIdKey);
-  std::string message_id;
-  if (iter != incoming_message.data.end())
-    message_id = iter->second;
-  delegate->OnMessageSendError(app_id, message_id, SERVER_ERROR);
+void GCMClientImpl::HandleIncomingDataMessage(
+    const mcs_proto::DataMessageStanza& data_message_stanza,
+    MessageData& message_data) {
+  IncomingMessage incoming_message;
+  incoming_message.sender_id = data_message_stanza.from();
+  if (data_message_stanza.has_token())
+    incoming_message.collapse_key = data_message_stanza.token();
+  incoming_message.data = message_data;
+  delegate_->OnMessageReceived(data_message_stanza.category(),
+                               incoming_message);
+}
+
+void GCMClientImpl::HandleIncomingSendError(
+    const mcs_proto::DataMessageStanza& data_message_stanza,
+    MessageData& message_data) {
+  SendErrorDetails send_error_details;
+  send_error_details.additional_data = message_data;
+  send_error_details.result = SERVER_ERROR;
+
+  MessageData::iterator iter =
+      send_error_details.additional_data.find(kSendErrorMessageIdKey);
+  if (iter != send_error_details.additional_data.end()) {
+    send_error_details.message_id = iter->second;
+    send_error_details.additional_data.erase(iter);
+  }
+
+  delegate_->OnMessageSendError(data_message_stanza.category(),
+                                send_error_details);
 }
 
 void GCMClientImpl::SetMCSClientForTesting(scoped_ptr<MCSClient> mcs_client) {
