@@ -31,13 +31,14 @@
 #include "content/public/browser/devtools_target.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/user_agent.h"
+#include "content/public/common/user_agent.h"
 #include "grit/devtools_resources_map.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -452,7 +453,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   if (command == "version") {
     base::DictionaryValue version;
     version.SetString("Protocol-Version", kProtocolVersion);
-    version.SetString("WebKit-Version", webkit_glue::GetWebKitVersion());
+    version.SetString("WebKit-Version", GetWebKitVersion());
     version.SetString("Browser", GetContentClient()->GetProduct());
     version.SetString("User-Agent", GetContentClient()->GetUserAgent());
 #if defined(OS_ANDROID)

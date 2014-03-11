@@ -16,9 +16,9 @@
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/user_agent.h"
 #include "jni/AwDevToolsServer_jni.h"
 #include "net/socket/unix_domain_socket_posix.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
@@ -178,8 +178,7 @@ void AwDevToolsServer::Start() {
           base::StringPrintf(kSocketNameFormat, getpid()),
           "",
           base::Bind(&content::CanUserConnectToDevTools)),
-      base::StringPrintf(kFrontEndURL,
-                         webkit_glue::GetWebKitRevision().c_str()),
+      base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new AwDevToolsServerDelegate());
 }
 

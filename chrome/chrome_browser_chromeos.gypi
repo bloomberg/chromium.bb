@@ -94,7 +94,6 @@
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/webkit_resources.gyp:webkit_resources',

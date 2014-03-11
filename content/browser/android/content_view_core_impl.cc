@@ -51,6 +51,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/user_agent.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -61,7 +62,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/size_f.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -250,7 +250,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
   const char kLinuxInfoStr[] = "X11; Linux x86_64";
   std::string product = content::GetContentClient()->GetProduct();
   std::string spoofed_ua =
-      webkit_glue::BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
+      BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
 
   InitWebContents();

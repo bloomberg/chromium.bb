@@ -19,6 +19,7 @@
 #include "content/child/npapi/webplugin_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/user_agent.h"
 #include "content/public/common/webplugininfo.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/web/WebBindings.h"

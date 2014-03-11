@@ -37,12 +37,12 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/user_agent.h"
 #include "grit/browser_resources.h"
 #include "jni/DevToolsServer_jni.h"
 #include "net/socket/unix_domain_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
@@ -414,8 +414,7 @@ void DevToolsServer::Start() {
           socket_name_,
           base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()),
           base::Bind(&content::CanUserConnectToDevTools)),
-      base::StringPrintf(kFrontEndURL,
-                         webkit_glue::GetWebKitRevision().c_str()),
+      base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new DevToolsServerDelegate());
 }
 

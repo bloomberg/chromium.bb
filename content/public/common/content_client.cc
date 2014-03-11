@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "content/public/common/user_agent.h"
 #include "ui/gfx/image/image.h"
 
 namespace content {

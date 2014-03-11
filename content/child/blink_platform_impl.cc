@@ -370,10 +370,9 @@ WebString BlinkPlatformImpl::userAgent(const WebURL& url) {
   return userAgent();
 }
 
-WebData BlinkPlatformImpl::parseDataURL(
-    const WebURL& url,
-    WebString& mimetype_out,
-    WebString& charset_out) {
+WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
+                                        WebString& mimetype_out,
+                                        WebString& charset_out) {
   std::string mime_type, char_set, data;
   if (net::DataURL::Parse(url, &mime_type, &char_set, &data)
       && net::IsSupportedMimeType(mime_type)) {

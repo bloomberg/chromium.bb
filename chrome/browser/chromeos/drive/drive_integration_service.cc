@@ -40,12 +40,12 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/gdata_wapi_url_generator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -82,7 +82,7 @@ std::string GetDriveUserAgent() {
   // This part is <client_name>/<version>.
   const char kLibraryInfo[] = "chrome-cc/none";
 
-  const std::string os_cpu_info = webkit_glue::BuildOSCpuInfo();
+  const std::string os_cpu_info = content::BuildOSCpuInfo();
 
   // Add "gzip" to receive compressed data from the server.
   // (see https://developers.google.com/drive/performance)

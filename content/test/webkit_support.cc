@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/user_agent.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"

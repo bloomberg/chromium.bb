@@ -51,7 +51,6 @@
         '<(DEPTH)/third_party/zlib/google/zip.gyp:zip',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'sources': [
         '../apps/app_shim/app_shim_launch.h',

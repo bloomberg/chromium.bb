@@ -29,13 +29,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/user_agent.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/mac/obsolete_system.h"
@@ -275,7 +275,7 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
   source->AddString("productTOS", tos);
 
-  source->AddString("webkitVersion", webkit_glue::GetWebKitVersion());
+  source->AddString("webkitVersion", content::GetWebKitVersion());
 
   source->AddString("jsEngine", "V8");
   source->AddString("jsEngineVersion", v8::V8::GetVersion());

@@ -16,7 +16,6 @@
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
     '../ui/ui.gyp:ui',
     '../url/url.gyp:url_lib',
-    '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
   ],
   'include_dirs': [
     '..',
@@ -32,6 +31,7 @@
     'public/common/child_process_sandbox_support_linux.h',
     'public/common/color_suggestion.cc',
     'public/common/color_suggestion.h',
+    'public/common/console_message_level.h',
     'public/common/content_constants.cc',
     'public/common/content_constants.h',
     'public/common/content_descriptors.h',
@@ -41,7 +41,6 @@
     'public/common/content_switches.h',
     'public/common/context_menu_params.cc',
     'public/common/context_menu_params.h',
-    'public/common/console_message_level.h',
     'public/common/drop_data.cc',
     'public/common/drop_data.h',
     'public/common/favicon_url.cc',
@@ -89,8 +88,8 @@
     'public/common/signed_certificate_timestamp_id_and_status.h',
     'public/common/speech_recognition_error.h',
     'public/common/speech_recognition_grammar.h',
-    'public/common/speech_recognition_result.h',
     'public/common/speech_recognition_result.cc',
+    'public/common/speech_recognition_result.h',
     'public/common/ssl_status.cc',
     'public/common/ssl_status.h',
     'public/common/stop_find_action.h',
@@ -102,6 +101,7 @@
     'public/common/url_fetcher.h',
     'public/common/url_utils.cc',
     'public/common/url_utils.h',
+    'public/common/user_agent.h',
     'public/common/webplugininfo.cc',
     'public/common/webplugininfo.h',
     'public/common/zygote_fork_delegate_linux.h',
@@ -395,6 +395,8 @@
     'common/swapped_out_messages.cc',
     'common/swapped_out_messages.h',
     'common/text_input_client_messages.h',
+    'common/user_agent.cc',
+    'common/user_agent_ios.mm',
     'common/url_schemes.cc',
     'common/url_schemes.h',
     'common/utility_messages.h',
@@ -419,6 +421,12 @@
   ],
   'conditions': [
     ['OS=="ios"', {
+      # iOS has different user-agent construction utilities, since the
+      # version strings is not derived from webkit_version, and follows
+      # a different format.
+      'sources!': [
+        'common/user_agent.cc',
+      ],
       'sources/': [
         # iOS only needs a small portion of content; exclude all the
         # implementation, and re-include what is used.
@@ -461,6 +469,7 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
+        'content.gyp:webkit_version',
       ],
     }],
     ['OS=="mac"', {

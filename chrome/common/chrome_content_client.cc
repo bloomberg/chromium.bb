@@ -29,6 +29,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/common_resources.h"
@@ -36,7 +37,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -435,7 +435,7 @@ std::string GetUserAgent() {
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";
 #endif
-  return webkit_glue::BuildUserAgentFromProduct(product);
+  return content::BuildUserAgentFromProduct(product);
 }
 
 void ChromeContentClient::SetActiveURL(const GURL& url) {

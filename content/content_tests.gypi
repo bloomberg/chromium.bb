@@ -215,6 +215,7 @@
           ],
           'dependencies': [
             'content.gyp:content_child',
+            'content.gyp:content_common',
             'content.gyp:content_gpu',
             'content.gyp:content_ppapi_plugin',
             'content.gyp:content_renderer',
@@ -230,7 +231,6 @@
             '../ui/surface/surface.gyp:surface',
             '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-            '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
@@ -326,7 +326,6 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
-        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [
         '..',

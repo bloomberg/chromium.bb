@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/user_agent/user_agent_util.h"
+#include "content/public/common/user_agent.h"
 
 #import <UIKit/UIKit.h>
 
@@ -59,7 +59,7 @@ const UAVersions& GetUAVersionsForCurrentOS() {
 
 }  // namespace
 
-namespace webkit_glue {
+namespace content {
 
 std::string BuildOSCpuInfo() {
   int32 os_major_version = 0;
@@ -114,17 +114,16 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
   UAVersions ua_versions = GetUAVersionsForCurrentOS();
 
   std::string user_agent;
-  base::StringAppendF(
-      &user_agent,
-      "Mozilla/5.0 (%s) AppleWebKit/%s"
-      " (KHTML, like Gecko) %s Mobile/%s Safari/%s",
-      webkit_glue::BuildOSCpuInfo().c_str(),
-      ua_versions.webkit_version_string,
-      product.c_str(),
-      kernel_version,
-      ua_versions.safari_version_string);
+  base::StringAppendF(&user_agent,
+                      "Mozilla/5.0 (%s) AppleWebKit/%s"
+                      " (KHTML, like Gecko) %s Mobile/%s Safari/%s",
+                      BuildOSCpuInfo().c_str(),
+                      ua_versions.webkit_version_string,
+                      product.c_str(),
+                      kernel_version,
+                      ua_versions.safari_version_string);
 
   return user_agent;
 }
 
-}  // namespace webkit_glue
+}  // namespace content

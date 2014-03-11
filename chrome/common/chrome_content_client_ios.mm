@@ -8,10 +8,10 @@
 #include "base/strings/string_piece.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 // TODO(ios): Investigate merging with chrome_content_client.cc; this would
 // requiring either a lot of ifdefing, or spliting the file into parts.
@@ -50,7 +50,7 @@ std::string ChromeContentClient::GetProduct() const {
 
 std::string ChromeContentClient::GetUserAgent() const {
   std::string product = GetProduct();
-  return webkit_glue::BuildUserAgentFromProduct(product);
+  return content::BuildUserAgentFromProduct(product);
 }
 
 base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {

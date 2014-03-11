@@ -77,10 +77,10 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/common/user_agent.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/escape.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
@@ -1098,9 +1098,8 @@ void ToggleRequestTabletSite(Browser* browser) {
     std::string product;
     if (version_info.is_valid())
       product = version_info.ProductNameAndVersionForUserAgent();
-    current_tab->SetUserAgentOverride(
-        webkit_glue::BuildUserAgentFromOSAndProduct(
-            kOsOverrideForTabletSite, product));
+    current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
+        kOsOverrideForTabletSite, product));
   }
   controller.ReloadOriginalRequestURL(true);
 }

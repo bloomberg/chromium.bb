@@ -57,7 +57,6 @@
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],

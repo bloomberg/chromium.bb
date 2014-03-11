@@ -85,7 +85,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',
-        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [
         '..',

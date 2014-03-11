@@ -58,7 +58,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
-        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [
         '..',

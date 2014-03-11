@@ -1,17 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/user_agent/user_agent_util.h"
+#include "content/public/common/user_agent.h"
+
+#include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
+#include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/utsname.h>
 #endif
-
-#include "base/lazy_instance.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -20,7 +21,17 @@
 // Generated
 #include "webkit_version.h"  // NOLINT
 
-namespace webkit_glue {
+namespace content {
+
+namespace {
+
+#if defined(OS_ANDROID)
+std::string GetAndroidDeviceName() {
+  return base::SysInfo::GetDeviceName();
+}
+#endif
+
+}  // namespace
 
 std::string GetWebKitVersion() {
   return base::StringPrintf("%d.%d (%s)",
@@ -29,15 +40,17 @@ std::string GetWebKitVersion() {
                             WEBKIT_SVN_REVISION);
 }
 
+int GetWebKitMajorVersion() {
+  return WEBKIT_VERSION_MAJOR;
+}
+
+int GetWebKitMinorVersion() {
+  return WEBKIT_VERSION_MINOR;
+}
+
 std::string GetWebKitRevision() {
   return WEBKIT_SVN_REVISION;
 }
-
-#if defined(OS_ANDROID)
-std::string GetAndroidDeviceName() {
-  return base::SysInfo::GetDeviceName();
-}
-#endif
 
 std::string BuildOSCpuInfo() {
   std::string os_cpu;
@@ -143,14 +156,6 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
-int GetWebKitMajorVersion() {
-  return WEBKIT_VERSION_MAJOR;
-}
-
-int GetWebKitMinorVersion() {
-  return WEBKIT_VERSION_MINOR;
-}
-
 std::string BuildUserAgentFromProduct(const std::string& product) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
@@ -166,8 +171,8 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
 #endif
 
   std::string os_info;
-  base::StringAppendF(&os_info, "%s%s", kUserAgentPlatform,
-                      webkit_glue::BuildOSCpuInfo().c_str());
+  base::StringAppendF(
+      &os_info, "%s%s", kUserAgentPlatform, BuildOSCpuInfo().c_str());
   return BuildUserAgentFromOSAndProduct(os_info, product);
 }
 
@@ -189,4 +194,4 @@ std::string BuildUserAgentFromOSAndProduct(const std::string& os_info,
   return user_agent;
 }
 
-}  // namespace webkit_glue
+}  // namespace content
