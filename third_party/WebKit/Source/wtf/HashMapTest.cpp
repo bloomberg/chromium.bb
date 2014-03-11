@@ -142,23 +142,46 @@ public:
     DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
     ~DummyRefCounted() { m_isDeleted = true; }
 
+    void ref()
+    {
+        WTF::RefCounted<DummyRefCounted>::ref();
+        ++m_refInvokesCount;
+    }
+
+    static int m_refInvokesCount;
+
 private:
     bool& m_isDeleted;
 };
+
+int DummyRefCounted::m_refInvokesCount = 0;
 
 TEST(WTF, HashMapWithRefPtrAsKey)
 {
     bool isDeleted;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
+    ASSERT_EQ(0, DummyRefCounted::m_refInvokesCount);
     HashMap<RefPtr<DummyRefCounted>, int> map;
     map.add(ptr, 1);
+    // Referenced only once (to store a copy in the container).
+    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
     ASSERT_EQ(1, map.get(ptr));
+
+    DummyRefCounted* rawPtr = ptr.get();
+
+    ASSERT_TRUE(map.contains(rawPtr));
+    ASSERT_NE(map.end(), map.find(rawPtr));
+    ASSERT_TRUE(map.contains(ptr));
+    ASSERT_NE(map.end(), map.find(ptr));
+    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
 
     ptr.clear();
     ASSERT_FALSE(isDeleted);
 
-    map.clear();
+    map.remove(rawPtr);
+    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
     ASSERT_TRUE(isDeleted);
+    ASSERT_TRUE(map.isEmpty());
 }
 
 } // namespace
