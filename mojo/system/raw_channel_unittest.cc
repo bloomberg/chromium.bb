@@ -511,7 +511,16 @@ TEST_F(RawChannelTest, OnFatalError) {
 
 // TODO(yzshen): On Windows, I haven't figured out a way to shut down one
 // direction of the named pipe.
-TEST_F(RawChannelTest, ReadUnaffectedByWriteFatalError) {
+// TODO(yzshen): On Mac, shutting down read on one end doesn't fail write on the
+// other end.
+#if defined(OS_MACOSX)
+#define MAYBE_ReadUnaffectedByWriteFatalError \
+    DISABLED_ReadUnaffectedByWriteFatalError
+#else
+#define MAYBE_ReadUnaffectedByWriteFatalError \
+    ReadUnaffectedByWriteFatalError
+#endif
+TEST_F(RawChannelTest, MAYBE_ReadUnaffectedByWriteFatalError) {
   const size_t kMessageCount = 5;
 
   FatalErrorRecordingRawChannelDelegate delegate(2 * kMessageCount, false,

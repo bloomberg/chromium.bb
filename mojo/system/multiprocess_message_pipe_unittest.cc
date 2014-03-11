@@ -215,7 +215,13 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
 
 // Sends a bunch of messages to the child. Expects them "repeated" back. Waits
 // for the child to close its end before quitting.
-TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
+// TODO(yzshen): The test hangs on Mac. http://crbug.com/350575
+#if defined(OS_MACOSX)
+#define MAYBE_QueueMessages DISABLED_QueueMessages
+#else
+#define MAYBE_QueueMessages QueueMessages
+#endif
+TEST_F(MultiprocessMessagePipeTest, MAYBE_QueueMessages) {
   helper()->StartChild("EchoEcho");
 
   scoped_refptr<MessagePipe> mp(new MessagePipe(
