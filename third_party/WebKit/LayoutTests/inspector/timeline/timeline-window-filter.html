@@ -31,7 +31,7 @@ function test()
         view._refresh();
         InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
-        InspectorTest.addResult("time range = " + timeline._windowFilter._windowStartTime + " - " + timeline._windowFilter._windowEndTime);
+        InspectorTest.addResult("time range = " + view._windowStartTime + " - " + view._windowEndTime);
         InspectorTest.addResult("records count: " + view._presentationModel.filteredRecords().length);
         InspectorTest.addResult("");
     }
@@ -55,18 +55,18 @@ function test()
 
     InspectorTest.addResult("--------------------------------------------------------");
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
-    InspectorTest.addResult("time range = " + timeline._windowFilter._windowStartTime + " - " + timeline._windowFilter._windowEndTime);
+    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
     timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Events);
     InspectorTest.addResult("");
 
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
-    InspectorTest.addResult("time range = " + timeline._windowFilter._windowStartTime + " - " + timeline._windowFilter._windowEndTime);
+    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
     timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Memory);
     
     InspectorTest.addResult("");
 
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
-    InspectorTest.addResult("time range = " + timeline._windowFilter._windowStartTime + " - " + timeline._windowFilter._windowEndTime);
+    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
     timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Frames);
 
     InspectorTest.completeTest();
