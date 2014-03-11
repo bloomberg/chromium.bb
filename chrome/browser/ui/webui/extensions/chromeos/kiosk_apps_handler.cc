@@ -234,6 +234,8 @@ void KioskAppsHandler::SendKioskAppSettings() {
 
   base::DictionaryValue settings;
   settings.SetBoolean("disableBailout", !enable_bailout_shortcut);
+  settings.SetBoolean("hasAutoLaunchApp",
+                      !kiosk_app_manager_->GetAutoLaunchApp().empty());
 
   KioskAppManager::Apps apps;
   kiosk_app_manager_->GetApps(&apps);

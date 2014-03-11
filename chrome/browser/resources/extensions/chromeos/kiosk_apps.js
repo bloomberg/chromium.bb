@@ -107,6 +107,7 @@ cr.define('extensions', function() {
   KioskAppsOverlay.setSettings = function(settings) {
     $('kiosk-app-list').setApps(settings.apps);
     $('kiosk-disable-bailout-shortcut').checked = settings.disableBailout;
+    $('kiosk-disable-bailout-shortcut').disabled = !settings.hasAutoLaunchApp;
   };
 
   /**
@@ -131,6 +132,8 @@ cr.define('extensions', function() {
    */
   KioskAppsOverlay.enableKiosk = function(params) {
     $('add-kiosk-app').hidden = !params.kioskEnabled;
+    $('kiosk-disable-bailout-shortcut').parentNode.hidden =
+        !params.autoLaunchEnabled;
     $('kiosk-app-list').setAutoLaunchEnabled(params.autoLaunchEnabled);
   };
 

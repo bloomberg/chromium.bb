@@ -59,6 +59,10 @@ list .row-delete-button:active {
           2x);
 }
 
+.controlled-setting-with-label > input:disabled + span label {
+  color: #999;
+}
+
 #kiosk-app-id-edit-row {
   -webkit-justify-content: space-between;
   display: -webkit-flex;

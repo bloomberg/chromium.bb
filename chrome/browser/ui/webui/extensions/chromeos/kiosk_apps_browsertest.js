@@ -38,7 +38,8 @@ KioskAppSettingsWebUITest.prototype = {
         isLoading: true,
       },
     ],
-    disableBailout: false
+    disableBailout: false,
+    hasAutoLaunchApp: false
   },
 
   /**
@@ -204,4 +205,32 @@ TEST_F('KioskAppSettingsWebUITest', 'testCheckDisableBailout', function() {
   cr.dispatchSimpleEvent($('kiosk-disable-bailout-cancel-button'), 'click');
   expectFalse(checkbox.checked);
   expectFalse(confirmOverlay.classList.contains('showing'));
+});
+
+// Verify that disable bailout checkbox is hidden without kiosk auto launch.
+TEST_F('KioskAppSettingsWebUITest', 'testHideDisableBailout', function() {
+  var checkbox = $('kiosk-disable-bailout-shortcut');
+  var kioskEnabledSettings = {
+    kioskEnabled: true,
+    autoLaunchEnabled: true
+  };
+  extensions.KioskAppsOverlay.enableKiosk(kioskEnabledSettings);
+  expectFalse(checkbox.parentNode.hidden);
+
+  kioskEnabledSettings.autoLaunchEnabled = false;
+  extensions.KioskAppsOverlay.enableKiosk(kioskEnabledSettings);
+  expectTrue(checkbox.parentNode.hidden);
+});
+
+// Verify that disable bailout checkbox is disabled with no auto launch app.
+TEST_F('KioskAppSettingsWebUITest', 'testAllowDisableBailout', function() {
+  var checkbox = $('kiosk-disable-bailout-shortcut');
+
+  this.settings_.hasAutoLaunchApp = false;
+  extensions.KioskAppsOverlay.setSettings(this.settings_);
+  expectTrue(checkbox.disabled);
+
+  this.settings_.hasAutoLaunchApp = true;
+  extensions.KioskAppsOverlay.setSettings(this.settings_);
+  expectFalse(checkbox.disabled);
 });
