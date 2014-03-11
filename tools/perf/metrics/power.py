@@ -10,34 +10,57 @@ from metrics import Metric
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
 
-  _enabed = True
+  _enabled = True
 
   def __init__(self):
     super(PowerMetric, self).__init__()
+    self._browser = None
+    self._running = False
     self._results = None
+
+  def __del__(self):
+    # TODO(jeremy): Remove once crbug.com/350841 is fixed.
+    # Don't leave power monitoring processes running on the system.
+    self._StopInternal()
+    parent = super(PowerMetric, self)
+    if hasattr(parent, '__del__'):
+      parent.__del__()
+
+  def _StopInternal(self):
+    """ Stop monitoring power if measurement is running. This function is
+    idempotent."""
+    if not self._running:
+      return
+    self._running = False
+    self._results = self._browser.platform.StopMonitoringPowerAsync()
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    PowerMetric._enabed = options.report_root_metrics
+    PowerMetric._enabled = options.report_root_metrics
 
   def Start(self, _, tab):
-    if not PowerMetric._enabed:
+    if not PowerMetric._enabled:
       return
 
     if not tab.browser.platform.CanMonitorPowerAsync():
       logging.warning("System doesn't support async power monitoring.")
       return
 
-    tab.browser.platform.StartMonitoringPowerAsync()
+    self._results = None
+    self._browser = tab.browser
+    self._StopInternal()
+
+    self._browser.platform.StartMonitoringPowerAsync()
+    self._running = True
 
   def Stop(self, _, tab):
-    if not PowerMetric._enabed:
+    if not PowerMetric._enabled:
       return
 
     if not tab.browser.platform.CanMonitorPowerAsync():
       return
 
-    self._results = tab.browser.platform.StopMonitoringPowerAsync()
+    self._StopInternal()
 
   def AddResults(self, _, results):
     if not self._results:
