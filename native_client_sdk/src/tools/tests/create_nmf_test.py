@@ -400,6 +400,54 @@ class TestNmfUtils(unittest.TestCase):
     self.assertManifestEquals(nmf, expected_manifest)
     self.assertStagingEquals(expected_staging)
 
+  def testDynamicWithRelPath(self):
+    """Test that when the nmf root is a relative path that things work."""
+    arch_dir = {'x86_64': 'x86_64', 'x86_32': 'x86_32'}
+    old_path = os.getcwd()
+    try:
+      os.chdir(self.tempdir)
+      nmf, nexes = self._CreateDynamicAndStageDeps(arch_dir, nmf_root='')
+      expected_manifest = {
+        'files': {
+          'main.nexe': {
+            'x86-32': {'url': 'x86_32/test_dynamic_x86_32.nexe'},
+            'x86-64': {'url': 'x86_64/test_dynamic_x86_64.nexe'},
+          },
+          'libc.so': {
+            'x86-32': {'url': 'x86_32/lib32/libc.so'},
+            'x86-64': {'url': 'x86_64/lib64/libc.so'},
+          },
+          'libgcc_s.so': {
+            'x86-32': {'url': 'x86_32/lib32/libgcc_s.so'},
+            'x86-64': {'url': 'x86_64/lib64/libgcc_s.so'},
+          },
+          'libpthread.so': {
+            'x86-32': {'url': 'x86_32/lib32/libpthread.so'},
+            'x86-64': {'url': 'x86_64/lib64/libpthread.so'},
+          },
+        },
+        'program': {
+          'x86-32': {'url': 'x86_32/lib32/runnable-ld.so'},
+          'x86-64': {'url': 'x86_64/lib64/runnable-ld.so'},
+        }
+      }
+
+      expected_staging = [PosixRelPath(f, self.tempdir) for f in nexes]
+      expected_staging.extend([
+        'x86_32/lib32/libc.so',
+        'x86_32/lib32/libgcc_s.so',
+        'x86_32/lib32/libpthread.so',
+        'x86_32/lib32/runnable-ld.so',
+        'x86_64/lib64/libc.so',
+        'x86_64/lib64/libgcc_s.so',
+        'x86_64/lib64/libpthread.so',
+        'x86_64/lib64/runnable-ld.so'])
+
+      self.assertManifestEquals(nmf, expected_manifest)
+      self.assertStagingEquals(expected_staging)
+    finally:
+      os.chdir(old_path)
+
   def testDynamicWithPathNoArchPrefix(self):
     arch_dir = {'x86_64': 'x86_64', 'x86_32': 'x86_32'}
     nmf, nexes = self._CreateDynamicAndStageDeps(arch_dir,

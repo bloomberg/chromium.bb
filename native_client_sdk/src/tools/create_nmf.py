@@ -186,7 +186,7 @@ class NmfUtils(object):
     self.remap = remap or {}
     self.pnacl = main_files[0].endswith('pexe')
     self.pnacl_optlevel = pnacl_optlevel
-    if nmf_root:
+    if nmf_root is not None:
       self.nmf_root = nmf_root
     else:
       # To match old behavior, if there is no nmf_root, use the directory of
@@ -262,7 +262,7 @@ class NmfUtils(object):
     for arch_file in self.needed.itervalues():
       path = os.path.normcase(os.path.abspath(arch_file.path))
       prefix = ''
-      if path.startswith(self.nmf_root):
+      if os.path.abspath(path).startswith(os.path.abspath(self.nmf_root)):
         # This file is already in the nmf_root tree, so it does not need to be
         # staged. Just make the URL relative to the .nmf.
         url = PosixRelPath(path, self.nmf_root)
