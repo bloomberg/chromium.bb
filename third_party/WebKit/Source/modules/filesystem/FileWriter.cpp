@@ -44,9 +44,9 @@ namespace WebCore {
 static const int kMaxRecursionDepth = 3;
 static const double progressNotificationIntervalMS = 50;
 
-PassRefPtr<FileWriter> FileWriter::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<FileWriter> FileWriter::create(ExecutionContext* context)
 {
-    RefPtr<FileWriter> fileWriter(adoptRef(new FileWriter(context)));
+    RefPtrWillBeRawPtr<FileWriter> fileWriter(adoptRefWillBeRefCountedGarbageCollected(new FileWriter(context)));
     fileWriter->suspendIfNeeded();
     return fileWriter.release();
 }
@@ -317,6 +317,13 @@ void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionState& except
     ASSERT(errorCode);
     FileError::throwDOMException(exceptionState, errorCode);
     m_error = FileError::create(errorCode);
+}
+
+void FileWriter::trace(Visitor* visitor)
+{
+    visitor->trace(m_error);
+    visitor->trace(m_blobBeingWritten);
+    FileWriterBase::trace(visitor);
 }
 
 } // namespace WebCore

@@ -40,18 +40,18 @@
 
 namespace WebCore {
 
-DirectoryEntrySync::DirectoryEntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryEntrySync::DirectoryEntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : EntrySync(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DirectoryReaderSync> DirectoryEntrySync::createReader()
+PassRefPtrWillBeRawPtr<DirectoryReaderSync> DirectoryEntrySync::createReader()
 {
     return DirectoryReaderSync::create(m_fileSystem, m_fullPath);
 }
 
-PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper;
@@ -59,7 +59,7 @@ PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const 
     return static_pointer_cast<FileEntrySync>(helper.getResult(exceptionState));
 }
 
-PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper;
@@ -72,6 +72,11 @@ void DirectoryEntrySync::removeRecursively(ExceptionState& exceptionState)
     VoidSyncCallbackHelper helper;
     m_fileSystem->removeRecursively(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
     helper.getResult(exceptionState);
+}
+
+void DirectoryEntrySync::trace(Visitor* visitor)
+{
+    EntrySync::trace(visitor);
 }
 
 }

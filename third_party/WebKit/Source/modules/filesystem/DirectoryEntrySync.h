@@ -45,19 +45,21 @@ class FileEntrySync;
 
 class DirectoryEntrySync FINAL : public EntrySync {
 public:
-    static PassRefPtr<DirectoryEntrySync> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static PassRefPtrWillBeRawPtr<DirectoryEntrySync> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {
-        return adoptRef(new DirectoryEntrySync(fileSystem, fullPath));
+        return adoptRefWillBeNoop(new DirectoryEntrySync(fileSystem, fullPath));
     }
     virtual bool isDirectory() const OVERRIDE { return true; }
 
-    PassRefPtr<DirectoryReaderSync> createReader();
-    PassRefPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionState&);
-    PassRefPtr<DirectoryEntrySync> getDirectory(const String& path, const Dictionary&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<DirectoryReaderSync> createReader();
+    PassRefPtrWillBeRawPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<DirectoryEntrySync> getDirectory(const String& path, const Dictionary&, ExceptionState&);
     void removeRecursively(ExceptionState&);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    DirectoryEntrySync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
+    DirectoryEntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntrySync, EntrySync, entry, entry->isDirectory(), entry.isDirectory());

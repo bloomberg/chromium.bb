@@ -31,6 +31,7 @@
 #ifndef FileWriterBase_h
 #define FileWriterBase_h
 
+#include "heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -39,7 +40,7 @@ namespace blink { class WebFileWriter; }
 
 namespace WebCore {
 
-class FileWriterBase : public RefCounted<FileWriterBase> {
+class FileWriterBase : public RefCountedWillBeRefCountedGarbageCollected<FileWriterBase> {
 public:
     virtual ~FileWriterBase();
     void initialize(PassOwnPtr<blink::WebFileWriter>, long long length);
@@ -52,6 +53,8 @@ public:
     {
         return m_length;
     }
+
+    virtual void trace(Visitor*) { }
 
 protected:
     FileWriterBase();

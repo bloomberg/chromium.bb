@@ -31,7 +31,8 @@
 
 [
     NoInterfaceObject,
-    ActiveDOMObject
+    ActiveDOMObject,
+    WillBeGarbageCollected,
 ] interface FileWriter : EventTarget {
     // ready states
     const unsigned short INIT = 0;

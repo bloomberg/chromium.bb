@@ -72,11 +72,11 @@ protected:
 
 class EntryCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, PassRefPtr<DOMFileSystemBase>, const String& expectedPath, bool isDirectory);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& expectedPath, bool isDirectory);
     virtual void didSucceed() OVERRIDE;
 
 private:
-    EntryCallbacks(PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, PassRefPtr<DOMFileSystemBase>, const String& expectedPath, bool isDirectory);
+    EntryCallbacks(PassOwnPtr<EntryCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& expectedPath, bool isDirectory);
     OwnPtr<EntryCallback> m_successCallback;
     String m_expectedPath;
     bool m_isDirectory;
@@ -84,16 +84,16 @@ private:
 
 class EntriesCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<EntriesCallback>, PassOwnPtr<ErrorCallback>, PassRefPtr<DirectoryReaderBase>, const String& basePath);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassOwnPtr<EntriesCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DirectoryReaderBase>, const String& basePath);
     virtual void didReadDirectoryEntry(const String& name, bool isDirectory) OVERRIDE;
     virtual void didReadDirectoryEntries(bool hasMore) OVERRIDE;
 
 private:
-    EntriesCallbacks(PassOwnPtr<EntriesCallback>, PassOwnPtr<ErrorCallback>, PassRefPtr<DirectoryReaderBase>, const String& basePath);
+    EntriesCallbacks(PassOwnPtr<EntriesCallback>, PassOwnPtr<ErrorCallback>, PassRefPtrWillBeRawPtr<DirectoryReaderBase>, const String& basePath);
     OwnPtr<EntriesCallback> m_successCallback;
-    RefPtr<DirectoryReaderBase> m_directoryReader;
+    RefPtrWillBePersistent<DirectoryReaderBase> m_directoryReader;
     String m_basePath;
-    EntryVector m_entries;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Entry> > m_entries;
 };
 
 class FileSystemCallbacks FINAL : public FileSystemCallbacksBase {
@@ -131,12 +131,12 @@ private:
 
 class FileWriterBaseCallbacks FINAL : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<FileWriterBase>, PassOwnPtr<FileWriterBaseCallback>, PassOwnPtr<ErrorCallback>);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<FileWriterBase>, PassOwnPtr<FileWriterBaseCallback>, PassOwnPtr<ErrorCallback>);
     virtual void didCreateFileWriter(PassOwnPtr<blink::WebFileWriter>, long long length) OVERRIDE;
 
 private:
-    FileWriterBaseCallbacks(PassRefPtr<FileWriterBase>, PassOwnPtr<FileWriterBaseCallback>, PassOwnPtr<ErrorCallback>);
-    RefPtr<FileWriterBase> m_fileWriter;
+    FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase>, PassOwnPtr<FileWriterBaseCallback>, PassOwnPtr<ErrorCallback>);
+    RefPtrWillBePersistent<FileWriterBase> m_fileWriter;
     OwnPtr<FileWriterBaseCallback> m_successCallback;
 };
 

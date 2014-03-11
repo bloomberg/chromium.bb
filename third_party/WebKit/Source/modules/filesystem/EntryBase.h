@@ -31,6 +31,7 @@
 #ifndef EntryBase_h
 #define EntryBase_h
 
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,7 +41,7 @@ class DOMFileSystemBase;
 class EntrySync;
 
 // A common base class for Entry and EntrySync.
-class EntryBase : public RefCounted<EntryBase> {
+class EntryBase : public RefCountedWillBeGarbageCollectedFinalized<EntryBase> {
 public:
     virtual ~EntryBase();
 
@@ -54,11 +55,13 @@ public:
 
     String toURL() const;
 
+    virtual void trace(Visitor*);
+
 protected:
-    EntryBase(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
+    EntryBase(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
     friend class EntrySync;
 
-    RefPtr<DOMFileSystemBase> m_fileSystem;
+    RefPtrWillBeMember<DOMFileSystemBase> m_fileSystem;
 
     // This is a virtual path.
     String m_fullPath;

@@ -36,6 +36,10 @@
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
 
+#if BLINK_IMPLEMENTATION
+#include "heap/Handle.h"
+#endif
+
 namespace v8 {
 class Value;
 template <class T> class Handle;
@@ -94,9 +98,8 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    WebDOMFileSystem(const WTF::PassRefPtr<WebCore::DOMFileSystem>&);
-    WebDOMFileSystem& operator=(const WTF::PassRefPtr<WebCore::DOMFileSystem>&);
-    operator WTF::PassRefPtr<WebCore::DOMFileSystem>() const;
+    WebDOMFileSystem(const PassRefPtrWillBeRawPtr<WebCore::DOMFileSystem>&);
+    WebDOMFileSystem& operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMFileSystem>&);
 #endif
 
 private:

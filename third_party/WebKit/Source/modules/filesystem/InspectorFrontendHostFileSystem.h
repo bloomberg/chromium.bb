@@ -5,6 +5,7 @@
 #ifndef InspectorFrontendHostFileSystem_h
 #define InspectorFrontendHostFileSystem_h
 
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -15,7 +16,7 @@ class InspectorFrontendHost;
 
 class InspectorFrontendHostFileSystem {
 public:
-    static PassRefPtr<DOMFileSystem> isolatedFileSystem(InspectorFrontendHost&, const String& fileSystemName, const String& rootURL);
+    static PassRefPtrWillBeRawPtr<DOMFileSystem> isolatedFileSystem(InspectorFrontendHost&, const String& fileSystemName, const String& rootURL);
     static void upgradeDraggedFileSystemPermissions(InspectorFrontendHost&, DOMFileSystem*);
 private:
     InspectorFrontendHostFileSystem();

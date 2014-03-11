@@ -64,7 +64,7 @@ WebDOMFileSystem WebDOMFileSystem::create(
     SerializableType serializableType)
 {
     ASSERT(frame && toWebFrameImpl(frame)->frame());
-    RefPtr<DOMFileSystem> domFileSystem = DOMFileSystem::create(toWebFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
+    RefPtrWillBeRawPtr<DOMFileSystem> domFileSystem = DOMFileSystem::create(toWebFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
     if (serializableType == SerializableTypeSerializable)
         domFileSystem->makeClonable();
     return WebDOMFileSystem(domFileSystem);
@@ -129,20 +129,15 @@ v8::Handle<v8::Value> WebDOMFileSystem::createV8Entry(
     return toV8(FileEntry::create(m_private.get(), path), v8::Handle<v8::Object>(), toIsolate(m_private->executionContext()));
 }
 
-WebDOMFileSystem::WebDOMFileSystem(const WTF::PassRefPtr<DOMFileSystem>& domFileSystem)
+WebDOMFileSystem::WebDOMFileSystem(const PassRefPtrWillBeRawPtr<DOMFileSystem>& domFileSystem)
     : m_private(domFileSystem)
 {
 }
 
-WebDOMFileSystem& WebDOMFileSystem::operator=(const WTF::PassRefPtr<WebCore::DOMFileSystem>& domFileSystem)
+WebDOMFileSystem& WebDOMFileSystem::operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMFileSystem>& domFileSystem)
 {
     m_private = domFileSystem;
     return *this;
-}
-
-WebDOMFileSystem::operator WTF::PassRefPtr<WebCore::DOMFileSystem>() const
-{
-    return m_private.get();
 }
 
 } // namespace blink

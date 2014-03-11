@@ -35,6 +35,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntryCallback.h"
@@ -50,8 +51,10 @@ namespace WebCore {
 
 template <typename ResultType, typename CallbackArg>
 struct HelperResultType {
-    typedef PassRefPtr<ResultType> ReturnType;
-    typedef RefPtr<ResultType> StorageType;
+    DISALLOW_ALLOCATION();
+public:
+    typedef PassRefPtrWillBeRawPtr<ResultType> ReturnType;
+    typedef RefPtrWillBeRawPtr<ResultType> StorageType;
 
     static ReturnType createFromCallbackArg(CallbackArg argument)
     {
@@ -63,6 +66,7 @@ struct HelperResultType {
 template <typename SuccessCallback, typename CallbackArg, typename ResultType>
 class SyncCallbackHelper {
     WTF_MAKE_NONCOPYABLE(SyncCallbackHelper);
+    STACK_ALLOCATED();
 public:
     typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> HelperType;
     typedef HelperResultType<ResultType, CallbackArg> ResultTypeTrait;
@@ -151,7 +155,7 @@ private:
 };
 
 struct EmptyType : public RefCounted<EmptyType> {
-    static PassRefPtr<EmptyType> create(EmptyType*)
+    static PassRefPtrWillBeRawPtr<EmptyType> create(EmptyType*)
     {
         return nullptr;
     }

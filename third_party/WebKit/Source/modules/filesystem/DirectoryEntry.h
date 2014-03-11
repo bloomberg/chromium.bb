@@ -31,6 +31,7 @@
 #ifndef DirectoryEntry_h
 #define DirectoryEntry_h
 
+#include "heap/Handle.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileSystemFlags.h"
 #include "wtf/PassRefPtr.h"
@@ -47,19 +48,21 @@ class VoidCallback;
 
 class DirectoryEntry FINAL : public Entry {
 public:
-    static PassRefPtr<DirectoryEntry> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static PassRefPtrWillBeRawPtr<DirectoryEntry> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {
-        return adoptRef(new DirectoryEntry(fileSystem, fullPath));
+        return adoptRefWillBeNoop(new DirectoryEntry(fileSystem, fullPath));
     }
     virtual bool isDirectory() const OVERRIDE { return true; }
 
-    PassRefPtr<DirectoryReader> createReader();
+    PassRefPtrWillBeRawPtr<DirectoryReader> createReader();
     void getFile(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
     void getDirectory(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);
     void removeRecursively(PassOwnPtr<VoidCallback> successCallback = nullptr, PassOwnPtr<ErrorCallback> = nullptr) const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    DirectoryEntry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
+    DirectoryEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntry, Entry, entry, entry->isDirectory(), entry.isDirectory());

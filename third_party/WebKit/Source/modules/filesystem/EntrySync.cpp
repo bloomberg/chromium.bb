@@ -43,28 +43,28 @@
 
 namespace WebCore {
 
-PassRefPtr<EntrySync> EntrySync::create(EntryBase* entry)
+PassRefPtrWillBeRawPtr<EntrySync> EntrySync::create(EntryBase* entry)
 {
     if (entry->isFile())
         return FileEntrySync::create(entry->m_fileSystem, entry->m_fullPath);
     return DirectoryEntrySync::create(entry->m_fileSystem, entry->m_fullPath);
 }
 
-PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Metadata> EntrySync::getMetadata(ExceptionState& exceptionState)
 {
     MetadataSyncCallbackHelper helper;
     m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
     return helper.getResult(exceptionState);
 }
 
-PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
+PassRefPtrWillBeRawPtr<EntrySync> EntrySync::moveTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
 {
     EntrySyncCallbackHelper helper;
     m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
     return helper.getResult(exceptionState);
 }
 
-PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
+PassRefPtrWillBeRawPtr<EntrySync> EntrySync::copyTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
 {
     EntrySyncCallbackHelper helper;
     m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
@@ -78,17 +78,22 @@ void EntrySync::remove(ExceptionState& exceptionState) const
     helper.getResult(exceptionState);
 }
 
-PassRefPtr<EntrySync> EntrySync::getParent() const
+PassRefPtrWillBeRawPtr<EntrySync> EntrySync::getParent() const
 {
     // Sync verion of getParent doesn't throw exceptions.
     String parentPath = DOMFilePath::getDirectory(fullPath());
     return DirectoryEntrySync::create(m_fileSystem, parentPath);
 }
 
-EntrySync::EntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+EntrySync::EntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
+}
+
+void EntrySync::trace(Visitor* visitor)
+{
+    EntryBase::trace(visitor);
 }
 
 }

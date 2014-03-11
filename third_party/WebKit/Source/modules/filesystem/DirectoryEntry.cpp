@@ -39,13 +39,13 @@
 
 namespace WebCore {
 
-DirectoryEntry::DirectoryEntry(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryEntry::DirectoryEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DirectoryReader> DirectoryEntry::createReader()
+PassRefPtrWillBeRawPtr<DirectoryReader> DirectoryEntry::createReader()
 {
     return DirectoryReader::create(m_fileSystem, m_fullPath);
 }
@@ -65,6 +65,11 @@ void DirectoryEntry::getDirectory(const String& path, const Dictionary& options,
 void DirectoryEntry::removeRecursively(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
     m_fileSystem->removeRecursively(this, successCallback, errorCallback);
+}
+
+void DirectoryEntry::trace(Visitor* visitor)
+{
+    Entry::trace(visitor);
 }
 
 }

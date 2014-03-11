@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/FileWriterBase.h"
 #include "public/platform/WebFileWriterClient.h"
 #include "wtf/PassRefPtr.h"
@@ -42,11 +43,11 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class FileWriterSync FINAL : public ScriptWrappable, public FileWriterBase, public blink::WebFileWriterClient {
+class FileWriterSync FINAL : public FileWriterBase, public ScriptWrappable, public blink::WebFileWriterClient {
 public:
-    static PassRefPtr<FileWriterSync> create()
+    static PassRefPtrWillBeRawPtr<FileWriterSync> create()
     {
-        return adoptRef(new FileWriterSync());
+        return adoptRefWillBeRefCountedGarbageCollected(new FileWriterSync());
     }
     virtual ~FileWriterSync();
 

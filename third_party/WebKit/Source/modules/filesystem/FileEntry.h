@@ -31,6 +31,7 @@
 #ifndef FileEntry_h
 #define FileEntry_h
 
+#include "heap/Handle.h"
 #include "modules/filesystem/Entry.h"
 
 namespace WebCore {
@@ -41,9 +42,9 @@ class FileWriterCallback;
 
 class FileEntry FINAL : public Entry {
 public:
-    static PassRefPtr<FileEntry> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+    static PassRefPtrWillBeRawPtr<FileEntry> create(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {
-        return adoptRef(new FileEntry(fileSystem, fullPath));
+        return adoptRefWillBeNoop(new FileEntry(fileSystem, fullPath));
     }
 
     void createWriter(PassOwnPtr<FileWriterCallback>, PassOwnPtr<ErrorCallback> = nullptr);
@@ -51,8 +52,10 @@ public:
 
     virtual bool isFile() const OVERRIDE { return true; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    FileEntry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
+    FileEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());

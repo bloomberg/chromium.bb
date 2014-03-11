@@ -32,6 +32,7 @@
 #define EntrySync_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/EntryBase.h"
 #include "wtf/Forward.h"
@@ -44,20 +45,22 @@ class DirectoryEntrySync;
 class Metadata;
 class ExceptionState;
 
-class EntrySync : public ScriptWrappable, public EntryBase {
+class EntrySync : public EntryBase, public ScriptWrappable {
 public:
-    static PassRefPtr<EntrySync> create(EntryBase*);
+    static PassRefPtrWillBeRawPtr<EntrySync> create(EntryBase*);
 
     DOMFileSystemSync* filesystem() const { return static_cast<DOMFileSystemSync*>(m_fileSystem.get()); }
 
-    PassRefPtr<Metadata> getMetadata(ExceptionState&);
-    PassRefPtr<EntrySync> moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
-    PassRefPtr<EntrySync> copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<Metadata> getMetadata(ExceptionState&);
+    PassRefPtrWillBeRawPtr<EntrySync> moveTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<EntrySync> copyTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
     void remove(ExceptionState&) const;
-    PassRefPtr<EntrySync> getParent() const;
+    PassRefPtrWillBeRawPtr<EntrySync> getParent() const;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    EntrySync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
+    EntrySync(PassRefPtrWillBeRawPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
 }

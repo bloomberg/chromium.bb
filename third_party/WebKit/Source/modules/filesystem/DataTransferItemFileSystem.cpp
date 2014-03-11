@@ -48,7 +48,7 @@
 namespace WebCore {
 
 // static
-PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem& item)
+PassRefPtrWillBeRawPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem& item)
 {
     if (!item.dataObjectItem()->isFilename())
         return nullptr;

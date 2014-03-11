@@ -49,12 +49,12 @@ class FileWriterCallback;
 
 class DOMFileSystem FINAL : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
 public:
-    static PassRefPtr<DOMFileSystem> create(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
+    static PassRefPtrWillBeRawPtr<DOMFileSystem> create(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
     // Creates a new isolated file system for the given filesystemId.
-    static PassRefPtr<DOMFileSystem> createIsolatedFileSystem(ExecutionContext*, const String& filesystemId);
+    static PassRefPtrWillBeRawPtr<DOMFileSystem> createIsolatedFileSystem(ExecutionContext*, const String& filesystemId);
 
-    PassRefPtr<DirectoryEntry> root();
+    PassRefPtrWillBeRawPtr<DirectoryEntry> root();
 
     // DOMFileSystemBase overrides.
     virtual void addPendingCallbacks() OVERRIDE;
@@ -79,7 +79,7 @@ public:
     }
 
     template <typename CB, typename CBArg>
-    void scheduleCallback(PassOwnPtr<CB> callback,  const CBArg& callbackArg)
+    void scheduleCallback(PassOwnPtr<CB> callback, const CBArg& callbackArg)
     {
         scheduleCallback(executionContext(), callback, callbackArg);
     }

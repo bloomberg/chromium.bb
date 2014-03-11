@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-FileEntry::FileEntry(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+FileEntry::FileEntry(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
@@ -53,6 +53,11 @@ void FileEntry::createWriter(PassOwnPtr<FileWriterCallback> successCallback, Pas
 void FileEntry::file(PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     filesystem()->createFile(this, successCallback, errorCallback);
+}
+
+void FileEntry::trace(Visitor* visitor)
+{
+    Entry::trace(visitor);
 }
 
 } // namespace

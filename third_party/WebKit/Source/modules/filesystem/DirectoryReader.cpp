@@ -40,24 +40,24 @@ namespace WebCore {
 
 class DirectoryReader::EntriesCallbackHelper : public EntriesCallback {
 public:
-    EntriesCallbackHelper(PassRefPtr<DirectoryReader> reader)
+    EntriesCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReader> reader)
         : m_reader(reader)
     {
     }
 
-    virtual void handleEvent(const Vector<RefPtr<Entry> >& entries) OVERRIDE
+    virtual void handleEvent(const EntryHeapVector& entries) OVERRIDE
     {
         m_reader->addEntries(entries);
     }
 
 private:
     // FIXME: This RefPtr keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
-    RefPtr<DirectoryReader> m_reader;
+    RefPtrWillBePersistent<DirectoryReader> m_reader;
 };
 
 class DirectoryReader::ErrorCallbackHelper : public ErrorCallback {
 public:
-    ErrorCallbackHelper(PassRefPtr<DirectoryReader> reader)
+    ErrorCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReader> reader)
         : m_reader(reader)
     {
     }
@@ -68,10 +68,10 @@ public:
     }
 
 private:
-    RefPtr<DirectoryReader> m_reader;
+    RefPtrWillBePersistent<DirectoryReader> m_reader;
 };
 
-DirectoryReader::DirectoryReader(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryReader::DirectoryReader(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
     , m_isReading(false)
 {
@@ -110,12 +110,12 @@ void DirectoryReader::readEntries(PassOwnPtr<EntriesCallback> entriesCallback, P
     m_errorCallback = errorCallback;
 }
 
-void DirectoryReader::addEntries(const Vector<RefPtr<Entry> >& entries)
+void DirectoryReader::addEntries(const EntryHeapVector& entries)
 {
     m_entries.appendVector(entries);
     if (m_entriesCallback) {
         OwnPtr<EntriesCallback> entriesCallback = m_entriesCallback.release();
-        Vector<RefPtr<Entry> > entries;
+        EntryHeapVector entries;
         entries.swap(m_entries);
         entriesCallback->handleEvent(entries);
     }
@@ -126,6 +126,13 @@ void DirectoryReader::onError(FileError* error)
     m_error = error;
     if (m_errorCallback)
         m_errorCallback->handleEvent(error);
+}
+
+void DirectoryReader::trace(Visitor* visitor)
+{
+    visitor->trace(m_entries);
+    visitor->trace(m_error);
+    DirectoryReaderBase::trace(visitor);
 }
 
 }

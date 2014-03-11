@@ -32,26 +32,29 @@
 #define Metadata_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "platform/FileMetadata.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Metadata : public RefCounted<Metadata>, public ScriptWrappable {
+class Metadata : public RefCountedWillBeGarbageCollectedFinalized<Metadata>, public ScriptWrappable {
 public:
-    static PassRefPtr<Metadata> create(const FileMetadata& platformMetadata)
+    static PassRefPtrWillBeRawPtr<Metadata> create(const FileMetadata& platformMetadata)
     {
-        return adoptRef(new Metadata(platformMetadata));
+        return adoptRefWillBeNoop(new Metadata(platformMetadata));
     }
 
-    static PassRefPtr<Metadata> create(Metadata* metadata)
+    static PassRefPtrWillBeRawPtr<Metadata> create(Metadata* metadata)
     {
-        return adoptRef(new Metadata(metadata->m_platformMetadata));
+        return adoptRefWillBeNoop(new Metadata(metadata->m_platformMetadata));
     }
 
     // Needs to return epoch time in milliseconds for Date while FileMetadata's modificationTime is in seconds.
     double modificationTime() const { return m_platformMetadata.modificationTime * 1000.0; }
     unsigned long long size() const { return static_cast<unsigned long long>(m_platformMetadata.length); }
+
+    void trace(Visitor*) { }
 
 private:
     explicit Metadata(const FileMetadata& platformMetadata)

@@ -44,14 +44,14 @@ namespace WebCore {
 
 class DirectoryReaderSync::EntriesCallbackHelper : public EntriesCallback {
 public:
-    EntriesCallbackHelper(PassRefPtr<DirectoryReaderSync> reader)
+    EntriesCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReaderSync> reader)
         : m_reader(reader)
     {
     }
 
-    virtual void handleEvent(const Vector<RefPtr<Entry> >& entries) OVERRIDE
+    virtual void handleEvent(const EntryHeapVector& entries) OVERRIDE
     {
-        EntrySyncVector syncEntries;
+        EntrySyncHeapVector syncEntries;
         syncEntries.reserveInitialCapacity(entries.size());
         for (size_t i = 0; i < entries.size(); ++i)
             syncEntries.uncheckedAppend(EntrySync::create(entries[i].get()));
@@ -59,12 +59,12 @@ public:
     }
 
 private:
-    RefPtr<DirectoryReaderSync> m_reader;
+    RefPtrWillBePersistent<DirectoryReaderSync> m_reader;
 };
 
 class DirectoryReaderSync::ErrorCallbackHelper : public ErrorCallback {
 public:
-    ErrorCallbackHelper(PassRefPtr<DirectoryReaderSync> reader)
+    ErrorCallbackHelper(PassRefPtrWillBeRawPtr<DirectoryReaderSync> reader)
         : m_reader(reader)
     {
     }
@@ -75,10 +75,10 @@ public:
     }
 
 private:
-    RefPtr<DirectoryReaderSync> m_reader;
+    RefPtrWillBePersistent<DirectoryReaderSync> m_reader;
 };
 
-DirectoryReaderSync::DirectoryReaderSync(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+DirectoryReaderSync::DirectoryReaderSync(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : DirectoryReaderBase(fileSystem, fullPath)
     , m_callbacksId(0)
     , m_errorCode(FileError::OK)
@@ -90,7 +90,7 @@ DirectoryReaderSync::~DirectoryReaderSync()
 {
 }
 
-EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
+EntrySyncHeapVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
 {
     if (!m_callbacksId) {
         m_callbacksId = filesystem()->readDirectory(this, m_fullPath, adoptPtr(new EntriesCallbackHelper(this)), adoptPtr(new ErrorCallbackHelper(this)), DOMFileSystemBase::Synchronous);
@@ -101,12 +101,18 @@ EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
 
     if (m_errorCode != FileError::OK) {
         FileError::throwDOMException(exceptionState, m_errorCode);
-        return EntrySyncVector();
+        return EntrySyncHeapVector();
     }
 
-    EntrySyncVector result;
+    EntrySyncHeapVector result;
     result.swap(m_entries);
     return result;
+}
+
+void DirectoryReaderSync::trace(Visitor* visitor)
+{
+    visitor->trace(m_entries);
+    DirectoryReaderBase::trace(visitor);
 }
 
 } // namespace

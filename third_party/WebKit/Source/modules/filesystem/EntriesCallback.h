@@ -31,17 +31,18 @@
 #ifndef EntriesCallback_h
 #define EntriesCallback_h
 
+#include "heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 class Entry;
-typedef Vector<RefPtr<Entry> > EntryVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<Entry> > EntryHeapVector;
 
 class EntriesCallback {
 public:
     virtual ~EntriesCallback() { }
-    virtual void handleEvent(const EntryVector&) = 0;
+    virtual void handleEvent(const EntryHeapVector&) = 0;
 };
 
 } // namespace

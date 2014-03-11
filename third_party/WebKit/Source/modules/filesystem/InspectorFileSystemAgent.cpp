@@ -201,7 +201,7 @@ private:
     }
 
     bool didGetEntry(Entry*);
-    bool didReadDirectoryEntries(const EntryVector&);
+    bool didReadDirectoryEntries(const EntryHeapVector&);
 
     void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry> > entries = nullptr)
     {
@@ -217,7 +217,7 @@ private:
     RefPtr<RequestDirectoryContentCallback> m_requestCallback;
     KURL m_url;
     RefPtr<Array<TypeBuilder::FileSystem::Entry> > m_entries;
-    RefPtr<DirectoryReader> m_directoryReader;
+    RefPtrWillBePersistent<DirectoryReader> m_directoryReader;
 };
 
 void DirectoryContentRequest::start(ExecutionContext* executionContext)
@@ -257,7 +257,7 @@ void DirectoryContentRequest::readDirectoryEntries()
     m_directoryReader->readEntries(successCallback.release(), errorCallback.release());
 }
 
-bool DirectoryContentRequest::didReadDirectoryEntries(const EntryVector& entries)
+bool DirectoryContentRequest::didReadDirectoryEntries(const EntryHeapVector& entries)
 {
     if (entries.isEmpty()) {
         reportResult(static_cast<FileError::ErrorCode>(0), m_entries);
@@ -265,7 +265,7 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryVector& entries
     }
 
     for (size_t i = 0; i < entries.size(); ++i) {
-        RefPtr<Entry> entry = entries[i];
+        RefPtrWillBeRawPtr<Entry> entry = entries[i];
         RefPtr<TypeBuilder::FileSystem::Entry> entryForFrontend = TypeBuilder::FileSystem::Entry::create()
             .setUrl(entry->toURL())
             .setName(entry->name())
@@ -433,7 +433,7 @@ private:
     String m_mimeType;
     String m_charset;
 
-    RefPtr<FileReader> m_reader;
+    RefPtrWillBePersistent<FileReader> m_reader;
 };
 
 void FileContentRequest::start(ExecutionContext* executionContext)

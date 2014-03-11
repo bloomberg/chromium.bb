@@ -54,14 +54,14 @@
 namespace WebCore {
 
 // static
-PassRefPtr<DOMFileSystem> DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+PassRefPtrWillBeRawPtr<DOMFileSystem> DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
 {
-    RefPtr<DOMFileSystem> fileSystem(adoptRef(new DOMFileSystem(context, name, type, rootURL)));
+    RefPtrWillBeRawPtr<DOMFileSystem> fileSystem(adoptRefWillBeRefCountedGarbageCollected(new DOMFileSystem(context, name, type, rootURL)));
     fileSystem->suspendIfNeeded();
     return fileSystem.release();
 }
 
-PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
+PassRefPtrWillBeRawPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
 {
     if (filesystemId.isEmpty())
         return nullptr;
@@ -92,7 +92,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, File
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DirectoryEntry> DOMFileSystem::root()
+PassRefPtrWillBeRawPtr<DirectoryEntry> DOMFileSystem::root()
 {
     return DirectoryEntry::create(this, DOMFilePath::root);
 }
@@ -139,7 +139,7 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassOwnPtr<FileWrit
 {
     ASSERT(fileEntry);
 
-    RefPtr<FileWriter> fileWriter = FileWriter::create(executionContext());
+    RefPtrWillBeRawPtr<FileWriter> fileWriter = FileWriter::create(executionContext());
     OwnPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback.release(), errorCallback);
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());
@@ -149,7 +149,7 @@ namespace {
 
 class SnapshotFileCallback : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
     {
         return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback)));
     }
@@ -182,7 +182,7 @@ public:
     }
 
 private:
-    SnapshotFileCallback(PassRefPtr<DOMFileSystem> filesystem, const String& name,  const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+    SnapshotFileCallback(PassRefPtrWillBeRawPtr<DOMFileSystem> filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
         : FileSystemCallbacksBase(errorCallback, filesystem.get())
         , m_name(name)
         , m_url(url)

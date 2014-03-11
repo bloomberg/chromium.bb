@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-EntryBase::EntryBase(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+EntryBase::EntryBase(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : m_fileSystem(fileSystem)
     , m_fullPath(fullPath)
     , m_name(DOMFilePath::getName(fullPath))
@@ -56,6 +56,11 @@ String EntryBase::toURL() const
         return String();
 
     return m_fileSystem->createFileSystemURL(this).string();
+}
+
+void EntryBase::trace(Visitor* visitor)
+{
+    visitor->trace(m_fileSystem);
 }
 
 } // namespace WebCore

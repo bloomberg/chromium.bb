@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-Entry::Entry(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
+Entry::Entry(PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
 {
     ScriptWrappable::init(this);
@@ -54,12 +54,12 @@ void Entry::getMetadata(PassOwnPtr<MetadataCallback> successCallback, PassOwnPtr
     m_fileSystem->getMetadata(this, successCallback, errorCallback);
 }
 
-void Entry::moveTo(PassRefPtr<DirectoryEntry> parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
+void Entry::moveTo(PassRefPtrWillBeRawPtr<DirectoryEntry> parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
     m_fileSystem->move(this, parent.get(), name, successCallback, errorCallback);
 }
 
-void Entry::copyTo(PassRefPtr<DirectoryEntry> parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
+void Entry::copyTo(PassRefPtrWillBeRawPtr<DirectoryEntry> parent, const String& name, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
     m_fileSystem->copy(this, parent.get(), name, successCallback, errorCallback);
 }
@@ -72,6 +72,11 @@ void Entry::remove(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCal
 void Entry::getParent(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback) const
 {
     m_fileSystem->getParent(this, successCallback, errorCallback);
+}
+
+void Entry::trace(Visitor* visitor)
+{
+    EntryBase::trace(visitor);
 }
 
 } // namespace WebCore

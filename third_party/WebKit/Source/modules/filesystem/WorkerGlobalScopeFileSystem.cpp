@@ -62,7 +62,7 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& wor
     LocalFileSystem::from(worker)->requestFileSystem(&worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, &worker, fileSystemType));
 }
 
-PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope& worker, int type, long long size, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope& worker, int type, long long size, ExceptionState& exceptionState)
 {
     ExecutionContext* secureContext = worker.executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
@@ -101,7 +101,7 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, &worker));
 }
 
-PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope& worker, const String& url, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope& worker, const String& url, ExceptionState& exceptionState)
 {
     KURL completedURL = worker.completeURL(url);
     ExecutionContext* secureContext = worker.executionContext();
@@ -121,7 +121,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
 
     LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, callbacks.release());
 
-    RefPtr<EntrySync> entry = resolveURLHelper.getResult(exceptionState);
+    RefPtrWillBeRawPtr<EntrySync> entry = resolveURLHelper.getResult(exceptionState);
     if (!entry)
         return nullptr;
     return entry.release();
