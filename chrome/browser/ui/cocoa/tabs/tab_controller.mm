@@ -228,24 +228,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [iconView_ removeFromSuperview];
   iconView_.reset([iconView retain]);
 
-  if ([self app] || [self mini]) {
-    NSRect appIconFrame = [iconView frame];
-    appIconFrame.origin = originalIconFrame_.origin;
-
-    const CGFloat tabWidth = [self app] ? [TabController appTabWidth]
-                                        : [TabController miniTabWidth];
-
-    // Center the icon.
-    appIconFrame.origin.x =
-        std::floor((tabWidth - NSWidth(appIconFrame)) / 2.0);
-    [iconView_ setFrame:appIconFrame];
-  } else {
-    [iconView_ setFrame:originalIconFrame_];
-  }
-  // Ensure that the icon is suppressed if no icon is set or if the tab is too
-  // narrow to display one.
-  [self updateVisibility];
-
   if (iconView_)
     [[self view] addSubview:iconView_];
 }
@@ -325,6 +307,24 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     }
 
     [iconView_ setImage:image withToastAnimation:animate];
+
+    if ([self app] || [self mini]) {
+      NSRect appIconFrame = [iconView_ frame];
+      appIconFrame.origin = originalIconFrame_.origin;
+
+      const CGFloat tabWidth = [self app] ? [TabController appTabWidth]
+                                          : [TabController miniTabWidth];
+
+      // Center the icon.
+      appIconFrame.origin.x =
+          std::floor((tabWidth - NSWidth(appIconFrame)) / 2.0);
+      [iconView_ setFrame:appIconFrame];
+    } else {
+      [iconView_ setFrame:originalIconFrame_];
+    }
+    // Ensure that the icon is suppressed if no icon is set or if the tab is too
+    // narrow to display one.
+    [self updateVisibility];
   }
 }
 
