@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -83,54 +82,50 @@ class GetFileInfoHelper {
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 
-void ReadDirectoryHelper(FileSystemFileUtil* file_util,
-                         FileSystemOperationContext* context,
-                         const FileSystemURL& url,
-                         base::SingleThreadTaskRunner* origin_loop,
-                         const AsyncFileUtil::ReadDirectoryCallback& callback) {
-  base::File::Info file_info;
-  base::FilePath platform_path;
-  base::File::Error error = file_util->GetFileInfo(
-      context, url, &file_info, &platform_path);
+class ReadDirectoryHelper {
+ public:
+  ReadDirectoryHelper() : error_(base::File::FILE_OK) {}
 
-  if (error == base::File::FILE_OK && !file_info.is_directory)
-    error = base::File::FILE_ERROR_NOT_A_DIRECTORY;
-
-  std::vector<DirectoryEntry> entries;
-  if (error != base::File::FILE_OK) {
-    origin_loop->PostTask(
-        FROM_HERE, base::Bind(callback, error, entries, false /* has_more */));
-    return;
-  }
-
-  // Note: Increasing this value may make some tests in LayoutTests meaningless.
-  // (Namely, read-directory-many.html and read-directory-sync-many.html are
-  // assuming that they are reading much more entries than this constant.)
-  const size_t kResultChunkSize = 100;
-
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      file_util->CreateFileEnumerator(context, url));
-
-  base::FilePath current;
-  while (!(current = file_enum->Next()).empty()) {
-    DirectoryEntry entry;
-    entry.is_directory = file_enum->IsDirectory();
-    entry.name = VirtualPath::BaseName(current).value();
-    entry.size = file_enum->Size();
-    entry.last_modified_time = file_enum->LastModifiedTime();
-    entries.push_back(entry);
-
-    if (entries.size() == kResultChunkSize) {
-      origin_loop->PostTask(
-          FROM_HERE, base::Bind(callback, base::File::FILE_OK, entries,
-                                true /* has_more */));
-      entries.clear();
+  void RunWork(FileSystemFileUtil* file_util,
+               FileSystemOperationContext* context,
+               const FileSystemURL& url) {
+    base::File::Info file_info;
+    base::FilePath platform_path;
+    base::File::Error error = file_util->GetFileInfo(
+        context, url, &file_info, &platform_path);
+    if (error != base::File::FILE_OK) {
+      error_ = error;
+      return;
     }
+    if (!file_info.is_directory) {
+      error_ = base::File::FILE_ERROR_NOT_A_DIRECTORY;
+      return;
+    }
+
+    scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
+        file_util->CreateFileEnumerator(context, url));
+
+    base::FilePath current;
+    while (!(current = file_enum->Next()).empty()) {
+      DirectoryEntry entry;
+      entry.is_directory = file_enum->IsDirectory();
+      entry.name = VirtualPath::BaseName(current).value();
+      entry.size = file_enum->Size();
+      entry.last_modified_time = file_enum->LastModifiedTime();
+      entries_.push_back(entry);
+    }
+    error_ = base::File::FILE_OK;
   }
-  origin_loop->PostTask(
-      FROM_HERE, base::Bind(callback, base::File::FILE_OK, entries,
-                            false /* has_more */));
-}
+
+  void Reply(const AsyncFileUtil::ReadDirectoryCallback& callback) {
+    callback.Run(error_, entries_, false /* has_more */);
+  }
+
+ private:
+  base::File::Error error_;
+  std::vector<DirectoryEntry> entries_;
+  DISALLOW_COPY_AND_ASSIGN(ReadDirectoryHelper);
+};
 
 void RunCreateOrOpenCallback(
     const AsyncFileUtil::CreateOrOpenCallback& callback,
@@ -216,11 +211,12 @@ void AsyncFileUtilAdapter::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   FileSystemOperationContext* context_ptr = context.release();
-  const bool success = context_ptr->task_runner()->PostTask(
+  ReadDirectoryHelper* helper = new ReadDirectoryHelper;
+  const bool success = context_ptr->task_runner()->PostTaskAndReply(
       FROM_HERE,
-      Bind(&ReadDirectoryHelper,
-           sync_file_util_.get(), base::Owned(context_ptr), url,
-           base::ThreadTaskRunnerHandle::Get(), callback));
+      Bind(&ReadDirectoryHelper::RunWork, Unretained(helper),
+           sync_file_util_.get(), base::Owned(context_ptr), url),
+      Bind(&ReadDirectoryHelper::Reply, Owned(helper), callback));
   DCHECK(success);
 }
 
