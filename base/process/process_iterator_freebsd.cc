@@ -4,7 +4,9 @@
 
 #include "base/process/process_iterator.h"
 
+#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"

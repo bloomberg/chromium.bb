@@ -4,6 +4,12 @@
 
 #include "base/process/process_metrics.h"
 
+#include <sys/sysctl.h>
+#include <sys/user.h>
+#include <unistd.h>
+
+#include "base/sys_info.h"
+
 namespace base {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)

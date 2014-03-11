@@ -20,8 +20,10 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <tlhelp32.h>
-#elif defined(OS_MACOSX) || defined(OS_BSD)
+#elif defined(OS_MACOSX) || defined(OS_OPENBSD)
 #include <sys/sysctl.h>
+#elif defined(OS_FREEBSD)
+#include <sys/user.h>
 #elif defined(OS_POSIX)
 #include <dirent.h>
 #endif
