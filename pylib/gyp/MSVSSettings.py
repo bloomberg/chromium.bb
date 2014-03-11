@@ -616,7 +616,9 @@ _Same(_compile, 'DebugInformationFormat',
 _Same(_compile, 'EnableEnhancedInstructionSet',
       _Enumeration(['NotSet',
                     'StreamingSIMDExtensions',  # /arch:SSE
-                    'StreamingSIMDExtensions2']))  # /arch:SSE2
+                    'StreamingSIMDExtensions2',  # /arch:SSE2
+                    'AdvancedVectorExtensions',  # /arch:AVX (vs2012+)
+                    'NoExtensions',]))  # /arch:IA32 (vs2012+)
 _Same(_compile, 'ErrorReporting',
       _Enumeration(['None',  # /errorReport:none
                     'Prompt',  # /errorReport:prompt

@@ -379,6 +379,8 @@ class MsvsSettings(object):
         map={'false': '-', 'true': ''}, prefix='/Zc:wchar_t')
     cl('EnablePREfast', map={'true': '/analyze'})
     cl('AdditionalOptions', prefix='')
+    cl('EnableEnhancedInstructionSet',
+       map={'1': 'SSE', '2': 'SSE2', '3': 'AVX', '4': 'IA32'}, prefix='/arch:')
     cflags.extend(['/FI' + f for f in self._Setting(
         ('VCCLCompilerTool', 'ForcedIncludeFiles'), config, default=[])])
     if self.vs_version.short_name in ('2013', '2013e'):
