@@ -1949,7 +1949,8 @@ public class ContentViewCore
     /**
      * Send the screen orientation value to the renderer.
      */
-    private void sendOrientationChangeEvent(int orientation) {
+    @VisibleForTesting
+    void sendOrientationChangeEvent(int orientation) {
         if (mNativeContentViewCore == 0) return;
 
         nativeSendOrientationChangeEvent(mNativeContentViewCore, orientation);
