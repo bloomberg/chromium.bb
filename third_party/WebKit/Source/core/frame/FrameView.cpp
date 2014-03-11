@@ -107,11 +107,12 @@ static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLay
 class FrameViewLayoutStateMaintainer {
     WTF_MAKE_NONCOPYABLE(FrameViewLayoutStateMaintainer);
 public:
-    FrameViewLayoutStateMaintainer(RenderObject& root)
+    FrameViewLayoutStateMaintainer(RenderObject& root, bool inSubtreeLayout)
         : m_view(*root.view())
-        , m_disabled(m_view.frameView()->isSubtreeLayout() && m_view.shouldDisableLayoutStateForSubtree(root))
+        , m_inSubtreeLayout(inSubtreeLayout)
+        , m_disabled(inSubtreeLayout && m_view.shouldDisableLayoutStateForSubtree(root))
     {
-        if (m_view.frameView()->isSubtreeLayout())
+        if (m_inSubtreeLayout)
             m_view.pushLayoutState(root);
         if (m_disabled)
             m_view.disableLayoutState();
@@ -121,11 +122,12 @@ public:
     {
         if (m_disabled)
             m_view.enableLayoutState();
-        if (m_view.frameView()->isSubtreeLayout())
+        if (m_inSubtreeLayout)
             m_view.popLayoutState();
     }
 private:
     RenderView& m_view;
+    bool m_inSubtreeLayout;
     bool m_disabled;
 };
 
@@ -797,7 +799,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
     // so that a single human could understand what layout() is actually doing.
 
-    FrameViewLayoutStateMaintainer statePusher(*rootForThisLayout);
+    FrameViewLayoutStateMaintainer statePusher(*rootForThisLayout, inSubtreeLayout);
     forceLayoutParentViewIfNeeded();
 
     {

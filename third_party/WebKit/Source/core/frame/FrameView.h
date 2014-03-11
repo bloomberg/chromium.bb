@@ -304,6 +304,9 @@ public:
     virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
 
     virtual bool shouldAttemptToScrollUsingFastPath() const OVERRIDE;
+    // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
+    // passed around the FrameView layout methods can be true while this returns
+    // false.
     bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
 
 protected:
