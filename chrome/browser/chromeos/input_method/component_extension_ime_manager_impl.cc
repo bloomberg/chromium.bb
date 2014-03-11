@@ -121,23 +121,24 @@ bool ComponentExtensionIMEManagerImpl::Load(const std::string& extension_id,
                                             const std::string& manifest,
                                             const base::FilePath& file_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (loaded_extension_id_.find(extension_id) != loaded_extension_id_.end())
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  ExtensionService* extension_service = extension_system->extension_service();
+  if (extension_service->GetExtensionById(extension_id, false))
     return false;
   const std::string loaded_extension_id =
       GetComponentLoader()->Add(manifest, file_path);
   DCHECK_EQ(loaded_extension_id, extension_id);
-  loaded_extension_id_.insert(extension_id);
   return true;
 }
 
-bool ComponentExtensionIMEManagerImpl::Unload(const std::string& extension_id,
+void ComponentExtensionIMEManagerImpl::Unload(const std::string& extension_id,
                                               const base::FilePath& file_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (loaded_extension_id_.find(extension_id) == loaded_extension_id_.end())
-    return false;
+  // Remove(extension_id) does nothing when the extension has already been
+  // removed or not been registered.
   GetComponentLoader()->Remove(extension_id);
-  loaded_extension_id_.erase(extension_id);
-  return true;
 }
 
 scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(

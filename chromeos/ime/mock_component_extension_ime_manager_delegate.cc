@@ -31,11 +31,10 @@ bool MockComponentExtIMEManagerDelegate::Load(const std::string& extension_id,
   return true;
 }
 
-bool MockComponentExtIMEManagerDelegate::Unload(const std::string& extension_id,
+void MockComponentExtIMEManagerDelegate::Unload(const std::string& extension_id,
                                                 const base::FilePath& path) {
   unload_call_count_++;
   last_unloaded_extension_id_ = extension_id;
-  return false;
 }
 
 }  // namespace input_method

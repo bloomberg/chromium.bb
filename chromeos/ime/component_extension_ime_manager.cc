@@ -116,10 +116,10 @@ bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
 bool ComponentExtensionIMEManager::UnloadComponentExtensionIME(
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
-  if (FindEngineEntry(input_method_id, &ime, NULL))
-    return delegate_->Unload(ime.id, ime.path);
-  else
+  if (!FindEngineEntry(input_method_id, &ime, NULL))
     return false;
+  delegate_->Unload(ime.id, ime.path);
+  return true;
 }
 
 bool ComponentExtensionIMEManager::IsWhitelisted(

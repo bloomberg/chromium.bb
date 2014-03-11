@@ -21,7 +21,7 @@ class CHROMEOS_EXPORT MockComponentExtIMEManagerDelegate
   virtual bool Load(const std::string& extension_id,
                     const std::string& manifest,
                     const base::FilePath& path) OVERRIDE;
-  virtual bool Unload(const std::string& extension_id,
+  virtual void Unload(const std::string& extension_id,
                       const base::FilePath& path) OVERRIDE;
 
   int load_call_count() const { return load_call_count_; }

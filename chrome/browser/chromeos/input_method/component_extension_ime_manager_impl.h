@@ -29,7 +29,7 @@ class ComponentExtensionIMEManagerImpl
   virtual bool Load(const std::string& extension_id,
                     const std::string& manifest,
                     const base::FilePath& file_path) OVERRIDE;
-  virtual bool Unload(const std::string& extension_id,
+  virtual void Unload(const std::string& extension_id,
                       const base::FilePath& file_path) OVERRIDE;
 
   // Loads extension list and reads their manifest file. After finished
@@ -75,9 +75,6 @@ class ComponentExtensionIMEManagerImpl
 
   // The list of component extension IME.
   std::vector<ComponentExtensionIME> component_extension_list_;
-
-  // The list of already loaded extension ids.
-  std::set<std::string> loaded_extension_id_;
 
   // For checking the function should be called on UI thread.
   base::ThreadChecker thread_checker_;

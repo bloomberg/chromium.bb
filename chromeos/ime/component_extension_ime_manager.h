@@ -55,8 +55,7 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
                     const base::FilePath& path) = 0;
 
   // Unloads component extension IME associated with |extension_id|.
-  // Returns false if it fails, otherwise returns true;
-  virtual bool Unload(const std::string& extension_id,
+  virtual void Unload(const std::string& extension_id,
                       const base::FilePath& path) = 0;
 };
 
