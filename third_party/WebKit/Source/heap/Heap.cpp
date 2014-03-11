@@ -1186,22 +1186,25 @@ public:
 
     virtual bool isMarked(const void* objectPointer) OVERRIDE
     {
-        return FinalizedHeapObjectHeader::fromPayload(objectPointer)->isMarked();
+        // FIXME: We shouldn't have to check for a 0 object pointer here.
+        // The reason for having the check is 0 weak pointers in collections
+        // which really shouldn't happen because it is a leak.
+        return !objectPointer || FinalizedHeapObjectHeader::fromPayload(objectPointer)->isMarked();
     }
 
     // This macro defines the necessary visitor methods for typed heaps
-#define DEFINE_VISITOR_METHODS(Type)                                              \
-    virtual void mark(const Type* objectPointer, TraceCallback callback) OVERRIDE \
-    {                                                                             \
-        if (!objectPointer)                                                       \
-            return;                                                               \
-        HeapObjectHeader* header =                                                \
-            HeapObjectHeader::fromPayload(objectPointer);                         \
-        visitHeader(header, header->payload(), callback);                         \
-    }                                                                             \
-    virtual bool isMarked(const Type* objectPointer) OVERRIDE                     \
-    {                                                                             \
-        return HeapObjectHeader::fromPayload(objectPointer)->isMarked();          \
+#define DEFINE_VISITOR_METHODS(Type)                                                       \
+    virtual void mark(const Type* objectPointer, TraceCallback callback) OVERRIDE          \
+    {                                                                                      \
+        if (!objectPointer)                                                                \
+            return;                                                                        \
+        HeapObjectHeader* header =                                                         \
+            HeapObjectHeader::fromPayload(objectPointer);                                  \
+        visitHeader(header, header->payload(), callback);                                  \
+    }                                                                                      \
+    virtual bool isMarked(const Type* objectPointer) OVERRIDE                              \
+    {                                                                                      \
+        return !objectPointer || HeapObjectHeader::fromPayload(objectPointer)->isMarked(); \
     }
 
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)

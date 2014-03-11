@@ -367,7 +367,7 @@ public:
     template<typename T> inline bool isAlive(T obj) { return ObjectAliveTrait<T>::isAlive(this, obj); }
     template<typename T> inline bool isAlive(const Member<T>& member)
     {
-        return member && isAlive(member.get());
+        return isAlive(member.get());
     }
 
 #ifndef NDEBUG
