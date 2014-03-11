@@ -1,3 +1,2 @@
-CONSOLE WARNING: event.returnValue is deprecated. Please use the standard event.preventDefault() instead.
 ALERT: 376 tests of 376 passed, 0 failed.
 

@@ -1,3 +1,2 @@
-CONSOLE WARNING: Attr.specified is deprecated. Its value is always true.
 Test	http://www.w3.org/2001/DOM-Test-Suite/level3/core/documentadoptnode05
 Status	Success

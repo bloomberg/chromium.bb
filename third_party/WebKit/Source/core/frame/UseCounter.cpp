@@ -646,17 +646,11 @@ String UseCounter::deprecationMessage(Feature feature)
     case FileError:
         return "FileError is deprecated. Please use the 'name' or 'message' attributes of DOMError rather than 'code'.";
 
-    case EventReturnValue:
-        return "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.";
-
     case ShowModalDialog:
         return "Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.";
 
     case CSSStyleSheetInsertRuleOptionalArg:
         return "Calling CSSStyleSheet.insertRule() with one argument is deprecated. Please pass the index argument as well: insertRule(x, 0).";
-
-    case AttributeSpecified:
-        return "Attr.specified is deprecated. Its value is always true.";
 
     case SVGElementGetPresentationAttribute:
         return "CSSValue and SVGElement.getPresentationAttribute are deprecated. Please use getPropertyValue and parse the return value instead.";

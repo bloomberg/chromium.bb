@@ -1,4 +1,3 @@
-CONSOLE WARNING: event.returnValue is deprecated. Please use the standard event.preventDefault() instead.
 GET test
 
 responseText

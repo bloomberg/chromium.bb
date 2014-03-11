@@ -32,7 +32,6 @@ CONSOLE MESSAGE: line 12: null
 CONSOLE MESSAGE: line 13: 
 CONSOLE MESSAGE: line 12: undefined
 CONSOLE MESSAGE: line 13: 
-CONSOLE WARNING: Attr.specified is deprecated. Its value is always true.
 CONSOLE MESSAGE: line 12: [object Attr]
 CONSOLE MESSAGE: line 13: [object Attr]
 CONSOLE MESSAGE: line 12: [object Attr]
@@ -129,7 +128,6 @@ undefined console-format.html:12
 [undefined] console-format.html:13
 globals[12]
 undefined
-Attr.specified is deprecated. Its value is always true. VM:437
 attr="" console-format.html:12
 [attr]0: attrlength: 1__proto__: Array[0] console-format.html:13
 globals[13]
