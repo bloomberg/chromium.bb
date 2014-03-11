@@ -168,8 +168,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
     }
 
     layer_tree_host_impl_->Animate(
-        layer_tree_host_impl_->CurrentFrameTimeTicks(),
-        layer_tree_host_impl_->CurrentFrameTime());
+        layer_tree_host_impl_->CurrentFrameTimeTicks());
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
@@ -397,12 +396,11 @@ bool LayerTreeHostImpl::CanDraw() const {
   return true;
 }
 
-void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time,
-                                base::Time wall_clock_time) {
+void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time) {
   if (input_handler_client_)
     input_handler_client_->Animate(monotonic_time);
   AnimatePageScale(monotonic_time);
-  AnimateLayers(monotonic_time, wall_clock_time);
+  AnimateLayers(monotonic_time);
   AnimateScrollbars(monotonic_time);
   AnimateTopControls(monotonic_time);
 }
@@ -2646,26 +2644,30 @@ void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
     InnerViewportScrollLayer()->ScrollBy(unused_delta);
 }
 
-void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
+void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   if (!page_scale_animation_)
     return;
 
-  double monotonic_time = (time - base::TimeTicks()).InSecondsF();
+  // TODO(ajuma): http://crbug.com/178171 - Animations use double for monotonic
+  // time.
+  double monotonic_time_for_cc_animations =
+      (monotonic_time - base::TimeTicks()).InSecondsF();
   gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
 
   if (!page_scale_animation_->IsAnimationStarted())
-    page_scale_animation_->StartAnimation(monotonic_time);
+    page_scale_animation_->StartAnimation(monotonic_time_for_cc_animations);
 
-  active_tree_->SetPageScaleDelta(
-      page_scale_animation_->PageScaleFactorAtTime(monotonic_time) /
-      active_tree_->page_scale_factor());
-  gfx::Vector2dF next_scroll =
-      page_scale_animation_->ScrollOffsetAtTime(monotonic_time);
+  active_tree_->SetPageScaleDelta(page_scale_animation_->PageScaleFactorAtTime(
+                                      monotonic_time_for_cc_animations) /
+                                  active_tree_->page_scale_factor());
+  gfx::Vector2dF next_scroll = page_scale_animation_->ScrollOffsetAtTime(
+      monotonic_time_for_cc_animations);
 
   ScrollViewportBy(next_scroll - scroll_total);
   SetNeedsRedraw();
 
-  if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
+  if (page_scale_animation_->IsAnimationCompleteAtTime(
+          monotonic_time_for_cc_animations)) {
     page_scale_animation_.reset();
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();
@@ -2688,8 +2690,7 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   }
 }
 
-void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
-                                      base::Time wall_clock_time) {
+void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty() ||
       !active_tree_->root_layer())
@@ -2697,14 +2698,16 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateLayers");
 
-  double monotonic_seconds = (monotonic_time - base::TimeTicks()).InSecondsF();
-
+  // TODO(ajuma): http://crbug.com/178171 - Animations use double for monotonic
+  // time.
+  double monotonic_time_for_cc_animations =
+      (monotonic_time - base::TimeTicks()).InSecondsF();
   AnimationRegistrar::AnimationControllerMap copy =
       animation_registrar_->active_animation_controllers();
   for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
        iter != copy.end();
        ++iter)
-    (*iter).second->Animate(monotonic_seconds);
+    (*iter).second->Animate(monotonic_time_for_cc_animations);
 
   SetNeedsRedraw();
 }
@@ -2861,26 +2864,17 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
 
 void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {
   current_frame_timeticks_ = base::TimeTicks();
-  current_frame_time_ = base::Time();
 }
 
-void LayerTreeHostImpl::UpdateCurrentFrameTime(base::TimeTicks* ticks,
-                                               base::Time* now) const {
+void LayerTreeHostImpl::UpdateCurrentFrameTime(base::TimeTicks* ticks) const {
   if (ticks->is_null()) {
-    DCHECK(now->is_null());
     *ticks = CurrentPhysicalTimeTicks();
-    *now = base::Time::Now();
   }
 }
 
 base::TimeTicks LayerTreeHostImpl::CurrentFrameTimeTicks() {
-  UpdateCurrentFrameTime(&current_frame_timeticks_, &current_frame_time_);
+  UpdateCurrentFrameTime(&current_frame_timeticks_);
   return current_frame_timeticks_;
-}
-
-base::Time LayerTreeHostImpl::CurrentFrameTime() {
-  UpdateCurrentFrameTime(&current_frame_timeticks_, &current_frame_time_);
-  return current_frame_time_;
 }
 
 base::TimeTicks LayerTreeHostImpl::CurrentPhysicalTimeTicks() const {

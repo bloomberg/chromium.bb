@@ -533,8 +533,7 @@ bool SingleThreadProxy::DoComposite(
     }
 
     layer_tree_host_impl_->Animate(
-        layer_tree_host_impl_->CurrentFrameTimeTicks(),
-        layer_tree_host_impl_->CurrentFrameTime());
+        layer_tree_host_impl_->CurrentFrameTimeTicks());
     UpdateBackgroundAnimateTicking();
 
     if (!layer_tree_host_impl_->IsContextLost()) {

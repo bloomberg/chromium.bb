@@ -167,8 +167,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void BeginMainFrameAborted(bool did_handle);
   virtual void BeginCommit();
   virtual void CommitComplete();
-  virtual void Animate(base::TimeTicks monotonic_time,
-                       base::Time wall_clock_time);
+  virtual void Animate(base::TimeTicks monotonic_time);
   virtual void UpdateAnimationState(bool start_ready_animations);
   void MainThreadHasStoppedFlinging();
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
@@ -391,7 +390,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ResetCurrentFrameTimeForNextFrame();
   virtual base::TimeTicks CurrentFrameTimeTicks();
-  base::Time CurrentFrameTime();
 
   virtual base::TimeTicks CurrentPhysicalTimeTicks() const;
 
@@ -448,8 +446,7 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateInnerViewportContainerSize();
 
   // Virtual for testing.
-  virtual void AnimateLayers(base::TimeTicks monotonic_time,
-                             base::Time wall_clock_time);
+  virtual void AnimateLayers(base::TimeTicks monotonic_time);
 
   // Virtual for testing.
   virtual base::TimeDelta LowFrequencyAnimationInterval() const;
@@ -508,7 +505,7 @@ class CC_EXPORT LayerTreeHostImpl
   void AnimateScrollbarsRecursive(LayerImpl* layer,
                                   base::TimeTicks time);
 
-  void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
+  void UpdateCurrentFrameTime(base::TimeTicks* ticks) const;
 
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
@@ -641,7 +638,6 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Rect viewport_damage_rect_;
 
   base::TimeTicks current_frame_timeticks_;
-  base::Time current_frame_time_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
 

@@ -682,10 +682,6 @@ base::TimeTicks LayerTreeImpl::CurrentFrameTimeTicks() const {
   return layer_tree_host_impl_->CurrentFrameTimeTicks();
 }
 
-base::Time LayerTreeImpl::CurrentFrameTime() const {
-  return layer_tree_host_impl_->CurrentFrameTime();
-}
-
 base::TimeTicks LayerTreeImpl::CurrentPhysicalTimeTicks() const {
   return layer_tree_host_impl_->CurrentPhysicalTimeTicks();
 }

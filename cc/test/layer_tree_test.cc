@@ -169,10 +169,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidSetVisibleOnImplTree(this, visible);
   }
 
-  virtual void AnimateLayers(base::TimeTicks monotonic_time,
-                             base::Time wall_clock_time) OVERRIDE {
+  virtual void AnimateLayers(base::TimeTicks monotonic_time) OVERRIDE {
     test_hooks_->WillAnimateLayers(this, monotonic_time);
-    LayerTreeHostImpl::AnimateLayers(monotonic_time, wall_clock_time);
+    LayerTreeHostImpl::AnimateLayers(monotonic_time);
     test_hooks_->AnimateLayers(this, monotonic_time);
   }
 

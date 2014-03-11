@@ -1152,14 +1152,10 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   else
     monotonic_time = impl().layer_tree_host_impl->CurrentFrameTimeTicks();
 
-  // TODO(ajuma): Remove wall_clock_time once the legacy implementation of
-  // animations in Blink is removed.
-  base::Time wall_clock_time = impl().layer_tree_host_impl->CurrentFrameTime();
-
   // TODO(enne): This should probably happen post-animate.
   if (impl().layer_tree_host_impl->pending_tree())
     impl().layer_tree_host_impl->pending_tree()->UpdateDrawProperties();
-  impl().layer_tree_host_impl->Animate(monotonic_time, wall_clock_time);
+  impl().layer_tree_host_impl->Animate(monotonic_time);
 
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its
