@@ -10,9 +10,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_global_error.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "content/public/browser/notification_details.h"
@@ -63,15 +60,6 @@ void ProfileOAuth2TokenService::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   NOTREACHED();
-}
-
-std::string ProfileOAuth2TokenService::GetPrimaryAccountId() {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile_);
-  // TODO(fgorski): DCHECK(signin_manager) here - it may require update to test
-  // code and the line above (SigninManager might not exist yet).
-  return signin_manager ? signin_manager->GetAuthenticatedUsername()
-      : std::string();
 }
 
 std::vector<std::string> ProfileOAuth2TokenService::GetAccounts() {

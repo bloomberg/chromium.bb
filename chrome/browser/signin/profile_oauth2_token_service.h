@@ -47,10 +47,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   virtual void Shutdown();
 
-  // Gets an account id of the primary account related to the profile.
-  // DEPRECATED: Use SigninManagerBase::GetAuthenticatedAccountId() instead.
-  std::string GetPrimaryAccountId();
-
   // Lists account IDs of all accounts with a refresh token.
   virtual std::vector<std::string> GetAccounts() OVERRIDE;
 
