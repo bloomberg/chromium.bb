@@ -46,4 +46,14 @@ PassOwnPtr<InterpolableValue> InterpolableList::interpolate(const InterpolableVa
     return result.release();
 }
 
+PassOwnPtr<InterpolableValue> InterpolableAnimatableValue::interpolate(const InterpolableValue &other, const double percentage) const
+{
+    const InterpolableAnimatableValue *otherValue = toInterpolableAnimatableValue(&other);
+    if (!percentage)
+        return create(m_value);
+    if (percentage == 1)
+        return create(otherValue->m_value);
+    return create(AnimatableValue::interpolate(m_value.get(), otherValue->m_value.get(), percentage));
+}
+
 }

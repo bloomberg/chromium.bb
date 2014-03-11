@@ -5,6 +5,7 @@
 #ifndef InterpolableValue_h
 #define InterpolableValue_h
 
+#include "core/animation/AnimatableValue.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -15,6 +16,7 @@ public:
     virtual bool isNumber() const { return false; }
     virtual bool isBool() const { return false; }
     virtual bool isList() const { return false; }
+    virtual bool isAnimatableValue() const { return false; }
 
     virtual ~InterpolableValue() { }
     virtual PassOwnPtr<InterpolableValue> clone() const = 0;
@@ -119,9 +121,31 @@ private:
     OwnPtr<OwnPtr<InterpolableValue>[]> m_values;
 };
 
+// FIXME: Remove this when we can.
+class InterpolableAnimatableValue : public InterpolableValue {
+public:
+    static PassOwnPtr<InterpolableAnimatableValue> create(PassRefPtr<AnimatableValue> value)
+    {
+        return adoptPtr(new InterpolableAnimatableValue(value));
+    }
+
+    virtual bool isAnimatableValue() const OVERRIDE FINAL { return true; }
+    AnimatableValue* value() const { return m_value.get(); }
+    virtual PassOwnPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+
+private:
+    virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
+    RefPtr<AnimatableValue> m_value;
+
+    InterpolableAnimatableValue(PassRefPtr<AnimatableValue> value)
+        : m_value(value)
+    { }
+};
+
 DEFINE_TYPE_CASTS(InterpolableNumber, InterpolableValue, value, value->isNumber(), value.isNumber());
 DEFINE_TYPE_CASTS(InterpolableBool, InterpolableValue, value, value->isBool(), value.isBool());
 DEFINE_TYPE_CASTS(InterpolableList, InterpolableValue, value, value->isList(), value.isList());
+DEFINE_TYPE_CASTS(InterpolableAnimatableValue, InterpolableValue, value, value->isAnimatableValue(), value.isAnimatableValue());
 
 }
 
