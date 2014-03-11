@@ -212,8 +212,6 @@ public:
         InputTypeEmailMultiple = 184,
         InputTypeEmailMaxLength = 185,
         InputTypeEmailMultipleMaxLength = 186,
-        CSSStyleDeclarationPropertyName = 188, // Removed in CSSOM.
-        CSSStyleDeclarationFloatPropertyName = 189, // Pending removal in CSSOM.
         InputTypeText = 190,
         InputTypeTextMaxLength = 191,
         InputTypePassword = 192,

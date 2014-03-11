@@ -40,7 +40,6 @@
 #include "core/css/CSSValue.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/events/EventTarget.h"
-#include "core/frame/UseCounter.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -82,18 +81,8 @@ static bool hasCSSPropertyNamePrefix(const String& propertyName, const char* pre
 }
 
 struct CSSPropertyInfo {
-    unsigned propID: 30; // CSSPropertyID
-    unsigned nameWithDash: 1;
-    unsigned nameWithCssPrefix: 1;
+    CSSPropertyID propID;
 };
-
-static inline void countCssPropertyInfoUsage(v8::Isolate* isolate, const CSSPropertyInfo& propInfo)
-{
-    if (propInfo.nameWithDash)
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::CSSStyleDeclarationPropertyName);
-    if (propInfo.propID == CSSPropertyFloat && !propInfo.nameWithCssPrefix)
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::CSSStyleDeclarationFloatPropertyName);
-}
 
 // When getting properties on CSSStyleDeclarations, the name used from
 // Javascript and the actual name of the property are not the same, so
@@ -120,16 +109,13 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
 
         unsigned i = 0;
         bool hasSeenDash = false;
-        bool hasSeenCssPrefix = false;
 
-        if (hasCSSPropertyNamePrefix(propertyName, "css")) {
-            hasSeenCssPrefix = true;
+        if (hasCSSPropertyNamePrefix(propertyName, "css"))
             i += 3;
-        } else if (hasCSSPropertyNamePrefix(propertyName, "webkit")) {
+        else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
             builder.append('-');
-        } else if (isASCIIUpper(propertyName[0])) {
+        else if (isASCIIUpper(propertyName[0]))
             return 0;
-        }
 
         bool hasSeenUpper = isASCIIUpper(propertyName[i]);
 
@@ -158,8 +144,6 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
         if (propertyID && RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID)) {
             propInfo = new CSSPropertyInfo();
             propInfo->propID = propertyID;
-            propInfo->nameWithDash = hasSeenDash;
-            propInfo->nameWithCssPrefix = hasSeenCssPrefix;
             map.add(propertyName, propInfo);
         }
     }
@@ -196,8 +180,7 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::String> v8Nam
 {
     // NOTE: cssPropertyInfo lookups incur several mallocs.
     // Successful lookups have the same cost the first time, but are cached.
-    if (CSSPropertyInfo* propInfo = cssPropertyInfo(v8Name)) {
-        countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
+    if (cssPropertyInfo(v8Name)) {
         v8SetReturnValueInt(info, 0);
         return;
     }
@@ -216,7 +199,6 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     if (!propInfo)
         return;
 
-    countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
     CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
     RefPtrWillBeRawPtr<CSSValue> cssValue = imp->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
     if (cssValue) {
@@ -238,7 +220,6 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name
     if (!propInfo)
         return;
 
-    countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, propertyValue, value);
     ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(static_cast<CSSPropertyID>(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
     imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
