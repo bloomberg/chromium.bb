@@ -15,7 +15,6 @@ namespace WTF {
 // TerminatedArray<T> can only be constructed by TerminatedArrayBuilder<T>.
 template<typename T>
 class TerminatedArray {
-    WTF_MAKE_FAST_ALLOCATED;
     WTF_MAKE_NONCOPYABLE(TerminatedArray);
 public:
     T& at(size_t index) { return reinterpret_cast<T*>(this)[index]; }
@@ -64,18 +63,32 @@ public:
         return count;
     }
 
+    // Match Allocator semantics to be able to use OwnPtr<TerminatedArray>.
+    void operator delete(void* p) { ::WTF::fastFree(p); }
+
 private:
-    static PassOwnPtr<TerminatedArray> create(size_t capacity)
-    {
-        return adoptPtr(static_cast<TerminatedArray*>(fastMalloc(capacity * sizeof(T))));
-    }
+    // Allocator describes how TerminatedArrayBuilder should create new instances
+    // of TerminateArray and manage their lifetimes.
+    struct Allocator {
+        typedef PassOwnPtr<TerminatedArray> PassPtr;
+        typedef OwnPtr<TerminatedArray> Ptr;
 
-    static PassOwnPtr<TerminatedArray> resize(PassOwnPtr<TerminatedArray> array, size_t capacity)
-    {
-        return adoptPtr(static_cast<TerminatedArray*>(fastRealloc(array.leakPtr(), capacity * sizeof(T))));
-    }
+        static PassPtr create(size_t capacity)
+        {
+            return adoptPtr(static_cast<TerminatedArray*>(fastMalloc(capacity * sizeof(T))));
+        }
 
-    template<typename> friend class TerminatedArrayBuilder;
+        static PassPtr resize(PassPtr ptr, size_t capacity)
+        {
+            return adoptPtr(static_cast<TerminatedArray*>(fastRealloc(ptr.leakPtr(), capacity * sizeof(T))));
+        }
+    };
+
+    // Prohibit construction. Allocator makes TerminatedArray instances for
+    // TerminatedArrayBuilder by pointer casting.
+    TerminatedArray();
+
+    template<typename, template <typename> class> friend class TerminatedArrayBuilder;
 };
 
 } // namespace WTF
