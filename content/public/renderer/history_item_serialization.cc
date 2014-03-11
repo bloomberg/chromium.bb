@@ -82,7 +82,6 @@ void AppendHTTPBodyElement(const ExplodedHttpBodyElement& element,
 bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
                                    ExplodedFrameState* state) {
   state->url_string = item.urlString();
-  state->original_url_string = item.originalURLString();
   state->referrer = item.referrer();
   state->referrer_policy = item.referrerPolicy();
   state->target = item.target();
@@ -92,7 +91,6 @@ bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
   state->item_sequence_number = item.itemSequenceNumber();
   state->document_sequence_number =
       item.documentSequenceNumber();
-  state->target_frame_id = item.targetFrameID();
   state->page_scale_factor = item.pageScaleFactor();
   ToNullableString16Vector(item.documentState(), &state->document_state);
 
@@ -122,7 +120,6 @@ bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
 bool RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
                                     WebHistoryItem* item) {
   item->setURLString(state.url_string);
-  item->setOriginalURLString(state.original_url_string);
   item->setReferrer(state.referrer, state.referrer_policy);
   item->setTarget(state.target);
   if (!state.state_object.is_null()) {
@@ -140,8 +137,6 @@ bool RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
     item->setItemSequenceNumber(state.item_sequence_number);
   if (state.document_sequence_number)
     item->setDocumentSequenceNumber(state.document_sequence_number);
-
-  item->setTargetFrameID(state.target_frame_id);
 
   item->setHTTPContentType(state.http_body.http_content_type);
   if (!state.http_body.is_null) {

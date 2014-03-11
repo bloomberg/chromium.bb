@@ -43,7 +43,6 @@ struct CONTENT_EXPORT ExplodedHttpBody {
 
 struct CONTENT_EXPORT ExplodedFrameState {
   base::NullableString16 url_string;
-  base::NullableString16 original_url_string;
   base::NullableString16 referrer;
   base::NullableString16 target;
   base::NullableString16 state_object;
@@ -51,7 +50,6 @@ struct CONTENT_EXPORT ExplodedFrameState {
   gfx::Point scroll_offset;
   int64 item_sequence_number;
   int64 document_sequence_number;
-  int64 target_frame_id;
   double page_scale_factor;
   blink::WebReferrerPolicy referrer_policy;
   ExplodedHttpBody http_body;
