@@ -229,7 +229,8 @@ scoped_ptr<tabs::Tab> SessionsGetDevicesFunction::CreateTabModel(
     int selected_index) {
   std::string session_id = SessionId(session_tag, tab.tab_id.id()).ToString();
   return CreateTabModelHelper(GetProfile(),
-                              tab.navigations[tab.current_navigation_index],
+                              tab.navigations[
+                                tab.normalized_navigation_index()],
                               session_id,
                               tab_index,
                               tab.pinned,
