@@ -737,10 +737,6 @@ extern const char kVideoCaptureAllowedUrls[];
 extern const char kHotwordSearchEnabled[];
 extern const char kHotwordOptInPopupTimesShown[];
 
-#if defined(OS_CHROMEOS)
-extern const char kHotwordAppListEnabled[];
-#endif
-
 #if defined(OS_ANDROID)
 extern const char kProtectedMediaIdentifierEnabled[];
 #endif

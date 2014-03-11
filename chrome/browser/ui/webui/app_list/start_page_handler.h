@@ -58,10 +58,6 @@ class StartPageHandler : public content::WebUIMessageHandler,
 
   // Called when the pref has been changed.
   void OnHotwordEnabledChanged();
-
-  // Called when the availability of the hotword for NTP is changed. The new
-  // value has to be propagated.
-  void SynchronizeHotwordEnabled();
 #endif
 
   // Returns true if the hotword recognizer should run background.

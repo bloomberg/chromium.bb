@@ -2139,13 +2139,6 @@ const char kHotwordSearchEnabled[] = "hotword.search_enabled";
 // longer shown.
 const char kHotwordOptInPopupTimesShown[] = "hotword.opt_in_popup_times_shown";
 
-#if defined(OS_CHROMEOS)
-// A boolean pref that controls the enabled-state of hotword search in the
-// app-list. This pref cooperates with kHotwordSearchEnabled. If the user
-// explicitly turns off kHotwordSearchEnabled, this pref should go off too.
-const char kHotwordAppListEnabled[] = "hotword.app_list_enabled";
-#endif
-
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.
 const char kProtectedMediaIdentifierEnabled[] =

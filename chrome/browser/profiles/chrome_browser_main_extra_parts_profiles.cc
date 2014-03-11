@@ -166,10 +166,6 @@
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
 
-#if defined(ENABLE_APP_LIST)
-#include "chrome/browser/ui/app_list/start_page_service_factory.h"
-#endif
-
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/extensions/api/spellcheck/spellcheck_api.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -207,9 +203,6 @@ ChromeBrowserMainExtraPartsProfiles::~ChromeBrowserMainExtraPartsProfiles() {
 void ChromeBrowserMainExtraPartsProfiles::
 EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AboutSigninInternalsFactory::GetInstance();
-#if defined(ENABLE_APP_LIST)
-  app_list::StartPageServiceFactory::GetInstance();
-#endif
   autofill::PersonalDataManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   AutomaticProfileResetterFactory::GetInstance();

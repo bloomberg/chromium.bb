@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/hotword_background_activity_monitor.h"
@@ -162,34 +163,31 @@ void StartPageHandler::SendRecommendedApps() {
 #if defined(OS_CHROMEOS)
 bool StartPageHandler::HotwordEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
 
-  return HotwordService::DoesHotwordSupportLanguage(profile) &&
-      profile->GetPrefs()->GetBoolean(prefs::kHotwordAppListEnabled) &&
-      service->GetExtensionById(extension_misc::kHotwordExtensionId, false);
+  if (!HotwordService::DoesHotwordSupportLanguage(profile))
+    return false;
+
+  const PrefService::Preference* preference =
+      profile->GetPrefs()->FindPreference(prefs::kHotwordSearchEnabled);
+  if (!preference)
+    return false;
+
+  if (!HotwordServiceFactory::IsServiceAvailable(profile))
+    return false;
+
+  // kHotwordSearchEnabled is off by default, but app-list is on by default.
+  // To achieve this, we'll return true if it's in the default status.
+  if (preference->IsDefaultValue())
+    return true;
+
+  bool isEnabled = false;
+  return preference->GetValue()->GetAsBoolean(&isEnabled) && isEnabled;
 }
 
 void StartPageHandler::OnHotwordEnabledChanged() {
   web_ui()->CallJavascriptFunction(
       "appList.startPage.setHotwordEnabled",
       base::FundamentalValue(HotwordEnabled()));
-}
-
-void StartPageHandler::SynchronizeHotwordEnabled() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* pref_service = profile->GetPrefs();
-  const PrefService::Preference* pref =
-      pref_service->FindPreference(prefs::kHotwordSearchEnabled);
-  if (!pref || pref->IsDefaultValue())
-    return;
-
-  bool search_enabled = false;
-  if (!pref->GetValue()->GetAsBoolean(&search_enabled))
-    return;
-
-  if (pref_service->GetBoolean(prefs::kHotwordAppListEnabled) != search_enabled)
-    pref_service->SetBoolean(prefs::kHotwordAppListEnabled, search_enabled);
 }
 #endif
 
@@ -207,15 +205,10 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   if (app_list::switches::IsVoiceSearchEnabled() &&
       HotwordService::DoesHotwordSupportLanguage(profile)) {
-    SynchronizeHotwordEnabled();
     OnHotwordEnabledChanged();
     pref_change_registrar_.Init(profile->GetPrefs());
     pref_change_registrar_.Add(
         prefs::kHotwordSearchEnabled,
-        base::Bind(&StartPageHandler::SynchronizeHotwordEnabled,
-                   base::Unretained(this)));
-    pref_change_registrar_.Add(
-        prefs::kHotwordAppListEnabled,
         base::Bind(&StartPageHandler::OnHotwordEnabledChanged,
                    base::Unretained(this)));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
