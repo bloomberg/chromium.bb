@@ -531,10 +531,6 @@ const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 const char kEnablePrivilegedWebGLExtensions[] =
     "enable-privileged-webgl-extensions";
 
-// Aggressively free GPU command buffers belonging to hidden tabs.
-const char kEnablePruneGpuCommandBuffers[] =
-    "enable-prune-gpu-command-buffers";
-
 // Enables the CSS multicol implementation that uses the regions implementation.
 const char kEnableRegionBasedColumns[] =
     "enable-region-based-columns";

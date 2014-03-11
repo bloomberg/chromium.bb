@@ -158,7 +158,6 @@ CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnablePinch[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
-extern const char kEnablePruneGpuCommandBuffers[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
 CONTENT_EXPORT extern const char kEnableRepaintAfterLayout[];
 CONTENT_EXPORT extern const char kEnableSandboxLogging[];

@@ -423,17 +423,12 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
 
   DCHECK(host_.get());
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool free_command_buffer_when_invisible =
-      command_line.HasSwitch(switches::kEnablePruneGpuCommandBuffers);
-
   // Create the object exposing the OpenGL API.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(),
       gles2_share_group,
       transfer_buffer_.get(),
       bind_generates_resources_,
-      free_command_buffer_when_invisible,
       command_buffer_.get()));
   gl_ = real_gl_.get();
 

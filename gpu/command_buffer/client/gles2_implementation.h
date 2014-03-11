@@ -185,7 +185,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
       bool bind_generates_resource,
-      bool free_everything_when_invisible,
       GpuControl* gpu_control);
 
   virtual ~GLES2Implementation();
@@ -715,9 +714,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_ptr<std::string> current_trace_name_;
 
   GpuControl* gpu_control_;
-
-  bool surface_visible_;
-  bool free_everything_when_invisible_;
 
   Capabilities capabilities_;
 

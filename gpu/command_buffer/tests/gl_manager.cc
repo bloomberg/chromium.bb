@@ -188,15 +188,12 @@ void GLManager::Initialize(const GLManager::Options& options) {
   // Create a transfer buffer.
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
-  bool free_everything_when_invisible = false;
-
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new gles2::GLES2Implementation(
       gles2_helper_.get(),
       client_share_group,
       transfer_buffer_.get(),
       options.bind_generates_resource,
-      free_everything_when_invisible ,
       gpu_control_.get()));
 
   ASSERT_TRUE(gles2_implementation_->Initialize(

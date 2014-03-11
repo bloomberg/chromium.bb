@@ -45,7 +45,6 @@ bool GLES2Context::Initialize() {
                                           NULL,
                                           transfer_buffer_.get(),
                                           true,
-                                          true,
                                           &command_buffer_));
   return implementation_->Initialize(kDefaultStartTransferBufferSize,
                                      kDefaultMinTransferBufferSize,

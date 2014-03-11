@@ -118,7 +118,6 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
   const bool bind_creates_resources = true;
-  const bool free_everything_when_invisible = false;
 
   // Create the object exposing the OpenGL API.
   gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
@@ -126,7 +125,6 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
       share_gles2 ? share_gles2->share_group() : NULL,
       transfer_buffer_.get(),
       bind_creates_resources,
-      free_everything_when_invisible,
       GetGpuControl()));
 
   if (!gles2_impl_->Initialize(

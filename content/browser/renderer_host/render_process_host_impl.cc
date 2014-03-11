@@ -1050,7 +1050,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableOverscrollNotifications,
     switches::kEnablePinch,
     switches::kEnablePreparsedJsCaching,
-    switches::kEnablePruneGpuCommandBuffers,
     switches::kEnableRepaintAfterLayout,
     switches::kEnableServiceWorker,
     switches::kEnableSkiaBenchmarking,
