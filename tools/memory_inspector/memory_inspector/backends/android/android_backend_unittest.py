@@ -66,10 +66,10 @@ _MOCK_PS_EXT_OUT = """
   "processes": {
     "1": {
        "name": "foo", "n_threads": 42, "start_time": 1000000, "user_time": 82,
-       "sys_time": 445, "min_faults": 918, "maj_faults": 2, "vm_rss": 528},
+       "sys_time": 445, "min_faults": 0, "maj_faults": 0, "vm_rss": 528},
     "2": {
        "name": "bar", "n_threads": 142, "start_time": 1, "user_time": 82,
-       "sys_time": 445, "min_faults": 918, "maj_faults": 0, "vm_rss": 528}}
+       "sys_time": 445, "min_faults": 0, "maj_faults": 0, "vm_rss": 528}}
 }
 """
 
@@ -125,7 +125,7 @@ class AndroidBackendTest(unittest.TestCase):
     self.assertEqual(stats.cpu_usage, 0)
     self.assertEqual(stats.run_time, 1)
     self.assertEqual(stats.vm_rss, 528)
-    self.assertEqual(stats.page_faults, 920)
+    self.assertEqual(stats.page_faults, 0)
 
     # Test memdump parsing.
     mmaps = processes[0].DumpMemoryMaps()

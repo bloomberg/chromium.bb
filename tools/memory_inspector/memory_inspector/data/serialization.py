@@ -14,6 +14,7 @@ hierarchy keeping only the meaningful bits) format.
 
 import json
 
+from memory_inspector.core import backends
 from memory_inspector.core import memory_map
 from memory_inspector.core import native_heap
 from memory_inspector.core import stacktrace
@@ -54,6 +55,9 @@ class Encoder(json.JSONEncoder):
       return {'address': obj.address,
               'exec_file_rel_path': obj.exec_file_rel_path,
               'offset': obj.offset}
+
+    if isinstance(obj, (backends.DeviceStats, backends.ProcessStats)):
+      return obj.__dict__
 
     return json.JSONEncoder.default(self, obj)
 

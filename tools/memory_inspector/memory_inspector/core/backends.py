@@ -19,14 +19,18 @@ def ListDevices():
       yield device
 
 
+def GetBackend(backend_name):
+  """Retrieves a specific backend given its name."""
+  return _backends.get(backend_name, None)
+
+
 def GetDevice(backend_name, device_id):
   """Retrieves a specific device given its backend name and device id."""
-  for backend in _backends.itervalues():
-    if backend.name != backend_name:
-      continue
-    for device in backend.EnumerateDevices():
-      if device.id != device_id:
-        continue
+  backend = GetBackend(backend_name)
+  if not backend:
+    return None
+  for device in backend.EnumerateDevices():
+    if device.id == device_id:
       return device
   return None
 

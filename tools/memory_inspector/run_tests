@@ -4,30 +4,20 @@
 # found in the LICENSE file.
 
 import logging
-import os
+import memory_inspector
 import sys
 import unittest
 
 
 if __name__ == '__main__':
-  cur_dir = os.path.abspath(os.path.dirname(__file__))
-  chromium_dir = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
-
-  sys.path += [
-      cur_dir,
-
-      # Include all dependencies.
-      os.path.join(chromium_dir, 'build', 'android'),  # For pylib.
-  ]
-
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.WARNING,
       format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
 
   suite = unittest.TestSuite()
   loader = unittest.TestLoader()
-  suite.addTests(loader.discover(start_dir=cur_dir, pattern='*_unittest.py'))
-
+  suite.addTests(loader.discover(start_dir=memory_inspector.ROOT_DIR,
+                                 pattern='*_unittest.py'))
   res = unittest.TextTestRunner(verbosity=2).run(suite)
   if res.wasSuccessful():
     sys.exit(0)

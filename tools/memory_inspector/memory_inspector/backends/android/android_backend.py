@@ -40,9 +40,10 @@ class AndroidBackend(backends.Backend):
       'adb_path': 'Path of directory containing the adb binary',
       'toolchain_path': 'Path of toolchain (for addr2line)'}
 
-  def __init__(self, settings=None):
+  def __init__(self):
     super(AndroidBackend, self).__init__(
         settings=backends.Settings(AndroidBackend._SETTINGS_KEYS))
+    self._devices = {}  # 'device id' -> |Device|.
 
   def EnumerateDevices(self):
     # If a custom adb_path has been setup through settings, prepend that to the
@@ -51,8 +52,13 @@ class AndroidBackend(backends.Backend):
         not os.environ['PATH'].startswith(self.settings['adb_path'])):
       os.environ['PATH'] = os.pathsep.join([self.settings['adb_path'],
                                            os.environ['PATH']])
-    for device in android_commands.GetAttachedDevices():
-      yield AndroidDevice(self, android_commands.AndroidCommands(device))
+    for device_id in android_commands.GetAttachedDevices():
+      device = self._devices.get(device_id)
+      if not device:
+        device = AndroidDevice(
+          self, android_commands.AndroidCommands(device_id))
+        self._devices[device_id] = device
+      yield device
 
   @property
   def name(self):
@@ -73,7 +79,10 @@ class AndroidDevice(backends.Device):
     self._id = adb.GetDevice()
     self._name = adb.GetProductModel()
     self._sys_stats = None
+    self._last_device_stats = None
     self._sys_stats_last_update = None
+    self._processes = {}  # pid (int) -> |Process|
+    self._initialized = False
 
   def Initialize(self):
     """Starts adb root and deploys the prebuilt binaries on initialization."""
@@ -84,6 +93,7 @@ class AndroidDevice(backends.Device):
                                          _MEMDUMP_PATH_ON_DEVICE)
     self._DeployPrebuiltOnDeviceIfNeeded(_PSEXT_PREBUILT_PATH,
                                          _PSEXT_PATH_ON_DEVICE)
+    self._initialized = True
 
   def EnableMmapTracing(self, enabled):
     """Nothing to do here. memdump is already deployed in Initialize()."""
@@ -98,6 +108,7 @@ class AndroidDevice(backends.Device):
 
   def EnableNativeAllocTracing(self, enabled):
     """Enables libc.debug.malloc and restarts the shell."""
+    assert(self._initialized)
     prop_value = '1' if enabled else ''
     self.adb.system_properties[_DLMALLOC_DEBUG_SYSPROP] = prop_value
     assert(self.IsNativeAllocTracingEnabled())
@@ -106,24 +117,19 @@ class AndroidDevice(backends.Device):
 
   def ListProcesses(self):
     """Returns a sequence of |AndroidProcess|."""
-    sys_stats = self.UpdateAndGetSystemStats()
-    for pid, proc in sys_stats['processes'].iteritems():
-      yield AndroidProcess(self, int(pid), proc['name'])
+    self._RefreshProcessesList()
+    return self._processes.itervalues()
 
   def GetProcess(self, pid):
     """Returns an instance of |AndroidProcess| (None if not found)."""
     assert(isinstance(pid, int))
-    sys_stats = self.UpdateAndGetSystemStats()
-    proc = sys_stats['processes'].get(str(pid))
-    if not proc:
-      return None
-    return AndroidProcess(self, pid, proc['name'])
+    self._RefreshProcessesList()
+    return self._processes.get(pid)
 
   def GetStats(self):
     """Returns an instance of |DeviceStats| with the OS CPU/Memory stats."""
-    old = self._sys_stats
     cur = self.UpdateAndGetSystemStats()
-    old = old or cur  # Handle 1st call case.
+    old = self._last_device_stats or cur  # Handle 1st call case.
     uptime = cur['time']['ticks'] / cur['time']['rate']
     ticks = max(1, cur['time']['ticks'] - old['time']['ticks'])
 
@@ -133,22 +139,32 @@ class AndroidDevice(backends.Device):
           'usr': 100 * (cur['cpu'][i]['usr'] - old['cpu'][i]['usr']) / ticks,
           'sys': 100 * (cur['cpu'][i]['sys'] - old['cpu'][i]['sys']) / ticks,
           'idle': 100 * (cur['cpu'][i]['idle'] - old['cpu'][i]['idle']) / ticks}
-      # The idle tick count on many Linux kernels stays frozen when the CPU is
+      # The idle tick count on many Linux kernels is frozen when the CPU is
       # offline, and bumps up (compensating all the offline period) when it
-      # reactivates. For this reason it needs to be saturated at 100.
-      cpu_time['idle'] = min(cpu_time['idle'],
-                             100 - cpu_time['usr'] - cpu_time['sys'])
+      # reactivates. For this reason it needs to be saturated at [0, 100].
+      cpu_time['idle'] = max(0, min(cpu_time['idle'],
+                                    100 - cpu_time['usr'] - cpu_time['sys']))
+
       cpu_times.append(cpu_time)
+
+    memory_stats = {'Free': cur['mem']['MemFree:'],
+                    'Cache': cur['mem']['Buffers:'] + cur['mem']['Cached:'],
+                    'Swap': cur['mem']['SwapCached:'],
+                    'Anonymous': cur['mem']['AnonPages:'],
+                    'Kernel': cur['mem']['VmallocUsed:']}
+    self._last_device_stats = cur
+
     return backends.DeviceStats(uptime=uptime,
-                               cpu_times=cpu_times,
-                               memory_stats=cur['mem'])
+                                cpu_times=cpu_times,
+                                memory_stats=memory_stats)
 
   def UpdateAndGetSystemStats(self):
-    """Grabs and caches system stats through ps_ext (max cache TTL = 1s).
+    """Grabs and caches system stats through ps_ext (max cache TTL = 0.5s).
 
     Rationale of caching: avoid invoking adb too often, it is slow.
     """
-    max_ttl = datetime.timedelta(seconds=1)
+    assert(self._initialized)
+    max_ttl = datetime.timedelta(seconds=0.5)
     if (self._sys_stats_last_update and
         datetime.datetime.now() - self._sys_stats_last_update <= max_ttl):
       return self._sys_stats
@@ -160,6 +176,19 @@ class AndroidDevice(backends.Device):
     self._sys_stats = stats
     self._sys_stats_last_update = datetime.datetime.now()
     return self._sys_stats
+
+  def _RefreshProcessesList(self):
+    sys_stats = self.UpdateAndGetSystemStats()
+    processes_to_delete = set(self._processes.keys())
+    for pid, proc in sys_stats['processes'].iteritems():
+      pid = int(pid)
+      process = self._processes.get(pid)
+      if not process or process.name != proc['name']:
+        process = AndroidProcess(self, int(pid), proc['name'])
+        self._processes[pid] = process
+      processes_to_delete.discard(pid)
+    for pid in processes_to_delete:
+      del self._processes[pid]
 
   def _DeployPrebuiltOnDeviceIfNeeded(self, local_path, path_on_device):
     # TODO(primiano): check that the md5 binary is built-in also on pre-KK.
@@ -236,6 +265,8 @@ class AndroidProcess(backends.Process):
         run_time=run_time,
         cpu_usage=cpu_usage,
         vm_rss=cur_proc_stats['vm_rss'],
-        page_faults=cur_proc_stats['maj_faults'] + cur_proc_stats['min_faults'])
+        page_faults=(
+            (cur_proc_stats['maj_faults'] + cur_proc_stats['min_faults']) -
+            (old_proc_stats['maj_faults'] + old_proc_stats['min_faults'])))
     self._last_sys_stats = cur_sys_stats
     return proc_stats
