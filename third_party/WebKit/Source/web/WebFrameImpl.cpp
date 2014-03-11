@@ -1257,7 +1257,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     RefPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
     if (!markerRange)
         return;
-    frame()->selection().setSelection(markerRange.get(), CharacterGranularity);
+    frame()->selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
     frame()->editor().replaceSelectionWithText(text, false, false);
 }
 
@@ -2272,7 +2272,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
             if (element->isFocusable()) {
                 // Found a focusable parent node. Set the active match as the
                 // selection and focus to the focusable node.
-                frame()->selection().setSelection(m_activeMatch.get());
+                frame()->selection().setSelection(VisibleSelection(m_activeMatch.get()));
                 frame()->document()->setFocusedElement(element);
                 return;
             }
@@ -2297,7 +2297,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // you'll have the last thing you found highlighted) and make sure that
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
-        frame()->selection().setSelection(m_activeMatch.get());
+        frame()->selection().setSelection(VisibleSelection(m_activeMatch.get()));
         frame()->document()->setFocusedElement(nullptr);
 
         // Finally clear the active match, for two reasons:

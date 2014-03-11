@@ -70,28 +70,38 @@ static inline EditCommandComposition* compositionIfPossible(EditCommand* command
     return toCompositeEditCommand(command)->composition();
 }
 
-void EditCommand::setStartingSelection(const VisibleSelection& s)
+void EditCommand::setStartingSelection(const VisibleSelection& selection)
 {
-    for (EditCommand* cmd = this; ; cmd = cmd->m_parent) {
-        if (EditCommandComposition* composition = compositionIfPossible(cmd)) {
-            ASSERT(cmd->isTopLevelCommand());
-            composition->setStartingSelection(s);
+    for (EditCommand* command = this; ; command = command->m_parent) {
+        if (EditCommandComposition* composition = compositionIfPossible(command)) {
+            ASSERT(command->isTopLevelCommand());
+            composition->setStartingSelection(selection);
         }
-        cmd->m_startingSelection = s;
-        if (!cmd->m_parent || cmd->m_parent->isFirstCommand(cmd))
+        command->m_startingSelection = selection;
+        if (!command->m_parent || command->m_parent->isFirstCommand(command))
             break;
     }
 }
 
-void EditCommand::setEndingSelection(const VisibleSelection &s)
+void EditCommand::setStartingSelection(const VisiblePosition& position)
 {
-    for (EditCommand* cmd = this; cmd; cmd = cmd->m_parent) {
-        if (EditCommandComposition* composition = compositionIfPossible(cmd)) {
-            ASSERT(cmd->isTopLevelCommand());
-            composition->setEndingSelection(s);
+    setStartingSelection(VisibleSelection(position));
+}
+
+void EditCommand::setEndingSelection(const VisibleSelection& selection)
+{
+    for (EditCommand* command = this; command; command = command->m_parent) {
+        if (EditCommandComposition* composition = compositionIfPossible(command)) {
+            ASSERT(command->isTopLevelCommand());
+            composition->setEndingSelection(selection);
         }
-        cmd->m_endingSelection = s;
+        command->m_endingSelection = selection;
     }
+}
+
+void EditCommand::setEndingSelection(const VisiblePosition& position)
+{
+    setEndingSelection(VisibleSelection(position));
 }
 
 void EditCommand::setParent(CompositeEditCommand* parent)

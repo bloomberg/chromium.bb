@@ -63,7 +63,9 @@ protected:
     Document& document() const { return *m_document.get(); }
     CompositeEditCommand* parent() const { return m_parent; }
     void setStartingSelection(const VisibleSelection&);
+    void setStartingSelection(const VisiblePosition&);
     void setEndingSelection(const VisibleSelection&);
+    void setEndingSelection(const VisiblePosition&);
 
 private:
     RefPtr<Document> m_document;

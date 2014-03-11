@@ -428,7 +428,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCar
 {
     frame->selection().setSelection(dragCaret);
     if (frame->selection().isNone()) {
-        dragCaret = frame->visiblePositionForPoint(point);
+        dragCaret = VisibleSelection(frame->visiblePositionForPoint(point));
         frame->selection().setSelection(dragCaret);
         range = dragCaret.toNormalizedRange();
     }
@@ -439,7 +439,7 @@ bool DragController::dispatchTextInputEventFor(LocalFrame* innerFrame, DragData*
 {
     ASSERT(m_page->dragCaretController().hasCaret());
     String text = m_page->dragCaretController().isContentRichlyEditable() ? "" : dragData->asPlainText();
-    Node* target = innerFrame->editor().findEventTargetFrom(m_page->dragCaretController().caretPosition());
+    Node* target = innerFrame->editor().findEventTargetFrom(VisibleSelection(m_page->dragCaretController().caretPosition()));
     return target->dispatchEvent(TextEvent::createForDrop(innerFrame->domWindow(), text), IGNORE_EXCEPTION);
 }
 
@@ -481,7 +481,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
         return false;
     }
 
-    VisibleSelection dragCaret = m_page->dragCaretController().caretPosition();
+    VisibleSelection dragCaret(m_page->dragCaretController().caretPosition());
     m_page->dragCaretController().clear();
     RefPtr<Range> range = dragCaret.toNormalizedRange();
     RefPtr<Element> rootEditableElement = innerFrame->selection().rootEditableElement();
@@ -965,4 +965,3 @@ void DragController::cleanupAfterSystemDrag()
 }
 
 } // namespace WebCore
-
