@@ -250,9 +250,9 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
 }
 
 bool LinuxSandbox::InitializeSandboxImpl() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   const std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType);
+      command_line->GetSwitchValueASCII(switches::kProcessType);
 
   // We need to make absolutely sure that our sandbox is "sealed" before
   // returning.
@@ -271,14 +271,26 @@ bool LinuxSandbox::InitializeSandboxImpl() {
   if (!IsSingleThreaded()) {
     std::string error_message = "InitializeSandbox() called with multiple "
                                 "threads in process " + process_type;
-    // TSAN starts a helper thread. So we don't start the sandbox and don't
+    // TSAN starts a helper thread, so we don't start the sandbox and don't
     // even report an error about it.
     if (IsRunningTSAN())
       return false;
-    // The GPU process is allowed to call InitializeSandbox() with threads for
-    // now, because it loads third-party libraries.
-    if (process_type != switches::kGpuProcess)
-      CHECK(false) << error_message;
+
+    // The GPU process is allowed to call InitializeSandbox() with threads.
+    bool sandbox_failure_fatal = process_type != switches::kGpuProcess;
+    // This can be disabled with the '--gpu-sandbox-failures-fatal' flag.
+    // Setting the flag with no value or any value different than 'yes' or 'no'
+    // is equal to setting '--gpu-sandbox-failures-fatal=yes'.
+    if (process_type == switches::kGpuProcess &&
+        command_line->HasSwitch(switches::kGpuSandboxFailuresFatal)) {
+      const std::string switch_value =
+          command_line->GetSwitchValueASCII(switches::kGpuSandboxFailuresFatal);
+      sandbox_failure_fatal = switch_value != "no";
+    }
+
+    if (sandbox_failure_fatal)
+      LOG(FATAL) << error_message;
+
     LOG(ERROR) << error_message;
     return false;
   }
