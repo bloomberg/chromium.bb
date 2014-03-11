@@ -39,7 +39,8 @@ class SYNC_EXPORT AttachmentStore {
 
   typedef base::Callback<void(const Result&, scoped_ptr<Attachment>)>
       ReadCallback;
-  typedef base::Callback<void(const Result&)> WriteCallback;
+  typedef base::Callback<void(const Result&, const sync_pb::AttachmentId& id)>
+      WriteCallback;
   typedef base::Callback<void(const Result&)> DropCallback;
 
   // Asynchronously reads the attachment identified by |id|.
@@ -50,12 +51,10 @@ class SYNC_EXPORT AttachmentStore {
   virtual void Read(const sync_pb::AttachmentId& id,
                     const ReadCallback& callback) = 0;
 
-  // Asynchronously writes |bytes| to the store under the given |id|.
+  // Asynchronously writes |bytes| to the store.
   //
-  // If the store already contains an attachment with |id| it will be
-  // overwritten. |callback| will be invoked when finished.
-  virtual void Write(const sync_pb::AttachmentId& id,
-                     const scoped_refptr<base::RefCountedMemory>& bytes,
+  // |callback| will be invoked when finished.
+  virtual void Write(const scoped_refptr<base::RefCountedMemory>& bytes,
                      const WriteCallback& callback) = 0;
 
   // Asynchronously drops the attchment with the given id from this store.

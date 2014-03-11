@@ -16,8 +16,7 @@ using sync_pb::AttachmentId;
 
 namespace syncer {
 
-const char kTestData1[] = "some data";
-const char kTestData2[] = "some other data";
+const char kTestData[] = "some data";
 
 class FakeAttachmentStoreTest : public testing::Test {
  protected:
@@ -28,9 +27,12 @@ class FakeAttachmentStoreTest : public testing::Test {
                    base::Unretained(this),
                    &result,
                    &attachment);
-    write_callback = base::Bind(
+    write_callback = base::Bind(&FakeAttachmentStoreTest::CopyResultAndId,
+                                base::Unretained(this),
+                                &result,
+                                &id);
+    drop_callback = base::Bind(
         &FakeAttachmentStoreTest::CopyResult, base::Unretained(this), &result);
-    drop_callback = write_callback;
   }
 
   virtual void ClearAndPumpLoop() {
@@ -39,6 +41,7 @@ class FakeAttachmentStoreTest : public testing::Test {
   }
 
   AttachmentStore::Result result;
+  AttachmentId id;
   scoped_ptr<Attachment> attachment;
 
   AttachmentStore::ReadCallback read_callback;
@@ -48,12 +51,21 @@ class FakeAttachmentStoreTest : public testing::Test {
  private:
   void Clear() {
     result = AttachmentStore::UNSPECIFIED_ERROR;
+    id.Clear();
     attachment.reset();
   }
 
   void CopyResult(AttachmentStore::Result* destination,
                   const AttachmentStore::Result& source) {
     *destination = source;
+  }
+
+  void CopyResultAndId(AttachmentStore::Result* destination_result,
+                       AttachmentId* destination_id,
+                       const AttachmentStore::Result& source_result,
+                       const AttachmentId& source_id) {
+    CopyResult(destination_result, source_result);
+    *destination_id = source_id;
   }
 
   void CopyAttachmentAndResult(AttachmentStore::Result* destination_result,
@@ -69,59 +81,28 @@ class FakeAttachmentStoreTest : public testing::Test {
 
 TEST_F(FakeAttachmentStoreTest, WriteReadRoundTrip) {
   FakeAttachmentStore store(base::MessageLoopProxy::current());
-  AttachmentId id = Attachment::CreateId();
-  scoped_refptr<base::RefCountedString> bytes(new base::RefCountedString);
-  bytes->data() = kTestData1;
+  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
+  some_data->data() = kTestData;
 
-  store.Write(id, bytes, write_callback);
+  store.Write(some_data, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_TRUE(id.has_unique_id());
+  AttachmentId id_written(id);
 
-  store.Read(id, read_callback);
+  store.Read(id_written, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
-  EXPECT_EQ(id.unique_id(), attachment->GetId().unique_id());
-  EXPECT_EQ(bytes, attachment->GetBytes());
-
-  store.Read(id, read_callback);
-  ClearAndPumpLoop();
-  EXPECT_EQ(id.unique_id(), attachment->GetId().unique_id());
-  EXPECT_EQ(bytes, attachment->GetBytes());
-}
-
-TEST_F(FakeAttachmentStoreTest, Write_Overwrite) {
-  FakeAttachmentStore store(base::MessageLoopProxy::current());
-  AttachmentId id = Attachment::CreateId();
-  scoped_refptr<base::RefCountedString> bytes(new base::RefCountedString);
-  bytes->data() = kTestData1;
-
-  store.Write(id, bytes, write_callback);
-  ClearAndPumpLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
-
-  store.Read(id, read_callback);
-  ClearAndPumpLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
-  EXPECT_EQ(id.unique_id(), attachment->GetId().unique_id());
-  EXPECT_EQ(bytes, attachment->GetBytes());
-
-  scoped_refptr<base::RefCountedString> bytes2(new base::RefCountedString);
-  bytes2->data() = kTestData2;
-  store.Write(id, bytes2, write_callback);
-  ClearAndPumpLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
-
-  store.Read(id, read_callback);
-  ClearAndPumpLoop();
-  EXPECT_EQ(result, AttachmentStore::SUCCESS);
-  EXPECT_EQ(id.unique_id(), attachment->GetId().unique_id());
-  EXPECT_EQ(bytes2, attachment->GetBytes());
+  EXPECT_EQ(id_written.unique_id(), attachment->GetId().unique_id());
+  EXPECT_EQ(some_data, attachment->GetData());
 }
 
 TEST_F(FakeAttachmentStoreTest, Read_NotFound) {
   FakeAttachmentStore store(base::MessageLoopProxy::current());
-  AttachmentId id = Attachment::CreateId();
-  store.Read(id, read_callback);
+  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
+  scoped_ptr<Attachment> some_attachment = Attachment::Create(some_data);
+  AttachmentId some_id = some_attachment->GetId();
+  store.Read(some_id, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::NOT_FOUND);
   EXPECT_EQ(NULL, attachment.get());
@@ -129,28 +110,29 @@ TEST_F(FakeAttachmentStoreTest, Read_NotFound) {
 
 TEST_F(FakeAttachmentStoreTest, Drop) {
   FakeAttachmentStore store(base::MessageLoopProxy::current());
-  scoped_refptr<base::RefCountedString> bytes(new base::RefCountedString);
-  bytes->data() = kTestData1;
-  AttachmentId id = Attachment::CreateId();
-  store.Write(id, bytes, write_callback);
+  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
+  some_data->data() = kTestData;
+  store.Write(some_data, write_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  EXPECT_TRUE(id.has_unique_id());
+  AttachmentId id_written(id);
 
   // First drop.
-  store.Drop(id, drop_callback);
+  store.Drop(id_written, drop_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
 
-  store.Read(id, read_callback);
+  store.Read(id_written, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::NOT_FOUND);
 
   // Second drop.
-  store.Drop(id, drop_callback);
+  store.Drop(id_written, drop_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::NOT_FOUND);
 
-  store.Read(id, read_callback);
+  store.Read(id_written, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::NOT_FOUND);
 }

@@ -35,19 +35,20 @@ class SYNC_EXPORT FakeAttachmentStore : public AttachmentStore {
   // |backend_task_runner|.
   FakeAttachmentStore(
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
+
   virtual ~FakeAttachmentStore();
 
   // AttachmentStore implementation.
   virtual void Read(const sync_pb::AttachmentId& id,
                     const ReadCallback& callback) OVERRIDE;
-  virtual void Write(const sync_pb::AttachmentId& id,
-                     const scoped_refptr<base::RefCountedMemory>& bytes,
+  virtual void Write(const scoped_refptr<base::RefCountedMemory>& bytes,
                      const WriteCallback& callback) OVERRIDE;
   virtual void Drop(const sync_pb::AttachmentId& id,
                     const DropCallback& callback) OVERRIDE;
 
  private:
   class Backend;
+
   scoped_refptr<Backend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 

@@ -5,7 +5,6 @@
 #include "sync/api/attachments/attachment.h"
 
 #include "base/logging.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/rand_util.h"
 
 namespace syncer {
@@ -14,34 +13,35 @@ Attachment::~Attachment() {}
 
 // Static.
 scoped_ptr<Attachment> Attachment::Create(
-    const scoped_refptr<base::RefCountedMemory>& bytes) {
-  return CreateWithId(CreateId(), bytes);
+    const scoped_refptr<base::RefCountedMemory>& data) {
+  return CreateWithId(CreateId(), data);
 }
 
 // Static.
 scoped_ptr<Attachment> Attachment::CreateWithId(
     const sync_pb::AttachmentId& id,
-    const scoped_refptr<base::RefCountedMemory>& bytes) {
-  return scoped_ptr<Attachment>(new Attachment(id, bytes)).Pass();
+    const scoped_refptr<base::RefCountedMemory>& data) {
+  return scoped_ptr<Attachment>(new Attachment(id, data)).Pass();
 }
 
 const sync_pb::AttachmentId& Attachment::GetId() const { return id_; }
 
-const scoped_refptr<base::RefCountedMemory>& Attachment::GetBytes() const {
-  return bytes_;
+const scoped_refptr<base::RefCountedMemory>& Attachment::GetData() const {
+  return data_;
 }
 
 Attachment::Attachment(const sync_pb::AttachmentId& id,
-                       const scoped_refptr<base::RefCountedMemory>& bytes)
-    : id_(id), bytes_(bytes) {
+                       const scoped_refptr<base::RefCountedMemory>& data)
+    : id_(id), data_(data) {
   DCHECK(!id.unique_id().empty());
-  DCHECK(bytes);
+  DCHECK(data);
 }
 
 // Static.
 sync_pb::AttachmentId Attachment::CreateId() {
   sync_pb::AttachmentId result;
   // Only requirement here is that this id must be globally unique.
+  // TODO(maniscalco): Consider making this base64 encoded.
   result.set_unique_id(base::RandBytesAsString(16));
   return result;
 }

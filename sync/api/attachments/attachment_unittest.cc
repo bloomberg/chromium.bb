@@ -32,29 +32,29 @@ TEST_F(AttachmentTest, CreateId_UniqueIdIsUnique) {
 
 TEST_F(AttachmentTest, Create_UniqueIdIsUnique) {
   AttachmentId id;
-  scoped_refptr<base::RefCountedString> bytes(new base::RefCountedString);
-  bytes->data() = kAttachmentData;
-  scoped_ptr<Attachment> a1 = Attachment::Create(bytes);
-  scoped_ptr<Attachment> a2 = Attachment::Create(bytes);
+  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
+  some_data->data() = kAttachmentData;
+  scoped_ptr<Attachment> a1 = Attachment::Create(some_data);
+  scoped_ptr<Attachment> a2 = Attachment::Create(some_data);
   EXPECT_NE(a1->GetId().unique_id(), a2->GetId().unique_id());
-  EXPECT_EQ(a1->GetBytes(), a2->GetBytes());
+  EXPECT_EQ(a1->GetData(), a2->GetData());
 }
 
-TEST_F(AttachmentTest, Create_WithEmptyBytes) {
+TEST_F(AttachmentTest, Create_WithEmptyData) {
   AttachmentId id;
-  scoped_refptr<base::RefCountedString> emptyBytes(new base::RefCountedString);
-  scoped_ptr<Attachment> a = Attachment::Create(emptyBytes);
-  EXPECT_EQ(emptyBytes, a->GetBytes());
+  scoped_refptr<base::RefCountedString> emptyData(new base::RefCountedString);
+  scoped_ptr<Attachment> a = Attachment::Create(emptyData);
+  EXPECT_EQ(emptyData, a->GetData());
 }
 
 TEST_F(AttachmentTest, CreateWithId_HappyCase) {
   AttachmentId id;
   id.set_unique_id("3290482049832");
-  scoped_refptr<base::RefCountedString> bytes(new base::RefCountedString);
-  bytes->data() = kAttachmentData;
-  scoped_ptr<Attachment> a = Attachment::CreateWithId(id, bytes);
+  scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
+  some_data->data() = kAttachmentData;
+  scoped_ptr<Attachment> a = Attachment::CreateWithId(id, some_data);
   EXPECT_EQ(id.unique_id(), a->GetId().unique_id());
-  EXPECT_EQ(bytes, a->GetBytes());
+  EXPECT_EQ(some_data, a->GetData());
 }
 
 }  // namespace syncer
