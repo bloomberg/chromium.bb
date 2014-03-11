@@ -564,6 +564,7 @@ bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
       // Flag the command buffer as lost. Defer deleting the channel until
       // OnChannelError is called after returning to the message loop in case
       // it is referenced elsewhere.
+      DVLOG(1) << "CommandBufferProxyImpl::Send failed. Losing context.";
       last_state_.error = gpu::error::kLostContext;
       return false;
     }

@@ -369,11 +369,18 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
         gpu_preference_));
   }
 
-  if (!command_buffer_)
+  if (!command_buffer_) {
+    DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
     return false;
+  }
 
+  DVLOG_IF(1, gpu::error::IsError(command_buffer_->GetLastError()))
+      << "Context dead on arrival. Last error: "
+      << command_buffer_->GetLastError();
   // Initialize the command buffer.
-  return command_buffer_->Initialize();
+  bool result = command_buffer_->Initialize();
+  LOG_IF(ERROR, !result) << "CommandBufferProxy::Initialize failed.";
+  return result;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
@@ -390,8 +397,10 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
     share_group_lock.reset(new base::AutoLock(share_group_->lock()));
     share_context = share_group_->GetAnyContextLocked();
 
-    if (!InitializeCommandBuffer(onscreen, share_context))
+    if (!InitializeCommandBuffer(onscreen, share_context)) {
+      LOG(ERROR) << "Failed to initialize command buffer.";
       return false;
+    }
 
     if (share_context)
       gles2_share_group = share_context->GetImplementation()->share_group();
@@ -401,12 +410,13 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
-  if (!gles2_helper_->Initialize(mem_limits_.command_buffer_size))
+  if (!gles2_helper_->Initialize(mem_limits_.command_buffer_size)) {
+    LOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
     return false;
+  }
 
   if (attributes_.noAutomaticFlushes)
     gles2_helper_->SetAutomaticFlushes(false);
-
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
   transfer_buffer_ .reset(new gpu::TransferBuffer(gles2_helper_.get()));
@@ -432,6 +442,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
       mem_limits_.min_transfer_buffer_size,
       mem_limits_.max_transfer_buffer_size,
       mem_limits_.mapped_memory_reclaim_limit)) {
+    LOG(ERROR) << "Failed to initialize GLES2Implementation.";
     return false;
   }
 
@@ -443,16 +454,20 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
     trace_gl_.reset(new gpu::gles2::GLES2TraceImplementation(gl_));
     gl_ = trace_gl_.get();
   }
-
   return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
-  if (!MaybeInitializeGL())
+  if (!MaybeInitializeGL()) {
+    DLOG(ERROR) << "Failed to initialize context.";
     return false;
+  }
   gles2::SetGLContext(gl_);
-  if (command_buffer_->GetLastError() != gpu::error::kNoError)
+  if (gpu::error::IsError(command_buffer_->GetLastError())) {
+    LOG(ERROR) << "Context dead on arrival. Last error: "
+               << command_buffer_->GetLastError();
     return false;
+  }
 
   return true;
 }

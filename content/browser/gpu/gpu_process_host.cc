@@ -686,6 +686,7 @@ void GpuProcessHost::EstablishGpuChannel(
 
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL)) {
+    DVLOG(1) << "GPU blacklisted, refusing to open a GPU channel.";
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
     return;
   }
@@ -693,6 +694,7 @@ void GpuProcessHost::EstablishGpuChannel(
   if (Send(new GpuMsg_EstablishChannel(client_id, share_context))) {
     channel_requests_.push(callback);
   } else {
+    DVLOG(1) << "Failed to send GpuMsg_EstablishChannel.";
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
   }
 

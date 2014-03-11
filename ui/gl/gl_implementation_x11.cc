@@ -31,6 +31,15 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
 }
 
+#if defined(OS_OPENBSD)
+const char kGLLibraryName[] = "libGL.so";
+#else
+const char kGLLibraryName[] = "libGL.so.1";
+#endif
+
+const char kGLESv2LibraryName[] = "libGLESv2.so.2";
+const char kEGLLibraryName[] = "libEGL.so.1";
+
 }  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
@@ -63,15 +72,13 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
             switches::kTestGLLib).c_str());
 
       if (!library) {
-#if defined(OS_OPENBSD)
-        library = LoadLibrary("libGL.so");
-#else
-        library = LoadLibrary("libGL.so.1");
-#endif
+        library = LoadLibrary(kGLLibraryName);
       }
 
-      if (!library)
+      if (!library) {
+        LOG(ERROR) << "Failed to load " << kGLLibraryName << ".";
         return false;
+      }
 
       GLGetProcAddressProc get_proc_address =
           reinterpret_cast<GLGetProcAddressProc>(
@@ -92,11 +99,14 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationEGLGLES2: {
-      base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so.2");
-      if (!gles_library)
+      base::NativeLibrary gles_library = LoadLibrary(kGLESv2LibraryName);
+      if (!gles_library) {
+        LOG(ERROR) << "Failed to load " << kGLESv2LibraryName << ".";
         return false;
-      base::NativeLibrary egl_library = LoadLibrary("libEGL.so.1");
+      }
+      base::NativeLibrary egl_library = LoadLibrary(kEGLLibraryName);
       if (!egl_library) {
+        LOG(ERROR) << "Failed to load " << kEGLLibraryName << ".";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }

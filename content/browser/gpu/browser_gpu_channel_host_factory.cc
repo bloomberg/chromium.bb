@@ -59,6 +59,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
     host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                                cause_for_gpu_launch_);
     if (!host) {
+      LOG(ERROR) << "Failed to launch GPU process.";
       FinishOnIO();
       return;
     }
@@ -70,6 +71,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
       // failure in ChannelEstablishedOnIO, but we ended up with the same
       // process ID, meaning the failure was not because of a channel error,
       // but another reason. So fail now.
+      LOG(ERROR) << "Failed to create channel.";
       FinishOnIO();
       return;
     }
@@ -90,6 +92,8 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
   if (channel_handle.name.empty() && reused_gpu_process_) {
     // We failed after re-using the GPU process, but it may have died in the
     // mean time. Retry to have a chance to create a fresh GPU process.
+    DVLOG(1) << "Failed to create channel on existing GPU process. Trying to "
+                "restart GPU process.";
     EstablishOnIO();
   } else {
     channel_handle_ = channel_handle;

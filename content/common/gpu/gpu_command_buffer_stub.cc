@@ -400,11 +400,8 @@ void GpuCommandBufferStub::OnInitialize(
   command_buffer_.reset(new gpu::CommandBufferService(
       context_group_->transfer_buffer_manager()));
 
-  if (!command_buffer_->Initialize()) {
-    DLOG(ERROR) << "CommandBufferService failed to initialize.\n";
-    OnInitializeFailed(reply_message);
-    return;
-  }
+  bool result = command_buffer_->Initialize();
+  DCHECK(result);
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group_.get()));
 
@@ -419,7 +416,7 @@ void GpuCommandBufferStub::OnInitialize(
   if (!handle_.is_null()) {
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     if (software_) {
-      DLOG(ERROR) << "No software support.\n";
+      LOG(ERROR) << "No software support.\n";
       OnInitializeFailed(reply_message);
       return;
     }

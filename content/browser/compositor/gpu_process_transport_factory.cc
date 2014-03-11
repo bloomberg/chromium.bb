@@ -432,8 +432,10 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
-  if (!gpu_channel_host)
+  if (!gpu_channel_host) {
+    LOG(ERROR) << "Failed to establish GPU channel.";
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  }
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(

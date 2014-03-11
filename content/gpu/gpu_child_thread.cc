@@ -126,7 +126,7 @@ void GpuChildThread::OnInitialize() {
   }
 
   if (dead_on_arrival_) {
-    VLOG(1) << "Exiting GPU process due to errors during initialization";
+    LOG(ERROR) << "Exiting GPU process due to errors during initialization";
     base::MessageLoop::current()->Quit();
     return;
   }

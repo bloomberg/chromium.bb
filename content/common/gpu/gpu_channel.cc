@@ -414,7 +414,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
 }
 
 
-bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
+void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
   DCHECK(!channel_.get());
 
@@ -438,8 +438,6 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
   channel_->AddFilter(filter_.get());
 
   devtools_gpu_agent_.reset(new DevToolsGpuAgent(this));
-
-  return true;
 }
 
 std::string GpuChannel::GetChannelName() {

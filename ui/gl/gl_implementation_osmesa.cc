@@ -37,9 +37,12 @@ bool InitializeStaticGLBindingsOSMesaGL() {
     return false;
   }
 
-  base::NativeLibrary library = LoadLibrary(module_path.Append("libosmesa.so"));
-  if (!library)
+  base::FilePath library_path = module_path.Append("libosmesa.so");
+  base::NativeLibrary library = LoadLibrary(library_path);
+  if (!library) {
+    LOG(ERROR) << "Failed to load " << library_path.value() << ".";
     return false;
+  }
 
   GLGetProcAddressProc get_proc_address =
       reinterpret_cast<GLGetProcAddressProc>(

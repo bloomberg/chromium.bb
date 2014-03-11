@@ -107,9 +107,15 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
   if (factory_->IsMainThread()) {
     // http://crbug.com/125264
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
-    return channel_->Send(message.release());
+    bool result = channel_->Send(message.release());
+    if (!result)
+      DVLOG(1) << "GpuChannelHost::Send failed: Channel::Send failed";
+    return result;
   } else if (base::MessageLoop::current()) {
-    return sync_filter_->Send(message.release());
+    bool result = sync_filter_->Send(message.release());
+    if (!result)
+      DVLOG(1) << "GpuChannelHost::Send failed: SyncMessageFilter::Send failed";
+    return result;
   }
 
   return false;
@@ -133,8 +139,10 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
   int32 route_id = factory_->CreateViewCommandBuffer(surface_id, init_params);
-  if (route_id == MSG_ROUTING_NONE)
+  if (route_id == MSG_ROUTING_NONE) {
+    LOG(ERROR) << "GpuChannelHost::CreateViewCommandBuffer failed.";
     return NULL;
+  }
 
   CommandBufferProxyImpl* command_buffer =
       new CommandBufferProxyImpl(this, route_id);
@@ -163,11 +171,15 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(size,
                                                            init_params,
                                                            &route_id))) {
+    LOG(ERROR) << "Failed to send GpuChannelMsg_CreateOffscreenCommandBuffer.";
     return NULL;
   }
 
-  if (route_id == MSG_ROUTING_NONE)
+  if (route_id == MSG_ROUTING_NONE) {
+    LOG(ERROR)
+        << "GpuChannelMsg_CreateOffscreenCommandBuffer returned failure.";
     return NULL;
+  }
 
   CommandBufferProxyImpl* command_buffer =
       new CommandBufferProxyImpl(this, route_id);

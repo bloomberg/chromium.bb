@@ -59,7 +59,7 @@ class GpuChannel : public IPC::Listener,
              int client_id,
              bool software);
 
-  bool Init(base::MessageLoopProxy* io_message_loop,
+  void Init(base::MessageLoopProxy* io_message_loop,
             base::WaitableEvent* shutdown_event);
 
   // Get the GpuChannelManager that owns this channel.

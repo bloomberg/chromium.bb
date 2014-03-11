@@ -134,18 +134,17 @@ void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
                                                      mailbox_manager,
                                                      client_id,
                                                      false);
-  if (channel->Init(io_message_loop_.get(), shutdown_event_)) {
-    gpu_channels_[client_id] = channel;
-    channel_handle.name = channel->GetChannelName();
+  channel->Init(io_message_loop_.get(), shutdown_event_);
+  gpu_channels_[client_id] = channel;
+  channel_handle.name = channel->GetChannelName();
 
 #if defined(OS_POSIX)
-    // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
-    // that it gets closed after it has been sent.
-    int renderer_fd = channel->TakeRendererFileDescriptor();
-    DCHECK_NE(-1, renderer_fd);
-    channel_handle.socket = base::FileDescriptor(renderer_fd, true);
+  // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
+  // that it gets closed after it has been sent.
+  int renderer_fd = channel->TakeRendererFileDescriptor();
+  DCHECK_NE(-1, renderer_fd);
+  channel_handle.socket = base::FileDescriptor(renderer_fd, true);
 #endif
-  }
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
