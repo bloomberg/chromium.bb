@@ -8,7 +8,9 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "crypto/sha2.h"
 #include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -74,6 +77,13 @@ const char kTestEnterpriseKioskApp[] = "ibjkkfdnfcaoapcpheeijckmpcfkifob";
 // The version 2.0.0 crx is in
 //   chrome/test/data/chromeos/app_mode/webstore/downloads/
 const char kTestOfflineEnabledKioskApp[] = "ajoggoflpgplnnjkjamcmbepjdjdnpdp";
+
+// An app to test local fs data persistence across app update. V1 app writes
+// data into local fs. V2 app reads and verifies the data.
+// Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/bmbpicmpniaclbbpdkfglgipkkebnbjf
+const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
 
 // Timeout while waiting for network connectivity during tests.
 const int kTestNetworkTimeoutSeconds = 1;
@@ -892,8 +902,42 @@ class KioskUpdateTest : public KioskTest {
                    base::Unretained(this)));
   }
 
+  void SetNoUpdate() {
+    SetUpdateCheckContent(
+        "chromeos/app_mode/webstore/update_check/no_update.xml",
+        GURL(),
+        "",
+        "",
+        "");
+  }
+
+  void SetUpdateCrx(const std::string& crx_file, const std::string& version) {
+    GURL webstore_url = GetTestWebstoreUrl();
+    GURL crx_download_url = webstore_url.Resolve(
+        "/chromeos/app_mode/webstore/downloads/" + crx_file);
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::FilePath crx_file_path =
+        test_data_dir.AppendASCII("chromeos/app_mode/webstore/downloads")
+            .AppendASCII(crx_file);
+
+    std::string crx_content;
+    ASSERT_TRUE(base::ReadFileToString(crx_file_path, &crx_content));
+
+    const std::string sha256 = crypto::SHA256HashString(crx_content);
+    const std::string sha256_hex =
+        base::HexEncode(sha256.c_str(), sha256.size());
+
+    SetUpdateCheckContent(
+        "chromeos/app_mode/webstore/update_check/has_update.xml",
+        crx_download_url,
+        sha256_hex,
+        base::UintToString(crx_content.size()),
+        version);
+  }
+
+ private:
   void SetUpdateCheckContent(const std::string& update_check_file,
-                             const std::string& app_id,
                              const GURL& crx_download_url,
                              const std::string& crx_fp,
                              const std::string& crx_size,
@@ -904,7 +948,8 @@ class KioskUpdateTest : public KioskTest {
         test_data_dir.AppendASCII(update_check_file.c_str());
     ASSERT_TRUE(base::ReadFileToString(update_file, &update_check_content_));
 
-    ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$AppId", app_id);
+    ReplaceSubstringsAfterOffset(
+        &update_check_content_, 0, "$AppId", test_app_id());
     ReplaceSubstringsAfterOffset(
         &update_check_content_, 0, "$CrxDownloadUrl", crx_download_url.spec());
     ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$FP", crx_fp);
@@ -913,7 +958,6 @@ class KioskUpdateTest : public KioskTest {
         &update_check_content_, 0, "$Version", version);
   }
 
- private:
   scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
     std::string request_path = request_url.path();
@@ -949,13 +993,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
-  SetUpdateCheckContent(
-      "chromeos/app_mode/webstore/update_check/no_update.xml",
-      kTestOfflineEnabledKioskApp,
-      GURL(),
-      "",
-      "",
-      "");
+  SetNoUpdate();
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
@@ -970,18 +1008,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
-  GURL webstore_url = GetTestWebstoreUrl();
-  GURL crx_download_url = webstore_url.Resolve(
-      "/chromeos/app_mode/webstore/downloads/"
-      "ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx");
-
-  SetUpdateCheckContent(
-      "chromeos/app_mode/webstore/update_check/has_update.xml",
-      kTestOfflineEnabledKioskApp,
-      crx_download_url,
-      "ca08d1d120429f49a2b5b1d4db67ce4234390f0758b580e25fba5226a0526209",
-      "2294",
-      "2.0.0");
+  SetUpdateCrx("ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx", "2.0.0");
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
@@ -990,6 +1017,48 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  SetUpdateCrx("ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_permission_change.crx",
+               "2.0.0");
+
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
+  // Installs v1 app and writes some local data.
+  set_test_app_id(kTestLocalFsKioskApp);
+
+  ResultCatcher catcher;
+  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  WaitForAppLaunchSuccess();
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
+  // Update existing v1 app installed in PRE_PreserveLocalData to v2
+  // that reads and verifies the local data.
+  set_test_app_id(kTestLocalFsKioskApp);
+
+  SetUpdateCrx("bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
+               "2.0.0");
+
+  ResultCatcher catcher;
+  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 class KioskEnterpriseTest : public KioskTest {
