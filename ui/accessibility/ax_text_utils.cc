@@ -31,12 +31,8 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
       }
       return text_size;
     } else {
-      // Note: j is unsigned, so for loop continues until j wraps around
-      // and becomes greater than the starting value.
-      for (size_t j = line_breaks.size() - 1;
-           j < line_breaks.size();
-           --j) {
-        size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
+      for (size_t j = line_breaks.size(); j != 0; --j) {
+        size_t line_break = line_breaks[j - 1] >= 0 ? line_breaks[j - 1] : 0;
         if (line_break <= start_offset)
           return line_break;
       }
