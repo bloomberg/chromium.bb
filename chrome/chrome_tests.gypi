@@ -3178,6 +3178,7 @@
           'type': 'none',
           'dependencies': [
             'chrome_run',
+            '../tools/telemetry/telemetry.gyp:bitmaptools',
           ],
           'includes': [
             '../build/isolate.gypi',
