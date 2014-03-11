@@ -25,7 +25,13 @@ void PowerDataCollector::Initialize() {
   // DBusThreadManager is initialized.
   CHECK(DBusThreadManager::Get());
   CHECK(g_power_data_collector == NULL);
-  g_power_data_collector = new PowerDataCollector();
+  g_power_data_collector = new PowerDataCollector(true);
+}
+
+void PowerDataCollector::InitializeForTesting() {
+  CHECK(DBusThreadManager::Get());
+  CHECK(g_power_data_collector == NULL);
+  g_power_data_collector = new PowerDataCollector(false);
 }
 
 // static
@@ -60,8 +66,10 @@ void PowerDataCollector::SystemResumed(const base::TimeDelta& sleep_duration) {
   AddSample(&system_resumed_data_, sample);
 }
 
-PowerDataCollector::PowerDataCollector() {
+PowerDataCollector::PowerDataCollector(const bool start_cpu_data_collector) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  if (start_cpu_data_collector)
+    cpu_data_collector_.Start();
 }
 
 PowerDataCollector::~PowerDataCollector() {
