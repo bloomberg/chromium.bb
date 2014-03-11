@@ -2535,15 +2535,17 @@ class ChromeSDKStage(ArchivingStage):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       parallel.RunParallelSteps(steps)
 
-      with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
-        cache_dir = os.path.join(tempdir, 'cache')
-        extra_args = ['--cwd', self.chrome_src, '--sdk-path', self.archive_path]
-        sdk_cmd = commands.ChromeSDK(
-            self._build_root, self._current_board, chrome_src=self.chrome_src,
-            goma=self._run.config.chrome_sdk_goma,
-            extra_args=extra_args, cache_dir=cache_dir)
-        self._BuildChrome(sdk_cmd)
-        self._TestDeploy(sdk_cmd)
+      if self._run.config.chrome_sdk_build_chrome:
+        with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
+          cache_dir = os.path.join(tempdir, 'cache')
+          extra_args = ['--cwd', self.chrome_src, '--sdk-path',
+                        self.archive_path]
+          sdk_cmd = commands.ChromeSDK(
+              self._build_root, self._current_board, chrome_src=self.chrome_src,
+              goma=self._run.config.chrome_sdk_goma,
+              extra_args=extra_args, cache_dir=cache_dir)
+          self._BuildChrome(sdk_cmd)
+          self._TestDeploy(sdk_cmd)
 
 
 class BuildImageStage(BuildPackagesStage):

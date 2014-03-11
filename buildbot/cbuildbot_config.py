@@ -520,8 +520,12 @@ _settings = dict(
 # Enable rootfs verification on the image.
   rootfs_verification=True,
 
-# Runs through the chrome-sdk workflow.
+# Build the Chrome SDK.
   chrome_sdk=False,
+
+# If chrome_sdk is set to True, this determines whether we attempt to build
+# Chrome itself with the generated SDK.
+  chrome_sdk_build_chrome=True,
 
 # If chrome_sdk is set to True, this determines whether we use goma to build
 # chrome.
@@ -1713,6 +1717,7 @@ _release = full.derive(official, internal,
 )
 
 _grouped_config = _config(
+  chrome_sdk_build_chrome=False,
   unittests=None,
   vm_tests=[],
 )
