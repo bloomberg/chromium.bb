@@ -145,7 +145,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // check it in many cases, however. Windows can send us messages during the
   // destruction process after it has been shut down.
   RenderFrameHostImpl* current_frame_host() const {
-    return render_frame_host_;
+    return render_frame_host_.get();
   }
 
   // TODO(creis): Remove this when we no longer use RVH for navigation.
@@ -157,7 +157,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Returns the pending RenderFrameHost, or NULL if there is no pending one.
   RenderFrameHostImpl* pending_frame_host() const {
-    return pending_render_frame_host_;
+    return pending_render_frame_host_.get();
   }
 
   // TODO(creis): Remove this when we no longer use RVH for navigation.
@@ -425,7 +425,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // a child RenderFrame instance.
   // For now, RenderFrameHost keeps a RenderViewHost in its SiteInstance alive.
   // Eventually, RenderViewHost will be replaced with a page context.
-  RenderFrameHostImpl* render_frame_host_;
+  scoped_ptr<RenderFrameHostImpl> render_frame_host_;
   scoped_ptr<WebUIImpl> web_ui_;
 
   // A RenderFrameHost used to load a cross-site page. This remains hidden
@@ -438,7 +438,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // transitioning between two Web UI pages: the RFH won't be swapped, so the
   // pending pointer will be unused, but there will be a pending Web UI
   // associated with the navigation.
-  RenderFrameHostImpl* pending_render_frame_host_;
+  scoped_ptr<RenderFrameHostImpl> pending_render_frame_host_;
 
   // Tracks information about any current pending cross-process navigation.
   scoped_ptr<PendingNavigationParams> pending_nav_params_;

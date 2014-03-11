@@ -75,8 +75,6 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
-      render_frame_host_(NULL),
-      pending_render_frame_host_(NULL),
       interstitial_page_(NULL),
       cross_process_frame_connector_(NULL),
       weak_factory_(this) {}
@@ -89,13 +87,10 @@ RenderFrameHostManager::~RenderFrameHostManager() {
     delete cross_process_frame_connector_;
 
   // We should always have a current RenderFrameHost except in some tests.
-  // TODO(creis): Now that we aren't using Shutdown, make render_frame_host_ and
-  // RenderFrameHostMap use scoped_ptrs.
-  RenderFrameHostImpl* render_frame_host = render_frame_host_;
-  render_frame_host_ = NULL;
-  if (render_frame_host)
-    delete render_frame_host;
+  render_frame_host_.reset();
 
+  // TODO(creis): Now that we aren't using Shutdown, make RenderFrameHostMap
+  // use scoped_ptrs.
   // Delete any swapped out RenderFrameHosts.
   for (RenderFrameHostMap::iterator iter = swapped_out_hosts_.begin();
        iter != swapped_out_hosts_.end();
@@ -114,10 +109,9 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
   if (!site_instance)
     site_instance = SiteInstance::Create(browser_context);
 
-  // TODO(creis): Make render_frame_host_ a scoped_ptr.
-  render_frame_host_ = CreateRenderFrameHost(site_instance, view_routing_id,
-                                             frame_routing_id, false,
-                                             delegate_->IsHidden());
+  render_frame_host_ = make_scoped_ptr(
+      CreateRenderFrameHost(site_instance, view_routing_id, frame_routing_id,
+                            false, delegate_->IsHidden()));
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
@@ -559,7 +553,7 @@ void RenderFrameHostManager::SwapOutOldPage() {
     // TODO(kenrb): This will change when RenderFrameProxyHost is created.
     if (!cross_process_frame_connector_) {
       cross_process_frame_connector_ =
-          new CrossProcessFrameConnector(render_frame_host_);
+          new CrossProcessFrameConnector(render_frame_host_.get());
     }
     render_frame_host_->SwapOut();
   }
@@ -989,7 +983,7 @@ int RenderFrameHostManager::CreateRenderFrame(
 
   // Use this as our new pending RFH if it isn't swapped out.
   if (!swapped_out)
-    pending_render_frame_host_ = new_render_frame_host;
+    pending_render_frame_host_.reset(new_render_frame_host);
 
   return new_render_frame_host->render_view_host()->GetRoutingID();
 }
@@ -1068,9 +1062,8 @@ void RenderFrameHostManager::CommitPending() {
 
   // Swap in the pending frame and make it active. Also ensure the FrameTree
   // stays in sync.
-  RenderFrameHostImpl* old_render_frame_host = render_frame_host_;
-  render_frame_host_ = pending_render_frame_host_;
-  pending_render_frame_host_ = NULL;
+  RenderFrameHostImpl* old_render_frame_host = render_frame_host_.release();
+  render_frame_host_ = pending_render_frame_host_.Pass();
   if (is_main_frame)
     render_frame_host_->render_view_host()->AttachToFrameTree();
 
@@ -1288,10 +1281,10 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
         // cross-navigating (Note that we don't care about on{before}unload
         // handlers if the current RFH isn't live.)
         CommitPending();
-        return render_frame_host_;
+        return render_frame_host_.get();
       } else {
         NOTREACHED();
-        return render_frame_host_;
+        return render_frame_host_.get();
       }
     }
     // Otherwise, it's safe to treat this as a pending cross-site transition.
@@ -1340,7 +1333,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
     if (!is_transfer)
       render_frame_host_->render_view_host()->FirePageBeforeUnload(true);
 
-    return pending_render_frame_host_;
+    return pending_render_frame_host_.get();
   }
 
   // Otherwise the same SiteInstance can be used.  Navigate render_frame_host_.
@@ -1372,12 +1365,12 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
             render_frame_host_->render_view_host()->GetRoutingID()));
   }
 
-  return render_frame_host_;
+  return render_frame_host_.get();
 }
 
 void RenderFrameHostManager::CancelPending() {
-  RenderFrameHostImpl* pending_render_frame_host = pending_render_frame_host_;
-  pending_render_frame_host_ = NULL;
+  RenderFrameHostImpl* pending_render_frame_host =
+      pending_render_frame_host_.release();
 
   RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
       pending_render_frame_host->render_view_host(),
@@ -1416,7 +1409,7 @@ void RenderFrameHostManager::RenderViewDeleted(RenderViewHost* rvh) {
     // happened  (navigating to a new page, closing a tab...) and if you can
     // reproduce.
     NOTREACHED();
-    pending_render_frame_host_ = NULL;
+    pending_render_frame_host_.reset();
   }
 
   // Make sure deleted RVHs are not kept in the swapped out list while we are
