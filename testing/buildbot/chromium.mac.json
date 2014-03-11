@@ -40,6 +40,7 @@
     "gtest_tests": [
       "net_unittests",
       "message_center_unittests",
+      "mojo_apps_js_unittests",
       "mojo_common_unittests",
       "mojo_js_unittests",
       "mojo_public_bindings_unittests",
@@ -92,6 +93,7 @@
     "gtest_tests": [
       "net_unittests",
       "message_center_unittests",
+      "mojo_apps_js_unittests",
       "mojo_common_unittests",
       "mojo_js_unittests",
       "mojo_public_bindings_unittests",
@@ -148,6 +150,7 @@
       "sql_unittests",
       "ui_unittests",
       "content_unittests",
+      "mojo_apps_js_unittests",
       "mojo_common_unittests",
       "mojo_js_unittests",
       "mojo_public_bindings_unittests",
@@ -204,6 +207,7 @@
       "sql_unittests",
       "ui_unittests",
       "content_unittests",
+      "mojo_apps_js_unittests",
       "mojo_common_unittests",
       "mojo_js_unittests",
       "mojo_public_bindings_unittests",

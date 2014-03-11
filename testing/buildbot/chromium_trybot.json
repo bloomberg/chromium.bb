@@ -1,5 +1,6 @@
 [
   "gfx_unittests",
+  "mojo_apps_js_unittests",
   "mojo_common_unittests",
   "mojo_js_unittests",
   "mojo_public_bindings_unittests",
