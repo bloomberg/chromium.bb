@@ -385,4 +385,38 @@ TEST_F(VisitDatabaseTest, VisitSource) {
   EXPECT_EQ(SOURCE_EXTENSION, sources[matches[0].visit_id]);
 }
 
+TEST_F(VisitDatabaseTest, GetVisibleVisitsForURL) {
+  std::vector<VisitRow> test_visit_rows = GetTestVisitRows();
+
+  for (size_t i = 0; i < test_visit_rows.size(); ++i) {
+    EXPECT_TRUE(AddVisit(&test_visit_rows[i], SOURCE_BROWSED));
+  }
+
+  // Query the visits for the first url id.  We should not get the first or the
+  // second visit (duplicates of the sixth) or any other urls, redirects or
+  // subframe visits.
+  VisitVector results;
+  QueryOptions options;
+  int url_id = test_visit_rows[0].url_id;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(1), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
+
+  // Now try with only per-day de-duping -- the second visit should appear,
+  // since it's a duplicate of visit6 but on a different day.
+  options.duplicate_policy = QueryOptions::REMOVE_DUPLICATES_PER_DAY;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(2), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[1]));
+
+  // Now try without de-duping, expect to see all visible visits to url id 1.
+  options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  GetVisibleVisitsForURL(url_id, options, &results);
+  ASSERT_EQ(static_cast<size_t>(3), results.size());
+  EXPECT_TRUE(IsVisitInfoEqual(results[0], test_visit_rows[5]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[1], test_visit_rows[1]));
+  EXPECT_TRUE(IsVisitInfoEqual(results[2], test_visit_rows[0]));
+}
+
 }  // namespace history
