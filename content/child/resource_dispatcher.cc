@@ -29,7 +29,6 @@
 #include "webkit/common/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
-using webkit_glue::ResourceRequestBody;
 using webkit_glue::ResourceResponseInfo;
 
 namespace content {

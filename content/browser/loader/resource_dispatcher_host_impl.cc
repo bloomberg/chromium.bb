@@ -53,6 +53,7 @@
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,13 +95,11 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/common/blob/shareable_file_reference.h"
-#include "webkit/common/resource_request_body.h"
 
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using webkit_blob::ShareableFileReference;
-using webkit_glue::ResourceRequestBody;
 
 // ----------------------------------------------------------------------------
 

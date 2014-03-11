@@ -259,7 +259,7 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Write(
+void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Write(
     Message* m,
     const param_type& p) {
   WriteParam(m, p.get() != NULL);
@@ -269,7 +269,7 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Read(
+bool ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Read(
     const Message* m,
     PickleIterator* iter,
     param_type* r) {
@@ -284,15 +284,15 @@ bool ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Read(
   int64 identifier;
   if (!ReadParam(m, iter, &identifier))
     return false;
-  *r = new webkit_glue::ResourceRequestBody;
+  *r = new content::ResourceRequestBody;
   (*r)->swap_elements(&elements);
   (*r)->set_identifier(identifier);
   return true;
 }
 
-void ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Log(
+void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Log(
     const param_type& p, std::string* l) {
-  l->append("<webkit_glue::ResourceRequestBody>");
+  l->append("<ResourceRequestBody>");
 }
 
 }  // namespace IPC

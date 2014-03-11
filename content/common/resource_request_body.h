@@ -1,28 +1,28 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_RESOURCE_REQUEST_BODY_H_
-#define WEBKIT_COMMON_RESOURCE_REQUEST_BODY_H_
+#ifndef CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
+#define CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
+#include "content/common/content_export.h"
 #include "url/gurl.h"
 #include "webkit/common/data_element.h"
-#include "webkit/common/webkit_common_export.h"
 
 namespace base {
 class FilePath;
 }
 
-namespace webkit_glue {
+namespace content {
 
 // A struct used to represent upload data. The data field is populated by
 // WebURLLoader from the data given as WebHTTPBody.
-class WEBKIT_COMMON_EXPORT ResourceRequestBody
+class CONTENT_EXPORT ResourceRequestBody
     : public base::RefCounted<ResourceRequestBody>,
       public base::SupportsUserData {
  public:
@@ -60,6 +60,6 @@ class WEBKIT_COMMON_EXPORT ResourceRequestBody
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestBody);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_COMMON_RESOURCE_REQUEST_BODY_H_
+#endif  // CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_

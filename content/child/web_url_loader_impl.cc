@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/child/blink_platform_impl.h"
+#include "content/common/resource_request_body.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -35,7 +36,6 @@
 #include "webkit/child/resource_loader_bridge.h"
 #include "webkit/child/weburlrequest_extradata_impl.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
-#include "webkit/common/resource_request_body.h"
 
 using base::Time;
 using base::TimeTicks;
@@ -57,7 +57,6 @@ using webkit_glue::FtpDirectoryListingResponseDelegate;
 using webkit_glue::MultipartResponseDelegate;
 using webkit_glue::ResourceDevToolsInfo;
 using webkit_glue::ResourceLoaderBridge;
-using webkit_glue::ResourceRequestBody;
 using webkit_glue::ResourceResponseInfo;
 using webkit_glue::WebURLResponseExtraDataImpl;
 

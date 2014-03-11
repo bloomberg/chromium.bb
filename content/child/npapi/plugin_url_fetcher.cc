@@ -15,6 +15,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/web_url_loader_impl.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -22,7 +23,6 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/common/resource_request_body.h"
 
 namespace content {
 namespace {
@@ -148,8 +148,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   bridge_.reset(ChildThread::current()->resource_dispatcher()->CreateBridge(
       request_info));
   if (!body.empty()) {
-    scoped_refptr<webkit_glue::ResourceRequestBody> request_body =
-        new webkit_glue::ResourceRequestBody;
+    scoped_refptr<ResourceRequestBody> request_body =
+        new ResourceRequestBody;
     request_body->AppendBytes(&body[0], body.size());
     bridge_->SetRequestBody(request_body.get());
   }

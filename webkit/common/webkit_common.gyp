@@ -50,8 +50,6 @@
         'data_element.h',
         'resource_devtools_info.cc',
         'resource_devtools_info.h',
-        'resource_request_body.cc',
-        'resource_request_body.h',
         'resource_response_info.cc',
         'resource_response_info.h',
         'resource_type.cc',

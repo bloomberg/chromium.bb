@@ -6,17 +6,16 @@
 
 #include "base/logging.h"
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
+#include "content/common/resource_request_body.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/common/resource_request_body.h"
 
 using webkit_blob::BlobData;
 using webkit_blob::BlobDataHandle;
 using webkit_blob::BlobStorageContext;
-using webkit_glue::ResourceRequestBody;
 
 namespace content {
 namespace {

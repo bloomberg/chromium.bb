@@ -24,11 +24,9 @@ namespace webkit_blob {
 class BlobStorageContext;
 }
 
-namespace webkit_glue {
-class ResourceRequestBody;
-}
-
 namespace content {
+
+class ResourceRequestBody;
 
 class CONTENT_EXPORT UploadDataStreamBuilder {
  public:
@@ -43,7 +41,7 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
   // filesystem URLs.  |file_task_runner| is used to perform file operations
   // when the data gets uploaded.
   static scoped_ptr<net::UploadDataStream> Build(
-      webkit_glue::ResourceRequestBody* body,
+      ResourceRequestBody* body,
       webkit_blob::BlobStorageContext* blob_context,
       fileapi::FileSystemContext* file_system_context,
       base::TaskRunner* file_task_runner);

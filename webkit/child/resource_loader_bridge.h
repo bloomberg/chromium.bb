@@ -33,8 +33,13 @@
 #include "webkit/common/resource_response_info.h"
 #include "webkit/common/resource_type.h"
 
-namespace webkit_glue {
+// TODO(pilgrim) remove this once resource loader is moved to content
+// http://crbug.com/338338
+namespace content {
 class ResourceRequestBody;
+}
+
+namespace webkit_glue {
 
 class ResourceLoaderBridge {
  public:
@@ -191,7 +196,7 @@ class ResourceLoaderBridge {
 
   // Call this method before calling Start() to set the request body.
   // May only be used with HTTP(S) POST requests.
-  virtual void SetRequestBody(ResourceRequestBody* request_body) = 0;
+  virtual void SetRequestBody(content::ResourceRequestBody* request_body) = 0;
 
   // Call this method to initiate the request.  If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.

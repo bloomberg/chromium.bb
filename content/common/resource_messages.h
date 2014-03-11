@@ -10,12 +10,12 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "content/common/content_param_traits_macros.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_info.h"
-#include "webkit/common/resource_request_body.h"
 
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
 #define CONTENT_COMMON_RESOURCE_MESSAGES_H_
@@ -63,8 +63,8 @@ struct ParamTraits<net::LoadTimingInfo> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> > {
-  typedef scoped_refptr<webkit_glue::ResourceRequestBody> param_type;
+struct ParamTraits<scoped_refptr<content::ResourceRequestBody> > {
+  typedef scoped_refptr<content::ResourceRequestBody> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -175,7 +175,7 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   IPC_STRUCT_MEMBER(int, service_worker_provider_id)
 
   // Optional resource request body (may be null).
-  IPC_STRUCT_MEMBER(scoped_refptr<webkit_glue::ResourceRequestBody>,
+  IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,
                     request_body)
 
   IPC_STRUCT_MEMBER(bool, download_to_file)
