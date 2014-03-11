@@ -718,6 +718,7 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
       this.isActionBoxMenuActive = !this.isActionBoxMenuActive;
+      e.stopPropagation();
     },
 
     /**
