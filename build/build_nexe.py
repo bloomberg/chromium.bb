@@ -229,6 +229,23 @@ class Builder(object):
         # Also use fast translation because we are still translating libc/libc++
         self.link_options.append('-Wt,-O0')
 
+    self.irt_layout = options.irt_layout
+    if self.irt_layout:
+      # IRT constraints for auto layout.
+      # IRT text can only go up to 256MB. Addresses after that are for data.
+      self.irt_text_max = 0x10000000
+      # Data can only go up to the sandbox_top - sizeof(stack).
+      # NaCl allocates 16MB for the initial thread's stack (see
+      # NACL_DEFAULT_STACK_MAX in sel_ldr.h).
+      # Assume sandbox_top is 1GB, since even on x86-64 the limit would
+      # only be 2GB (rip-relative references can only be +/- 2GB).
+      sandbox_top = 0x40000000
+      self.irt_data_max = sandbox_top - (16 << 20)
+      # Initialize layout flags with "too-close-to-max" flags so that
+      # we can relax this later and get a tight fit.
+      self.link_options += [
+          '-Wl,-Ttext-segment=0x%x' % (self.irt_text_max - 0x10000),
+          '-Wl,-Trodata-segment=0x%x' % (self.irt_data_max - 0x10000)]
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
 
@@ -265,6 +282,10 @@ class Builder(object):
   def GetObjCopy(self):
     """Helper which returns objcopy path."""
     return self.GetBinName('objcopy')
+
+  def GetReadElf(self):
+    """Helper which returns readelf path."""
+    return self.GetBinName('readelf')
 
   def GetPnaclFinalize(self):
     """Helper which returns pnacl-finalize path."""
@@ -343,8 +364,12 @@ class Builder(object):
     if self.verbose:
       sys.stderr.write(str(msg) + '\n')
 
-  def Run(self, cmd_line, out):
-    """Helper which runs a command line."""
+  def Run(self, cmd_line, get_output=False, **kwargs):
+    """Helper which runs a command line.
+
+    Returns the error code if get_output is False.
+    Returns the output if get_output is True.
+    """
 
     # For POSIX style path on windows for POSIX based toolchain
     # (just for arguments, not for the path to the command itself)
@@ -358,18 +383,21 @@ class Builder(object):
 
     self.Log(' '.join(cmd_line))
     try:
+      runner = subprocess.call
+      if get_output:
+        runner = subprocess.check_output
       if self.is_pnacl_toolchain:
         # PNaCl toolchain executable is a script, not a binary, so it doesn't
         # want to run on Windows without a shell
-        ecode = subprocess.call(' '.join(cmd_line), shell=True)
+        result = runner(' '.join(cmd_line), shell=True, **kwargs)
       else:
-        ecode = subprocess.call(cmd_line)
+        result = runner(cmd_line, **kwargs)
     except Exception as err:
       raise Error('%s\nFAILED: %s' % (' '.join(cmd_line), str(err)))
-
-    if temp_file is not None:
-      RemoveFile(temp_file.name)
-    return ecode
+    finally:
+      if temp_file is not None:
+        RemoveFile(temp_file.name)
+    return result
 
   def GetObjectName(self, src):
     if self.strip:
@@ -563,6 +591,87 @@ class Builder(object):
                         src, out, outd, ' '.join(cmd_line), e))
     return out
 
+  def IRTLayoutFits(self, irt_file):
+    """Check if the IRT's data and text segment fit layout constraints.
+
+    Returns a tuple containing:
+      * whether the IRT data/text top addresses fit within the max limit
+      * current data/text top addrs
+    """
+    cmd_line = [self.GetReadElf(), '-W', '--segments', irt_file]
+    env = dict(os.environ)
+    env.update({'LANG': 'en_US.UTF-8'})
+    seginfo = self.Run(cmd_line, get_output=True, env=env)
+    lines = seginfo.splitlines()
+    ph_start = -1
+    for i, line in enumerate(lines):
+      if line == 'Program Headers:':
+        ph_start = i + 1
+        break
+    if ph_start == -1:
+      raise Error('Could not find Program Headers start: %s\n' % lines)
+    seg_lines = lines[ph_start:]
+    text_top = 0
+    data_top = 0
+    for line in seg_lines:
+      pieces = line.split()
+      # Type, Offset, Vaddr, Paddr, FileSz, MemSz, Flg(multiple), Align
+      if len(pieces) >= 8 and pieces[0] == 'LOAD':
+        # Vaddr + MemSz
+        segment_top = int(pieces[2], 16) + int(pieces[5], 16)
+        if pieces[6] == 'R' and pieces[7] == 'E':
+          text_top = max(segment_top, text_top)
+          continue
+        if pieces[6] == 'R' or pieces[6] == 'RW':
+          data_top = max(segment_top, data_top)
+          continue
+    if text_top == 0 or data_top == 0:
+      raise Error('Could not parse IRT Layout: text_top=0x%x data_top=0x%x\n'
+                  'readelf output: %s\n' % (text_top, data_top, lines))
+    return (text_top <= self.irt_text_max and
+            data_top <= self.irt_data_max), text_top, data_top
+
+  def FindOldIRTFlagPosition(self, cmd_line, flag_name):
+    """Search for a given IRT link flag's position and value."""
+    pos = -1
+    old_start = ''
+    for i, option in enumerate(cmd_line):
+      m = re.search('.*%s=(0x.*)' % flag_name, option)
+      if m:
+        if pos != -1:
+          raise Exception('Duplicate %s flag at position %d' % (flag_name, i))
+        pos = i
+        old_start = m.group(1)
+    if pos == -1:
+      raise Exception('Could not find IRT layout flag %s' % flag_name)
+    return pos, old_start
+
+  def AdjustIRTLinkToFit(self, cmd_line, text_top, data_top):
+    """Adjust the linker options so that the IRT's data and text segment fit."""
+    def RoundDownToAlign(x):
+      return x - (x % 0x10000)
+    def AdjustFlag(flag_name, orig_max, expected_max):
+      if orig_max < expected_max:
+        return
+      pos, old_start = self.FindOldIRTFlagPosition(cmd_line, flag_name)
+      size = orig_max - int(old_start, 16)
+      self.Log('IRT %s size is %s' % (flag_name, size))
+      new_start = RoundDownToAlign(expected_max - size)
+      self.Log('Adjusting link flag %s from %s to %s' % (flag_name,
+                                                         old_start,
+                                                         hex(new_start)))
+      cmd_line[pos] = cmd_line[pos].replace(old_start, hex(new_start))
+    AdjustFlag('-Ttext-segment', text_top, self.irt_text_max)
+    AdjustFlag('-Trodata-segment', data_top, self.irt_data_max)
+    self.Log('Adjusted link options to %s' % ' '.join(cmd_line))
+    return cmd_line
+
+  def RunLink(self, cmd_line, link_out):
+    self.CleanOutput(link_out)
+    err = self.Run(cmd_line, link_out)
+    if err:
+      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
+
   def Link(self, srcs):
     """Link these objects with predetermined options and output name."""
     out = self.LinkOutputName()
@@ -574,16 +683,28 @@ class Builder(object):
       link_out = out + '.raw'
 
     MakeDir(os.path.dirname(link_out))
-    self.CleanOutput(link_out)
 
     cmd_line = [bin_name, '-o', link_out, '-Wl,--as-needed']
     if not self.empty:
       cmd_line += srcs
     cmd_line += self.link_options
 
-    err = self.Run(cmd_line, link_out)
-    if err:
-      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
+    self.RunLink(cmd_line, link_out)
+
+    if self.irt_layout:
+      fits, text_top, data_top = self.IRTLayoutFits(link_out)
+      if not fits:
+        self.Log('IRT layout does not fit: text_top=0x%x and data_top=0x%x' %
+                 (text_top, data_top))
+        cmd_line = self.AdjustIRTLinkToFit(cmd_line, text_top, data_top)
+        self.RunLink(cmd_line, link_out)
+        fits, text_top, data_top = self.IRTLayoutFits(link_out)
+        if not fits:
+          raise Error('Already re-linked IRT and it still does not fit:\n'
+                      'text_top=0x%x and data_top=0x%x\n' % (
+                          text_top, data_top))
+      self.Log('IRT layout fits: text_top=0x%x and data_top=0x%x' %
+               (text_top, data_top))
 
     if self.tls_edit is not None:
       tls_edit_cmd = [FixPath(self.tls_edit), link_out, out]
@@ -724,6 +845,9 @@ def Main(argv):
                     help='Filename to load a source list from')
   parser.add_option('--tls-edit', dest='tls_edit', default=None,
                     help='tls_edit location if TLS should be modified for IRT')
+  parser.add_option('--irt-layout', dest='irt_layout', default=False,
+                    help='Apply the IRT layout (pick data/text seg addresses)',
+                    action='store_true')
   parser.add_option('-a', '--arch', dest='arch',
                     help='Set target architecture')
   parser.add_option('-c', '--compile', dest='compile_only', default=False,
