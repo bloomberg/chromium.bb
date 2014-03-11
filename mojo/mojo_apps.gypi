@@ -39,7 +39,7 @@
       ],
     },
     {
-      'target_name': 'mojo_js_unittests',
+      'target_name': 'mojo_apps_js_unittests',
       'type': 'executable',
       'dependencies': [
         '../gin/gin.gyp:gin_test',
@@ -48,7 +48,7 @@
         'mojo_sample_service',
       ],
       'sources': [
-        'apps/js/test/run_js_tests.cc',
+        'apps/js/test/run_apps_js_tests.cc',
       ],
     },
     {

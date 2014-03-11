@@ -28,6 +28,7 @@
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
+        'mojo_apps_js_unittests',
         'mojo_bindings',
         'mojo_compositor_app',
         'mojo_common_lib',
@@ -449,6 +450,18 @@
         'bindings/js/support.h',
         'bindings/js/waiting_callback.cc',
         'bindings/js/waiting_callback.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_js_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../gin/gin.gyp:gin_test',
+        'mojo_js_bindings_lib',
+        'mojo_run_all_unittests',
+      ],
+      'sources': [
+        'bindings/js/run_js_tests.cc',
       ],
     },
   ],
