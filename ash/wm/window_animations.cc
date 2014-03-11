@@ -31,6 +31,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
@@ -277,18 +278,17 @@ class CrossFadeObserver : public ui::CompositorObserver,
  public:
   // Observes |window| for destruction, but does not take ownership.
   // Takes ownership of |layer| and its child layers.
-  CrossFadeObserver(aura::Window* window, ui::Layer* layer)
+  CrossFadeObserver(aura::Window* window,
+                    scoped_ptr<ui::LayerTreeOwner> layer_owner)
       : window_(window),
-        layer_(layer) {
+        layer_owner_(layer_owner.Pass()) {
     window_->AddObserver(this);
-    layer_->GetCompositor()->AddObserver(this);
+    layer_owner_->root()->GetCompositor()->AddObserver(this);
   }
   virtual ~CrossFadeObserver() {
     window_->RemoveObserver(this);
     window_ = NULL;
-    layer_->GetCompositor()->RemoveObserver(this);
-    views::corewm::DeepDeleteLayers(layer_);
-    layer_ = NULL;
+    layer_owner_->root()->GetCompositor()->RemoveObserver(this);
   }
 
   // ui::CompositorObserver overrides:
@@ -301,7 +301,7 @@ class CrossFadeObserver : public ui::CompositorObserver,
   }
   virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE {
     // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
-    layer_->GetAnimator()->StopAnimating();
+    layer_owner_->root()->GetAnimator()->StopAnimating();
   }
   virtual void OnCompositingLockStateChanged(
       ui::Compositor* compositor) OVERRIDE {
@@ -310,10 +310,10 @@ class CrossFadeObserver : public ui::CompositorObserver,
   // aura::WindowObserver overrides:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
     // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
-    layer_->GetAnimator()->StopAnimating();
+    layer_owner_->root()->GetAnimator()->StopAnimating();
   }
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
-    layer_->GetAnimator()->StopAnimating();
+    layer_owner_->root()->GetAnimator()->StopAnimating();
   }
 
   // ui::ImplicitAnimationObserver overrides:
@@ -323,15 +323,17 @@ class CrossFadeObserver : public ui::CompositorObserver,
 
  private:
   aura::Window* window_;  // not owned
-  ui::Layer* layer_;  // owned
+  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossFadeObserver);
 };
 
-base::TimeDelta CrossFadeAnimation(aura::Window* window,
-                                   ui::Layer* old_layer,
-                                   gfx::Tween::Type tween_type) {
-  const gfx::Rect old_bounds(old_layer->bounds());
+base::TimeDelta CrossFadeAnimation(
+    aura::Window* window,
+    scoped_ptr<ui::LayerTreeOwner> old_layer_owner,
+    gfx::Tween::Type tween_type) {
+  DCHECK(old_layer_owner->root());
+  const gfx::Rect old_bounds(old_layer_owner->root()->bounds());
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
 
@@ -341,11 +343,12 @@ base::TimeDelta CrossFadeAnimation(aura::Window* window,
 
   // Scale up the old layer while translating to new position.
   {
+    ui::Layer* old_layer = old_layer_owner->root();
     old_layer->GetAnimator()->StopAnimating();
     ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
 
     // Animation observer owns the old layer and deletes itself.
-    settings.AddObserver(new CrossFadeObserver(window, old_layer));
+    settings.AddObserver(new CrossFadeObserver(window, old_layer_owner.Pass()));
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
     gfx::Transform out_transform;

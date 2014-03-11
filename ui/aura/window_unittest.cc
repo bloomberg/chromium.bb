@@ -1916,10 +1916,8 @@ TEST_F(WindowTest, RecreateLayer) {
   EXPECT_FALSE(layer->visible());
   EXPECT_EQ(1u, layer->children().size());
   EXPECT_TRUE(layer->GetMasksToBounds());
-  // On recreate it's expected the bounds of both the window and layer go to
-  // 0. See description of Window::RecreateLayer() for details.
-  EXPECT_EQ("0,0 0x0", w.bounds().ToString());
-  EXPECT_EQ("0,0 0x0", layer->bounds().ToString());
+  EXPECT_EQ("0,0 100x100", w.bounds().ToString());
+  EXPECT_EQ("0,0 100x100", layer->bounds().ToString());
 }
 
 // Verify that RecreateLayer() stacks the old layer above the newly creatd

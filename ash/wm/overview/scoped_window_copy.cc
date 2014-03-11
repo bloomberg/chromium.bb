@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/display.h"
 #include "ui/views/corewm/shadow_types.h"
 #include "ui/views/corewm/window_util.h"
@@ -81,7 +82,9 @@ views::Widget* CreateCopyOfWindow(aura::Window* target_root,
 // animation finishes.
 class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
  public:
-  CleanupWidgetAfterAnimationObserver(views::Widget* widget, ui::Layer* layer);
+  CleanupWidgetAfterAnimationObserver(
+      views::Widget* widget,
+      scoped_ptr<ui::LayerTreeOwner> layer_owner);
 
   // Takes ownership of the widget. At this point the class will delete itself
   // and clean up the layer when there are no pending animations.
@@ -103,7 +106,7 @@ class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
   void MaybeDestruct();
 
   views::Widget* widget_;
-  ui::Layer* layer_;
+  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
   bool owns_widget_;
   int pending_animations_;
 
@@ -112,9 +115,9 @@ class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
 
 CleanupWidgetAfterAnimationObserver::CleanupWidgetAfterAnimationObserver(
         views::Widget* widget,
-        ui::Layer* layer)
+        scoped_ptr<ui::LayerTreeOwner> layer_owner)
     : widget_(widget),
-      layer_(layer),
+      layer_owner_(layer_owner.Pass()),
       owns_widget_(false),
       pending_animations_(0) {
   widget_->GetNativeWindow()->layer()->GetAnimator()->AddObserver(this);
@@ -146,10 +149,6 @@ CleanupWidgetAfterAnimationObserver::~CleanupWidgetAfterAnimationObserver() {
   widget_->GetNativeWindow()->layer()->GetAnimator()->RemoveObserver(this);
   widget_->Close();
   widget_ = NULL;
-  if (layer_) {
-    views::corewm::DeepDeleteLayers(layer_);
-    layer_ = NULL;
-  }
 }
 
 void CleanupWidgetAfterAnimationObserver::MaybeDestruct() {
@@ -160,9 +159,11 @@ void CleanupWidgetAfterAnimationObserver::MaybeDestruct() {
 
 ScopedWindowCopy::ScopedWindowCopy(aura::Window* target_root,
                                    aura::Window* src_window) {
-  layer_ = views::corewm::RecreateWindowLayers(src_window, true);
-  widget_ = CreateCopyOfWindow(target_root, src_window, layer_);
-  cleanup_observer_ = new CleanupWidgetAfterAnimationObserver(widget_, layer_);
+  scoped_ptr<ui::LayerTreeOwner> layer_owner =
+      views::corewm::RecreateLayers(src_window);
+  widget_ = CreateCopyOfWindow(target_root, src_window, layer_owner->root());
+  cleanup_observer_ =
+      new CleanupWidgetAfterAnimationObserver(widget_, layer_owner.Pass());
 }
 
 ScopedWindowCopy::~ScopedWindowCopy() {

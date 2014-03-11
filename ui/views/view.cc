@@ -505,14 +505,14 @@ void View::SetPaintToLayer(bool paint_to_layer) {
   }
 }
 
-ui::Layer* View::RecreateLayer() {
-  ui::Layer* acquired = AcquireLayer();
+scoped_ptr<ui::Layer> View::RecreateLayer() {
+  scoped_ptr<ui::Layer> acquired(AcquireLayer());
   if (!acquired)
-    return NULL;
+    return acquired.Pass();
 
   CreateLayer();
   layer()->set_scale_content(acquired->scale_content());
-  return acquired;
+  return acquired.Pass();
 }
 
 // RTL positioning -------------------------------------------------------------

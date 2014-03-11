@@ -6,6 +6,7 @@
 #define ASH_WM_WINDOW_ANIMATIONS_H_
 
 #include "ash/ash_export.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/corewm/window_animations.h"
@@ -15,6 +16,9 @@ class Window;
 }
 namespace ui {
 class Layer;
+class LayerTreeOwner;
+}
+namespace views {
 }
 
 // This is only for animations specific to Ash. For window animations shared
@@ -42,12 +46,13 @@ enum LayerScaleAnimationDirection {
 extern const int kCrossFadeDurationMS;
 
 // Implementation of cross fading. Window is the window being cross faded. It
-// should be at the target bounds. |old_layer| the previous layer from |window|.
-// This takes ownership of |old_layer| and deletes when the animation is done.
-// |tween_type| specifies the tween type of the cross fade animation.
-ASH_EXPORT base::TimeDelta CrossFadeAnimation(aura::Window* window,
-                                              ui::Layer* old_layer,
-                                              gfx::Tween::Type tween_type);
+// should be at the target bounds. |old_layer_owner| contains the previous layer
+// from |window|.  |tween_type| specifies the tween type of the cross fade
+// animation.
+ASH_EXPORT base::TimeDelta CrossFadeAnimation(
+    aura::Window* window,
+    scoped_ptr<ui::LayerTreeOwner> old_layer_owner,
+    gfx::Tween::Type tween_type);
 
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,
                                                       bool visible);

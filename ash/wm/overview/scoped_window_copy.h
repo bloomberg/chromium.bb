@@ -8,12 +8,7 @@
 #include "base/basictypes.h"
 
 namespace aura {
-class RootWindow;
 class Window;
-}
-
-namespace ui {
-class Layer;
 }
 
 namespace views {
@@ -36,10 +31,6 @@ class ScopedWindowCopy {
  private:
   // A weak pointer to a copy of the source window owned by cleanup_observer_.
   views::Widget* widget_;
-
-  // A weak pointer to the deep copy of the source window's layers owned by
-  // cleanup_observer_.
-  ui::Layer* layer_;
 
   // A weak pointer to an animation observer which owns itself. When the
   // ScopedWindowCopy is destroyed The animation observer will clean up the

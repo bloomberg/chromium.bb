@@ -23,6 +23,10 @@ Layer* LayerOwner::AcquireLayer() {
   return layer_owner_.release();
 }
 
+scoped_ptr<Layer> LayerOwner::RecreateLayer() {
+  return scoped_ptr<ui::Layer>();
+}
+
 void LayerOwner::DestroyLayer() {
   layer_ = NULL;
   layer_owner_.reset();

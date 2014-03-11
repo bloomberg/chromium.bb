@@ -21,6 +21,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/display.h"
 #include "ui/views/corewm/window_util.h"
@@ -390,7 +391,10 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   // cleaned up after the animation completes.
   // Specify |set_bounds| to true here to keep the old bounds in the child
   // windows of |window|.
-  ui::Layer* old_layer = views::corewm::RecreateWindowLayers(window_, true);
+  scoped_ptr<ui::LayerTreeOwner> old_layer_owner =
+      views::corewm::RecreateLayers(window_);
+  ui::Layer* old_layer = old_layer_owner->root();
+  DCHECK(old_layer);
   ui::Layer* new_layer = window_->layer();
 
   // Resize the window to the new size, which will force a layout and paint.
@@ -403,7 +407,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   else
     old_layer->parent()->StackAbove(new_layer, old_layer);
 
-  CrossFadeAnimation(window_, old_layer, gfx::Tween::EASE_OUT);
+  CrossFadeAnimation(window_, old_layer_owner.Pass(), gfx::Tween::EASE_OUT);
 }
 
 WindowState* GetActiveWindowState() {

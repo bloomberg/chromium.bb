@@ -403,7 +403,7 @@ TEST_F(NativeWidgetAuraTest, OnWidgetMovedInvokedAfterAcquireLayer) {
   widget->Show();
   delegate->ClearGotMove();
   // Simulate a maximize with animation.
-  delete widget->GetNativeView()->RecreateLayer();
+  delete widget->GetNativeView()->RecreateLayer().release();
   widget->SetBounds(gfx::Rect(0, 0, 500, 500));
   EXPECT_TRUE(delegate->got_move());
   widget->CloseNow();

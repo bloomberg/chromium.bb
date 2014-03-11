@@ -78,13 +78,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Initializes the window. This creates the window's layer.
   void Init(WindowLayerType layer_type);
 
-  // Creates a new layer for the window. Erases the layer-owned bounds, so the
-  // caller may wish to set new bounds and other state on the window/layer.
-  // Returns the old layer, which can be used for animations. Caller owns the
-  // memory for the returned layer and must delete it when animation completes.
-  // Returns NULL and does not recreate layer if window does not own its layer.
-  ui::Layer* RecreateLayer() WARN_UNUSED_RESULT;
-
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;
   }
@@ -320,6 +313,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+
+  // Overriden from ui::LayerOwner.
+  virtual scoped_ptr<ui::Layer> RecreateLayer() OVERRIDE;
 
 #if !defined(NDEBUG)
   // These methods are useful when debugging.

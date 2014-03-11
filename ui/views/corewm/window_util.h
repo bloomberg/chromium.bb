@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -16,6 +18,8 @@ class Window;
 
 namespace ui {
 class Layer;
+class LayerOwner;
+class LayerTreeOwner;
 }
 
 namespace views {
@@ -34,20 +38,14 @@ VIEWS_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 // determination.
 VIEWS_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 
-// Deletes |layer| and all its child layers.
-VIEWS_EXPORT void DeepDeleteLayers(ui::Layer* layer);
-
-// Returns the existing Layer for |window| (and all its descendants) and creates
-// a new layer for |window| and all its descendants. This is intended for
-// animations that want to animate between the existing visuals and a new window
-// state. The caller owns the return value.
+// Returns the existing Layer for |root| (and all its descendants) and creates
+// a new layer for |root| and all its descendants. This is intended for
+// animations that want to animate between the existing visuals and a new state.
 //
-// As a result of this |window| has freshly created layers, meaning the layers
-// are all empty (nothing has been painted to them) and are sized to 0x0. Soon
-// after this call you need to reset the bounds of the window. Or, you can pass
-// true as the second argument to let the function do that.
-VIEWS_EXPORT ui::Layer* RecreateWindowLayers(aura::Window* window,
-                                            bool set_bounds) WARN_UNUSED_RESULT;
+// As a result of this |root| has freshly created layers, meaning the layers
+// have not yet been painted to.
+VIEWS_EXPORT scoped_ptr<ui::LayerTreeOwner> RecreateLayers(
+    ui::LayerOwner* root);
 
 // Convenience functions that get the TransientWindowManager for the window and
 // redirect appropriately. These are preferable to calling functions on

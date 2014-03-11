@@ -1171,7 +1171,7 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
 #if defined(USE_AURA)
   scoped_ptr<ui::Layer> layer;
   if (animate_current) {
-    layer.reset(view->RecreateLayer());
+    layer = view->RecreateLayer();
     layer->SuppressPaint();
 
     view->SetFillsBoundsOpaquely(false);

@@ -20,6 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/window_util.h"
@@ -377,7 +378,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     // Check if |resizer->layer_| is properly set to the drag widget.
     const std::vector<ui::Layer*>& layers = drag_layer->children();
     EXPECT_FALSE(layers.empty());
-    EXPECT_EQ(controller->layer_, layers.back());
+    EXPECT_EQ(controller->layer_owner_->root(), layers.back());
 
     // |window_| should be opaque since the pointer is still on the primary
     // root window. The drag window should be semi-transparent.

@@ -18,6 +18,7 @@ class Window;
 
 namespace ui {
 class Layer;
+class LayerTreeOwner;
 }
 
 namespace views {
@@ -84,9 +85,8 @@ class ASH_EXPORT DragWindowController {
 
   views::Widget* drag_widget_;
 
-  // The copy of window_->layer() and its children. This object is the owner of
-  // the layer.
-  ui::Layer* layer_;
+  // The copy of window_->layer() and its descendants.
+  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowController);
 };

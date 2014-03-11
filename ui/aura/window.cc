@@ -277,31 +277,32 @@ void Window::Init(WindowLayerType window_layer_type) {
   Env::GetInstance()->NotifyWindowInitialized(this);
 }
 
-ui::Layer* Window::RecreateLayer() {
+// TODO(sky): move to match new position.
+scoped_ptr<ui::Layer> Window::RecreateLayer() {
   // Disconnect the old layer, but don't delete it.
-  ui::Layer* old_layer = AcquireLayer();
+  scoped_ptr<ui::Layer> old_layer(AcquireLayer());
   if (!old_layer)
-    return NULL;
-
-  bounds_.SetRect(0, 0, 0, 0);
+    return old_layer.Pass();
 
   old_layer->set_delegate(NULL);
 
+  const gfx::Rect layer_bounds(old_layer->bounds());
   SetLayer(new ui::Layer(old_layer->type()));
   layer()->SetVisible(old_layer->visible());
   layer()->set_scale_content(old_layer->scale_content());
+  layer()->SetBounds(layer_bounds);
   layer()->set_delegate(this);
   layer()->SetMasksToBounds(old_layer->GetMasksToBounds());
 
   if (delegate_)
-    delegate_->DidRecreateLayer(old_layer, layer());
+    delegate_->DidRecreateLayer(old_layer.get(), layer());
 
   UpdateLayerName(name_);
   layer()->SetFillsBoundsOpaquely(!transparent_);
   // Install new layer as a sibling of the old layer, stacked below it.
   if (old_layer->parent()) {
     old_layer->parent()->Add(layer());
-    old_layer->parent()->StackBelow(layer(), old_layer);
+    old_layer->parent()->StackBelow(layer(), old_layer.get());
   }
   // Migrate all the child layers over to the new layer. Copy the list because
   // the items are removed during iteration.
@@ -312,7 +313,7 @@ ui::Layer* Window::RecreateLayer() {
     ui::Layer* child = *it;
     layer()->Add(child);
   }
-  return old_layer;
+  return old_layer.Pass();
 }
 
 void Window::SetType(ui::wm::WindowType type) {

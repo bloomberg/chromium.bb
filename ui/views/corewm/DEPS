@@ -12,16 +12,6 @@ specific_include_rules = {
     "+ui/views/widget/tooltip_manager.h",
   ],
 
-  "window_util.cc": [
-    "+ui/views/view.h",
-    "+ui/views/widget/widget.h",
-  ],
-
-  "window_util_unittest.cc": [
-    "+ui/views/view_constants_aura.h",
-    "+ui/views/widget/widget.h",
-  ],
-
   "tooltip_aura.cc": [
     "+ui/views/background.h",
     "+ui/views/border.h",

@@ -52,6 +52,8 @@
         'layer_delegate.h',
         'layer_owner.cc',
         'layer_owner.h',
+        'layer_tree_owner.cc',
+        'layer_tree_owner.h',
         'layer_type.h',
         'reflector.h',
         'scoped_animation_duration_scale_mode.cc',
