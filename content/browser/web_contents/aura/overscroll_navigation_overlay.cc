@@ -113,6 +113,7 @@ OverscrollNavigationOverlay::OverscrollNavigationOverlay(
       image_delegate_(NULL),
       loading_complete_(false),
       received_paint_update_(false),
+      pending_entry_id_(0),
       slide_direction_(SLIDE_UNKNOWN),
       need_paint_update_(true) {
 }
@@ -123,6 +124,7 @@ OverscrollNavigationOverlay::~OverscrollNavigationOverlay() {
 void OverscrollNavigationOverlay::StartObserving() {
   loading_complete_ = false;
   received_paint_update_ = false;
+  pending_entry_id_ = 0;
   Observe(web_contents_);
 
   // Make sure the overlay window is on top.
@@ -208,10 +210,15 @@ void OverscrollNavigationOverlay::OnUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
   if (loading_complete_ &&
       ViewHostMsg_UpdateRect_Flags::is_repaint_ack(params.flags)) {
-    // This is a paint update after the page has been loaded. So do not wait for
-    // a 'first non-empty' paint update.
-    received_paint_update_ = true;
-    StopObservingIfDone();
+    NavigationEntry* visible_entry =
+        web_contents_->GetController().GetVisibleEntry();
+    int visible_entry_id = visible_entry ? visible_entry->GetUniqueID() : 0;
+    if (visible_entry_id == pending_entry_id_ || !pending_entry_id_) {
+      // This is a paint update after the page has been loaded. So do not wait
+      // for a 'first non-empty' paint update.
+      received_paint_update_ = true;
+      StopObservingIfDone();
+    }
   }
 }
 
@@ -255,6 +262,13 @@ void OverscrollNavigationOverlay::OnWindowSlideComplete() {
     web_contents_->GetController().GoForward();
   else
     NOTREACHED();
+
+  NavigationEntry* pending_entry =
+      web_contents_->GetController().GetPendingEntry();
+  // Save id of the pending entry to identify when it loads and paints later.
+  // Under some circumstances navigation can leave a null pending entry -
+  // see comments in NavigationControllerImpl::NavigateToPendingEntry().
+  pending_entry_id_ = pending_entry ? pending_entry->GetUniqueID() : 0;
 }
 
 void OverscrollNavigationOverlay::OnWindowSlideAborted() {
@@ -275,19 +289,43 @@ void OverscrollNavigationOverlay::OnWindowSliderDestroyed() {
   }
 }
 
+void OverscrollNavigationOverlay::DocumentOnLoadCompletedInMainFrame(
+    int32 page_id) {
+  // Use the last committed entry rather than the active one, in case a
+  // pending entry has been created.
+  int committed_entry_id =
+      web_contents_->GetController().GetLastCommittedEntry()->GetUniqueID();
+  // For the purposes of dismissing the overlay - consider the loading completed
+  // once the main frame has loaded.
+  if (committed_entry_id == pending_entry_id_ || !pending_entry_id_) {
+    loading_complete_ = true;
+    StopObservingIfDone();
+  }
+}
+
 void OverscrollNavigationOverlay::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
-  received_paint_update_ = true;
-  StopObservingIfDone();
+  int visible_entry_id =
+      web_contents_->GetController().GetVisibleEntry()->GetUniqueID();
+  if (visible_entry_id == pending_entry_id_ || !pending_entry_id_) {
+    received_paint_update_ = true;
+    StopObservingIfDone();
+  }
 }
 
 void OverscrollNavigationOverlay::DidStopLoading(RenderViewHost* host) {
-  loading_complete_ = true;
-  if (!received_paint_update_) {
-    // Force a repaint after the page is loaded.
-    RenderViewHostImpl* view = static_cast<RenderViewHostImpl*>(host);
-    view->ScheduleComposite();
+  // Use the last committed entry rather than the active one, in case a
+  // pending entry has been created.
+  int committed_entry_id =
+      web_contents_->GetController().GetLastCommittedEntry()->GetUniqueID();
+  if (committed_entry_id == pending_entry_id_ || !pending_entry_id_) {
+    loading_complete_ = true;
+    if (!received_paint_update_) {
+      // Force a repaint after the page is loaded.
+      RenderViewHostImpl* view = static_cast<RenderViewHostImpl*>(host);
+      view->ScheduleComposite();
+    }
+    StopObservingIfDone();
   }
-  StopObservingIfDone();
 }
 
 bool OverscrollNavigationOverlay::OnMessageReceived(
