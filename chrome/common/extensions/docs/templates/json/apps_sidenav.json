@@ -184,6 +184,10 @@
               {
                 "title": "Network Communications",
                 "href": "/apps/app_network.html"
+              },
+              {
+                "title": "Bluetooth",
+                "href": "/apps/app_bluetooth.html"
               }
             ]
           },

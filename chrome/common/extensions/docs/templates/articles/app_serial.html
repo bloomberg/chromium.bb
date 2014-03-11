@@ -6,7 +6,7 @@
 <p>
 This document describes how to use the <a href="serial.html">serial API</a> to read
 and write from serial devices. Chrome Apps can also connect to
-<a href="app_usb.html">USB</a> and <a href="bluetooth.html">Bluetooth</a> devices.
+<a href="app_usb.html">USB</a> and <a href="app_bluetooth.html">Bluetooth</a> devices.
 </p>
 
 <p class="note">
@@ -88,7 +88,7 @@ chrome.serial.connect("/dev/ttyS01", {bitrate: 115200}, onConnect);
 <h2 id="disconnect">Disconnect from a serial port</h2>
 
 <p>
-When an app terminates, connections to serial ports that are not persistent 
+When an app terminates, connections to serial ports that are not persistent
 are automatically closed by the platform. However, if you want to disconnect
 while your app is still running, you can use the $ref:serial.disconnect method:
 </p>
@@ -109,9 +109,9 @@ chrome.serial.disconnect(connectionId, onDisconnect);
 <p>
 The serial API reads from the serial port and delivers the read bytes as an ArrayBuffer to event listeners.
 
-Every port that your application is connected to will generate read events to all listeners added through 
+Every port that your application is connected to will generate read events to all listeners added through
 <code>chrome.serial.onReceive.addListener(onReceiveCallback)</code>. If you are connected to more than one port at the
-same time, you may find the corresponding <code>connectionId</code> of an incoming read event in the callback parameter 
+same time, you may find the corresponding <code>connectionId</code> of an incoming read event in the callback parameter
 of $ref:serial.onReceive.
 </p>
 <p>

@@ -38,8 +38,8 @@
   "bluetooth": {
     "Learn More": [
       {
-        "link": "app_usb.html",
-        "text": "Accessing Hardware Devices"
+        "link": "app_bluetooth.html",
+        "text": "Bluetooth"
       }
     ]
   },

@@ -16,7 +16,13 @@
     "example": false,
     "level": "recommended"
   },
-  "browser_action": {
+  "bluetooth": {
+    "documentation": "manifest/bluetooth.html",
+    "example": {
+      "profiles": [ "1105", "1006" ]
+    }
+  },
+   "browser_action": {
     "documentation": "browserAction.html",
     "example": {},
     "level": "only_one"

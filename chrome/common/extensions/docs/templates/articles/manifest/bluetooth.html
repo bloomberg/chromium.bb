@@ -1,0 +1,28 @@
+<h1>Manifest - Bluetooth</h1>
+
+<p>
+The <code>bluetooth</code> manifest property declares which permissions are
+available for the $ref:bluetooth API.
+</p>
+
+<h2 id="manifest">Sample manifest.json</h2>
+<pre data-filename="manifest.json">
+{
+  "name": "My Bluetooth {{platform}}",
+  "bluetooth": {
+    // Permission for chrome.bluetooth.addProfile:
+    // The application is allowed to make and receive connections
+    // implementing the profiles identified by the UUIDs
+    // 0x1105 and 0x1106.
+    "profiles": [ "1105", "1106" ]
+  },
+  ...
+}
+</pre>
+
+<section>
+<h2 id="reference">Reference</h2>
+<p class="api_reference">
+{{+partials.type type:apis.manifestTypes.byName.bluetooth/}}
+</p>
+</section>

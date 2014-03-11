@@ -408,6 +408,10 @@
               {
                 "title": "Network Communications",
                 "href": "/apps/app_network"
+              },
+              {
+                "title": "Bluetooth",
+                "href": "/apps/app_bluetooth"
               }
             ]
           },
