@@ -62,6 +62,7 @@ class ExternalInstallGlobalError;
 class ExternalInstallDialogDelegate
     : public ExtensionInstallPrompt::Delegate,
       public WebstoreDataFetcherDelegate,
+      public content::NotificationObserver,
       public base::RefCountedThreadSafe<ExternalInstallDialogDelegate> {
  public:
   ExternalInstallDialogDelegate(Browser* browser,
@@ -88,6 +89,11 @@ class ExternalInstallDialogDelegate
   virtual void OnWebstoreResponseParseFailure(
       const std::string& error) OVERRIDE;
 
+  // NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Show the install dialog to the user.
   void ShowInstallUI();
 
@@ -98,6 +104,7 @@ class ExternalInstallDialogDelegate
   Browser* browser_;
   base::WeakPtr<ExtensionService> service_weak_;
   scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
+  content::NotificationRegistrar registrar_;
   std::string extension_id_;
   bool use_global_error_;
 
@@ -230,6 +237,11 @@ ExternalInstallDialogDelegate::ExternalInstallDialogDelegate(
     return;
   }
 
+  // Make sure to be notified if the owning profile is destroyed.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::Source<Profile>(browser->profile()));
+
   webstore_data_fetcher_.reset(new WebstoreDataFetcher(
       this,
       browser->profile()->GetRequestContext(),
@@ -272,6 +284,15 @@ void ExternalInstallDialogDelegate::OnWebstoreResponseParseFailure(
   ShowInstallUI();
 }
 
+void ExternalInstallDialogDelegate::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+  // If the owning profile is destroyed, we need to abort so that we don't leak.
+  InstallUIAbort(false);  // Not user initiated.
+}
+
 void ExternalInstallDialogDelegate::ShowInstallUI() {
   const Extension* extension = NULL;
   if (!service_weak_.get() ||
@@ -296,21 +317,19 @@ ExternalInstallDialogDelegate::~ExternalInstallDialogDelegate() {
 
 void ExternalInstallDialogDelegate::InstallUIProceed() {
   const Extension* extension = NULL;
-  if (!service_weak_.get() ||
-      !(extension = service_weak_->GetInstalledExtension(extension_id_))) {
-    return;
+  if (service_weak_.get() &&
+      (extension = service_weak_->GetInstalledExtension(extension_id_))) {
+    service_weak_->GrantPermissionsAndEnableExtension(extension);
   }
-  service_weak_->GrantPermissionsAndEnableExtension(extension);
   Release();
 }
 
 void ExternalInstallDialogDelegate::InstallUIAbort(bool user_initiated) {
   const Extension* extension = NULL;
-  if (!service_weak_.get() ||
-      !(extension = service_weak_->GetInstalledExtension(extension_id_))) {
-    return;
+  if (service_weak_.get() &&
+      (extension = service_weak_->GetInstalledExtension(extension_id_))) {
+    service_weak_->UninstallExtension(extension_id_, false, NULL);
   }
-  service_weak_->UninstallExtension(extension_id_, false, NULL);
   Release();
 }
 
