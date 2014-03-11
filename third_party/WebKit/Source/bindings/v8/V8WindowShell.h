@@ -79,7 +79,6 @@ public:
     void clearForClose(bool destroyGlobal);
 
     DOMWrapperWorld* world() { return m_world.get(); }
-    static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 
 private:
     V8WindowShell(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);

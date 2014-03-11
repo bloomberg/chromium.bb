@@ -33,6 +33,7 @@
 
 
 #include "V8Window.h"
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/V8Binding.h"
@@ -56,8 +57,12 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> co
     if (context.IsEmpty())
         return 0;
 
-    // Test that context has associated global dom window object.
-    if (!V8WindowShell::contextHasCorrectPrototype(context))
+    // FIXME: This is a temporary hack for crbug.com/345014.
+    // Currently it's possible that V8 can trigger Debugger::ProcessDebugEvent for a context
+    // that is being initialized (i.e., inside Context::New() of the context).
+    // We should fix the V8 side so that it won't trigger the event for a half-baked context
+    // because there is no way in the embedder side to check if the context is half-baked or not.
+    if (isMainThread() && DOMWrapperWorld::windowIsBeingInitialized())
         return 0;
 
     v8::Handle<v8::Value> global = V8Window::findInstanceInPrototypeChain(context->Global(), context->GetIsolate());

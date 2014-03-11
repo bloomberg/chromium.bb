@@ -554,11 +554,9 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* w
 {
     ASSERT(context);
     if (context->isDocument()) {
-        ASSERT(world);
         if (LocalFrame* frame = toDocument(context)->frame())
             return frame->script().windowShell(world)->context();
     } else if (context->isWorkerGlobalScope()) {
-        ASSERT(!world);
         if (WorkerScriptController* script = toWorkerGlobalScope(context)->script())
             return script->context();
     }
