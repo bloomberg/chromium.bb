@@ -23,6 +23,7 @@ namespace base {
 BASE_EXPORT void SplitString(const string16& str,
                              char16 c,
                              std::vector<string16>* r);
+
 // |str| should not be in a multi-byte encoding like Shift-JIS or GBK in which
 // the trailing byte of a multi-byte character can be in the ASCII range.
 // UTF-8, and other single/multi-byte ASCII-compatible encodings are OK.
@@ -31,13 +32,16 @@ BASE_EXPORT void SplitString(const std::string& str,
                              char c,
                              std::vector<std::string>* r);
 
-typedef std::vector<std::pair<std::string, std::string> > StringPairs;;
+typedef std::vector<std::pair<std::string, std::string> > StringPairs;
 
-BASE_EXPORT bool SplitStringIntoKeyValuePairs(
-    const std::string& line,
-    char key_value_delimiter,
-    char key_value_pair_delimiter,
-    StringPairs* key_value_pairs);
+// Splits |line| into key value pairs according to the given delimiters and
+// removes whitespace leading each key and trailing each value. Returns true
+// only if each pair has a non-empty key and value. |key_value_pairs| will
+// include ("","") pairs for entries without |key_value_delimiter|.
+BASE_EXPORT bool SplitStringIntoKeyValuePairs(const std::string& line,
+                                              char key_value_delimiter,
+                                              char key_value_pair_delimiter,
+                                              StringPairs* key_value_pairs);
 
 // The same as SplitString, but use a substring delimiter instead of a char.
 BASE_EXPORT void SplitStringUsingSubstr(const string16& str,
