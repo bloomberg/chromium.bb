@@ -152,7 +152,7 @@ function runAesCbcSuccessTestCase(testCase)
         shouldBe("tmpKey.extractable", "false");
         shouldBe("tmpKey.algorithm.name", "'AES-CBC'");
         shouldBe("tmpKey.algorithm.length", (keyData.byteLength * 8).toString());
-        shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'");
+        shouldBe("tmpKey.usages.join(',')", "'encrypt,decrypt'");
 
         // (2) Encrypt.
         return crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));
@@ -189,7 +189,7 @@ function runAesGcmSuccessTestCase(testCase)
         shouldBe("tmpKey.type", "'secret'");
         shouldBe("tmpKey.extractable", "false");
         shouldBe("tmpKey.algorithm.name", "'AES-GCM'");
-        shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'");
+        shouldBe("tmpKey.usages.join(',')", "'encrypt,decrypt'");
 
         // (2) Encrypt.
         return crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));

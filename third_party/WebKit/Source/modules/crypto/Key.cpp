@@ -61,15 +61,16 @@ struct KeyUsageMapping {
     const char* const name;
 };
 
-// Keep this array sorted.
+// The order of this array is the same order that will appear in Key.usages. It
+// must be kept ordered as described by the Web Crypto spec.
 const KeyUsageMapping keyUsageMappings[] = {
-    { blink::WebCryptoKeyUsageDecrypt, "decrypt" },
-    { blink::WebCryptoKeyUsageDeriveKey, "deriveKey" },
     { blink::WebCryptoKeyUsageEncrypt, "encrypt" },
+    { blink::WebCryptoKeyUsageDecrypt, "decrypt" },
     { blink::WebCryptoKeyUsageSign, "sign" },
-    { blink::WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
     { blink::WebCryptoKeyUsageVerify, "verify" },
+    { blink::WebCryptoKeyUsageDeriveKey, "deriveKey" },
     { blink::WebCryptoKeyUsageWrapKey, "wrapKey" },
+    { blink::WebCryptoKeyUsageUnwrapKey, "unwrapKey" },
 };
 
 COMPILE_ASSERT(blink::EndOfWebCryptoKeyUsage == (1 << 6) + 1, update_keyUsageMappings);
