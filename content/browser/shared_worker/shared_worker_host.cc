@@ -12,6 +12,8 @@
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 namespace {
@@ -167,21 +169,32 @@ void SharedWorkerHost::AllowDatabase(const GURL& url,
                                      const base::string16& display_name,
                                      unsigned long estimated_size,
                                      bool* result) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (!instance_)
+    return;
+  *result = GetContentClient()->browser()->AllowWorkerDatabase(
+      url,
+      name,
+      display_name,
+      estimated_size,
+      instance_->resource_context(),
+      GetRenderFrameIDsForWorker());
 }
 
 void SharedWorkerHost::AllowFileSystem(const GURL& url,
                                        bool* result) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (!instance_)
+    return;
+  *result = GetContentClient()->browser()->AllowWorkerFileSystem(
+      url, instance_->resource_context(), GetRenderFrameIDsForWorker());
 }
 
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
                                       const base::string16& name,
                                       bool* result) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (!instance_)
+    return;
+  *result = GetContentClient()->browser()->AllowWorkerIndexedDB(
+      url, name, instance_->resource_context(), GetRenderFrameIDsForWorker());
 }
 
 void SharedWorkerHost::RelayMessage(
@@ -223,6 +236,23 @@ void SharedWorkerHost::RelayMessage(
 
 void SharedWorkerHost::TerminateWorker() {
   Send(new WorkerMsg_TerminateWorkerContext(worker_route_id_));
+}
+
+std::vector<std::pair<int, int> >
+SharedWorkerHost::GetRenderFrameIDsForWorker() {
+  std::vector<std::pair<int, int> > result;
+  if (!instance_)
+    return result;
+  const WorkerDocumentSet::DocumentInfoSet& documents =
+      instance_->worker_document_set()->documents();
+  for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
+           documents.begin();
+       doc != documents.end();
+       ++doc) {
+    result.push_back(
+        std::make_pair(doc->render_process_id(), doc->render_frame_id()));
+  }
+  return result;
 }
 
 }  // namespace content

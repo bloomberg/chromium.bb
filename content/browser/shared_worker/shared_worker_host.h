@@ -82,6 +82,9 @@ class SharedWorkerHost {
   void RelayMessage(const IPC::Message& message,
                     SharedWorkerMessageFilter* incoming_filter);
 
+  // Return a vector of all the render process/render frame IDs.
+  std::vector<std::pair<int, int> > GetRenderFrameIDsForWorker();
+
   scoped_ptr<SharedWorkerInstance> instance_;
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_route_id_;
