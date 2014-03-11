@@ -188,11 +188,6 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   }
 }
 
-void AutofillAgent::DidCommitProvisionalLoad(WebFrame* frame,
-                                             bool is_new_navigation) {
-  in_flight_request_form_.reset();
-}
-
 void AutofillAgent::FrameDetached(WebFrame* frame) {
   form_cache_.ResetFrame(*frame);
 }

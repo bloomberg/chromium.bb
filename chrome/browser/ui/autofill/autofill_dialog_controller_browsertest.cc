@@ -369,6 +369,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  content::RenderViewHost* GetRenderViewHost() {
+    return GetActiveWebContents()->GetRenderViewHost();
+  }
+
   scoped_ptr<AutofillDialogViewTester> GetViewTester() {
     return AutofillDialogViewTester::For(controller()->view()).Pass();
   }
@@ -412,6 +416,14 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
                 "document.forms[0].requestAutocomplete();"
                 "send('clicked');"
               "};"
+              "function loadIframe() {"
+              "  var iframe = document.createElement('iframe');"
+              "  iframe.onload = function() {"
+              "    send('iframe loaded');"
+              "  };"
+              "  iframe.src = 'about:blank';"
+              "  document.body.appendChild(iframe);"
+              "}"
               "function getValueForFieldOfType(type) {"
               "  var fields = document.getElementsByTagName('input');"
               "  for (var i = 0; i < fields.length; i++) {"
@@ -484,12 +496,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   // Returns the value filled into the first field with autocomplete attribute
   // equal to |autocomplete_type|, or an empty string if there is no such field.
   std::string GetValueForHTMLFieldOfType(const std::string& autocomplete_type) {
-    content::RenderViewHost* render_view_host =
-        browser()->tab_strip_model()->GetActiveWebContents()->
-        GetRenderViewHost();
     std::string script = "getValueForFieldOfType('" + autocomplete_type + "');";
     std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(render_view_host, script,
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(GetRenderViewHost(),
+                                                       script,
                                                        &result));
     return result;
   }
@@ -917,6 +927,30 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
   ASSERT_TRUE(controller);
+  AutofillDialogViewTester::For(
+      static_cast<TestAutofillDialogController*>(controller)->view())->
+          CancelForTesting();
+  ExpectDomMessage("error: cancel");
+}
+
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_ErrorWithFrameNavigation DISABLED_ErrorWithFrameNavigation
+#else
+#define MAYBE_ErrorWithFrameNavigation ErrorWithFrameNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       MAYBE_ErrorWithFrameNavigation) {
+  AutofillDialogControllerImpl* controller =
+      SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
+  ASSERT_TRUE(controller);
+
+  std::string unused;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(GetRenderViewHost(),
+                                                     "loadIframe();",
+                                                     &unused));
+  ExpectDomMessage("iframe loaded");
+
   AutofillDialogViewTester::For(
       static_cast<TestAutofillDialogController*>(controller)->view())->
           CancelForTesting();
