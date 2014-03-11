@@ -8,7 +8,10 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into gcl.
 """
 
-def GetPreferredTrySlaves(project, change):
+def GetPreferredTryMasters(project, change):
   # Changes in crypto often need a corresponding OpenSSL edit.
-  return ['linux_redux']
-
+  return {
+    'tryserver.chromium': {
+      'linux_redux': set(['defaulttests']),
+    }
+  }

@@ -8,9 +8,11 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into gcl.
 """
 
-def GetPreferredTrySlaves():
-  return [
-    'linux_rel:sync_integration_tests',
-    'mac_rel:sync_integration_tests',
-    'win_rel:sync_integration_tests',
-  ]
+def GetPreferredTryMasters(project, change):
+  return {
+    'tryserver.chromium': {
+      'linux_rel': set(['sync_integration_tests']),
+      'mac_rel': set(['sync_integration_tests']),
+      'win_rel': set(['sync_integration_tests']),
+    }
+  }

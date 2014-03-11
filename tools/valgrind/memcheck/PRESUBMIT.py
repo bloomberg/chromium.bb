@@ -77,5 +77,10 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   return CheckChange(input_api, output_api)
 
-def GetPreferredTrySlaves():
-  return ['linux_valgrind', 'mac_valgrind']
+def GetPreferredTryMasters(project, change):
+  return {
+    'tryserver.chromium': {
+      'linux_valgrind': set(['defaulttests']),
+      'mac_valgrind': set(['defaulttests']),
+    }
+  }

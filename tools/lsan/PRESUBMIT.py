@@ -32,5 +32,9 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   return CheckChange(input_api, output_api)
 
-def GetPreferredTrySlaves():
-  return ['linux_asan']
+def GetPreferredTryMasters(project, change):
+  return {
+    'tryserver.chromium': {
+      'linux_asan': set(['defaulttests']),
+    }
+  }

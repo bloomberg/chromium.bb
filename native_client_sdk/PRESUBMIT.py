@@ -38,12 +38,14 @@ def CheckChangeOnCommit(input_api, output_api):
   return CommonChecks(input_api, output_api)
 
 
-def GetPreferredTrySlaves(project, change):
-  return [
-    'linux_nacl_sdk',
-    'linux_nacl_sdk_build',
-    'win_nacl_sdk',
-    'win_nacl_sdk_build',
-    'mac_nacl_sdk',
-    'mac_nacl_sdk_build'
-  ]
+def GetPreferredTryMasters(project, change):
+  return {
+    'tryserver.chromium': {
+      'linux_nacl_sdk': set(['defaulttests']),
+      'linux_nacl_sdk_build': set(['defaulttests']),
+      'win_nacl_sdk': set(['defaulttests']),
+      'win_nacl_sdk_build': set(['defaulttests']),
+      'mac_nacl_sdk': set(['defaulttests']),
+      'mac_nacl_sdk_build': set(['defaulttests']),
+    }
+  }

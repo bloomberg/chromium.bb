@@ -8,8 +8,12 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into gcl.
 """
 
-def GetPreferredTrySlaves():
-  return ['linux_chromeos']
+def GetPreferredTryMasters(project, change):
+  return {
+    'tryserver.chromium': {
+      'linux_chromeos': set(['defaulttests']),
+    }
+  }
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []

@@ -31,5 +31,9 @@ def CheckChangeOnCommit(input_api, output_api):
   return CheckChange(input_api, output_api)
 
 
-def GetPreferredTrySlaves():
-  return ['linux_tsan']
+def GetPreferredTryMasters(project, change):
+  return {
+    'tryserver.chromium': {
+      'linux_tsan': set(['defaulttests']),
+    }
+  }
