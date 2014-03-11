@@ -6,6 +6,10 @@
 #ifndef _LIBEVDEV_UTIL_H_
 #define _LIBEVDEV_UTIL_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Helper for bit operations
 #define LONG_BITS (sizeof(long) * 8)
 #define NLONGS(x) (((x) + LONG_BITS - 1) / LONG_BITS)
@@ -25,5 +29,8 @@ static inline void AssignBit(unsigned long* array, int bit, int value)
         array[bit / LONG_BITS] &= ~mask;
 }
 
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif

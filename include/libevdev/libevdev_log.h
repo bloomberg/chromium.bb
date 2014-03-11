@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct Evdev_;
 typedef struct Evdev_ *EvdevPtr;
 
@@ -32,5 +36,8 @@ typedef struct Evdev_ *EvdevPtr;
     (evdev)->log((evdev)->log_udata, LOGLEVEL_WARNING, \
     "%s():%d: " format, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif

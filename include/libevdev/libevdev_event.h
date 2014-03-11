@@ -11,6 +11,9 @@
 #include <libevdev/libevdev_log.h>
 #include <libevdev/libevdev_mt.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* 1 MiB debug buffer of struct input_event objects */
 #define DEBUG_BUF_SIZE      65536
@@ -63,5 +66,9 @@ void Event_Sync_State(EvdevPtr);
 const char* Event_To_String(int type, int code);
 const char* Event_Type_To_String(int type);
 const char* Evdev_Get_Version();
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif

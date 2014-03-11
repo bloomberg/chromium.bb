@@ -11,6 +11,10 @@
 #include <stdint.h>
 #include <libevdev/libevdev_log.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * From include/linux/input.h
  * (as per linux-2.6.git:771d6d85667d68a17c24c452979f8d37cc628082)
@@ -54,5 +58,9 @@ int MT_Slot_Value_Get(MtSlotPtr, int);
 void MT_Slot_Value_Set(MtSlotPtr, int, int);
 
 void MT_Slot_Sync(EvdevPtr, MTSlotInfoPtr);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif

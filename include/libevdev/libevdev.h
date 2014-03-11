@@ -10,6 +10,10 @@
 #include <libevdev/libevdev_event.h>
 #include <libevdev/libevdev_mt.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef Success
 // from X.h
 #define Success 0
@@ -82,5 +86,9 @@ int EvdevWriteEventToFile(FILE* file, const struct input_event* event);
 
 int EvdevReadInfoFromFile(FILE* file, EvdevInfoPtr info);
 int EvdevReadEventFromFile(FILE* file, struct input_event* event);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif
