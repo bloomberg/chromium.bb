@@ -2092,10 +2092,6 @@ void RenderViewImpl::moveValidationMessage(
                                              anchor_in_root_view));
 }
 
-void RenderViewImpl::clearContextMenu() {
-  context_menu_node_.reset();
-}
-
 void RenderViewImpl::setStatusText(const WebString& text) {
 }
 

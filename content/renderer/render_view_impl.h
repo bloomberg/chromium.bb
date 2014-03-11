@@ -445,7 +445,6 @@ class CONTENT_EXPORT RenderViewImpl
   // DEPRECATED
   virtual bool runModalBeforeUnloadDialog(blink::WebFrame* frame,
                                           const blink::WebString& message);
-  virtual void clearContextMenu();
   virtual void setStatusText(const blink::WebString& text);
   virtual void setMouseOverURL(const blink::WebURL& url);
   virtual void setKeyboardFocusURL(const blink::WebURL& url);
