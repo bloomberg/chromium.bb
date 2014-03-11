@@ -288,9 +288,9 @@ TEST_F(RegistryControlledDomainTest, TestDefaultData) {
                                          EXCLUDE_UNKNOWN_REGISTRIES));
   EXPECT_EQ(3U, GetRegistryLengthFromURL("http://ferretcentral.org",
                                          EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://nowhere.foo",
+  EXPECT_EQ(0U, GetRegistryLengthFromURL("http://nowhere.notavaliddomain",
                                          EXCLUDE_UNKNOWN_REGISTRIES));
-  EXPECT_EQ(3U, GetRegistryLengthFromURL("http://nowhere.foo",
+  EXPECT_EQ(15U, GetRegistryLengthFromURL("http://nowhere.notavaliddomain",
                                          INCLUDE_UNKNOWN_REGISTRIES));
 }
 
