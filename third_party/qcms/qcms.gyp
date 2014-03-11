@@ -33,11 +33,9 @@
       'variables': {
         'conditions': [
           # For x86, turn off SSE2 for non-CrOS *nix Chrome builds.
-          # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
           ['disable_sse2==1 or \
             (branding=="Chrome" and target_arch=="ia32" and \
-             os_posix==1 and OS!="mac" and chromeos==0) or \
-            (OS=="win" and target_arch=="x64")', {
+             os_posix==1 and OS!="mac" and chromeos==0)', {
             'qcms_use_sse': 0,
           }, {
             'qcms_use_sse': 1,
@@ -53,6 +51,13 @@
           'sources': [
             'src/transform-sse1.c',
             'src/transform-sse2.c',
+          ],
+        }],
+        # MSVC x64 doesn't support the MMX intrinsics present in the SSE1 code,
+        # but that's OK since qcms prefers using SSE2 when available.
+        [ 'qcms_use_sse==1 and OS=="win" and target_arch=="x64"', {
+          'sources!': [
+            'src/transform-sse1.c',
           ],
         }],
         ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
