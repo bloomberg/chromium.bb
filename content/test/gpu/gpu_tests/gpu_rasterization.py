@@ -40,6 +40,9 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
     if not _DidTestSucceed(tab):
       raise page_test.Failure('Page indicated a failure')
 
+    if not hasattr(page, 'expectations') or not page.expectations:
+      raise page_test.Failure('Expectations not specified')
+
     if not tab.screenshot_supported:
       raise page_test.Failure('Browser does not support screenshot capture')
 
@@ -47,15 +50,13 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
     if not screenshot:
       raise page_test.Failure('Could not capture screenshot')
 
-    if hasattr(page, 'test_rect'):
-      screenshot = screenshot.Crop(
-          page.test_rect[0], page.test_rect[1],
-          page.test_rect[2], page.test_rect[3])
-
-    if not hasattr(page, 'expectations') or not page.expectations:
-      raise page_test.Failure('Expectations not specified')
-
     device_pixel_ratio = tab.EvaluateJavaScript('window.devicePixelRatio')
+    if hasattr(page, 'test_rect'):
+      test_rect = [x * device_pixel_ratio for x in page.test_rect]
+      screenshot = screenshot.Crop(
+          test_rect[0], test_rect[1],
+          test_rect[2], test_rect[3])
+
     self._ValidateScreenshotSamples(
         page.display_name,
         screenshot,
