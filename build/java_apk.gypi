@@ -513,19 +513,19 @@
       'action_name': 'javac_<(_target_name)',
       'message': 'Compiling java for <(_target_name)',
       'variables': {
-        'gen_src_dirs': [
+        'all_src_dirs': [
+          '<(java_in_dir)/src',
           '<(intermediate_dir)/gen',
+          '>@(additional_src_dirs)',
           '>@(generated_src_dirs)',
         ],
-        # If there is a separate find for additional_src_dirs, it will find the
-        # wrong .java files when additional_src_dirs is empty.
-        'java_source_list': '>|(javasources.<(_target_name).gypcmd >!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java"))',
-
       },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/javac.py',
-        '>(java_source_list)',
+        # If there is a separate find for additional_src_dirs, it will find the
+        # wrong .java files when additional_src_dirs is empty.
+        '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
         '>@(input_jars_paths)',
         '<(codegen_stamp)',
         '>@(compile_input_paths)',
@@ -537,8 +537,7 @@
         'python', '<(DEPTH)/build/android/gyp/javac.py',
         '--output-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
-        '--src-filelist=>(java_source_list)',
-        '--src-gendirs=>(gen_src_dirs)',
+        '--src-dirs=>(all_src_dirs)',
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
         '--stamp=<(compile_stamp)',

@@ -16,9 +16,8 @@ from util import md5_check
 def DoJavac(options):
   output_dir = options.output_dir
 
-  src_gendirs = build_utils.ParseGypList(options.src_gendirs)
-  java_files = (open(options.src_filelist).read().splitlines() +
-                build_utils.FindInDirectories(src_gendirs, '*.java'))
+  src_dirs = build_utils.ParseGypList(options.src_dirs)
+  java_files = build_utils.FindInDirectories(src_dirs, '*.java')
   if options.javac_includes:
     javac_includes = build_utils.ParseGypList(options.javac_includes)
     filtered_java_files = []
@@ -77,9 +76,7 @@ def DoJavac(options):
 
 def main(argv):
   parser = optparse.OptionParser()
-  parser.add_option('--src-filelist', help='File list containing java files.')
-  parser.add_option('--src-gendirs',
-      help='Directories containing generated java files.')
+  parser.add_option('--src-dirs', help='Directories containing java files.')
   parser.add_option('--javac-includes',
       help='A list of file patterns. If provided, only java files that match' +
         'one of the patterns will be compiled.')
