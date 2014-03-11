@@ -438,15 +438,7 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
-// Temporarily disabling this test while I figure it out.
-// https://code.google.com/p/chromium/issues/detail?id=349607
-#if defined(OS_WIN)
-#define MAYBE_GetImageNamed DISABLED_GetImageNamed
-#else
-#define MAYBE_GetImageNamed GetImageNamed
-#endif
-
-TEST_F(ResourceBundleImageTest, MAYBE_GetImageNamed) {
+TEST_F(ResourceBundleImageTest, GetImageNamed) {
   std::vector<ScaleFactor> supported_factors;
   supported_factors.push_back(SCALE_FACTOR_100P);
   supported_factors.push_back(SCALE_FACTOR_200P);
@@ -467,8 +459,8 @@ TEST_F(ResourceBundleImageTest, MAYBE_GetImageNamed) {
 
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
 
-#if defined(OS_CHROMEOS)
-  // ChromeOS loads highest scale factor first.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  // ChromeOS/Windows load highest scale factor first.
   EXPECT_EQ(ui::SCALE_FACTOR_200P,
             GetSupportedScaleFactor(image_skia->image_reps()[0].scale()));
 #else
