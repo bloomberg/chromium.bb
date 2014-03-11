@@ -340,7 +340,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 #endif
   }
 
-  void InitializeController() {
+  void InitializeControllerWithoutShowing() {
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
     form.method = ASCIIToUTF16("POST");
@@ -361,6 +361,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
         form,
         metric_logger_,
         message_loop_runner_);
+  }
+
+  void InitializeController() {
+    InitializeControllerWithoutShowing();
     controller_->Show();
     CycleRunLoops();  // Ensures dialog is fully visible.
   }
@@ -1486,48 +1490,22 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
-// A shim to install a TestPersonalDataManager instead of the real thing.
-class TestPersonalDataManagerService
-    : public autofill::PersonalDataManagerService {
- public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-    return new TestPersonalDataManagerService();
-  }
-
-  TestPersonalDataManagerService() {}
-  virtual ~TestPersonalDataManagerService() {}
-
-  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
-    return &test_data_manager_;
-  }
-  TestPersonalDataManager* GetTestPersonalDataManager() {
-    return &test_data_manager_;
-  }
-
- private:
-  TestPersonalDataManager test_data_manager_;
-  DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManagerService);
-};
-
 // Changing the data source to or from Wallet preserves the shipping country,
 // but not the billing country because Wallet only supports US billing
 // addresses.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        ChangingDataSourcePreservesCountry) {
-  // Set the default country to Canada.
-  static_cast<TestPersonalDataManagerService*>(
-      autofill::PersonalDataManagerFactory::GetInstance()->
-          SetTestingFactoryAndUse(
-              browser()->profile(),
-              TestPersonalDataManagerService::Build))->
-                  GetTestPersonalDataManager()->set_default_country_code("CA");
+  InitializeControllerWithoutShowing();
+  controller()->GetTestingManager()->set_default_country_code("CA");
+  controller()->Show();
+  CycleRunLoops();
 
-  InitializeController();
   AutofillProfile verified_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
 
   CreditCard verified_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingCreditCard(&verified_card);
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
   controller()->OnDidFetchWalletCookieValue(std::string());
   scoped_ptr<wallet::WalletItems> items =
@@ -1541,9 +1519,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
-  // Default shipping country matches timezone, but default billing is always
-  // US in Wallet mode.
+  // Default shipping country matches PDM's default, but default billing is
+  // always US in Wallet mode.
   scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("Canada"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));

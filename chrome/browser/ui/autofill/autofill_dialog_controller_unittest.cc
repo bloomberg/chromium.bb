@@ -3105,7 +3105,8 @@ TEST_F(AutofillDialogControllerTest, NoPartiallySupportedCountriesSuggested) {
                               ASCIIToUTF16(partially_supported_country));
   controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
 
-  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
+  EXPECT_FALSE(
+      controller()->SuggestionStateForSection(SECTION_BILLING).visible);
 }
 
 TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
@@ -3236,6 +3237,82 @@ TEST_F(AutofillDialogControllerTest, ValidButUnverifiedWhenRulesFail) {
             full_profile.GetRawInfo(NAME_FULL));
   EXPECT_EQ(imported_profile.origin(), GURL(kSourceUrl).GetOrigin().spec());
   EXPECT_FALSE(imported_profile.IsVerified());
+}
+
+TEST_F(AutofillDialogControllerTest, LimitedCountryChoices) {
+  ui::ComboboxModel* shipping_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
+  const int default_number_of_countries =
+      shipping_country_model->GetItemCount();
+  // We show a lot of countries by default, but the exact number doesn't matter.
+  EXPECT_GT(default_number_of_countries, 50);
+
+  // Create a form data that simulates:
+  //   <select autocomplete="billing country">
+  //     <option value="AU">Down Under</option>
+  //     <option value="">fR</option>  <!-- Case doesn't matter -->
+  //     <option value="GRMNY">Germany</option>
+  //   </select>
+  // Only country codes are respected, whether they're in value or the option's
+  // text content. Thus the first two options should be recognized.
+  FormData form_data;
+  FormFieldData field;
+  field.autocomplete_attribute = "billing country";
+  field.option_contents.push_back(ASCIIToUTF16("Down Under"));
+  field.option_values.push_back(ASCIIToUTF16("AU"));
+  field.option_contents.push_back(ASCIIToUTF16("Fr"));
+  field.option_values.push_back(ASCIIToUTF16(""));
+  field.option_contents.push_back(ASCIIToUTF16("Germany"));
+  field.option_values.push_back(ASCIIToUTF16("GRMNY"));
+  form_data.fields.push_back(field);
+  ResetControllerWithFormData(form_data);
+  controller()->Show();
+
+  // Shipping model shouldn't have changed.
+  shipping_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
+  EXPECT_EQ(default_number_of_countries,
+            shipping_country_model->GetItemCount());
+  // Billing model now only has two items.
+  ui::ComboboxModel* billing_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_BILLING_COUNTRY);
+  ASSERT_EQ(2, billing_country_model->GetItemCount());
+  EXPECT_EQ(billing_country_model->GetItemAt(0), ASCIIToUTF16("Australia"));
+  EXPECT_EQ(billing_country_model->GetItemAt(1), ASCIIToUTF16("France"));
+
+  // Make sure it also applies to profile suggestions.
+  AutofillProfile us_profile(test::GetVerifiedProfile());
+  us_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  controller()->GetTestingManager()->AddTestingProfile(&us_profile);
+  // Don't show a suggestion if the only one that exists is disabled.
+  EXPECT_FALSE(
+      controller()->SuggestionStateForSection(SECTION_BILLING).visible);
+
+  // Add a profile with an acceptable country; suggestion should be shown.
+  ResetControllerWithFormData(form_data);
+  controller()->Show();
+  AutofillProfile au_profile(test::GetVerifiedProfile2());
+  au_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("AU"));
+  controller()->GetTestingManager()->AddTestingProfile(&us_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&au_profile);
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_BILLING);
+  ASSERT_TRUE(model);
+  EXPECT_EQ(4, model->GetItemCount());
+  EXPECT_FALSE(model->IsEnabledAt(0));
+  EXPECT_TRUE(model->IsEnabledAt(1));
+
+  // Add <input type="text" autocomplete="billing country"></input>
+  // This should open up selection of all countries again.
+  FormFieldData field2;
+  field2.autocomplete_attribute = "billing country";
+  form_data.fields.push_back(field2);
+  ResetControllerWithFormData(form_data);
+  controller()->Show();
+
+  billing_country_model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_BILLING_COUNTRY);
+  EXPECT_EQ(default_number_of_countries,
+            billing_country_model->GetItemCount());
 }
 
 }  // namespace autofill

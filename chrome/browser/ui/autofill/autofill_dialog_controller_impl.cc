@@ -624,6 +624,15 @@ void AutofillDialogControllerImpl::Show() {
     return;
   }
 
+  billing_country_combobox_model_.reset(new CountryComboboxModel(
+      *GetManager(),
+      form_structure_.PossibleValues(ADDRESS_BILLING_COUNTRY),
+      false));
+  shipping_country_combobox_model_.reset(new CountryComboboxModel(
+      *GetManager(),
+      form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY),
+      false));
+
   // Log any relevant UI metrics and security exceptions.
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
 
@@ -1362,10 +1371,10 @@ ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
       return &cc_exp_year_combobox_model_;
 
     case ADDRESS_BILLING_COUNTRY:
-      return &billing_country_combobox_model_;
+      return billing_country_combobox_model_.get();
 
     case ADDRESS_HOME_COUNTRY:
-      return &shipping_country_combobox_model_;
+      return shipping_country_combobox_model_.get();
 
     default:
       return NULL;
@@ -2647,8 +2656,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       wallet_items_requested_(false),
       handling_use_wallet_link_click_(false),
       passive_failed_(false),
-      billing_country_combobox_model_(*GetManager(), false),
-      shipping_country_combobox_model_(*GetManager(), false),
       suggested_cc_(this),
       suggested_billing_(this),
       suggested_cc_billing_(this),
@@ -2804,6 +2811,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           key,
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
+      suggested_shipping_.SetEnabled(
+          key,
+          CanAcceptCountry(SECTION_SHIPPING,
+                           addresses[i]->country_name_code()));
 
       // TODO(scr): Move this assignment outside the loop or comment why it
       // can't be there.
@@ -2824,7 +2835,9 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       std::string first_active_instrument_key;
       std::string default_instrument_key;
       for (size_t i = 0; i < instruments.size(); ++i) {
-        bool allowed = IsInstrumentAllowed(*instruments[i]);
+        bool allowed = IsInstrumentAllowed(*instruments[i]) &&
+            CanAcceptCountry(SECTION_BILLING,
+                             instruments[i]->address().country_name_code());
         gfx::Image icon = instruments[i]->CardIcon();
         if (!allowed && !icon.IsEmpty()) {
           // Create a grayed disabled icon.
@@ -2903,9 +2916,19 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         // Don't add variants for addresses: name is part of credit card and
         // we'll just ignore email and phone number variants.
         suggested_shipping_.AddKeyedItem(profile.guid(), labels[i]);
+        suggested_shipping_.SetEnabled(
+            profile.guid(),
+            CanAcceptCountry(
+                SECTION_SHIPPING,
+                base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))));
         if (!profile.GetRawInfo(EMAIL_ADDRESS).empty() &&
             !profile.IsPresentButInvalid(EMAIL_ADDRESS)) {
           suggested_billing_.AddKeyedItem(profile.guid(), labels[i]);
+          suggested_billing_.SetEnabled(
+              profile.guid(),
+              CanAcceptCountry(
+                  SECTION_BILLING,
+                  base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))));
         }
       }
     }
@@ -3112,6 +3135,19 @@ base::string16 AutofillDialogControllerImpl::GetValueFromSection(
   return output[type];
 }
 
+bool AutofillDialogControllerImpl::CanAcceptCountry(
+    DialogSection section,
+    const std::string& country_code) {
+  CountryComboboxModel* model = CountryComboboxModelForSection(section);
+  const std::vector<AutofillCountry*>& countries = model->countries();
+  for (size_t i = 0; i < countries.size(); ++i) {
+    if (countries[i] && countries[i]->country_code() == country_code)
+      return true;
+  }
+
+  return false;
+}
+
 SuggestionsMenuModel* AutofillDialogControllerImpl::
     SuggestionsMenuModelForSection(DialogSection section) {
   switch (section) {
@@ -3153,10 +3189,10 @@ DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
 CountryComboboxModel* AutofillDialogControllerImpl::
     CountryComboboxModelForSection(DialogSection section) {
   if (section == SECTION_BILLING)
-    return &billing_country_combobox_model_;
+    return billing_country_combobox_model_.get();
 
   if (section == SECTION_SHIPPING)
-    return &shipping_country_combobox_model_;
+    return shipping_country_combobox_model_.get();
 
   return NULL;
 }
@@ -3645,9 +3681,13 @@ void AutofillDialogControllerImpl::GetDefaultAutofillChoice(
   // item.
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   for (int i = 0; i < model->GetItemCount(); ++i) {
-    if (IsASuggestionItemKey(model->GetItemKeyAt(i))) {
+    // Try the first suggestion item that is enabled.
+    if (IsASuggestionItemKey(model->GetItemKeyAt(i)) && model->IsEnabledAt(i)) {
       *guid = model->GetItemKeyAt(i);
-      break;
+      return;
+    // Fall back to the first non-suggestion key.
+    } else if (!IsASuggestionItemKey(model->GetItemKeyAt(i)) && guid->empty()) {
+      *guid = model->GetItemKeyAt(i);
     }
   }
 }

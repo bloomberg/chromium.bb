@@ -83,7 +83,8 @@ std::string SuggestionsMenuModel::GetItemKeyForCheckedItem() const {
 void SuggestionsMenuModel::SetCheckedItem(const std::string& item_key) {
   for (size_t i = 0; i < items_.size(); ++i) {
     if (items_[i].key == item_key) {
-      checked_item_ = i;
+      if (IsEnabledAt(i))
+        checked_item_ = i;
       break;
     }
   }

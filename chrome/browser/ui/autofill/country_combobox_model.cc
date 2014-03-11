@@ -22,27 +22,39 @@ namespace autofill {
 
 namespace {
 
-bool ShouldShowCountry(const std::string& country_code) {
+bool ShouldShowCountry(const std::string& country_code,
+                       bool show_partially_supported_countries,
+                       const std::set<base::string16>& candidate_countries) {
 #if defined(ENABLE_AUTOFILL_DIALOG)
-  return i18ninput::CountryIsFullySupported(country_code);
-#else
-  return true;
+  if (!show_partially_supported_countries &&
+      !i18ninput::CountryIsFullySupported(country_code)) {
+    return false;
+  }
 #endif
+
+  if (!candidate_countries.empty() &&
+      !candidate_countries.count(base::ASCIIToUTF16(country_code))) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
 
 CountryComboboxModel::CountryComboboxModel(
     const PersonalDataManager& manager,
+    const std::set<base::string16>& country_filter,
     bool show_partially_supported_countries) {
   // Insert the default country at the top as well as in the ordered list.
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
   std::string default_country_code =
       manager.GetDefaultCountryCodeForNewAddress();
   DCHECK(!default_country_code.empty());
 
-  if (show_partially_supported_countries ||
-      ShouldShowCountry(default_country_code)) {
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  if (ShouldShowCountry(default_country_code,
+                        show_partially_supported_countries,
+                        country_filter)) {
     countries_.push_back(new AutofillCountry(default_country_code, app_locale));
     // The separator item.
     countries_.push_back(NULL);
@@ -60,8 +72,11 @@ CountryComboboxModel::CountryComboboxModel(
   std::vector<AutofillCountry*> sorted_countries;
   for (std::vector<std::string>::const_iterator it =
            available_countries.begin(); it != available_countries.end(); ++it) {
-    if (show_partially_supported_countries || ShouldShowCountry(*it))
+    if (ShouldShowCountry(*it,
+                          show_partially_supported_countries,
+                          country_filter)) {
       sorted_countries.push_back(new AutofillCountry(*it, app_locale));
+    }
   }
 
   l10n_util::SortStringsUsingMethod(app_locale,

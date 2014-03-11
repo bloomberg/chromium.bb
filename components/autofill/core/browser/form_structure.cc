@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
@@ -1110,6 +1111,35 @@ bool FormStructure::FillFields(
     }
   }
   return filled_something;
+}
+
+std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
+  std::set<base::string16> values;
+  AutofillType target_type(type);
+  for (std::vector<AutofillField*>::iterator iter = fields_.begin();
+       iter != fields_.end(); ++iter) {
+    AutofillField* field = *iter;
+    if (field->Type().GetStorableType() != target_type.GetStorableType() ||
+        field->Type().group() != target_type.group()) {
+      continue;
+    }
+
+    // No option values; anything goes.
+    if (field->option_values.empty())
+      return std::set<base::string16>();
+
+    for (size_t i = 0; i < field->option_values.size(); ++i) {
+      if (!field->option_values[i].empty())
+        values.insert(base::i18n::ToUpper(field->option_values[i]));
+    }
+
+    for (size_t i = 0; i < field->option_contents.size(); ++i) {
+      if (!field->option_contents[i].empty())
+        values.insert(base::i18n::ToUpper(field->option_contents[i]));
+    }
+  }
+
+  return values;
 }
 
 void FormStructure::IdentifySections(bool has_author_specified_sections) {

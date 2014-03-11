@@ -27,7 +27,9 @@ class CountryComboboxModelTest : public testing::Test {
  protected:
   void CreateModel(bool show_partially_supported_countries) {
     model_.reset(new CountryComboboxModel(
-        manager_, show_partially_supported_countries));
+        manager_,
+        std::set<base::string16>(),
+        show_partially_supported_countries));
   }
 
   TestPersonalDataManager* manager() { return &manager_; }

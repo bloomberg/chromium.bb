@@ -427,7 +427,11 @@ class AutofillDialogControllerImpl
   // Gets the value for |type| in |section|, whether it comes from manual user
   // input or the active suggestion.
   base::string16 GetValueFromSection(DialogSection section,
-                               ServerFieldType type);
+                                     ServerFieldType type);
+
+  // Returns whether the given section can accept an address with the given
+  // country code.
+  bool CanAcceptCountry(DialogSection section, const std::string& country_code);
 
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
@@ -696,8 +700,8 @@ class AutofillDialogControllerImpl
   YearComboboxModel cc_exp_year_combobox_model_;
 
   // Models for country input.
-  CountryComboboxModel billing_country_combobox_model_;
-  CountryComboboxModel shipping_country_combobox_model_;
+  scoped_ptr<CountryComboboxModel> billing_country_combobox_model_;
+  scoped_ptr<CountryComboboxModel> shipping_country_combobox_model_;
 
   // Models for the suggestion views.
   SuggestionsMenuModel suggested_cc_;

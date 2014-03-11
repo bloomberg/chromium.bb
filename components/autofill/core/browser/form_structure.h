@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_STRUCTURE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_STRUCTURE_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -150,6 +151,15 @@ class FormStructure {
       const InputFieldComparator& matches,
       const base::Callback<base::string16(const AutofillType&)>& get_info,
       const std::string& app_locale);
+
+  // Returns the values that can be filled into the form structure for the
+  // given type. For example, there's no way to fill in a value of "The Moon"
+  // into ADDRESS_HOME_STATE if the form only has a
+  // <select autocomplete="region"> with no "The Moon" option. Returns an
+  // empty set if the form doesn't reference the given type or if all inputs
+  // are accepted (e.g., <input type="text" autocomplete="region">).
+  // All returned values are standardized to upper case.
+  std::set<base::string16> PossibleValues(ServerFieldType type);
 
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);

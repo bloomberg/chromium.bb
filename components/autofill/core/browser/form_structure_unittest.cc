@@ -2359,4 +2359,44 @@ TEST(FormStructureTest, SkipFieldTest) {
   EXPECT_EQ(kResponse, encoded_xml);
 }
 
+TEST(FormStructureTest, PossibleValues) {
+  FormData form_data;
+  FormFieldData field;
+  field.autocomplete_attribute = "billing country";
+  field.option_contents.push_back(ASCIIToUTF16("Down Under"));
+  field.option_values.push_back(ASCIIToUTF16("AU"));
+  field.option_contents.push_back(ASCIIToUTF16("Fr"));
+  field.option_values.push_back(ASCIIToUTF16(""));
+  field.option_contents.push_back(ASCIIToUTF16("Germany"));
+  field.option_values.push_back(ASCIIToUTF16("GRMNY"));
+  form_data.fields.push_back(field);
+  FormStructure form_structure(form_data);
+
+  bool unused;
+  form_structure.ParseFieldTypesFromAutocompleteAttributes(&unused, &unused);
+
+  // All values in <option> value= or contents are returned, set to upper case.
+  std::set<base::string16> possible_values =
+      form_structure.PossibleValues(ADDRESS_BILLING_COUNTRY);
+  EXPECT_EQ(5U, possible_values.size());
+  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("AU")));
+  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("FR")));
+  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("DOWN UNDER")));
+  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("GERMANY")));
+  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("GRMNY")));
+  EXPECT_EQ(0U, possible_values.count(ASCIIToUTF16("Fr")));
+  EXPECT_EQ(0U, possible_values.count(ASCIIToUTF16("DE")));
+
+  // No field for the given type; empty value set.
+  EXPECT_EQ(0U, form_structure.PossibleValues(ADDRESS_HOME_COUNTRY).size());
+
+  // A freeform input (<input>) allows any value (overriding other <select>s).
+  FormFieldData freeform_field;
+  freeform_field.autocomplete_attribute = "billing country";
+  form_data.fields.push_back(freeform_field);
+  FormStructure form_structure2(form_data);
+  form_structure2.ParseFieldTypesFromAutocompleteAttributes(&unused, &unused);
+  EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
+}
+
 }  // namespace autofill

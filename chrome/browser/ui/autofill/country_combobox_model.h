@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_COUNTRY_COMBOBOX_MODEL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_COUNTRY_COMBOBOX_MODEL_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,9 +22,12 @@ class PersonalDataManager;
 // A model for countries to be used to enter addresses.
 class CountryComboboxModel : public ui::ComboboxModel {
  public:
+  // When |country_filter| is non-empty, it provides the set of country values
+  // (both 2-letter codes and display names) that are available to choose from.
   // When |show_partially_supported_countries| is false, countries with
   // semi-supported address components (e.g. dependent locality) will be hidden.
   CountryComboboxModel(const PersonalDataManager& manager,
+                       const std::set<base::string16>& country_filter,
                        bool show_partially_supported_countries);
   virtual ~CountryComboboxModel();
 
