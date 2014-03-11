@@ -6,14 +6,13 @@
 #define CONTENT_BROWSER_MESSAGE_PORT_MESSAGE_FILTER_H_
 
 #include "base/callback.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
 
 // Filter for MessagePort related IPC messages (creating and destroying a
 // MessagePort, sending a message via a MessagePort etc).
-class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
+class MessagePortMessageFilter : public BrowserMessageFilter {
  public:
   typedef base::Callback<int(void)> NextRoutingIDCallback;
 
@@ -29,13 +28,11 @@ class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
 
   int GetNextRoutingID();
 
- protected:
-  // This is protected, so we can define sub classes for testing.
-  virtual ~MessagePortMessageFilter();
-
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<MessagePortMessageFilter>;
+
+  virtual ~MessagePortMessageFilter();
 
   // Message handlers.
   void OnCreateMessagePort(int* route_id, int* message_port_id);

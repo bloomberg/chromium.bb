@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 
-#include <set>
-
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/singleton.h"
@@ -87,22 +85,11 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   void OnSharedWorkerMessageFilterClosing(
       SharedWorkerMessageFilter* filter);
 
-  // Checks the worker dependency of renderer processes and calls
-  // IncrementWorkerRefCount and DecrementWorkerRefCount of
-  // RenderProcessHostImpl on UI thread if necessary.
-  void CheckWorkerDependency();
-
  private:
   friend struct DefaultSingletonTraits<SharedWorkerServiceImpl>;
-  friend class SharedWorkerServiceImplTest;
-
-  typedef void (*UpdateWorkerDependencyFunc)(const std::vector<int>&,
-                                             const std::vector<int>&);
 
   SharedWorkerServiceImpl();
   virtual ~SharedWorkerServiceImpl();
-
-  void ResetForTesting();
 
   SharedWorkerHost* FindSharedWorkerHost(
       SharedWorkerMessageFilter* filter,
@@ -113,16 +100,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
       const base::string16& name,
       const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
-
-  // Returns the IDs of the renderer processes which are executing
-  // SharedWorkers connected to other renderer processes.
-  const std::set<int> GetRenderersWithWorkerDependency();
-
-  void ChangeUpdateWorkerDependencyFuncForTesting(
-      UpdateWorkerDependencyFunc new_func);
-
-  std::set<int> last_worker_depended_renderers_;
-  UpdateWorkerDependencyFunc update_worker_dependency_;
 
   // Pair of render_process_id and worker_route_id.
   typedef std::pair<int, int> ProcessRouteIdPair;

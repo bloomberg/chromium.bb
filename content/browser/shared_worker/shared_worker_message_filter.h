@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_MESSAGE_FILTER_H_
 
 #include "content/browser/worker_host/worker_storage_partition.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
@@ -18,7 +17,7 @@ class ResourceContext;
 
 // If "enable-embedded-shared-worker" is set this class will be used instead of
 // WorkerMessageFilter.
-class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
+class SharedWorkerMessageFilter : public BrowserMessageFilter {
  public:
   SharedWorkerMessageFilter(int render_process_id,
                             ResourceContext* resource_context,
@@ -37,11 +36,9 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
     return message_port_message_filter_;
   }
 
- protected:
-  // This is protected, so we can define sub classes for testing.
+ private:
   virtual ~SharedWorkerMessageFilter();
 
- private:
   // Message handlers.
   void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                       int* route_id);
