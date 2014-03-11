@@ -51,8 +51,24 @@ void RenderTableCol::styleDidChange(StyleDifference diff, const RenderStyle* old
     // If border was changed, notify table.
     if (parent()) {
         RenderTable* table = this->table();
-        if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border())
+        if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border()) {
             table->invalidateCollapsedBorders();
+        } else if (oldStyle && oldStyle->logicalWidth() != style()->logicalWidth()) {
+            // FIXME : setPreferredLogicalWidthsDirty is done for all cells as of now.
+            // Need to find a better way so that only the cells which are changed by
+            // the col width should have preferred logical widths recomputed.
+            unsigned nEffCols = table->numEffCols();
+            for (RenderTableSection* section = table->topSection(); section; section = table->sectionBelow(section)) {
+                for (unsigned j = 0; j < nEffCols; j++) {
+                    for (unsigned i = 0; i < section->numRows(); i++) {
+                        RenderTableCell* cell = section->primaryCellAt(i, j);
+                        if (!cell)
+                            continue;
+                        cell->setPreferredLogicalWidthsDirty();
+                    }
+                }
+            }
+        }
     }
 }
 

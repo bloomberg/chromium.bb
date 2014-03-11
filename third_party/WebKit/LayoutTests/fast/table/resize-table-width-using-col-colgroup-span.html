@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+           #thecol {
+                width: 200px;
+            }
+            td {
+                height: 25px;
+            }
+        </style>
+        <script type="text/javascript">
+           function runTest() {
+                var col = document.getElementById('thecol');
+                col.offsetTop;
+                col.style.width="100px";
+                window.checkLayout("#td1", document.getElementById("test-output"));
+                window.checkLayout("#td2", document.getElementById("test-output"));
+                window.checkLayout("#td3", document.getElementById("test-output"));
+                window.checkLayout("#td4", document.getElementById("test-output"));
+                window.checkLayout("#td5", document.getElementById("test-output"));
+                window.checkLayout("#td6", document.getElementById("test-output"));
+                window.checkLayout("#td7", document.getElementById("test-output"));
+                window.checkLayout("#td8", document.getElementById("test-output"));
+                window.checkLayout("#td9", document.getElementById("test-output"));
+            }
+        </script>
+        <script src="../../resources/check-layout.js"></script>
+    </head>
+    <body onload="runTest()">
+        Tests that the width of table cell changes on changing the colgroup width to new width.
+        <table>
+            <colgroup id="thecol" span="4" style="background-color:red"/>
+            </col>
+            <thead>
+                <tr>
+                   <td id="td1" data-expected-width="100"></td>
+                   <td id="td2" data-expected-width="100"></td>
+                   <td id="td3" data-expected-width="100"></td>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td id="td4" data-expected-width="100"></td>
+                    <td id="td5" data-expected-width="100"></td>
+                    <td id="td6" data-expected-width="100"></td>
+                </tr>
+            </tfoot>
+            <tbody>
+                <tr>
+                    <td id="td7" data-expected-width="100"></td>
+                    <td id="td8" data-expected-width="100"></td>
+                    <td id="td9" data-expected-width="100"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div id="test-output"></div>
+    </body>
+</html>
