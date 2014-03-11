@@ -41,12 +41,12 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/HashTraits.h"
+#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
-DOMWrapperWorld* DOMWrapperWorld::worldOfInitializingWindow = 0;
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(int worldId, int extensionGroup)
 {
@@ -58,6 +58,14 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
     , m_extensionGroup(extensionGroup)
     , m_domDataStore(adoptPtr(new DOMDataStore(isMainWorld())))
 {
+}
+
+DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
+{
+    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+    if (context.IsEmpty() || !toDOMWindow(context))
+        return 0;
+    return world(context);
 }
 
 DOMWrapperWorld* DOMWrapperWorld::mainWorld()
@@ -199,6 +207,11 @@ void DOMWrapperWorld::clearIsolatedWorldContentSecurityPolicy(int worldId)
 {
     ASSERT(isIsolatedWorldId(worldId));
     isolatedWorldContentSecurityPolicies().remove(worldId);
+}
+
+bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
+{
+    return V8WindowShell::contextHasCorrectPrototype(context);
 }
 
 } // namespace WebCore
