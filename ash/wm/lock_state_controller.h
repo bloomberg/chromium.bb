@@ -11,6 +11,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -318,6 +319,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   base::OneShotTimer<LockStateController> real_shutdown_timer_;
 
   base::Closure lock_screen_displayed_callback_;
+
+  base::WeakPtrFactory<LockStateController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LockStateController);
 };
