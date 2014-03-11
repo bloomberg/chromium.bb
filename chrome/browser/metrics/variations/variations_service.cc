@@ -445,8 +445,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
       RecordLastFetchTime();
       // Update the seed date value in local state (used for expiry check on
       // next start up), since 304 is a successful response.
-      local_state_->SetInt64(prefs::kVariationsSeedDate,
-                             response_date.ToInternalValue());
+      seed_store_.UpdateSeedDateAndLogDayChange(response_date);
     }
     return;
   }

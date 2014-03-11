@@ -38,6 +38,10 @@ class VariationsSeedStore {
                      const std::string& base64_seed_signature,
                      const base::Time& date_fetched);
 
+  // Updates |kVariationsSeedDate| and logs when previous date was from a
+  // different day.
+  void UpdateSeedDateAndLogDayChange(const base::Time& server_date_fetched);
+
   // Returns the serial number of the last loaded or stored seed.
   const std::string& variations_serial_number() const {
     return variations_serial_number_;

@@ -72,6 +72,44 @@ void RecordVariationSeedEmptyHistogram(VariationSeedEmptyState state) {
                             VARIATIONS_SEED_EMPTY_ENUM_SIZE);
 }
 
+// Note: UMA histogram enum - don't re-order or remove entries.
+enum VariationsSeedDateChangeState {
+  SEED_DATE_NO_OLD_DATE,
+  SEED_DATE_NEW_DATE_OLDER,
+  SEED_DATE_SAME_DAY,
+  SEED_DATE_NEW_DAY,
+  SEED_DATE_ENUM_SIZE,
+};
+
+// Truncates a time to the start of the day in UTC. If given a time representing
+// 2014-03-11 10:18:03.1 UTC, it will return a time representing
+// 2014-03-11 00:00:00.0 UTC.
+base::Time TruncateToUTCDay(const base::Time& time) {
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  exploded.hour = 0;
+  exploded.minute = 0;
+  exploded.second = 0;
+  exploded.millisecond = 0;
+
+  return base::Time::FromUTCExploded(exploded);
+}
+
+VariationsSeedDateChangeState GetSeedDateChangeState(
+    const base::Time& server_seed_date,
+    const base::Time& stored_seed_date) {
+  if (server_seed_date < stored_seed_date)
+    return SEED_DATE_NEW_DATE_OLDER;
+
+  if (TruncateToUTCDay(server_seed_date) !=
+      TruncateToUTCDay(stored_seed_date)) {
+    // The server date is earlier than the stored date, and they are from
+    // different UTC days, so |server_seed_date| is a valid new day.
+    return SEED_DATE_NEW_DAY;
+  }
+  return SEED_DATE_SAME_DAY;
+}
+
 }  // namespace
 
 VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
@@ -158,13 +196,32 @@ bool VariationsSeedStore::StoreSeedData(
   local_state_->ClearPref(prefs::kVariationsSeedHash);
 
   local_state_->SetString(prefs::kVariationsSeed, base64_seed_data);
-  local_state_->SetInt64(prefs::kVariationsSeedDate,
-                         date_fetched.ToInternalValue());
+  UpdateSeedDateAndLogDayChange(date_fetched);
   local_state_->SetString(prefs::kVariationsSeedSignature,
                           base64_seed_signature);
   variations_serial_number_ = seed.serial_number();
 
   return true;
+}
+
+void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
+    const base::Time& server_date_fetched) {
+  VariationsSeedDateChangeState date_change = SEED_DATE_NO_OLD_DATE;
+
+  if (local_state_->HasPrefPath(prefs::kVariationsSeedDate)) {
+    const int64 stored_date_value =
+        local_state_->GetInt64(prefs::kVariationsSeedDate);
+    const base::Time stored_date =
+        base::Time::FromInternalValue(stored_date_value);
+
+    date_change = GetSeedDateChangeState(server_date_fetched, stored_date);
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Variations.SeedDateChange", date_change,
+                            SEED_DATE_ENUM_SIZE);
+
+  local_state_->SetInt64(prefs::kVariationsSeedDate,
+                         server_date_fetched.ToInternalValue());
 }
 
 // static
