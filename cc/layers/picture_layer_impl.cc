@@ -54,8 +54,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
-      should_use_gpu_rasterization_(tree_impl->settings().rasterization_site ==
-                                    LayerTreeSettings::GpuRasterization) {}
+      has_gpu_rasterization_hint_(false) {}
 
 PictureLayerImpl::~PictureLayerImpl() {}
 
@@ -92,6 +91,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->SetIsMask(is_mask_);
   layer_impl->pile_ = pile_;
+  layer_impl->SetHasGpuRasterizationHint(has_gpu_rasterization_hint_);
 
   // Tilings would be expensive to push, so we swap.  This optimization requires
   // an extra invalidation in SyncFromActiveLayer.
@@ -466,14 +466,24 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
   return pile_->GetFlattenedPicture();
 }
 
-void PictureLayerImpl::SetShouldUseGpuRasterization(
-    bool should_use_gpu_rasterization) {
-  if (should_use_gpu_rasterization != should_use_gpu_rasterization_) {
-    should_use_gpu_rasterization_ = should_use_gpu_rasterization;
+void PictureLayerImpl::SetHasGpuRasterizationHint(bool has_hint) {
+  bool old_should_use_gpu_rasterization = ShouldUseGpuRasterization();
+  has_gpu_rasterization_hint_ = has_hint;
+  if (ShouldUseGpuRasterization() != old_should_use_gpu_rasterization)
     RemoveAllTilings();
-  } else {
-    should_use_gpu_rasterization_ = should_use_gpu_rasterization;
+}
+
+bool PictureLayerImpl::ShouldUseGpuRasterization() const {
+  switch (layer_tree_impl()->settings().rasterization_site) {
+    case LayerTreeSettings::CpuRasterization:
+      return false;
+    case LayerTreeSettings::HybridRasterization:
+      return has_gpu_rasterization_hint_;
+    case LayerTreeSettings::GpuRasterization:
+      return true;
   }
+  NOTREACHED();
+  return false;
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
@@ -484,7 +494,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   int flags = 0;
   if (is_using_lcd_text_)
     flags |= Tile::USE_LCD_TEXT;
-  if (should_use_gpu_rasterization())
+  if (ShouldUseGpuRasterization())
     flags |= Tile::USE_GPU_RASTERIZATION;
   return layer_tree_impl()->tile_manager()->CreateTile(
       pile_.get(),
@@ -508,8 +518,8 @@ const Region* PictureLayerImpl::GetInvalidation() {
 const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
     const PictureLayerTiling* tiling) const {
 
-  if (!twin_layer_ || twin_layer_->should_use_gpu_rasterization() !=
-      should_use_gpu_rasterization())
+  if (!twin_layer_ ||
+      twin_layer_->ShouldUseGpuRasterization() != ShouldUseGpuRasterization())
     return NULL;
   for (size_t i = 0; i < twin_layer_->tilings_->num_tilings(); ++i)
     if (twin_layer_->tilings_->tiling_at(i)->contents_scale() ==
@@ -858,8 +868,8 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   const Region& recorded = pile_->recorded_region();
   DCHECK(!recorded.IsEmpty());
 
-  if (twin_layer_ && twin_layer_->should_use_gpu_rasterization() ==
-      should_use_gpu_rasterization())
+  if (twin_layer_ &&
+      twin_layer_->ShouldUseGpuRasterization() == ShouldUseGpuRasterization())
     twin_layer_->SyncTiling(tiling);
 
   return tiling;
@@ -879,7 +889,8 @@ void PictureLayerImpl::RemoveTiling(float contents_scale) {
 }
 
 void PictureLayerImpl::RemoveAllTilings() {
-  tilings_->RemoveAllTilings();
+  if (tilings_)
+    tilings_->RemoveAllTilings();
   // If there are no tilings, then raster scales are no longer meaningful.
   ResetRasterScale();
 }
@@ -1234,6 +1245,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   }
   state->Set("coverage_tiles", coverage_tiles.release());
   state->SetBoolean("is_using_lcd_text", is_using_lcd_text_);
+  state->SetBoolean("using_gpu_rasterization", ShouldUseGpuRasterization());
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {

@@ -46,6 +46,13 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
   layer_->layer()->SetDrawCheckerboardForMissingTiles(enable);
 }
 
+void WebContentLayerImpl::setHasGpuRasterizationHint(bool has_hint) {
+  if (WebLayerImpl::UsingPictureLayer()) {
+    static_cast<PictureLayer*>(layer_->layer())
+        ->SetHasGpuRasterizationHint(has_hint);
+  }
+}
+
 void WebContentLayerImpl::PaintContents(SkCanvas* canvas,
                                         const gfx::Rect& clip,
                                         gfx::RectF* opaque) {

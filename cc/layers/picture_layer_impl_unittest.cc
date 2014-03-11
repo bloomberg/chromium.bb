@@ -15,6 +15,8 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/gpu_rasterization_settings.h"
+#include "cc/test/hybrid_rasterization_settings.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -42,6 +44,11 @@ class PictureLayerImplTest : public testing::Test {
   PictureLayerImplTest()
       : proxy_(base::MessageLoopProxy::current()),
         host_impl_(ImplSidePaintingSettings(), &proxy_),
+        id_(7) {}
+
+  explicit PictureLayerImplTest(const LayerTreeSettings& settings)
+      : proxy_(base::MessageLoopProxy::current()),
+        host_impl_(settings, &proxy_),
         id_(7) {}
 
   virtual ~PictureLayerImplTest() {
@@ -1415,28 +1422,20 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(tile_scale));
 }
 
-TEST_F(PictureLayerImplTest, TilingGpuRasterization) {
+TEST_F(PictureLayerImplTest, TilingWithoutGpuRasterization) {
   gfx::Size default_tile_size(host_impl_.settings().default_tile_size);
   gfx::Size layer_bounds(default_tile_size.width() * 4,
                          default_tile_size.height() * 4);
   float result_scale_x, result_scale_y;
   gfx::Size result_bounds;
 
-  // Layers without GPU rasterization (default).
   SetupDefaultTrees(layer_bounds);
+  EXPECT_FALSE(pending_layer_->ShouldUseGpuRasterization());
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
   pending_layer_->CalculateContentsScale(
       1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
   // Should have a low-res and a high-res tiling.
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
-
-  // Tell the layer to use GPU rasterization.
-  pending_layer_->SetShouldUseGpuRasterization(true);
-  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
-  pending_layer_->CalculateContentsScale(
-      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
-  // Should only have the high-res tiling.
-  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
@@ -1550,6 +1549,68 @@ TEST_F(DeferredInitPictureLayerImplTest,
   ASSERT_TRUE(host_impl_.pending_tree()->needs_update_draw_properties());
   ASSERT_TRUE(host_impl_.active_tree()->needs_update_draw_properties());
   host_impl_.active_tree()->UpdateDrawProperties();
+}
+
+class HybridRasterizationPictureLayerImplTest : public PictureLayerImplTest {
+ public:
+  HybridRasterizationPictureLayerImplTest()
+      : PictureLayerImplTest(HybridRasterizationSettings()) {}
+};
+
+TEST_F(HybridRasterizationPictureLayerImplTest, Tiling) {
+  gfx::Size default_tile_size(host_impl_.settings().default_tile_size);
+  gfx::Size layer_bounds(default_tile_size.width() * 4,
+                         default_tile_size.height() * 4);
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  SetupDefaultTrees(layer_bounds);
+  EXPECT_FALSE(pending_layer_->ShouldUseGpuRasterization());
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+  pending_layer_->CalculateContentsScale(
+      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  // Should have a low-res and a high-res tiling.
+  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+
+  pending_layer_->SetHasGpuRasterizationHint(true);
+  EXPECT_TRUE(pending_layer_->ShouldUseGpuRasterization());
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+  pending_layer_->CalculateContentsScale(
+      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  // Should only have the high-res tiling.
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
+}
+
+class GpuRasterizationPictureLayerImplTest : public PictureLayerImplTest {
+ public:
+  GpuRasterizationPictureLayerImplTest()
+      : PictureLayerImplTest(GpuRasterizationSettings()) {}
+};
+
+TEST_F(GpuRasterizationPictureLayerImplTest, Tiling) {
+  gfx::Size default_tile_size(host_impl_.settings().default_tile_size);
+  gfx::Size layer_bounds(default_tile_size.width() * 4,
+                         default_tile_size.height() * 4);
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  SetupDefaultTrees(layer_bounds);
+  pending_layer_->SetHasGpuRasterizationHint(true);
+  EXPECT_TRUE(pending_layer_->ShouldUseGpuRasterization());
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+  pending_layer_->CalculateContentsScale(
+      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  // Should only have the high-res tiling.
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
+
+  pending_layer_->SetHasGpuRasterizationHint(false);
+  EXPECT_TRUE(pending_layer_->ShouldUseGpuRasterization());
+  // Should still have the high-res tiling.
+  EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
+  pending_layer_->CalculateContentsScale(
+      1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  // Should still only have the high-res tiling.
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
 }
 
 }  // namespace

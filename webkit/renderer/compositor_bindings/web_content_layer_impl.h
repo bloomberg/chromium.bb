@@ -30,6 +30,7 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   virtual blink::WebLayer* layer();
   virtual void setDoubleSided(bool double_sided);
   virtual void setDrawCheckerboardForMissingTiles(bool checkerboard);
+  virtual void setHasGpuRasterizationHint(bool has_hint);
 
  protected:
   virtual ~WebContentLayerImpl();

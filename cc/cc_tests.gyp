@@ -163,6 +163,8 @@
       'test/fake_video_frame_provider.h',
       'test/geometry_test_utils.cc',
       'test/geometry_test_utils.h',
+      'test/gpu_rasterization_settings.h',
+      'test/hybrid_rasterization_settings.h',
       'test/test_in_process_context_provider.cc',
       'test/test_in_process_context_provider.h',
       'test/impl_side_painting_settings.h',

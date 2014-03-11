@@ -40,6 +40,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   ContentLayerClient* client() { return client_; }
 
+  void SetHasGpuRasterizationHint(bool has_hint);
+
  protected:
   explicit PictureLayer(ContentLayerClient* client);
   virtual ~PictureLayer();
@@ -55,6 +57,7 @@ class CC_EXPORT PictureLayer : public Layer {
   Region pile_invalidation_;
   gfx::Rect last_updated_visible_content_rect_;
   bool is_mask_;
+  bool has_gpu_rasterization_hint_;
 
   int update_source_frame_number_;
 

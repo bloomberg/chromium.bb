@@ -77,10 +77,8 @@ class CC_EXPORT PictureLayerImpl
 
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) OVERRIDE;
 
-  void SetShouldUseGpuRasterization(bool should_use_gpu_rasterization);
-  bool should_use_gpu_rasterization() const {
-    return should_use_gpu_rasterization_;
-  }
+  void SetHasGpuRasterizationHint(bool has_hint);
+  bool ShouldUseGpuRasterization() const;
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -89,9 +87,7 @@ class CC_EXPORT PictureLayerImpl
   void RemoveAllTilings();
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   void ManageTilings(bool animating_transform_to_screen);
-  bool ShouldHaveLowResTiling() const {
-    return !should_use_gpu_rasterization();
-  }
+  bool ShouldHaveLowResTiling() const { return !ShouldUseGpuRasterization(); }
   virtual bool ShouldAdjustRasterScale(
       bool animating_transform_to_screen) const;
   virtual void RecalculateRasterScales(
@@ -149,7 +145,7 @@ class CC_EXPORT PictureLayerImpl
   // A sanity state check to make sure UpdateTilePriorities only gets called
   // after a CalculateContentsScale/ManageTilings.
   bool should_update_tile_priorities_;
-  bool should_use_gpu_rasterization_;
+  bool has_gpu_rasterization_hint_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
