@@ -32,6 +32,7 @@
 #ifndef SQLTransactionBackendSync_h
 #define SQLTransactionBackendSync_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -65,7 +66,7 @@ public:
 private:
     SQLTransactionBackendSync(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly);
 
-    RefPtr<DatabaseSync> m_database;
+    RefPtrWillBePersistent<DatabaseSync> m_database;
     OwnPtr<SQLTransactionSyncCallback> m_callback;
     bool m_readOnly;
     bool m_hasVersionMismatch;

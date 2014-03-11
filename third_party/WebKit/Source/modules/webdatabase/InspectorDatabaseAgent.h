@@ -31,6 +31,7 @@
 
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -66,7 +67,7 @@ public:
     virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names) OVERRIDE;
     virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>) OVERRIDE;
 
-    void didOpenDatabase(PassRefPtr<Database>, const String& domain, const String& name, const String& version);
+    void didOpenDatabase(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
 private:
     explicit InspectorDatabaseAgent();
 

@@ -30,6 +30,7 @@
 #define SQLTransaction_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "modules/webdatabase/AbstractSQLTransaction.h"
 #include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLStatement.h"
@@ -95,7 +96,7 @@ private:
 
     SQLTransactionState nextStateForTransactionError();
 
-    RefPtr<Database> m_database;
+    RefPtrWillBeCrossThreadPersistent<Database> m_database;
     RefPtr<AbstractSQLTransactionBackend> m_backend;
     SQLCallbackWrapper<SQLTransactionCallback> m_callbackWrapper;
     SQLCallbackWrapper<VoidCallback> m_successCallbackWrapper;

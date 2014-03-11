@@ -55,7 +55,7 @@ void SQLTransactionClient::didCommitWriteTransaction(DatabaseBackendBase* databa
 {
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(bind(&databaseModified, PassRefPtr<DatabaseBackendBase>(database)));
+        executionContext->postTask(bind(&databaseModified, PassRefPtrWillBeRawPtr<DatabaseBackendBase>(database)));
         return;
     }
 

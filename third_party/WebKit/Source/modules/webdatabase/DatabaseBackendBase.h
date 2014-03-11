@@ -30,6 +30,7 @@
 #ifndef DatabaseBackendBase_h
 #define DatabaseBackendBase_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
@@ -50,9 +51,10 @@ class DatabaseBase;
 class ExecutionContext;
 class SecurityOrigin;
 
-class DatabaseBackendBase : public ThreadSafeRefCounted<DatabaseBackendBase> {
+class DatabaseBackendBase : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseBackendBase> {
 public:
     virtual ~DatabaseBackendBase();
+    virtual void trace(Visitor*);
 
     virtual String version() const;
 

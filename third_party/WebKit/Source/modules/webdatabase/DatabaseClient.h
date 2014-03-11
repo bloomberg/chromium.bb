@@ -33,6 +33,7 @@
 
 #include "core/page/Page.h"
 #include "core/workers/WorkerClients.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -50,7 +51,7 @@ public:
 
     virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) = 0;
 
-    void didOpenDatabase(PassRefPtr<Database>, const String& domain, const String& name, const String& version);
+    void didOpenDatabase(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
 
     static DatabaseClient* from(ExecutionContext*);
     static const char* supplementName();

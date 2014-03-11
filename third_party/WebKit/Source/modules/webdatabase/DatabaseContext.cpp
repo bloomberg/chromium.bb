@@ -196,7 +196,7 @@ void DatabaseContext::stopSyncDatabases()
         syncDatabases[i]->closeImmediately();
 }
 
-bool DatabaseContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
+void DatabaseContext::stopDatabases()
 {
     stopSyncDatabases();
     if (m_isRegistered) {
@@ -215,11 +215,11 @@ bool DatabaseContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
     // DatabaseThread.
 
     if (m_databaseThread && !m_hasRequestedTermination) {
-        m_databaseThread->requestTermination(cleanupSync);
+        DatabaseTaskSynchronizer sync;
+        m_databaseThread->requestTermination(&sync);
         m_hasRequestedTermination = true;
-        return true;
+        sync.waitForTaskCompletion();
     }
-    return false;
 }
 
 bool DatabaseContext::allowDatabaseAccess() const

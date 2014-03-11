@@ -70,7 +70,7 @@ DatabaseManager::DatabaseManager()
 
 class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtr<Database> database, PassOwnPtr<DatabaseCallback> creationCallback)
+    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtr<DatabaseCallback> creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
@@ -81,13 +81,13 @@ public:
     }
 
 private:
-    DatabaseCreationCallbackTask(PassRefPtr<Database> database, PassOwnPtr<DatabaseCallback> callback)
+    DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtr<DatabaseCallback> callback)
         : m_database(database)
         , m_creationCallback(callback)
     {
     }
 
-    RefPtr<Database> m_database;
+    RefPtrWillBePersistent<Database> m_database;
     OwnPtr<DatabaseCallback> m_creationCallback;
 };
 
@@ -180,7 +180,7 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
         context->securityOrigin()->toString().ascii().data());
 }
 
-PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionContext* context,
+PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionContext* context,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
@@ -189,7 +189,8 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionCo
     RefPtr<DatabaseContext> databaseContext = databaseContextFor(context);
     RefPtr<DatabaseContext> backendContext = databaseContext->backend();
 
-    RefPtr<DatabaseBackendBase> backend = m_server->openDatabase(backendContext, type, name, expectedVersion,
+    RefPtrWillBeRawPtr<DatabaseBackendBase> backend = m_server->openDatabase(
+        backendContext, type, name, expectedVersion,
         displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
 
     if (!backend) {
@@ -212,7 +213,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionCo
     return backend.release();
 }
 
-PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
+PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
@@ -220,12 +221,12 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    RefPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Async, name,
+    RefPtrWillBeRawPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Async, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)
         return nullptr;
 
-    RefPtr<Database> database = Database::create(context, backend);
+    RefPtrWillBeRawPtr<Database> database = Database::create(context, backend);
 
     RefPtr<DatabaseContext> databaseContext = databaseContextFor(context);
     databaseContext->setHasOpenDatabases();
@@ -240,7 +241,7 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     return database.release();
 }
 
-PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* context,
+PassRefPtrWillBeRawPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
@@ -249,12 +250,12 @@ PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* con
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    RefPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Sync, name,
+    RefPtrWillBeRawPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Sync, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)
         return nullptr;
 
-    RefPtr<DatabaseSync> database = DatabaseSync::create(context, backend);
+    RefPtrWillBeRawPtr<DatabaseSync> database = DatabaseSync::create(context, backend);
 
     if (backend->isNew() && creationCallback.get()) {
         WTF_LOG(StorageAPI, "Invoking the creation callback for database %p\n", database.get());
@@ -263,14 +264,6 @@ PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* con
 
     ASSERT(database);
     return database.release();
-}
-
-void DatabaseManager::stopDatabases(ExecutionContext* context, DatabaseTaskSynchronizer* synchronizer)
-{
-    RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
-    if (!databaseContext || !databaseContext->stopDatabases(synchronizer))
-        if (synchronizer)
-            synchronizer->taskCompleted();
 }
 
 String DatabaseManager::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)

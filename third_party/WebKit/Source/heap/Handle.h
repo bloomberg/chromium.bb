@@ -222,6 +222,9 @@ private:
 //
 // A Persistent is always a GC root from the point of view of
 // the garbage collector.
+//
+// We have to construct and destruct Persistent with default RootsAccessor in
+// the same thread.
 template<typename T, typename RootsAccessor /* = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > */ >
 class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAccessor> > {
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Persistent);
@@ -322,6 +325,14 @@ public:
 
 private:
     T* m_raw;
+};
+
+// Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
+// different from the construction thread.
+template<typename T>
+class CrossThreadPersistent : public Persistent<T, GlobalPersistents> {
+public:
+    CrossThreadPersistent(T* raw) : Persistent<T, GlobalPersistents>(raw) { }
 };
 
 // FIXME: derive affinity based on the collection.
@@ -615,9 +626,12 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RefCountedWillBeGarbageCollected WebCore::GarbageCollected
 #define RefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
 #define RefCountedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
+#define ThreadSafeRefCountedWillBeGarbageCollected WebCore::GarbageCollected
+#define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
 #define RefPtrWillBePersistent WebCore::Persistent
 #define RefPtrWillBeRawPtr WTF::RawPtr
 #define RefPtrWillBeMember WebCore::Member
+#define RefPtrWillBeCrossThreadPersistent WebCore::CrossThreadPersistent
 #define RawPtrWillBeMember WebCore::Member
 #define RawPtrWillBeWeakMember WebCore::WeakMember
 #define OwnPtrWillBeMember WebCore::Member
@@ -676,9 +690,12 @@ public:
 #define RefCountedWillBeGarbageCollected WTF::RefCounted
 #define RefCountedWillBeGarbageCollectedFinalized WTF::RefCounted
 #define RefCountedWillBeRefCountedGarbageCollected WTF::RefCounted
+#define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
+#define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
 #define RefPtrWillBePersistent WTF::RefPtr
 #define RefPtrWillBeRawPtr WTF::RefPtr
 #define RefPtrWillBeMember WTF::RefPtr
+#define RefPtrWillBeCrossThreadPersistent WTF::RefPtr
 #define RawPtrWillBeMember WTF::RawPtr
 #define RawPtrWillBeWeakMember WTF::RawPtr
 #define OwnPtrWillBeMember WTF::OwnPtr

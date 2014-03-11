@@ -79,7 +79,6 @@
 #include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/xml/parser/XMLDocumentParser.h"
-#include "modules/webdatabase/DatabaseManager.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
@@ -202,9 +201,6 @@ void FrameLoader::stopLoading()
         // FIXME: HTML5 doesn't tell us to set the state to complete when aborting, but we do anyway to match legacy behavior.
         // http://www.w3.org/Bugs/Public/show_bug.cgi?id=10537
         doc->setReadyState(Document::Complete);
-
-        // FIXME: Should the DatabaseManager watch for something like ActiveDOMObject::stop() rather than being special-cased here?
-        DatabaseManager::manager().stopDatabases(doc, 0);
     }
 
     // FIXME: This will cancel redirection timer, which really needs to be restarted when restoring the frame from b/f cache.

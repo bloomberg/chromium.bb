@@ -28,6 +28,7 @@
 #ifndef SQLTransactionBackend_h
 #define SQLTransactionBackend_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/AbstractSQLTransactionBackend.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
@@ -110,7 +111,7 @@ private:
     RefPtr<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
     RefPtr<SQLStatementBackend> m_currentStatementBackend;
 
-    RefPtr<DatabaseBackend> m_database;
+    RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
     RefPtr<SQLTransactionWrapper> m_wrapper;
     RefPtr<SQLError> m_transactionError;
 

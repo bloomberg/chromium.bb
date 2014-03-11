@@ -57,7 +57,7 @@
 
 namespace WebCore {
 
-PassRefPtr<Database> Database::create(ExecutionContext*, PassRefPtr<DatabaseBackendBase> backend)
+PassRefPtrWillBeRawPtr<Database> Database::create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase> backend)
 {
     // FIXME: Currently, we're only simulating the backend by return the
     // frontend database as its own the backend. When we split the 2 apart,
@@ -68,8 +68,8 @@ PassRefPtr<Database> Database::create(ExecutionContext*, PassRefPtr<DatabaseBack
 
 Database::Database(PassRefPtr<DatabaseContext> databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
-    : DatabaseBase(databaseContext->executionContext())
-    , DatabaseBackend(databaseContext, name, expectedVersion, displayName, estimatedSize)
+    : DatabaseBackend(databaseContext.get(), name, expectedVersion, displayName, estimatedSize)
+    , DatabaseBase(databaseContext->executionContext())
     , m_databaseContext(DatabaseBackend::databaseContext())
 {
     ScriptWrappable::init(this);
@@ -83,12 +83,17 @@ Database::~Database()
 {
 }
 
+void Database::trace(Visitor* visitor)
+{
+    DatabaseBackend::trace(visitor);
+}
+
 Database* Database::from(DatabaseBackend* backend)
 {
     return static_cast<Database*>(backend->m_frontend);
 }
 
-PassRefPtr<DatabaseBackend> Database::backend()
+PassRefPtrWillBeRawPtr<DatabaseBackend> Database::backend()
 {
     return this;
 }

@@ -26,6 +26,7 @@
 #ifndef DatabaseManager_h
 #define DatabaseManager_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "wtf/Assertions.h"
@@ -73,10 +74,8 @@ public:
 
     static void throwExceptionForDatabaseError(DatabaseError, const String& errorMessage, ExceptionState&);
 
-    PassRefPtr<Database> openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
-    PassRefPtr<DatabaseSync> openDatabaseSync(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
-
-    void stopDatabases(ExecutionContext*, DatabaseTaskSynchronizer*);
+    PassRefPtrWillBeRawPtr<Database> openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
+    PassRefPtrWillBeRawPtr<DatabaseSync> openDatabaseSync(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
 
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
@@ -92,7 +91,7 @@ private:
     // it already exist previously. Otherwise, it returns 0.
     PassRefPtr<DatabaseContext> existingDatabaseContextFor(ExecutionContext*);
 
-    PassRefPtr<DatabaseBackendBase> openDatabaseBackend(ExecutionContext*,
+    PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabaseBackend(ExecutionContext*,
         DatabaseType, const String& name, const String& expectedVersion, const String& displayName,
         unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 

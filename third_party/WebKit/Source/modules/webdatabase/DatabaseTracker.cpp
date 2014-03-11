@@ -107,7 +107,7 @@ void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
 
 class NotifyDatabaseObserverOnCloseTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtr<DatabaseBackendBase> database)
+    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtrWillBeRawPtr<DatabaseBackendBase> database)
     {
         return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
     }
@@ -123,12 +123,12 @@ public:
     }
 
 private:
-    NotifyDatabaseObserverOnCloseTask(PassRefPtr<DatabaseBackendBase> database)
+    explicit NotifyDatabaseObserverOnCloseTask(PassRefPtrWillBeRawPtr<DatabaseBackendBase> database)
         : m_database(database)
     {
     }
 
-    RefPtr<DatabaseBackendBase> m_database;
+    RefPtrWillBeCrossThreadPersistent<DatabaseBackendBase> m_database;
 };
 
 void DatabaseTracker::removeOpenDatabase(DatabaseBackendBase* database)

@@ -28,6 +28,7 @@
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
@@ -90,7 +91,7 @@ private:
     virtual void doPerformTask() = 0;
     virtual void taskCancelled() { }
 
-    RefPtr<DatabaseBackend> m_database;
+    RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
     DatabaseTaskSynchronizer* m_synchronizer;
 
 #if !LOG_DISABLED

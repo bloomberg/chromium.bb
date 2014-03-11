@@ -36,7 +36,6 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "heap/ThreadState.h"
 #include "modules/webdatabase/DatabaseManager.h"
-#include "modules/webdatabase/DatabaseTask.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
@@ -191,19 +190,11 @@ public:
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
 
-        // FIXME: Should we stop the databases as part of stopActiveDOMObjects() below?
-        DatabaseTaskSynchronizer cleanupSync;
-        DatabaseManager::manager().stopDatabases(workerGlobalScope, &cleanupSync);
-
         workerGlobalScope->stopActiveDOMObjects();
 
         // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,
         // which become dangling once Heap is destroyed.
         workerGlobalScope->removeAllEventListeners();
-
-        // We wait for the database thread to clean up all its stuff so that we
-        // can do more stringent leak checks as we exit.
-        cleanupSync.waitForTaskCompletion();
 
         // Stick a shutdown command at the end of the queue, so that we deal
         // with all the cleanup tasks the databases post first.

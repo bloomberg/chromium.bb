@@ -48,15 +48,15 @@
 
 namespace WebCore {
 
-PassRefPtr<DatabaseSync> DatabaseSync::create(ExecutionContext*, PassRefPtr<DatabaseBackendBase> backend)
+PassRefPtrWillBeRawPtr<DatabaseSync> DatabaseSync::create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase> backend)
 {
     return static_cast<DatabaseSync*>(backend.get());
 }
 
 DatabaseSync::DatabaseSync(PassRefPtr<DatabaseContext> databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
-    : DatabaseBase(databaseContext->executionContext())
-    , DatabaseBackendSync(databaseContext, name, expectedVersion, displayName, estimatedSize)
+    : DatabaseBackendSync(databaseContext.get(), name, expectedVersion, displayName, estimatedSize)
+    , DatabaseBase(databaseContext->executionContext())
 {
     ScriptWrappable::init(this);
     setFrontend(this);
@@ -64,7 +64,13 @@ DatabaseSync::DatabaseSync(PassRefPtr<DatabaseContext> databaseContext,
 
 DatabaseSync::~DatabaseSync()
 {
-    ASSERT(executionContext()->isContextThread());
+    if (executionContext())
+        ASSERT(executionContext()->isContextThread());
+}
+
+void DatabaseSync::trace(Visitor* visitor)
+{
+    DatabaseBackendSync::trace(visitor);
 }
 
 void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& exceptionState)

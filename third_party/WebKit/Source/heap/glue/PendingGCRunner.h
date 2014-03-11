@@ -42,7 +42,9 @@ public:
 
     ~PendingGCRunner()
     {
-        ASSERT(!m_nesting);
+        // m_nesting can be 1 if this was unregistered in a task and
+        // didProcessTask was not called.
+        ASSERT(!m_nesting || m_nesting == 1);
     }
 
     virtual void willProcessTask()
@@ -58,7 +60,7 @@ public:
         if (m_nesting)
             m_nesting--;
 
-        WebCore::ThreadState* state = WebCore::ThreadState::mainThreadState();
+        WebCore::ThreadState* state = WebCore::ThreadState::current();
         state->safePoint(m_nesting ? WebCore::ThreadState::HeapPointersOnStack : WebCore::ThreadState::NoHeapPointersOnStack);
     }
 

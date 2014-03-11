@@ -29,6 +29,7 @@
 #define DatabaseContext_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
@@ -60,8 +61,8 @@ public:
     void setHasOpenDatabases() { m_hasOpenDatabases = true; }
     void didOpenDatabase(DatabaseBackendBase&);
     void didCloseDatabase(DatabaseBackendBase&);
-    // When the database cleanup is done, cleanupSync will be signalled.
-    bool stopDatabases(DatabaseTaskSynchronizer*);
+    // Blocks the caller thread until cleanup tasks are completed.
+    void stopDatabases();
 
     bool allowDatabaseAccess() const;
 
@@ -72,7 +73,6 @@ private:
     explicit DatabaseContext(ExecutionContext*);
 
     void stopSyncDatabases();
-    void stopDatabases() { stopDatabases(0); }
 
     RefPtr<DatabaseThread> m_databaseThread;
     // The contents of m_openSyncDatabases are raw pointers. It's safe because

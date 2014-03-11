@@ -48,9 +48,10 @@ class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-class Database FINAL : public DatabaseBase, public DatabaseBackend, public ScriptWrappable {
+class Database FINAL : public DatabaseBackend, public DatabaseBase, public ScriptWrappable {
 public:
     virtual ~Database();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Direct support for the DOM API
     virtual String version() const OVERRIDE;
@@ -73,8 +74,8 @@ public:
 private:
     Database(PassRefPtr<DatabaseContext>, const String& name,
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
-    PassRefPtr<DatabaseBackend> backend();
-    static PassRefPtr<Database> create(ExecutionContext*, PassRefPtr<DatabaseBackendBase>);
+    PassRefPtrWillBeRawPtr<DatabaseBackend> backend();
+    static PassRefPtrWillBeRawPtr<Database> create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase>);
 
     void runTransaction(PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>,
         PassOwnPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);

@@ -248,6 +248,10 @@ DatabaseBackendBase::~DatabaseBackendBase()
     ASSERT(!m_opened);
 }
 
+void DatabaseBackendBase::trace(Visitor*)
+{
+}
+
 void DatabaseBackendBase::closeDatabase()
 {
     if (!m_opened)

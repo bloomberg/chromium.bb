@@ -45,6 +45,9 @@ DatabaseTaskSynchronizer::DatabaseTaskSynchronizer()
 
 void DatabaseTaskSynchronizer::waitForTaskCompletion()
 {
+    // Prevent the deadlock between park request by other threads and blocking
+    // by m_synchronousCondition.
+    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
     m_synchronousMutex.lock();
     while (!m_taskCompleted)
         m_synchronousCondition.wait(m_synchronousMutex);

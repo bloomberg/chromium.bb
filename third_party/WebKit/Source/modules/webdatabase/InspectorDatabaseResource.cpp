@@ -38,12 +38,12 @@ namespace WebCore {
 
 static int nextUnusedId = 1;
 
-PassRefPtr<InspectorDatabaseResource> InspectorDatabaseResource::create(PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
+PassRefPtr<InspectorDatabaseResource> InspectorDatabaseResource::create(PassRefPtrWillBeRawPtr<Database> database, const String& domain, const String& name, const String& version)
 {
     return adoptRef(new InspectorDatabaseResource(database, domain, name, version));
 }
 
-InspectorDatabaseResource::InspectorDatabaseResource(PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
+InspectorDatabaseResource::InspectorDatabaseResource(PassRefPtrWillBeRawPtr<Database> database, const String& domain, const String& name, const String& version)
     : m_database(database)
     , m_id(String::number(nextUnusedId++))
     , m_domain(domain)

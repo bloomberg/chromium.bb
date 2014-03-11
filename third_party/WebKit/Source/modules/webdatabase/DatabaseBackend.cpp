@@ -47,6 +47,11 @@ DatabaseBackend::DatabaseBackend(PassRefPtr<DatabaseContext> databaseContext, co
 {
 }
 
+void DatabaseBackend::trace(Visitor* visitor)
+{
+    DatabaseBackendBase::trace(visitor);
+}
+
 bool DatabaseBackend::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     DatabaseTaskSynchronizer synchronizer;

@@ -42,6 +42,7 @@ class DatabaseServer;
 class DatabaseBackendSync : public DatabaseBackendBase {
 public:
     virtual ~DatabaseBackendSync();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
 

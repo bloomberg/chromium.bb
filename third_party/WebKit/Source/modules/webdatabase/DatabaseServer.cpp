@@ -50,27 +50,27 @@ void DatabaseServer::interruptAllDatabasesForContext(const DatabaseContext* cont
     DatabaseTracker::tracker().interruptAllDatabasesForContext(context);
 }
 
-PassRefPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseContext>& backendContext,
+PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseContext>& backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
-    RefPtr<DatabaseBackendBase> database;
+    RefPtrWillBeRawPtr<DatabaseBackendBase> database;
     if (DatabaseTracker::tracker().canEstablishDatabase(backendContext.get(), name, displayName, estimatedSize, error))
         database = createDatabase(backendContext, type, name, expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     return database.release();
 }
 
-PassRefPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseContext>& backendContext,
+PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseContext>& backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
-    RefPtr<DatabaseBackendBase> database;
+    RefPtrWillBeRawPtr<DatabaseBackendBase> database;
     switch (type) {
     case DatabaseType::Async:
-        database = adoptRef(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
+        database = adoptRefWillBeNoop(new Database(backendContext, name, expectedVersion, displayName, estimatedSize));
         break;
     case DatabaseType::Sync:
-        database = adoptRef(new DatabaseSync(backendContext, name, expectedVersion, displayName, estimatedSize));
+        database = adoptRefWillBeNoop(new DatabaseSync(backendContext, name, expectedVersion, displayName, estimatedSize));
     }
 
     if (!database->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))

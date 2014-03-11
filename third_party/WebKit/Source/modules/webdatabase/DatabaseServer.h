@@ -26,6 +26,7 @@
 #ifndef DatabaseServer_h
 #define DatabaseServer_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
 
 namespace WebCore {
@@ -37,7 +38,7 @@ public:
 
     virtual String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist) OVERRIDE;
 
-    virtual PassRefPtr<DatabaseBackendBase> openDatabase(RefPtr<DatabaseContext>&, DatabaseType,
+    virtual PassRefPtrWillBeRawPtr<DatabaseBackendBase> openDatabase(RefPtr<DatabaseContext>&, DatabaseType,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE;
 
@@ -46,7 +47,7 @@ public:
     virtual void interruptAllDatabasesForContext(const DatabaseContext*) OVERRIDE;
 
 protected:
-    PassRefPtr<DatabaseBackendBase> createDatabase(RefPtr<DatabaseContext>&, DatabaseType,
+    PassRefPtrWillBeRawPtr<DatabaseBackendBase> createDatabase(RefPtr<DatabaseContext>&, DatabaseType,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 };

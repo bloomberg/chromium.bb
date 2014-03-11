@@ -27,6 +27,7 @@
 #ifndef WorkerGlobalScopeWebDatabase_h
 #define WorkerGlobalScopeWebDatabase_h
 
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -42,8 +43,8 @@ class WorkerGlobalScope;
 
 class WorkerGlobalScopeWebDatabase {
 public:
-    static PassRefPtr<Database> openDatabase(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
-    static PassRefPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Database> openDatabase(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
 
 private:
     WorkerGlobalScopeWebDatabase() { };

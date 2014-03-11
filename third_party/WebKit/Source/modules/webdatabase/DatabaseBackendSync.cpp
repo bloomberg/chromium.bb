@@ -50,6 +50,11 @@ DatabaseBackendSync::~DatabaseBackendSync()
     }
 }
 
+void DatabaseBackendSync::trace(Visitor* visitor)
+{
+    DatabaseBackendBase::trace(visitor);
+}
+
 bool DatabaseBackendSync::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     DatabaseTracker::tracker().prepareToOpenDatabase(this);

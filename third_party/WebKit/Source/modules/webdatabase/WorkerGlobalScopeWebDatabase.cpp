@@ -42,10 +42,10 @@
 
 namespace WebCore {
 
-PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
-    RefPtr<Database> database;
+    RefPtrWillBeRawPtr<Database> database;
     DatabaseError error = DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && context.securityOrigin()->canAccessDatabase()) {
         String errorMessage;
@@ -60,10 +60,10 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
     return database.release();
 }
 
-PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope& context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
-    RefPtr<DatabaseSync> database;
+    RefPtrWillBeRawPtr<DatabaseSync> database;
     DatabaseError error =  DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && context.securityOrigin()->canAccessDatabase()) {
         String errorMessage;
