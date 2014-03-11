@@ -164,12 +164,6 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
 
 // static
 int CreditCard::IconResourceId(const std::string& type) {
-  // TODO(blundell): Either move these resources out of webkit_resources or
-  // this function into //components/autofill/content/browser to eliminate the
-  // need for this ifdef-ing. crbug.com/328150
-#if defined(OS_IOS)
-  return 0;
-#else
   if (type == kAmericanExpressCard)
     return IDR_AUTOFILL_CC_AMEX;
   if (type == kDinersCard)
@@ -189,7 +183,6 @@ int CreditCard::IconResourceId(const std::string& type) {
   // include a new card.
   DCHECK_EQ(kGenericCard, type);
   return IDR_AUTOFILL_CC_GENERIC;
-#endif  // defined(OS_IOS)
 }
 
 // static

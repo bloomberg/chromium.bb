@@ -146,6 +146,8 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/ui.gyp:ui',
 
+            'component_resources.gyp:component_resources',
+
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',
 
@@ -204,8 +206,6 @@
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
               ],
               'dependencies': [
-                'component_resources.gyp:component_resources',
-
                 # Dependencies of browser_context_keyed_service
                 'components.gyp:browser_context_keyed_service',
 

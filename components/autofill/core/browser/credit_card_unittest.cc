@@ -10,13 +10,8 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-// TODO(blundell): Eliminate the need for this conditional include.
-// crbug.com/328150
-#if !defined(OS_IOS)
 #include "grit/component_scaled_resources.h"
-#endif
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 
@@ -168,10 +163,6 @@ TEST(CreditCardTest, Compare) {
   EXPECT_LT(0, b.Compare(a));
 }
 
-// TODO(blundell): Either move these resources out of webkit_resources or
-// this test into //components/autofill/content/browser to eliminate the
-// need for this ifdef-ing. crbug.com/328150
-#if !defined(OS_IOS)
 // Test we get the correct icon for each card type.
 TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_AMEX,
@@ -187,7 +178,6 @@ TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_VISA,
             CreditCard::IconResourceId(kVisaCard));
 }
-#endif  // !defined(OS_IOS)
 
 TEST(CreditCardTest, UpdateFromImportedCard) {
   CreditCard original_card(base::GenerateGUID(), "https://www.example.com");

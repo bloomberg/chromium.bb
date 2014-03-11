@@ -215,13 +215,6 @@
         ],
       },
       'conditions': [
-        # TODO(blundell): Eliminate the need for this conditional dependence.
-        # crbug.com/328150
-        ['OS != "ios"', {
-          'dependencies': [
-            'component_resources.gyp:component_resources',
-          ],
-        }],
         ['autofill_enable_sync == 1', {
           'defines': [
             'AUTOFILL_ENABLE_SYNC',
