@@ -14,8 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -656,22 +654,20 @@ class PowerManagerClientImpl : public PowerManagerClient {
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
 };
 
-// The fake PowerManagerClient implementation used on Linux desktop. This
-// can simulate a battery draining/charging, etc, for testing UI.
-class FakePowerManagerClient : public PowerManagerClient {
+// The PowerManagerClient implementation used on Linux desktop,
+// which does nothing.
+class PowerManagerClientStubImpl : public PowerManagerClient {
  public:
-  FakePowerManagerClient()
+  PowerManagerClientStubImpl()
       : discharging_(true),
         battery_percentage_(40),
         brightness_(50.0),
         pause_count_(2),
         cycle_count_(0),
         num_pending_suspend_readiness_callbacks_(0),
-        weak_ptr_factory_(this) {
-    ParseCommandLineSwitch();
-  }
+        weak_ptr_factory_(this) {}
 
-  virtual ~FakePowerManagerClient() {}
+  virtual ~PowerManagerClientStubImpl() {}
 
   int num_pending_suspend_readiness_callbacks() const {
     return num_pending_suspend_readiness_callbacks_;
@@ -679,11 +675,12 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   // PowerManagerClient overrides:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
-    if (power_cycle_delay_ != base::TimeDelta()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnableStubInteractive)) {
+      const int kStatusUpdateMs = 1000;
       update_timer_.Start(FROM_HERE,
-                          power_cycle_delay_,
-                          this,
-                          &FakePowerManagerClient::UpdateStatus);
+          base::TimeDelta::FromMilliseconds(kStatusUpdateMs), this,
+          &PowerManagerClientStubImpl::UpdateStatus);
     }
   }
 
@@ -731,7 +728,7 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   virtual void RequestStatusUpdate() OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&FakePowerManagerClient::UpdateStatus,
+        base::Bind(&PowerManagerClientStubImpl::UpdateStatus,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -746,7 +743,7 @@ class FakePowerManagerClient : public PowerManagerClient {
   virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
   virtual base::Closure GetSuspendReadinessCallback() OVERRIDE {
     num_pending_suspend_readiness_callbacks_++;
-    return base::Bind(&FakePowerManagerClient::HandleSuspendReadiness,
+    return base::Bind(&PowerManagerClientStubImpl::HandleSuspendReadiness,
                       weak_ptr_factory_.GetWeakPtr());
   }
   virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE {
@@ -833,40 +830,13 @@ class FakePowerManagerClient : public PowerManagerClient {
                       BrightnessChanged(brightness_level, user_initiated));
   }
 
-  void ParseCommandLineSwitch() {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kPowerStub)) {
-      std::string option_str =
-          command_line->GetSwitchValueASCII(switches::kPowerStub);
-      base::StringPairs string_pairs;
-      base::SplitStringIntoKeyValuePairs(option_str, '=', ',', &string_pairs);
-      for (base::StringPairs::iterator iter = string_pairs.begin();
-           iter != string_pairs.end(); ++iter) {
-        ParseOption((*iter).first, (*iter).second);
-      }
-      return;
-    }
-  }
-
-  bool ParseOption(const std::string& arg0, const std::string& arg1) {
-    if (arg0 == "cycle" || arg0 == "interactive") {
-      int seconds = 1;
-      if (!arg1.empty())
-        base::StringToInt(arg1, &seconds);
-      power_cycle_delay_ = base::TimeDelta::FromSeconds(seconds);
-      return true;
-    }
-    return false;
-  }
-
-  base::TimeDelta power_cycle_delay_;  // Time over which to cycle power state
   bool discharging_;
   int battery_percentage_;
   double brightness_;
   int pause_count_;
   int cycle_count_;
   ObserverList<Observer> observers_;
-  base::RepeatingTimer<FakePowerManagerClient> update_timer_;
+  base::RepeatingTimer<PowerManagerClientStubImpl> update_timer_;
   power_manager::PowerSupplyProperties props_;
 
   // Number of callbacks returned by GetSuspendReadinessCallback() but not yet
@@ -875,7 +845,7 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FakePowerManagerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<PowerManagerClientStubImpl> weak_ptr_factory_;
 };
 
 PowerManagerClient::PowerManagerClient() {
@@ -890,7 +860,7 @@ PowerManagerClient* PowerManagerClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new PowerManagerClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakePowerManagerClient();
+  return new PowerManagerClientStubImpl();
 }
 
 }  // namespace chromeos
