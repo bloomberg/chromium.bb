@@ -1020,8 +1020,7 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     self._InitializeRepo()
     self.RegisterManifestManager(self._GetInitializedManager(self.internal))
-    if (self._run.config.master and
-        self._GetSlavesForMaster(self._run.config)):
+    if (self._run.config.master and self._GetSlaveConfigs()):
       assert self.internal, 'Unified masters must use an internal checkout.'
       MasterSlaveSyncStage.sub_manager = self._GetInitializedManager(False)
 
@@ -1264,7 +1263,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       # Wait for slaves to finish, unless this is a debug run.
       wait_for_results = not self._run.options.debug
 
-      builders = self._GetSlavesForMaster(self._run.config)
+      builders = self._GetSlaveConfigs()
       builder_names = [b['name'] for b in builders]
 
       manager = self._run.attrs.manifest_manager
@@ -3782,7 +3781,7 @@ class MasterUploadPrebuiltsStage(bs.BuilderStage):
 
     # Update all the binhost conf files.
     generated_args.append('--sync-binhost-conf')
-    for slave_config in self._GetSlavesForMaster(self._run.config):
+    for slave_config in self._GetSlaveConfigs():
       if slave_config['prebuilts'] == constants.PUBLIC:
         public_builders.append(slave_config['name'])
         public_args.extend(self._AddOptionsForSlave(slave_config))
@@ -3901,7 +3900,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
         # upload_prebuilts for the last board. The other boards are treated as
         # slave boards.
         generated_args.append('--sync-binhost-conf')
-        for c in self._GetSlavesForMaster(self._run.config):
+        for c in self._GetSlaveConfigs():
           if c['prebuilts'] == constants.PUBLIC:
             public_builders.append(c['name'])
             public_args.extend(self._AddOptionsForSlave(c, board))

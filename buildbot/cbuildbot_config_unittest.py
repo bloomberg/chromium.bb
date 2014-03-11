@@ -12,7 +12,6 @@ import sys
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.buildbot import builderstage
 from chromite.buildbot import cbuildbot_config
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -235,7 +234,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Make sure every master has a sane list of slaves"""
     for build_name, config in cbuildbot_config.config.iteritems():
       if config['master']:
-        configs = builderstage.BuilderStage._GetSlavesForMaster(config)
+        configs = cbuildbot_config.GetSlavesForMaster(config)
         self.assertEqual(
             len(map(repr, configs)), len(set(map(repr, configs))),
             'Duplicate board in slaves of %s will cause upload prebuilts'
@@ -352,7 +351,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Test that no two same-board paladin slaves upload prebuilts."""
     for cfg in cbuildbot_config.config.values():
       if (cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']):
-        slaves = builderstage.BuilderStage._GetSlavesForMaster(cfg)
+        slaves = cbuildbot_config.GetSlavesForMaster(cfg)
         prebuilt_slaves = [s for s in slaves if s['prebuilts']]
         # Dictionary from board name to builder name that uploads prebuilt
         prebuilt_slave_boards = {}

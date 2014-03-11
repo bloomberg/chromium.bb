@@ -189,37 +189,19 @@ class BuilderStage(object):
         enter_chroot=True, error_code_ok=True)
     return binhost.output.rstrip('\n')
 
-  @staticmethod
-  def _GetSlavesForMaster(build_config, configs=None):
-    """Gets the important slave builds corresponding to this master.
+  def _GetSlaveConfigs(self):
+    """Get the slave configs for the current build config.
 
-    The master itself is eligible to be a slave (of itself) if it has boards.
-
-    Args:
-      build_config: A build config for a master builder.
-      configs: Option override of cbuildbot_config.config for the list
-        of build configs to look through for slaves.
+    This assumes self._run.config is a master config.
 
     Returns:
       A list of build configs corresponding to the slaves for the master
-        represented by build_config.
+        build config at self._run.config.
+
+    Raises:
+      See cbuildbot_config.GetSlavesForMaster for details.
     """
-    if configs is None:
-      configs = cbuildbot_config.config
-
-    builders = []
-    assert build_config['manifest_version']
-    assert build_config['master']
-    for config in configs.itervalues():
-      if (config['important'] and
-          config['manifest_version'] and
-          (not config['master'] or config['boards']) and
-          config['build_type'] == build_config['build_type'] and
-          config['chrome_rev'] == build_config['chrome_rev'] and
-          config['branch'] == build_config['branch']):
-        builders.append(config)
-
-    return builders
+    return cbuildbot_config.GetSlavesForMaster(self._run.config)
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""

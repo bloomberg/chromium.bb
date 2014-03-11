@@ -653,18 +653,24 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
 
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake unified master configuration."""
-    test_config = self._GetTestConfig()
-    self.mox.ReplayAll()
+    orig_config = stages.cbuildbot_config.config
+    try:
+      stages.cbuildbot_config.config = test_config = self._GetTestConfig()
 
-    stage = self.ConstructStage()
-    p = stage._GetSlavesForMaster(self.run.config, test_config)
-    self.mox.VerifyAll()
+      self.mox.ReplayAll()
 
-    self.assertTrue(test_config['test3'] in p)
-    self.assertTrue(test_config['test5'] in p)
-    self.assertFalse(test_config['test1'] in p)
-    self.assertFalse(test_config['test2'] in p)
-    self.assertFalse(test_config['test4'] in p)
+      stage = self.ConstructStage()
+      p = stage._GetSlaveConfigs()
+      self.mox.VerifyAll()
+
+      self.assertTrue(test_config['test3'] in p)
+      self.assertTrue(test_config['test5'] in p)
+      self.assertFalse(test_config['test1'] in p)
+      self.assertFalse(test_config['test2'] in p)
+      self.assertFalse(test_config['test4'] in p)
+
+    finally:
+      stages.cbuildbot_config.config = orig_config
 
   def testIsFailureFatal(self):
     """Tests the correctness of the _IsFailureFatal method"""

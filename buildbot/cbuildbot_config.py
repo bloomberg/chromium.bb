@@ -203,6 +203,45 @@ def FindCanonicalConfigForBoard(board):
   return both[0]
 
 
+def GetSlavesForMaster(master_config):
+  """Gets the important slave builds corresponding to this master.
+
+  A slave config is one that matches the master config in build_type,
+  chrome_rev, and branch.  It also must be marked important.  For the
+  full requirements see the logic in code below.
+
+  The master itself is eligible to be a slave (of itself) if it has boards.
+
+  Args:
+    master_config: A build config for a master builder.
+
+  Returns:
+    A list of build configs corresponding to the slaves for the master
+      represented by master_config.
+
+  Raises:
+    AssertionError if the given config is not a master config or it does
+      not have a manifest_version.
+  """
+  # This is confusing.  "config" really should be capitalized in this file.
+  all_configs = config
+
+  assert master_config['manifest_version']
+  assert master_config['master']
+
+  slave_configs = []
+  for build_config in all_configs.itervalues():
+    if (build_config['important'] and
+        build_config['manifest_version'] and
+        (not build_config['master'] or build_config['boards']) and
+        build_config['build_type'] == master_config['build_type'] and
+        build_config['chrome_rev'] == master_config['chrome_rev'] and
+        build_config['branch'] == master_config['branch']):
+      slave_configs.append(build_config)
+
+  return slave_configs
+
+
 # Enumeration of valid settings; any/all config settings must be in this.
 # All settings must be documented.
 
@@ -1421,7 +1460,7 @@ internal_paladin.add_config('master-paladin',
 # in a few config values (e.g. 'build_type', 'branch', etc).  If
 # they are not 'important' then they are ignored slaves.
 # TODO(mtennant): This master-slave relationship should be specified
-# here in the configuration, rather than BuilderStage._GetSlavesForMaster.
+# here in the configuration, rather than GetSlavesForMaster().
 # Something like the following:
 # master_paladin = internal_paladin.add_config(...)
 # master_paladin.AddSlave(internal_paladin.add_config(...))
