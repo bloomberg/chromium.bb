@@ -224,10 +224,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     frame: 'none',
     width: WALLPAPER_PICKER_WIDTH,
     height: WALLPAPER_PICKER_HEIGHT,
-    minWidth: WALLPAPER_PICKER_WIDTH,
-    maxWidth: WALLPAPER_PICKER_WIDTH,
-    minHeight: WALLPAPER_PICKER_HEIGHT,
-    maxHeight: WALLPAPER_PICKER_HEIGHT,
+    resizable: false,
     transparentBackground: true
   }, function(w) {
     wallpaperPickerWindow = w;
